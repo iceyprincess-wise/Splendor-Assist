@@ -1,0 +1,7 @@
+int id btnDelete 0x0
+int id btnSave 0x0
+int id copyButton 0x0
+int id logDisplay 0x0
+int id matchHistoryList 0x0
+int layout activity_analytics_theater 0x0
+int layout activity_crash_inspector 0x0

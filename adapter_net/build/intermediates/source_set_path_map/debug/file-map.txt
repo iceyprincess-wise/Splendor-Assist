@@ -1,0 +1,7 @@
+com.assistant.adapter.net.adapter_net-pngs-0 /home/user/efootball-assistant/adapter_net/build/generated/res/pngs/debug
+com.assistant.adapter.net.adapter_net-resValues-1 /home/user/efootball-assistant/adapter_net/build/generated/res/resValues/debug
+com.assistant.adapter.net.adapter_net-packageDebugResources-2 /home/user/efootball-assistant/adapter_net/build/intermediates/incremental/debug/packageDebugResources/merged.dir
+com.assistant.adapter.net.adapter_net-packageDebugResources-3 /home/user/efootball-assistant/adapter_net/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
+com.assistant.adapter.net.adapter_net-merged_res-4 /home/user/efootball-assistant/adapter_net/build/intermediates/merged_res/debug
+com.assistant.adapter.net.adapter_net-debug-5 /home/user/efootball-assistant/adapter_net/src/debug/res
+com.assistant.adapter.net.adapter_net-main-6 /home/user/efootball-assistant/adapter_net/src/main/res

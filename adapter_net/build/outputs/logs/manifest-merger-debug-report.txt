@@ -1,0 +1,60 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:1:1-22:12
+INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:1:1-22:12
+INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:1:1-22:12
+INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:1:1-22:12
+	package
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:2:5-40
+		INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml
+	android:versionCode
+		INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:1:11-69
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:4:5-77
+	android:name
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:4:22-74
+uses-permission#android.permission.FOREGROUND_SERVICE_SPECIAL_USE
+ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:5:5-89
+	android:name
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:5:22-86
+application
+ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:7:5-21:19
+INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:7:5-21:19
+	android:extractNativeLibs
+		INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml
+	android:label
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:10:9-45
+	android:hardwareAccelerated
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:11:9-43
+	android:icon
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:9:9-46
+	android:allowBackup
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:8:9-36
+service#com.assistant.adapter.net.NetAdapterService
+ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:13:9-20:19
+	android:process
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:16:13-42
+	android:exported
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:15:13-36
+	android:foregroundServiceType
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:17:13-55
+	android:name
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:14:13-46
+property
+ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:18:13-19:115
+	android:value
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:19:23-113
+	android:name
+		ADDED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml:18:23-82
+uses-sdk
+INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml
+INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /home/user/efootball-assistant/adapter_net/src/main/AndroidManifest.xml

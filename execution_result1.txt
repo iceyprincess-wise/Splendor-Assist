@@ -1,0 +1,81 @@
+Script started on 2026-06-06 13:03:43+00:00 [TERM="xterm-256color" TTY="/dev/pts/1" COLUMNS="36" LINES="30"]
+bash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ # Force clear corruption from locked engines
+[?2004late -s 0 app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt
+truncate -s 0 app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt
+truncate -s 0 app/src/main/java/com/assistant/overlay/dvr/DvrProjectionService.ktbash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ truncate -s 0 app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt
+[?2004ltruncate: cannot open 'app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt' for writing: Permission denied
+bash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ truncate -s 0 app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt
+[?2004ltruncate: cannot open 'app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt' for writing: Permission denied
+bash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ truncate -s 0 app/src/main/java/com/assistant/overlay/dvr/DvrProjectionService.kt
+[?2004ltruncate: cannot open 'app/src/main/java/com/assistant/overlay/dvr/DvrProjectionService.kt' for writing: Permission denied
+bash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ # Inject clean Accessibility Engine
+[?2004ld.accessibilityservice.AccessibilityService\n\nclass SmartAssistAccessibilityEngine : AccessibilityService() {\n    companion object { @Volatile var globalInstance: SmartAssistAccessibilityEngine? = null }\n    override fun onServiceConnected() {\n        super.onServiceConnected()\n        globalInstance = this\n    }\n    override fun onAccessibilityEvent(event: android.view.accessibility.AccessibilityEvent?) {}\n    override fun onInterrupt() {}\n}' > app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt
+
+# Inject clean Goalkeeper Engine
+printf 'package com.assistant.overlay.interceptor\nimport android.accessibilityservice.AccessibilityService\nimport android.accessibilityservice.GestureDescription\nimport android.graphics.Path\nimport android.os.*\nimport java.nio.ByteBuffer\n\nobject OmnipotentGoalkeeperEngine {\n    var isProcessing = false\n    fun scanFrameForOpponentAnimation(buffer: ByteBuffer, width: Int, height: Int) {\n        val service = SmartAssistAccessibilityEngine.globalInstance ?: return\n        if (isProcessing) return\n        isProcessing = true\n        val stride = width * 4\n        val startY = (height * 0.75).toInt()\n        try {\n            for (y in startY until height step 8) {\n                for (x in 0 until width step 8) {\n                    val index = (y * stride) + (x * 4)\n                    val r = buffer.get(index).toInt() and 0xFF\n                    val b = buffer.get(index + 2).toInt() and 0xFF\n                    if (r > 130 && b > 130) {bash: __vsc_prompt_cmd_original: command not found
+\n                        executeSwipe(service)\n                        isProcessing = false\n                        return\n                    }\n                }\n            }\n        } catch(e: Exception) {}\n        isProcessing = false\n    }\n    private fun executeSwipe(service: Accessi[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ printf 'package com.assistant.overlay.interceptor\nimport android.accessibilityservice.AccessibilityService\n\nclass SmartAssistAccessibilityEngine : AccessibilityService() {\n    companion object { @Volatile var globalInstance: SmartAssistAccessibilityEngine? = null }\n    override fun onServiceConnected() {\n        super.onServiceConnected()\n        globalInstance = this\n    }\n    override fun onAccessibilityEvent(event: android.view.accessibility.AccessibilityEvent?) {}\n    override fun onInterrupt() {}\n}' > app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt
+[?2004lbash: app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt: Permission denied
+bash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ 
+[?2004lbash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ # Inject clean Goalkeeper Engine
+[?2004lbash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ printf 'package com.assistant.overlay.interceptor\nimport android.accessibilityservice.AccessibilityService\nimport android.accessibilityservice.GestureDescription\nimport android.graphics.Path\nimport android.os.*\nimport java.nio.ByteBuffer\n\nobject OmnipotentGoalkeeperEngine {\n    var isProcessing = false\n    fun scanFrameForOpponentAnimation(buffer: ByteBuffer, width: Int, height: Int) {\n        val service = SmartAssistAccessibilityEngine.globalInstance ?: return\n        if (isProcessing) return\n        isProcessing = true\n        val stride = width * 4\n        val startY = (height * 0.75).toInt()\n        try {\n            for (y in startY until height step 8) {\n                for (x in 0 until width step 8) {\n                    val index = (y * stride) + (x * 4)\n                    val r = buffer.get(index).toInt() and 0xFF\n                    val b = buffer.get(index + 2).toInt() and 0xFF\n                    if (r > 130 && b > 130) {\n                        executeSwipe(service)\n                        isProcessing = false\n                        return\n                    }\n                }\n            }\n        } catch(e: Exception) {}\n        isProcessing = false\n    }\n    private fun executeSwipe(service: AccessibilityService) {\n        val path = Path().apply { moveTo(825f, 540f); lineTo(165f, 72f) }\n        val builder = GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(path, 0L, 2L))\n        service.dispatchGesture(builder.build(), null, null)\n    }\n}' > app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt
+[?2004lbash: app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt: Permission denied
+bash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ # Find the projection service file path
+[?2004l(find app/src/main -name "*DvrProjectionService.kt" | head -n 1)
+
+# Apply hook only if it's missing (prevent double-injection)
+if ! grep -q "OmnipotentGoalkeeperEngine" "$DVR_PATH"; then
+    sed -i '/val buffer =/a \        try { com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(buffer, 1650, 720) } catch(e: Exception) {}' "$DVR_PATH"
+fibash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ DVR_PATH=$(find app/src/main -name "*DvrProjectionService.kt" | head -n 1)
+[?2004lbash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ 
+[?2004lbash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ # Apply hook only if it's missing (prevent double-injection)
+[?2004lbash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ if ! grep -q "OmnipotentGoalkeeperEngine" "$DVR_PATH"; then
+[?2004l[?2004h>     sed -i '/val buffer =/a \        try { com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(buffer, 1650, 720) } catch(e: Exception) {}' "$DVR_PATH"
+[?2004l[?2004h> fi
+[?2004lbash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ # Perform build
+[?2004liet
+
+# Verify output existence
+if [ -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
+    echo "SUCCESS: Omnipotent Goalkeeper Engine compiled."
+    cp -f app/build/outputs/apk/debug/app-debug.apk "./SmartAssist-Omnipotent(Hybrid).apk"
+else
+    echo "CRITICAL FAILURE: Check Gradle logs."
+fibash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ ./gradlew clean assembleDebug --quiet
+[?2004le: file:///home/user/efootball-assistant/app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt:28:1 Expecting a top level declaration
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:kspDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 9s
+bash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ 
+[?2004lbash: __vsc_prompt_cmd_original: command not found
+[?2004h]0;user@firebase-efootball-assistant-1779975046441: ~/efootball-assistant[00;35mefootball-assistant-00995228[00m:[01;34m~/efootball-assistant[00m[01;32m{main}[00m$ exit
+[?2004lexit
+
+Script done on 2026-06-06 13:05:44+00:00 [COMMAND_EXIT_CODE="1"]

@@ -1,0 +1,1 @@
+com.assistant.adapter.net:drawable/ic_extension = 0x7f010000

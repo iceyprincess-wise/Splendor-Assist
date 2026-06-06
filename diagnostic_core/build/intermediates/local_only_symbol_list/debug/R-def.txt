@@ -1,0 +1,9 @@
+R_DEF: Internal format may change without notice
+local
+id btnDelete
+id btnSave
+id copyButton
+id logDisplay
+id matchHistoryList
+layout activity_analytics_theater
+layout activity_crash_inspector

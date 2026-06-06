@@ -1,0 +1,9 @@
+[SECURITY GUARD LOCK ACTIVE]
+STATUS: IMMUTABLE
+PROTECTED_MODULES:
+- :diagnostic_core
+- DvrProjectionService
+- app/src/debug/AndroidManifest.xml
+
+DIRECTIVE:
+DO NOT MODIFY, STRIP, OR DEGRADE. PERFORMANCE LOCK ENABLED.
