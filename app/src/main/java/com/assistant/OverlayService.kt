@@ -154,6 +154,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
         )
         windowManager.addView(overlayView, layoutParams)
         updateOverlayVisuals("GUARD LOCK: SECURE [ANTI-BAN ON]", Color.GREEN)
+        startTrajectoryWatchdog(
+            overlayView,
+            Handler(Looper.getMainLooper())
+        )
     }
 
     private fun updateOverlayVisuals(text: String, color: Int) {
@@ -196,6 +200,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     reusableBitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
                 }
                 reusableBitmap!!.copyPixelsFromBuffer(image.planes[0].buffer)
+
+                try {
+                    val scanBuffer = image.planes[0].buffer.duplicate()
+                    com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine
+                        .scanFrameForOpponentAnimation(
+                            scanBuffer,
+                            image.width,
+                            image.height
+                        )
+                } catch (_: Exception) {}
+
                 recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))
                     .addOnSuccessListener { visionText ->
                         if (visionText.text.contains("time", true) || visionText.text.contains("v", true)) {

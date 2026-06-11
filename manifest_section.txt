@@ -1,0 +1,52 @@
+        
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+    <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.fileprovider" android:exported="false" android:grantUriPermissions="true">
+        <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/filepaths" />
+    </provider>
+    <receiver android:name="com.assistant.overlay.database.TheaterCleanupReceiver" android:exported="false" />
+        
+        <service android:name=".overlay.interceptor.SmartAssistAccessibilityEngine"
+                 android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+                 android:foregroundServiceType="specialUse"
+                 android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility_service_config" />
+        </service>
+        <service android:name=".overlay.interceptor.SmartAssistAccessibilityEngine"
+                                 android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+                                                                           android:foregroundServiceType="specialUse"
+                                                                                                                                      android:exported="true">
+                                                                                                                                                                                                             <intent-filter>
+                                                                                                                                                                                                                                                                                                    <action android:name="android.accessibilityservice.AccessibilityService" />
+                                                                                                                                                                                                                                                                                                                                                                                                       </intent-filter>        
+        <service android:name=".overlay.interceptor.SmartAssistAccessibilityEngine"
+                 android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+                 android:foregroundServiceType="specialUse"
+                 android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility_service_config" />
+        </service>
+        <!-- [SECURITY GUARD LOCK ACTIVE] Smart Assist Engine & AI Interceptor -->
+        <service android:name=".overlay.interceptor.SmartAssistAccessibilityEngine"
+                 android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+                 android:foregroundServiceType="specialUse"
+                 android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility_service_config" />
+        </service>
+    </application>
+</manifest>

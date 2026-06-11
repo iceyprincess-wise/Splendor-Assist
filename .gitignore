@@ -1,1 +1,11 @@
 local.properties
+android-sdk/
+*.apk
+android-sdk/
+ijkff7/
+jdk17/
+*.tar.gz
+jdk17/
+jdk17.tar.gz
+.jdk17/
+jdk17.tar.gz

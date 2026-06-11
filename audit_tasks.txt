@@ -1,0 +1,24 @@
+Starting a Gradle Daemon, 1 busy and 3 incompatible and 1 stopped Daemons could not be reused, use --status for details
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file '/workspaces/Splendor-Assist/adapter_input/build.gradle.kts' line: 2
+
+* What went wrong:
+An exception occurred applying plugin request [id: 'com.android.application']
+> Failed to apply plugin 'com.android.internal.application'.
+   > Android Gradle plugin requires Java 17 to run. You are currently using Java 11.
+      Your current JDK is located in /opt/java/11.0.14
+      You can try some of the following options:
+       - changing the IDE settings.
+       - changing the JAVA_HOME environment variable.
+       - changing `org.gradle.java.home` in `gradle.properties`.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 10s

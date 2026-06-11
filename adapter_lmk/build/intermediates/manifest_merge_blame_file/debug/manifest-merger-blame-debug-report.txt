@@ -9,40 +9,40 @@
 9        android:targetSdkVersion="36" />
 10
 11    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-11-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:4:5-77
-11-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:4:22-74
+11-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:4:5-77
+11-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:4:22-74
 12    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-12-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:5:5-89
-12-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:5:22-86
+12-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:5:5-89
+12-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:5:22-86
 13
 14    <application
-14-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:7:5-21:19
+14-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:7:5-21:19
 15        android:allowBackup="false"
-15-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:8:9-36
+15-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:8:9-36
 16        android:debuggable="true"
 17        android:extractNativeLibs="false"
 18        android:hardwareAccelerated="true"
-18-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:11:9-43
+18-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:11:9-43
 19        android:icon="@drawable/ic_extension"
-19-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:9:9-46
+19-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:9:9-46
 20        android:label="Splendor LMK Adapter" >
-20-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:10:9-45
+20-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:10:9-45
 21        <service
-21-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:13:9-20:19
+21-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:13:9-20:19
 22            android:name="com.assistant.adapter.lmk.LmkAdapterService"
-22-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:14:13-46
+22-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:14:13-46
 23            android:exported="true"
-23-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:15:13-36
+23-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:15:13-36
 24            android:foregroundServiceType="specialUse"
-24-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:17:13-55
+24-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:17:13-55
 25            android:process=":kernel_lmk" >
-25-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:16:13-42
+25-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:16:13-42
 26            <property
-26-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:18:13-19:124
+26-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:18:13-19:124
 27                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-27-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:18:23-82
+27-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:18:23-82
 28                android:value="System performance optimization and thread priority alignment for active workloads." />
-28-->/home/user/efootball-assistant/adapter_lmk/src/main/AndroidManifest.xml:19:23-122
+28-->/workspaces/Splendor-Assist/adapter_lmk/src/main/AndroidManifest.xml:19:23-122
 29        </service>
 30    </application>
 31

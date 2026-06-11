@@ -7,6 +7,11 @@ class App : Application() {
         super.onCreate()
         // Hardware-level panic interception active app-wide
         Thread.setDefaultUncaughtExceptionHandler(GlobalCrashHandler(this))
+
+        DiagnosticsEngine.initTracking()
+
+        initializeGoalkeeperSubsystem(this)
+        bindDiagnosticsInterceptor(this)
     }
 }
 

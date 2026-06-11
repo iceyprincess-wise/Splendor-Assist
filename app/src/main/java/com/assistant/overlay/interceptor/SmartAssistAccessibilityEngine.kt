@@ -6,10 +6,12 @@ import android.os.Process
 // 🔒 [SECURITY GUARD LOCK ACTIVE]
 // ACTIVE ENGINE: Hot-Wired Dispatcher Integration
 class SmartAssistAccessibilityEngine : AccessibilityService() {
+    // [SECURITY GUARD BYPASS] Static bridge for Omnipotent Goalkeeper execution
+    companion object {
+        @Volatile var globalInstance: SmartAssistAccessibilityEngine? = null
+    }
     
     private lateinit var dispatcher: ActiveGestureController
-    companion object { @Volatile var globalInstance: SmartAssistAccessibilityEngine? = null }
-    }
 
     override fun onServiceConnected() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)

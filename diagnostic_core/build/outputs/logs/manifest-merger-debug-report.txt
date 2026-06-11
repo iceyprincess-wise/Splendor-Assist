@@ -1,16 +1,16 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /home/user/efootball-assistant/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest11318361044215105910.xml:2:13-83
-INJECTED from /home/user/efootball-assistant/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest11318361044215105910.xml:2:13-83
+ADDED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml:2:13-83
+INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml:2:13-83
 	package
-		INJECTED from /home/user/efootball-assistant/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest11318361044215105910.xml
+		INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml
 	xmlns:android
-		ADDED from /home/user/efootball-assistant/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest11318361044215105910.xml:2:23-81
+		ADDED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml:2:23-81
 uses-sdk
-INJECTED from /home/user/efootball-assistant/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest11318361044215105910.xml reason: use-sdk injection requested
-INJECTED from /home/user/efootball-assistant/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest11318361044215105910.xml
-INJECTED from /home/user/efootball-assistant/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest11318361044215105910.xml
+INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml reason: use-sdk injection requested
+INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml
+INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml
 	android:targetSdkVersion
-		INJECTED from /home/user/efootball-assistant/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest11318361044215105910.xml
+		INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml
 	android:minSdkVersion
-		INJECTED from /home/user/efootball-assistant/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest11318361044215105910.xml
+		INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml

@@ -1,0 +1,436 @@
+========== TOTAL KOTLIN FILES ==========
+29
+
+========== FUNCTIONS DEFINED ==========
+attach
+attachAndExecute
+bind
+bindAllAdapters
+bindDiagnosticsInterceptor
+calculateAndBindTTL
+checkBatteryAndProceed
+checkOverlayAndProceed
+clearCrashLog
+computeOptimalVector
+consumeTrajectory
+dispatchRawTouchMatrix
+dispatchSyncPulse
+doFrame
+dropMatchRecord
+enforceTrafficShapingProtocol
+evaluateOpponentShotTrajectory
+executeDynamicCheckState
+executeOmnipotentAction
+executeRollingRecord
+getActiveTheaterMatches
+getDatabase
+getExpiredMatchesForDeletion
+getItemCount
+getRuntimeReport
+ignite
+initTracking
+initializeEngine
+initializeGoalkeeperSubsystem
+initializeOverlayUI
+initializePerformanceMode
+initializePlayer
+initializeProcessingEngine
+injectWinningVector
+insertMatchData
+installApk
+loadMatchHistory
+loadVideoPayload
+logSilentFailure
+onAccessibilityEvent
+onBind
+onBindViewHolder
+onCancelled
+onCompleted
+onCreate
+onCreateViewHolder
+onDestroy
+onInterrupt
+onReceive
+onServiceConnected
+onServiceDisconnected
+onStartCommand
+onStop
+processImageForOCR
+readCrashLog
+routeToPhase
+run
+saveToRom
+scanFrameForOpponentAnimation
+setupMediaProjection
+startDownload
+startDvrHooks
+startForegroundSafely
+startTrajectoryWatchdog
+stopDvrHooks
+submitList
+theaterDao
+trackProgress
+triggerInstantExecution
+triggerLmkMatchStateLock
+uncaughtException
+updateOverlayVisuals
+updateStatus
+writeCrashLog
+
+========== POSSIBLE ORPHAN FUNCTIONS ==========
+clearCrashLog
+computeOptimalVector
+dispatchRawTouchMatrix
+doFrame
+enforceTrafficShapingProtocol
+getItemCount
+getRuntimeReport
+onAccessibilityEvent
+onBindViewHolder
+onCancelled
+onCompleted
+onCreateViewHolder
+onInterrupt
+onReceive
+readCrashLog
+startDvrHooks
+stopDvrHooks
+triggerInstantExecution
+triggerLmkMatchStateLock
+
+========== ACCESSIBILITY ==========
+app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt:3:import android.accessibilityservice.AccessibilityService
+app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt:8:class SmartAssistAccessibilityEngine : AccessibilityService() {
+app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt:36:fun AccessibilityService.triggerUniversalAssist(actionPhase: Int, x1: Float, y1: Float, x2: Float, y2: Float) {
+app/src/main/java/com/assistant/overlay/interceptor/ActiveGestureController.kt:3:import android.accessibilityservice.AccessibilityService
+app/src/main/java/com/assistant/overlay/interceptor/ActiveGestureController.kt:7:class ActiveGestureController(private val service: AccessibilityService) {
+app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:4:import android.accessibilityservice.AccessibilityService
+app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:75:    private fun evaluateOpponentShotTrajectory(accessibilityService: AccessibilityService) {
+app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:105:                accessibilityService.dispatchGesture(gestureBuilder.build(), object : AccessibilityService.GestureResultCallback() {
+app/src/main/java/com/assistant/overlay/interceptor/GodTierExecutionEngine.kt:3:import android.accessibilityservice.AccessibilityService
+app/src/main/java/com/assistant/overlay/interceptor/GodTierExecutionEngine.kt:11:class GodTierExecutionEngine(private val service: AccessibilityService) {
+
+========== MEDIA PROJECTION ==========
+app/src/main/java/com/assistant/OverlayService.kt:19:import android.media.projection.MediaProjection
+app/src/main/java/com/assistant/OverlayService.kt:20:import android.media.projection.MediaProjectionManager
+app/src/main/java/com/assistant/OverlayService.kt:58:    private var mediaProjection: MediaProjection? = null
+app/src/main/java/com/assistant/OverlayService.kt:61:    private var projectionCallback: MediaProjection.Callback? = null
+app/src/main/java/com/assistant/OverlayService.kt:100:                setupMediaProjection(resultCode, data)
+app/src/main/java/com/assistant/OverlayService.kt:170:    private fun setupMediaProjection(code: Int, intent: Intent) {
+app/src/main/java/com/assistant/OverlayService.kt:171:        val projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+app/src/main/java/com/assistant/OverlayService.kt:172:        mediaProjection = projectionManager.getMediaProjection(code, intent)
+app/src/main/java/com/assistant/OverlayService.kt:173:        projectionCallback = object : MediaProjection.Callback() {
+app/src/main/java/com/assistant/MainActivity.kt:8:import android.media.projection.MediaProjectionManager
+app/src/main/java/com/assistant/MainActivity.kt:22:    private lateinit var projectionManager: MediaProjectionManager
+app/src/main/java/com/assistant/MainActivity.kt:54:        projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+
+========== GLOBAL INSTANCES ==========
+app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt:11:        @Volatile var globalInstance: SmartAssistAccessibilityEngine? = null
+app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt:19:        globalInstance = this
+app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:37:        val service = SmartAssistAccessibilityEngine.globalInstance ?: return
+
+========== DISPATCH GESTURE ==========
+app/src/main/java/com/assistant/overlay/interceptor/ActiveGestureController.kt:18:        service.dispatchGesture(builder.build(), null, null)
+app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:105:                accessibilityService.dispatchGesture(gestureBuilder.build(), object : AccessibilityService.GestureResultCallback() {
+app/src/main/java/com/assistant/overlay/interceptor/GodTierExecutionEngine.kt:64:        service.dispatchGesture(builder.build(), null, null)
+
+========== SMARTASSIST PIPELINE ==========
+app/src/main/java/com/assistant/OverlayService.kt:253:            if (com.assistant.interceptor.SmartAssistPipeline.isPanicStateActive) {
+app/src/main/java/com/assistant/OverlayService.kt:258:            val activeVector = com.assistant.interceptor.SmartAssistPipeline.consumeTrajectory()
+app/src/main/java/com/assistant/interceptor/SmartAssistPipeline.kt:7:object SmartAssistPipeline {
+
+========== DIAGNOSTICS ==========
+app/src/main/java/com/assistant/App.kt:11:        DiagnosticsEngine.initTracking()
+app/src/main/java/com/assistant/DiagnosticsEngine.kt:11:object DiagnosticsEngine {
+app/src/main/java/com/assistant/GlobalCrashHandler.kt:44:        DiagnosticsEngine.writeCrashLog(context, throwable)
+
+========== GOALKEEPER ==========
+app/src/main/java/com/assistant/App.kt:23:    com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.initializeEngine(hintManager)
+app/src/main/java/com/assistant/OverlayService.kt:206:                    com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine
+app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:14:object OmnipotentGoalkeeperEngine {
+
+========== SERVICES ==========
+app/src/main/java/com/assistant/OverlayService.kt:45:class OverlayService : Service(), ComponentCallbacks2 {
+app/src/main/java/com/assistant/overlay/dvr/DvrProjectionService.kt:27:class DvrProjectionService : Service() {
+app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt:8:class SmartAssistAccessibilityEngine : AccessibilityService() {
+app/src/main/java/com/assistant/overlay/interceptor/ActiveGestureController.kt:7:class ActiveGestureController(private val service: AccessibilityService) {
+app/src/main/java/com/assistant/overlay/interceptor/GodTierExecutionEngine.kt:11:class GodTierExecutionEngine(private val service: AccessibilityService) {
+app/src/main/java/com/assistant/PingEliminatorVpnService.kt:5:class PingEliminatorVpnService : VpnService() {
+
+========== ACTIVITIES ==========
+app/src/main/java/com/assistant/ErrorActivity.kt:13:class ErrorActivity : AppCompatActivity() {
+app/src/main/java/com/assistant/WelcomeActivity.kt:23:class WelcomeActivity : AppCompatActivity() {
+app/src/main/java/com/assistant/overlay/ui/AnalyticsTheaterActivity.kt:26:class AnalyticsTheaterActivity : AppCompatActivity() {
+app/src/main/java/com/assistant/MainActivity.kt:20:class MainActivity : AppCompatActivity() {
+app/src/main/java/com/assistant/LogActivity.kt:15:class LogActivity : AppCompatActivity() {
+app/src/main/java/com/assistant/UpdateActivity.kt:22:class UpdateActivity : AppCompatActivity() {
+
+========== BUILD CHECK ==========
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+WARNING: We recommend using a newer Android Gradle plugin to use compileSdk = 36
+
+This Android Gradle plugin (8.2.2) was tested up to compileSdk = 34.
+
+You are strongly encouraged to update your project to use a newer
+Android Gradle plugin that has been tested with compileSdk = 36.
+
+If you are already using the latest version of the Android Gradle plugin,
+you may need to wait until a newer version with support for compileSdk = 36 is available.
+
+To suppress this warning, add/update
+    android.suppressUnsupportedCompileSdk=36
+to this project's gradle.properties.
+> Task :adapter_input:preBuild UP-TO-DATE
+> Task :adapter_input:preDebugBuild UP-TO-DATE
+> Task :adapter_input:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :adapter_input:checkKotlinGradlePluginConfigurationErrors
+> Task :adapter_input:checkDebugAarMetadata UP-TO-DATE
+> Task :adapter_input:generateDebugResValues UP-TO-DATE
+> Task :adapter_input:mapDebugSourceSetPaths UP-TO-DATE
+> Task :adapter_input:generateDebugResources UP-TO-DATE
+> Task :adapter_input:mergeDebugResources UP-TO-DATE
+> Task :adapter_input:packageDebugResources UP-TO-DATE
+> Task :adapter_input:parseDebugLocalResources UP-TO-DATE
+> Task :adapter_input:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :adapter_input:extractDeepLinksDebug UP-TO-DATE
+> Task :adapter_input:processDebugMainManifest UP-TO-DATE
+> Task :adapter_input:processDebugManifest UP-TO-DATE
+> Task :adapter_input:processDebugManifestForPackage UP-TO-DATE
+> Task :adapter_input:processDebugResources UP-TO-DATE
+> Task :adapter_input:compileDebugKotlin UP-TO-DATE
+> Task :adapter_input:javaPreCompileDebug UP-TO-DATE
+> Task :adapter_input:compileDebugJavaWithJavac NO-SOURCE
+> Task :adapter_input:mergeDebugShaders UP-TO-DATE
+> Task :adapter_input:compileDebugShaders NO-SOURCE
+> Task :adapter_input:generateDebugAssets UP-TO-DATE
+> Task :adapter_input:mergeDebugAssets UP-TO-DATE
+> Task :adapter_input:compressDebugAssets UP-TO-DATE
+> Task :adapter_input:desugarDebugFileDependencies UP-TO-DATE
+> Task :adapter_input:dexBuilderDebug UP-TO-DATE
+> Task :adapter_input:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :adapter_input:processDebugJavaRes UP-TO-DATE
+> Task :adapter_input:mergeDebugJavaResource UP-TO-DATE
+> Task :adapter_input:checkDebugDuplicateClasses UP-TO-DATE
+> Task :adapter_input:mergeExtDexDebug UP-TO-DATE
+> Task :adapter_input:mergeLibDexDebug UP-TO-DATE
+> Task :adapter_input:mergeProjectDexDebug UP-TO-DATE
+> Task :adapter_input:mergeDebugJniLibFolders UP-TO-DATE
+> Task :adapter_input:mergeDebugNativeLibs NO-SOURCE
+> Task :adapter_input:stripDebugDebugSymbols NO-SOURCE
+> Task :adapter_input:validateSigningDebug UP-TO-DATE
+> Task :adapter_input:writeDebugAppMetadata UP-TO-DATE
+> Task :adapter_input:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :adapter_input:packageDebug UP-TO-DATE
+> Task :adapter_input:createDebugApkListingFileRedirect UP-TO-DATE
+> Task :adapter_input:assembleDebug UP-TO-DATE
+> Task :adapter_lmk:preBuild UP-TO-DATE
+> Task :adapter_lmk:preDebugBuild UP-TO-DATE
+> Task :adapter_lmk:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :adapter_lmk:checkKotlinGradlePluginConfigurationErrors
+> Task :adapter_lmk:checkDebugAarMetadata UP-TO-DATE
+> Task :adapter_lmk:generateDebugResValues UP-TO-DATE
+> Task :adapter_lmk:mapDebugSourceSetPaths UP-TO-DATE
+> Task :adapter_lmk:generateDebugResources UP-TO-DATE
+> Task :adapter_lmk:mergeDebugResources UP-TO-DATE
+> Task :adapter_lmk:packageDebugResources UP-TO-DATE
+> Task :adapter_lmk:parseDebugLocalResources UP-TO-DATE
+> Task :adapter_lmk:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :adapter_lmk:extractDeepLinksDebug UP-TO-DATE
+> Task :adapter_lmk:processDebugMainManifest UP-TO-DATE
+> Task :adapter_lmk:processDebugManifest UP-TO-DATE
+> Task :adapter_lmk:processDebugManifestForPackage UP-TO-DATE
+> Task :adapter_lmk:processDebugResources UP-TO-DATE
+> Task :adapter_lmk:compileDebugKotlin UP-TO-DATE
+> Task :adapter_lmk:javaPreCompileDebug UP-TO-DATE
+> Task :adapter_lmk:compileDebugJavaWithJavac NO-SOURCE
+> Task :adapter_lmk:mergeDebugShaders UP-TO-DATE
+> Task :adapter_lmk:compileDebugShaders NO-SOURCE
+> Task :adapter_lmk:generateDebugAssets UP-TO-DATE
+> Task :adapter_lmk:mergeDebugAssets UP-TO-DATE
+> Task :adapter_lmk:compressDebugAssets UP-TO-DATE
+> Task :adapter_lmk:desugarDebugFileDependencies UP-TO-DATE
+> Task :adapter_lmk:dexBuilderDebug UP-TO-DATE
+> Task :adapter_lmk:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :adapter_lmk:processDebugJavaRes UP-TO-DATE
+> Task :adapter_lmk:mergeDebugJavaResource UP-TO-DATE
+> Task :adapter_lmk:checkDebugDuplicateClasses UP-TO-DATE
+> Task :adapter_lmk:mergeExtDexDebug UP-TO-DATE
+> Task :adapter_lmk:mergeLibDexDebug UP-TO-DATE
+> Task :adapter_lmk:mergeProjectDexDebug UP-TO-DATE
+> Task :adapter_lmk:mergeDebugJniLibFolders UP-TO-DATE
+> Task :adapter_lmk:mergeDebugNativeLibs NO-SOURCE
+> Task :adapter_lmk:stripDebugDebugSymbols NO-SOURCE
+> Task :adapter_lmk:validateSigningDebug UP-TO-DATE
+> Task :adapter_lmk:writeDebugAppMetadata UP-TO-DATE
+> Task :adapter_lmk:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :adapter_lmk:packageDebug UP-TO-DATE
+> Task :adapter_lmk:createDebugApkListingFileRedirect UP-TO-DATE
+> Task :adapter_lmk:assembleDebug UP-TO-DATE
+> Task :adapter_net:preBuild UP-TO-DATE
+> Task :adapter_net:preDebugBuild UP-TO-DATE
+> Task :adapter_net:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :adapter_net:checkKotlinGradlePluginConfigurationErrors
+> Task :adapter_net:checkDebugAarMetadata UP-TO-DATE
+> Task :adapter_net:generateDebugResValues UP-TO-DATE
+> Task :adapter_net:mapDebugSourceSetPaths UP-TO-DATE
+> Task :adapter_net:generateDebugResources UP-TO-DATE
+> Task :adapter_net:mergeDebugResources UP-TO-DATE
+> Task :adapter_net:packageDebugResources UP-TO-DATE
+> Task :adapter_net:parseDebugLocalResources UP-TO-DATE
+> Task :adapter_net:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :adapter_net:extractDeepLinksDebug UP-TO-DATE
+> Task :adapter_net:processDebugMainManifest UP-TO-DATE
+> Task :adapter_net:processDebugManifest UP-TO-DATE
+> Task :adapter_net:processDebugManifestForPackage UP-TO-DATE
+> Task :adapter_net:processDebugResources UP-TO-DATE
+> Task :adapter_net:compileDebugKotlin UP-TO-DATE
+> Task :adapter_net:javaPreCompileDebug UP-TO-DATE
+> Task :adapter_net:compileDebugJavaWithJavac NO-SOURCE
+> Task :adapter_net:mergeDebugShaders UP-TO-DATE
+> Task :adapter_net:compileDebugShaders NO-SOURCE
+> Task :adapter_net:generateDebugAssets UP-TO-DATE
+> Task :adapter_net:mergeDebugAssets UP-TO-DATE
+> Task :adapter_net:compressDebugAssets UP-TO-DATE
+> Task :adapter_net:desugarDebugFileDependencies UP-TO-DATE
+> Task :adapter_net:dexBuilderDebug UP-TO-DATE
+> Task :adapter_net:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :adapter_net:processDebugJavaRes UP-TO-DATE
+> Task :adapter_net:mergeDebugJavaResource UP-TO-DATE
+> Task :adapter_net:checkDebugDuplicateClasses UP-TO-DATE
+> Task :adapter_net:mergeExtDexDebug UP-TO-DATE
+> Task :adapter_net:mergeLibDexDebug UP-TO-DATE
+> Task :adapter_net:mergeProjectDexDebug UP-TO-DATE
+> Task :adapter_net:mergeDebugJniLibFolders UP-TO-DATE
+> Task :adapter_net:mergeDebugNativeLibs NO-SOURCE
+> Task :adapter_net:stripDebugDebugSymbols NO-SOURCE
+> Task :adapter_net:validateSigningDebug UP-TO-DATE
+> Task :adapter_net:writeDebugAppMetadata UP-TO-DATE
+> Task :adapter_net:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :adapter_net:packageDebug UP-TO-DATE
+> Task :adapter_net:createDebugApkListingFileRedirect UP-TO-DATE
+> Task :adapter_net:assembleDebug UP-TO-DATE
+> Task :adapter_sync:preBuild UP-TO-DATE
+> Task :adapter_sync:preDebugBuild UP-TO-DATE
+> Task :adapter_sync:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :adapter_sync:checkKotlinGradlePluginConfigurationErrors
+> Task :adapter_sync:checkDebugAarMetadata UP-TO-DATE
+> Task :adapter_sync:generateDebugResValues UP-TO-DATE
+> Task :adapter_sync:mapDebugSourceSetPaths UP-TO-DATE
+> Task :adapter_sync:generateDebugResources UP-TO-DATE
+> Task :adapter_sync:mergeDebugResources UP-TO-DATE
+> Task :adapter_sync:packageDebugResources UP-TO-DATE
+> Task :adapter_sync:parseDebugLocalResources UP-TO-DATE
+> Task :adapter_sync:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :adapter_sync:extractDeepLinksDebug UP-TO-DATE
+> Task :adapter_sync:processDebugMainManifest UP-TO-DATE
+> Task :adapter_sync:processDebugManifest UP-TO-DATE
+> Task :adapter_sync:processDebugManifestForPackage UP-TO-DATE
+> Task :adapter_sync:processDebugResources UP-TO-DATE
+> Task :adapter_sync:compileDebugKotlin UP-TO-DATE
+> Task :adapter_sync:javaPreCompileDebug UP-TO-DATE
+> Task :adapter_sync:compileDebugJavaWithJavac NO-SOURCE
+> Task :adapter_sync:mergeDebugShaders UP-TO-DATE
+> Task :adapter_sync:compileDebugShaders NO-SOURCE
+> Task :adapter_sync:generateDebugAssets UP-TO-DATE
+> Task :adapter_sync:mergeDebugAssets UP-TO-DATE
+> Task :adapter_sync:compressDebugAssets UP-TO-DATE
+> Task :adapter_sync:desugarDebugFileDependencies UP-TO-DATE
+> Task :adapter_sync:dexBuilderDebug UP-TO-DATE
+> Task :adapter_sync:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :adapter_sync:processDebugJavaRes UP-TO-DATE
+> Task :adapter_sync:mergeDebugJavaResource UP-TO-DATE
+> Task :adapter_sync:checkDebugDuplicateClasses UP-TO-DATE
+> Task :adapter_sync:mergeExtDexDebug UP-TO-DATE
+> Task :adapter_sync:mergeLibDexDebug UP-TO-DATE
+> Task :adapter_sync:mergeProjectDexDebug UP-TO-DATE
+> Task :adapter_sync:mergeDebugJniLibFolders UP-TO-DATE
+> Task :adapter_sync:mergeDebugNativeLibs NO-SOURCE
+> Task :adapter_sync:stripDebugDebugSymbols NO-SOURCE
+> Task :adapter_sync:validateSigningDebug UP-TO-DATE
+> Task :adapter_sync:writeDebugAppMetadata UP-TO-DATE
+> Task :adapter_sync:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :adapter_sync:packageDebug UP-TO-DATE
+> Task :adapter_sync:createDebugApkListingFileRedirect UP-TO-DATE
+> Task :adapter_sync:assembleDebug UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:kspDebugKotlin UP-TO-DATE
+> Task :app:compileDebugKotlin UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:mergeDebugArtProfile UP-TO-DATE
+> Task :app:expandDebugArtProfileWildcards UP-TO-DATE
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:mergeDebugJavaResource UP-TO-DATE
+> Task :app:minifyDebugWithR8 UP-TO-DATE
+> Task :app:processApplicationManifestDebugForBundle UP-TO-DATE
+> Task :app:bundleDebugResources UP-TO-DATE
+> Task :app:shrinkDebugRes UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeDebugNativeLibs UP-TO-DATE
+> Task :app:stripDebugDebugSymbols UP-TO-DATE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :app:packageDebug UP-TO-DATE
+> Task :app:createDebugApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleDebug UP-TO-DATE
+> Task :diagnostic_core:preBuild UP-TO-DATE
+> Task :diagnostic_core:preDebugBuild UP-TO-DATE
+> Task :diagnostic_core:mergeDebugJniLibFolders UP-TO-DATE
+> Task :diagnostic_core:mergeDebugNativeLibs NO-SOURCE
+> Task :diagnostic_core:stripDebugDebugSymbols NO-SOURCE
+> Task :diagnostic_core:copyDebugJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :diagnostic_core:checkKotlinGradlePluginConfigurationErrors
+> Task :diagnostic_core:generateDebugResValues UP-TO-DATE
+> Task :diagnostic_core:generateDebugResources UP-TO-DATE
+> Task :diagnostic_core:packageDebugResources UP-TO-DATE
+> Task :diagnostic_core:parseDebugLocalResources UP-TO-DATE
+> Task :diagnostic_core:processDebugManifest UP-TO-DATE
+> Task :diagnostic_core:generateDebugRFile UP-TO-DATE
+> Task :diagnostic_core:compileDebugKotlin UP-TO-DATE
+> Task :diagnostic_core:extractDebugAnnotations UP-TO-DATE
+> Task :diagnostic_core:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :diagnostic_core:javaPreCompileDebug UP-TO-DATE
+> Task :diagnostic_core:compileDebugJavaWithJavac NO-SOURCE
+> Task :diagnostic_core:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :diagnostic_core:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :diagnostic_core:mergeDebugShaders UP-TO-DATE
+> Task :diagnostic_core:compileDebugShaders NO-SOURCE
+> Task :diagnostic_core:generateDebugAssets UP-TO-DATE
+> Task :diagnostic_core:packageDebugAssets UP-TO-DATE
+> Task :diagnostic_core:prepareDebugArtProfile UP-TO-DATE
+> Task :diagnostic_core:prepareLintJarForPublish UP-TO-DATE
+> Task :diagnostic_core:processDebugJavaRes UP-TO-DATE
+> Task :diagnostic_core:mergeDebugJavaResource UP-TO-DATE
+> Task :diagnostic_core:syncDebugLibJars UP-TO-DATE
+> Task :diagnostic_core:writeDebugAarMetadata UP-TO-DATE
+> Task :diagnostic_core:bundleDebugAar UP-TO-DATE
+> Task :diagnostic_core:assembleDebug UP-TO-DATE
+
+BUILD SUCCESSFUL in 31s
+194 actionable tasks: 6 executed, 188 up-to-date
