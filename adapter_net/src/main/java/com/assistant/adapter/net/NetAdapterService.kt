@@ -1,4 +1,5 @@
 package com.assistant.adapter.net
+import com.assistant.diagnostic.RuntimeLogger
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -14,6 +15,7 @@ class NetAdapterService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        RuntimeLogger.log("NetAdapterService started", "ADAPTER")
         val channel = NotificationChannel("net_adapter", "Net Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         

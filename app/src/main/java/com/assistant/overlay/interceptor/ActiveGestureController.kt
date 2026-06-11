@@ -1,4 +1,5 @@
 package com.assistant.overlay.interceptor
+import com.assistant.diagnostic.RuntimeLogger
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
@@ -14,6 +15,7 @@ class ActiveGestureController(private val service: AccessibilityService) {
         val stroke = GestureDescription.StrokeDescription(path, 0, duration)
         val builder = GestureDescription.Builder()
         builder.addStroke(stroke) 
+        RuntimeLogger.log("Gesture injection attempted via Vector", "GESTURE")
         
         service.dispatchGesture(builder.build(), null, null)
     }

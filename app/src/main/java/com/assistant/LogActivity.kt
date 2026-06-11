@@ -27,13 +27,21 @@ class LogActivity : AppCompatActivity() {
             setTextIsSelectable(true)
         }
         
-        val logFile = File(getExternalFilesDir(null), "crash_log.txt")
-        val logs = if (logFile.exists()) logFile.readText() else "SYSTEM STABLE: NO CRASHES DETECTED."
-        txtLogs.text = logs
+        // Read Crash Logs
+        val crashFile = File(getExternalFilesDir(null), "crash_log.txt")
+        val crashLogs = if (crashFile.exists()) crashFile.readText() else "SYSTEM STABLE: NO CRASHES DETECTED.\n"
+        
+        // Read Runtime Diagnostics
+        val runtimeFile = File(filesDir, "runtime_diagnostic.txt")
+        val runtimeLogs = if (runtimeFile.exists()) runtimeFile.readText() else "NO RUNTIME DIAGNOSTICS FOUND.\n"
+        
+        val combinedLogs = "=== RUNTIME DIAGNOSTICS ===\n$runtimeLogs\n\n=== CRASH LOGS ===\n$crashLogs"
+        
+        txtLogs.text = combinedLogs
         
         btnCopy.setOnClickListener {
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("Engine Logs", logs)
+            val clip = ClipData.newPlainText("Engine Logs", combinedLogs)
             clipboard.setPrimaryClip(clip)
             Toast.makeText(this, "Logs Copied to Clipboard", Toast.LENGTH_SHORT).show()
         }

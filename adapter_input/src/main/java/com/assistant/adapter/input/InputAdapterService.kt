@@ -1,4 +1,5 @@
 package com.assistant.adapter.input
+import com.assistant.diagnostic.RuntimeLogger
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -14,6 +15,7 @@ class InputAdapterService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
         val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         

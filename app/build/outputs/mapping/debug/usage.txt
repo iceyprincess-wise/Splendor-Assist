@@ -643,56 +643,59 @@ androidx.activity.ComponentActivity:
     private androidx.lifecycle.ViewModelProvider$Factory mDefaultFactory
     public void <init>(int)
     public void addContentView(android.view.View,android.view.ViewGroup$LayoutParams)
-    public void addMenuProvider(androidx.core.view.MenuProvider)
     public void addMenuProvider(androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner)
     public void addMenuProvider(androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner,androidx.lifecycle.Lifecycle$State)
-    public final void addOnConfigurationChangedListener(androidx.core.util.Consumer)
-    public final void addOnMultiWindowModeChangedListener(androidx.core.util.Consumer)
-    public final void addOnNewIntentListener(androidx.core.util.Consumer)
-    public final void addOnPictureInPictureModeChangedListener(androidx.core.util.Consumer)
-    public final void addOnTrimMemoryListener(androidx.core.util.Consumer)
     public androidx.lifecycle.ViewModelProvider$Factory getDefaultViewModelProviderFactory()
+    public androidx.activity.FullyDrawnReporter getFullyDrawnReporter()
     public java.lang.Object getLastCustomNonConfigurationInstance()
-    public void onMultiWindowModeChanged(boolean)
-    public void onPictureInPictureModeChanged(boolean)
     public android.content.Context peekAvailableContext()
-    public void removeMenuProvider(androidx.core.view.MenuProvider)
-    public final void removeOnConfigurationChangedListener(androidx.core.util.Consumer)
     public final void removeOnContextAvailableListener(androidx.activity.contextaware.OnContextAvailableListener)
-    public final void removeOnMultiWindowModeChangedListener(androidx.core.util.Consumer)
     public final void removeOnNewIntentListener(androidx.core.util.Consumer)
-    public final void removeOnPictureInPictureModeChangedListener(androidx.core.util.Consumer)
-    public final void removeOnTrimMemoryListener(androidx.core.util.Consumer)
     public void setContentView(android.view.View,android.view.ViewGroup$LayoutParams)
 androidx.activity.ComponentDialog:
     public void <init>(android.content.Context)
     public synthetic void <init>(android.content.Context,int,int,kotlin.jvm.internal.DefaultConstructorMarker)
-    public void addContentView(android.view.View,android.view.ViewGroup$LayoutParams)
-    private static synthetic void getOnBackPressedDispatcher$annotations()
-    private final void initViewTreeOwners()
-    public void setContentView(int)
-    public void setContentView(android.view.View)
-    public void setContentView(android.view.View,android.view.ViewGroup$LayoutParams)
+    public static synthetic void getOnBackPressedDispatcher$annotations()
+androidx.activity.FullyDrawnReporter:
+    public final void addOnReportDrawnListener(kotlin.jvm.functions.Function0)
+    public final void addReporter()
+    private final void postWhenReportersAreDone()
+    public final void removeOnReportDrawnListener(kotlin.jvm.functions.Function0)
+    public final void removeReporter()
+androidx.activity.FullyDrawnReporterKt$reportWhenComplete$1
+androidx.activity.FullyDrawnReporterKt
+androidx.activity.FullyDrawnReporterOwner:
+    public abstract androidx.activity.FullyDrawnReporter getFullyDrawnReporter()
 androidx.activity.ImmLeaksCleaner:
     private static final int INIT_FAILED
     private static final int INIT_SUCCESS
     private static final int NOT_INITIALIAZED
-androidx.activity.OnBackPressedDispatcher$Api33Impl:
-    private void <init>()
+androidx.activity.OnBackPressedCallback:
+    public final kotlin.jvm.functions.Function0 getEnabledChangedCallback$activity_release()
 androidx.activity.OnBackPressedDispatcher:
     public void <init>()
-    public void addCallback(androidx.activity.OnBackPressedCallback)
+    public synthetic void <init>(java.lang.Runnable,int,kotlin.jvm.internal.DefaultConstructorMarker)
+    public final void addCallback(androidx.activity.OnBackPressedCallback)
+androidx.activity.OnBackPressedDispatcherKt$addCallback$callback$1
+androidx.activity.OnBackPressedDispatcherKt
 androidx.activity.R$id:
     private void <init>()
 androidx.activity.R
+androidx.activity.ViewTreeFullyDrawnReporterOwner$findViewTreeFullyDrawnReporterOwner$1
+androidx.activity.ViewTreeFullyDrawnReporterOwner$findViewTreeFullyDrawnReporterOwner$2
+androidx.activity.ViewTreeFullyDrawnReporterOwner:
+    public static final androidx.activity.FullyDrawnReporterOwner get(android.view.View)
 androidx.activity.ViewTreeOnBackPressedDispatcherOwner$findViewTreeOnBackPressedDispatcherOwner$1
 androidx.activity.ViewTreeOnBackPressedDispatcherOwner$findViewTreeOnBackPressedDispatcherOwner$2
 androidx.activity.ViewTreeOnBackPressedDispatcherOwner:
     public static final androidx.activity.OnBackPressedDispatcherOwner get(android.view.View)
 androidx.activity.contextaware.ContextAware
 androidx.activity.contextaware.ContextAwareHelper:
-    public android.content.Context peekAvailableContext()
-    public void removeOnContextAvailableListener(androidx.activity.contextaware.OnContextAvailableListener)
+    public final android.content.Context peekAvailableContext()
+    public final void removeOnContextAvailableListener(androidx.activity.contextaware.OnContextAvailableListener)
+androidx.activity.contextaware.ContextAwareKt$withContextAvailable$2$1
+androidx.activity.contextaware.ContextAwareKt$withContextAvailable$2$listener$1
+androidx.activity.contextaware.ContextAwareKt
 androidx.activity.result.ActivityResultCaller
 androidx.activity.result.ActivityResultLauncher:
     public abstract androidx.activity.result.contract.ActivityResultContract getContract()
@@ -708,12 +711,16 @@ androidx.activity.result.ActivityResultRegistry:
     private static final java.lang.String KEY_COMPONENT_ACTIVITY_REGISTERED_KEYS
     private static final java.lang.String KEY_COMPONENT_ACTIVITY_REGISTERED_RCS
     private static final java.lang.String LOG_TAG
+androidx.activity.result.IntentSenderRequest$Builder$Flag
 androidx.activity.result.IntentSenderRequest$Builder:
     public void <init>(android.app.PendingIntent)
+androidx.activity.result.IntentSenderRequest$Companion:
+    public static synthetic void getCREATOR$annotations()
+androidx.activity.result.IntentSenderRequest:
+    public synthetic void <init>(android.content.IntentSender,android.content.Intent,int,int,int,kotlin.jvm.internal.DefaultConstructorMarker)
 androidx.activity.result.PickVisualMediaRequest$Builder
 androidx.activity.result.PickVisualMediaRequest
 androidx.activity.result.PickVisualMediaRequestKt
-androidx.activity.result.contract.ActivityResultContracts$Api33Impl
 androidx.activity.result.contract.ActivityResultContracts$CaptureVideo
 androidx.activity.result.contract.ActivityResultContracts$CreateDocument
 androidx.activity.result.contract.ActivityResultContracts$GetContent
@@ -992,6 +999,7 @@ androidx.appcompat.R$attr:
     public static int ratingBarStyleSmall
     public static int searchHintIcon
     public static int searchIcon
+    public static int searchViewStyle
     public static int selectableItemBackground
     public static int selectableItemBackgroundBorderless
     public static int showAsAction
@@ -1025,6 +1033,7 @@ androidx.appcompat.R$attr:
     public static int textAppearanceSearchResultTitle
     public static int textAppearanceSmallPopupMenu
     public static int textColorAlertDialogListItem
+    public static int textColorSearchUrl
     public static int textLocale
     public static int theme
     public static int thickness
@@ -1185,6 +1194,8 @@ androidx.appcompat.R$dimen:
     public static int abc_dialog_title_divider_material
     public static int abc_disabled_alpha_material_dark
     public static int abc_disabled_alpha_material_light
+    public static int abc_dropdownitem_icon_width
+    public static int abc_dropdownitem_text_padding_left
     public static int abc_dropdownitem_text_padding_right
     public static int abc_edit_text_inset_bottom_material
     public static int abc_edit_text_inset_horizontal_material
@@ -1196,6 +1207,8 @@ androidx.appcompat.R$dimen:
     public static int abc_list_item_padding_horizontal_material
     public static int abc_panel_menu_list_width
     public static int abc_progress_bar_height_material
+    public static int abc_search_view_preferred_height
+    public static int abc_search_view_preferred_width
     public static int abc_seekbar_track_background_height_material
     public static int abc_seekbar_track_progress_height_material
     public static int abc_select_dialog_padding_start_material
@@ -1288,6 +1301,7 @@ androidx.appcompat.R$id:
     public static int checkbox
     public static int checked
     public static int default_activity_button
+    public static int edit_query
     public static int expand_activities_button
     public static int expanded_menu
     public static int home
@@ -1306,10 +1320,19 @@ androidx.appcompat.R$id:
     public static int screen
     public static int search_badge
     public static int search_bar
+    public static int search_button
+    public static int search_close_btn
+    public static int search_edit_frame
+    public static int search_go_btn
+    public static int search_mag_icon
+    public static int search_plate
+    public static int search_src_text
+    public static int search_voice_btn
     public static int select_dialog_listview
     public static int src_atop
     public static int src_in
     public static int src_over
+    public static int submit_area
     public static int tabMode
     public static int unchecked
     public static int uniform
@@ -1327,6 +1350,8 @@ androidx.appcompat.R$layout:
     public static int abc_alert_dialog_material
     public static int abc_alert_dialog_title_material
     public static int abc_screen_content_include
+    public static int abc_search_dropdown_item_icons_2line
+    public static int abc_search_view
     public static int abc_select_dialog_material
     public static int select_dialog_item_material
     public static int select_dialog_multichoice_material
@@ -1343,6 +1368,7 @@ androidx.appcompat.R$string:
     public static int abc_search_hint
     public static int abc_searchview_description_clear
     public static int abc_searchview_description_query
+    public static int abc_searchview_description_search
     public static int abc_searchview_description_submit
     public static int abc_searchview_description_voice
     public static int abc_shareactionprovider_share_with
@@ -1844,6 +1870,23 @@ androidx.appcompat.R$styleable:
     public static int MenuView_android_windowAnimationStyle
     public static int PopupWindowBackgroundState_state_above_anchor
     public static int PopupWindow_android_popupAnimationStyle
+    public static int SearchView_android_focusable
+    public static int SearchView_android_imeOptions
+    public static int SearchView_android_inputType
+    public static int SearchView_android_maxWidth
+    public static int SearchView_closeIcon
+    public static int SearchView_commitIcon
+    public static int SearchView_defaultQueryHint
+    public static int SearchView_goIcon
+    public static int SearchView_iconifiedByDefault
+    public static int SearchView_layout
+    public static int SearchView_queryBackground
+    public static int SearchView_queryHint
+    public static int SearchView_searchHintIcon
+    public static int SearchView_searchIcon
+    public static int SearchView_submitBackground
+    public static int SearchView_suggestionRowLayout
+    public static int SearchView_voiceIcon
     public static int SwitchCompat_android_textOff
     public static int SwitchCompat_android_textOn
     public static int SwitchCompat_android_thumb
@@ -1949,12 +1992,9 @@ androidx.appcompat.app.ActionBar:
 androidx.appcompat.app.ActionBarDrawerToggle$1
 androidx.appcompat.app.ActionBarDrawerToggle$Delegate
 androidx.appcompat.app.ActionBarDrawerToggle$DelegateProvider
-androidx.appcompat.app.ActionBarDrawerToggle$FrameworkActionBarDelegate$Api18Impl
 androidx.appcompat.app.ActionBarDrawerToggle$FrameworkActionBarDelegate
 androidx.appcompat.app.ActionBarDrawerToggle$ToolbarCompatDelegate
 androidx.appcompat.app.ActionBarDrawerToggle
-androidx.appcompat.app.ActionBarDrawerToggleHoneycomb$SetIndicatorInfo
-androidx.appcompat.app.ActionBarDrawerToggleHoneycomb
 androidx.appcompat.app.AlertController$AlertParams:
     public boolean mForceInverseBackground
 androidx.appcompat.app.AlertController$ButtonHandler:
@@ -2022,6 +2062,7 @@ androidx.appcompat.app.AppCompatActivity:
     public void setSupportProgressBarIndeterminateVisibility(boolean)
     public void setSupportProgressBarVisibility(boolean)
     public androidx.appcompat.view.ActionMode startSupportActionMode(androidx.appcompat.view.ActionMode$Callback)
+    public void supportInvalidateOptionsMenu()
     public boolean supportRequestWindowFeature(int)
 androidx.appcompat.app.AppCompatDelegate$Api24Impl:
     private void <init>()
@@ -2029,6 +2070,7 @@ androidx.appcompat.app.AppCompatDelegate$Api33Impl:
     private void <init>()
 androidx.appcompat.app.AppCompatDelegate$NightMode
 androidx.appcompat.app.AppCompatDelegate:
+    static final java.lang.String APP_LOCALES_META_DATA_HOLDER_SERVICE_NAME
     static final boolean DEBUG
     public static final int FEATURE_ACTION_MODE_OVERLAY
     public static final int FEATURE_SUPPORT_ACTION_BAR
@@ -2065,8 +2107,6 @@ androidx.appcompat.app.AppCompatDelegate:
     public abstract void setSupportActionBar(androidx.appcompat.widget.Toolbar)
     public abstract androidx.appcompat.view.ActionMode startSupportActionMode(androidx.appcompat.view.ActionMode$Callback)
 androidx.appcompat.app.AppCompatDelegateImpl$ActionBarDrawableToggleImpl
-androidx.appcompat.app.AppCompatDelegateImpl$Api17Impl:
-    private void <init>()
 androidx.appcompat.app.AppCompatDelegateImpl$Api21Impl:
     private void <init>()
 androidx.appcompat.app.AppCompatDelegateImpl$Api24Impl:
@@ -2079,8 +2119,6 @@ androidx.appcompat.app.AppCompatDelegateImpl$AppCompatWindowCallback:
     void setActionBarCallback(androidx.appcompat.app.AppCompatDelegateImpl$ActionBarMenuCallback)
 androidx.appcompat.app.AppCompatDelegateImpl$AutoNightModeManager:
     boolean isListening()
-androidx.appcompat.app.AppCompatDelegateImpl$ContextThemeWrapperCompatApi17Impl:
-    private void <init>()
 androidx.appcompat.app.AppCompatDelegateImpl$PanelFeatureState$SavedState$1
 androidx.appcompat.app.AppCompatDelegateImpl$PanelFeatureState$SavedState
 androidx.appcompat.app.AppCompatDelegateImpl$PanelFeatureState:
@@ -2114,19 +2152,10 @@ androidx.appcompat.app.AppLocalesMetadataHolderService$Api24Impl:
 androidx.appcompat.app.AppLocalesMetadataHolderService:
     public void <init>()
     public android.os.IBinder onBind(android.content.Intent)
-androidx.appcompat.app.AppLocalesStorageHelper:
-    static final java.lang.String APPLICATION_LOCALES_RECORD_FILE
-    static final java.lang.String APP_LOCALES_META_DATA_HOLDER_SERVICE_NAME
-    static final java.lang.String LOCALE_RECORD_ATTRIBUTE_TAG
-    static final java.lang.String LOCALE_RECORD_FILE_TAG
-    static final java.lang.String TAG
-    private void <init>()
 androidx.appcompat.app.LocaleOverlayHelper:
     private void <init>()
     static androidx.core.os.LocaleListCompat combineLocalesIfOverlayExists(android.os.LocaleList,android.os.LocaleList)
 androidx.appcompat.app.NavItemSelectedListener
-androidx.appcompat.app.ResourcesFlusher$Api16Impl:
-    private void <init>()
 androidx.appcompat.app.ResourcesFlusher:
     private static final java.lang.String TAG
     private void <init>()
@@ -2340,6 +2369,8 @@ androidx.appcompat.graphics.drawable.DrawableContainerCompat:
     void setCurrentIndex(int)
     public void setEnterFadeDuration(int)
     public void setExitFadeDuration(int)
+androidx.appcompat.graphics.drawable.DrawableWrapperCompat:
+    public android.graphics.drawable.Drawable getDrawable()
 androidx.appcompat.graphics.drawable.DrawerArrowDrawable$ArrowDirection
 androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 androidx.appcompat.graphics.drawable.StateListDrawableCompat$StateListState:
@@ -2363,10 +2394,6 @@ androidx.appcompat.graphics.drawable.StateListDrawableCompat:
     private void inflateChildElements(android.content.Context,android.content.res.Resources,org.xmlpull.v1.XmlPullParser,android.util.AttributeSet,android.content.res.Resources$Theme)
     public boolean isStateful()
     private void updateStateFromTypedArray(android.content.res.TypedArray)
-androidx.appcompat.resources.Compatibility$Api15Impl:
-    private void <init>()
-androidx.appcompat.resources.Compatibility$Api18Impl:
-    private void <init>()
 androidx.appcompat.resources.Compatibility$Api21Impl:
     private void <init>()
 androidx.appcompat.resources.Compatibility
@@ -2388,8 +2415,6 @@ androidx.appcompat.view.ActionBarPolicy:
     public int getTabContainerHeight()
 androidx.appcompat.view.ActionMode:
     public boolean isUiFocusable()
-androidx.appcompat.view.ContextThemeWrapper$Api17Impl:
-    private void <init>()
 androidx.appcompat.view.ContextThemeWrapper:
     public void <init>()
 androidx.appcompat.view.StandaloneActionMode:
@@ -2493,15 +2518,14 @@ androidx.appcompat.view.menu.MenuItemImpl:
     java.lang.Runnable getCallback()
     public boolean requiresOverflow()
     public android.view.MenuItem setCallback(java.lang.Runnable)
-androidx.appcompat.view.menu.MenuItemWrapperICS$ActionProviderWrapperJB:
+androidx.appcompat.view.menu.MenuItemWrapperICS$ActionProviderWrapper:
+    public android.view.View onCreateActionView()
     public void refreshVisibility()
 androidx.appcompat.view.menu.MenuItemWrapperICS:
     static final java.lang.String LOG_TAG
 androidx.appcompat.view.menu.MenuPopup:
     public int getId()
     public androidx.appcompat.view.menu.MenuView getMenuView(android.view.ViewGroup)
-androidx.appcompat.view.menu.MenuPopupHelper$Api17Impl:
-    private void <init>()
 androidx.appcompat.view.menu.MenuPopupHelper:
     private static final int TOUCH_EPICENTER_SIZE_DP
     public void <init>(android.content.Context,androidx.appcompat.view.menu.MenuBuilder)
@@ -2603,15 +2627,20 @@ androidx.appcompat.widget.ActivityChooserView$Callbacks
 androidx.appcompat.widget.ActivityChooserView
 androidx.appcompat.widget.AlertDialogLayout:
     public void <init>(android.content.Context)
+androidx.appcompat.widget.AppCompatAutoCompleteTextView$InspectionCompanion
 androidx.appcompat.widget.AppCompatAutoCompleteTextView:
     public void <init>(android.content.Context)
     public boolean isEmojiCompatEnabled()
+androidx.appcompat.widget.AppCompatButton$InspectionCompanion$1
+androidx.appcompat.widget.AppCompatButton$InspectionCompanion
 androidx.appcompat.widget.AppCompatButton:
     public void <init>(android.content.Context)
     public boolean isEmojiCompatEnabled()
+androidx.appcompat.widget.AppCompatCheckBox$InspectionCompanion
 androidx.appcompat.widget.AppCompatCheckBox:
     public void <init>(android.content.Context)
     public boolean isEmojiCompatEnabled()
+androidx.appcompat.widget.AppCompatCheckedTextView$InspectionCompanion
 androidx.appcompat.widget.AppCompatCheckedTextView:
     public void <init>(android.content.Context)
     public boolean isEmojiCompatEnabled()
@@ -2620,6 +2649,7 @@ androidx.appcompat.widget.AppCompatDrawableManager:
     private static final java.lang.String TAG
     synchronized android.graphics.drawable.Drawable onDrawableLoadedFromResources(android.content.Context,androidx.appcompat.widget.VectorEnabledTintResources,int)
     boolean tintDrawableUsingColorFilter(android.content.Context,int,android.graphics.drawable.Drawable)
+androidx.appcompat.widget.AppCompatEditText$InspectionCompanion
 androidx.appcompat.widget.AppCompatEditText:
     public void <init>(android.content.Context)
     public boolean isEmojiCompatEnabled()
@@ -2630,10 +2660,13 @@ androidx.appcompat.widget.AppCompatEmojiTextHelper:
     public android.text.method.TransformationMethod wrapTransformationMethod(android.text.method.TransformationMethod)
 androidx.appcompat.widget.AppCompatHintHelper:
     private void <init>()
+androidx.appcompat.widget.AppCompatImageButton$InspectionCompanion
 androidx.appcompat.widget.AppCompatImageButton:
     public void <init>(android.content.Context)
 androidx.appcompat.widget.AppCompatImageHelper:
     void setInternalImageTint(android.content.res.ColorStateList)
+androidx.appcompat.widget.AppCompatImageView$InspectionCompanion
+androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView$InspectionCompanion
 androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView:
     public void <init>(android.content.Context)
     public boolean isEmojiCompatEnabled()
@@ -2641,6 +2674,7 @@ androidx.appcompat.widget.AppCompatPopupWindow:
     public void <init>(android.content.Context,android.util.AttributeSet,int)
 androidx.appcompat.widget.AppCompatProgressBarHelper$Api23Impl:
     private void <init>()
+androidx.appcompat.widget.AppCompatRadioButton$InspectionCompanion
 androidx.appcompat.widget.AppCompatRadioButton:
     public void <init>(android.content.Context)
     public boolean isEmojiCompatEnabled()
@@ -2659,14 +2693,11 @@ androidx.appcompat.widget.AppCompatSeekBarHelper:
     android.graphics.PorterDuff$Mode getTickMarkTintMode()
     void setTickMarkTintList(android.content.res.ColorStateList)
     void setTickMarkTintMode(android.graphics.PorterDuff$Mode)
-androidx.appcompat.widget.AppCompatSpinner$Api16Impl:
-    private void <init>()
-androidx.appcompat.widget.AppCompatSpinner$Api17Impl:
-    private void <init>()
 androidx.appcompat.widget.AppCompatSpinner$Api23Impl:
     private void <init>()
 androidx.appcompat.widget.AppCompatSpinner$DialogPopup:
     public int getHorizontalOriginalOffset()
+androidx.appcompat.widget.AppCompatSpinner$InspectionCompanion
 androidx.appcompat.widget.AppCompatSpinner$SpinnerPopup:
     public abstract int getHorizontalOriginalOffset()
 androidx.appcompat.widget.AppCompatSpinner:
@@ -2678,8 +2709,6 @@ androidx.appcompat.widget.AppCompatSpinner:
     public void <init>(android.content.Context)
     public void <init>(android.content.Context,int)
 androidx.appcompat.widget.AppCompatTextClassifierHelper$Api26Impl:
-    private void <init>()
-androidx.appcompat.widget.AppCompatTextHelper$Api17Impl:
     private void <init>()
 androidx.appcompat.widget.AppCompatTextHelper$Api21Impl:
     private void <init>()
@@ -2694,12 +2723,10 @@ androidx.appcompat.widget.AppCompatTextHelper:
     private static final int SANS
     private static final int SERIF
     private static final int TEXT_FONT_WEIGHT_UNSPECIFIED
+androidx.appcompat.widget.AppCompatTextView$InspectionCompanion$1
+androidx.appcompat.widget.AppCompatTextView$InspectionCompanion
 androidx.appcompat.widget.AppCompatTextView:
     public boolean isEmojiCompatEnabled()
-androidx.appcompat.widget.AppCompatTextViewAutoSizeHelper$Api16Impl:
-    private void <init>()
-androidx.appcompat.widget.AppCompatTextViewAutoSizeHelper$Api18Impl:
-    private void <init>()
 androidx.appcompat.widget.AppCompatTextViewAutoSizeHelper$Api23Impl:
     private void <init>()
 androidx.appcompat.widget.AppCompatTextViewAutoSizeHelper:
@@ -2709,6 +2736,7 @@ androidx.appcompat.widget.AppCompatTextViewAutoSizeHelper:
     private static final java.lang.String TAG
     static final float UNSET_AUTO_SIZE_UNIFORM_CONFIGURATION_VALUE
     private static final int VERY_WIDE
+androidx.appcompat.widget.AppCompatToggleButton$InspectionCompanion
 androidx.appcompat.widget.AppCompatToggleButton:
     public void <init>(android.content.Context)
     public boolean isEmojiCompatEnabled()
@@ -2762,6 +2790,7 @@ androidx.appcompat.widget.DrawableUtils$Api18Impl
 androidx.appcompat.widget.DrawableUtils$Api29Impl
 androidx.appcompat.widget.DrawableUtils:
     private void <init>()
+    public static boolean canSafelyMutateDrawable(android.graphics.drawable.Drawable)
     public static android.graphics.Rect getOpticalBounds(android.graphics.drawable.Drawable)
 androidx.appcompat.widget.DropDownListView$Api21Impl:
     private void <init>()
@@ -2781,9 +2810,11 @@ androidx.appcompat.widget.FitWindowsFrameLayout:
 androidx.appcompat.widget.FitWindowsLinearLayout:
     public void <init>(android.content.Context)
 androidx.appcompat.widget.LinearLayoutCompat$DividerMode
+androidx.appcompat.widget.LinearLayoutCompat$InspectionCompanion$1
+androidx.appcompat.widget.LinearLayoutCompat$InspectionCompanion$2
+androidx.appcompat.widget.LinearLayoutCompat$InspectionCompanion
 androidx.appcompat.widget.LinearLayoutCompat$LayoutParams:
     public void <init>(int,int,float)
-    public void <init>(android.view.ViewGroup$MarginLayoutParams)
 androidx.appcompat.widget.LinearLayoutCompat$OrientationMode
 androidx.appcompat.widget.LinearLayoutCompat:
     private static final java.lang.String ACCESSIBILITY_CLASS_NAME
@@ -2850,8 +2881,6 @@ androidx.appcompat.widget.MenuPopupWindow$Api23Impl:
     private void <init>()
 androidx.appcompat.widget.MenuPopupWindow$Api29Impl:
     private void <init>()
-androidx.appcompat.widget.MenuPopupWindow$MenuDropDownListView$Api17Impl:
-    private void <init>()
 androidx.appcompat.widget.MenuPopupWindow$MenuDropDownListView:
     public void clearSelection()
     public synthetic bridge int lookForSelectablePosition(int,boolean)
@@ -2915,34 +2944,171 @@ androidx.appcompat.widget.ScrollingTabContainerView:
     public void setContentHeight(int)
     public void setTabSelected(int)
     public void updateTab(int)
+androidx.appcompat.widget.SearchView$10
+androidx.appcompat.widget.SearchView$1
+androidx.appcompat.widget.SearchView$2
+androidx.appcompat.widget.SearchView$3
+androidx.appcompat.widget.SearchView$4
+androidx.appcompat.widget.SearchView$5
+androidx.appcompat.widget.SearchView$6
+androidx.appcompat.widget.SearchView$7
+androidx.appcompat.widget.SearchView$8
+androidx.appcompat.widget.SearchView$9
 androidx.appcompat.widget.SearchView$Api29Impl:
     private void <init>()
+androidx.appcompat.widget.SearchView$InspectionCompanion
+androidx.appcompat.widget.SearchView$OnCloseListener
+androidx.appcompat.widget.SearchView$OnQueryTextListener
+androidx.appcompat.widget.SearchView$OnSuggestionListener
+androidx.appcompat.widget.SearchView$PreQAutoCompleteTextViewReflector:
+    void doAfterTextChanged(android.widget.AutoCompleteTextView)
+    void doBeforeTextChanged(android.widget.AutoCompleteTextView)
+androidx.appcompat.widget.SearchView$SavedState$1
+androidx.appcompat.widget.SearchView$SavedState
 androidx.appcompat.widget.SearchView$SearchAutoComplete:
     public void <init>(android.content.Context)
+    boolean isEmpty()
+androidx.appcompat.widget.SearchView$UpdatableTouchDelegate
 androidx.appcompat.widget.SearchView:
     static final boolean DBG
     private static final java.lang.String IME_OPTION_NO_MICROPHONE
     static final java.lang.String LOG_TAG
+    private android.os.Bundle mAppSearchData
+    private boolean mClearingFocus
+    final android.widget.ImageView mCloseButton
+    private final android.widget.ImageView mCollapsedIcon
+    private int mCollapsedImeOptions
+    private final java.lang.CharSequence mDefaultQueryHint
+    private final android.view.View mDropDownAnchor
+    private boolean mExpandedInActionView
+    final android.widget.ImageView mGoButton
+    private boolean mIconified
+    private boolean mIconifiedByDefault
+    private int mMaxWidth
+    private java.lang.CharSequence mOldQueryText
+    private final android.view.View$OnClickListener mOnClickListener
+    private androidx.appcompat.widget.SearchView$OnCloseListener mOnCloseListener
+    private final android.widget.TextView$OnEditorActionListener mOnEditorActionListener
+    private final android.widget.AdapterView$OnItemClickListener mOnItemClickListener
+    private final android.widget.AdapterView$OnItemSelectedListener mOnItemSelectedListener
+    private androidx.appcompat.widget.SearchView$OnQueryTextListener mOnQueryChangeListener
+    android.view.View$OnFocusChangeListener mOnQueryTextFocusChangeListener
+    private android.view.View$OnClickListener mOnSearchClickListener
+    private androidx.appcompat.widget.SearchView$OnSuggestionListener mOnSuggestionListener
+    private final java.util.WeakHashMap mOutsideDrawablesCache
+    private java.lang.CharSequence mQueryHint
+    private boolean mQueryRefinement
+    private java.lang.Runnable mReleaseCursorRunnable
+    final android.widget.ImageView mSearchButton
+    private final android.view.View mSearchEditFrame
+    private final android.graphics.drawable.Drawable mSearchHintIcon
+    private final android.view.View mSearchPlate
+    final androidx.appcompat.widget.SearchView$SearchAutoComplete mSearchSrcTextView
+    private android.graphics.Rect mSearchSrcTextViewBounds
+    private android.graphics.Rect mSearchSrtTextViewBoundsExpanded
+    android.app.SearchableInfo mSearchable
+    private final android.view.View mSubmitArea
+    private boolean mSubmitButtonEnabled
+    private final int mSuggestionCommitIconResId
+    private final int mSuggestionRowLayout
+    androidx.cursoradapter.widget.CursorAdapter mSuggestionsAdapter
+    private int[] mTemp
+    private int[] mTemp2
+    android.view.View$OnKeyListener mTextKeyListener
+    private android.text.TextWatcher mTextWatcher
+    private androidx.appcompat.widget.SearchView$UpdatableTouchDelegate mTouchDelegate
+    private final java.lang.Runnable mUpdateDrawableStateRunnable
+    private java.lang.CharSequence mUserQuery
+    private final android.content.Intent mVoiceAppSearchIntent
+    final android.widget.ImageView mVoiceButton
+    private boolean mVoiceButtonEnabled
+    private final android.content.Intent mVoiceWebSearchIntent
+    public void <init>(android.content.Context)
+    public void <init>(android.content.Context,android.util.AttributeSet)
+    public void <init>(android.content.Context,android.util.AttributeSet,int)
+    void adjustDropDownSizeAndPosition()
+    private android.content.Intent createIntent(java.lang.String,android.net.Uri,java.lang.String,java.lang.String,int,java.lang.String)
+    private android.content.Intent createIntentFromSuggestion(android.database.Cursor,int,java.lang.String)
+    private android.content.Intent createVoiceAppSearchIntent(android.content.Intent,android.app.SearchableInfo)
+    private android.content.Intent createVoiceWebSearchIntent(android.content.Intent,android.app.SearchableInfo)
+    private void dismissSuggestions()
+    void forceSuggestionQuery()
+    private void getChildBoundsWithinSearchView(android.view.View,android.graphics.Rect)
+    private java.lang.CharSequence getDecoratedHint(java.lang.CharSequence)
+    public int getImeOptions()
+    public int getInputType()
+    public int getMaxWidth()
+    private int getPreferredHeight()
+    private int getPreferredWidth()
+    public java.lang.CharSequence getQuery()
+    public java.lang.CharSequence getQueryHint()
+    int getSuggestionCommitIconResId()
+    int getSuggestionRowLayout()
+    public androidx.cursoradapter.widget.CursorAdapter getSuggestionsAdapter()
+    private boolean hasVoiceSearch()
     public boolean isIconfiedByDefault()
+    public boolean isIconified()
     public boolean isQueryRefinementEnabled()
+    private boolean isSubmitAreaEnabled()
     public boolean isSubmitButtonEnabled()
+    private void launchIntent(android.content.Intent)
+    void launchQuerySearch(int,java.lang.String,java.lang.String)
+    private boolean launchSuggestion(int,int,java.lang.String)
+    public void onActionViewCollapsed()
+    public void onActionViewExpanded()
+    void onCloseClicked()
+    protected void onDetachedFromWindow()
+    boolean onItemClicked(int,int,java.lang.String)
+    boolean onItemSelected(int)
+    protected void onLayout(boolean,int,int,int,int)
+    protected void onMeasure(int,int)
+    protected void onQueryRefine(java.lang.CharSequence)
+    protected void onRestoreInstanceState(android.os.Parcelable)
+    protected android.os.Parcelable onSaveInstanceState()
+    void onSearchClicked()
+    void onSubmitQuery()
+    boolean onSuggestionsKey(android.view.View,int,android.view.KeyEvent)
+    void onTextChanged(java.lang.CharSequence)
+    void onVoiceClicked()
+    public void onWindowFocusChanged(boolean)
+    private void postUpdateFocusedState()
+    public boolean requestFocus(int,android.graphics.Rect)
+    private void rewriteQueryFromSuggestion(int)
+    public void setAppSearchData(android.os.Bundle)
+    public void setIconified(boolean)
+    public void setIconifiedByDefault(boolean)
+    public void setImeOptions(int)
+    public void setInputType(int)
+    public void setMaxWidth(int)
+    public void setOnCloseListener(androidx.appcompat.widget.SearchView$OnCloseListener)
+    public void setOnQueryTextFocusChangeListener(android.view.View$OnFocusChangeListener)
+    public void setOnQueryTextListener(androidx.appcompat.widget.SearchView$OnQueryTextListener)
+    public void setOnSearchClickListener(android.view.View$OnClickListener)
+    public void setOnSuggestionListener(androidx.appcompat.widget.SearchView$OnSuggestionListener)
+    private void setQuery(java.lang.CharSequence)
+    public void setQuery(java.lang.CharSequence,boolean)
+    public void setQueryHint(java.lang.CharSequence)
+    public void setQueryRefinementEnabled(boolean)
+    public void setSearchableInfo(android.app.SearchableInfo)
+    public void setSubmitButtonEnabled(boolean)
+    public void setSuggestionsAdapter(androidx.cursoradapter.widget.CursorAdapter)
+    private void updateCloseButton()
+    void updateFocusedState()
+    private void updateQueryHint()
+    private void updateSearchAutoComplete()
+    private void updateSubmitArea()
+    private void updateSubmitButton(boolean)
+    private void updateViewsVisibility(boolean)
+    private void updateVoiceButton(boolean)
 androidx.appcompat.widget.ShareActionProvider$OnShareTargetSelectedListener
 androidx.appcompat.widget.ShareActionProvider$ShareActivityChooserModelPolicy
 androidx.appcompat.widget.ShareActionProvider$ShareMenuItemOnMenuItemClickListener
 androidx.appcompat.widget.ShareActionProvider
-androidx.appcompat.widget.SuggestionsAdapter:
-    private static final boolean DBG
-    static final int INVALID_INDEX
-    private static final java.lang.String LOG_TAG
-    private static final int QUERY_LIMIT
-    static final int REFINE_ALL
-    static final int REFINE_BY_ENTRY
-    static final int REFINE_NONE
-    public void close()
-    public int getQueryRefinement()
+androidx.appcompat.widget.SuggestionsAdapter$ChildViewCache
+androidx.appcompat.widget.SuggestionsAdapter
 androidx.appcompat.widget.SwitchCompat$1
-androidx.appcompat.widget.SwitchCompat$Api18Impl
 androidx.appcompat.widget.SwitchCompat$EmojiCompatInitCallback
+androidx.appcompat.widget.SwitchCompat$InspectionCompanion
 androidx.appcompat.widget.SwitchCompat
 androidx.appcompat.widget.ThemeUtils:
     private static final java.lang.String TAG
@@ -2963,7 +3129,6 @@ androidx.appcompat.widget.TintTypedArray:
     public int getType(int)
     public boolean getValue(int,android.util.TypedValue)
     public int length()
-    public android.util.TypedValue peekValue(int)
 androidx.appcompat.widget.Toolbar$Api33Impl:
     private void <init>()
 androidx.appcompat.widget.Toolbar$ExpandedActionViewMenuPresenter:
@@ -2972,6 +3137,7 @@ androidx.appcompat.widget.Toolbar$ExpandedActionViewMenuPresenter:
     public void onRestoreInstanceState(android.os.Parcelable)
     public android.os.Parcelable onSaveInstanceState()
     public void setCallback(androidx.appcompat.view.menu.MenuPresenter$Callback)
+androidx.appcompat.widget.Toolbar$InspectionCompanion
 androidx.appcompat.widget.Toolbar$LayoutParams:
     static final int CUSTOM
     static final int EXPANDED
@@ -2983,12 +3149,10 @@ androidx.appcompat.widget.Toolbar$SavedState:
 androidx.appcompat.widget.Toolbar:
     private static final java.lang.String TAG
     public void <init>(android.content.Context)
-    public void addMenuProvider(androidx.core.view.MenuProvider)
     public void addMenuProvider(androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner)
     public void addMenuProvider(androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner,androidx.lifecycle.Lifecycle$State)
     public boolean isBackInvokedCallbackEnabled()
     public boolean isTitleTruncated()
-    public void removeMenuProvider(androidx.core.view.MenuProvider)
     public void setContentInsetsAbsolute(int,int)
     public void setMenuCallbacks(androidx.appcompat.view.menu.MenuPresenter$Callback,androidx.appcompat.view.menu.MenuBuilder$Callback)
     public void setTitleMargin(int,int,int,int)
@@ -3034,6 +3198,8 @@ androidx.appcompat.widget.TooltipPopup:
 androidx.appcompat.widget.VectorEnabledTintResources:
     public static final int MAX_SDK_WHERE_REQUIRED
     public static void setCompatVectorFromResourcesEnabled(boolean)
+androidx.appcompat.widget.ViewUtils$Api29Impl:
+    private void <init>()
 androidx.appcompat.widget.ViewUtils:
     private static final java.lang.String TAG
     private void <init>()
@@ -3113,17 +3279,16 @@ androidx.collection.SparseArrayCompat:
     public java.lang.Object replace(int,java.lang.Object)
     public boolean replace(int,java.lang.Object,java.lang.Object)
     public void setValueAt(int,java.lang.Object)
-androidx.concurrent.futures.AbstractResolvableFuture$1
-androidx.concurrent.futures.AbstractResolvableFuture$AtomicHelper
-androidx.concurrent.futures.AbstractResolvableFuture$Cancellation
-androidx.concurrent.futures.AbstractResolvableFuture$Failure$1
-androidx.concurrent.futures.AbstractResolvableFuture$Failure
-androidx.concurrent.futures.AbstractResolvableFuture$Listener
-androidx.concurrent.futures.AbstractResolvableFuture$SafeAtomicHelper
-androidx.concurrent.futures.AbstractResolvableFuture$SetFuture
-androidx.concurrent.futures.AbstractResolvableFuture$SynchronizedHelper
-androidx.concurrent.futures.AbstractResolvableFuture$Waiter
-androidx.concurrent.futures.AbstractResolvableFuture
+androidx.concurrent.futures.AbstractResolvableFuture$SetFuture:
+    void <init>(androidx.concurrent.futures.AbstractResolvableFuture,com.google.common.util.concurrent.ListenableFuture)
+    public void run()
+androidx.concurrent.futures.AbstractResolvableFuture:
+    private static final long SPIN_THRESHOLD_NANOS
+    public final void addListener(java.lang.Runnable,java.util.concurrent.Executor)
+    final void maybePropagateCancellationTo(java.util.concurrent.Future)
+    protected boolean setException(java.lang.Throwable)
+    protected boolean setFuture(com.google.common.util.concurrent.ListenableFuture)
+    protected final boolean wasInterrupted()
 androidx.concurrent.futures.CallbackToFutureAdapter$Completer
 androidx.concurrent.futures.CallbackToFutureAdapter$FutureGarbageCollectedException
 androidx.concurrent.futures.CallbackToFutureAdapter$Resolver
@@ -3131,7 +3296,9 @@ androidx.concurrent.futures.CallbackToFutureAdapter$SafeFuture$1
 androidx.concurrent.futures.CallbackToFutureAdapter$SafeFuture
 androidx.concurrent.futures.CallbackToFutureAdapter
 androidx.concurrent.futures.DirectExecutor
-androidx.concurrent.futures.ResolvableFuture
+androidx.concurrent.futures.ResolvableFuture:
+    public boolean setException(java.lang.Throwable)
+    public boolean setFuture(com.google.common.util.concurrent.ListenableFuture)
 androidx.constraintlayout.core.ArrayLinkedVariables:
     private static final boolean DEBUG
     private static final boolean FULL_NEW_CHECK
@@ -6038,9 +6205,6 @@ androidx.core.animation.AnimatorKt$doOnEnd$$inlined$addListener$default$1
 androidx.core.animation.AnimatorKt$doOnRepeat$$inlined$addListener$default$1
 androidx.core.animation.AnimatorKt$doOnStart$$inlined$addListener$default$1
 androidx.core.animation.AnimatorKt
-androidx.core.animation.Api19Impl
-androidx.core.app.ActivityCompat$Api16Impl:
-    private void <init>()
 androidx.core.app.ActivityCompat$Api21Impl
 androidx.core.app.ActivityCompat$Api22Impl
 androidx.core.app.ActivityCompat$Api23Impl:
@@ -6070,10 +6234,10 @@ androidx.core.app.ActivityCompat:
     public static void startPostponedEnterTransition(android.app.Activity)
 androidx.core.app.ActivityManagerCompat
 androidx.core.app.ActivityOptionsCompat$ActivityOptionsCompatImpl
-androidx.core.app.ActivityOptionsCompat$Api16Impl
 androidx.core.app.ActivityOptionsCompat$Api21Impl
 androidx.core.app.ActivityOptionsCompat$Api23Impl
 androidx.core.app.ActivityOptionsCompat$Api24Impl
+androidx.core.app.ActivityOptionsCompat$Api34Impl
 androidx.core.app.ActivityOptionsCompat:
     public static final java.lang.String EXTRA_USAGE_TIME_REPORT
     public static final java.lang.String EXTRA_USAGE_TIME_REPORT_PACKAGES
@@ -6089,18 +6253,24 @@ androidx.core.app.ActivityOptionsCompat:
     public static androidx.core.app.ActivityOptionsCompat makeThumbnailScaleUpAnimation(android.view.View,android.graphics.Bitmap,int,int)
     public void requestUsageTimeReport(android.app.PendingIntent)
     public androidx.core.app.ActivityOptionsCompat setLaunchBounds(android.graphics.Rect)
+    public androidx.core.app.ActivityOptionsCompat setShareIdentityEnabled(boolean)
     public void update(androidx.core.app.ActivityOptionsCompat)
 androidx.core.app.ActivityRecreator:
     private static final java.lang.String LOG_TAG
     private void <init>()
-androidx.core.app.AlarmManagerCompat$Api19Impl
 androidx.core.app.AlarmManagerCompat$Api21Impl
 androidx.core.app.AlarmManagerCompat$Api23Impl
+androidx.core.app.AlarmManagerCompat$Api31Impl
 androidx.core.app.AlarmManagerCompat
 androidx.core.app.AppComponentFactory
 androidx.core.app.AppLaunchChecker
-androidx.core.app.AppLocalesStorageHelper
-androidx.core.app.AppOpsManagerCompat$Api19Impl
+androidx.core.app.AppLocalesStorageHelper:
+    static final java.lang.String APPLICATION_LOCALES_RECORD_FILE
+    static final boolean DEBUG
+    static final java.lang.String LOCALE_RECORD_ATTRIBUTE_TAG
+    static final java.lang.String LOCALE_RECORD_FILE_TAG
+    static final java.lang.String TAG
+    private void <init>()
 androidx.core.app.AppOpsManagerCompat$Api23Impl:
     private void <init>()
 androidx.core.app.AppOpsManagerCompat$Api29Impl:
@@ -6120,10 +6290,10 @@ androidx.core.app.BundleCompat:
 androidx.core.app.ComponentActivity$ExtraData
 androidx.core.app.ComponentActivity:
     public androidx.core.app.ComponentActivity$ExtraData getExtraData(java.lang.Class)
+    private static synthetic void getExtraDataMap$annotations()
     public androidx.lifecycle.Lifecycle getLifecycle()
+    private static synthetic void getLifecycleRegistry$annotations()
     public void putExtraData(androidx.core.app.ComponentActivity$ExtraData)
-    protected final boolean shouldDumpInternalState(java.lang.String[])
-    private static boolean shouldSkipDump(java.lang.String[])
 androidx.core.app.DialogCompat$Api28Impl
 androidx.core.app.DialogCompat
 androidx.core.app.FrameMetricsAggregator$FrameMetricsApi24Impl$1
@@ -6149,11 +6319,7 @@ androidx.core.app.LocaleManagerCompat$Api24Impl
 androidx.core.app.LocaleManagerCompat$Api33Impl
 androidx.core.app.LocaleManagerCompat
 androidx.core.app.MultiWindowModeChangedInfo:
-    public void <init>(boolean)
-    public android.content.res.Configuration getNewConfig()
-    public boolean isInMultiWindowMode()
-androidx.core.app.NavUtils$Api16Impl:
-    private void <init>()
+    public final android.content.res.Configuration getNewConfig()
 androidx.core.app.NavUtils:
     public static final java.lang.String PARENT_ACTIVITY
     private static final java.lang.String TAG
@@ -6204,12 +6370,9 @@ androidx.core.app.NotificationCompat$Api28Impl
 androidx.core.app.NotificationCompat$Api29Impl
 androidx.core.app.NotificationCompat$Api31Impl
 androidx.core.app.NotificationCompat$BadgeIconType
-androidx.core.app.NotificationCompat$BigPictureStyle$Api16Impl
 androidx.core.app.NotificationCompat$BigPictureStyle$Api23Impl
 androidx.core.app.NotificationCompat$BigPictureStyle$Api31Impl
 androidx.core.app.NotificationCompat$BigPictureStyle
-androidx.core.app.NotificationCompat$BigTextStyle$Api16Impl:
-    private void <init>()
 androidx.core.app.NotificationCompat$BigTextStyle:
     private static final java.lang.String TEMPLATE_CLASS_NAME
     public void <init>(androidx.core.app.NotificationCompat$Builder)
@@ -6316,7 +6479,6 @@ androidx.core.app.NotificationCompat$Builder:
     public androidx.core.app.NotificationCompat$Builder setVibrate(long[])
     public androidx.core.app.NotificationCompat$Builder setVisibility(int)
     private boolean useExistingRemoteView()
-androidx.core.app.NotificationCompat$CallStyle$Api16Impl
 androidx.core.app.NotificationCompat$CallStyle$Api20Impl
 androidx.core.app.NotificationCompat$CallStyle$Api21Impl
 androidx.core.app.NotificationCompat$CallStyle$Api23Impl
@@ -6368,15 +6530,11 @@ androidx.core.app.NotificationCompat$CarExtender$Api29Impl
 androidx.core.app.NotificationCompat$CarExtender$UnreadConversation$Builder
 androidx.core.app.NotificationCompat$CarExtender$UnreadConversation
 androidx.core.app.NotificationCompat$CarExtender
-androidx.core.app.NotificationCompat$DecoratedCustomViewStyle$Api15Impl
-androidx.core.app.NotificationCompat$DecoratedCustomViewStyle$Api16Impl
 androidx.core.app.NotificationCompat$DecoratedCustomViewStyle$Api24Impl
 androidx.core.app.NotificationCompat$DecoratedCustomViewStyle
 androidx.core.app.NotificationCompat$Extender
 androidx.core.app.NotificationCompat$GroupAlertBehavior
-androidx.core.app.NotificationCompat$InboxStyle$Api16Impl
 androidx.core.app.NotificationCompat$InboxStyle
-androidx.core.app.NotificationCompat$MessagingStyle$Api16Impl
 androidx.core.app.NotificationCompat$MessagingStyle$Api24Impl
 androidx.core.app.NotificationCompat$MessagingStyle$Api26Impl
 androidx.core.app.NotificationCompat$MessagingStyle$Api28Impl
@@ -6387,7 +6545,6 @@ androidx.core.app.NotificationCompat$MessagingStyle
 androidx.core.app.NotificationCompat$NotificationVisibility
 androidx.core.app.NotificationCompat$ServiceNotificationBehavior
 androidx.core.app.NotificationCompat$StreamType
-androidx.core.app.NotificationCompat$Style$Api16Impl
 androidx.core.app.NotificationCompat$Style$Api24Impl
 androidx.core.app.NotificationCompat$Style:
     public android.widget.RemoteViews applyStandardTemplate(boolean,int,boolean)
@@ -6563,12 +6720,6 @@ androidx.core.app.NotificationCompat:
     public static int getVisibility(android.app.Notification)
     public static boolean isGroupSummary(android.app.Notification)
     public static android.graphics.Bitmap reduceLargeIconSize(android.content.Context,android.graphics.Bitmap)
-androidx.core.app.NotificationCompatBuilder$Api16Impl:
-    private void <init>()
-androidx.core.app.NotificationCompatBuilder$Api17Impl:
-    private void <init>()
-androidx.core.app.NotificationCompatBuilder$Api19Impl:
-    private void <init>()
 androidx.core.app.NotificationCompatBuilder$Api20Impl:
     private void <init>()
 androidx.core.app.NotificationCompatBuilder$Api21Impl:
@@ -6610,6 +6761,8 @@ androidx.core.app.NotificationCompatJellybean:
     private static java.lang.reflect.Field sActionTitleField
     private static boolean sActionsAccessFailed
     private static java.lang.reflect.Field sActionsField
+    private static java.lang.reflect.Field sExtrasField
+    private static boolean sExtrasFieldAccessFailed
     private void <init>()
     private static boolean ensureActionReflectionReadyLocked()
     private static androidx.core.app.RemoteInput fromBundle(android.os.Bundle)
@@ -6619,6 +6772,7 @@ androidx.core.app.NotificationCompatJellybean:
     static androidx.core.app.NotificationCompat$Action getActionFromBundle(android.os.Bundle)
     private static java.lang.Object[] getActionObjectsLocked(android.app.Notification)
     private static android.os.Bundle[] getBundleArrayFromBundle(android.os.Bundle,java.lang.String)
+    public static android.os.Bundle getExtras(android.app.Notification)
     public static androidx.core.app.NotificationCompat$Action readAction(int,java.lang.CharSequence,android.app.PendingIntent,android.os.Bundle)
 androidx.core.app.NotificationCompatSideChannelService$NotificationSideChannelStub
 androidx.core.app.NotificationCompatSideChannelService
@@ -6696,10 +6850,8 @@ androidx.core.app.NotificationManagerCompat:
     public void notify(java.util.List)
     private void pushSideChannelQueue(androidx.core.app.NotificationManagerCompat$Task)
     private static boolean useSideChannelForNotification(android.app.Notification)
-androidx.core.app.OnMultiWindowModeChangedProvider
 androidx.core.app.OnNewIntentProvider
-androidx.core.app.OnPictureInPictureModeChangedProvider
-androidx.core.app.PendingIntentCompat$Api16Impl
+androidx.core.app.OnUserLeaveHintProvider
 androidx.core.app.PendingIntentCompat$Api23Impl
 androidx.core.app.PendingIntentCompat$Api26Impl
 androidx.core.app.PendingIntentCompat$Flags
@@ -6722,6 +6874,7 @@ androidx.core.app.Person:
     java.lang.CharSequence mName
     java.lang.String mUri
     void <init>(androidx.core.app.Person$Builder)
+    public boolean equals(java.lang.Object)
     public static androidx.core.app.Person fromAndroidPerson(android.app.Person)
     public static androidx.core.app.Person fromBundle(android.os.Bundle)
     public static androidx.core.app.Person fromPersistableBundle(android.os.PersistableBundle)
@@ -6729,15 +6882,14 @@ androidx.core.app.Person:
     public java.lang.String getKey()
     public java.lang.CharSequence getName()
     public java.lang.String getUri()
+    public int hashCode()
     public boolean isBot()
     public boolean isImportant()
     public androidx.core.app.Person$Builder toBuilder()
     public android.os.Bundle toBundle()
     public android.os.PersistableBundle toPersistableBundle()
 androidx.core.app.PictureInPictureModeChangedInfo:
-    public void <init>(boolean)
-    public android.content.res.Configuration getNewConfig()
-    public boolean isInPictureInPictureMode()
+    public final android.content.res.Configuration getNewConfig()
 androidx.core.app.RemoteActionCompat$Api26Impl
 androidx.core.app.RemoteActionCompat$Api28Impl
 androidx.core.app.RemoteActionCompat:
@@ -6753,7 +6905,6 @@ androidx.core.app.RemoteActionCompat:
     public void setShouldShowIcon(boolean)
     public boolean shouldShowIcon()
     public android.app.RemoteAction toRemoteAction()
-androidx.core.app.RemoteInput$Api16Impl
 androidx.core.app.RemoteInput$Api20Impl:
     private void <init>()
     static androidx.core.app.RemoteInput fromPlatform(java.lang.Object)
@@ -6807,7 +6958,6 @@ androidx.core.app.ServiceCompat:
     public static final int STOP_FOREGROUND_REMOVE
     private void <init>()
     public static void stopForeground(android.app.Service,int)
-androidx.core.app.ShareCompat$Api16Impl
 androidx.core.app.ShareCompat$IntentBuilder
 androidx.core.app.ShareCompat$IntentReader
 androidx.core.app.ShareCompat
@@ -6824,7 +6974,6 @@ androidx.core.app.SharedElementCallback:
     public android.view.View onCreateSnapshotView(android.content.Context,android.os.Parcelable)
     public void onRejectSharedElements(java.util.List)
     public void onSharedElementsArrived(java.util.List,java.util.List,androidx.core.app.SharedElementCallback$OnSharedElementsReadyListener)
-androidx.core.app.TaskStackBuilder$Api16Impl
 androidx.core.app.TaskStackBuilder:
     private static final java.lang.String TAG
     public androidx.core.app.TaskStackBuilder addNextIntentWithParentStack(android.content.Intent)
@@ -6845,14 +6994,8 @@ androidx.core.app.unusedapprestrictions.IUnusedAppRestrictionsBackportService$St
 androidx.core.app.unusedapprestrictions.IUnusedAppRestrictionsBackportService$Stub
 androidx.core.app.unusedapprestrictions.IUnusedAppRestrictionsBackportService
 androidx.core.content.ContentProviderCompat
-androidx.core.content.ContentResolverCompat$Api16Impl
 androidx.core.content.ContentResolverCompat
 androidx.core.content.ContentValuesKt
-androidx.core.content.ContextCompat$Api16Impl:
-    private void <init>()
-androidx.core.content.ContextCompat$Api17Impl
-androidx.core.content.ContextCompat$Api19Impl:
-    private void <init>()
 androidx.core.content.ContextCompat$Api21Impl:
     private void <init>()
 androidx.core.content.ContextCompat$Api23Impl:
@@ -6874,6 +7017,7 @@ androidx.core.content.ContextCompat:
     public static final int RECEIVER_VISIBLE_TO_INSTANT_APPS
     private static final java.lang.String TAG
     protected void <init>()
+    public static android.content.Context createAttributionContext(android.content.Context,java.lang.String)
     private static java.io.File createFilesDir(java.io.File)
     public static java.lang.String getAttributionTag(android.content.Context)
     public static java.io.File getCodeCacheDir(android.content.Context)
@@ -6904,16 +7048,12 @@ androidx.core.content.FileProvider:
     private static final java.lang.String TAG_EXTERNAL_MEDIA
     private static final java.lang.String TAG_FILES_PATH
     private static final java.lang.String TAG_ROOT_PATH
-    protected void <init>(int)
     public static android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File,java.lang.String)
-androidx.core.content.IntentCompat$Api15Impl
 androidx.core.content.IntentCompat$Api33Impl
 androidx.core.content.IntentCompat
 androidx.core.content.IntentSanitizer$1
-androidx.core.content.IntentSanitizer$Api15Impl
-androidx.core.content.IntentSanitizer$Api16Impl$Api31Impl
-androidx.core.content.IntentSanitizer$Api16Impl
 androidx.core.content.IntentSanitizer$Api29Impl
+androidx.core.content.IntentSanitizer$Api31Impl
 androidx.core.content.IntentSanitizer$Builder
 androidx.core.content.IntentSanitizer
 androidx.core.content.LocusIdCompat$Api29Impl
@@ -6928,8 +7068,6 @@ androidx.core.content.LocusIdCompat:
     public static androidx.core.content.LocusIdCompat toLocusIdCompat(android.content.LocusId)
     public java.lang.String toString()
 androidx.core.content.MimeTypeFilter
-androidx.core.content.OnConfigurationChangedProvider
-androidx.core.content.OnTrimMemoryProvider
 androidx.core.content.PackageManagerCompat$Api30Impl
 androidx.core.content.PackageManagerCompat$UnusedAppRestrictionsStatus
 androidx.core.content.PackageManagerCompat
@@ -7014,8 +7152,6 @@ androidx.core.content.res.GrowingArrayUtils:
     public static long[] insert(long[],int,int,long)
     public static java.lang.Object[] insert(java.lang.Object[],int,int,java.lang.Object)
     public static boolean[] insert(boolean[],int,int,boolean)
-androidx.core.content.res.ResourcesCompat$Api15Impl:
-    private void <init>()
 androidx.core.content.res.ResourcesCompat$Api21Impl:
     private void <init>()
 androidx.core.content.res.ResourcesCompat$Api23Impl:
@@ -7050,15 +7186,12 @@ androidx.core.content.res.TypedArrayUtils:
     public static java.lang.CharSequence getText(android.content.res.TypedArray,int,int)
     public static java.lang.CharSequence[] getTextArray(android.content.res.TypedArray,int,int)
 androidx.core.database.CursorKt
-androidx.core.database.CursorWindowCompat$Api15Impl
 androidx.core.database.CursorWindowCompat$Api28Impl
 androidx.core.database.CursorWindowCompat
 androidx.core.database.DatabaseUtilsCompat
 androidx.core.database.sqlite.SQLiteCursorCompat$Api28Impl
 androidx.core.database.sqlite.SQLiteCursorCompat
 androidx.core.database.sqlite.SQLiteDatabaseKt
-androidx.core.graphics.BitmapCompat$Api17Impl
-androidx.core.graphics.BitmapCompat$Api19Impl
 androidx.core.graphics.BitmapCompat$Api27Impl
 androidx.core.graphics.BitmapCompat$Api29Impl
 androidx.core.graphics.BitmapCompat$Api31Impl
@@ -7127,9 +7260,13 @@ androidx.core.graphics.PaintCompat:
     public static boolean setBlendMode(android.graphics.Paint,androidx.core.graphics.BlendModeCompat)
 androidx.core.graphics.PaintKt
 androidx.core.graphics.PathKt
+androidx.core.graphics.PathParser$PathDataNode:
+    public float[] getParams()
+    public char getType()
 androidx.core.graphics.PathParser:
     private static final java.lang.String LOGTAG
     private void <init>()
+    public static void interpolatePathDataNodes(androidx.core.graphics.PathParser$PathDataNode[],float,androidx.core.graphics.PathParser$PathDataNode[],androidx.core.graphics.PathParser$PathDataNode[])
     public static boolean interpolatePathDataNodes(androidx.core.graphics.PathParser$PathDataNode[],androidx.core.graphics.PathParser$PathDataNode[],androidx.core.graphics.PathParser$PathDataNode[],float)
 androidx.core.graphics.PathSegment
 androidx.core.graphics.PathUtils$Api26Impl
@@ -7184,8 +7321,6 @@ androidx.core.graphics.TypefaceCompatBaseImpl:
     android.graphics.Typeface createFromFontFamilyFilesResourceEntry(android.content.Context,androidx.core.content.res.FontResourcesParserCompat$FontFamilyFilesResourceEntry,android.content.res.Resources,int,boolean)
     android.graphics.Typeface createWeightStyle(android.content.Context,android.graphics.Typeface,int,boolean)
     private androidx.core.content.res.FontResourcesParserCompat$FontFileResourceEntry findBestEntry(androidx.core.content.res.FontResourcesParserCompat$FontFamilyFilesResourceEntry,int,boolean)
-androidx.core.graphics.TypefaceCompatUtil$Api19Impl:
-    private void <init>()
 androidx.core.graphics.TypefaceCompatUtil:
     private static final java.lang.String CACHE_FILE_PREFIX
     private static final java.lang.String TAG
@@ -7195,8 +7330,6 @@ androidx.core.graphics.WeightTypefaceApi21
 androidx.core.graphics.WeightTypefaceApi26
 androidx.core.graphics.drawable.BitmapDrawableKt
 androidx.core.graphics.drawable.ColorDrawableKt
-androidx.core.graphics.drawable.DrawableCompat$Api19Impl:
-    private void <init>()
 androidx.core.graphics.drawable.DrawableCompat$Api21Impl:
     private void <init>()
 androidx.core.graphics.drawable.DrawableCompat$Api23Impl:
@@ -7269,7 +7402,6 @@ androidx.core.graphics.drawable.RoundedBitmapDrawableFactory$DefaultRoundedBitma
 androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 androidx.core.graphics.drawable.WrappedDrawableApi21:
     private static final java.lang.String TAG
-androidx.core.hardware.display.DisplayManagerCompat$Api17Impl
 androidx.core.hardware.display.DisplayManagerCompat
 androidx.core.hardware.fingerprint.FingerprintManagerCompat$1
 androidx.core.hardware.fingerprint.FingerprintManagerCompat$Api23Impl
@@ -7304,8 +7436,6 @@ androidx.core.location.GnssStatusWrapper$Api26Impl
 androidx.core.location.GnssStatusWrapper$Api30Impl
 androidx.core.location.GnssStatusWrapper
 androidx.core.location.GpsStatusWrapper
-androidx.core.location.LocationCompat$Api17Impl
-androidx.core.location.LocationCompat$Api18Impl
 androidx.core.location.LocationCompat$Api26Impl
 androidx.core.location.LocationCompat$Api28Impl
 androidx.core.location.LocationCompat$Api29Impl
@@ -7352,7 +7482,6 @@ androidx.core.math.MathUtils:
     public static int subtractExact(int,int)
     public static long subtractExact(long,long)
     public static int toIntExact(long)
-androidx.core.net.ConnectivityManagerCompat$Api16Impl
 androidx.core.net.ConnectivityManagerCompat$Api24Impl
 androidx.core.net.ConnectivityManagerCompat$RestrictBackgroundStatus
 androidx.core.net.ConnectivityManagerCompat
@@ -7377,38 +7506,20 @@ androidx.core.os.BuildCompat:
     public static final boolean isAtLeastSv2()
     public static final boolean isAtLeastU()
     public static final boolean isAtLeastV()
-androidx.core.os.BundleApi18ImplKt
 androidx.core.os.BundleApi21ImplKt
-androidx.core.os.BundleCompat$Api18Impl:
-    private void <init>()
 androidx.core.os.BundleCompat$Api33Impl
-androidx.core.os.BundleCompat$BeforeApi18Impl:
-    private static final java.lang.String TAG
-    private static java.lang.reflect.Method sPutIBinderMethod
-    private static boolean sPutIBinderMethodFetched
-    private void <init>()
-    public static void putBinder(android.os.Bundle,java.lang.String,android.os.IBinder)
-androidx.core.os.BundleCompat:
-    private void <init>()
-    public static java.lang.Object getParcelable(android.os.Bundle,java.lang.String,java.lang.Class)
-    public static android.os.Parcelable[] getParcelableArray(android.os.Bundle,java.lang.String,java.lang.Class)
-    public static java.util.ArrayList getParcelableArrayList(android.os.Bundle,java.lang.String,java.lang.Class)
-    public static android.util.SparseArray getSparseParcelableArray(android.os.Bundle,java.lang.String,java.lang.Class)
-    public static void putBinder(android.os.Bundle,java.lang.String,android.os.IBinder)
+androidx.core.os.BundleCompat
 androidx.core.os.BundleKt
-androidx.core.os.CancellationSignal$Api16Impl:
-    private void <init>()
 androidx.core.os.CancellationSignal:
     public java.lang.Object getCancellationSignalObject()
+    public boolean isCanceled()
     public void throwIfCanceled()
-androidx.core.os.ConfigurationCompat$Api17Impl
 androidx.core.os.ConfigurationCompat$Api24Impl:
     private void <init>()
 androidx.core.os.ConfigurationCompat:
     private void <init>()
     public static void setLocales(android.content.res.Configuration,androidx.core.os.LocaleListCompat)
 androidx.core.os.ContinuationOutcomeReceiver
-androidx.core.os.EnvironmentCompat$Api19Impl
 androidx.core.os.EnvironmentCompat$Api21Impl
 androidx.core.os.EnvironmentCompat
 androidx.core.os.ExecutorCompat$HandlerExecutor
@@ -7460,12 +7571,9 @@ androidx.core.os.ParcelableCompatCreatorCallbacks
 androidx.core.os.PersistableBundleApi21ImplKt
 androidx.core.os.PersistableBundleApi22ImplKt
 androidx.core.os.PersistableBundleKt
-androidx.core.os.ProcessCompat$Api16Impl
-androidx.core.os.ProcessCompat$Api17Impl
+androidx.core.os.ProcessCompat$Api19Impl
 androidx.core.os.ProcessCompat$Api24Impl
 androidx.core.os.ProcessCompat
-androidx.core.os.TraceCompat$Api18Impl:
-    private void <init>()
 androidx.core.os.TraceCompat$Api29Impl
 androidx.core.os.TraceCompat:
     private static final java.lang.String TAG
@@ -7484,12 +7592,9 @@ androidx.core.provider.CallbackWithHandler:
 androidx.core.provider.CalleeHandler:
     private void <init>()
 androidx.core.provider.DocumentsContractCompat$DocumentCompat
-androidx.core.provider.DocumentsContractCompat$DocumentsContractApi19Impl
 androidx.core.provider.DocumentsContractCompat$DocumentsContractApi21Impl
 androidx.core.provider.DocumentsContractCompat$DocumentsContractApi24Impl
 androidx.core.provider.DocumentsContractCompat
-androidx.core.provider.FontProvider$Api16Impl:
-    private void <init>()
 androidx.core.provider.FontProvider:
     private void <init>()
 androidx.core.provider.FontRequest:
@@ -7605,7 +7710,6 @@ androidx.core.text.TextDirectionHeuristicsCompat$TextDirectionHeuristicImpl
 androidx.core.text.TextDirectionHeuristicsCompat$TextDirectionHeuristicInternal
 androidx.core.text.TextDirectionHeuristicsCompat$TextDirectionHeuristicLocale
 androidx.core.text.TextDirectionHeuristicsCompat
-androidx.core.text.TextUtilsCompat$Api17Impl
 androidx.core.text.TextUtilsCompat
 androidx.core.text.method.LinkMovementMethodCompat
 androidx.core.text.util.FindAddress$ZipRange
@@ -7658,8 +7762,6 @@ androidx.core.util.LruCacheKt$lruCache$2
 androidx.core.util.LruCacheKt$lruCache$3
 androidx.core.util.LruCacheKt$lruCache$4
 androidx.core.util.LruCacheKt
-androidx.core.util.ObjectsCompat$Api19Impl:
-    private void <init>()
 androidx.core.util.ObjectsCompat:
     private void <init>()
     public static int hashCode(java.lang.Object)
@@ -7701,21 +7803,26 @@ androidx.core.util.SparseIntArrayKt
 androidx.core.util.SparseLongArrayKt$keyIterator$1
 androidx.core.util.SparseLongArrayKt$valueIterator$1
 androidx.core.util.SparseLongArrayKt
-androidx.core.util.Supplier
 androidx.core.util.TimeUtils
 androidx.core.util.TypedValueCompat$Api34Impl
 androidx.core.util.TypedValueCompat$ComplexDimensionUnit
-androidx.core.util.TypedValueCompat
-androidx.core.view.AccessibilityDelegateCompat$Api16Impl:
+androidx.core.util.TypedValueCompat:
+    private static final float INCHES_PER_MM
+    private static final float INCHES_PER_PT
     private void <init>()
+    public static float deriveDimension(int,float,android.util.DisplayMetrics)
+    public static float dpToPx(float,android.util.DisplayMetrics)
+    public static float pxToDp(float,android.util.DisplayMetrics)
+    public static float pxToSp(float,android.util.DisplayMetrics)
+    public static float spToPx(float,android.util.DisplayMetrics)
 androidx.core.view.ActionProvider$SubUiVisibilityListener:
     public abstract void onSubUiVisibilityChanged(boolean)
 androidx.core.view.ActionProvider:
     private static final java.lang.String TAG
     public android.content.Context getContext()
+    public abstract android.view.View onCreateActionView()
     public void refreshVisibility()
     public void subUiVisibilityChanged(boolean)
-androidx.core.view.Api16Impl
 androidx.core.view.ContentInfoCompat$Api31Impl
 androidx.core.view.ContentInfoCompat$Builder:
     public void <init>(androidx.core.view.ContentInfoCompat)
@@ -7757,7 +7864,6 @@ androidx.core.view.ContentInfoCompat:
     static android.util.Pair partition(android.content.ClipData,androidx.core.util.Predicate)
     public static android.util.Pair partition(android.view.ContentInfo,java.util.function.Predicate)
     public android.util.Pair partition(androidx.core.util.Predicate)
-androidx.core.view.DisplayCompat$Api17Impl
 androidx.core.view.DisplayCompat$Api23Impl
 androidx.core.view.DisplayCompat$ModeCompat$Api23Impl
 androidx.core.view.DisplayCompat$ModeCompat
@@ -7777,12 +7883,7 @@ androidx.core.view.DragAndDropPermissionsCompat$Api24Impl
 androidx.core.view.DragAndDropPermissionsCompat
 androidx.core.view.DragStartHelper$OnDragStartListener
 androidx.core.view.DragStartHelper
-androidx.core.view.GestureDetectorCompat$GestureDetectorCompatImpl
-androidx.core.view.GestureDetectorCompat$GestureDetectorCompatImplBase$GestureHandler
-androidx.core.view.GestureDetectorCompat$GestureDetectorCompatImplBase
-androidx.core.view.GestureDetectorCompat$GestureDetectorCompatImplJellybeanMr2
 androidx.core.view.GestureDetectorCompat
-androidx.core.view.GravityCompat$Api17Impl
 androidx.core.view.GravityCompat:
     public static final int END
     public static final int RELATIVE_HORIZONTAL_GRAVITY_MASK
@@ -7805,27 +7906,22 @@ androidx.core.view.LayoutInflaterCompat:
     public static androidx.core.view.LayoutInflaterFactory getFactory(android.view.LayoutInflater)
     public static void setFactory(android.view.LayoutInflater,androidx.core.view.LayoutInflaterFactory)
 androidx.core.view.LayoutInflaterFactory
-androidx.core.view.MarginLayoutParamsCompat$Api17Impl:
-    private void <init>()
-androidx.core.view.MarginLayoutParamsCompat:
-    private void <init>()
-    public static int getLayoutDirection(android.view.ViewGroup$MarginLayoutParams)
-    public static boolean isMarginRelative(android.view.ViewGroup$MarginLayoutParams)
-    public static void resolveLayoutDirection(android.view.ViewGroup$MarginLayoutParams,int)
-    public static void setLayoutDirection(android.view.ViewGroup$MarginLayoutParams,int)
-    public static void setMarginEnd(android.view.ViewGroup$MarginLayoutParams,int)
-    public static void setMarginStart(android.view.ViewGroup$MarginLayoutParams,int)
+androidx.core.view.MarginLayoutParamsCompat
 androidx.core.view.MenuCompat$Api28Impl
 androidx.core.view.MenuCompat
-androidx.core.view.MenuHost
-androidx.core.view.MenuHostHelper$LifecycleContainer
+androidx.core.view.MenuHost:
+    public abstract void addMenuProvider(androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner)
+    public abstract void addMenuProvider(androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner,androidx.lifecycle.Lifecycle$State)
+    public abstract void invalidateMenu()
+androidx.core.view.MenuHostHelper$LifecycleContainer:
+    final androidx.lifecycle.Lifecycle mLifecycle
+    private androidx.lifecycle.LifecycleEventObserver mObserver
+    void <init>(androidx.lifecycle.Lifecycle,androidx.lifecycle.LifecycleEventObserver)
 androidx.core.view.MenuHostHelper:
-    public void addMenuProvider(androidx.core.view.MenuProvider)
     public void addMenuProvider(androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner)
     public void addMenuProvider(androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner,androidx.lifecycle.Lifecycle$State)
     private synthetic void lambda$addMenuProvider$0(androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner,androidx.lifecycle.Lifecycle$Event)
     private synthetic void lambda$addMenuProvider$1(androidx.lifecycle.Lifecycle$State,androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner,androidx.lifecycle.Lifecycle$Event)
-    public void removeMenuProvider(androidx.core.view.MenuProvider)
 androidx.core.view.MenuItemCompat$1
 androidx.core.view.MenuItemCompat$Api26Impl:
     private void <init>()
@@ -7946,25 +8042,29 @@ androidx.core.view.NestedScrollingParentHelper:
     public void onStopNestedScroll(android.view.View)
 androidx.core.view.PointerIconCompat$Api24Impl
 androidx.core.view.PointerIconCompat
-androidx.core.view.ScaleGestureDetectorCompat$Api19Impl
 androidx.core.view.ScaleGestureDetectorCompat
 androidx.core.view.ScrollingView
 androidx.core.view.SoftwareKeyboardControllerCompat$Impl20
 androidx.core.view.SoftwareKeyboardControllerCompat$Impl30
 androidx.core.view.SoftwareKeyboardControllerCompat$Impl
 androidx.core.view.SoftwareKeyboardControllerCompat
-androidx.core.view.VelocityTrackerCompat$Api34Impl
+androidx.core.view.VelocityTrackerCompat$Api34Impl:
+    private void <init>()
 androidx.core.view.VelocityTrackerCompat$VelocityTrackableMotionEventAxis
-androidx.core.view.VelocityTrackerCompat
-androidx.core.view.ViewCompat$Api15Impl:
+androidx.core.view.VelocityTrackerCompat:
     private void <init>()
-androidx.core.view.ViewCompat$Api16Impl:
-    private void <init>()
-androidx.core.view.ViewCompat$Api17Impl:
-    private void <init>()
-androidx.core.view.ViewCompat$Api18Impl
-androidx.core.view.ViewCompat$Api19Impl:
-    private void <init>()
+    public static void clear(android.view.VelocityTracker)
+    public static float getAxisVelocity(android.view.VelocityTracker,int,int)
+    public static float getXVelocity(android.view.VelocityTracker,int)
+    public static float getYVelocity(android.view.VelocityTracker,int)
+    public static boolean isAxisSupported(android.view.VelocityTracker,int)
+    public static void recycle(android.view.VelocityTracker)
+    private static void removeFallbackForTracker(android.view.VelocityTracker)
+androidx.core.view.VelocityTrackerFallback:
+    private static final long ASSUME_POINTER_STOPPED_MS
+    private static final int HISTORY_SIZE
+    private static final long RANGE_MS
+    void computeCurrentVelocity(int)
 androidx.core.view.ViewCompat$Api20Impl:
     private void <init>()
 androidx.core.view.ViewCompat$Api21Impl:
@@ -8059,6 +8159,7 @@ androidx.core.view.ViewCompat:
     public static void dispatchStartTemporaryDetach(android.view.View)
     public static void enableAccessibleClickableSpanSupport(android.view.View)
     public static int generateViewId()
+    public static int getAccessibilityLiveRegion(android.view.View)
     public static androidx.core.view.accessibility.AccessibilityNodeProviderCompat getAccessibilityNodeProvider(android.view.View)
     private static java.util.List getActionList(android.view.View)
     public static float getAlpha(android.view.View)
@@ -8101,6 +8202,7 @@ androidx.core.view.ViewCompat:
     public static boolean hasExplicitFocusable(android.view.View)
     public static boolean hasNestedScrollingParent(android.view.View)
     public static boolean hasNestedScrollingParent(android.view.View,int)
+    public static boolean hasOnClickListeners(android.view.View)
     public static boolean hasOverlappingRendering(android.view.View)
     public static boolean isFocusedByDefault(android.view.View)
     public static boolean isImportantForAccessibility(android.view.View)
@@ -8135,6 +8237,7 @@ androidx.core.view.ViewCompat:
     public static void setAlpha(android.view.View,float)
     public static varargs void setAutofillHints(android.view.View,java.lang.String[])
     public static void setAutofillId(android.view.View,androidx.core.view.autofill.AutofillIdCompat)
+    public static void setBackground(android.view.View,android.graphics.drawable.Drawable)
     public static void setChildrenDrawingOrderEnabled(android.view.ViewGroup,boolean)
     public static void setClipBounds(android.view.View,android.graphics.Rect)
     public static void setContentCaptureSession(android.view.View,androidx.core.view.contentcapture.ContentCaptureSessionCompat)
@@ -8182,18 +8285,17 @@ androidx.core.view.ViewConfigurationCompat$Api26Impl:
     private void <init>()
 androidx.core.view.ViewConfigurationCompat$Api28Impl:
     private void <init>()
-androidx.core.view.ViewConfigurationCompat$Api34Impl
+androidx.core.view.ViewConfigurationCompat$Api34Impl:
+    private void <init>()
 androidx.core.view.ViewConfigurationCompat:
+    private static final int NO_FLING_MAX_VELOCITY
+    private static final int NO_FLING_MIN_VELOCITY
+    private static final int RESOURCE_ID_NOT_SUPPORTED
+    private static final int RESOURCE_ID_SUPPORTED_BUT_NOT_FOUND
     private static final java.lang.String TAG
     private void <init>()
-    private static int getPreApi34MaximumFlingVelocityResId(android.content.res.Resources,int,int)
-    private static int getPreApi34MinimumFlingVelocityResId(android.content.res.Resources,int,int)
-    public static int getScaledMaximumFlingVelocity(android.content.Context,android.view.ViewConfiguration,int,int,int)
-    public static int getScaledMinimumFlingVelocity(android.content.Context,android.view.ViewConfiguration,int,int,int)
     public static int getScaledPagingTouchSlop(android.view.ViewConfiguration)
     public static boolean hasPermanentMenuKey(android.view.ViewConfiguration)
-    private static boolean isInputDeviceInfoValid(int,int,int)
-androidx.core.view.ViewGroupCompat$Api18Impl
 androidx.core.view.ViewGroupCompat$Api21Impl:
     private void <init>()
 androidx.core.view.ViewGroupCompat:
@@ -8260,7 +8362,6 @@ androidx.core.view.ViewKt:
     public static synthetic void updatePadding$default(android.view.View,int,int,int,int,int,java.lang.Object)
     public static final void updatePaddingRelative(android.view.View,int,int,int,int)
     public static synthetic void updatePaddingRelative$default(android.view.View,int,int,int,int,int,java.lang.Object)
-androidx.core.view.ViewParentCompat$Api19Impl
 androidx.core.view.ViewParentCompat$Api21Impl:
     private void <init>()
 androidx.core.view.ViewParentCompat:
@@ -8276,13 +8377,8 @@ androidx.core.view.ViewParentCompat:
     public static boolean onStartNestedScroll(android.view.ViewParent,android.view.View,android.view.View,int)
     public static void onStopNestedScroll(android.view.ViewParent,android.view.View)
     public static boolean requestSendAccessibilityEvent(android.view.ViewParent,android.view.View,android.view.accessibility.AccessibilityEvent)
-androidx.core.view.ViewPropertyAnimatorCompat$Api16Impl
-androidx.core.view.ViewPropertyAnimatorCompat$Api18Impl
-androidx.core.view.ViewPropertyAnimatorCompat$Api19Impl:
-    private void <init>()
 androidx.core.view.ViewPropertyAnimatorCompat$Api21Impl
 androidx.core.view.ViewPropertyAnimatorCompat:
-    static final int LISTENER_TAG_ID
     public androidx.core.view.ViewPropertyAnimatorCompat alphaBy(float)
     public android.view.animation.Interpolator getInterpolator()
     public long getStartDelay()
@@ -8420,9 +8516,6 @@ androidx.core.view.WindowInsetsControllerCompat$OnControllableInsetsChangedListe
 androidx.core.view.WindowInsetsControllerCompat
 androidx.core.view.accessibility.AccessibilityClickableSpanCompat:
     public static final java.lang.String SPAN_ID
-androidx.core.view.accessibility.AccessibilityEventCompat$Api16Impl
-androidx.core.view.accessibility.AccessibilityEventCompat$Api19Impl:
-    private void <init>()
 androidx.core.view.accessibility.AccessibilityEventCompat$Api34Impl
 androidx.core.view.accessibility.AccessibilityEventCompat$ContentChangeType
 androidx.core.view.accessibility.AccessibilityEventCompat:
@@ -8474,7 +8567,6 @@ androidx.core.view.accessibility.AccessibilityEventCompat:
 androidx.core.view.accessibility.AccessibilityManagerCompat$AccessibilityStateChangeListener
 androidx.core.view.accessibility.AccessibilityManagerCompat$AccessibilityStateChangeListenerCompat
 androidx.core.view.accessibility.AccessibilityManagerCompat$AccessibilityStateChangeListenerWrapper
-androidx.core.view.accessibility.AccessibilityManagerCompat$Api19Impl
 androidx.core.view.accessibility.AccessibilityManagerCompat$Api34Impl
 androidx.core.view.accessibility.AccessibilityManagerCompat$TouchExplorationStateChangeListener
 androidx.core.view.accessibility.AccessibilityManagerCompat$TouchExplorationStateChangeListenerWrapper
@@ -8483,8 +8575,6 @@ androidx.core.view.accessibility.AccessibilityNodeInfoCompat$AccessibilityAction
     private static final java.lang.String TAG
     public void <init>(int,java.lang.CharSequence,androidx.core.view.accessibility.AccessibilityViewCommand)
     public androidx.core.view.accessibility.AccessibilityNodeInfoCompat$AccessibilityActionCompat createReplacementAction(java.lang.CharSequence,androidx.core.view.accessibility.AccessibilityViewCommand)
-androidx.core.view.accessibility.AccessibilityNodeInfoCompat$Api19Impl:
-    private void <init>()
 androidx.core.view.accessibility.AccessibilityNodeInfoCompat$Api21Impl
 androidx.core.view.accessibility.AccessibilityNodeInfoCompat$Api30Impl:
     private void <init>()
@@ -8707,7 +8797,6 @@ androidx.core.view.accessibility.AccessibilityNodeInfoCompat:
     public void setUniqueId(java.lang.String)
     public void setViewIdResourceName(java.lang.String)
     public void setVisibleToUser(boolean)
-androidx.core.view.accessibility.AccessibilityNodeProviderCompat$AccessibilityNodeProviderApi16
 androidx.core.view.accessibility.AccessibilityNodeProviderCompat$AccessibilityNodeProviderApi19
 androidx.core.view.accessibility.AccessibilityNodeProviderCompat$AccessibilityNodeProviderApi26
 androidx.core.view.accessibility.AccessibilityNodeProviderCompat:
@@ -8718,9 +8807,6 @@ androidx.core.view.accessibility.AccessibilityNodeProviderCompat:
     public java.util.List findAccessibilityNodeInfosByText(java.lang.String,int)
     public androidx.core.view.accessibility.AccessibilityNodeInfoCompat findFocus(int)
     public boolean performAction(int,int,android.os.Bundle)
-androidx.core.view.accessibility.AccessibilityRecordCompat$Api15Impl:
-    private void <init>()
-androidx.core.view.accessibility.AccessibilityRecordCompat$Api16Impl
 androidx.core.view.accessibility.AccessibilityRecordCompat:
     private final android.view.accessibility.AccessibilityRecord mRecord
     public void <init>(java.lang.Object)
@@ -8814,11 +8900,25 @@ androidx.core.view.accessibility.AccessibilityWindowInfoCompat
 androidx.core.view.animation.PathInterpolatorApi14
 androidx.core.view.animation.PathInterpolatorCompat$Api21Impl
 androidx.core.view.animation.PathInterpolatorCompat
-androidx.core.view.autofill.AutofillIdCompat
+androidx.core.view.autofill.AutofillIdCompat:
+    private final java.lang.Object mWrappedObj
+    private void <init>(android.view.autofill.AutofillId)
+    public static androidx.core.view.autofill.AutofillIdCompat toAutofillIdCompat(android.view.autofill.AutofillId)
 androidx.core.view.contentcapture.ContentCaptureSessionCompat$Api23Impl
 androidx.core.view.contentcapture.ContentCaptureSessionCompat$Api29Impl
 androidx.core.view.contentcapture.ContentCaptureSessionCompat$Api34Impl
-androidx.core.view.contentcapture.ContentCaptureSessionCompat
+androidx.core.view.contentcapture.ContentCaptureSessionCompat:
+    private static final java.lang.String KEY_VIEW_TREE_APPEARED
+    private static final java.lang.String KEY_VIEW_TREE_APPEARING
+    private final android.view.View mView
+    private final java.lang.Object mWrappedObj
+    private void <init>(android.view.contentcapture.ContentCaptureSession,android.view.View)
+    public android.view.autofill.AutofillId newAutofillId(long)
+    public androidx.core.view.ViewStructureCompat newVirtualViewStructure(android.view.autofill.AutofillId,long)
+    public void notifyViewTextChanged(android.view.autofill.AutofillId,java.lang.CharSequence)
+    public void notifyViewsAppeared(java.util.List)
+    public void notifyViewsDisappeared(long[])
+    public static androidx.core.view.contentcapture.ContentCaptureSessionCompat toContentCaptureSessionCompat(android.view.contentcapture.ContentCaptureSession,android.view.View)
 androidx.core.view.inputmethod.EditorInfoCompat$Api30Impl:
     private void <init>()
     static java.lang.CharSequence getInitialSelectedText(android.view.inputmethod.EditorInfo,int)
@@ -8834,11 +8934,14 @@ androidx.core.view.inputmethod.EditorInfoCompat:
     public static final int IME_FLAG_NO_PERSONALIZED_LEARNING
     static final int MAX_INITIAL_SELECTION_LENGTH
     static final int MEMORY_EFFICIENT_TEXT_LENGTH
+    private static final java.lang.String STYLUS_HANDWRITING_ENABLED_KEY
     public void <init>()
     public static java.lang.CharSequence getInitialSelectedText(android.view.inputmethod.EditorInfo,int)
     public static java.lang.CharSequence getInitialTextAfterCursor(android.view.inputmethod.EditorInfo,int,int)
     public static java.lang.CharSequence getInitialTextBeforeCursor(android.view.inputmethod.EditorInfo,int,int)
     static int getProtocol(android.view.inputmethod.EditorInfo)
+    public static boolean isStylusHandwritingEnabled(android.view.inputmethod.EditorInfo)
+    public static void setStylusHandwritingEnabled(android.view.inputmethod.EditorInfo,boolean)
 androidx.core.view.inputmethod.InputConnectionCompat$Api25Impl
 androidx.core.view.inputmethod.InputConnectionCompat:
     private static final java.lang.String COMMIT_CONTENT_ACTION
@@ -8889,16 +8992,11 @@ androidx.core.widget.AutoScrollHelper:
     public boolean isExclusive()
     public androidx.core.widget.AutoScrollHelper setExclusive(boolean)
 androidx.core.widget.AutoSizeableTextView
-androidx.core.widget.CheckedTextViewCompat$Api14Impl:
-    private void <init>()
-androidx.core.widget.CheckedTextViewCompat$Api16Impl:
-    private void <init>()
 androidx.core.widget.CheckedTextViewCompat$Api21Impl:
     private void <init>()
     static android.content.res.ColorStateList getCheckMarkTintList(android.widget.CheckedTextView)
     static android.graphics.PorterDuff$Mode getCheckMarkTintMode(android.widget.CheckedTextView)
 androidx.core.widget.CheckedTextViewCompat:
-    private static final java.lang.String TAG
     private void <init>()
     public static android.content.res.ColorStateList getCheckMarkTintList(android.widget.CheckedTextView)
     public static android.graphics.PorterDuff$Mode getCheckMarkTintMode(android.widget.CheckedTextView)
@@ -8931,13 +9029,8 @@ androidx.core.widget.ImageViewCompat$Api21Impl:
     private void <init>()
 androidx.core.widget.ImageViewCompat:
     private void <init>()
-androidx.core.widget.ListPopupWindowCompat$Api19Impl
 androidx.core.widget.ListPopupWindowCompat
-androidx.core.widget.ListViewCompat$Api19Impl:
-    private void <init>()
-androidx.core.widget.ListViewCompat:
-    private void <init>()
-    public static boolean canScrollList(android.widget.ListView,int)
+androidx.core.widget.ListViewCompat
 androidx.core.widget.NestedScrollView$Api21Impl:
     private void <init>()
 androidx.core.widget.NestedScrollView:
@@ -8956,10 +9049,7 @@ androidx.core.widget.NestedScrollView:
     public final void smoothScrollBy(int,int,int)
     public final void smoothScrollTo(int,int)
     public final void smoothScrollTo(int,int,int)
-androidx.core.widget.PopupMenuCompat$Api19Impl
 androidx.core.widget.PopupMenuCompat
-androidx.core.widget.PopupWindowCompat$Api19Impl:
-    private void <init>()
 androidx.core.widget.PopupWindowCompat$Api23Impl:
     private void <init>()
 androidx.core.widget.PopupWindowCompat:
@@ -8970,10 +9060,6 @@ androidx.core.widget.PopupWindowCompat:
     public static boolean getOverlapAnchor(android.widget.PopupWindow)
     public static int getWindowLayoutType(android.widget.PopupWindow)
 androidx.core.widget.ScrollerCompat
-androidx.core.widget.TextViewCompat$Api16Impl:
-    private void <init>()
-androidx.core.widget.TextViewCompat$Api17Impl:
-    private void <init>()
 androidx.core.widget.TextViewCompat$Api23Impl:
     private void <init>()
 androidx.core.widget.TextViewCompat$Api24Impl:
@@ -8981,23 +9067,14 @@ androidx.core.widget.TextViewCompat$Api24Impl:
 androidx.core.widget.TextViewCompat$Api26Impl
 androidx.core.widget.TextViewCompat$Api28Impl:
     private void <init>()
-androidx.core.widget.TextViewCompat$Api34Impl
+androidx.core.widget.TextViewCompat$Api34Impl:
+    private void <init>()
 androidx.core.widget.TextViewCompat$AutoSizeTextType
 androidx.core.widget.TextViewCompat$OreoCallback:
     private static final int MENU_ITEM_ORDER_PROCESS_TEXT_INTENT_ACTIONS_START
 androidx.core.widget.TextViewCompat:
     public static final int AUTO_SIZE_TEXT_TYPE_NONE
     public static final int AUTO_SIZE_TEXT_TYPE_UNIFORM
-    private static final int LINES
-    private static final java.lang.String LOG_TAG
-    private static java.lang.reflect.Field sMaxModeField
-    private static boolean sMaxModeFieldFetched
-    private static java.lang.reflect.Field sMaximumField
-    private static boolean sMaximumFieldFetched
-    private static java.lang.reflect.Field sMinModeField
-    private static boolean sMinModeFieldFetched
-    private static java.lang.reflect.Field sMinimumField
-    private static boolean sMinimumFieldFetched
     private void <init>()
     public static int getAutoSizeMaxTextSize(android.widget.TextView)
     public static int getAutoSizeMinTextSize(android.widget.TextView)
@@ -9009,8 +9086,6 @@ androidx.core.widget.TextViewCompat:
     public static android.graphics.drawable.Drawable[] getCompoundDrawablesRelative(android.widget.TextView)
     public static int getMaxLines(android.widget.TextView)
     public static int getMinLines(android.widget.TextView)
-    private static java.lang.reflect.Field retrieveField(java.lang.String)
-    private static int retrieveIntFromField(java.lang.reflect.Field,android.widget.TextView)
     public static void setAutoSizeTextTypeUniformWithConfiguration(android.widget.TextView,int,int,int,int)
     public static void setAutoSizeTextTypeUniformWithPresetSizes(android.widget.TextView,int[],int)
     public static void setAutoSizeTextTypeWithDefaults(android.widget.TextView,int)
@@ -9018,7 +9093,6 @@ androidx.core.widget.TextViewCompat:
     public static void setCompoundDrawablesRelativeWithIntrinsicBounds(android.widget.TextView,int,int,int,int)
     public static void setCompoundDrawablesRelativeWithIntrinsicBounds(android.widget.TextView,android.graphics.drawable.Drawable,android.graphics.drawable.Drawable,android.graphics.drawable.Drawable,android.graphics.drawable.Drawable)
     public static void setCustomSelectionActionModeCallback(android.widget.TextView,android.view.ActionMode$Callback)
-    public static void setLineHeight(android.widget.TextView,int,float)
     public static void setTextAppearance(android.widget.TextView,int)
 androidx.core.widget.TextViewKt$addTextChangedListener$1
 androidx.core.widget.TextViewKt$addTextChangedListener$2
@@ -9028,10 +9102,6 @@ androidx.core.widget.TextViewKt$doAfterTextChanged$$inlined$addTextChangedListen
 androidx.core.widget.TextViewKt$doBeforeTextChanged$$inlined$addTextChangedListener$default$1
 androidx.core.widget.TextViewKt$doOnTextChanged$$inlined$addTextChangedListener$default$1
 androidx.core.widget.TextViewKt
-androidx.core.widget.TextViewOnReceiveContentListener$Api16Impl:
-    private void <init>()
-androidx.core.widget.TextViewOnReceiveContentListener$ApiImpl:
-    private void <init>()
 androidx.core.widget.TextViewOnReceiveContentListener:
     private static final java.lang.String LOG_TAG
 androidx.core.widget.TintableCheckedTextView:
@@ -9044,22 +9114,12 @@ androidx.core.widget.TintableCompoundDrawablesView:
     public abstract android.content.res.ColorStateList getSupportCompoundDrawablesTintList()
     public abstract android.graphics.PorterDuff$Mode getSupportCompoundDrawablesTintMode()
 androidx.cursoradapter.R
-androidx.cursoradapter.widget.CursorAdapter:
-    public static final int FLAG_AUTO_REQUERY
-    public static final int FLAG_REGISTER_CONTENT_OBSERVER
-    protected android.widget.FilterQueryProvider mFilterQueryProvider
-    public void <init>(android.content.Context,android.database.Cursor)
-    public void <init>(android.content.Context,android.database.Cursor,int)
-    public android.widget.FilterQueryProvider getFilterQueryProvider()
-    public boolean hasStableIds()
-    protected void init(android.content.Context,android.database.Cursor,boolean)
-    public android.database.Cursor runQueryOnBackgroundThread(java.lang.CharSequence)
-    public void setFilterQueryProvider(android.widget.FilterQueryProvider)
-androidx.cursoradapter.widget.ResourceCursorAdapter:
-    public void <init>(android.content.Context,int,android.database.Cursor)
-    public void <init>(android.content.Context,int,android.database.Cursor,int)
-    public void setDropDownViewResource(int)
-    public void setViewResource(int)
+androidx.cursoradapter.widget.CursorAdapter$ChangeObserver
+androidx.cursoradapter.widget.CursorAdapter$MyDataSetObserver
+androidx.cursoradapter.widget.CursorAdapter
+androidx.cursoradapter.widget.CursorFilter$CursorFilterClient
+androidx.cursoradapter.widget.CursorFilter
+androidx.cursoradapter.widget.ResourceCursorAdapter
 androidx.cursoradapter.widget.SimpleCursorAdapter$CursorToStringConverter
 androidx.cursoradapter.widget.SimpleCursorAdapter$ViewBinder
 androidx.cursoradapter.widget.SimpleCursorAdapter
@@ -9139,12 +9199,16 @@ androidx.emoji2.text.DefaultGlyphChecker:
 androidx.emoji2.text.EmojiCompat$CodepointSequenceMatchResult
 androidx.emoji2.text.EmojiCompat$CompatInternal19:
     java.lang.String getAssetSignature()
+    int getEmojiEnd(java.lang.CharSequence,int)
     public int getEmojiMatch(java.lang.CharSequence,int)
+    int getEmojiStart(java.lang.CharSequence,int)
     boolean hasEmojiGlyph(java.lang.CharSequence)
     boolean hasEmojiGlyph(java.lang.CharSequence,int)
 androidx.emoji2.text.EmojiCompat$CompatInternal:
     java.lang.String getAssetSignature()
+    int getEmojiEnd(java.lang.CharSequence,int)
     public int getEmojiMatch(java.lang.CharSequence,int)
+    int getEmojiStart(java.lang.CharSequence,int)
     boolean hasEmojiGlyph(java.lang.CharSequence)
     boolean hasEmojiGlyph(java.lang.CharSequence,int)
 androidx.emoji2.text.EmojiCompat$Config:
@@ -9153,6 +9217,7 @@ androidx.emoji2.text.EmojiCompat$Config:
     public androidx.emoji2.text.EmojiCompat$Config setEmojiSpanIndicatorEnabled(boolean)
     public androidx.emoji2.text.EmojiCompat$Config setGlyphChecker(androidx.emoji2.text.EmojiCompat$GlyphChecker)
     public androidx.emoji2.text.EmojiCompat$Config setReplaceAll(boolean)
+    public androidx.emoji2.text.EmojiCompat$Config setSpanFactory(androidx.emoji2.text.EmojiCompat$SpanFactory)
     public androidx.emoji2.text.EmojiCompat$Config setUseEmojiAsDefaultStyle(boolean)
     public androidx.emoji2.text.EmojiCompat$Config setUseEmojiAsDefaultStyle(boolean,java.util.List)
     public androidx.emoji2.text.EmojiCompat$Config unregisterInitCallback(androidx.emoji2.text.EmojiCompat$InitCallback)
@@ -9177,7 +9242,9 @@ androidx.emoji2.text.EmojiCompat:
     public static final int REPLACE_STRATEGY_NON_EXISTENT
     private static volatile boolean sHasDoneDefaultConfigLookup
     public java.lang.String getAssetSignature()
+    public int getEmojiEnd(java.lang.CharSequence,int)
     public int getEmojiMatch(java.lang.CharSequence,int)
+    public int getEmojiStart(java.lang.CharSequence,int)
     public boolean hasEmojiGlyph(java.lang.CharSequence)
     public boolean hasEmojiGlyph(java.lang.CharSequence,int)
     public static androidx.emoji2.text.EmojiCompat init(android.content.Context)
@@ -9189,17 +9256,16 @@ androidx.emoji2.text.EmojiCompatInitializer:
     private static final long STARTUP_THREAD_CREATION_DELAY_MS
     private static final java.lang.String S_INITIALIZER_THREAD_NAME
 androidx.emoji2.text.EmojiDefaults
-androidx.emoji2.text.EmojiMetadata$HasGlyph
-androidx.emoji2.text.EmojiMetadata:
-    public static final int HAS_GLYPH_ABSENT
-    public static final int HAS_GLYPH_EXISTS
-    public static final int HAS_GLYPH_UNKNOWN
-    public short getCompatAdded()
-    public android.graphics.Typeface getTypeface()
-    public void resetHasGlyphCache()
+androidx.emoji2.text.EmojiExclusions$EmojiExclusions_Api34:
+    private void <init>()
+androidx.emoji2.text.EmojiExclusions$EmojiExclusions_Reflections:
+    private void <init>()
+androidx.emoji2.text.EmojiExclusions:
+    private void <init>()
 androidx.emoji2.text.EmojiProcessor$CodepointIndexFinder:
     private static final int INVALID_INDEX
     private void <init>()
+androidx.emoji2.text.EmojiProcessor$EmojiProcessLookupCallback
 androidx.emoji2.text.EmojiProcessor$ProcessorSm:
     private static final int STATE_DEFAULT
     private static final int STATE_WALKING
@@ -9207,8 +9273,11 @@ androidx.emoji2.text.EmojiProcessor:
     private static final int ACTION_ADVANCE_BOTH
     private static final int ACTION_ADVANCE_END
     private static final int ACTION_FLUSH
+    private static final int MAX_LOOK_AROUND_CHARACTER
+    int getEmojiEnd(java.lang.CharSequence,int)
     int getEmojiMatch(java.lang.CharSequence)
     int getEmojiMatch(java.lang.CharSequence,int)
+    int getEmojiStart(java.lang.CharSequence,int)
 androidx.emoji2.text.EmojiSpan:
     public final int getHeight()
     public final int getId()
@@ -9244,6 +9313,14 @@ androidx.emoji2.text.MetadataRepo:
     public static androidx.emoji2.text.MetadataRepo create(android.graphics.Typeface,java.io.InputStream)
 androidx.emoji2.text.SpannableBuilder:
     void <init>(java.lang.Class)
+androidx.emoji2.text.TypefaceEmojiRasterizer$HasGlyph
+androidx.emoji2.text.TypefaceEmojiRasterizer:
+    static final int HAS_GLYPH_ABSENT
+    static final int HAS_GLYPH_EXISTS
+    static final int HAS_GLYPH_UNKNOWN
+    public short getCompatAdded()
+    public android.graphics.Typeface getTypeface()
+    public void resetHasGlyphCache()
 androidx.emoji2.text.UnprecomputeTextOnModificationSpannable$CharSequenceHelper_API24:
     private void <init>()
 androidx.emoji2.text.UnprecomputeTextOnModificationSpannable:
@@ -9873,128 +9950,15 @@ androidx.exifinterface.media.ExifInterfaceUtils:
 androidx.fragment.R$anim
 androidx.fragment.R$animator:
     private void <init>()
-androidx.fragment.R$attr
-androidx.fragment.R$color
-androidx.fragment.R$dimen
-androidx.fragment.R$drawable
 androidx.fragment.R$id:
-    public static int accessibility_action_clickable_span
-    public static int accessibility_custom_action_0
-    public static int accessibility_custom_action_1
-    public static int accessibility_custom_action_10
-    public static int accessibility_custom_action_11
-    public static int accessibility_custom_action_12
-    public static int accessibility_custom_action_13
-    public static int accessibility_custom_action_14
-    public static int accessibility_custom_action_15
-    public static int accessibility_custom_action_16
-    public static int accessibility_custom_action_17
-    public static int accessibility_custom_action_18
-    public static int accessibility_custom_action_19
-    public static int accessibility_custom_action_2
-    public static int accessibility_custom_action_20
-    public static int accessibility_custom_action_21
-    public static int accessibility_custom_action_22
-    public static int accessibility_custom_action_23
-    public static int accessibility_custom_action_24
-    public static int accessibility_custom_action_25
-    public static int accessibility_custom_action_26
-    public static int accessibility_custom_action_27
-    public static int accessibility_custom_action_28
-    public static int accessibility_custom_action_29
-    public static int accessibility_custom_action_3
-    public static int accessibility_custom_action_30
-    public static int accessibility_custom_action_31
-    public static int accessibility_custom_action_4
-    public static int accessibility_custom_action_5
-    public static int accessibility_custom_action_6
-    public static int accessibility_custom_action_7
-    public static int accessibility_custom_action_8
-    public static int accessibility_custom_action_9
-    public static int action_container
-    public static int action_divider
-    public static int action_image
-    public static int action_text
-    public static int actions
-    public static int async
-    public static int blocking
-    public static int chronometer
-    public static int dialog_button
-    public static int forever
-    public static int icon
-    public static int icon_group
-    public static int info
-    public static int italic
-    public static int line1
-    public static int line3
-    public static int normal
-    public static int notification_background
-    public static int notification_main_column
-    public static int notification_main_column_container
-    public static int right_icon
-    public static int right_side
-    public static int tag_accessibility_actions
-    public static int tag_accessibility_clickable_spans
-    public static int tag_accessibility_heading
-    public static int tag_accessibility_pane_title
-    public static int tag_screen_reader_focusable
-    public static int tag_transition_group
-    public static int tag_unhandled_key_event_manager
-    public static int tag_unhandled_key_listeners
-    public static int text
-    public static int text2
-    public static int time
-    public static int title
-    public static int view_tree_lifecycle_owner
-    public static int view_tree_saved_state_registry_owner
-    public static int view_tree_view_model_store_owner
     private void <init>()
-androidx.fragment.R$integer
-androidx.fragment.R$layout
-androidx.fragment.R$string
-androidx.fragment.R$style
 androidx.fragment.R$styleable:
-    public static int ColorStateListItem_alpha
-    public static int ColorStateListItem_android_alpha
-    public static int ColorStateListItem_android_color
-    public static int ColorStateListItem_android_lStar
-    public static int ColorStateListItem_lStar
-    public static int FontFamilyFont_android_font
-    public static int FontFamilyFont_android_fontStyle
-    public static int FontFamilyFont_android_fontVariationSettings
-    public static int FontFamilyFont_android_fontWeight
-    public static int FontFamilyFont_android_ttcIndex
-    public static int FontFamilyFont_font
-    public static int FontFamilyFont_fontStyle
-    public static int FontFamilyFont_fontVariationSettings
-    public static int FontFamilyFont_fontWeight
-    public static int FontFamilyFont_ttcIndex
-    public static int FontFamily_fontProviderAuthority
-    public static int FontFamily_fontProviderCerts
-    public static int FontFamily_fontProviderFetchStrategy
-    public static int FontFamily_fontProviderFetchTimeout
-    public static int FontFamily_fontProviderPackage
-    public static int FontFamily_fontProviderQuery
-    public static int FontFamily_fontProviderSystemFontFamily
-    public static int GradientColorItem_android_color
-    public static int GradientColorItem_android_offset
-    public static int GradientColor_android_centerColor
-    public static int GradientColor_android_centerX
-    public static int GradientColor_android_centerY
-    public static int GradientColor_android_endColor
-    public static int GradientColor_android_endX
-    public static int GradientColor_android_endY
-    public static int GradientColor_android_gradientRadius
-    public static int GradientColor_android_startColor
-    public static int GradientColor_android_startX
-    public static int GradientColor_android_startY
-    public static int GradientColor_android_tileMode
-    public static int GradientColor_android_type
     private void <init>()
 androidx.fragment.R
 androidx.fragment.app.BackStackRecord:
     private static final java.lang.String TAG
-    public void commitNow()
+    void <init>(androidx.fragment.app.BackStackRecord)
+    void collapseOps()
     public androidx.fragment.app.FragmentTransaction detach(androidx.fragment.app.Fragment)
     public java.lang.CharSequence getBreadCrumbShortTitle()
     public int getBreadCrumbShortTitleRes()
@@ -10006,8 +9970,12 @@ androidx.fragment.app.BackStackRecord:
     public androidx.fragment.app.FragmentTransaction setMaxLifecycle(androidx.fragment.app.Fragment,androidx.lifecycle.Lifecycle$State)
     public androidx.fragment.app.FragmentTransaction setPrimaryNavigationFragment(androidx.fragment.app.Fragment)
     public androidx.fragment.app.FragmentTransaction show(androidx.fragment.app.Fragment)
-androidx.fragment.app.BackStackState:
+androidx.fragment.app.BackStackRecordState:
     private static final java.lang.String TAG
+    public androidx.fragment.app.BackStackRecord instantiate(androidx.fragment.app.FragmentManager,java.util.Map)
+androidx.fragment.app.BackStackState:
+    void <init>(java.util.List,java.util.List)
+    java.util.List instantiate(androidx.fragment.app.FragmentManager,java.util.Map)
 androidx.fragment.app.DialogFragment:
     private static final java.lang.String SAVED_BACK_STACK_ID
     private static final java.lang.String SAVED_CANCELABLE
@@ -10023,6 +9991,7 @@ androidx.fragment.app.DialogFragment:
     public void <init>(int)
     public void dismiss()
     public void dismissAllowingStateLoss()
+    public void dismissNow()
     public android.app.Dialog getDialog()
     public boolean getShowsDialog()
     public boolean isCancelable()
@@ -10031,13 +10000,12 @@ androidx.fragment.app.DialogFragment:
     public void setStyle(int,int)
     public int show(androidx.fragment.app.FragmentTransaction,java.lang.String)
     public void showNow(androidx.fragment.app.FragmentManager,java.lang.String)
-androidx.fragment.app.Fragment$6
+androidx.fragment.app.Fragment$10
 androidx.fragment.app.Fragment$7
 androidx.fragment.app.Fragment$8
 androidx.fragment.app.Fragment$9
-androidx.fragment.app.Fragment$OnPreAttachedListener:
+androidx.fragment.app.Fragment$Api19Impl:
     private void <init>()
-    synthetic void <init>(androidx.fragment.app.Fragment$1)
 androidx.fragment.app.Fragment$SavedState$1
 androidx.fragment.app.Fragment$SavedState
 androidx.fragment.app.Fragment:
@@ -10052,7 +10020,6 @@ androidx.fragment.app.Fragment:
     static final int VIEW_CREATED
     public void <init>(int)
     java.lang.String generateActivityResultKey()
-    public final android.os.Bundle getArguments()
     public androidx.lifecycle.ViewModelProvider$Factory getDefaultViewModelProviderFactory()
     public final androidx.fragment.app.FragmentManager getFragmentManager()
     public final int getId()
@@ -10062,15 +10029,14 @@ androidx.fragment.app.Fragment:
     public final java.lang.String getString(int)
     public final varargs java.lang.String getString(int,java.lang.Object[])
     public final java.lang.String getTag()
+    public final androidx.fragment.app.Fragment getTargetFragment()
     public final int getTargetRequestCode()
     public final java.lang.CharSequence getText(int)
     public boolean getUserVisibleHint()
     public androidx.lifecycle.LifecycleOwner getViewLifecycleOwner()
     public final boolean hasOptionsMenu()
     public static androidx.fragment.app.Fragment instantiate(android.content.Context,java.lang.String)
-    public final boolean isAdded()
     public final boolean isDetached()
-    public final boolean isHidden()
     public final boolean isInLayout()
     public final boolean isResumed()
     public final boolean isVisible()
@@ -10080,7 +10046,6 @@ androidx.fragment.app.Fragment:
     public final androidx.activity.result.ActivityResultLauncher registerForActivityResult(androidx.activity.result.contract.ActivityResultContract,androidx.activity.result.ActivityResultCallback)
     public final androidx.activity.result.ActivityResultLauncher registerForActivityResult(androidx.activity.result.contract.ActivityResultContract,androidx.activity.result.ActivityResultRegistry,androidx.activity.result.ActivityResultCallback)
     public void registerForContextMenu(android.view.View)
-    private void registerOnPreAttachListener(androidx.fragment.app.Fragment$OnPreAttachedListener)
     public final void requestPermissions(java.lang.String[],int)
     public final android.os.Bundle requireArguments()
     public final androidx.fragment.app.FragmentManager requireFragmentManager()
@@ -10108,12 +10073,14 @@ androidx.fragment.app.Fragment:
     public void startIntentSenderForResult(android.content.IntentSender,int,android.content.Intent,int,int,int,android.os.Bundle)
     public void unregisterForContextMenu(android.view.View)
 androidx.fragment.app.FragmentActivity$HostCallbacks:
-    public void onDump(java.lang.String,java.io.FileDescriptor,java.io.PrintWriter,java.lang.String[])
+    public void addMenuProvider(androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner)
+    public void addMenuProvider(androidx.core.view.MenuProvider,androidx.lifecycle.LifecycleOwner,androidx.lifecycle.Lifecycle$State)
     public int onGetWindowAnimations()
     public boolean onHasWindowAnimations()
+    public boolean onShouldSaveFragmentState(androidx.fragment.app.Fragment)
     public boolean onShouldShowRequestPermissionRationale(java.lang.String)
 androidx.fragment.app.FragmentActivity:
-    static final java.lang.String FRAGMENTS_TAG
+    static final java.lang.String LIFECYCLE_TAG
     public void <init>(int)
     public androidx.loader.app.LoaderManager getSupportLoaderManager()
     public void setEnterSharedElementCallback(androidx.core.app.SharedElementCallback)
@@ -10122,6 +10089,7 @@ androidx.fragment.app.FragmentActivity:
     public void startActivityFromFragment(androidx.fragment.app.Fragment,android.content.Intent,int,android.os.Bundle)
     public void startIntentSenderFromFragment(androidx.fragment.app.Fragment,android.content.IntentSender,int,android.content.Intent,int,int,int,android.os.Bundle)
     public void supportFinishAfterTransition()
+    public void supportInvalidateOptionsMenu()
     public void supportPostponeEnterTransition()
     public void supportStartPostponedEnterTransition()
 androidx.fragment.app.FragmentAnim:
@@ -10130,8 +10098,17 @@ androidx.fragment.app.FragmentContainerView:
     public void <init>(android.content.Context)
     public void <init>(android.content.Context,android.util.AttributeSet)
     public void <init>(android.content.Context,android.util.AttributeSet,int)
+    public synthetic void <init>(android.content.Context,android.util.AttributeSet,int,int,kotlin.jvm.internal.DefaultConstructorMarker)
 androidx.fragment.app.FragmentController:
+    public void dispatchConfigurationChanged(android.content.res.Configuration)
+    public boolean dispatchCreateOptionsMenu(android.view.Menu,android.view.MenuInflater)
     public void dispatchDestroyView()
+    public void dispatchLowMemory()
+    public void dispatchMultiWindowModeChanged(boolean)
+    public boolean dispatchOptionsItemSelected(android.view.MenuItem)
+    public void dispatchOptionsMenuClosed(android.view.Menu)
+    public void dispatchPictureInPictureModeChanged(boolean)
+    public boolean dispatchPrepareOptionsMenu(android.view.Menu)
     public void dispatchReallyStop()
     public void doLoaderDestroy()
     public void doLoaderRetain()
@@ -10146,17 +10123,19 @@ androidx.fragment.app.FragmentController:
     public void restoreAllState(android.os.Parcelable,androidx.fragment.app.FragmentManagerNonConfig)
     public void restoreAllState(android.os.Parcelable,java.util.List)
     public void restoreLoaderNonConfig(androidx.collection.SimpleArrayMap)
+    public void restoreSaveState(android.os.Parcelable)
     public androidx.collection.SimpleArrayMap retainLoaderNonConfig()
     public androidx.fragment.app.FragmentManagerNonConfig retainNestedNonConfig()
     public java.util.List retainNonConfig()
+    public android.os.Parcelable saveAllState()
 androidx.fragment.app.FragmentHostCallback:
     public void <init>(android.content.Context,android.os.Handler,int)
-    public void onDump(java.lang.String,java.io.FileDescriptor,java.io.PrintWriter,java.lang.String[])
     public android.view.View onFindViewById(int)
     public int onGetWindowAnimations()
     public boolean onHasView()
     public boolean onHasWindowAnimations()
     public void onRequestPermissionsFromFragment(androidx.fragment.app.Fragment,java.lang.String[],int)
+    public boolean onShouldSaveFragmentState(androidx.fragment.app.Fragment)
     public boolean onShouldShowRequestPermissionRationale(java.lang.String)
     public void onStartActivityFromFragment(androidx.fragment.app.Fragment,android.content.Intent,int)
     public void onStartIntentSenderFromFragment(androidx.fragment.app.Fragment,android.content.IntentSender,int,android.content.Intent,int,int,int,android.os.Bundle)
@@ -10170,32 +10149,40 @@ androidx.fragment.app.FragmentLifecycleCallbacksDispatcher:
 androidx.fragment.app.FragmentManager$6:
     void <init>(androidx.fragment.app.FragmentManager,java.lang.String,androidx.fragment.app.FragmentResultListener,androidx.lifecycle.Lifecycle)
 androidx.fragment.app.FragmentManager$BackStackEntry
+androidx.fragment.app.FragmentManager$ClearBackStackState
 androidx.fragment.app.FragmentManager$FragmentLifecycleCallbacks:
     public void <init>()
 androidx.fragment.app.FragmentManager$LifecycleAwareResultListener
+androidx.fragment.app.FragmentManager$RestoreBackStackState
+androidx.fragment.app.FragmentManager$SaveBackStackState
 androidx.fragment.app.FragmentManager:
     private static final java.lang.String EXTRA_CREATED_FILLIN_INTENT
+    static final java.lang.String FRAGMENT_MANAGER_STATE_TAG
+    static final java.lang.String FRAGMENT_NAME_PREFIX
+    static final java.lang.String FRAGMENT_STATE_TAG
     public static final int POP_BACK_STACK_INCLUSIVE
-    static final java.lang.String TAG
+    static final java.lang.String RESULT_NAME_PREFIX
+    static final java.lang.String SAVED_STATE_TAG
+    public static final java.lang.String TAG
     public void addOnBackStackChangedListener(androidx.fragment.app.FragmentManager$OnBackStackChangedListener)
     void addRetainedFragment(androidx.fragment.app.Fragment)
+    public void clearBackStack(java.lang.String)
+    boolean clearBackStackState(java.util.ArrayList,java.util.ArrayList,java.lang.String)
     public final void clearFragmentResultListener(java.lang.String)
     public static void enableDebugLogging(boolean)
-    public static void enableNewStateManager(boolean)
     public boolean executePendingTransactions()
     public static androidx.fragment.app.Fragment findFragment(android.view.View)
-    static androidx.fragment.app.FragmentManager findFragmentManager(android.view.View)
-    private static androidx.fragment.app.Fragment findViewFragment(android.view.View)
     int getActiveFragmentCount()
     java.util.List getActiveFragments()
     public androidx.fragment.app.FragmentManager$BackStackEntry getBackStackEntryAt(int)
     public androidx.fragment.app.Fragment getFragment(android.os.Bundle,java.lang.String)
+    androidx.fragment.app.FragmentStore getFragmentStore()
     void launchRequestPermissions(androidx.fragment.app.Fragment,java.lang.String[],int)
     void launchStartIntentSenderForResult(androidx.fragment.app.Fragment,android.content.IntentSender,int,android.content.Intent,int,int,int,android.os.Bundle)
     public androidx.fragment.app.FragmentTransaction openTransaction()
     public void popBackStack()
+    public void popBackStack(int,int)
     public void popBackStack(java.lang.String,int)
-    public boolean popBackStackImmediate(int,int)
     public boolean popBackStackImmediate(java.lang.String,int)
     public void putFragment(android.os.Bundle,java.lang.String,androidx.fragment.app.Fragment)
     public void registerFragmentLifecycleCallbacks(androidx.fragment.app.FragmentManager$FragmentLifecycleCallbacks,boolean)
@@ -10203,13 +10190,19 @@ androidx.fragment.app.FragmentManager:
     public void removeOnBackStackChangedListener(androidx.fragment.app.FragmentManager$OnBackStackChangedListener)
     void removeRetainedFragment(androidx.fragment.app.Fragment)
     void restoreAllState(android.os.Parcelable,androidx.fragment.app.FragmentManagerNonConfig)
+    public void restoreBackStack(java.lang.String)
+    boolean restoreBackStackState(java.util.ArrayList,java.util.ArrayList,java.lang.String)
+    void restoreSaveState(android.os.Parcelable)
     androidx.fragment.app.FragmentManagerNonConfig retainNonConfig()
+    android.os.Parcelable saveAllState()
+    public void saveBackStack(java.lang.String)
+    boolean saveBackStackState(java.util.ArrayList,java.util.ArrayList,java.lang.String)
     public androidx.fragment.app.Fragment$SavedState saveFragmentInstanceState(androidx.fragment.app.Fragment)
     public void setFragmentFactory(androidx.fragment.app.FragmentFactory)
     public final void setFragmentResult(java.lang.String,android.os.Bundle)
     public final void setFragmentResultListener(java.lang.String,androidx.lifecycle.LifecycleOwner,androidx.fragment.app.FragmentResultListener)
     void setSpecialEffectsControllerFactory(androidx.fragment.app.SpecialEffectsControllerFactory)
-    private void throwException(java.lang.RuntimeException)
+    public void setStrictModePolicy(androidx.fragment.app.strictmode.FragmentStrictMode$Policy)
     public void unregisterFragmentLifecycleCallbacks(androidx.fragment.app.FragmentManager$FragmentLifecycleCallbacks)
 androidx.fragment.app.FragmentManagerNonConfig
 androidx.fragment.app.FragmentManagerViewModel:
@@ -10226,7 +10219,6 @@ androidx.fragment.app.FragmentStateManager:
     private static final java.lang.String VIEW_REGISTRY_STATE_TAG
     private static final java.lang.String VIEW_STATE_TAG
     androidx.fragment.app.Fragment$SavedState saveInstanceState()
-androidx.fragment.app.FragmentStateManagerControl
 androidx.fragment.app.FragmentStatePagerAdapter
 androidx.fragment.app.FragmentStore:
     private static final java.lang.String TAG
@@ -10238,6 +10230,7 @@ androidx.fragment.app.FragmentTabHost$TabInfo
 androidx.fragment.app.FragmentTabHost
 androidx.fragment.app.FragmentTransaction$Op:
     void <init>(int,androidx.fragment.app.Fragment,androidx.lifecycle.Lifecycle$State)
+    void <init>(androidx.fragment.app.FragmentTransaction$Op)
 androidx.fragment.app.FragmentTransaction:
     static final int OP_ADD
     static final int OP_ATTACH
@@ -10254,10 +10247,13 @@ androidx.fragment.app.FragmentTransaction:
     public static final int TRANSIT_EXIT_MASK
     public static final int TRANSIT_FRAGMENT_CLOSE
     public static final int TRANSIT_FRAGMENT_FADE
+    public static final int TRANSIT_FRAGMENT_MATCH_ACTIVITY_CLOSE
+    public static final int TRANSIT_FRAGMENT_MATCH_ACTIVITY_OPEN
     public static final int TRANSIT_FRAGMENT_OPEN
     public static final int TRANSIT_NONE
     public static final int TRANSIT_UNSET
     public void <init>()
+    void <init>(androidx.fragment.app.FragmentFactory,java.lang.ClassLoader,androidx.fragment.app.FragmentTransaction)
     public androidx.fragment.app.FragmentTransaction add(int,androidx.fragment.app.Fragment)
     public final androidx.fragment.app.FragmentTransaction add(int,java.lang.Class,android.os.Bundle)
     public final androidx.fragment.app.FragmentTransaction add(int,java.lang.Class,android.os.Bundle,java.lang.String)
@@ -10265,7 +10261,6 @@ androidx.fragment.app.FragmentTransaction:
     public androidx.fragment.app.FragmentTransaction addSharedElement(android.view.View,java.lang.String)
     public androidx.fragment.app.FragmentTransaction addToBackStack(java.lang.String)
     public androidx.fragment.app.FragmentTransaction attach(androidx.fragment.app.Fragment)
-    public abstract void commitNow()
     private androidx.fragment.app.Fragment createFragment(java.lang.Class,android.os.Bundle)
     public androidx.fragment.app.FragmentTransaction detach(androidx.fragment.app.Fragment)
     public androidx.fragment.app.FragmentTransaction hide(androidx.fragment.app.Fragment)
@@ -10291,49 +10286,107 @@ androidx.fragment.app.FragmentTransaction:
 androidx.fragment.app.FragmentTransition:
     private void <init>()
     static boolean supportsTransition()
+androidx.fragment.app.FragmentTransitionCompat21$Api19Impl:
+    private void <init>()
+androidx.fragment.app.FragmentTransitionCompat21:
+    public void removeTarget(java.lang.Object,android.view.View)
+androidx.fragment.app.FragmentTransitionImpl:
+    public abstract void removeTarget(java.lang.Object,android.view.View)
+    public abstract void replaceTargets(java.lang.Object,java.util.ArrayList,java.util.ArrayList)
 androidx.fragment.app.FragmentViewLifecycleOwner:
     private androidx.lifecycle.ViewModelProvider$Factory mDefaultFactory
     public androidx.lifecycle.ViewModelProvider$Factory getDefaultViewModelProviderFactory()
 androidx.fragment.app.ListFragment$1
 androidx.fragment.app.ListFragment$2
 androidx.fragment.app.ListFragment
+androidx.fragment.app.strictmode.FragmentReuseViolation:
+    public final java.lang.String getPreviousFragmentId()
+androidx.fragment.app.strictmode.FragmentStrictMode$Policy$Builder
+androidx.fragment.app.strictmode.FragmentStrictMode:
+    private static final java.lang.String TAG
+    public final androidx.fragment.app.strictmode.FragmentStrictMode$Policy getDefaultPolicy()
+    public static final void onGetRetainInstanceUsage(androidx.fragment.app.Fragment)
+    public static final void onGetTargetFragmentRequestCodeUsage(androidx.fragment.app.Fragment)
+    public final void onPolicyViolation(androidx.fragment.app.strictmode.Violation)
+    public static final void onSetRetainInstanceUsage(androidx.fragment.app.Fragment)
+    public static final void onSetTargetFragmentUsage(androidx.fragment.app.Fragment,androidx.fragment.app.Fragment,int)
+    public static final void onSetUserVisibleHint(androidx.fragment.app.Fragment,boolean)
+    public final void setDefaultPolicy(androidx.fragment.app.strictmode.FragmentStrictMode$Policy)
+androidx.fragment.app.strictmode.FragmentTagUsageViolation:
+    public final android.view.ViewGroup getParentContainer()
+androidx.fragment.app.strictmode.GetRetainInstanceUsageViolation
+androidx.fragment.app.strictmode.GetTargetFragmentRequestCodeUsageViolation
+androidx.fragment.app.strictmode.RetainInstanceUsageViolation
+androidx.fragment.app.strictmode.SetRetainInstanceUsageViolation
+androidx.fragment.app.strictmode.SetTargetFragmentUsageViolation
+androidx.fragment.app.strictmode.SetUserVisibleHintViolation
+androidx.fragment.app.strictmode.TargetFragmentUsageViolation:
+    public synthetic void <init>(androidx.fragment.app.Fragment,java.lang.String,int,kotlin.jvm.internal.DefaultConstructorMarker)
+androidx.fragment.app.strictmode.Violation:
+    public synthetic void <init>(androidx.fragment.app.Fragment,java.lang.String,int,kotlin.jvm.internal.DefaultConstructorMarker)
+androidx.fragment.app.strictmode.WrongFragmentContainerViolation:
+    public final android.view.ViewGroup getContainer()
 androidx.interpolator.R
+androidx.lifecycle.AbstractSavedStateViewModelFactory$Companion
 androidx.lifecycle.AbstractSavedStateViewModelFactory
 androidx.lifecycle.AndroidViewModel
 androidx.lifecycle.ClassesInfoCache:
     private static final int CALL_TYPE_NO_ARG
     private static final int CALL_TYPE_PROVIDER
     private static final int CALL_TYPE_PROVIDER_WITH_EVENT
-androidx.lifecycle.ComputableLiveData$1
-androidx.lifecycle.ComputableLiveData$2
-androidx.lifecycle.ComputableLiveData$3
+androidx.lifecycle.ComputableLiveData$_liveData$1
 androidx.lifecycle.ComputableLiveData
-androidx.lifecycle.DefaultLifecycleObserver:
-    public void onResume(androidx.lifecycle.LifecycleOwner)
+androidx.lifecycle.DispatchQueue
 androidx.lifecycle.GenericLifecycleObserver
 androidx.lifecycle.HasDefaultViewModelProviderFactory:
     public abstract androidx.lifecycle.ViewModelProvider$Factory getDefaultViewModelProviderFactory()
 androidx.lifecycle.LegacySavedStateHandleController:
-    static final java.lang.String TAG_SAVED_STATE_HANDLE_CONTROLLER
-    private void <init>()
-    static androidx.lifecycle.SavedStateHandleController create(androidx.savedstate.SavedStateRegistry,androidx.lifecycle.Lifecycle,java.lang.String,android.os.Bundle)
+    public static final java.lang.String TAG_SAVED_STATE_HANDLE_CONTROLLER
+    public static final androidx.lifecycle.SavedStateHandleController create(androidx.savedstate.SavedStateRegistry,androidx.lifecycle.Lifecycle,java.lang.String,android.os.Bundle)
+androidx.lifecycle.Lifecycle$Event$Companion:
+    public final androidx.lifecycle.Lifecycle$Event downTo(androidx.lifecycle.Lifecycle$State)
+    public final androidx.lifecycle.Lifecycle$Event upTo(androidx.lifecycle.Lifecycle$State)
 androidx.lifecycle.Lifecycle$Event:
-    public static androidx.lifecycle.Lifecycle$Event downTo(androidx.lifecycle.Lifecycle$State)
-    public static androidx.lifecycle.Lifecycle$Event upTo(androidx.lifecycle.Lifecycle$State)
-androidx.lifecycle.LifecycleDispatcher:
-    private void <init>()
+    public static final androidx.lifecycle.Lifecycle$Event downFrom(androidx.lifecycle.Lifecycle$State)
+    public static final androidx.lifecycle.Lifecycle$Event downTo(androidx.lifecycle.Lifecycle$State)
+    public static final androidx.lifecycle.Lifecycle$Event upFrom(androidx.lifecycle.Lifecycle$State)
+    public static final androidx.lifecycle.Lifecycle$Event upTo(androidx.lifecycle.Lifecycle$State)
+androidx.lifecycle.Lifecycle:
+    public final java.util.concurrent.atomic.AtomicReference getInternalScopeRef()
+    public final void setInternalScopeRef(java.util.concurrent.atomic.AtomicReference)
+androidx.lifecycle.LifecycleController
+androidx.lifecycle.LifecycleCoroutineScope$launchWhenCreated$1
+androidx.lifecycle.LifecycleCoroutineScope$launchWhenResumed$1
+androidx.lifecycle.LifecycleCoroutineScope$launchWhenStarted$1
+androidx.lifecycle.LifecycleCoroutineScope:
+    public void <init>()
+    public abstract androidx.lifecycle.Lifecycle getLifecycle$lifecycle_common()
+    public final kotlinx.coroutines.Job launchWhenCreated(kotlin.jvm.functions.Function2)
+    public final kotlinx.coroutines.Job launchWhenResumed(kotlin.jvm.functions.Function2)
+    public final kotlinx.coroutines.Job launchWhenStarted(kotlin.jvm.functions.Function2)
+androidx.lifecycle.LifecycleCoroutineScopeImpl$register$1
+androidx.lifecycle.LifecycleCoroutineScopeImpl:
+    public void <init>(androidx.lifecycle.Lifecycle,kotlin.coroutines.CoroutineContext)
+    public final void register()
+androidx.lifecycle.LifecycleKt
+androidx.lifecycle.LifecycleOwnerKt
+androidx.lifecycle.LifecycleRegistry$Companion:
+    public final androidx.lifecycle.LifecycleRegistry createUnsafe(androidx.lifecycle.LifecycleOwner)
+androidx.lifecycle.LifecycleRegistry$ObserverWithState:
+    public final androidx.lifecycle.LifecycleEventObserver getLifecycleObserver()
+    public final void setLifecycleObserver(androidx.lifecycle.LifecycleEventObserver)
+    public final void setState(androidx.lifecycle.Lifecycle$State)
 androidx.lifecycle.LifecycleRegistry:
-    public static androidx.lifecycle.LifecycleRegistry createUnsafe(androidx.lifecycle.LifecycleOwner)
+    public synthetic void <init>(androidx.lifecycle.LifecycleOwner,boolean,kotlin.jvm.internal.DefaultConstructorMarker)
+    public static final androidx.lifecycle.LifecycleRegistry createUnsafe(androidx.lifecycle.LifecycleOwner)
     public int getObserverCount()
+    public void markState(androidx.lifecycle.Lifecycle$State)
+    public static final androidx.lifecycle.Lifecycle$State min$lifecycle_runtime_release(androidx.lifecycle.Lifecycle$State,androidx.lifecycle.Lifecycle$State)
 androidx.lifecycle.LifecycleRegistryOwner:
     public synthetic bridge androidx.lifecycle.Lifecycle getLifecycle()
-androidx.lifecycle.Lifecycling$1:
-    void <init>(androidx.lifecycle.LifecycleEventObserver)
 androidx.lifecycle.Lifecycling:
     private static final int GENERATED_CALLBACK
     private static final int REFLECTIVE_CALLBACK
-    private void <init>()
-    static androidx.lifecycle.GenericLifecycleObserver getCallback(java.lang.Object)
 androidx.lifecycle.LiveData$LifecycleBoundObserver:
     void <init>(androidx.lifecycle.LiveData,androidx.lifecycle.LifecycleOwner,androidx.lifecycle.Observer)
     boolean isAttachedTo(androidx.lifecycle.LifecycleOwner)
@@ -10346,6 +10399,7 @@ androidx.lifecycle.LiveData:
     int getVersion()
     public boolean hasActiveObservers()
     public boolean hasObservers()
+    public boolean isInitialized()
     public void observe(androidx.lifecycle.LifecycleOwner,androidx.lifecycle.Observer)
     protected void postValue(java.lang.Object)
     public void removeObservers(androidx.lifecycle.LifecycleOwner)
@@ -10356,10 +10410,21 @@ androidx.lifecycle.MethodCallsLogger:
 androidx.lifecycle.MutableLiveData:
     public void <init>(java.lang.Object)
     public void postValue(java.lang.Object)
+androidx.lifecycle.PausingDispatcher
+androidx.lifecycle.PausingDispatcherKt$whenStateAtLeast$2
+androidx.lifecycle.PausingDispatcherKt
+androidx.lifecycle.ProcessLifecycleOwner$Companion:
+    public static synthetic void getTIMEOUT_MS$lifecycle_process_release$annotations()
 androidx.lifecycle.ProcessLifecycleOwner:
-    static final long TIMEOUT_MS
+    public static final long TIMEOUT_MS
+    public static final androidx.lifecycle.LifecycleOwner get()
+    public static final void init$lifecycle_process_release(android.content.Context)
+androidx.lifecycle.ReportFragment$Companion:
+    public static synthetic void get$annotations(android.app.Activity)
 androidx.lifecycle.ReportFragment:
     private static final java.lang.String REPORT_FRAGMENT_TAG
+    public static final void dispatch$lifecycle_runtime_release(android.app.Activity,androidx.lifecycle.Lifecycle$Event)
+    public static final androidx.lifecycle.ReportFragment get(android.app.Activity)
 androidx.lifecycle.SavedStateHandle$Companion
 androidx.lifecycle.SavedStateHandle$SavingStateLiveData
 androidx.lifecycle.SavedStateHandle:
@@ -10388,12 +10453,12 @@ androidx.lifecycle.SavedStateHandle:
     public final kotlinx.coroutines.flow.StateFlow getStateFlow(java.lang.String,java.lang.Object)
     public final java.util.Set keys()
     public final java.lang.Object remove(java.lang.String)
-    private static final android.os.Bundle savedStateProvider$lambda-0(androidx.lifecycle.SavedStateHandle)
+    private static final android.os.Bundle savedStateProvider$lambda$0(androidx.lifecycle.SavedStateHandle)
     public final void set(java.lang.String,java.lang.Object)
     public final void setSavedStateProvider(java.lang.String,androidx.savedstate.SavedStateRegistry$SavedStateProvider)
 androidx.lifecycle.SavedStateHandleController:
-    void <init>(java.lang.String,androidx.lifecycle.SavedStateHandle)
-    androidx.lifecycle.SavedStateHandle getHandle()
+    public void <init>(java.lang.String,androidx.lifecycle.SavedStateHandle)
+    public final androidx.lifecycle.SavedStateHandle getHandle()
 androidx.lifecycle.SavedStateHandleSupport:
     private static final java.lang.String SAVED_STATE_KEY
     private static final java.lang.String VIEWMODEL_KEY
@@ -10404,9 +10469,14 @@ androidx.lifecycle.SavedStateHandlesProvider:
     public final android.os.Bundle consumeRestoredStateForKey(java.lang.String)
 androidx.lifecycle.SavedStateViewModelFactory
 androidx.lifecycle.SavedStateViewModelFactoryKt
-androidx.lifecycle.Transformations$1
-androidx.lifecycle.Transformations$2$1
-androidx.lifecycle.Transformations$2
+androidx.lifecycle.Transformations$distinctUntilChanged$1
+androidx.lifecycle.Transformations$map$1
+androidx.lifecycle.Transformations$map$2
+androidx.lifecycle.Transformations$sam$androidx_lifecycle_Observer$0
+androidx.lifecycle.Transformations$switchMap$1$onChanged$1
+androidx.lifecycle.Transformations$switchMap$1
+androidx.lifecycle.Transformations$switchMap$2$onChanged$1
+androidx.lifecycle.Transformations$switchMap$2
 androidx.lifecycle.Transformations
 androidx.lifecycle.ViewModel:
     public varargs void <init>(java.io.Closeable[])
@@ -10450,13 +10520,15 @@ androidx.lifecycle.ViewModelProvider:
     public void <init>(androidx.lifecycle.ViewModelStoreOwner)
 androidx.lifecycle.ViewModelProviderGetKt:
     public static final synthetic androidx.lifecycle.ViewModel get(androidx.lifecycle.ViewModelProvider)
+androidx.lifecycle.ViewTreeLifecycleOwner$findViewTreeLifecycleOwner$1
+androidx.lifecycle.ViewTreeLifecycleOwner$findViewTreeLifecycleOwner$2
 androidx.lifecycle.ViewTreeLifecycleOwner:
-    private void <init>()
-    public static androidx.lifecycle.LifecycleOwner get(android.view.View)
+    public static final androidx.lifecycle.LifecycleOwner get(android.view.View)
 androidx.lifecycle.ViewTreeViewModelKt
+androidx.lifecycle.ViewTreeViewModelStoreOwner$findViewTreeViewModelStoreOwner$1
+androidx.lifecycle.ViewTreeViewModelStoreOwner$findViewTreeViewModelStoreOwner$2
 androidx.lifecycle.ViewTreeViewModelStoreOwner:
-    private void <init>()
-    public static androidx.lifecycle.ViewModelStoreOwner get(android.view.View)
+    public static final androidx.lifecycle.ViewModelStoreOwner get(android.view.View)
 androidx.lifecycle.livedata.R
 androidx.lifecycle.livedata.core.R
 androidx.lifecycle.process.R
@@ -14660,6 +14732,110 @@ androidx.media3.ui.WebViewSubtitleOutput:
     private static final float CSS_LINE_HEIGHT
     private static final java.lang.String DEFAULT_BACKGROUND_CSS_CLASS
 androidx.media3.ui.package-info
+androidx.profileinstaller.BenchmarkOperation$Api21ContextHelper:
+    private void <init>()
+androidx.profileinstaller.BenchmarkOperation$Api24ContextHelper:
+    private void <init>()
+androidx.profileinstaller.BenchmarkOperation:
+    private void <init>()
+androidx.profileinstaller.Encoding:
+    static final int SIZEOF_BYTE
+    static final int UINT_16_SIZE
+    static final int UINT_32_SIZE
+    static final int UINT_8_SIZE
+    private void <init>()
+androidx.profileinstaller.FileSectionType:
+    static androidx.profileinstaller.FileSectionType fromValue(long)
+androidx.profileinstaller.ProfileInstallReceiver:
+    public static final java.lang.String ACTION_BENCHMARK_OPERATION
+    public static final java.lang.String ACTION_INSTALL_PROFILE
+    public static final java.lang.String ACTION_SAVE_PROFILE
+    public static final java.lang.String ACTION_SKIP_FILE
+    private static final java.lang.String EXTRA_BENCHMARK_OPERATION
+    private static final java.lang.String EXTRA_BENCHMARK_OPERATION_DROP_SHADER_CACHE
+    private static final java.lang.String EXTRA_SKIP_FILE_OPERATION
+    private static final java.lang.String EXTRA_SKIP_FILE_OPERATION_DELETE
+    private static final java.lang.String EXTRA_SKIP_FILE_OPERATION_WRITE
+androidx.profileinstaller.ProfileInstaller$2:
+    static final java.lang.String TAG
+androidx.profileinstaller.ProfileInstaller$DiagnosticCode
+androidx.profileinstaller.ProfileInstaller$ResultCode
+androidx.profileinstaller.ProfileInstaller:
+    public static final int DIAGNOSTIC_CURRENT_PROFILE_DOES_NOT_EXIST
+    public static final int DIAGNOSTIC_CURRENT_PROFILE_EXISTS
+    public static final int DIAGNOSTIC_PROFILE_IS_COMPRESSED
+    public static final int DIAGNOSTIC_REF_PROFILE_DOES_NOT_EXIST
+    public static final int DIAGNOSTIC_REF_PROFILE_EXISTS
+    private static final java.lang.String PROFILE_BASE_DIR
+    private static final java.lang.String PROFILE_FILE
+    private static final java.lang.String PROFILE_INSTALLER_SKIP_FILE_NAME
+    private static final java.lang.String PROFILE_META_LOCATION
+    private static final java.lang.String PROFILE_SOURCE_LOCATION
+    public static final int RESULT_ALREADY_INSTALLED
+    public static final int RESULT_BASELINE_PROFILE_NOT_FOUND
+    public static final int RESULT_BENCHMARK_OPERATION_FAILURE
+    public static final int RESULT_BENCHMARK_OPERATION_SUCCESS
+    public static final int RESULT_BENCHMARK_OPERATION_UNKNOWN
+    public static final int RESULT_DELETE_SKIP_FILE_SUCCESS
+    public static final int RESULT_DESIRED_FORMAT_UNSUPPORTED
+    public static final int RESULT_INSTALL_SKIP_FILE_SUCCESS
+    public static final int RESULT_INSTALL_SUCCESS
+    public static final int RESULT_IO_EXCEPTION
+    public static final int RESULT_META_FILE_REQUIRED_BUT_NOT_FOUND
+    public static final int RESULT_NOT_WRITABLE
+    public static final int RESULT_PARSE_EXCEPTION
+    public static final int RESULT_SAVE_PROFILE_SIGNALLED
+    public static final int RESULT_SAVE_PROFILE_SKIPPED
+    public static final int RESULT_UNSUPPORTED_ART_VERSION
+    private static final java.lang.String TAG
+    private void <init>()
+    static void diagnostic(java.util.concurrent.Executor,androidx.profileinstaller.ProfileInstaller$DiagnosticsCallback,int,java.lang.Object)
+    private static synthetic void lambda$diagnostic$1(androidx.profileinstaller.ProfileInstaller$DiagnosticsCallback,int,java.lang.Object)
+androidx.profileinstaller.ProfileInstallerInitializer$Choreographer16Impl:
+    private void <init>()
+androidx.profileinstaller.ProfileInstallerInitializer$Handler28Impl:
+    private void <init>()
+androidx.profileinstaller.ProfileInstallerInitializer:
+    private static final int DELAY_MS
+androidx.profileinstaller.ProfileTranscoder:
+    private static final int HOT
+    private static final int INLINE_CACHE_MEGAMORPHIC_ENCODING
+    private static final int INLINE_CACHE_MISSING_TYPES_ENCODING
+    private static final int POST_STARTUP
+    private static final int STARTUP
+    private void <init>()
+androidx.profileinstaller.ProfileVerifier$Api33Impl:
+    private void <init>()
+androidx.profileinstaller.ProfileVerifier$Cache:
+    private static final int SCHEMA
+androidx.profileinstaller.ProfileVerifier$CompilationStatus$ResultCode
+androidx.profileinstaller.ProfileVerifier$CompilationStatus:
+    public static final int RESULT_CODE_COMPILED_WITH_PROFILE
+    public static final int RESULT_CODE_COMPILED_WITH_PROFILE_NON_MATCHING
+    public static final int RESULT_CODE_ERROR_CACHE_FILE_EXISTS_BUT_CANNOT_BE_READ
+    public static final int RESULT_CODE_ERROR_CANT_WRITE_PROFILE_VERIFICATION_RESULT_CACHE_FILE
+    private static final int RESULT_CODE_ERROR_CODE_BIT_SHIFT
+    public static final int RESULT_CODE_ERROR_PACKAGE_NAME_DOES_NOT_EXIST
+    public static final int RESULT_CODE_ERROR_UNSUPPORTED_API_VERSION
+    public static final int RESULT_CODE_NO_PROFILE
+    public static final int RESULT_CODE_PROFILE_ENQUEUED_FOR_COMPILATION
+    public int getProfileInstallResultCode()
+    public boolean hasProfileEnqueuedForCompilation()
+    public boolean isCompiledWithProfile()
+androidx.profileinstaller.ProfileVerifier:
+    private static final java.lang.String CUR_PROFILES_BASE_DIR
+    private static final java.lang.String PROFILE_FILE_NAME
+    private static final java.lang.String PROFILE_INSTALLED_CACHE_FILE_NAME
+    private static final java.lang.String REF_PROFILES_BASE_DIR
+    private static final java.lang.String TAG
+    private void <init>()
+    public static com.google.common.util.concurrent.ListenableFuture getCompilationStatusAsync()
+    public static androidx.profileinstaller.ProfileVerifier$CompilationStatus writeProfileVerification(android.content.Context)
+androidx.profileinstaller.ProfileVersion:
+    public static final int MAX_SUPPORTED_SDK
+    public static final int MIN_SUPPORTED_SDK
+    private void <init>()
+androidx.profileinstaller.R
 androidx.recyclerview.R$attr:
     public static int fastScrollEnabled
     public static int fastScrollHorizontalThumbDrawable
@@ -16084,6 +16260,16 @@ com.assistant.core.AdapterIpcBridge:
     public final void dispatchSyncPulse(long)
     public final void enforceTrafficShapingProtocol(boolean)
     public final void triggerLmkMatchStateLock()
+com.assistant.diagnostic.AnalyticsTheaterActivity
+com.assistant.diagnostic.CrashInspector
+com.assistant.diagnostic.CrashInspectorActivity
+com.assistant.diagnostic.MachineLedger$startMonitoring$1
+com.assistant.diagnostic.MachineLedger
+com.assistant.diagnostic.R$id
+com.assistant.diagnostic.R$layout
+com.assistant.diagnostic.R
+com.assistant.diagnostic.RuntimeLogger:
+    private static final java.lang.String FILE_NAME
 com.assistant.interceptor.SmartAssistPipeline:
     public final float[] computeOptimalVector(float,float,float,float,int)
     public final java.util.concurrent.atomic.AtomicReference getTrajectoryLock()
@@ -21975,7 +22161,8 @@ com.google.common.util.concurrent.InterruptibleTask$DoNothingRunnable
 com.google.common.util.concurrent.InterruptibleTask
 com.google.common.util.concurrent.JdkFutureAdapters$ListenableFutureAdapter
 com.google.common.util.concurrent.JdkFutureAdapters
-com.google.common.util.concurrent.ListenableFuture
+com.google.common.util.concurrent.ListenableFuture:
+    public abstract void addListener(java.lang.Runnable,java.util.concurrent.Executor)
 com.google.common.util.concurrent.ListenableFutureTask
 com.google.common.util.concurrent.ListenableScheduledFuture
 com.google.common.util.concurrent.ListenerCallQueue$Event
@@ -22406,13 +22593,26 @@ kotlin.collections.AbstractMutableSet:
 kotlin.collections.AbstractSet$Companion
 kotlin.collections.AbstractSet
 kotlin.collections.ArrayAsCollection
-kotlin.collections.ArrayDeque$Companion
-kotlin.collections.ArrayDeque
+kotlin.collections.ArrayDeque:
+    private static final int defaultMinCapacity
+    public void <init>(int)
+    public void <init>(java.util.Collection)
+    private final boolean filterInPlace(kotlin.jvm.functions.Function1)
+    public final java.lang.Object first()
+    public final java.lang.Object firstOrNull()
+    private final java.lang.Object internalGet(int)
+    private final int internalIndex(int)
+    public final void internalStructure$kotlin_stdlib(kotlin.jvm.functions.Function2)
+    public final java.lang.Object last()
+    public final java.lang.Object lastOrNull()
+    public final java.lang.Object removeFirstOrNull()
+    public final java.lang.Object removeLastOrNull()
+    public final java.lang.Object[] testToArray$kotlin_stdlib()
+    public final java.lang.Object[] testToArray$kotlin_stdlib(java.lang.Object[])
 kotlin.collections.ArraysKt:
     private void <init>()
 kotlin.collections.ArraysKt__ArraysJVMKt:
     public void <init>()
-    public static final java.lang.Object[] arrayOfNulls(java.lang.Object[],int)
     public static final int contentDeepHashCode(java.lang.Object[])
     public static final synthetic java.lang.Object[] orEmpty(java.lang.Object[])
     private static final java.lang.String toString(byte[],java.nio.charset.Charset)
@@ -22509,7 +22709,6 @@ kotlin.collections.ArraysKt___ArraysJvmKt:
     public static synthetic float[] copyInto$default(float[],float[],int,int,int,int,java.lang.Object)
     public static synthetic int[] copyInto$default(int[],int[],int,int,int,int,java.lang.Object)
     public static synthetic long[] copyInto$default(long[],long[],int,int,int,int,java.lang.Object)
-    public static synthetic java.lang.Object[] copyInto$default(java.lang.Object[],java.lang.Object[],int,int,int,int,java.lang.Object)
     public static synthetic short[] copyInto$default(short[],short[],int,int,int,int,java.lang.Object)
     public static synthetic boolean[] copyInto$default(boolean[],boolean[],int,int,int,int,java.lang.Object)
     private static final byte[] copyOf(byte[])
@@ -22561,7 +22760,6 @@ kotlin.collections.ArraysKt___ArraysJvmKt:
     public static final void fill(double[],double,int,int)
     public static final void fill(float[],float,int,int)
     public static final void fill(long[],long,int,int)
-    public static final void fill(java.lang.Object[],java.lang.Object,int,int)
     public static final void fill(short[],short,int,int)
     public static final void fill(boolean[],boolean,int,int)
     public static synthetic void fill$default(byte[],byte,int,int,int,java.lang.Object)
@@ -24499,7 +24697,6 @@ kotlin.collections.CollectionsKt__MutableCollectionsKt:
     public static final boolean removeAll(java.util.List,kotlin.jvm.functions.Function1)
     public static final java.lang.Object removeFirst(java.util.List)
     public static final java.lang.Object removeFirstOrNull(java.util.List)
-    public static final java.lang.Object removeLast(java.util.List)
     public static final java.lang.Object removeLastOrNull(java.util.List)
     public static final boolean retainAll(java.lang.Iterable,kotlin.jvm.functions.Function1)
     public static final boolean retainAll(java.util.Collection,java.lang.Iterable)
@@ -24569,7 +24766,6 @@ kotlin.collections.CollectionsKt___CollectionsKt:
     private static final java.lang.Object component3(java.util.List)
     private static final java.lang.Object component4(java.util.List)
     private static final java.lang.Object component5(java.util.List)
-    public static final boolean contains(java.lang.Iterable,java.lang.Object)
     public static final int count(java.lang.Iterable)
     public static final int count(java.lang.Iterable,kotlin.jvm.functions.Function1)
     private static final int count(java.util.Collection)
@@ -24627,7 +24823,6 @@ kotlin.collections.CollectionsKt___CollectionsKt:
     public static final java.util.Map groupByTo(java.lang.Iterable,java.util.Map,kotlin.jvm.functions.Function1)
     public static final java.util.Map groupByTo(java.lang.Iterable,java.util.Map,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1)
     public static final kotlin.collections.Grouping groupingBy(java.lang.Iterable,kotlin.jvm.functions.Function1)
-    public static final int indexOf(java.lang.Iterable,java.lang.Object)
     public static final int indexOf(java.util.List,java.lang.Object)
     public static final int indexOfFirst(java.lang.Iterable,kotlin.jvm.functions.Function1)
     public static final int indexOfFirst(java.util.List,kotlin.jvm.functions.Function1)
@@ -24636,7 +24831,6 @@ kotlin.collections.CollectionsKt___CollectionsKt:
     public static final java.util.Set intersect(java.lang.Iterable,java.lang.Iterable)
     public static final java.lang.Object last(java.lang.Iterable)
     public static final java.lang.Object last(java.lang.Iterable,kotlin.jvm.functions.Function1)
-    public static final java.lang.Object last(java.util.List)
     public static final java.lang.Object last(java.util.List,kotlin.jvm.functions.Function1)
     public static final int lastIndexOf(java.lang.Iterable,java.lang.Object)
     public static final int lastIndexOf(java.util.List,java.lang.Object)
@@ -26661,8 +26855,6 @@ kotlin.text.StringsKt__StringsJVMKt:
     public static synthetic boolean regionMatches$default(java.lang.CharSequence,int,java.lang.CharSequence,int,int,boolean,int,java.lang.Object)
     public static synthetic boolean regionMatches$default(java.lang.String,int,java.lang.String,int,int,boolean,int,java.lang.Object)
     public static final java.lang.String repeat(java.lang.CharSequence,int)
-    public static final java.lang.String replace(java.lang.String,java.lang.String,java.lang.String,boolean)
-    public static synthetic java.lang.String replace$default(java.lang.String,java.lang.String,java.lang.String,boolean,int,java.lang.Object)
     public static final java.lang.String replaceFirst(java.lang.String,char,char,boolean)
     public static final java.lang.String replaceFirst(java.lang.String,java.lang.String,java.lang.String,boolean)
     public static synthetic java.lang.String replaceFirst$default(java.lang.String,char,char,boolean,int,java.lang.Object)
@@ -27187,14 +27379,81 @@ kotlinx.coroutines.InvokeOnCancel
 kotlinx.coroutines.InvokeOnCancelling
 kotlinx.coroutines.InvokeOnCompletion
 kotlinx.coroutines.Job$DefaultImpls
-kotlinx.coroutines.Job$Key
-kotlinx.coroutines.Job
+kotlinx.coroutines.Job:
+    public abstract kotlinx.coroutines.ChildHandle attachChild(kotlinx.coroutines.ChildJob)
+    public synthetic abstract void cancel()
+    public synthetic abstract boolean cancel(java.lang.Throwable)
+    public abstract java.util.concurrent.CancellationException getCancellationException()
+    public abstract kotlin.sequences.Sequence getChildren()
+    public abstract kotlinx.coroutines.selects.SelectClause0 getOnJoin()
+    public abstract kotlinx.coroutines.Job getParent()
+    public abstract kotlinx.coroutines.DisposableHandle invokeOnCompletion(kotlin.jvm.functions.Function1)
+    public abstract kotlinx.coroutines.DisposableHandle invokeOnCompletion(boolean,boolean,kotlin.jvm.functions.Function1)
+    public abstract boolean isActive()
+    public abstract boolean isCancelled()
+    public abstract boolean isCompleted()
+    public abstract java.lang.Object join(kotlin.coroutines.Continuation)
+    public abstract kotlinx.coroutines.Job plus(kotlinx.coroutines.Job)
+    public abstract boolean start()
 kotlinx.coroutines.JobCancellationException
 kotlinx.coroutines.JobCancellingNode
 kotlinx.coroutines.JobImpl
-kotlinx.coroutines.JobKt
+kotlinx.coroutines.JobKt:
+    public static final kotlinx.coroutines.CompletableJob Job(kotlinx.coroutines.Job)
+    public static final synthetic kotlinx.coroutines.Job Job(kotlinx.coroutines.Job)
+    public static synthetic kotlinx.coroutines.CompletableJob Job$default(kotlinx.coroutines.Job,int,java.lang.Object)
+    public static synthetic kotlinx.coroutines.Job Job$default(kotlinx.coroutines.Job,int,java.lang.Object)
+    public static final synthetic void cancel(kotlin.coroutines.CoroutineContext)
+    public static final void cancel(kotlinx.coroutines.Job,java.lang.String,java.lang.Throwable)
+    public static final synthetic boolean cancel(kotlin.coroutines.CoroutineContext,java.lang.Throwable)
+    public static synthetic void cancel$default(kotlinx.coroutines.Job,java.lang.String,java.lang.Throwable,int,java.lang.Object)
+    public static synthetic boolean cancel$default(kotlin.coroutines.CoroutineContext,java.lang.Throwable,int,java.lang.Object)
+    public static final java.lang.Object cancelAndJoin(kotlinx.coroutines.Job,kotlin.coroutines.Continuation)
+    public static final synthetic void cancelChildren(kotlin.coroutines.CoroutineContext)
+    public static final synthetic void cancelChildren(kotlin.coroutines.CoroutineContext,java.lang.Throwable)
+    public static final void cancelChildren(kotlin.coroutines.CoroutineContext,java.util.concurrent.CancellationException)
+    public static final synthetic void cancelChildren(kotlinx.coroutines.Job)
+    public static final synthetic void cancelChildren(kotlinx.coroutines.Job,java.lang.Throwable)
+    public static final void cancelChildren(kotlinx.coroutines.Job,java.util.concurrent.CancellationException)
+    public static synthetic void cancelChildren$default(kotlin.coroutines.CoroutineContext,java.lang.Throwable,int,java.lang.Object)
+    public static synthetic void cancelChildren$default(kotlin.coroutines.CoroutineContext,java.util.concurrent.CancellationException,int,java.lang.Object)
+    public static synthetic void cancelChildren$default(kotlinx.coroutines.Job,java.lang.Throwable,int,java.lang.Object)
+    public static synthetic void cancelChildren$default(kotlinx.coroutines.Job,java.util.concurrent.CancellationException,int,java.lang.Object)
+    public static final void cancelFutureOnCancellation(kotlinx.coroutines.CancellableContinuation,java.util.concurrent.Future)
+    public static final kotlinx.coroutines.DisposableHandle cancelFutureOnCompletion(kotlinx.coroutines.Job,java.util.concurrent.Future)
+    public static final kotlinx.coroutines.DisposableHandle disposeOnCompletion(kotlinx.coroutines.Job,kotlinx.coroutines.DisposableHandle)
+    public static final void ensureActive(kotlin.coroutines.CoroutineContext)
+    public static final void ensureActive(kotlinx.coroutines.Job)
+    public static final kotlinx.coroutines.Job getJob(kotlin.coroutines.CoroutineContext)
+    public static final boolean isActive(kotlin.coroutines.CoroutineContext)
 kotlinx.coroutines.JobKt__FutureKt
-kotlinx.coroutines.JobKt__JobKt
+kotlinx.coroutines.JobKt__JobKt:
+    public static final kotlinx.coroutines.CompletableJob Job(kotlinx.coroutines.Job)
+    public static final synthetic kotlinx.coroutines.Job Job(kotlinx.coroutines.Job)
+    public static synthetic kotlinx.coroutines.CompletableJob Job$default(kotlinx.coroutines.Job,int,java.lang.Object)
+    public static synthetic kotlinx.coroutines.Job Job$default(kotlinx.coroutines.Job,int,java.lang.Object)
+    public static final synthetic void cancel(kotlin.coroutines.CoroutineContext)
+    public static final void cancel(kotlinx.coroutines.Job,java.lang.String,java.lang.Throwable)
+    public static final synthetic boolean cancel(kotlin.coroutines.CoroutineContext,java.lang.Throwable)
+    public static synthetic void cancel$default(kotlinx.coroutines.Job,java.lang.String,java.lang.Throwable,int,java.lang.Object)
+    public static synthetic boolean cancel$default(kotlin.coroutines.CoroutineContext,java.lang.Throwable,int,java.lang.Object)
+    public static final java.lang.Object cancelAndJoin(kotlinx.coroutines.Job,kotlin.coroutines.Continuation)
+    public static final synthetic void cancelChildren(kotlin.coroutines.CoroutineContext)
+    public static final synthetic void cancelChildren(kotlin.coroutines.CoroutineContext,java.lang.Throwable)
+    public static final void cancelChildren(kotlin.coroutines.CoroutineContext,java.util.concurrent.CancellationException)
+    public static final synthetic void cancelChildren(kotlinx.coroutines.Job)
+    public static final synthetic void cancelChildren(kotlinx.coroutines.Job,java.lang.Throwable)
+    public static final void cancelChildren(kotlinx.coroutines.Job,java.util.concurrent.CancellationException)
+    public static synthetic void cancelChildren$default(kotlin.coroutines.CoroutineContext,java.lang.Throwable,int,java.lang.Object)
+    public static synthetic void cancelChildren$default(kotlin.coroutines.CoroutineContext,java.util.concurrent.CancellationException,int,java.lang.Object)
+    public static synthetic void cancelChildren$default(kotlinx.coroutines.Job,java.lang.Throwable,int,java.lang.Object)
+    public static synthetic void cancelChildren$default(kotlinx.coroutines.Job,java.util.concurrent.CancellationException,int,java.lang.Object)
+    public static final kotlinx.coroutines.DisposableHandle disposeOnCompletion(kotlinx.coroutines.Job,kotlinx.coroutines.DisposableHandle)
+    public static final void ensureActive(kotlin.coroutines.CoroutineContext)
+    public static final void ensureActive(kotlinx.coroutines.Job)
+    public static final kotlinx.coroutines.Job getJob(kotlin.coroutines.CoroutineContext)
+    public static final boolean isActive(kotlin.coroutines.CoroutineContext)
+    private static final java.lang.Throwable orCancellation$JobKt__JobKt(java.lang.Throwable,kotlinx.coroutines.Job)
 kotlinx.coroutines.JobNode
 kotlinx.coroutines.JobSupport$AwaitContinuation
 kotlinx.coroutines.JobSupport$ChildCompletion
@@ -28002,6 +28261,7 @@ android.support.v4.media.MediaBrowserCompat$SearchResultReceiver:
     public final android.support.v4.media.MediaBrowserCompat$SearchCallback mCallback
 android.support.v4.media.MediaDescriptionCompat:
     public void <init>(android.os.Parcel)
+androidx.activity.ComponentActivity$ReportFullyDrawnExecutorApi1
 androidx.activity.ImmLeaksCleaner:
     public void <init>(android.app.Activity)
 androidx.appcompat.R$dimen:
@@ -28032,7 +28292,6 @@ androidx.appcompat.app.AppCompatDelegateImpl$4
 androidx.appcompat.app.AppCompatDelegateImpl$ActionBarMenuCallback
 androidx.appcompat.app.AppCompatDelegateImpl$AppCompatWindowCallback:
     public androidx.appcompat.app.AppCompatDelegateImpl$ActionBarMenuCallback mActionBarCallback
-androidx.appcompat.app.ResourcesFlusher$Api16Impl
 androidx.appcompat.app.ResourcesFlusher
 androidx.appcompat.app.ToolbarActionBar
 androidx.appcompat.app.WindowDecorActionBar:
@@ -28050,24 +28309,15 @@ androidx.appcompat.graphics.drawable.DrawableContainerCompat$Api21Impl
 androidx.appcompat.graphics.drawable.DrawableContainerCompat$BlockInvalidateCallback
 androidx.appcompat.graphics.drawable.DrawableContainerCompat$DrawableContainerState
 androidx.appcompat.graphics.drawable.DrawableContainerCompat
-androidx.appcompat.graphics.drawable.DrawableWrapperCompat:
-    public android.graphics.drawable.Drawable getDrawable()
 androidx.appcompat.graphics.drawable.StateListDrawableCompat$StateListState
 androidx.appcompat.graphics.drawable.StateListDrawableCompat
-androidx.appcompat.resources.Compatibility$Api18Impl
 androidx.appcompat.resources.Compatibility$Api21Impl
 androidx.appcompat.resources.R$styleable
 androidx.appcompat.view.WindowCallbackWrapper:
     public android.view.ActionMode onWindowStartingActionMode(android.view.ActionMode$Callback)
-androidx.appcompat.view.menu.MenuItemWrapperICS$ActionProviderWrapper:
-    public android.view.View onCreateActionView()
 androidx.appcompat.view.menu.SubMenuWrapperICS
 androidx.appcompat.widget.AppCompatHintHelper$$InternalSyntheticThrowCCEIfNotNull$8$d5e73477d2dfd98a7ce7ccfed9df0ea76c5f8a1df170002f60208e5215744fc9$0
 androidx.appcompat.widget.AppCompatTextHelper$Api21Impl
-androidx.appcompat.widget.AppCompatTextViewAutoSizeHelper:
-    public static java.lang.Object accessAndReturnWithDefault(java.lang.Object,java.lang.String,java.lang.Object)
-    public final android.text.StaticLayout createStaticLayoutForMeasuringPre16(java.lang.CharSequence,android.text.Layout$Alignment,int)
-    public static java.lang.reflect.Field getTextViewField(java.lang.String)
 androidx.appcompat.widget.ContentFrameLayout:
     public void dispatchFitSystemWindows(android.graphics.Rect)
 androidx.appcompat.widget.FitWindowsViewGroup
@@ -28079,18 +28329,15 @@ androidx.appcompat.widget.ResourceManagerInternal$DrawableDelegate
 androidx.appcompat.widget.ResourceManagerInternal$VdcInflateDelegate
 androidx.appcompat.widget.ResourceManagerInternal:
     public final void addDelegate(java.lang.String,androidx.appcompat.widget.ResourceManagerInternal$InflateDelegate)
-androidx.appcompat.widget.SearchView$OnCloseListener:
-    public abstract boolean onClose()
-androidx.appcompat.widget.SearchView$OnQueryTextListener:
-    public abstract boolean onQueryTextChange(java.lang.String)
-    public abstract boolean onQueryTextSubmit(java.lang.String)
-androidx.appcompat.widget.SearchView$OnSuggestionListener:
-    public abstract boolean onSuggestionClick(int)
-    public abstract boolean onSuggestionSelect(int)
+androidx.appcompat.widget.SearchView$Api29Impl
+androidx.appcompat.widget.SearchView$PreQAutoCompleteTextViewReflector
+androidx.appcompat.widget.SearchView$SearchAutoComplete:
+    public androidx.appcompat.widget.SearchView mSearchView
+    public void ensureImeVisible()
 androidx.appcompat.widget.SearchView:
-    public androidx.appcompat.widget.SearchView$OnCloseListener mOnCloseListener
-    public androidx.appcompat.widget.SearchView$OnQueryTextListener mOnQueryChangeListener
-    public androidx.appcompat.widget.SearchView$OnSuggestionListener mOnSuggestionListener
+    public static final androidx.appcompat.widget.SearchView$PreQAutoCompleteTextViewReflector PRE_API_29_HIDDEN_METHOD_INVOKER
+    static void <clinit>()
+    public static boolean isLandscapeMode(android.content.Context)
 androidx.appcompat.widget.ThemedSpinnerAdapter
 androidx.appcompat.widget.Toolbar$OnMenuItemClickListener:
     public abstract boolean onMenuItemClick(android.view.MenuItem)
@@ -28107,6 +28354,17 @@ androidx.appcompat.widget.ViewStubCompat:
 androidx.appcompat.widget.WithHint
 androidx.collection.LongSparseArray:
     public void append(long,java.lang.Object)
+androidx.concurrent.futures.AbstractResolvableFuture$$InternalSyntheticThrowCCEIfNotNull$8$282794e7407cbf0f962ed9c1883a9f2c64f05feb993d954f51a3758513079b57$0
+androidx.concurrent.futures.AbstractResolvableFuture$$InternalSyntheticThrowCCEIfNotNull$8$743ab975251cb1db22f16289a9e8244bd87ce07e9c3878c0207da2083dd011f0$0
+androidx.concurrent.futures.AbstractResolvableFuture$Failure$1
+androidx.concurrent.futures.AbstractResolvableFuture$Failure:
+    public static final androidx.concurrent.futures.AbstractResolvableFuture$Failure FALLBACK_INSTANCE
+    static void <clinit>()
+    public void <init>(java.lang.Throwable)
+androidx.concurrent.futures.AbstractResolvableFuture$SetFuture
+androidx.concurrent.futures.AbstractResolvableFuture:
+    public static java.lang.Object checkNotNull(java.lang.Object)
+    public static java.lang.Object getFutureValue(com.google.common.util.concurrent.ListenableFuture)
 androidx.constraintlayout.core.LinearSystem:
     public static androidx.constraintlayout.core.Metrics sMetrics
 androidx.constraintlayout.core.Metrics:
@@ -28187,20 +28445,14 @@ androidx.core.app.NotificationCompatBuilder$$InternalSyntheticThrowCCEIfNotNull$
 androidx.core.app.NotificationCompatBuilder:
     public final void removeSoundAndVibration(android.app.Notification)
 androidx.core.app.NotificationCompatJellybean:
-    public static java.lang.reflect.Field sExtrasField
-    public static boolean sExtrasFieldAccessFailed
     public static android.util.SparseArray buildActionExtrasMap(java.util.List)
-    public static android.os.Bundle getExtras(android.app.Notification)
     public static android.os.Bundle writeActionAndGetExtras(android.app.Notification$Builder,androidx.core.app.NotificationCompat$Action)
-androidx.core.content.ContextCompat:
-    public static android.util.TypedValue sTempValue
 androidx.core.content.LocusIdCompat
 androidx.core.content.res.ColorStateListInflaterCompat:
     public static android.content.res.ColorStateList inflate(android.content.res.Resources,int,android.content.res.Resources$Theme)
 androidx.core.content.res.ComplexColorCompat
 androidx.core.content.res.GradientColorInflaterCompat$ColorStops
 androidx.core.content.res.GradientColorInflaterCompat
-androidx.core.content.res.ResourcesCompat$Api15Impl
 androidx.core.content.res.TypedArrayUtils
 androidx.core.graphics.PaintCompat:
     public static androidx.core.util.Pair obtainEmptyRects()
@@ -28245,10 +28497,10 @@ androidx.core.graphics.drawable.WrappedDrawableApi14
 androidx.core.graphics.drawable.WrappedDrawableApi21
 androidx.core.graphics.drawable.WrappedDrawableState
 androidx.core.internal.view.SupportSubMenu
-androidx.core.os.BundleCompat$BeforeApi18Impl
 androidx.core.os.LocaleListCompat:
     public static java.util.Locale forLanguageTagCompat(java.lang.String)
 androidx.core.os.LocaleListCompatWrapper
+androidx.core.provider.FontProvider$ContentQueryWrapperApi16Impl
 androidx.core.text.ICUCompat$Api21Impl
 androidx.core.text.ICUCompat:
     public static java.lang.reflect.Method sAddLikelySubtagsMethod
@@ -28256,8 +28508,6 @@ androidx.core.text.ICUCompat:
     public static java.lang.String addLikelySubtagsBelowApi21(java.util.Locale)
     public static java.lang.String getScriptBelowApi21(java.lang.String)
 androidx.core.util.Pair
-androidx.core.view.ActionProvider:
-    public abstract android.view.View onCreateActionView()
 androidx.core.view.LayoutInflaterCompat:
     public static boolean sCheckedField
     public static java.lang.reflect.Field sLayoutInflaterFactory2Field
@@ -28268,16 +28518,11 @@ androidx.core.view.TintableBackgroundView
 androidx.core.view.ViewCompat$Api28Impl$$InternalSyntheticLambda$1$2681dfbdcb67c35f98eab0e2bfd7b6e0f40bc9ea41db120cd68736076963a523$0:
     public final synthetic androidx.core.view.ViewCompat$OnUnhandledKeyEventListenerCompat f$0
 androidx.core.view.ViewCompat:
-    public static java.lang.reflect.Field sMinHeightField
-    public static boolean sMinHeightFieldFetched
-    public static java.lang.reflect.Field sMinWidthField
-    public static boolean sMinWidthFieldFetched
     public static java.util.WeakHashMap sTransitionNameMap
 androidx.core.view.ViewConfigurationCompat:
     public static java.lang.reflect.Method sGetScaledScrollFactorMethod
     public static float getLegacyScrollFactor(android.view.ViewConfiguration,android.content.Context)
     public static int getScaledHoverSlop(android.view.ViewConfiguration)
-androidx.core.view.ViewPropertyAnimatorCompat$ViewPropertyAnimatorListenerApi14
 androidx.core.view.accessibility.AccessibilityNodeInfoCompat$AccessibilityActionCompat$$InternalSyntheticThrowCCEIfNotNull$8$c1fad68fe340885a91ee2df785d8a12b1bda10320293b3dfc65523d397088fdd$0
 androidx.core.view.accessibility.AccessibilityNodeInfoCompat$AccessibilityActionCompat:
     public final androidx.core.view.accessibility.AccessibilityViewCommand mCommand
@@ -28303,7 +28548,6 @@ androidx.core.view.inputmethod.InputContentInfoCompat$InputContentInfoCompatApi2
 androidx.core.view.inputmethod.InputContentInfoCompat$InputContentInfoCompatBaseImpl
 androidx.core.view.inputmethod.InputContentInfoCompat:
     public void <init>(android.net.Uri,android.content.ClipDescription,android.net.Uri)
-androidx.core.widget.CheckedTextViewCompat$Api14Impl
 androidx.core.widget.CompoundButtonCompat:
     public static java.lang.reflect.Field sButtonDrawableField
     public static boolean sButtonDrawableFieldFetched
@@ -28312,7 +28556,6 @@ androidx.core.widget.PopupWindowCompat:
     public static boolean sOverlapAnchorFieldAttempted
     public static java.lang.reflect.Method sSetWindowLayoutTypeMethod
     public static boolean sSetWindowLayoutTypeMethodAttempted
-androidx.core.widget.TextViewOnReceiveContentListener$ApiImpl
 androidx.core.widget.TintableCheckedTextView
 androidx.core.widget.TintableCompoundButton
 androidx.core.widget.TintableCompoundDrawablesView
@@ -28334,17 +28577,25 @@ androidx.fragment.app.FragmentManager$6:
     public final synthetic androidx.fragment.app.FragmentResultListener val$listener
 androidx.fragment.app.FragmentManager:
     public final void clearFragmentResult(java.lang.String)
+androidx.fragment.app.strictmode.FragmentStrictMode$$InternalSyntheticLambda$1$6747af765e2b033ef1db55c2822e7b633fcb836001d4cead8a13afa3e59a483e$0
+androidx.fragment.app.strictmode.FragmentStrictMode$OnViolationListener:
+    public abstract void onViolation(androidx.fragment.app.strictmode.Violation)
+androidx.fragment.app.strictmode.FragmentStrictMode$Policy:
+    public final androidx.fragment.app.strictmode.FragmentStrictMode$OnViolationListener listener
+androidx.fragment.app.strictmode.FragmentStrictMode:
+    public static synthetic void $r8$lambda$3GEKar9k4mm28McDHO-XTHzF5lU(androidx.fragment.app.strictmode.FragmentStrictMode$Policy,androidx.fragment.app.strictmode.Violation)
+    public static final void handlePolicyViolation$lambda-0(androidx.fragment.app.strictmode.FragmentStrictMode$Policy,androidx.fragment.app.strictmode.Violation)
 androidx.interpolator.view.animation.FastOutLinearInInterpolator
 androidx.interpolator.view.animation.FastOutSlowInInterpolator
 androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 androidx.interpolator.view.animation.LookupTableInterpolator
 androidx.lifecycle.LifecycleRegistryOwner
-androidx.lifecycle.ReportFragment$$InternalSyntheticThrowCCEIfNotNull$8$9442b71b5560cc75a110ea9d112dab355ea1183b17c884f26ba55bef0cc2765e$0
+androidx.lifecycle.ReportFragment$Companion$$InternalSyntheticThrowCCEIfNotNull$8$00e9ac50f5a00c3ae07a61949c4665c1d7a4f130526c3286c8ad38eb619c5450$0
 androidx.lifecycle.SavedStateHandleController:
-    public final androidx.lifecycle.SavedStateHandle mHandle
-    public final java.lang.String mKey
+    public final androidx.lifecycle.SavedStateHandle handle
+    public final java.lang.String key
 androidx.lifecycle.SingleGeneratedAdapterObserver:
-    public final androidx.lifecycle.GeneratedAdapter mGeneratedAdapter
+    public final androidx.lifecycle.GeneratedAdapter generatedAdapter
 androidx.lifecycle.ViewModelProvider$$InternalSyntheticThrowCCEIfNotNull$8$bac46f794a940c0b6b6271e210e6df4ed07ebcc0221f5e4590f662faa06752aa$0
 androidx.lifecycle.ViewModelProvider$OnRequeryFactory
 androidx.media3.common.ErrorMessageProvider:
@@ -28539,6 +28790,7 @@ androidx.media3.ui.TrackSelectionView$TrackInfo:
 androidx.media3.ui.TrackSelectionView$TrackSelectionListener
 androidx.media3.ui.TrackSelectionView:
     public androidx.media3.ui.TrackSelectionView$TrackSelectionListener listener
+androidx.profileinstaller.BenchmarkOperation$Api21ContextHelper
 androidx.recyclerview.widget.RecyclerView$ChildDrawingOrderCallback:
     public abstract int onGetChildDrawingOrder(int,int)
 androidx.recyclerview.widget.RecyclerView$LayoutManager:
@@ -28910,6 +29162,7 @@ com.google.android.odml.image.zzg
 com.google.android.odml.image.zzi
 com.google.common.collect.ImmutableList:
     public static com.google.common.collect.ImmutableList of(java.lang.Object)
+com.google.common.util.concurrent.ListenableFuture
 com.google.firebase.components.EventBus$$Lambda$1:
     public final com.google.firebase.events.Event arg$2
 com.google.firebase.encoders.Encoder
@@ -28921,3 +29174,5 @@ kotlin.text.StringsKt:
 kotlin.text.StringsKt__StringsJVMKt:
     public static final boolean endsWith(java.lang.String,java.lang.String,boolean)
     public static synthetic boolean endsWith$default(java.lang.String,java.lang.String,boolean,int,java.lang.Object)
+kotlinx.coroutines.Job:
+    public abstract void cancel(java.util.concurrent.CancellationException)

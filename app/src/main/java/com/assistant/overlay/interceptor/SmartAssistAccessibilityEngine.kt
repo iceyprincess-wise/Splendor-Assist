@@ -1,4 +1,5 @@
 package com.assistant.overlay.interceptor
+import com.assistant.diagnostic.RuntimeLogger
 
 import android.accessibilityservice.AccessibilityService
 import android.os.Process

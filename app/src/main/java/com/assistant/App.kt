@@ -1,10 +1,12 @@
 package com.assistant
+import com.assistant.diagnostic.RuntimeLogger
 
 import android.app.Application
 
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
+        RuntimeLogger.initialize(this)
         // Hardware-level panic interception active app-wide
         Thread.setDefaultUncaughtExceptionHandler(GlobalCrashHandler(this))
 

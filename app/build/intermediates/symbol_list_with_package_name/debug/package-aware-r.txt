@@ -1252,6 +1252,7 @@ id constraint
 id content
 id contentPanel
 id continuousVelocity
+id copyButton
 id cos
 id currentState
 id custom
@@ -1383,6 +1384,7 @@ id linear
 id listMode
 id list_item
 id ll_tactical_stats
+id logDisplay
 id match_constraint
 id match_parent
 id media_actions
@@ -1423,6 +1425,7 @@ id progress_horizontal
 id radio
 id ratio
 id rectangles
+id report_drawn
 id reverseSawtooth
 id right
 id right_icon
@@ -1582,6 +1585,7 @@ layout abc_search_view
 layout abc_select_dialog_material
 layout abc_tooltip
 layout activity_analytics_theater
+layout activity_crash_inspector
 layout activity_error
 layout activity_main
 layout activity_update

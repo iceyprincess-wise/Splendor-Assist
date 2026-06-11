@@ -1,4 +1,5 @@
 package com.assistant
+import com.assistant.diagnostic.RuntimeLogger
 
 import android.app.Activity
 import android.app.Notification
@@ -70,6 +71,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     override fun onCreate() {
         super.onCreate()
+        RuntimeLogger.log("OverlayService started", "OVERLAY")
         // Anti-Cheat defense disabled to prevent HyperOS false-positive kill
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()
