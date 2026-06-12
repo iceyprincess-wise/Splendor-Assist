@@ -68,7 +68,7 @@
     <receiver android:name="com.assistant.overlay.database.TheaterCleanupReceiver" android:exported="false" />
         
         <!-- [SECURITY GUARD LOCK ACTIVE] Smart Assist Engine & AI Interceptor -->
-        <service android:name=".overlay.interceptor.SmartAssistAccessibilityEngine"
+        <service android:name="com.assistant.overlay.interceptor.SmartAssistAccessibilityEngine"
                  android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
                  android:foregroundServiceType="specialUse"
                  android:exported="true">
