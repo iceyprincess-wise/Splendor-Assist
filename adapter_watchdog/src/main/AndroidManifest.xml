@@ -7,16 +7,16 @@
     <application
         android:allowBackup="false"
         android:icon="@drawable/ic_extension"
-        android:label="Splendor Input Adapter"
+        android:label="Splendor Watchdog Adapter"
         android:hardwareAccelerated="true">
         
         <service
             android:name=".WatchdogAdapterService"
             android:exported="true"
-            android:process=":kernel_input"
+            android:process=":kernel_watchdog"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                      android:value="Coordinates input hardware event data collection pipelines."/>
+                      android:value="Supervises adapter health, failures and recovery telemetry."/>
         </service>
     </application>
 </manifest>

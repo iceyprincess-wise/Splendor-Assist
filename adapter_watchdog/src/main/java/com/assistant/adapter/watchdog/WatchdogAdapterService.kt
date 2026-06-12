@@ -29,19 +29,48 @@ class WatchdogAdapterService : Service() {
                     details = "Heartbeat active"
                 )
             )
-            RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+            RuntimeLogger.log("Watchdog heartbeat", "HEALTH")
             heartbeatHandler.postDelayed(this, 10000)
+        }
+    }
+
+
+    private val watchdogHandler = Handler(Looper.getMainLooper())
+
+    private val watchdogRunnable = object : Runnable {
+        override fun run() {
+
+            AdapterHealthRegistry.getAll().forEach { snapshot ->
+
+                val status =
+                    AdapterHealthRegistry.effectiveStatus(snapshot.adapterName)
+
+                when (status) {
+
+                    "OFFLINE" -> RuntimeLogger.log(
+                        "WATCHDOG OFFLINE: ${snapshot.adapterName}",
+                        "WATCHDOG"
+                    )
+
+                    "DEGRADED" -> RuntimeLogger.log(
+                        "WATCHDOG DEGRADED: ${snapshot.adapterName}",
+                        "WATCHDOG"
+                    )
+                }
+            }
+
+            watchdogHandler.postDelayed(this, 15000)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
+        RuntimeLogger.log("WatchdogAdapterService started", "ADAPTER")
+        val channel = NotificationChannel("watchdog_adapter", "Watchdog Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         
-        val notification = Notification.Builder(this, "input_adapter")
-            .setContentTitle("Splendor Input Node")
+        val notification = Notification.Builder(this, "watchdog_adapter")
+            .setContentTitle("Splendor Watchdog Node")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .build()
         startForeground(9993, notification)
@@ -58,13 +87,17 @@ class WatchdogAdapterService : Service() {
         )
 
         heartbeatHandler.post(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
+        RuntimeLogger.log("Watchdog heartbeat scheduler started", "HEALTH")
+
+        watchdogHandler.post(watchdogRunnable)
+        RuntimeLogger.log("Watchdog scanner started", "WATCHDOG")
     }
 
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
+        watchdogHandler.removeCallbacks(watchdogRunnable)
+        RuntimeLogger.log("Watchdog heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
 
