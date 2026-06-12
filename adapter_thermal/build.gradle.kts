@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.assistant.adapter.input"
+    namespace = "com.assistant.adapter.thermal"
     compileSdk = 36
 
     defaultConfig {

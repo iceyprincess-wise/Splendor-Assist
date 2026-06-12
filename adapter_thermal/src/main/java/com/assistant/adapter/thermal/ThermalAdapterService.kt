@@ -8,6 +8,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.os.Build
+import android.os.PowerManager
 import android.os.Handler
 import android.os.Looper
 import android.os.IBinder
@@ -29,19 +31,54 @@ class ThermalAdapterService : Service() {
                     details = "Heartbeat active"
                 )
             )
-            RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+            RuntimeLogger.log("ThermalAdapter heartbeat", "HEALTH")
             heartbeatHandler.postDelayed(this, 10000)
+        }
+    }
+
+
+    private val thermalHandler = Handler(Looper.getMainLooper())
+
+    private val thermalRunnable = object : Runnable {
+
+        override fun run() {
+
+            try {
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+
+                    val powerManager =
+                        getSystemService(PowerManager::class.java)
+
+                    val status =
+                        powerManager?.currentThermalStatus ?: -1
+
+                    RuntimeLogger.log(
+                        "THERMAL status=$status",
+                        "THERMAL"
+                    )
+                }
+
+            } catch (e: Exception) {
+
+                RuntimeLogger.log(
+                    "THERMAL telemetry failed",
+                    "THERMAL"
+                )
+            }
+
+            thermalHandler.postDelayed(this, 30000)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
+        RuntimeLogger.log("ThermalAdapterService started", "ADAPTER")
+        val channel = NotificationChannel("thermal_adapter", "Thermal Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         
-        val notification = Notification.Builder(this, "input_adapter")
-            .setContentTitle("Splendor Input Node")
+        val notification = Notification.Builder(this, "thermal_adapter")
+            .setContentTitle("Splendor Thermal Node")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .build()
         startForeground(9993, notification)
@@ -58,13 +95,17 @@ class ThermalAdapterService : Service() {
         )
 
         heartbeatHandler.post(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
+        RuntimeLogger.log("ThermalAdapter heartbeat scheduler started", "HEALTH")
+
+        thermalHandler.post(thermalRunnable)
+        RuntimeLogger.log("Thermal telemetry started", "THERMAL")
     }
 
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
+        thermalHandler.removeCallbacks(thermalRunnable)
+        RuntimeLogger.log("ThermalAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
 
