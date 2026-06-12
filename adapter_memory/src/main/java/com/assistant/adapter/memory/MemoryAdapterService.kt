@@ -8,6 +8,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.app.ActivityManager
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.IBinder
@@ -29,19 +31,57 @@ class MemoryAdapterService : Service() {
                     details = "Heartbeat active"
                 )
             )
-            RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+            RuntimeLogger.log("MemoryAdapter heartbeat", "HEALTH")
             heartbeatHandler.postDelayed(this, 10000)
+        }
+    }
+
+
+    private val memoryHandler = Handler(Looper.getMainLooper())
+
+    private val memoryRunnable = object : Runnable {
+
+        override fun run() {
+
+            try {
+
+                val activityManager =
+                    getSystemService(Context.ACTIVITY_SERVICE)
+                        as ActivityManager
+
+                val info =
+                    ActivityManager.MemoryInfo()
+
+                activityManager.getMemoryInfo(info)
+
+                val availableMb =
+                    info.availMem / (1024 * 1024)
+
+                RuntimeLogger.log(
+                    "MEMORY available=${availableMb}MB lowMemory=${info.lowMemory}",
+                    "MEMORY"
+                )
+
+            } catch (e: Exception) {
+
+                RuntimeLogger.log(
+                    "MEMORY telemetry failed",
+                    "MEMORY"
+                )
+            }
+
+            memoryHandler.postDelayed(this, 30000)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
+        RuntimeLogger.log("MemoryAdapterService started", "ADAPTER")
+        val channel = NotificationChannel("memory_adapter", "Memory Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         
-        val notification = Notification.Builder(this, "input_adapter")
-            .setContentTitle("Splendor Input Node")
+        val notification = Notification.Builder(this, "memory_adapter")
+            .setContentTitle("Splendor Memory Node")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .build()
         startForeground(9993, notification)
@@ -58,13 +98,17 @@ class MemoryAdapterService : Service() {
         )
 
         heartbeatHandler.post(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
+        RuntimeLogger.log("MemoryAdapter heartbeat scheduler started", "HEALTH")
+
+        memoryHandler.post(memoryRunnable)
+        RuntimeLogger.log("Memory telemetry started", "MEMORY")
     }
 
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
+        memoryHandler.removeCallbacks(memoryRunnable)
+        RuntimeLogger.log("MemoryAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
 
