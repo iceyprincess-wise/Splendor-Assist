@@ -1,16 +1,16 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml:2:13-83
-INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml:2:13-83
+ADDED from /data/data/com.termux/files/home/projects/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest7951388107575975120.xml:2:13-83
+INJECTED from /data/data/com.termux/files/home/projects/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest7951388107575975120.xml:2:13-83
 	package
-		INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml
+		INJECTED from /data/data/com.termux/files/home/projects/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest7951388107575975120.xml
 	xmlns:android
-		ADDED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml:2:23-81
+		ADDED from /data/data/com.termux/files/home/projects/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest7951388107575975120.xml:2:23-81
 uses-sdk
-INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml reason: use-sdk injection requested
-INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml
-INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml
+INJECTED from /data/data/com.termux/files/home/projects/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest7951388107575975120.xml reason: use-sdk injection requested
+INJECTED from /data/data/com.termux/files/home/projects/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest7951388107575975120.xml
+INJECTED from /data/data/com.termux/files/home/projects/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest7951388107575975120.xml
 	android:targetSdkVersion
-		INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml
+		INJECTED from /data/data/com.termux/files/home/projects/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest7951388107575975120.xml
 	android:minSdkVersion
-		INJECTED from /workspaces/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest15038193336181629407.xml
+		INJECTED from /data/data/com.termux/files/home/projects/Splendor-Assist/diagnostic_core/build/intermediates/tmp/ProcessLibraryManifest/debug/tempAndroidManifest7951388107575975120.xml

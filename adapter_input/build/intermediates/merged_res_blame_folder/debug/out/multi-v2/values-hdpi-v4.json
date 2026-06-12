@@ -4,7 +4,7 @@
             "outputFile": "com.assistant.adapter.input.adapter_input-mergeDebugResources-21:/values-hdpi-v4/values-hdpi-v4.xml",
             "map": [
                 {
-                    "source": "/home/codespace/.gradle/caches/transforms-3/aa9ffcd3f362c6e1a834d4923c906fac/transformed/appcompat-1.7.0/res/values-hdpi-v4/values-hdpi-v4.xml",
+                    "source": "/data/data/com.termux/files/home/.gradle/caches/transforms-3/aa9ffcd3f362c6e1a834d4923c906fac/transformed/appcompat-1.7.0/res/values-hdpi-v4/values-hdpi-v4.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
