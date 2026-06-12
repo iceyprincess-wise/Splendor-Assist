@@ -29,19 +29,44 @@ class StutterAdapterService : Service() {
                     details = "Heartbeat active"
                 )
             )
-            RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+            RuntimeLogger.log("StutterAdapter heartbeat", "HEALTH")
             heartbeatHandler.postDelayed(this, 10000)
+        }
+    }
+
+
+    private val stutterHandler = Handler(Looper.getMainLooper())
+
+    private var lastFrameTick = System.currentTimeMillis()
+
+    private val stutterRunnable = object : Runnable {
+
+        override fun run() {
+
+            val now = System.currentTimeMillis()
+
+            val frameGap =
+                now - lastFrameTick
+
+            lastFrameTick = now
+
+            RuntimeLogger.log(
+                "STUTTER frameGap=${frameGap}ms",
+                "STUTTER"
+            )
+
+            stutterHandler.postDelayed(this, 16)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
+        RuntimeLogger.log("StutterAdapterService started", "ADAPTER")
+        val channel = NotificationChannel("stutter_adapter", "Stutter Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         
-        val notification = Notification.Builder(this, "input_adapter")
-            .setContentTitle("Splendor Input Node")
+        val notification = Notification.Builder(this, "stutter_adapter")
+            .setContentTitle("Splendor Stutter Node")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .build()
         startForeground(9993, notification)
@@ -58,13 +83,17 @@ class StutterAdapterService : Service() {
         )
 
         heartbeatHandler.post(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
+        RuntimeLogger.log("StutterAdapter heartbeat scheduler started", "HEALTH")
+
+        stutterHandler.post(stutterRunnable)
+        RuntimeLogger.log("Stutter telemetry started", "STUTTER")
     }
 
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
+        stutterHandler.removeCallbacks(stutterRunnable)
+        RuntimeLogger.log("StutterAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
 
