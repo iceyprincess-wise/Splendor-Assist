@@ -22,7 +22,19 @@ object IgnitionEngine {
                 "com.assistant.adapter.net.NetAdapterService",
                 "com.assistant.adapter.input.InputAdapterService",
                 "com.assistant.adapter.lmk.LmkAdapterService",
-                "com.assistant.adapter.sync.SyncAdapterService"
+                "com.assistant.adapter.sync.SyncAdapterService",
+
+                "com.assistant.adapter.ping.PingAdapterService",
+                "com.assistant.adapter.stutter.StutterAdapterService",
+                "com.assistant.adapter.lag.LagAdapterService",
+                "com.assistant.adapter.boot.BootAdapterService",
+                "com.assistant.adapter.watchdog.WatchdogAdapterService",
+
+                "com.assistant.adapter.memory.MemoryAdapterService",
+                "com.assistant.adapter.thermal.ThermalAdapterService",
+                "com.assistant.adapter.battery.BatteryAdapterService",
+                "com.assistant.adapter.scheduler.SchedulerAdapterService",
+                "com.assistant.adapter.smartassist.SmartAssistAdapterService"
             )
 
             adapters.forEach { className ->
