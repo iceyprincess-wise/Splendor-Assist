@@ -12,6 +12,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.IBinder
 import android.os.Messenger
+import java.net.InetAddress
+import java.util.concurrent.Executors
 
 class PingAdapterService : Service() {
     private val messenger = Messenger(Handler(Handler.Callback { msg -> true }))
@@ -29,19 +31,67 @@ class PingAdapterService : Service() {
                     details = "Heartbeat active"
                 )
             )
-            RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+            RuntimeLogger.log("PingAdapter heartbeat", "HEALTH")
             heartbeatHandler.postDelayed(this, 10000)
+        }
+    }
+
+
+    private val pingHandler = Handler(Looper.getMainLooper())
+
+    private val pingExecutor =
+        Executors.newSingleThreadExecutor()
+
+    private val pingRunnable = object : Runnable {
+
+        override fun run() {
+
+            pingExecutor.execute {
+
+                try {
+
+                    val start =
+                        System.currentTimeMillis()
+
+                    InetAddress
+                        .getByName("google.com")
+
+                    val latency =
+                        System.currentTimeMillis() - start
+
+                    val quality =
+                        when {
+                            latency < 100 -> "GOOD"
+                            latency < 300 -> "FAIR"
+                            else -> "POOR"
+                        }
+
+                    RuntimeLogger.log(
+                        "PING latency=${latency}ms quality=$quality",
+                        "PING"
+                    )
+
+                } catch (e: Exception) {
+
+                    RuntimeLogger.log(
+                        "PING connectivity check failed",
+                        "PING"
+                    )
+                }
+            }
+
+            pingHandler.postDelayed(this, 30000)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
+        RuntimeLogger.log("PingAdapterService started", "ADAPTER")
+        val channel = NotificationChannel("ping_adapter", "Ping Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         
-        val notification = Notification.Builder(this, "input_adapter")
-            .setContentTitle("Splendor Input Node")
+        val notification = Notification.Builder(this, "ping_adapter")
+            .setContentTitle("Splendor Ping Node")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .build()
         startForeground(9993, notification)
@@ -58,13 +108,18 @@ class PingAdapterService : Service() {
         )
 
         heartbeatHandler.post(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
+        RuntimeLogger.log("PingAdapter heartbeat scheduler started", "HEALTH")
+
+        pingHandler.post(pingRunnable)
+        RuntimeLogger.log("Ping telemetry started", "PING")
     }
 
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
+        pingHandler.removeCallbacks(pingRunnable)
+        pingExecutor.shutdownNow()
+        RuntimeLogger.log("PingAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
 
