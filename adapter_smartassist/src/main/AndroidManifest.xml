@@ -1,0 +1,22 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.assistant.adapter.smartassist">
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_extension"
+        android:label="Splendor Input Adapter"
+        android:hardwareAccelerated="true">
+        
+        <service
+            android:name=".SmartAssistAdapterService"
+            android:exported="true"
+            android:process=":kernel_input"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                      android:value="Coordinates input hardware event data collection pipelines."/>
+        </service>
+    </application>
+</manifest>
