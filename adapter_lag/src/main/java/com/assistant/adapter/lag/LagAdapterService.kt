@@ -29,19 +29,44 @@ class LagAdapterService : Service() {
                     details = "Heartbeat active"
                 )
             )
-            RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+            RuntimeLogger.log("LagAdapter heartbeat", "HEALTH")
             heartbeatHandler.postDelayed(this, 10000)
+        }
+    }
+
+
+    private val lagHandler = Handler(Looper.getMainLooper())
+
+    private var lastTick = System.currentTimeMillis()
+
+    private val lagRunnable = object : Runnable {
+
+        override fun run() {
+
+            val now = System.currentTimeMillis()
+
+            val drift =
+                now - lastTick - 1000
+
+            lastTick = now
+
+            RuntimeLogger.log(
+                "LAG drift=${drift}ms",
+                "LAG"
+            )
+
+            lagHandler.postDelayed(this, 1000)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
+        RuntimeLogger.log("LagAdapterService started", "ADAPTER")
+        val channel = NotificationChannel("lag_adapter", "Lag Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         
-        val notification = Notification.Builder(this, "input_adapter")
-            .setContentTitle("Splendor Input Node")
+        val notification = Notification.Builder(this, "lag_adapter")
+            .setContentTitle("Splendor Lag Node")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .build()
         startForeground(9993, notification)
@@ -58,13 +83,17 @@ class LagAdapterService : Service() {
         )
 
         heartbeatHandler.post(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
+        RuntimeLogger.log("LagAdapter heartbeat scheduler started", "HEALTH")
+
+        lagHandler.post(lagRunnable)
+        RuntimeLogger.log("Lag telemetry started", "LAG")
     }
 
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
+        lagHandler.removeCallbacks(lagRunnable)
+        RuntimeLogger.log("LagAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
 
