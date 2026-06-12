@@ -29,19 +29,51 @@ class SchedulerAdapterService : Service() {
                     details = "Heartbeat active"
                 )
             )
-            RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+            RuntimeLogger.log("Scheduler heartbeat", "HEALTH")
             heartbeatHandler.postDelayed(this, 10000)
+        }
+    }
+
+
+    private val schedulerHandler = Handler(Looper.getMainLooper())
+
+    private val schedulerRunnable = object : Runnable {
+        override fun run() {
+
+            var active = 0
+            var degraded = 0
+            var offline = 0
+
+            AdapterHealthRegistry.getAll().forEach { snapshot ->
+
+                when (
+                    AdapterHealthRegistry.effectiveStatus(
+                        snapshot.adapterName
+                    )
+                ) {
+                    "ACTIVE" -> active++
+                    "DEGRADED" -> degraded++
+                    "OFFLINE" -> offline++
+                }
+            }
+
+            RuntimeLogger.log(
+                "FLEET HEALTH active=$active degraded=$degraded offline=$offline",
+                "SCHEDULER"
+            )
+
+            schedulerHandler.postDelayed(this, 15000)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
+        RuntimeLogger.log("SchedulerAdapterService started", "ADAPTER")
+        val channel = NotificationChannel("scheduler_adapter", "Scheduler Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         
-        val notification = Notification.Builder(this, "input_adapter")
-            .setContentTitle("Splendor Input Node")
+        val notification = Notification.Builder(this, "scheduler_adapter")
+            .setContentTitle("Splendor Scheduler Node")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .build()
         startForeground(9993, notification)
@@ -58,13 +90,17 @@ class SchedulerAdapterService : Service() {
         )
 
         heartbeatHandler.post(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
+        RuntimeLogger.log("Scheduler heartbeat scheduler started", "HEALTH")
+
+        schedulerHandler.post(schedulerRunnable)
+        RuntimeLogger.log("Scheduler fleet monitor started", "SCHEDULER")
     }
 
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
+        schedulerHandler.removeCallbacks(schedulerRunnable)
+        RuntimeLogger.log("Scheduler heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
 
