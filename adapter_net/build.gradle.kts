@@ -1,6 +1,6 @@
 // [SECURITY GUARD LOCK ACTIVE] - DEPENDENCY BOUNDARY SEALED
 plugins {
-    id("com.android.application")
+    id("com.android.library")
     id("org.jetbrains.kotlin.android")
 }
 
@@ -9,11 +9,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.assistant.adapter.net"
         minSdk = 26
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
     }
 
     buildTypes {
