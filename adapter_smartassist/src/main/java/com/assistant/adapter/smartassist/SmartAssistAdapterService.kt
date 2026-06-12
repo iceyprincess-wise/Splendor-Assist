@@ -29,19 +29,63 @@ class SmartAssistAdapterService : Service() {
                     details = "Heartbeat active"
                 )
             )
-            RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+            RuntimeLogger.log("SmartAssist heartbeat", "HEALTH")
             heartbeatHandler.postDelayed(this, 10000)
+        }
+    }
+
+
+    private val smartAssistHandler = Handler(Looper.getMainLooper())
+
+    private val smartAssistRunnable = object : Runnable {
+        override fun run() {
+
+            var active = 0
+            var degraded = 0
+            var offline = 0
+
+            AdapterHealthRegistry.getAll().forEach { snapshot ->
+
+                when (
+                    AdapterHealthRegistry.effectiveStatus(
+                        snapshot.adapterName
+                    )
+                ) {
+                    "ACTIVE" -> active++
+                    "DEGRADED" -> degraded++
+                    "OFFLINE" -> offline++
+                }
+            }
+
+            val recommendation =
+                when {
+                    offline > 0 ->
+                        "RECOVERY RECOMMENDED"
+
+                    degraded > 0 ->
+                        "SYSTEM DEGRADED"
+
+                    else ->
+                        "SYSTEM HEALTHY"
+                }
+
+            RuntimeLogger.log(
+                recommendation,
+                "SMARTASSIST"
+            )
+
+            smartAssistHandler.postDelayed(this, 20000)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
+        RuntimeLogger.log("SmartAssistAdapterService started", "ADAPTER")
+        val channel = NotificationChannel("smartassist_adapter", "SmartAssist Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         
-        val notification = Notification.Builder(this, "input_adapter")
-            .setContentTitle("Splendor Input Node")
+        val notification = Notification.Builder(this, "smartassist_adapter")
+            .setContentTitle("Splendor SmartAssist Node")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .build()
         startForeground(9993, notification)
@@ -58,13 +102,17 @@ class SmartAssistAdapterService : Service() {
         )
 
         heartbeatHandler.post(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
+        RuntimeLogger.log("SmartAssist heartbeat scheduler started", "HEALTH")
+
+        smartAssistHandler.post(smartAssistRunnable)
+        RuntimeLogger.log("SmartAssist decision engine started", "SMARTASSIST")
     }
 
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
+        smartAssistHandler.removeCallbacks(smartAssistRunnable)
+        RuntimeLogger.log("SmartAssist heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
 
