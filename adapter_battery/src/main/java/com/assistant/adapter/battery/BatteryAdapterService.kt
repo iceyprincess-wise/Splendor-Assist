@@ -8,6 +8,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
 import android.os.Handler
 import android.os.Looper
 import android.os.IBinder
@@ -29,19 +31,62 @@ class BatteryAdapterService : Service() {
                     details = "Heartbeat active"
                 )
             )
-            RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+            RuntimeLogger.log("BatteryAdapter heartbeat", "HEALTH")
             heartbeatHandler.postDelayed(this, 10000)
+        }
+    }
+
+
+    private val batteryHandler = Handler(Looper.getMainLooper())
+
+    private val batteryRunnable = object : Runnable {
+
+        override fun run() {
+
+            try {
+
+                val intent = registerReceiver(
+                    null,
+                    IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+                )
+
+                val level =
+                    intent?.getIntExtra(
+                        BatteryManager.EXTRA_LEVEL,
+                        -1
+                    ) ?: -1
+
+                val charging =
+                    intent?.getIntExtra(
+                        BatteryManager.EXTRA_STATUS,
+                        -1
+                    )
+
+                RuntimeLogger.log(
+                    "BATTERY level=${level}% status=$charging",
+                    "BATTERY"
+                )
+
+            } catch (e: Exception) {
+
+                RuntimeLogger.log(
+                    "BATTERY telemetry failed",
+                    "BATTERY"
+                )
+            }
+
+            batteryHandler.postDelayed(this, 30000)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
+        RuntimeLogger.log("BatteryAdapterService started", "ADAPTER")
+        val channel = NotificationChannel("battery_adapter", "Battery Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         
-        val notification = Notification.Builder(this, "input_adapter")
-            .setContentTitle("Splendor Input Node")
+        val notification = Notification.Builder(this, "battery_adapter")
+            .setContentTitle("Splendor Battery Node")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .build()
         startForeground(9993, notification)
@@ -58,13 +103,17 @@ class BatteryAdapterService : Service() {
         )
 
         heartbeatHandler.post(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
+        RuntimeLogger.log("BatteryAdapter heartbeat scheduler started", "HEALTH")
+
+        batteryHandler.post(batteryRunnable)
+        RuntimeLogger.log("Battery telemetry started", "BATTERY")
     }
 
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
+        batteryHandler.removeCallbacks(batteryRunnable)
+        RuntimeLogger.log("BatteryAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
 
