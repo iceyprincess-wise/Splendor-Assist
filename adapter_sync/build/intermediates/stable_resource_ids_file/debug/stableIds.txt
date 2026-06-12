@@ -1,1 +1,0 @@
-com.assistant.adapter.sync:drawable/ic_extension = 0x7f010000

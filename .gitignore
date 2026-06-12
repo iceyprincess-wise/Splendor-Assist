@@ -9,3 +9,11 @@ jdk17/
 jdk17.tar.gz
 .jdk17/
 jdk17.tar.gz
+
+# Gradle
+.gradle/
+
+# Android build outputs
+build/
+**/build/
+
