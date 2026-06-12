@@ -4,3 +4,6 @@
     @android.webkit.JavascriptInterface <methods>;
 }
 -dontwarn com.google.mlkit.**
+
+# SmartAssist Engine Lock
+-keep class com.assistant.overlay.interceptor.SmartAssistAccessibilityEngine { *; }
