@@ -8,8 +8,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Handler
-import android.os.HandlerThread
 import android.os.IBinder
+import android.os.Looper
+import android.os.HandlerThread
 import android.os.Process
 import android.telephony.TelephonyManager
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
@@ -20,6 +21,8 @@ class InterruptionAdapterService : Service() {
     private lateinit var workerThread: HandlerThread
 
     private lateinit var interruptionHandler: Handler
+
+
 
     private val interruptionRunnable =
         object : Runnable {
@@ -58,6 +61,7 @@ class InterruptionAdapterService : Service() {
                 CallOverlayRepository.incomingCallVisible =
                     TelephonyStateRepository.activeCall
 
+
                 val state =
                     InterruptionCoordinator.evaluate(
                         batteryLevel,
@@ -68,24 +72,10 @@ class InterruptionAdapterService : Service() {
                 InterruptionRepository.save(state)
 
                 val audioProtected =
-                    AudioProtectionEngine.protect(
-                        this@InterruptionAdapterService
-                    )
+                    AudioProtectionEngine.protect(this@InterruptionAdapterService)
 
                 val throttleMode =
                     CounterThrottleEngine.recommendedMode()
-
-                val attenuationLevel =
-                    NotificationAttenuationEngine
-                        .attenuationLevel()
-
-                val vibrationReduced =
-                    NotificationAttenuationEngine
-                        .vibrationAttenuated()
-
-                val soundReduced =
-                    NotificationAttenuationEngine
-                        .soundAttenuated()
 
                 AdapterHealthRegistry.update(
                     AdapterHealthSnapshot(
@@ -97,11 +87,7 @@ class InterruptionAdapterService : Service() {
                         details =
                             "battery=${state.batteryLevel}," +
                             "call=${TelephonyStateRepository.activeCall}," +
-                            "audio=$audioProtected," +
-                            "mode=$throttleMode," +
-                            "attenuation=$attenuationLevel," +
-                            "vibration=$vibrationReduced," +
-                            "sound=$soundReduced"
+                            "mode=$throttleMode"
                     )
                 )
 
@@ -125,6 +111,7 @@ class InterruptionAdapterService : Service() {
 
         interruptionHandler =
             Handler(workerThread.looper)
+
 
         val channel =
             NotificationChannel(
@@ -158,7 +145,6 @@ class InterruptionAdapterService : Service() {
     }
 
     override fun onDestroy() {
-
         interruptionHandler.removeCallbacks(
             interruptionRunnable
         )
