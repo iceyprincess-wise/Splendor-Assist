@@ -220,8 +220,45 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
                 recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))
                     .addOnSuccessListener { visionText ->
-                        if (visionText.text.contains("time", true) || visionText.text.contains("v", true)) {
-                            updateOverlayVisuals("WINNING CHANCE: 100% [LOCKED]", Color.GREEN)
+
+                        val detectedText =
+                            visionText.text
+                                .replace("\n", " ")
+                                .take(120)
+
+                        if (detectedText.isNotBlank()) {
+                            RuntimeLogger.log(
+                                "OCR: $detectedText",
+                                "OCR"
+                            )
+                        }
+
+                        if (
+                            visionText.text.contains("time", true) ||
+                            visionText.text.contains("v", true)
+                        ) {
+
+                            com.assistant.interceptor.SmartAssistPipeline
+                                .isPanicStateActive = true
+
+                            com.assistant.interceptor.SmartAssistPipeline
+                                .computeOptimalVector(
+                                    200f,
+                                    500f,
+                                    900f,
+                                    500f,
+                                    1
+                                )
+
+                            RuntimeLogger.log(
+                                "MATCH DETECTED -> PANIC ACTIVE",
+                                "SMART_ASSIST"
+                            )
+
+                            updateOverlayVisuals(
+                                "MATCH DETECTED [PANIC ACTIVE]",
+                                Color.GREEN
+                            )
                         }
                     }
                     .addOnCompleteListener { image.close() }
