@@ -27,9 +27,9 @@ class NetAdapterService : Service() {
                     errorCount = 0,
                     recoveryCount = 0,
                     details = "Heartbeat active"
+                    )
                 )
-            )
-            RuntimeLogger.log("NetAdapter heartbeat", "HEALTH")
+                RuntimeLogger.log("NetAdapter heartbeat", "HEALTH")
             heartbeatHandler.postDelayed(this, 10000)
         }
     }
@@ -57,10 +57,10 @@ class NetAdapterService : Service() {
                 recoveryCount = 0,
                 details = "Foreground service running"
             )
+        )
 
         heartbeatHandler.post(heartbeatRunnable)
         RuntimeLogger.log("NetAdapter heartbeat scheduler started", "HEALTH")
-        )
     }
 
 
