@@ -12,6 +12,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.IBinder
 import android.os.Messenger
+import android.os.SystemClock
 
 class BootAdapterService : Service() {
     private val messenger = Messenger(Handler(Handler.Callback { msg -> true }))
@@ -29,19 +30,45 @@ class BootAdapterService : Service() {
                     details = "Heartbeat active"
                 )
             )
-            RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+            RuntimeLogger.log("BootAdapter heartbeat", "HEALTH")
             heartbeatHandler.postDelayed(this, 10000)
+        }
+    }
+
+
+    private val bootHandler = Handler(Looper.getMainLooper())
+
+    private val bootRunnable = object : Runnable {
+
+        override fun run() {
+
+            val uptimeSeconds =
+                SystemClock.elapsedRealtime() / 1000
+
+            val stabilization =
+                when {
+                    uptimeSeconds < 60 -> "EARLY_BOOT"
+                    uptimeSeconds < 300 -> "STABILIZING"
+                    else -> "STABLE"
+                }
+
+            RuntimeLogger.log(
+                "BOOT uptime=${uptimeSeconds}s state=$stabilization",
+                "BOOT"
+            )
+
+            bootHandler.postDelayed(this, 30000)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
+        RuntimeLogger.log("BootAdapterService started", "ADAPTER")
+        val channel = NotificationChannel("boot_adapter", "Boot Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         
-        val notification = Notification.Builder(this, "input_adapter")
-            .setContentTitle("Splendor Input Node")
+        val notification = Notification.Builder(this, "boot_adapter")
+            .setContentTitle("Splendor Boot Node")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .build()
         startForeground(9993, notification)
@@ -58,13 +85,17 @@ class BootAdapterService : Service() {
         )
 
         heartbeatHandler.post(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
+        RuntimeLogger.log("BootAdapter heartbeat scheduler started", "HEALTH")
+
+        bootHandler.post(bootRunnable)
+        RuntimeLogger.log("Boot telemetry started", "BOOT")
     }
 
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
-        RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
+        bootHandler.removeCallbacks(bootRunnable)
+        RuntimeLogger.log("BootAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
 
