@@ -1,10 +1,8 @@
 package com.assistant
 
-import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
@@ -12,118 +10,190 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.widget.Button
-import android.widget.Toast
 import android.widget.TextView
-import com.assistant.diagnostic.registry.AdapterHealthRegistry
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import com.assistant.diagnostic.registry.AdapterHealthRegistry
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var projectionManager: MediaProjectionManager
+    private lateinit var projectionManager:
+        MediaProjectionManager
 
-    private val screenCaptureLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
-            
-            // BULLETPROOFING: Double-bind both Static Memory and IPC Parceling
-            EngineData.code = result.resultCode
-            EngineData.intent = result.data
-            
-            EngineData.code = result.resultCode; EngineData.intent = result.data; EngineData.code = result.resultCode; EngineData.intent = result.data; val serviceIntent = Intent(this, OverlayService::class.java).apply {
-                putExtra("CROSS_PROCESS_CODE", result.resultCode)
-                putExtra("CROSS_PROCESS_DATA", result.data)
+    private val screenCaptureLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+
+            if (
+                result.resultCode == Activity.RESULT_OK &&
+                result.data != null
+            ) {
+
+                EngineData.code = result.resultCode
+                EngineData.intent = result.data
+
+                val serviceIntent =
+                    Intent(
+                        this,
+                        OverlayService::class.java
+                    )
+
+                serviceIntent.putExtra(
+                    "CROSS_PROCESS_CODE",
+                    result.resultCode
+                )
+
+                serviceIntent.putExtra(
+                    "CROSS_PROCESS_DATA",
+                    result.data
+                )
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent)
+                } else {
+                    startService(serviceIntent)
+                }
+
+                Toast.makeText(
+                    this,
+                    "Engine Linked",
+                    Toast.LENGTH_LONG
+                ).show()
             }
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent)
-            } else {
-                startService(serviceIntent)
-            }
-            Toast.makeText(this, "Secure Engine IPC Bridge Linked", Toast.LENGTH_LONG).show()
-        } else {
-            Toast.makeText(this, "Engine Authorization Denied.", Toast.LENGTH_LONG).show()
         }
-    }
 
+    override fun onCreate(
+        savedInstanceState: Bundle?
+    ) {
+        super.onCreate(savedInstanceState)
 
-override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    Thread.setDefaultUncaughtExceptionHandler(GlobalCrashHandler(this))
-    setContentView(com.assistant.overlay.R.layout.activity_main)
+        Thread.setDefaultUncaughtExceptionHandler(
+            GlobalCrashHandler(this)
+        )
 
-    // [IGNITION INJECTION: DO NOT REMOVE]
-    com.assistant.DashboardInjector.attach(this)
+        setContentView(
+            com.assistant.overlay.R.layout.activity_main
+        )
 
-    projectionManager =
-        getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        DashboardInjector.attach(this)
 
-    refreshAdapterHealth()
+        projectionManager =
+            getSystemService(
+                Context.MEDIA_PROJECTION_SERVICE
+            ) as MediaProjectionManager
 
-    findViewById<Button>(com.assistant.overlay.R.id.btnStartEngine)
-        .setOnClickListener {
+        refreshAdapterHealth()
+
+        findViewById<Button>(
+            com.assistant.overlay.R.id.btnStartEngine
+        ).setOnClickListener {
             checkBatteryAndProceed()
         }
 
-    findViewById<Button>(com.assistant.overlay.R.id.btnViewLogs)
-        .setOnClickListener {
-            startActivity(Intent(this, LogActivity::class.java))
+        findViewById<Button>(
+            com.assistant.overlay.R.id.btnViewLogs
+        ).setOnClickListener {
+            startActivity(
+                Intent(
+                    this,
+                    LogActivity::class.java
+                )
+            )
         }
-}
-
-private fun refreshAdapterHealth() {
-
-    val inputView =
-        findViewById<TextView>(com.assistant.overlay.R.id.tvInputAdapter)
-
-    val lmkView =
-        findViewById<TextView>(com.assistant.overlay.R.id.tvLmkAdapter)
-
-    val netView =
-        findViewById<TextView>(com.assistant.overlay.R.id.tvNetAdapter)
-
-    val syncView =
-        findViewById<TextView>(com.assistant.overlay.R.id.tvSyncAdapter)
-
-    AdapterHealthRegistry.get("adapter_input")?.let {
-        inputView.text = "Input Adapter: ${AdapterHealthRegistry.effectiveStatus("adapter_input")}"
     }
 
-    AdapterHealthRegistry.get("adapter_lmk")?.let {
-        lmkView.text = "LMK Adapter: ${AdapterHealthRegistry.effectiveStatus("adapter_lmk")}"
-    }
+    private fun refreshAdapterHealth() {
 
-    AdapterHealthRegistry.get("adapter_net")?.let {
-        netView.text = "Network Adapter: ${AdapterHealthRegistry.effectiveStatus("adapter_net")}"
-    }
+        findViewById<TextView>(
+            com.assistant.overlay.R.id.tvInputAdapter
+        ).text =
+            "Input : " +
+            AdapterHealthRegistry
+                .effectiveStatus("adapter_input")
 
-    AdapterHealthRegistry.get("adapter_sync")?.let {
-        syncView.text = "Sync Adapter: ${AdapterHealthRegistry.effectiveStatus("adapter_sync")}"
+        findViewById<TextView>(
+            com.assistant.overlay.R.id.tvLmkAdapter
+        ).text =
+            "LMK : " +
+            AdapterHealthRegistry
+                .effectiveStatus("adapter_lmk")
+
+        findViewById<TextView>(
+            com.assistant.overlay.R.id.tvNetAdapter
+        ).text =
+            "Network : " +
+            AdapterHealthRegistry
+                .effectiveStatus("adapter_net")
+
+        findViewById<TextView>(
+            com.assistant.overlay.R.id.tvSyncAdapter
+        ).text =
+            "Sync : " +
+            AdapterHealthRegistry
+                .effectiveStatus("adapter_sync")
+
+        findViewById<TextView>(
+            com.assistant.overlay.R.id.tvAdapterCount
+        ).text =
+            "Runtime Nodes : " +
+            AdapterHealthRegistry
+                .getAll()
+                .size
     }
-}
 
     private fun checkBatteryAndProceed() {
+
         try {
-            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !pm.isIgnoringBatteryOptimizations(packageName)) {
-                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                intent.data = Uri.parse("package:$packageName")
-                startActivity(intent)
+
+            val pm =
+                getSystemService(
+                    Context.POWER_SERVICE
+                ) as PowerManager
+
+            if (
+                Build.VERSION.SDK_INT >=
+                Build.VERSION_CODES.M &&
+                !pm.isIgnoringBatteryOptimizations(
+                    packageName
+                )
+            ) {
+
+                startActivity(
+                    Intent(
+                        Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                        Uri.parse("package:$packageName")
+                    )
+                )
+
             } else {
+
                 checkOverlayAndProceed()
             }
-        } catch (e: Exception) {
+
+        } catch (_: Exception) {
+
             checkOverlayAndProceed()
         }
     }
 
     private fun checkOverlayAndProceed() {
+
         if (!Settings.canDrawOverlays(this)) {
-            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
-            startActivity(intent)
+
+            startActivity(
+                Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+            )
+
         } else {
-            screenCaptureLauncher.launch(projectionManager.createScreenCaptureIntent())
+
+            screenCaptureLauncher.launch(
+                projectionManager.createScreenCaptureIntent()
+            )
         }
     }
 }
-

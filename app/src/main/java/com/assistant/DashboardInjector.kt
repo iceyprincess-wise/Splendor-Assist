@@ -1,6 +1,3 @@
-// [SECURITY GUARD LOCK ACTIVE]
-// CRITICAL CONTINUATION DIRECTIVE: ANTI-STRIP & ANTI-DEGRADATION ENFORCED.
-// DECOUPLED UI LOGIC. DO NOT SURGICALLY INJECT INTO MAINACTIVITY XML.
 package com.assistant
 
 import android.app.Activity
@@ -11,62 +8,116 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.assistant.diagnostic.registry.AdapterHealthRegistry
 
 object DashboardInjector {
+
     fun attach(activity: Activity) {
-        val root = activity.findViewById<ViewGroup>(android.R.id.content)
-        
-        val container = LinearLayout(activity).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            setPadding(48, 48, 48, 120)
-            elevation = 10f
-        }
 
-        val badgeContainer = LinearLayout(activity).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
-            setPadding(0, 0, 0, 24)
-        }
+        val root =
+            activity.findViewById<ViewGroup>(
+                android.R.id.content
+            )
 
-        val statusBadge = TextView(activity).apply {
-            text = "SYSTEM: STANDBY"
-            setTextColor(Color.parseColor("#FF5555")) // Red for standby
-            textSize = 12f
-            setTypeface(null, Typeface.BOLD)
-            letterSpacing = 0.1f
-        }
+        val container =
+            LinearLayout(activity).apply {
 
-        badgeContainer.addView(statusBadge)
+                orientation = LinearLayout.VERTICAL
 
-        val masterSwitch = Button(activity).apply {
-            text = "START FULL ENGINE"
-            setBackgroundColor(Color.parseColor("#1A1A1A"))
-            setTextColor(Color.parseColor("#00FF00"))
-            textSize = 16f
-            setTypeface(null, Typeface.BOLD)
-            
-            setOnClickListener {
-                // UI decoupled from actual Service Binding
-                statusBadge.text = "SYSTEM: ACTIVE [NET, INPUT, LMK, SYNC]"
-                statusBadge.setTextColor(Color.parseColor("#00FF00"))
-                this.text = "ENGINE RUNNING"
-                this.isEnabled = false
-                this.setBackgroundColor(Color.parseColor("#333333"))
-                
-                // Trigger isolated IPC
-                IgnitionEngine.ignite(activity)
+                gravity =
+                    Gravity.BOTTOM or
+                    Gravity.CENTER_HORIZONTAL
+
+                setPadding(
+                    40,
+                    40,
+                    40,
+                    120
+                )
             }
-        }
 
-        container.addView(badgeContainer)
-        container.addView(masterSwitch)
-        
-        // Overlay dynamically on existing MainActivity
-        val params = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+        val title =
+            TextView(activity).apply {
+
+                text =
+                    "SPLENDOR ASSIST PRO"
+
+                textSize = 22f
+
+                setTypeface(
+                    null,
+                    Typeface.BOLD
+                )
+
+                setTextColor(
+                    Color.WHITE
+                )
+            }
+
+        val runtime =
+            TextView(activity).apply {
+
+                text =
+                    "Runtime Nodes : ${
+                        AdapterHealthRegistry.getAll().size
+                    }"
+
+                textSize = 14f
+
+                setTextColor(
+                    Color.GREEN
+                )
+            }
+
+        val status =
+            TextView(activity).apply {
+
+                text =
+                    "ENGINE READY"
+
+                textSize = 14f
+
+                setTypeface(
+                    null,
+                    Typeface.BOLD
+                )
+
+                setTextColor(
+                    Color.CYAN
+                )
+            }
+
+        val launch =
+            Button(activity).apply {
+
+                text =
+                    "ACTIVATE ALL ADAPTERS"
+
+                setOnClickListener {
+
+                    IgnitionEngine.ignite(activity)
+
+                    status.text =
+                        "ENGINE ACTIVE"
+
+                    runtime.text =
+                        "Runtime Nodes : ${
+                            AdapterHealthRegistry.getAll().size
+                        }"
+                }
+            }
+
+        container.addView(title)
+        container.addView(runtime)
+        container.addView(status)
+        container.addView(launch)
+
+        root.addView(
+            container,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
         )
-        root.addView(container, params)
     }
 }
