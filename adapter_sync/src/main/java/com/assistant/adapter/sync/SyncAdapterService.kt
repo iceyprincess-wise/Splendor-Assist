@@ -55,9 +55,9 @@ class SyncAdapterService : Service() {
                 recoveryCount = 0,
                 details = "Foreground service running"
             )
+        )
 
         heartbeatHandler.post(heartbeatRunnable)
-        )
     }
 
 

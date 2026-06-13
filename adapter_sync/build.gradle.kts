@@ -26,3 +26,7 @@ android {
         jvmTarget = "17"
     }
 }
+
+dependencies {
+    implementation(project(":diagnostic_core"))
+}
