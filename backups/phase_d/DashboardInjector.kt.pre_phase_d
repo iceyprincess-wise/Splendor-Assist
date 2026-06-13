@@ -9,10 +9,6 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
-import android.os.Handler
-import android.os.Looper
-import com.assistant.diagnostic.RuntimeMetricsRegistry
-
 
 object DashboardInjector {
 
@@ -33,9 +29,9 @@ object DashboardInjector {
                     Gravity.CENTER_HORIZONTAL
 
                 setPadding(
-                    40,
-                    40,
-                    40,
+                    48,
+                    48,
+                    48,
                     120
                 )
             }
@@ -43,10 +39,9 @@ object DashboardInjector {
         val title =
             TextView(activity).apply {
 
-                text =
-                    "SPLENDOR ASSIST PRO"
+                text = "SPLENDOR ASSIST PRO"
 
-                textSize = 22f
+                textSize = 20f
 
                 setTypeface(
                     null,
@@ -58,34 +53,19 @@ object DashboardInjector {
                 )
             }
 
-        val runtime =
+        val health =
             TextView(activity).apply {
 
+                val active =
+                    AdapterHealthRegistry
+                        .getAll()
+                        .size
+
                 text =
-                    "Runtime Nodes : ${
-                        AdapterHealthRegistry.getAll().size
-                    }"
-
-                textSize = 14f
-
-
+                    "Runtime Nodes: $active"
 
                 setTextColor(
                     Color.GREEN
-                )
-            }
-
-
-        val metrics =
-            TextView(activity).apply {
-
-                text =
-                    RuntimeMetricsRegistry.snapshot()
-
-                textSize = 12f
-
-                setTextColor(
-                    Color.YELLOW
                 )
             }
 
@@ -93,14 +73,7 @@ object DashboardInjector {
             TextView(activity).apply {
 
                 text =
-                    "ENGINE READY"
-
-                textSize = 14f
-
-                setTypeface(
-                    null,
-                    Typeface.BOLD
-                )
+                    "System Status: READY"
 
                 setTextColor(
                     Color.CYAN
@@ -111,48 +84,22 @@ object DashboardInjector {
             Button(activity).apply {
 
                 text =
-                    "ACTIVATE ALL ADAPTERS"
+                    "START FULL ENGINE"
 
                 setOnClickListener {
 
-                    IgnitionEngine.ignite(activity)
+                    IgnitionEngine
+                        .ignite(activity)
 
                     status.text =
-                        "ENGINE ACTIVE"
-
-                    runtime.text =
-                        "Runtime Nodes : ${
-                            AdapterHealthRegistry.getAll().size
-                        }"
+                        "System Status: ACTIVE"
                 }
             }
 
         container.addView(title)
-        container.addView(runtime)
-        container.addView(metrics)
+        container.addView(health)
         container.addView(status)
         container.addView(launch)
-
-
-        val handler =
-            Handler(Looper.getMainLooper())
-
-        val refreshRunnable =
-            object : Runnable {
-
-                override fun run() {
-
-                    metrics.text =
-                        RuntimeMetricsRegistry.snapshot()
-
-                    handler.postDelayed(
-                        this,
-                        1000L
-                    )
-                }
-            }
-
-        handler.post(refreshRunnable)
 
         root.addView(
             container,

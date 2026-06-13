@@ -1,0 +1,3 @@
+        <activity
+            android:name="com.assistant.overlay.ui.AnalyticsTheaterActivity"
+            android:exported="false" />

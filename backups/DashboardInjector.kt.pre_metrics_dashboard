@@ -9,10 +9,6 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
-import android.os.Handler
-import android.os.Looper
-import com.assistant.diagnostic.RuntimeMetricsRegistry
-
 
 object DashboardInjector {
 
@@ -68,24 +64,8 @@ object DashboardInjector {
 
                 textSize = 14f
 
-
-
                 setTextColor(
                     Color.GREEN
-                )
-            }
-
-
-        val metrics =
-            TextView(activity).apply {
-
-                text =
-                    RuntimeMetricsRegistry.snapshot()
-
-                textSize = 12f
-
-                setTextColor(
-                    Color.YELLOW
                 )
             }
 
@@ -129,30 +109,8 @@ object DashboardInjector {
 
         container.addView(title)
         container.addView(runtime)
-        container.addView(metrics)
         container.addView(status)
         container.addView(launch)
-
-
-        val handler =
-            Handler(Looper.getMainLooper())
-
-        val refreshRunnable =
-            object : Runnable {
-
-                override fun run() {
-
-                    metrics.text =
-                        RuntimeMetricsRegistry.snapshot()
-
-                    handler.postDelayed(
-                        this,
-                        1000L
-                    )
-                }
-            }
-
-        handler.post(refreshRunnable)
 
         root.addView(
             container,

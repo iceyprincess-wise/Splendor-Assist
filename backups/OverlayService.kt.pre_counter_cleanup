@@ -80,6 +80,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     override fun onCreate() {
         super.onCreate()
+                            RuntimeMetricsRegistry
+                                .ocrDetections
+                                .incrementAndGet()
+
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         // Anti-Cheat defense disabled to prevent HyperOS false-positive kill
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -263,7 +267,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                 )
 
                             RuntimeMetricsRegistry
-                                .matchDetections
+                                .ocrDetections
                                 .incrementAndGet()
 
                             RuntimeLogger.log(
@@ -302,9 +306,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                             analytics
                                         )
 
-                                    RuntimeMetricsRegistry
-                                        .analyticsProduced
-                                        .incrementAndGet()
+                            RuntimeMetricsRegistry
+                                .ocrDetections
+                                .incrementAndGet()
 
                                     RuntimeLogger.log(
                                         "Analytics produced: $matchId",
@@ -312,6 +316,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                     )
 
                                 } catch (e: Exception) {
+
+                            RuntimeMetricsRegistry
+                                .ocrDetections
+                                .incrementAndGet()
 
                                     RuntimeLogger.log(
                                         "Analytics producer failed",

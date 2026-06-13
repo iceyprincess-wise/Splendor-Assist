@@ -1,6 +1,5 @@
 package com.assistant
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.RuntimeMetricsRegistry
 import com.assistant.overlay.database.MatchAnalyticsEntity
 import com.assistant.overlay.database.TheaterDatabase
 import java.util.UUID
@@ -235,10 +234,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                 .take(120)
 
                         if (detectedText.isNotBlank()) {
-                            RuntimeMetricsRegistry
-                                .ocrDetections
-                                .incrementAndGet()
-
                             RuntimeLogger.log(
                                 "OCR: $detectedText",
                                 "OCR"
@@ -261,10 +256,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                     500f,
                                     1
                                 )
-
-                            RuntimeMetricsRegistry
-                                .matchDetections
-                                .incrementAndGet()
 
                             RuntimeLogger.log(
                                 "MATCH DETECTED -> PANIC ACTIVE",
@@ -301,10 +292,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                         .insertMatchData(
                                             analytics
                                         )
-
-                                    RuntimeMetricsRegistry
-                                        .analyticsProduced
-                                        .incrementAndGet()
 
                                     RuntimeLogger.log(
                                         "Analytics produced: $matchId",

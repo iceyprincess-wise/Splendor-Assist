@@ -15,7 +15,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
-import com.assistant.overlay.ui.AnalyticsTheaterActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -99,7 +98,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(
                 Intent(
                     this,
-                    AnalyticsTheaterActivity::class.java
+                    LogActivity::class.java
                 )
             )
         }

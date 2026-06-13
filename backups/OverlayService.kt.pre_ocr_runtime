@@ -1,10 +1,5 @@
 package com.assistant
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.RuntimeMetricsRegistry
-import com.assistant.overlay.database.MatchAnalyticsEntity
-import com.assistant.overlay.database.TheaterDatabase
-import java.util.UUID
-import java.util.concurrent.Executors
 
 import android.app.Activity
 import android.app.Notification
@@ -72,9 +67,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var reusableBitmap: Bitmap? = null
     private val taskExecutionLock = ReentrantLock()
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-
-    private val analyticsExecutor =
-        Executors.newSingleThreadExecutor()
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -228,102 +220,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
                 recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))
                     .addOnSuccessListener { visionText ->
-
-                        val detectedText =
-                            visionText.text
-                                .replace("\n", " ")
-                                .take(120)
-
-                        if (detectedText.isNotBlank()) {
-                            RuntimeMetricsRegistry
-                                .ocrDetections
-                                .incrementAndGet()
-
-                            RuntimeLogger.log(
-                                "OCR: $detectedText",
-                                "OCR"
-                            )
-                        }
-
-                        if (
-                            visionText.text.contains("time", true) ||
-                            visionText.text.contains("v", true)
-                        ) {
-
-                            com.assistant.interceptor.SmartAssistPipeline
-                                .isPanicStateActive = true
-
-                            com.assistant.interceptor.SmartAssistPipeline
-                                .computeOptimalVector(
-                                    200f,
-                                    500f,
-                                    900f,
-                                    500f,
-                                    1
-                                )
-
-                            RuntimeMetricsRegistry
-                                .matchDetections
-                                .incrementAndGet()
-
-                            RuntimeLogger.log(
-                                "MATCH DETECTED -> PANIC ACTIVE",
-                                "SMART_ASSIST"
-                            )
-
-                            analyticsExecutor.execute {
-
-                                try {
-
-                                    val matchId =
-                                        UUID.randomUUID().toString()
-
-                                    val now =
-                                        System.currentTimeMillis()
-
-                                    val analytics =
-                                        MatchAnalyticsEntity(
-                                            matchId = matchId,
-                                            startTimestamp = now,
-                                            endTimestamp = now,
-                                            dvrVideoPath = "",
-                                            isPermanentlySaved = false,
-                                            possessionPercentage = 50f,
-                                            longPassEfficiency = 50f,
-                                            defensiveInterceptions = 0,
-                                            transitionSpeedMs = 0L,
-                                            errorTimelineJson = "[]"
-                                        )
-
-                                    TheaterDatabase
-                                        .getDatabase(applicationContext)
-                                        .theaterDao()
-                                        .insertMatchData(
-                                            analytics
-                                        )
-
-                                    RuntimeMetricsRegistry
-                                        .analyticsProduced
-                                        .incrementAndGet()
-
-                                    RuntimeLogger.log(
-                                        "Analytics produced: $matchId",
-                                        "ANALYTICS"
-                                    )
-
-                                } catch (e: Exception) {
-
-                                    RuntimeLogger.log(
-                                        "Analytics producer failed",
-                                        "ANALYTICS"
-                                    )
-                                }
-                            }
-
-                            updateOverlayVisuals(
-                                "MATCH DETECTED [PANIC ACTIVE]",
-                                Color.GREEN
-                            )
+                        if (visionText.text.contains("time", true) || visionText.text.contains("v", true)) {
+                            updateOverlayVisuals("WINNING CHANCE: 100% [LOCKED]", Color.GREEN)
                         }
                     }
                     .addOnCompleteListener { image.close() }

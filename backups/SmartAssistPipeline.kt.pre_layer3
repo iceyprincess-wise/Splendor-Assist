@@ -1,7 +1,6 @@
 package com.assistant.interceptor
 
 import java.util.concurrent.atomic.AtomicReference
-import com.assistant.diagnostic.RuntimeMetricsRegistry
 
 // 🔒 [SECURITY GUARD LOCK ACTIVE]
 // HEURISTIC ENGINE v2.0 - PREDICTIVE TRAJECTORY CALCULATOR
@@ -19,10 +18,6 @@ object SmartAssistPipeline {
         
         val vector = floatArrayOf(startX, startY, predictiveX, predictiveY, mode.toFloat())
         trajectoryLock.set(vector)
-        RuntimeMetricsRegistry
-            .trajectoryProduced
-            .incrementAndGet()
-
         return vector
     }
 

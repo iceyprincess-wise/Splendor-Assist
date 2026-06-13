@@ -1,0 +1,44 @@
+                            analyticsExecutor.execute {
+
+                                try {
+
+                                    val matchId =
+                                        UUID.randomUUID().toString()
+
+                                    val now =
+                                        System.currentTimeMillis()
+
+                                    val analytics =
+                                        MatchAnalyticsEntity(
+                                            matchId = matchId,
+                                            startTimestamp = now,
+                                            endTimestamp = now,
+                                            dvrVideoPath = "",
+                                            isPermanentlySaved = false,
+                                            possessionPercentage = 50f,
+                                            longPassEfficiency = 50f,
+                                            defensiveInterceptions = 0,
+                                            transitionSpeedMs = 0L,
+                                            errorTimelineJson = "[]"
+                                        )
+
+                                    TheaterDatabase
+                                        .getDatabase(applicationContext)
+                                        .theaterDao()
+                                        .insertMatchData(
+                                            analytics
+                                        )
+
+                                    RuntimeLogger.log(
+                                        "Analytics produced: $matchId",
+                                        "ANALYTICS"
+                                    )
+
+                                } catch (e: Exception) {
+
+                                    RuntimeLogger.log(
+                                        "Analytics producer failed",
+                                        "ANALYTICS"
+                                    )
+                                }
+                            }

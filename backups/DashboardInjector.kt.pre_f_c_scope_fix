@@ -69,13 +69,6 @@ object DashboardInjector {
                 textSize = 14f
 
 
-
-                setTextColor(
-                    Color.GREEN
-                )
-            }
-
-
         val metrics =
             TextView(activity).apply {
 
@@ -86,6 +79,11 @@ object DashboardInjector {
 
                 setTextColor(
                     Color.YELLOW
+                )
+            }
+
+                setTextColor(
+                    Color.GREEN
                 )
             }
 

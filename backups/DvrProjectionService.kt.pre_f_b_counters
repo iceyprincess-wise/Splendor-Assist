@@ -86,10 +86,6 @@ class DvrProjectionService : Service() {
                 )
             }
 
-            RuntimeMetricsRegistry
-                .dvrArtifacts
-                .incrementAndGet()
-
             RuntimeLogger.log(
                 "DVR runtime artifact created",
                 "DVR"

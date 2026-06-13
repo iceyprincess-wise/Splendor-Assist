@@ -51,9 +51,6 @@
         
         <activity android:name="com.assistant.UpdateActivity" android:exported="false" />
         <activity android:name="com.assistant.LogActivity" android:exported="false" />
-        <activity
-            android:name="com.assistant.overlay.ui.AnalyticsTheaterActivity"
-            android:exported="false" />
         <activity android:name=".ErrorActivity" android:exported="false" />
         
         <provider

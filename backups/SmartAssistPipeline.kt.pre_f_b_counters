@@ -19,10 +19,6 @@ object SmartAssistPipeline {
         
         val vector = floatArrayOf(startX, startY, predictiveX, predictiveY, mode.toFloat())
         trajectoryLock.set(vector)
-        RuntimeMetricsRegistry
-            .trajectoryProduced
-            .incrementAndGet()
-
         return vector
     }
 

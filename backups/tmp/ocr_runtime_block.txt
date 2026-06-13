@@ -1,0 +1,26 @@
+                recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))
+                    .addOnSuccessListener { visionText ->
+
+                        val detectedText =
+                            visionText.text
+                                .replace("\n", " ")
+                                .take(120)
+
+                        if (detectedText.isNotBlank()) {
+                            RuntimeLogger.log(
+                                "OCR: $detectedText",
+                                "OCR"
+                            )
+                        }
+
+                        if (
+                            visionText.text.contains("time", true) ||
+                            visionText.text.contains("v", true)
+                        ) {
+                            updateOverlayVisuals(
+                                "WINNING CHANCE: 100% [LOCKED]",
+                                Color.GREEN
+                            )
+                        }
+                    }
+                    .addOnCompleteListener { image.close() }

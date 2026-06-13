@@ -1,6 +1,5 @@
 package com.assistant
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.RuntimeMetricsRegistry
 import com.assistant.overlay.database.MatchAnalyticsEntity
 import com.assistant.overlay.database.TheaterDatabase
 import java.util.UUID
@@ -235,10 +234,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                 .take(120)
 
                         if (detectedText.isNotBlank()) {
-                            RuntimeMetricsRegistry
-                                .ocrDetections
-                                .incrementAndGet()
-
                             RuntimeLogger.log(
                                 "OCR: $detectedText",
                                 "OCR"
@@ -262,63 +257,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                     1
                                 )
 
-                            RuntimeMetricsRegistry
-                                .matchDetections
-                                .incrementAndGet()
-
                             RuntimeLogger.log(
                                 "MATCH DETECTED -> PANIC ACTIVE",
                                 "SMART_ASSIST"
                             )
-
-                            analyticsExecutor.execute {
-
-                                try {
-
-                                    val matchId =
-                                        UUID.randomUUID().toString()
-
-                                    val now =
-                                        System.currentTimeMillis()
-
-                                    val analytics =
-                                        MatchAnalyticsEntity(
-                                            matchId = matchId,
-                                            startTimestamp = now,
-                                            endTimestamp = now,
-                                            dvrVideoPath = "",
-                                            isPermanentlySaved = false,
-                                            possessionPercentage = 50f,
-                                            longPassEfficiency = 50f,
-                                            defensiveInterceptions = 0,
-                                            transitionSpeedMs = 0L,
-                                            errorTimelineJson = "[]"
-                                        )
-
-                                    TheaterDatabase
-                                        .getDatabase(applicationContext)
-                                        .theaterDao()
-                                        .insertMatchData(
-                                            analytics
-                                        )
-
-                                    RuntimeMetricsRegistry
-                                        .analyticsProduced
-                                        .incrementAndGet()
-
-                                    RuntimeLogger.log(
-                                        "Analytics produced: $matchId",
-                                        "ANALYTICS"
-                                    )
-
-                                } catch (e: Exception) {
-
-                                    RuntimeLogger.log(
-                                        "Analytics producer failed",
-                                        "ANALYTICS"
-                                    )
-                                }
-                            }
 
                             updateOverlayVisuals(
                                 "MATCH DETECTED [PANIC ACTIVE]",

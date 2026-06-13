@@ -27,7 +27,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.RuntimeMetricsRegistry
 
 class DvrProjectionService : Service() {
     private var dvrThread: HandlerThread? = null
@@ -66,43 +65,7 @@ class DvrProjectionService : Service() {
         return START_STICKY
     }
 
-        private fun executeRollingRecord() {
-
-        try {
-
-            val runtimeFile =
-                File(
-                    cacheDir,
-                    "dvr_runtime_${UUID.randomUUID()}.log"
-                )
-
-            FileOutputStream(runtimeFile).use { stream ->
-
-                val payload =
-                    "DVR ACTIVE :: ${System.currentTimeMillis()}"
-
-                stream.write(
-                    payload.toByteArray()
-                )
-            }
-
-            RuntimeMetricsRegistry
-                .dvrArtifacts
-                .incrementAndGet()
-
-            RuntimeLogger.log(
-                "DVR runtime artifact created",
-                "DVR"
-            )
-
-        } catch (e: Exception) {
-
-            RuntimeLogger.log(
-                "DVR runtime artifact failed",
-                "DVR"
-            )
-        }
-    }
+    private fun executeRollingRecord() {}
 
     override fun onBind(intent: Intent?): IBinder? = null
 
