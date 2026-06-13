@@ -31,6 +31,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
+import com.assistant.adapter.interruption.CallOverlayRepository
 import androidx.core.app.NotificationCompat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -164,7 +165,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     private fun updateOverlayVisuals(text: String, color: Int) {
         Handler(Looper.getMainLooper()).post {
-            txtEngineStatus.text = text
+            txtEngineStatus.text =
+                if (CallOverlayRepository.incomingCallVisible)
+                    "[CALL PROTECTED] " + text
+                else
+                    text
             txtEngineStatus.setTextColor(color)
         }
     }
