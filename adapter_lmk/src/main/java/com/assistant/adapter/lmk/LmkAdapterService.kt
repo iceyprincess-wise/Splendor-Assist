@@ -20,6 +20,8 @@ class LmkAdapterService : Service() {
     private val lifecycleHandler = Handler(Looper.getMainLooper())
     private val rehydrationHandler = Handler(Looper.getMainLooper())
 
+    private val workloadHandler = Handler(Looper.getMainLooper())
+
     private val heartbeatRunnable = object : Runnable {
         override fun run() {
             AdapterHealthRegistry.update(
@@ -53,7 +55,26 @@ class LmkAdapterService : Service() {
             }
             rehydrationHandler.postDelayed(this, 20000)
         }
+
     }
+
+    private val workloadRunnable = object : Runnable {
+        override fun run() {
+            val startTime = System.nanoTime()
+
+            val simulatedWorkload = System.nanoTime()
+
+            val duration =
+                simulatedWorkload - startTime
+
+            PerformanceHintEngine.reportActualWorkload(
+                this@LmkAdapterService,
+                duration.coerceAtLeast(1L)
+            )
+            workloadHandler.postDelayed(this, 5000)
+        }
+    }
+
 
     private val messenger =
         Messenger(
@@ -95,6 +116,8 @@ class LmkAdapterService : Service() {
         lifecycleHandler.post(lifecycleRunnable)
         rehydrationHandler.post(rehydrationRunnable)
 
+        workloadHandler.post(workloadRunnable)
+
         AdapterHealthRegistry.update(
             AdapterHealthSnapshot(
                 adapterName = "adapter_lmk",
@@ -111,6 +134,7 @@ class LmkAdapterService : Service() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
         lifecycleHandler.removeCallbacks(lifecycleRunnable)
         rehydrationHandler.removeCallbacks(rehydrationRunnable)
+        workloadHandler.removeCallbacks(workloadRunnable)
         super.onDestroy()
     }
 
