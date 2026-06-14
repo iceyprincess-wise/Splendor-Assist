@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Process
+import com.assistant.diagnostic.RuntimeLogger
 
 object IgnitionEngine {
 
@@ -51,7 +52,7 @@ object IgnitionEngine {
                     Intent().apply {
                         component =
                             ComponentName(
-                                "com.assistant",
+                                context.packageName,
                                 className
                             )
                     }
@@ -64,7 +65,17 @@ object IgnitionEngine {
                         context.startService(intent)
                     }
 
-                } catch (_: Exception) {
+                    RuntimeLogger.log(
+                        "Adapter launch requested: $className",
+                        "IGNITION"
+                    )
+
+                } catch (e: Exception) {
+
+                    RuntimeLogger.log(
+                        "Adapter launch failed: $className :: ${e.javaClass.simpleName}",
+                        "IGNITION"
+                    )
                 }
             }
         }

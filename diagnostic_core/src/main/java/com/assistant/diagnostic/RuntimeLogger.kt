@@ -9,37 +9,92 @@ import java.util.Date
 import java.util.Locale
 
 object RuntimeLogger {
-    private const val FILE_NAME = "runtime_diagnostic.txt"
+
+    private const val FILE_NAME =
+        "runtime_diagnostic.txt"
+
+    @Volatile
     private var logFile: File? = null
 
     @Synchronized
     fun initialize(context: Context) {
+
         if (logFile == null) {
-            logFile = File(context.filesDir, FILE_NAME)
+            logFile =
+                File(
+                    context.filesDir,
+                    FILE_NAME
+                )
         }
-        val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
+
+        val timestamp =
+            SimpleDateFormat(
+                "yyyy-MM-dd HH:mm:ss",
+                Locale.US
+            ).format(Date())
+
         try {
-            FileWriter(logFile, true).use { writer ->
-                writer.append("\n=== SESSION START: $timestamp ===\n")
+
+            FileWriter(
+                logFile,
+                true
+            ).use { writer ->
+
+                writer.append(
+                    "\n=== SESSION START: $timestamp ===\n"
+                )
             }
+
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        log("Application started", "BOOT")
+
+        log(
+            "Application started",
+            "BOOT"
+        )
     }
 
     @Synchronized
-    fun log(message: String, tag: String) {
+    fun log(
+        message: String,
+        tag: String
+    ) {
+
+        if (logFile == null) {
+
+            logFile =
+                File(
+                    File("/data/data/com.assistant/files"),
+                    FILE_NAME
+                )
+        }
+
         val file = logFile ?: return
-        val timestamp = SimpleDateFormat("HH:mm:ss.SSS", Locale.US).format(Date())
-        val logEntry = "$timestamp [$tag] $message\n"
-        
+
+        val timestamp =
+            SimpleDateFormat(
+                "HH:mm:ss.SSS",
+                Locale.US
+            ).format(Date())
+
+        val logEntry =
+            "$timestamp [$tag] $message\n"
+
         try {
-            FileWriter(file, true).use { writer ->
-                writer.append(logEntry)
+
+            FileWriter(
+                file,
+                true
+            ).use { writer ->
+
+                writer.append(
+                    logEntry
+                )
             }
+
         } catch (e: IOException) {
-            e.printStackTrace() // Fallback if filesystem write fails
+            e.printStackTrace()
         }
     }
 }

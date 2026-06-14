@@ -1,0 +1,22 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.assistant.adapter.stutter">
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_extension"
+        android:label="Splendor Stutter Adapter"
+        android:hardwareAccelerated="true">
+        
+        <service
+            android:name=".StutterAdapterService"
+            android:exported="true"
+            android:process=":kernel_stutter"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                      android:value="Monitors frame pacing and stutter conditions."/>
+        </service>
+    </application>
+</manifest>

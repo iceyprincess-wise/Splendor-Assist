@@ -6,8 +6,6 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/ic_extension"
-        android:label="Splendor LMK Adapter"
         android:hardwareAccelerated="true">
         
         <service

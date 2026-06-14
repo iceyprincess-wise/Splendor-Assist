@@ -6,8 +6,6 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/ic_extension"
-        android:label="Splendor Sync Adapter"
         android:hardwareAccelerated="true">
         
         <service

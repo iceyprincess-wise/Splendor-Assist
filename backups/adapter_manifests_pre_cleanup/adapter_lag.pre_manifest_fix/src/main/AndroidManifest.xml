@@ -1,0 +1,22 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.assistant.adapter.lag">
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_extension"
+        android:label="Splendor Lag Adapter"
+        android:hardwareAccelerated="true">
+        
+        <service
+            android:name=".LagAdapterService"
+            android:exported="true"
+            android:process=":kernel_lag"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                      android:value="Monitors application responsiveness and lag conditions."/>
+        </service>
+    </application>
+</manifest>

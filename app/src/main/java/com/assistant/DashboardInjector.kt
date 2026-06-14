@@ -130,6 +130,14 @@ object DashboardInjector {
         container.addView(title)
         container.addView(runtime)
         container.addView(metrics)
+
+        val adapterStatus =
+            TextView(activity).apply {
+                textSize = 12f
+                setTextColor(Color.WHITE)
+            }
+
+        container.addView(adapterStatus)
         container.addView(status)
         container.addView(launch)
 
