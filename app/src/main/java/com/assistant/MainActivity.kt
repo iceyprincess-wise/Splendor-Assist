@@ -11,6 +11,9 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -100,6 +103,10 @@ class MainActivity : AppCompatActivity() {
 
         refreshAdapterHealth()
 
+        dashboardHandler.post(
+            dashboardRefreshRunnable
+        )
+
         findViewById<Button>(
             com.assistant.overlay.R.id.btnStartEngine
         ).setOnClickListener {
@@ -166,13 +173,58 @@ class MainActivity : AppCompatActivity() {
 
             } else {
 
-                checkOverlayAndProceed()
+                checkAccessibilityAndProceed()
             }
 
         } catch (_: Exception) {
 
-            checkOverlayAndProceed()
+            checkAccessibilityAndProceed()
         }
+    }
+
+    private fun checkAccessibilityAndProceed() {
+
+        val enabled =
+            android.provider.Settings.Secure.getString(
+                contentResolver,
+                android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ) ?: ""
+
+        if (!enabled.contains(packageName, true)) {
+
+            startActivity(
+                Intent(
+                    android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS
+                )
+            )
+
+            return
+        }
+
+        checkNotificationAndProceed()
+    }
+
+    private fun checkNotificationAndProceed() {
+
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.POST_NOTIFICATIONS
+                ),
+                9001
+            )
+
+            return
+        }
+
+        checkOverlayAndProceed()
     }
 
     private fun checkOverlayAndProceed() {
