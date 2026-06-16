@@ -1,6 +1,8 @@
 package com.assistant
 
 import android.app.Application
+
+import com.assistant.compliance.ComplianceMonitor
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 
@@ -14,6 +16,8 @@ class App : Application() {
         AdapterHealthRegistry.initialize(
             this
         )
+
+        ComplianceMonitor.start(this)
 
         Thread.setDefaultUncaughtExceptionHandler(
             GlobalCrashHandler(this)

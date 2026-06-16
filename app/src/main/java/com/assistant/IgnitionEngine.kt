@@ -7,6 +7,8 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Process
+
+import com.assistant.compliance.ComplianceState
 import com.assistant.diagnostic.RuntimeLogger
 
 object IgnitionEngine {
@@ -21,6 +23,17 @@ object IgnitionEngine {
         Handler(ipcThread.looper)
 
     fun ignite(context: Context) {
+
+        if (!ComplianceState.ready(context)) {
+
+            RuntimeLogger.log(
+                "Ignition blocked :: " +
+                ComplianceState.summary(context),
+                "IGNITION"
+            )
+
+            return
+        }
 
         ipcHandler.post {
 
