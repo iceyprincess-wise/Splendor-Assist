@@ -1,5 +1,8 @@
 package com.assistant.diagnostic.registry
 
+import android.content.Context
+import com.assistant.diagnostic.persistence.HealthPersistenceStore
+
 data class AdapterHealthSnapshot(
     val adapterName: String,
     val status: String,
@@ -11,12 +14,40 @@ data class AdapterHealthSnapshot(
 
 object AdapterHealthRegistry {
 
+    @Volatile
+    private var applicationContext: Context? = null
+
     private val snapshots =
         mutableMapOf<String, AdapterHealthSnapshot>()
 
+    fun initialize(
+        context: Context
+    ) {
+        applicationContext =
+            context.applicationContext
+    }
+
     @Synchronized
     fun update(snapshot: AdapterHealthSnapshot) {
-        snapshots[snapshot.adapterName] = snapshot
+
+        snapshots[snapshot.adapterName] =
+            snapshot
+
+        applicationContext?.let {
+            HealthPersistenceStore.write(
+                it,
+                snapshot
+            )
+        }
+    }
+
+    @Synchronized
+    fun restore(
+        persisted: List<AdapterHealthSnapshot>
+    ) {
+        persisted.forEach {
+            snapshots[it.adapterName] = it
+        }
     }
 
     @Synchronized
@@ -31,8 +62,13 @@ object AdapterHealthRegistry {
 
     @Synchronized
     fun healthPercent(name: String): Int {
-        val snapshot = snapshots[name] ?: return 0
-        val age = System.currentTimeMillis() - snapshot.lastHeartbeat
+
+        val snapshot =
+            snapshots[name] ?: return 0
+
+        val age =
+            System.currentTimeMillis() -
+            snapshot.lastHeartbeat
 
         return when {
             age < 30000 -> 100
@@ -43,8 +79,13 @@ object AdapterHealthRegistry {
 
     @Synchronized
     fun effectiveStatus(name: String): String {
-        val snapshot = snapshots[name] ?: return "OFFLINE"
-        val age = System.currentTimeMillis() - snapshot.lastHeartbeat
+
+        val snapshot =
+            snapshots[name] ?: return "OFFLINE"
+
+        val age =
+            System.currentTimeMillis() -
+            snapshot.lastHeartbeat
 
         return when {
             age < 30000 -> "ACTIVE"
