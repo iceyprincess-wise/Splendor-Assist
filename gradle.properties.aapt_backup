@@ -1,10 +1,12 @@
 android.useAndroidX=true
 
+android.aapt2FromMavenOverride=/data/data/com.termux/files/usr/bin/aapt2
+
 org.gradle.daemon=true
 org.gradle.parallel=true
 org.gradle.caching=true
 org.gradle.configureondemand=true
-org.gradle.configuration-cache=true
+
 org.gradle.jvmargs=-Xmx4g -XX:+UseParallelGC
 
 kotlin.incremental=true
@@ -12,3 +14,6 @@ kotlin.incremental.android=true
 
 android.nonTransitiveRClass=true
 android.nonFinalResIds=true
+
+org.gradle.configuration-cache=true
+android.suppressUnsupportedCompileSdk=36

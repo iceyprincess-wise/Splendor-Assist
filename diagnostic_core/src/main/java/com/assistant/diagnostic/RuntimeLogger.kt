@@ -14,17 +14,27 @@ object RuntimeLogger {
         "runtime_diagnostic.txt"
 
     @Volatile
-    private var logFile: File? = null
+    private var internalLogFile: File? = null
+
+    @Volatile
+    private var externalLogFile: File? = null
 
     @Synchronized
     fun initialize(context: Context) {
 
-        if (logFile == null) {
-            logFile =
+        if (internalLogFile == null) {
+            internalLogFile =
                 File(
                     context.filesDir,
                     FILE_NAME
                 )
+        }
+
+        if (externalLogFile == null) {
+            externalLogFile =
+                context.getExternalFilesDir(null)?.let {
+                    File(it, FILE_NAME)
+                }
         }
 
         val timestamp =
@@ -33,21 +43,9 @@ object RuntimeLogger {
                 Locale.US
             ).format(Date())
 
-        try {
-
-            FileWriter(
-                logFile,
-                true
-            ).use { writer ->
-
-                writer.append(
-                    "\n=== SESSION START: $timestamp ===\n"
-                )
-            }
-
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+        writeToAll(
+            "\n=== SESSION START: $timestamp ===\n"
+        )
 
         log(
             "Application started",
@@ -61,17 +59,6 @@ object RuntimeLogger {
         tag: String
     ) {
 
-        if (logFile == null) {
-
-            logFile =
-                File(
-                    File("/data/data/com.assistant/files"),
-                    FILE_NAME
-                )
-        }
-
-        val file = logFile ?: return
-
         val timestamp =
             SimpleDateFormat(
                 "HH:mm:ss.SSS",
@@ -81,16 +68,31 @@ object RuntimeLogger {
         val logEntry =
             "$timestamp [$tag] $message\n"
 
+        writeToAll(logEntry)
+    }
+
+    private fun writeToAll(
+        text: String
+    ) {
+
         try {
 
-            FileWriter(
-                file,
-                true
-            ).use { writer ->
+            internalLogFile?.let { file ->
+                FileWriter(
+                    file,
+                    true
+                ).use { writer ->
+                    writer.append(text)
+                }
+            }
 
-                writer.append(
-                    logEntry
-                )
+            externalLogFile?.let { file ->
+                FileWriter(
+                    file,
+                    true
+                ).use { writer ->
+                    writer.append(text)
+                }
             }
 
         } catch (e: IOException) {

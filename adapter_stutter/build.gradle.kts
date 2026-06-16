@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.assistant.adapter.stutter"
-    compileSdk = 36
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 26

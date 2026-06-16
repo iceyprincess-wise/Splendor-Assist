@@ -13,6 +13,8 @@
     
     <application
         android:name="com.assistant.App"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:allowBackup="false"
         android:extractNativeLibs="false"
         android:label="Splendor Assist"
@@ -36,14 +38,14 @@
             </intent-filter>
         </service>
 
-        <activity
-            android:name="com.assistant.WelcomeActivity"
-            android:exported="true">
+        <activity android:name="com.assistant.SplashActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name="com.assistant.WelcomeActivity" android:exported="true" />
         
         <activity 
             android:name="com.assistant.MainActivity" 

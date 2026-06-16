@@ -31,10 +31,6 @@ class MainActivity : AppCompatActivity() {
         object : Runnable {
             override fun run() {
                 refreshAdapterHealth()
-
-        dashboardHandler.post(
-            dashboardRefreshRunnable
-        )
                 dashboardHandler.postDelayed(this, 1000L)
             }
         }

@@ -12,6 +12,7 @@ import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Process
 import android.telephony.TelephonyManager
+import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 
@@ -105,6 +106,8 @@ class InterruptionAdapterService : Service() {
                     )
                 )
 
+                RuntimeLogger.log("InterruptionAdapter heartbeat", "HEALTH")
+
                 interruptionHandler.postDelayed(
                     this,
                     10000
@@ -114,6 +117,8 @@ class InterruptionAdapterService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+
+        RuntimeLogger.log("InterruptionAdapterService started", "ADAPTER")
 
         workerThread =
             HandlerThread(
@@ -155,6 +160,8 @@ class InterruptionAdapterService : Service() {
         interruptionHandler.post(
             interruptionRunnable
         )
+
+        RuntimeLogger.log("Interruption heartbeat scheduler started", "HEALTH")
     }
 
     override fun onDestroy() {
@@ -162,6 +169,8 @@ class InterruptionAdapterService : Service() {
         interruptionHandler.removeCallbacks(
             interruptionRunnable
         )
+
+        RuntimeLogger.log("InterruptionAdapter heartbeat stopped", "HEALTH")
 
         workerThread.quitSafely()
 
