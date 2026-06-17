@@ -1,1 +1,0 @@
-$(sed '/recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))/,/\.addOnCompleteListener { image.close() }/d' app/src/main/java/com/assistant/OverlayService.kt)

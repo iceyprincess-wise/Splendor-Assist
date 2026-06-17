@@ -1,9 +1,0 @@
-# PATCH TARGET
-
-import com.assistant.survival.ResourceBudgetRegistry
-
-ResourceBudgetRegistry.update(
-    active,
-    degraded,
-    offline
-)
