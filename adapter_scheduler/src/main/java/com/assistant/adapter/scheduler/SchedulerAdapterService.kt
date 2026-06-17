@@ -2,6 +2,7 @@ package com.assistant.adapter.scheduler
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
+import com.assistant.survival.ResourceBudgetRegistry
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -56,6 +57,13 @@ class SchedulerAdapterService : Service() {
                     "OFFLINE" -> offline++
                 }
             }
+
+            
+ResourceBudgetRegistry.update(
+    active,
+    degraded,
+    offline
+)
 
             RuntimeLogger.log(
                 "FLEET HEALTH active=$active degraded=$degraded offline=$offline",

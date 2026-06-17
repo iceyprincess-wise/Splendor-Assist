@@ -1,0 +1,25 @@
+# PATCH TARGET
+
+import com.assistant.survival.ProcessSurvivalRegistry
+import com.assistant.survival.ResourceBudgetRegistry
+import com.assistant.audit.SelfAuditRegistry
+
+val survival =
+    TextView(activity).apply {
+
+        textSize = 12f
+        setTextColor(Color.GREEN)
+    }
+
+container.addView(
+    survival
+)
+
+# inside refreshRunnable
+
+survival.text =
+    ProcessSurvivalRegistry.snapshot() +
+    "\n\n" +
+    ResourceBudgetRegistry.snapshot() +
+    "\n\n" +
+    SelfAuditRegistry.snapshot()

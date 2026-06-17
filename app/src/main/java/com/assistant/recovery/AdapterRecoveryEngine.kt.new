@@ -1,0 +1,27 @@
+# PATCH TARGET
+
+import com.assistant.audit.SelfAuditRegistry
+
+var verified = 0
+var total = 0
+
+AdapterHealthRegistry
+    .getAll()
+    .forEach { snapshot ->
+
+        total++
+
+        if (
+            AdapterHealthRegistry
+                .effectiveStatus(
+                    snapshot.adapterName
+                ) == "ACTIVE"
+        ) {
+            verified++
+        }
+    }
+
+SelfAuditRegistry.update(
+    verified,
+    total
+)

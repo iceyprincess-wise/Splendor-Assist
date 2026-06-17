@@ -1,3 +1,9 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+
+FILE="app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt"
+
+cat > "$FILE" <<'KT'
 package com.assistant.recovery
 
 import android.content.ComponentName
@@ -8,7 +14,6 @@ import android.os.Handler
 import android.os.Looper
 
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.audit.SelfAuditRegistry
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 
 object AdapterRecoveryEngine {
@@ -22,12 +27,6 @@ object AdapterRecoveryEngine {
 
     private val cooldowns =
         mutableMapOf<String, Long>()
-
-    private val pendingRecovery =
-        mutableSetOf<String>()
-
-    private val activeLaunches =
-        mutableSetOf<String>()
 
     private const val COOLDOWN_MS =
         120000L
@@ -86,21 +85,6 @@ object AdapterRecoveryEngine {
         adapterName: String
     ) {
 
-        synchronized(activeLaunches) {
-
-            if (
-                activeLaunches.contains(
-                    adapterName
-                )
-            ) {
-                return
-            }
-
-            activeLaunches.add(
-                adapterName
-            )
-        }
-
         val className =
             adapterMap[adapterName]
                 ?: return
@@ -144,12 +128,6 @@ object AdapterRecoveryEngine {
                 "Recovery failed :: $adapterName :: ${e.javaClass.simpleName}",
                 "RECOVERY"
             )
-
-            synchronized(activeLaunches) {
-                activeLaunches.remove(
-                    adapterName
-                )
-            }
         }
     }
 
@@ -200,39 +178,9 @@ object AdapterRecoveryEngine {
                                             snapshot.adapterName
                                         ] = now
 
-                                        pendingRecovery.add(
-                                            snapshot.adapterName
-                                        )
-
                                         launchAdapter(
                                             context,
                                             snapshot.adapterName
-                                        )
-                                    }
-                                } else {
-
-                                    if (
-                                        pendingRecovery.contains(
-                                            snapshot.adapterName
-                                        )
-                                    ) {
-
-                                        pendingRecovery.remove(
-                                            snapshot.adapterName
-                                        )
-
-                                        RecoveryMetricsRegistry
-                                            .recordSuccess()
-
-                                        synchronized(activeLaunches) {
-                                            activeLaunches.remove(
-                                                snapshot.adapterName
-                                            )
-                                        }
-
-                                        RuntimeLogger.log(
-                                            "Recovery verified :: ${snapshot.adapterName}",
-                                            "RECOVERY"
                                         )
                                     }
                                 }
@@ -276,3 +224,7 @@ object AdapterRecoveryEngine {
         )
     }
 }
+KT
+
+echo
+echo "PHASE3E RECOVERY WIRING COMPLETE"

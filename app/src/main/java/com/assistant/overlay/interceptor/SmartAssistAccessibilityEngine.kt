@@ -3,6 +3,7 @@ import com.assistant.diagnostic.RuntimeLogger
 
 import android.accessibilityservice.AccessibilityService
 import android.os.Process
+import com.assistant.survival.AccessibilitySurvivalEngine
 
 // 🔒 [SECURITY GUARD LOCK ACTIVE]
 // ACTIVE ENGINE: Hot-Wired Dispatcher Integration
@@ -18,6 +19,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
         dispatcher = ActiveGestureController(this)
         globalInstance = this
+        AccessibilitySurvivalEngine.connected()
     }
 
     // [TASK 1: TRIGGER MECHANISM]
@@ -27,7 +29,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: android.view.accessibility.AccessibilityEvent?) {}
-    override fun onInterrupt() {}
+    override fun onInterrupt() {
+        AccessibilitySurvivalEngine.interrupted()
+    }
 }
 
 

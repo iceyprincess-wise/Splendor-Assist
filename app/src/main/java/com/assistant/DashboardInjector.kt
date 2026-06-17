@@ -13,6 +13,9 @@ import android.os.Looper
 
 import com.assistant.compliance.ComplianceState
 import com.assistant.diagnostic.RuntimeMetricsRegistry
+import com.assistant.survival.ProcessSurvivalRegistry
+import com.assistant.survival.ResourceBudgetRegistry
+import com.assistant.audit.SelfAuditRegistry
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 
 object DashboardInjector {
@@ -73,7 +76,10 @@ object DashboardInjector {
             TextView(activity).apply {
 
                 text =
-                    RuntimeMetricsRegistry.snapshot()
+                    RuntimeMetricsRegistry.snapshot() + "\n\n" +
+                    ProcessSurvivalRegistry.snapshot() + "\n\n" +
+                    ResourceBudgetRegistry.snapshot() + "\n\n" +
+                    SelfAuditRegistry.snapshot()
 
                 textSize = 12f
 
@@ -138,7 +144,10 @@ object DashboardInjector {
                 override fun run() {
 
                     metrics.text =
-                        RuntimeMetricsRegistry.snapshot()
+                        RuntimeMetricsRegistry.snapshot() + "\n\n" +
+                    ProcessSurvivalRegistry.snapshot() + "\n\n" +
+                    ResourceBudgetRegistry.snapshot() + "\n\n" +
+                    SelfAuditRegistry.snapshot()
 
                     status.text =
                         ComplianceState.summary(activity)

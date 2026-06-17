@@ -2,6 +2,7 @@ package com.assistant
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.RuntimeMetricsRegistry
 import com.assistant.overlay.database.MatchAnalyticsEntity
+import com.assistant.survival.OverlaySurvivalEngine
 import com.assistant.overlay.database.TheaterDatabase
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -164,6 +165,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
             PixelFormat.TRANSLUCENT
         )
         windowManager.addView(overlayView, layoutParams)
+        OverlaySurvivalEngine.attached()
         updateOverlayVisuals("GUARD LOCK: SECURE [ANTI-BAN ON]", Color.GREEN)
         startTrajectoryWatchdog(
             overlayView,
@@ -344,6 +346,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     override fun onDestroy() {
+        OverlaySurvivalEngine.destroyed()
         isRunning = false
         virtualDisplay?.release()
         imageReader?.close()

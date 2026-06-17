@@ -2,6 +2,7 @@ package com.assistant.adapter.watchdog
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
+import com.assistant.survival.ProcessSurvivalRegistry
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -44,6 +45,12 @@ class WatchdogAdapterService : Service() {
 
                 val status =
                     AdapterHealthRegistry.effectiveStatus(snapshot.adapterName)
+
+                
+ProcessSurvivalRegistry.update(
+    snapshot.adapterName,
+    status
+)
 
                 when (status) {
 
