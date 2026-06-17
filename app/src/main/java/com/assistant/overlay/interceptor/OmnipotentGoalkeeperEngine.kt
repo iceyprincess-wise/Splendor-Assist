@@ -9,7 +9,23 @@ import android.os.HandlerThread
 import android.os.Process
 import android.os.PerformanceHintManager
 import android.os.Build
+
 import java.nio.ByteBuffer
+
+import com.assistant.overlay.interceptor.GoalkeeperMetricsRegistry;
+import com.assistant.overlay.interceptor.GoalkeeperStateMachine;
+import com.assistant.overlay.interceptor.GoalkeeperState;
+
+import com.assistant.overlay.interceptor.RecoveryPositionEngine;
+
+import com.assistant.overlay.interceptor.ThreatType;
+import com.assistant.overlay.interceptor.ThreatZone;
+import com.assistant.overlay.interceptor.ThreatDecision;
+
+import com.assistant.overlay.interceptor.GoalkeeperActionRouter;
+import com.assistant.overlay.interceptor.GoalkeeperExecutionEngine;
+
+
 
 object OmnipotentGoalkeeperEngine {
     private const val TAG = "OmnipotentGK"
@@ -37,8 +53,14 @@ object OmnipotentGoalkeeperEngine {
         val service = SmartAssistAccessibilityEngine.globalInstance ?: return
         if (isProcessingFrame) return
         
-        var anomalyDetected = false
+
+var anomalyDetected = false
+
+var detectedThreat = ThreatType.NONE
+var detectedZone = ThreatZone.CENTER
+
         val stride = width * 4
+
         // Target the bottom 25% of the frame where eFootball power gauges trigger
         val startY = (height * 0.75).toInt() 
         
@@ -54,11 +76,30 @@ object OmnipotentGoalkeeperEngine {
                         val g = buffer.get(index + 1).toInt() and 0xFF
                         val b = buffer.get(index + 2).toInt() and 0xFF
                         
-                        // Detect Purple Gauge Signature (Stunning Shot / Blitz Curl Anomaly)
-                        if (r > 130 && b > 130 && g < 90) {
-                            anomalyDetected = true
-                            break
-                        }
+                        
+val threat =
+    ThreatClassifierEngine.classify(
+        r,
+        g,
+        b
+    )
+
+if (threat != ThreatType.NONE) {
+
+    detectedThreat = threat
+
+    detectedZone =
+        ThreatZoneEngine.detect(
+            x,
+            y,
+            width,
+            height
+        )
+
+    anomalyDetected = true
+    break
+}
+
                     }
                     x += 8 // High-speed stride skip (Guarantees <1ms execution on Helio G81 cache)
                 }
@@ -67,13 +108,37 @@ object OmnipotentGoalkeeperEngine {
             }
         } catch (e: Exception) {}
 
-        if (anomalyDetected) {
-            evaluateOpponentShotTrajectory(service)
-        }
+        
+if (anomalyDetected) {
+
+    
+val decision =
+    ThreatPriorityEngine.evaluate(
+        detectedThreat,
+        detectedZone
+    )
+
+GoalkeeperDecisionRegistry
+    .latestDecision = decision
+
+
+    evaluateOpponentShotTrajectory(
+        service
+    )
+}
+
     }
 
     private fun evaluateOpponentShotTrajectory(accessibilityService: AccessibilityService) {
         if (isProcessingFrame) return
+
+        GoalkeeperStateMachine.transition(
+            GoalkeeperState.SAVE
+        )
+
+        GoalkeeperMetricsRegistry
+            .triggerCount
+            .incrementAndGet()
         isProcessingFrame = true
         
         executionHandler?.post {
@@ -83,14 +148,38 @@ object OmnipotentGoalkeeperEngine {
                 }
                 
                 // Absolute Hardware Limit Vectors for Redmi 15C
-                val screenWidthBase = 1650.0f
-                val screenHeightBase = 720.0f
+                
+val screenWidthBase = 1650.0f
+val screenHeightBase = 720.0f
+
+val decision =
+    ThreatDecision(
+        threat = ThreatType.PURPLE,
+        zone = ThreatZone.CENTER,
+        direction = ShotDirection.CENTER,
+        priority = 100
+    )
+
+val action =
+    GoalkeeperActionRouter.route(
+        decision
+    )
+
+val vector =
+    GoalkeeperExecutionEngine.vectorFor(
+        action,
+        screenWidthBase,
+        screenHeightBase
+    )
+
                 
                 // Hyper-velocity interceptor swipe paths
-                executionCoordinates[0] = screenWidthBase * 0.30f
-                executionCoordinates[1] = screenHeightBase * 0.60f
-                executionCoordinates[2] = screenWidthBase * 0.10f 
-                executionCoordinates[3] = screenHeightBase * 0.10f
+                
+executionCoordinates[0] = vector[0]
+executionCoordinates[1] = vector[1]
+executionCoordinates[2] = vector[2]
+executionCoordinates[3] = vector[3]
+
                 
                 val swipePath = Path().apply {
                     moveTo(executionCoordinates[0], executionCoordinates[1])
@@ -103,7 +192,22 @@ object OmnipotentGoalkeeperEngine {
                 gestureBuilder.addStroke(stroke)
 
                 accessibilityService.dispatchGesture(gestureBuilder.build(), object : AccessibilityService.GestureResultCallback() {
-                    override fun onCompleted(gestureDescription: GestureDescription?) {}
+                    
+override fun onCompleted(gestureDescription: GestureDescription?) {
+
+                        GoalkeeperMetricsRegistry
+                            .saveAttempts
+                            .incrementAndGet()
+
+                        RecoveryPositionEngine.beginRecovery()
+
+                        RecoveryPositionEngine.finishRecovery()
+
+                        GoalkeeperMetricsRegistry
+                            .recoveryCount
+                            .incrementAndGet()
+                    }
+
                     override fun onCancelled(gestureDescription: GestureDescription?) {}
                 }, null)
             } finally {
