@@ -22,6 +22,33 @@ object ThreatPriorityEngine {
 
         var priority = threat.score
 
+        // INTERCEPTION AUTHORITY BOOST
+        when (direction) {
+
+            ShotDirection.CROSS ->
+                priority += 35
+
+            ShotDirection.LONG_BALL ->
+                priority += 30
+
+            else -> {}
+        }
+
+
+        priority +=
+            (InterceptionRuntimeRegistry.awareness / 2)
+
+        priority +=
+            (InterceptionRuntimeRegistry.prediction / 2)
+
+        priority +=
+            GoalkeeperAdaptiveFeedbackEngine
+                .interceptionBonus()
+
+        priority +=
+            GoalkeeperAdaptiveFeedbackEngine
+                .recoveryBonus()
+
         when (zone) {
 
             ThreatZone.GOAL_AREA ->

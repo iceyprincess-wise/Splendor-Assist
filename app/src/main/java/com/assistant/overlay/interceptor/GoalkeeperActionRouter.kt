@@ -40,6 +40,51 @@ object GoalkeeperActionRouter {
                 decision
             )
 
+
+        val panicOverride =
+            PanicSaveEngine.shouldPanic(
+                decision
+            )
+
+        val keeperBias =
+            KeeperPositionBiasEngine.evaluate(
+                decision
+            )
+
+
+        GoalkeeperBiasRegistry.currentBias =
+            keeperBias
+
+        val activeBias =
+            GoalkeeperBiasRegistry.currentBias
+
+        val farPostCoverage =
+            FarPostCoverageEngine.shouldCover(
+                decision
+            )
+
+        val nearPostCoverage =
+            NearPostCoverageEngine.shouldCover(
+                decision
+            )
+
+        val crossIntercept =
+            CrossInterceptionEngine.shouldIntercept(
+                decision
+            )
+
+        val longBallThreat =
+            LongBallCounterEngine.detected(
+                decision
+            )
+
+
+        if (
+            !InterceptionRuntimeRegistry.enabled
+        ) {
+            return GoalkeeperAction.TRACK
+        }
+
         val cross =
             CrossClaimEngine.evaluate(
                 decision
@@ -64,6 +109,7 @@ object GoalkeeperActionRouter {
         }
 
         if (
+            InterceptionRuntimeRegistry.autoIntercept.not() &&
             cross == CrossAction.PUNCH
         ) {
             
@@ -76,6 +122,7 @@ return GoalkeeperAction.PUNCH_CROSS
         }
 
         if (
+            InterceptionRuntimeRegistry.autoIntercept.not() &&
             cross == CrossAction.CLAIM &&
             CollisionAvoidanceEngine
                 .allowClaim(collision)
@@ -91,7 +138,8 @@ return GoalkeeperAction.CLAIM_CROSS
 
         return when {
 
-            panic ==
+            panicOverride &&
+                panic ==
                 PanicAction.BLOCK_LEFT -> {
                 GoalkeeperMetricsRegistry
                     .panicSaves
@@ -100,7 +148,8 @@ return GoalkeeperAction.CLAIM_CROSS
                 GoalkeeperAction.BLOCK_LEFT
             }
 
-            panic ==
+            panicOverride &&
+                panic ==
                 PanicAction.BLOCK_RIGHT -> {
                 GoalkeeperMetricsRegistry
                     .panicSaves
@@ -120,18 +169,32 @@ return GoalkeeperAction.CLAIM_CROSS
 
             anticipation ==
                 AnticipationResult.SAVE &&
-            decision.direction ==
-                ShotDirection.FAR_POST ->
+            (
+                farPostCoverage ||
+                activeBias ==
+                    KeeperBias.PROTECT_FAR_POST
+            ) ->
                     GoalkeeperAction.DIVE_LEFT
 
             anticipation ==
                 AnticipationResult.SAVE &&
-            decision.direction ==
-                ShotDirection.NEAR_POST ->
+            (
+                nearPostCoverage ||
+                activeBias ==
+                    KeeperBias.PROTECT_NEAR_POST
+            ) ->
                     GoalkeeperAction.DIVE_RIGHT
 
             anticipation ==
-                AnticipationResult.INTERCEPT -> {
+                AnticipationResult.INTERCEPT &&
+            (
+                crossIntercept ||
+                longBallThreat ||
+                activeBias ==
+                    KeeperBias.SHADE_LEFT ||
+                activeBias ==
+                    KeeperBias.SHADE_RIGHT
+            ) -> {
                 GoalkeeperMetricsRegistry
                     .interceptions
                     .incrementAndGet()

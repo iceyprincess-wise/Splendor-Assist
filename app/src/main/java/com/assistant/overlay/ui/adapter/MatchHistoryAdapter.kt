@@ -1,7 +1,3 @@
-// [SECURITY GUARD LOCK ACTIVE] - ANTI-STRIP ENFORCED
-// ARCHITECTURE: 48-Hour Media  Match Analytics Theater
-// HARDWARE CONTEXT: Redmi 15C (4GB RAM) / LMK Evasion Threads Active
-
 package com.assistant.overlay.ui.adapter
 
 import android.graphics.Color
@@ -48,20 +44,20 @@ class MatchHistoryAdapter(
         private val tvInterceptions: TextView = itemView.findViewById(R.id.tv_interceptions)
 
         fun bind(match: MatchAnalyticsEntity) {
-            tvId.text = "Match Signature: \${match.matchId.take(8)}"
-            
+            tvId.text = "Match Signature: ${match.matchId.take(8)}"
+
             if (match.isPermanentlySaved) {
                 tvStatus.text = "SAVED TO ROM"
                 tvStatus.setTextColor(Color.parseColor("#4CAF50"))
             } else {
                 val endDate = dateFormat.format(Date(match.endTimestamp))
-                tvStatus.text = "CACHED - \$endDate"
+                tvStatus.text = "CACHED - $endDate"
                 tvStatus.setTextColor(Color.parseColor("#FFC107"))
             }
 
-            tvPossession.text = "POS: \${match.possessionPercentage}%"
-            tvLongPass.text = "LBC ACC: \${match.longPassEfficiency}%"
-            tvInterceptions.text = "INT: \${match.defensiveInterceptions}"
+            tvPossession.text = "POS: ${match.possessionPercentage}%"
+            tvLongPass.text = "LBC ACC: ${match.longPassEfficiency}%"
+            tvInterceptions.text = "INT: ${match.defensiveInterceptions}"
 
             itemView.setOnClickListener { onMatchSelected(match) }
         }

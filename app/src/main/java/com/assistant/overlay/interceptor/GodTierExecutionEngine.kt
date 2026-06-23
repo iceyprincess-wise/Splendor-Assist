@@ -5,6 +5,9 @@ import android.accessibilityservice.GestureDescription
 import android.graphics.Path
 import android.os.PerformanceHintManager
 import android.content.Context
+import com.assistant.execution.CentralExecutionBus
+import com.assistant.execution.ExecutionRequest
+import com.assistant.execution.ExecutionSource
 
 // 🔒 [SECURITY GUARD LOCK ACTIVE]
 // 1000% OMNIPOTENT TIER: Zero-Allocation & Hyper-Velocity Router
@@ -56,11 +59,16 @@ class GodTierExecutionEngine(private val service: AccessibilityService) {
             else -> cachedPath.lineTo(endX, endY)
         }
 
-        // 4. KERNEL-LEVEL INJECTION
-        val stroke = GestureDescription.StrokeDescription(cachedPath, 0, duration)
-        val builder = GestureDescription.Builder()
-        builder.addStroke(stroke)
-        
-        service.dispatchGesture(builder.build(), null, null)
+        CentralExecutionBus.submit(
+            ExecutionRequest(
+                source = ExecutionSource.SMART_ASSIST,
+                phase = actionPhase,
+                startX = startX,
+                startY = startY,
+                endX = endX,
+                endY = endY,
+                duration = duration
+            )
+        )
     }
 }

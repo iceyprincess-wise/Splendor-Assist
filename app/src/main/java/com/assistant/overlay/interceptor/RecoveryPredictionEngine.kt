@@ -13,7 +13,41 @@ object RecoveryPredictionEngine {
         decision: ThreatDecision
     ): RecoveryTarget {
 
+
+        val bias =
+            GoalkeeperBiasRegistry.currentBias
+
+
+        when (
+            RecoveryAuthorityRegistry.lastTarget
+        ) {
+
+            RecoveryTarget.LEFT ->
+                return RecoveryTarget.LEFT
+
+            RecoveryTarget.RIGHT ->
+                return RecoveryTarget.RIGHT
+
+            RecoveryTarget.GOAL_AREA ->
+                return RecoveryTarget.GOAL_AREA
+
+            else -> {}
+        }
+
         return when {
+
+            bias ==
+                KeeperBias.TIGHTEN_GOAL_AREA ->
+                    RecoveryTarget.GOAL_AREA
+
+            bias ==
+                KeeperBias.PROTECT_NEAR_POST ->
+                    RecoveryTarget.RIGHT
+
+            bias ==
+                KeeperBias.PROTECT_FAR_POST ->
+                    RecoveryTarget.LEFT
+
 
             decision.zone ==
                 ThreatZone.GOAL_AREA ->

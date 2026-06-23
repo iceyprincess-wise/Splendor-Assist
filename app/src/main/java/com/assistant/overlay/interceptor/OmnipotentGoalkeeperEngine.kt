@@ -24,6 +24,12 @@ import com.assistant.overlay.interceptor.ThreatDecision;
 
 import com.assistant.overlay.interceptor.GoalkeeperActionRouter;
 import com.assistant.overlay.interceptor.GoalkeeperExecutionEngine;
+import com.assistant.execution.CentralExecutionBus
+import com.assistant.execution.ExecutionRequest
+import com.assistant.execution.ExecutionSource
+import com.assistant.adapter.smartassist.SmartAssistAccessibilityEngine
+import com.assistant.overlay.repository.GoalkeeperRuntimeState;
+import com.assistant.adapter.smartassist.TelemetryCoordinator;
 
 
 
@@ -50,7 +56,7 @@ object OmnipotentGoalkeeperEngine {
 
     // [ACTIVE TELEMETRY BRIDGE] - 1000% Capacity Hardware Heuristic Scanner
     fun scanFrameForOpponentAnimation(buffer: ByteBuffer, width: Int, height: Int) {
-        val service = SmartAssistAccessibilityEngine.globalInstance ?: return
+        SmartAssistAccessibilityEngine.globalInstance ?: return
         if (isProcessingFrame) return
         
 
@@ -88,13 +94,12 @@ if (threat != ThreatType.NONE) {
 
     detectedThreat = threat
 
-    detectedZone =
-        ThreatZoneEngine.detect(
-            x,
-            y,
-            width,
-            height
-        )
+    detectedZone = ThreatZoneEngine.detect(x,y,width,height)
+
+TelemetryCoordinator.updatePlayerMotion(
+    velocity = (height - y).toFloat() / height.toFloat(),
+    opponentDistance = kotlin.math.abs((width / 2f) - x)
+)
 
     anomalyDetected = true
     break
@@ -122,14 +127,12 @@ GoalkeeperDecisionRegistry
     .latestDecision = decision
 
 
-    evaluateOpponentShotTrajectory(
-        service
-    )
+    evaluateOpponentShotTrajectory()
 }
 
     }
 
-    private fun evaluateOpponentShotTrajectory(accessibilityService: AccessibilityService) {
+    private fun evaluateOpponentShotTrajectory() {
         if (isProcessingFrame) return
 
         GoalkeeperStateMachine.transition(
@@ -138,6 +141,10 @@ GoalkeeperDecisionRegistry
 
         GoalkeeperMetricsRegistry
             .triggerCount
+            .incrementAndGet()
+
+        com.assistant.diagnostic.RuntimeMetricsRegistry
+            .goalkeeperTriggers
             .incrementAndGet()
         isProcessingFrame = true
         
@@ -153,16 +160,54 @@ val screenWidthBase = 1650.0f
 val screenHeightBase = 720.0f
 
 val decision =
-    ThreatDecision(
-        threat = ThreatType.PURPLE,
-        zone = ThreatZone.CENTER,
-        direction = ShotDirection.CENTER,
-        priority = 100
+    GoalkeeperDecisionRegistry
+        .latestDecision
+        ?: ThreatDecision(
+            threat = ThreatType.PURPLE,
+            zone = ThreatZone.CENTER,
+            direction = ShotDirection.CENTER,
+            priority = 100
+        )
+
+
+
+val recoveryTarget =
+    RecoveryPredictionEngine.predict(
+        decision
     )
+
+RecoveryAuthorityRegistry.lastTarget =
+    recoveryTarget
+
+
+when (recoveryTarget) {
+    RecoveryTarget.CENTER -> {}
+    RecoveryTarget.LEFT -> {
+
+        RecoveryAuthorityRegistry
+            .leftRecoveries
+            .incrementAndGet()}
+    RecoveryTarget.RIGHT -> {
+
+        RecoveryAuthorityRegistry
+            .rightRecoveries
+            .incrementAndGet()}
+    RecoveryTarget.GOAL_AREA -> {
+
+        RecoveryAuthorityRegistry
+            .goalAreaRecoveries
+            .incrementAndGet()}
+}
 
 val action =
     GoalkeeperActionRouter.route(
         decision
+    )
+
+GoalkeeperMetricsRegistry
+    .saveAttempts
+    .set(
+        GoalkeeperRuntimeState.reactions.toLong()
     )
 
 val vector =
@@ -180,36 +225,28 @@ executionCoordinates[1] = vector[1]
 executionCoordinates[2] = vector[2]
 executionCoordinates[3] = vector[3]
 
-                
-                val swipePath = Path().apply {
-                    moveTo(executionCoordinates[0], executionCoordinates[1])
-                    lineTo(executionCoordinates[2], executionCoordinates[3])
-                }
+                CentralExecutionBus.submit(
+                    ExecutionRequest(
+                        source = ExecutionSource.GOALKEEPER,
+                        phase = action.ordinal,
+                        startX = executionCoordinates[0],
+                        startY = executionCoordinates[1],
+                        endX = executionCoordinates[2],
+                        endY = executionCoordinates[3],
+                        duration = 2L
+                    )
+                )
 
-                // Execute in 2ms duration to out-speed server sync validations
-                val gestureBuilder = GestureDescription.Builder()
-                val stroke = GestureDescription.StrokeDescription(swipePath, 0L, 2L)
-                gestureBuilder.addStroke(stroke)
+                GoalkeeperMetricsRegistry
+                    .saveAttempts
+                    .incrementAndGet()
 
-                accessibilityService.dispatchGesture(gestureBuilder.build(), object : AccessibilityService.GestureResultCallback() {
-                    
-override fun onCompleted(gestureDescription: GestureDescription?) {
+                RecoveryPositionEngine.beginRecovery()
+                RecoveryPositionEngine.finishRecovery()
 
-                        GoalkeeperMetricsRegistry
-                            .saveAttempts
-                            .incrementAndGet()
-
-                        RecoveryPositionEngine.beginRecovery()
-
-                        RecoveryPositionEngine.finishRecovery()
-
-                        GoalkeeperMetricsRegistry
-                            .recoveryCount
-                            .incrementAndGet()
-                    }
-
-                    override fun onCancelled(gestureDescription: GestureDescription?) {}
-                }, null)
+                GoalkeeperMetricsRegistry
+                    .recoveryCount
+                    .incrementAndGet()
             } finally {
                 isProcessingFrame = false
             }
