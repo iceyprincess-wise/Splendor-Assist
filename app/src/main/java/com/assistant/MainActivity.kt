@@ -3,69 +3,47 @@ package com.assistant
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
 import android.Manifest
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
+import android.view.View
 import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.assistant.diagnostic.registry.AdapterHealthRegistry
+import androidx.core.content.ContextCompat
+import com.assistant.controlroom.AdapterControlRoomRegistry
+import com.assistant.controlroom.ui.FutureRoomsActivity
+import com.assistant.controlroom.ui.GoalkeeperControlRoomActivity
+import com.assistant.controlroom.ui.InterceptionControlRoomActivity
+import com.assistant.controlroom.ui.SmartAssistControlRoomActivity
 import com.assistant.overlay.ui.AnalyticsTheaterActivity
+import com.assistant.adapter.smartassist.SmartAssistRepository
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var projectionManager:
-        MediaProjectionManager
-
-    private val dashboardHandler =
-        Handler(Looper.getMainLooper())
-
-    private val dashboardRefreshRunnable =
-        object : Runnable {
-            override fun run() {
-                refreshAdapterHealth()
-                dashboardHandler.postDelayed(this, 1000L)
-            }
-        }
+    private lateinit var projectionManager: MediaProjectionManager
 
     private val screenCaptureLauncher =
         registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
-
             if (
                 result.resultCode == Activity.RESULT_OK &&
                 result.data != null
             ) {
-
                 EngineData.code = result.resultCode
                 EngineData.intent = result.data
 
-                val serviceIntent =
-                    Intent(
-                        this,
-                        OverlayService::class.java
-                    )
-
-                serviceIntent.putExtra(
-                    "CROSS_PROCESS_CODE",
-                    result.resultCode
-                )
-
-                serviceIntent.putExtra(
-                    "CROSS_PROCESS_DATA",
-                    result.data
-                )
+                val serviceIntent = Intent(this, OverlayService::class.java).apply {
+                    putExtra("CROSS_PROCESS_CODE", result.resultCode)
+                    putExtra("CROSS_PROCESS_DATA", result.data)
+                }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     startForegroundService(serviceIntent)
@@ -73,17 +51,11 @@ class MainActivity : AppCompatActivity() {
                     startService(serviceIntent)
                 }
 
-                Toast.makeText(
-                    this,
-                    "Engine Linked",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(this, "Engine Linked", Toast.LENGTH_LONG).show()
             }
         }
 
-    override fun onCreate(
-        savedInstanceState: Bundle?
-    ) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         Thread.setDefaultUncaughtExceptionHandler(
@@ -94,28 +66,24 @@ class MainActivity : AppCompatActivity() {
             com.assistant.overlay.R.layout.activity_main
         )
 
-        DashboardInjector.attach(this)
-
         projectionManager =
-            getSystemService(
-                Context.MEDIA_PROJECTION_SERVICE
-            ) as MediaProjectionManager
+            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
-        refreshAdapterHealth()
+        bindHomeButtons()
+        refreshRoomBulbs()
+    }
 
-        dashboardHandler.post(
-            dashboardRefreshRunnable
-        )
+    override fun onResume() {
+        super.onResume()
+        refreshRoomBulbs()
+    }
 
-        findViewById<Button>(
-            com.assistant.overlay.R.id.btnStartEngine
-        ).setOnClickListener {
+    private fun bindHomeButtons() {
+        findViewById<Button>(com.assistant.overlay.R.id.btnStartEngine).setOnClickListener {
             checkBatteryAndProceed()
         }
 
-        findViewById<Button>(
-            com.assistant.overlay.R.id.btnViewLogs
-        ).setOnClickListener {
+        findViewById<Button>(com.assistant.overlay.R.id.btnViewLogs).setOnClickListener {
             startActivity(
                 Intent(
                     this,
@@ -123,67 +91,140 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
+
+        findViewById<View>(com.assistant.overlay.R.id.cardSmartAssist).setOnClickListener {
+            startActivity(
+                Intent(
+                    this,
+                    SmartAssistControlRoomActivity::class.java
+                )
+            )
+        }
+
+        findViewById<View>(com.assistant.overlay.R.id.cardGoalkeeper).setOnClickListener {
+            startActivity(
+                Intent(
+                    this,
+                    GoalkeeperControlRoomActivity::class.java
+                )
+            )
+        }
+
+        findViewById<View>(com.assistant.overlay.R.id.cardInterception).setOnClickListener {
+            startActivity(
+                Intent(
+                    this,
+                    InterceptionControlRoomActivity::class.java
+                )
+            )
+        }
+
+        fun openFutureRoom(label: String) {
+            startActivity(
+                Intent(this, FutureRoomsActivity::class.java).putExtra("room_label", label)
+            )
+        }
+
+        findViewById<View>(com.assistant.overlay.R.id.cardOverlay).setOnClickListener { openFutureRoom("Overlay") }
+        findViewById<View>(com.assistant.overlay.R.id.cardAccessibility).setOnClickListener { openFutureRoom("Accessibility") }
+        findViewById<View>(com.assistant.overlay.R.id.cardNotifications).setOnClickListener { openFutureRoom("Notifications") }
+        findViewById<View>(com.assistant.overlay.R.id.cardMediaProjection).setOnClickListener { openFutureRoom("Media Projection") }
+        findViewById<View>(com.assistant.overlay.R.id.cardDiagnostics).setOnClickListener { openFutureRoom("Diagnostics") }
+        findViewById<View>(com.assistant.overlay.R.id.cardFutureRooms).setOnClickListener { openFutureRoom("Future Rooms") }
     }
 
-    private fun refreshAdapterHealth() {
+    private fun refreshRoomBulbs() {
+        val smartReady = true
+        setBulb(
+            com.assistant.overlay.R.id.tvSmartAssistBulb,
+            com.assistant.overlay.R.id.tvSmartAssistState,
+            smartReady,
+            if (smartReady) "READY" else "LOCKED"
+        )
 
-        val adapterList =
-            AdapterHealthRegistry
-                .getAll()
-                .sortedBy { it.adapterName }
-                .joinToString("\n") {
-                    "${it.adapterName} : " +
-                    AdapterHealthRegistry.effectiveStatus(it.adapterName)
-                }
+        val goalkeeperReady =
+            AdapterControlRoomRegistry.get("goalkeeper")?.enabled == true
 
-        findViewById<TextView>(
-            com.assistant.overlay.R.id.tvAdapterList
-        ).text = adapterList
+        setBulb(
+            com.assistant.overlay.R.id.tvGoalkeeperBulb,
+            com.assistant.overlay.R.id.tvGoalkeeperState,
+            goalkeeperReady,
+            if (goalkeeperReady) "ACTIVE" else "OFF"
+        )
 
-        findViewById<TextView>(
-            com.assistant.overlay.R.id.tvAdapterCount
-        ).text =
-            "Runtime Nodes : " +
-            AdapterHealthRegistry.getAll().size
+        val interceptionReady =
+            AdapterControlRoomRegistry.get("interception")?.enabled == true
+
+        setBulb(
+            com.assistant.overlay.R.id.tvInterceptionBulb,
+            com.assistant.overlay.R.id.tvInterceptionState,
+            interceptionReady,
+            if (interceptionReady) "ACTIVE" else "OFF"
+        )
+
+        setBulb(
+            com.assistant.overlay.R.id.tvFutureBulb,
+            com.assistant.overlay.R.id.tvFutureState,
+            true,
+            "30 ROOMS"
+        )
+    }
+
+    private fun setBulb(
+        bulbId: Int,
+        stateId: Int,
+        active: Boolean,
+        label: String
+    ) {
+        val bulb = findViewById<android.widget.TextView>(bulbId)
+        val state = findViewById<android.widget.TextView>(stateId)
+
+        bulb.setTextColor(
+            if (active) android.graphics.Color.parseColor("#40E36A")
+            else android.graphics.Color.parseColor("#D0D0D0")
+        )
+        state.text = label
     }
 
     private fun checkBatteryAndProceed() {
+        if (!true) {
+            Toast.makeText(
+                this,
+                "Set Your Optimization first",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            startActivity(
+                Intent(
+                    this,
+                    SmartAssistControlRoomActivity::class.java
+                )
+            )
+            return
+        }
 
         try {
-
-            val pm =
-                getSystemService(
-                    Context.POWER_SERVICE
-                ) as PowerManager
+            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
 
             if (
-                Build.VERSION.SDK_INT >=
-                Build.VERSION_CODES.M &&
-                !pm.isIgnoringBatteryOptimizations(
-                    packageName
-                )
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                !pm.isIgnoringBatteryOptimizations(packageName)
             ) {
-
                 startActivity(
                     Intent(
                         Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
                         Uri.parse("package:$packageName")
                     )
                 )
-
             } else {
-
                 checkAccessibilityAndProceed()
             }
-
         } catch (_: Exception) {
-
             checkAccessibilityAndProceed()
         }
     }
 
     private fun checkAccessibilityAndProceed() {
-
         val enabled =
             android.provider.Settings.Secure.getString(
                 contentResolver,
@@ -191,13 +232,9 @@ class MainActivity : AppCompatActivity() {
             ) ?: ""
 
         if (!enabled.contains(packageName, true)) {
-
             startActivity(
-                Intent(
-                    android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS
-                )
+                Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             )
-
             return
         }
 
@@ -205,7 +242,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkNotificationAndProceed() {
-
         if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(
@@ -213,14 +249,10 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-
             requestPermissions(
-                arrayOf(
-                    Manifest.permission.POST_NOTIFICATIONS
-                ),
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                 9001
             )
-
             return
         }
 
@@ -228,30 +260,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkOverlayAndProceed() {
-
         if (!Settings.canDrawOverlays(this)) {
-
             startActivity(
                 Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:$packageName")
                 )
             )
-
         } else {
-
             screenCaptureLauncher.launch(
                 projectionManager.createScreenCaptureIntent()
             )
         }
-    }
-
-    override fun onDestroy() {
-
-        dashboardHandler.removeCallbacks(
-            dashboardRefreshRunnable
-        )
-
-        super.onDestroy()
     }
 }

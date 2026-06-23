@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#173A6A"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/tvRoomEmoji"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚙️"
+            android:textSize="28sp"
+            android:textColor="#FFFFFF"/>
+
+        <TextView
+            android:id="@+id/tvRoomTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ROOM"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"/>
+
+        <TextView
+            android:id="@+id/tvRoomSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tuning panel"
+            android:textColor="#E0E0E0"
+            android:layout_marginBottom="18dp"/>
+
+        <Switch
+            android:id="@+id/swEnabled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ENABLE ROOM"
+            android:textColor="#FFFFFF"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="INTENSITY"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="18dp"/>
+
+        <SeekBar
+            android:id="@+id/seekIntensity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"/>
+
+        <TextView
+            android:id="@+id/tvRoomStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="16dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="SAVE"
+                android:background="@drawable/button_premium"
+                android:textColor="#FFFFFF"/>
+
+            <Space
+                android:layout_width="12dp"
+                android:layout_height="1dp"/>
+
+            <Button
+                android:id="@+id/btnBack"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="BACK"
+                android:background="@drawable/button_premium"
+                android:textColor="#FFFFFF"/>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

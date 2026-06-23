@@ -61,6 +61,11 @@ object IgnitionEngine {
 
             adapters.forEach { className ->
 
+                try {
+                    Thread.sleep(250)
+                } catch (_: Exception) {}
+
+
                 val intent =
                     Intent().apply {
                         component =

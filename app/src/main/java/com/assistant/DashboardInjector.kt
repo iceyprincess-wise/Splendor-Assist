@@ -3,22 +3,29 @@ package com.assistant
 import android.app.Activity
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.os.Handler
-import android.os.Looper
-
-import com.assistant.compliance.ComplianceState
-import com.assistant.diagnostic.RuntimeMetricsRegistry
-import com.assistant.survival.ProcessSurvivalRegistry
-import com.assistant.survival.ResourceBudgetRegistry
 import com.assistant.audit.SelfAuditRegistry
-import com.assistant.diagnostic.registry.AdapterHealthRegistry
+import com.assistant.compliance.ComplianceState
+
+        import com.assistant.diagnostic.RuntimeMetricsRegistry
+        import com.assistant.diagnostic.registry.AdapterHealthRegistry
+
+    import com.assistant.survival.ProcessSurvivalRegistry
+import com.assistant.survival.ResourceBudgetRegistry
 
 object DashboardInjector {
+
+    private const val DASHBOARD_TAG = "splendor_dashboard_overlay"
+
+    private var activeContainer: LinearLayout? = null
+
+    private var activeHandler: Handler? = null
 
     fun attach(activity: Activity) {
 
@@ -26,6 +33,17 @@ object DashboardInjector {
             activity.findViewById<ViewGroup>(
                 android.R.id.content
             )
+
+        activeHandler?.removeCallbacksAndMessages(null)
+        activeHandler = null
+
+        activeContainer?.let { previous ->
+            try {
+                (previous.parent as? ViewGroup)?.removeView(previous)
+            } catch (_: Exception) {
+            }
+        }
+        activeContainer = null
 
         val container =
             LinearLayout(activity).apply {
@@ -42,6 +60,8 @@ object DashboardInjector {
                     40,
                     120
                 )
+
+                tag = DASHBOARD_TAG
             }
 
         val title =
@@ -145,9 +165,9 @@ object DashboardInjector {
 
                     metrics.text =
                         RuntimeMetricsRegistry.snapshot() + "\n\n" +
-                    ProcessSurvivalRegistry.snapshot() + "\n\n" +
-                    ResourceBudgetRegistry.snapshot() + "\n\n" +
-                    SelfAuditRegistry.snapshot()
+                        ProcessSurvivalRegistry.snapshot() + "\n\n" +
+                        ResourceBudgetRegistry.snapshot() + "\n\n" +
+                        SelfAuditRegistry.snapshot()
 
                     status.text =
                         ComplianceState.summary(activity)
@@ -168,5 +188,8 @@ object DashboardInjector {
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
         )
+
+        activeContainer = container
+        activeHandler = handler
     }
 }

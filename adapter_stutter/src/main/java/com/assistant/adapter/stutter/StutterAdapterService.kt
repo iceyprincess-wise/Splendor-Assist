@@ -55,7 +55,7 @@ class StutterAdapterService : Service() {
                 "STUTTER"
             )
 
-            stutterHandler.postDelayed(this, 16)
+            stutterHandler.postDelayed(this, 1000)
         }
     }
 

@@ -13,9 +13,6 @@ object RuntimeMetricsRegistry {
     val analyticsProduced =
         AtomicLong(0)
 
-    val trajectoryProduced =
-        AtomicLong(0)
-
     val dvrArtifacts =
         AtomicLong(0)
 
@@ -34,9 +31,6 @@ object RuntimeMetricsRegistry {
 
             append(" ANALYTICS=")
             append(analyticsProduced.get())
-
-            append(" TRAJECTORY=")
-            append(trajectoryProduced.get())
 
             append(" DVR=")
             append(dvrArtifacts.get())

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#173A6A"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/tvFutureEmoji"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="➕"
+            android:textSize="28sp"
+            android:textColor="#FFFFFF"/>
+
+        <TextView
+            android:id="@+id/tvFutureTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FUTURE ROOMS"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"/>
+
+        <TextView
+            android:id="@+id/tvFutureSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Planned expansion rooms"
+            android:textColor="#E0E0E0"
+            android:layout_marginBottom="18dp"/>
+
+        <TextView
+            android:id="@+id/tvFutureList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:lineSpacingExtra="4dp"
+            android:padding="12dp"
+            android:background="@drawable/banner_premium"/>
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="BACK"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/button_premium"
+            android:textColor="#FFFFFF"/>
+    </LinearLayout>
+</ScrollView>

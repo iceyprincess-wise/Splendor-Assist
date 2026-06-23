@@ -37,6 +37,10 @@ object RuntimeLogger {
                 }
         }
 
+        if (!shouldWriteSessionHeader(context)) {
+            return
+        }
+
         val timestamp =
             SimpleDateFormat(
                 "yyyy-MM-dd HH:mm:ss",
@@ -51,6 +55,28 @@ object RuntimeLogger {
             "Application started",
             "BOOT"
         )
+    }
+
+    private fun shouldWriteSessionHeader(context: Context): Boolean {
+        val processName = currentProcessName()
+        return processName.isBlank() || processName == context.packageName
+    }
+
+    private fun currentProcessName(): String {
+        return try {
+            File("/proc/self/cmdline").inputStream().use { stream ->
+                val bytes = stream.readBytes()
+                bytes.toString(Charsets.UTF_8).trim(
+                    '\u0000',
+                    ' ',
+                    '\n',
+                    '\r',
+                    '\t'
+                )
+            }
+        } catch (_: Exception) {
+            ""
+        }
     }
 
     @Synchronized

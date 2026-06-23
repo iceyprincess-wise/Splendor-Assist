@@ -26,92 +26,109 @@ class InterruptionAdapterService : Service() {
         object : Runnable {
 
             override fun run() {
+                try {
+                    val batteryIntent =
+                        registerReceiver(
+                            null,
+                            IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+                        )
 
-                val batteryIntent =
-                    registerReceiver(
-                        null,
-                        IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+                    val batteryLevel =
+                        batteryIntent?.getIntExtra(
+                            BatteryManager.EXTRA_LEVEL,
+                            -1
+                        ) ?: -1
+
+                    val charging =
+                        batteryIntent?.getIntExtra(
+                            BatteryManager.EXTRA_STATUS,
+                            -1
+                        ) == BatteryManager.BATTERY_STATUS_CHARGING
+
+                    val telephonyManager =
+                        getSystemService(
+                            TELEPHONY_SERVICE
+                        ) as? TelephonyManager
+
+                    val callState =
+                        try {
+                            telephonyManager?.callState
+                                ?: TelephonyManager.CALL_STATE_IDLE
+                        } catch (_: SecurityException) {
+                            TelephonyManager.CALL_STATE_IDLE
+                        }
+
+                    CallStateMonitor.update(callState)
+
+                    CallOverlayRepository.incomingCallVisible =
+                        TelephonyStateRepository.activeCall
+
+                    val state =
+                        InterruptionCoordinator.evaluate(
+                            batteryLevel,
+                            charging,
+                            0
+                        )
+
+                    InterruptionRepository.save(state)
+
+                    val audioProtected =
+                        AudioProtectionEngine.protect(
+                            this@InterruptionAdapterService
+                        )
+
+                    val throttleMode =
+                        CounterThrottleEngine.recommendedMode()
+
+                    val attenuationLevel =
+                        NotificationAttenuationEngine
+                            .attenuationLevel()
+
+                    val vibrationReduced =
+                        NotificationAttenuationEngine
+                            .vibrationAttenuated()
+
+                    val soundReduced =
+                        NotificationAttenuationEngine
+                            .soundAttenuated()
+
+                    AdapterHealthRegistry.update(
+                        AdapterHealthSnapshot(
+                            adapterName = "adapter_interruption",
+                            status = state.severity,
+                            lastHeartbeat = System.currentTimeMillis(),
+                            errorCount = 0,
+                            recoveryCount = 0,
+                            details =
+                                "battery=${state.batteryLevel}," +
+                                "call=${TelephonyStateRepository.activeCall}," +
+                                "audio=$audioProtected," +
+                                "mode=$throttleMode," +
+                                "attenuation=$attenuationLevel," +
+                                "vibration=$vibrationReduced," +
+                                "sound=$soundReduced"
+                        )
                     )
 
-                val batteryLevel =
-                    batteryIntent?.getIntExtra(
-                        BatteryManager.EXTRA_LEVEL,
-                        -1
-                    ) ?: -1
-
-                val charging =
-                    batteryIntent?.getIntExtra(
-                        BatteryManager.EXTRA_STATUS,
-                        -1
-                    ) == BatteryManager.BATTERY_STATUS_CHARGING
-
-                val telephonyManager =
-                    getSystemService(
-                        TELEPHONY_SERVICE
-                    ) as? TelephonyManager
-
-                val callState =
-                    telephonyManager?.callState
-                        ?: TelephonyManager.CALL_STATE_IDLE
-
-                CallStateMonitor.update(callState)
-
-                CallOverlayRepository.incomingCallVisible =
-                    TelephonyStateRepository.activeCall
-
-                val state =
-                    InterruptionCoordinator.evaluate(
-                        batteryLevel,
-                        charging,
-                        0
+                    RuntimeLogger.log(
+                        "InterruptionAdapter heartbeat",
+                        "HEALTH"
                     )
 
-                InterruptionRepository.save(state)
-
-                val audioProtected =
-                    AudioProtectionEngine.protect(
-                        this@InterruptionAdapterService
+                } catch (e: Exception) {
+                    RuntimeLogger.log(
+                        "InterruptionAdapter heartbeat failed :: ${e.javaClass.simpleName}",
+                        "HEALTH"
                     )
-
-                val throttleMode =
-                    CounterThrottleEngine.recommendedMode()
-
-                val attenuationLevel =
-                    NotificationAttenuationEngine
-                        .attenuationLevel()
-
-                val vibrationReduced =
-                    NotificationAttenuationEngine
-                        .vibrationAttenuated()
-
-                val soundReduced =
-                    NotificationAttenuationEngine
-                        .soundAttenuated()
-
-                AdapterHealthRegistry.update(
-                    AdapterHealthSnapshot(
-                        adapterName = "adapter_interruption",
-                        status = state.severity,
-                        lastHeartbeat = System.currentTimeMillis(),
-                        errorCount = 0,
-                        recoveryCount = 0,
-                        details =
-                            "battery=${state.batteryLevel}," +
-                            "call=${TelephonyStateRepository.activeCall}," +
-                            "audio=$audioProtected," +
-                            "mode=$throttleMode," +
-                            "attenuation=$attenuationLevel," +
-                            "vibration=$vibrationReduced," +
-                            "sound=$soundReduced"
-                    )
-                )
-
-                RuntimeLogger.log("InterruptionAdapter heartbeat", "HEALTH")
-
-                interruptionHandler.postDelayed(
-                    this,
-                    10000
-                )
+                } finally {
+                    try {
+                        interruptionHandler.postDelayed(
+                            this,
+                            10000
+                        )
+                    } catch (_: Exception) {
+                    }
+                }
             }
         }
 
@@ -166,13 +183,19 @@ class InterruptionAdapterService : Service() {
 
     override fun onDestroy() {
 
-        interruptionHandler.removeCallbacks(
-            interruptionRunnable
-        )
+        try {
+            interruptionHandler.removeCallbacks(
+                interruptionRunnable
+            )
+        } catch (_: Exception) {
+        }
 
         RuntimeLogger.log("InterruptionAdapter heartbeat stopped", "HEALTH")
 
-        workerThread.quitSafely()
+        try {
+            workerThread.quitSafely()
+        } catch (_: Exception) {
+        }
 
         super.onDestroy()
     }

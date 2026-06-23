@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-    
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -10,77 +11,50 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    
-    <application
-        android:name="com.assistant.App"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:allowBackup="false"
-        android:extractNativeLibs="false"
-        android:label="Splendor Assist"
-        android:supportsRtl="true"
-        android:hardwareAccelerated="true"
-        android:theme="@style/Theme.AppCompat.NoActionBar">
-        
-        <service
-            android:name="com.assistant.OverlayService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="mediaProjection" />
-            
-        <service
-            android:name="com.assistant.PingEliminatorVpnService"
-            android:enabled="true"
-            android:exported="false"
-            android:permission="android.permission.BIND_VPN_SERVICE">
-            <intent-filter>
-                <action android:name="android.net.VpnService" />
-            </intent-filter>
-        </service>
 
-        <activity android:name="com.assistant.SplashActivity" android:exported="true">
+    <application
+        tools:replace="android:allowBackup"
+        android:name="com.assistant.App"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Splendor Assist"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SplendorAssist">
+
+        <!-- Control Rooms -->
+        <activity android:name="com.assistant.controlroom.ui.SmartAssistControlRoomActivity" android:exported="false" />
+        <activity android:name="com.assistant.controlroom.ui.GoalkeeperControlRoomActivity" android:exported="false" />
+        <activity android:name="com.assistant.controlroom.ui.InterceptionControlRoomActivity" android:exported="false" />
+        <activity android:name="com.assistant.controlroom.ui.FutureRoomsActivity" android:exported="false" />
+
+        <!-- Core Activities -->
+        <activity android:name="com.assistant.MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name="com.assistant.WelcomeActivity" android:exported="true" />
-        
-        <activity 
-            android:name="com.assistant.MainActivity" 
-            android:exported="false" />
-        
-        <activity android:name="com.assistant.UpdateActivity" android:exported="false" />
+        <activity android:name="com.assistant.ErrorActivity" android:exported="false" />
         <activity android:name="com.assistant.LogActivity" android:exported="false" />
-        <activity
-            android:name="com.assistant.overlay.ui.AnalyticsTheaterActivity"
-            android:exported="false" />
-        <activity android:name=".ErrorActivity" android:exported="false" />
-        
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths" />
-        </provider>
-    <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.fileprovider" android:exported="false" android:grantUriPermissions="true">
-        <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/filepaths" />
-    </provider>
-    <receiver android:name="com.assistant.overlay.database.TheaterCleanupReceiver" android:exported="false" />
-        
-        <!-- [SECURITY GUARD LOCK ACTIVE] Smart Assist Engine & AI Interceptor -->
-        <service android:name="com.assistant.overlay.interceptor.SmartAssistAccessibilityEngine"
-                 android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-                 android:foregroundServiceType="specialUse"
-                 android:exported="true">
+        <activity android:name="com.assistant.SplashActivity" android:exported="false" />
+        <activity android:name="com.assistant.WelcomeActivity" android:exported="false" />
+        <activity android:name="com.assistant.UpdateActivity" android:exported="false" />
+
+        <!-- Analytics Theater / Logs -->
+        <activity android:name="com.assistant.overlay.ui.AnalyticsTheaterActivity" android:exported="false" />
+
+        <service android:name="com.assistant.OverlayService" android:exported="false" android:foregroundServiceType="mediaProjection" />
+
+        <service android:name="com.assistant.adapter.smartassist.SmartAssistAccessibilityEngine"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
             <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility_service_config" />
         </service>
+
     </application>
 </manifest>

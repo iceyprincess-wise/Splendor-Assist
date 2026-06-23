@@ -1,6 +1,7 @@
 package com.assistant
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.RuntimeMetricsRegistry
+import com.assistant.adapter.smartassist.SmartAssistRepository
 import com.assistant.overlay.database.MatchAnalyticsEntity
 import com.assistant.survival.OverlaySurvivalEngine
 import com.assistant.overlay.database.TheaterDatabase
@@ -69,7 +70,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var projectionCallback: MediaProjection.Callback? = null
     private var perfHintSession: PerformanceHintManager.Session? = null
     private var lastOcrTime = 0L
-    private val OCR_INTERVAL_MS = 800L 
+    private var lastMatchDetectionTime = 0L
+    private val OCR_INTERVAL_MS = 1500L 
     private var reusableBitmap: Bitmap? = null
     private val taskExecutionLock = ReentrantLock()
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
@@ -108,6 +110,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
         
         if (resultCode == Activity.RESULT_OK && data != null) {
             startForegroundSafely()
+
+            startService(
+                android.content.Intent(
+                    this,
+                    com.assistant.overlay.dvr.DvrProjectionService::class.java
+                )
+            )
             try {
                 setupMediaProjection(resultCode, data)
                 if (!isRunning) {
@@ -188,7 +197,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
         val projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         mediaProjection = projectionManager.getMediaProjection(code, intent)
         projectionCallback = object : MediaProjection.Callback() {
-            override fun onStop() { super.onStop(); stopSelf() }
+            override fun onStop() {
+                super.onStop()
+                Handler(Looper.getMainLooper()).post {
+                    SmartAssistRepository.clearPanic()
+                    stopSelf()
+                }
+            }
         }
         mediaProjection?.registerCallback(projectionCallback!!, Handler(Looper.getMainLooper()))
         val metrics = DisplayMetrics()
@@ -248,14 +263,35 @@ class OverlayService : Service(), ComponentCallbacks2 {
                         }
 
                         if (
-                            visionText.text.contains("time", true) ||
-                            visionText.text.contains("v", true)
+                            detectedText.isNotBlank() &&
+                            !detectedText.contains("SPLENDOR ASSIST", true) &&
+                            !detectedText.contains("Runtime Summary", true) &&
+                            !detectedText.contains("Runtime Nodes", true) &&
+                            !detectedText.contains("Start Engine", true) &&
+                            !detectedText.contains("View Logs", true) &&
+                            !detectedText.contains("Activate All Adapters", true) &&
+                            !detectedText.contains("MATCH DETECTED", true) &&
+                            !detectedText.contains("PANIC ACTIVE", true) &&
+                            !detectedText.contains("ENGINE READY", true) &&
+                            !detectedText.contains("BLOCKED:", true) &&
+                            !detectedText.contains("Audit :", true) &&
+                            !detectedText.contains("Verified :", true) &&
+                            (
+                                detectedText.contains("time", true) ||
+                                detectedText.contains("match", true) ||
+                                detectedText.contains("vs", true) ||
+                                detectedText.contains("score", true)
+                            ) &&
+                            System.currentTimeMillis() - lastMatchDetectionTime >= 5000L
                         ) {
 
-                            com.assistant.interceptor.SmartAssistPipeline
-                                .isPanicStateActive = true
+                            SmartAssistRepository.activatePanic()
 
-                            com.assistant.interceptor.SmartAssistPipeline
+                            
+
+                            
+
+                            com.assistant.adapter.smartassist.SmartAssistPipeline()
                                 .computeOptimalVector(
                                     200f,
                                     500f,
@@ -326,9 +362,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                 "MATCH DETECTED [PANIC ACTIVE]",
                                 Color.GREEN
                             )
+
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                SmartAssistRepository.clearPanic()
+                            }, 3000)
                         }
                     }
-                    .addOnCompleteListener { image.close() }
+
             } finally {
                 taskExecutionLock.unlock(); try { image.close() } catch(e:Exception){}
             }
@@ -348,9 +388,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
     override fun onDestroy() {
         OverlaySurvivalEngine.destroyed()
         isRunning = false
+        SmartAssistRepository.clearPanic()
+        try { windowManager.removeViewImmediate(overlayView) } catch (_: Exception) {}
+        try { imageReader?.setOnImageAvailableListener(null, null) } catch (_: Exception) {}
+        try { projectionCallback?.let { mediaProjection?.unregisterCallback(it) } } catch (_: Exception) {}
         virtualDisplay?.release()
+        virtualDisplay = null
         imageReader?.close()
+        imageReader = null
         mediaProjection?.stop()
+        mediaProjection = null
         super.onDestroy()
     }
 }
@@ -362,16 +409,21 @@ class OverlayService : Service(), ComponentCallbacks2 {
 fun startTrajectoryWatchdog(overlayView: android.view.View, handler: android.os.Handler) {
     val renderRunnable = object : java.lang.Runnable {
         override fun run() {
-            if (com.assistant.interceptor.SmartAssistPipeline.isPanicStateActive) {
+            val panicActive =
+            SmartAssistRepository.panicActive() &&
+            System.currentTimeMillis() -
+            0L <= 3000L
+
+            if (!panicActive && SmartAssistRepository.panicActive()) {
+                SmartAssistRepository.clearPanic()
+            }
+
+            if (panicActive) {
                 overlayView.setBackgroundColor(android.graphics.Color.argb(50, 255, 0, 0))
             } else {
                 overlayView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
             }
-            val activeVector = com.assistant.interceptor.SmartAssistPipeline.consumeTrajectory()
-            if (activeVector != null) {
-                android.util.Log.i("SmartAssist", "EXECUTING LOCKED TRAJECTORY: Phase ${activeVector[4]}")
-            }
-            handler.postDelayed(this, 16L)
+            handler.postDelayed(this, 100L)
         }
     }
     handler.post(renderRunnable)
