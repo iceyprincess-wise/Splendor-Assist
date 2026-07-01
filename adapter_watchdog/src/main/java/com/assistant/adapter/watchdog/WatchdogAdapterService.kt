@@ -15,7 +15,7 @@ import android.os.IBinder
 import android.os.Messenger
 
 class WatchdogAdapterService : Service() {
-    private val messenger = Messenger(Handler(Handler.Callback { msg -> true }))
+    private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
     private val heartbeatHandler = Handler(Looper.getMainLooper())
 
     private val heartbeatRunnable = object : Runnable {

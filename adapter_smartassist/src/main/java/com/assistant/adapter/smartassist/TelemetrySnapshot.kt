@@ -13,6 +13,11 @@ data class TelemetrySnapshot(
 
     val goalkeeperX: Float = 0f,
     val goalkeeperY: Float = 0f,
+    val goalkeeperVelocityX: Float = 0f,
+    val goalkeeperVelocityY: Float = 0f,
+    val goalkeeperSpeed: Float = 0f,
+    val goalkeeperHeadingRadians: Float = 0f,
+    val goalkeeperConfidence: Float = 1f,
 
     val confidence: Float = 0f
 )

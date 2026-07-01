@@ -8,15 +8,44 @@ import android.os.HandlerThread
 import android.os.Process
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.execution.CentralExecutionBus
+import com.assistant.execution.HybridExecutionTerminal
 
 
 import com.assistant.adapter.smartassist.AccessibilitySurvivalEngine
 
 class SmartAssistAccessibilityEngine : AccessibilityService() {
 
+    fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
+        return try {
+            val path = android.graphics.Path().apply {
+                moveTo(request.startX, request.startY)
+                lineTo(request.endX, request.endY)
+            }
+
+            val stroke = android.accessibilityservice.GestureDescription.StrokeDescription(
+                path,
+                0,
+                request.duration.coerceAtMost(85L)
+            )
+
+            val gesture = android.accessibilityservice.GestureDescription.Builder()
+                .addStroke(stroke)
+                .build()
+
+            RuntimeLogger.execution("DIRECT_DISPATCH","phase=${request.phase}")
+
+            dispatchGesture(gesture,null,null)
+        } catch(e: Exception) {
+            false
+        }
+    }
+
+
     companion object {
         @Volatile
         var globalInstance: SmartAssistAccessibilityEngine? = null
+        @Volatile
+        var isDispatching = false
     }
 
     private lateinit var dispatcher: ActiveGestureController
@@ -26,8 +55,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     private val busRunnable = object : Runnable {
         override fun run() {
             try {
-                if (!SmartAssistRepository.enabled()) {
-                    busHandler.postDelayed(this, 100L)
+                if (!SmartAssistRepository.enabled() || isDispatching) {
+                    busHandler.postDelayed(this, 10L)
                     return
                 }
 
@@ -48,16 +77,24 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                         addStroke(stroke)
                     }
 
+                    isDispatching = true
                     val dispatched = dispatchGesture(builder.build(), object : GestureResultCallback() {
                         override fun onCompleted(gestureDescription: GestureDescription?) {
                             super.onCompleted(gestureDescription)
-                            busHandler.postDelayed({}, 10L)
+                            isDispatching = false
+                        }
+                        override fun onCancelled(gestureDescription: GestureDescription?) {
+                            super.onCancelled(gestureDescription)
+                            isDispatching = false
                         }
                     }, null)
+                    if (!dispatched) isDispatching = false
                     if (dispatched) {
+                        RuntimeLogger.execution("GESTURE_SUCCESS","phase=${request.phase}")
                         SmartAssistMetrics.executeRequest()
                         RuntimeLogger.log("Gesture executed phase=${request.phase}", "SMART_ASSIST")
                     } else {
+                        RuntimeLogger.execution("GESTURE_FAILED","phase=${request.phase}")
                         RuntimeLogger.log("Gesture dispatch failed", "SMART_ASSIST")
                     }
                 }
@@ -70,6 +107,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     override fun onServiceConnected() {
+        TelemetryCoordinator.initializeTransport("127.0.0.1",8080)
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
 
         busThread = HandlerThread("SmartAssistBus").apply { start() }

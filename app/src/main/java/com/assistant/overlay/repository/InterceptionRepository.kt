@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 data class InterceptionState(
-    val enabled: Boolean = false,
-    val autoIntercept: Boolean = false,
+    val enabled: Boolean = true,
+    val autoIntercept: Boolean = true,
     val awareness: Int = 50,
     val prediction: Int = 50
 )
@@ -20,8 +20,8 @@ class InterceptionRepository(context: Context) {
     
     private fun loadState(): InterceptionState {
         return InterceptionState(
-            enabled = prefs.getBoolean("enabled", false),
-            autoIntercept = prefs.getBoolean("auto_intercept", false),
+            enabled = prefs.getBoolean("enabled", true),
+            autoIntercept = prefs.getBoolean("auto_intercept", true),
             awareness = prefs.getInt("awareness", 50),
             prediction = prefs.getInt("prediction", 50)
         )

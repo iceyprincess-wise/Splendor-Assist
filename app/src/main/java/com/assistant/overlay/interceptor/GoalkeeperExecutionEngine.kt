@@ -31,9 +31,13 @@ object GoalkeeperExecutionEngine {
             GoalkeeperAction.PUNCH_CROSS ->
                 CrossPunchActionEngine.vector(width, height)
 
-            GoalkeeperAction.HOLD,
-            GoalkeeperAction.RECOVER,
+            GoalkeeperAction.RECOVER ->
+                HoldPositionActionEngine.vector(width, height)
+
             GoalkeeperAction.TRACK ->
+                HoldPositionActionEngine.vector(width, height)
+
+            GoalkeeperAction.HOLD ->
                 HoldPositionActionEngine.vector(width, height)
         }
     }

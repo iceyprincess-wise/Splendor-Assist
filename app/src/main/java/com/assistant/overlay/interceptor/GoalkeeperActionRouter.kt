@@ -1,26 +1,17 @@
-
 package com.assistant.overlay.interceptor
 
 import com.assistant.overlay.interceptor.GoalkeeperMetricsRegistry
 
-
 enum class GoalkeeperAction {
-
     TRACK,
-
     DIVE_LEFT,
     DIVE_RIGHT,
-
     CLAIM_CROSS,
     PUNCH_CROSS,
-
     RUSH_OUT,
-
     BLOCK_LEFT,
     BLOCK_RIGHT,
-
     RECOVER,
-
     HOLD
 }
 
@@ -40,7 +31,6 @@ object GoalkeeperActionRouter {
                 decision
             )
 
-
         val panicOverride =
             PanicSaveEngine.shouldPanic(
                 decision
@@ -50,7 +40,6 @@ object GoalkeeperActionRouter {
             KeeperPositionBiasEngine.evaluate(
                 decision
             )
-
 
         GoalkeeperBiasRegistry.currentBias =
             keeperBias
@@ -78,13 +67,6 @@ object GoalkeeperActionRouter {
                 decision
             )
 
-
-        if (
-            !InterceptionRuntimeRegistry.enabled
-        ) {
-            return GoalkeeperAction.TRACK
-        }
-
         val cross =
             CrossClaimEngine.evaluate(
                 decision
@@ -102,38 +84,57 @@ object GoalkeeperActionRouter {
             )
 
         if (
-            !OwnGoalAvoidanceEngine
-                .allowExecution(safety)
+            !InterceptionRuntimeRegistry.enabled
         ) {
-            return GoalkeeperAction.HOLD
+            return when {
+                panicOverride &&
+                    panic == PanicAction.BLOCK_LEFT -> GoalkeeperAction.BLOCK_LEFT
+
+                panicOverride &&
+                    panic == PanicAction.BLOCK_RIGHT -> GoalkeeperAction.BLOCK_RIGHT
+
+                panic == PanicAction.RUSH -> GoalkeeperAction.RUSH_OUT
+
+                else -> GoalkeeperAction.TRACK
+            }
         }
 
         if (
-            InterceptionRuntimeRegistry.autoIntercept.not() &&
+            safety == OwnGoalSafety.BLOCKED
+        ) {
+            return when {
+                panicOverride &&
+                    panic == PanicAction.BLOCK_LEFT -> GoalkeeperAction.BLOCK_LEFT
+
+                panicOverride &&
+                    panic == PanicAction.BLOCK_RIGHT -> GoalkeeperAction.BLOCK_RIGHT
+
+                else -> GoalkeeperAction.HOLD
+            }
+        }
+
+        if (
+            InterceptionRuntimeRegistry.autoIntercept &&
             cross == CrossAction.PUNCH
         ) {
-            
-GoalkeeperMetricsRegistry
-    .crossClaims
-    .incrementAndGet()
+            GoalkeeperMetricsRegistry
+                .crossClaims
+                .incrementAndGet()
 
-return GoalkeeperAction.PUNCH_CROSS
-
+            return GoalkeeperAction.PUNCH_CROSS
         }
 
         if (
-            InterceptionRuntimeRegistry.autoIntercept.not() &&
+            InterceptionRuntimeRegistry.autoIntercept &&
             cross == CrossAction.CLAIM &&
             CollisionAvoidanceEngine
                 .allowClaim(collision)
         ) {
-            
-GoalkeeperMetricsRegistry
-    .crossClaims
-    .incrementAndGet()
+            GoalkeeperMetricsRegistry
+                .crossClaims
+                .incrementAndGet()
 
-return GoalkeeperAction.CLAIM_CROSS
-
+            return GoalkeeperAction.CLAIM_CROSS
         }
 
         return when {
@@ -174,7 +175,7 @@ return GoalkeeperAction.CLAIM_CROSS
                 activeBias ==
                     KeeperBias.PROTECT_FAR_POST
             ) ->
-                    GoalkeeperAction.DIVE_LEFT
+                GoalkeeperAction.DIVE_LEFT
 
             anticipation ==
                 AnticipationResult.SAVE &&
@@ -183,7 +184,7 @@ return GoalkeeperAction.CLAIM_CROSS
                 activeBias ==
                     KeeperBias.PROTECT_NEAR_POST
             ) ->
-                    GoalkeeperAction.DIVE_RIGHT
+                GoalkeeperAction.DIVE_RIGHT
 
             anticipation ==
                 AnticipationResult.INTERCEPT &&
@@ -200,6 +201,15 @@ return GoalkeeperAction.CLAIM_CROSS
                     .incrementAndGet()
 
                 GoalkeeperAction.RUSH_OUT
+            }
+
+            safety == OwnGoalSafety.RISKY &&
+                anticipation == AnticipationResult.SAVE -> {
+                GoalkeeperMetricsRegistry
+                    .panicSaves
+                    .incrementAndGet()
+
+                GoalkeeperAction.BLOCK_LEFT
             }
 
             else ->

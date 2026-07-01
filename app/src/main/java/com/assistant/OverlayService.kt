@@ -69,6 +69,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var imageReader: ImageReader? = null
     private var projectionCallback: MediaProjection.Callback? = null
     private var perfHintSession: PerformanceHintManager.Session? = null
+    private var ocrIoThread: android.os.HandlerThread? = null
+    private var ocrIoHandler: android.os.Handler? = null
     private var lastOcrTime = 0L
     private var lastMatchDetectionTime = 0L
     private val OCR_INTERVAL_MS = 1500L 
@@ -87,6 +89,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // Anti-Cheat defense disabled to prevent HyperOS false-positive kill
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()
+        ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_BACKGROUND).apply { start() }
+        ocrIoHandler = android.os.Handler(ocrIoThread!!.looper)
         initializeOverlayUI()
     }
 
@@ -111,12 +115,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
         if (resultCode == Activity.RESULT_OK && data != null) {
             startForegroundSafely()
 
-            startService(
-                android.content.Intent(
-                    this,
-                    com.assistant.overlay.dvr.DvrProjectionService::class.java
-                )
-            )
+            // [CRASH FIX] DVR foreground-service start disabled:
+            // it went foreground as mediaProjection before consent was validated,
+            // causing SecurityException on Android 14+ (SDK 34+). Safe to skip.
+            // startService(
+            //     android.content.Intent(
+            //         this,
+            //         com.assistant.overlay.dvr.DvrProjectionService::class.java
+            //     )
+            // )
             try {
                 setupMediaProjection(resultCode, data)
                 if (!isRunning) {
@@ -169,7 +176,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         
         val layoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else WindowManager.LayoutParams.TYPE_PHONE,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSLUCENT
         )
@@ -206,21 +213,53 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
         }
         mediaProjection?.registerCallback(projectionCallback!!, Handler(Looper.getMainLooper()))
+        val scale = 0.4f
         val metrics = DisplayMetrics()
-        windowManager.defaultDisplay.getRealMetrics(metrics)
-        val scale = 0.4f 
-        val finalWidth = (metrics.widthPixels * scale).toInt() and 0xFFFFFFFE.toInt()
-        val finalHeight = (metrics.heightPixels * scale).toInt() and 0xFFFFFFFE.toInt()
+        val finalWidth: Int
+        val finalHeight: Int
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val bounds = windowManager.currentWindowMetrics.bounds
+            finalWidth = (bounds.width() * scale).toInt() and 0xFFFFFFFE.toInt()
+            finalHeight = (bounds.height() * scale).toInt() and 0xFFFFFFFE.toInt()
+            metrics.densityDpi = resources.configuration.densityDpi
+        } else {
+            @Suppress("DEPRECATION")
+            windowManager.defaultDisplay.getRealMetrics(metrics)
+            finalWidth = (metrics.widthPixels * scale).toInt() and 0xFFFFFFFE.toInt()
+            finalHeight = (metrics.heightPixels * scale).toInt() and 0xFFFFFFFE.toInt()
+        }
         imageReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
         imageReader?.setOnImageAvailableListener({ reader ->
             val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
+            try {
+                
+                val scanBuffer = image.planes[0].buffer.duplicate()
+
+                val normalized =
+                    com.assistant.adapter.smartassist.FrameNormalizer.normalize(
+                        scanBuffer.duplicate(),
+                        image.width,
+                        image.height
+                    )
+
+                val state =
+                    com.assistant.adapter.smartassist.VisionCore.process(
+                        normalized
+                    )
+
+                com.assistant.adapter.smartassist.GameStateBuilder.update(
+                    state
+                )
+
+                com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
+            } catch (_: Exception) {}
             if (System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS) {
                 lastOcrTime = System.currentTimeMillis()
                 processImageForOCR(image)
             } else {
                 image.close()
             }
-        }, Handler(Looper.getMainLooper()))
+        }, ocrIoHandler ?: Handler(Looper.getMainLooper()))
         virtualDisplay = mediaProjection?.createVirtualDisplay("HybridCoachScreen", finalWidth, finalHeight, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY, imageReader?.surface, null, null)
     }
 
@@ -234,7 +273,25 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 reusableBitmap!!.copyPixelsFromBuffer(image.planes[0].buffer)
 
                 try {
-                    val scanBuffer = image.planes[0].buffer.duplicate()
+                    
+                val scanBuffer = image.planes[0].buffer.duplicate()
+
+                val normalized =
+                    com.assistant.adapter.smartassist.FrameNormalizer.normalize(
+                        scanBuffer.duplicate(),
+                        image.width,
+                        image.height
+                    )
+
+                val state =
+                    com.assistant.adapter.smartassist.VisionCore.process(
+                        normalized
+                    )
+
+                com.assistant.adapter.smartassist.GameStateBuilder.update(
+                    state
+                )
+
                     com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine
                         .scanFrameForOpponentAnimation(
                             scanBuffer,
@@ -291,14 +348,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
                             
 
-                            com.assistant.adapter.smartassist.SmartAssistPipeline()
-                                .computeOptimalVector(
-                                    200f,
-                                    500f,
-                                    900f,
-                                    500f,
-                                    1
-                                )
+                            val lv = com.assistant.adapter.smartassist.LiveVectorResolver.resolve(
+                                reusableBitmap?.width?.toFloat() ?: 1080f,
+                                reusableBitmap?.height?.toFloat() ?: 2400f
+                            )
+                            if (lv.hasRealData) {
+                                val pipe = com.assistant.adapter.smartassist.SmartAssistPipeline()
+                                val dec = pipe.computeOptimalVector(lv.startX, lv.startY, lv.endX, lv.endY, lv.duration)
+                                if (dec.shouldAct) {
+                                    com.assistant.execution.CentralExecutionBus.submit(pipe.createExecutionRequest(dec))
+                                }
+                            }
 
                             RuntimeMetricsRegistry
                                 .matchDetections

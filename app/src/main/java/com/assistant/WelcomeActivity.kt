@@ -9,6 +9,7 @@ package com.assistant
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.Process
@@ -96,7 +97,19 @@ class WelcomeActivity : AppCompatActivity() {
     private fun routeToPhase(targetActivity: Class<*>) {
         Handler(Looper.getMainLooper()).post {
             startActivity(Intent(this@WelcomeActivity, targetActivity))
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            if (Build.VERSION.SDK_INT >= 34) {
+                overrideActivityTransition(
+                    android.app.Activity.OVERRIDE_TRANSITION_OPEN,
+                    android.R.anim.fade_in,
+                    android.R.anim.fade_out
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                overridePendingTransition(
+                    android.R.anim.fade_in,
+                    android.R.anim.fade_out
+                )
+            }
             finish()
         }
     }

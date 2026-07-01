@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import com.assistant.overlay.repository.GoalkeeperRuntimeState
 
 data class GoalkeeperState(
-    val enabled: Boolean = false,
+    val enabled: Boolean = true,
     val aggressiveMode: Boolean = false,
     val positioning: Int = 50,
     val reactions: Int = 50
@@ -30,7 +30,7 @@ class GoalkeeperRepository(context: Context) {
     
     private fun loadState(): GoalkeeperState {
         return GoalkeeperState(
-            enabled = prefs.getBoolean("enabled", false),
+            enabled = prefs.getBoolean("enabled", true),
             aggressiveMode = prefs.getBoolean("aggressive", false),
             positioning = prefs.getInt("positioning", 50),
             reactions = prefs.getInt("reactions", 50)

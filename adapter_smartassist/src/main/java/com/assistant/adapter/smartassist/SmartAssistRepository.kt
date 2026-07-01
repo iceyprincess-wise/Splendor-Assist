@@ -14,7 +14,7 @@ data class SmartAssistConfiguration(
 )
 
 data class SmartAssistState(
-    val enabled: Boolean = false,
+    val enabled: Boolean = true,
     val panicMode: Boolean = false,
     val configuration: SmartAssistConfiguration = SmartAssistConfiguration(),
     val lastUpdated: Long = System.currentTimeMillis()
@@ -62,7 +62,7 @@ class SmartAssistRepository(context: Context) {
     
     private fun loadState(): SmartAssistState {
         return SmartAssistState(
-            enabled = prefs.getBoolean(KEY_ENABLED, false),
+            enabled = prefs.getBoolean(KEY_ENABLED, true),
             panicMode = prefs.getBoolean(KEY_PANIC, false),
             configuration = SmartAssistConfiguration(
                 passThreshold = prefs.getInt(KEY_PASS, 50),

@@ -10,6 +10,9 @@ class App : Application() {
 
         // Install crash catcher FIRST - before anything else
         GlobalCrashHandler.install(this)
+
+        // Initialize forensic runtime logger
+        com.assistant.diagnostic.RuntimeLogger.initialize(this)
         // Optional: baseline health snapshot
         GlobalCrashHandler.logFeatureFault("BOOT", "App.onCreate - health baseline")
     }

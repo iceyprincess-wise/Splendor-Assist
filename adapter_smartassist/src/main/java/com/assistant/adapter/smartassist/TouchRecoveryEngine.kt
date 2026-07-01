@@ -14,11 +14,12 @@ object TouchRecoveryEngine {
     ): TouchRecoveryResult {
 
         val factor=(strength.coerceIn(0,100)/100f)
+        val pressureFactor=(pressure.coerceIn(0,100)/100f)
 
         return TouchRecoveryResult(
-            recoveryBoost=1f+(factor*0.60f),
-            shieldStrength=0.40f+(factor*0.60f),
-            balanceStrength=0.40f+(factor*0.60f)
+            recoveryBoost=2f+(factor*5.00f)+(pressureFactor*3.00f),
+            shieldStrength=2f+(factor*4.00f)+(pressureFactor*2.00f),
+            balanceStrength=2f+(factor*4.00f)+(pressureFactor*2.00f)
         )
     }
 }

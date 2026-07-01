@@ -1,5 +1,7 @@
 package com.assistant.adapter.smartassist
 
+import com.assistant.diagnostic.RuntimeLogger
+
 object TelemetryCoordinator {
 
     private var networkThread: LowLatencyNetworkThread? = null
@@ -24,6 +26,8 @@ object TelemetryCoordinator {
                 opponentDistance = opponentDistance
             )
         )
+
+        RuntimeLogger.telemetry("playerVelocity=$velocity opponentDistance=$opponentDistance")
     }
 
     fun updateBallMotion(
@@ -42,6 +46,8 @@ object TelemetryCoordinator {
                 ballVelocityY = velocityY
             )
         )
+
+        RuntimeLogger.telemetry("ball=($x,$y) velocity=($velocityX,$velocityY)")
     }
 
     fun updateGoalkeeperPosition(
@@ -53,8 +59,12 @@ object TelemetryCoordinator {
         TelemetryRepository.update(
             current.copy(
                 goalkeeperX = x,
-                goalkeeperY = y
+                goalkeeperY = y,
+                goalkeeperConfidence =
+                    if (x != 0f || y != 0f) 1f else 0f
             )
         )
+
+        RuntimeLogger.telemetry("goalkeeper=($x,$y)")
     }
 }

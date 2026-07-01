@@ -18,8 +18,8 @@ object CrossPrecisionEngine {
 
         return CrossPrecisionResult(
             crossX=x,
-            crossY=y-(18f*boost),
-            confidence=0.70f+(0.30f*boost)
+            crossY=y-(40f*boost),
+            confidence=2.0f+(boost*6.0f)
         )
     }
 
@@ -31,10 +31,10 @@ object CrossPrecisionEngine {
     }
 
     fun stunningCrossSwipeDistance():Float {
-        return 120f
+        return 320f
     }
 
     fun stunningCrossDuration():Long {
-        return 110L
+        return 45L
     }
 }

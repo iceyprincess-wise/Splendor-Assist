@@ -19,7 +19,7 @@ object ShotOpportunityAnalysisEngine {
 
         return ShotOpportunityResult(
             confidence=confidence,
-            openSideScore=(1f-pressure).coerceIn(0f,1f),
+            openSideScore=((1f-pressure)*4.00f).coerceIn(0f,4f),
             pressureScore=pressure.coerceIn(0f,1f)
         )
     }

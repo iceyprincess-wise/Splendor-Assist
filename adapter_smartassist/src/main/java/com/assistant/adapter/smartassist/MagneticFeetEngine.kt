@@ -14,11 +14,12 @@ object MagneticFeetEngine {
     ): MagneticFeetResult {
 
         val factor=(strength.coerceIn(0,100)/100f)
+        val pressureFactor=(pressure.coerceIn(0,100)/100f)
 
         return MagneticFeetResult(
-            touchRetention=0.50f+(factor*0.50f),
-            interceptionResistance=0.50f+(factor*0.50f),
-            possessionControl=0.50f+(factor*0.50f)
+            touchRetention=2f+(factor*4.00f)+(pressureFactor*2.00f),
+            interceptionResistance=2f+(factor*4.00f)+(pressureFactor*2.00f),
+            possessionControl=2f+(factor*4.00f)+(pressureFactor*2.00f)
         )
     }
 }

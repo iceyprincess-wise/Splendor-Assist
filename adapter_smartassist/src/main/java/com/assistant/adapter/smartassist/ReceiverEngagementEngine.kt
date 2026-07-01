@@ -13,19 +13,31 @@ object ReceiverEngagementEngine {
         retention:Float
     ):ReceiverEngagementResult {
 
-        val confidence=
-            (0.60f + retention * 0.40f)
-                .coerceAtMost(1f)
+        val distanceFactor =
+            (distance.coerceIn(0f,1000f) / 1000f)
+
+        val confidence =
+            (
+                0.45f +
+                retention * 0.35f +
+                (1f - distanceFactor) * 0.20f
+            ).coerceIn(0f,1f)
+
+        val engagementBoost =
+            1f +
+            (retention * 0.70f) +
+            ((1f - distanceFactor) * 0.30f)
+
+        val interceptionRisk =
+            (
+                (1f - retention) * 0.70f +
+                distanceFactor * 0.30f
+            ).coerceIn(0f,1f)
 
         return ReceiverEngagementResult(
-            engagementBoost=
-                1f + (retention * 0.30f),
-
-            interceptionRisk=
-                (1f-retention)
-                    .coerceIn(0f,1f),
-
-            confidence=confidence
+            engagementBoost = engagementBoost,
+            interceptionRisk = interceptionRisk,
+            confidence = confidence
         )
     }
 }

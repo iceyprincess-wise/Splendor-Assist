@@ -1,9 +1,11 @@
 package com.assistant.adapter.smartassist
 
 import com.assistant.adapter.smartassist.fps.NativePipelineCache
-
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
+import kotlin.math.hypot
+import kotlin.math.abs
+import kotlin.math.atan2
 
 data class VectorDecision(
     val shouldAct: Boolean,
@@ -25,7 +27,7 @@ enum class ActionType {
 }
 
 class SmartAssistPipeline {
-    
+
     fun computeOptimalVector(
         startX: Float,
         startY: Float,
@@ -33,41 +35,105 @@ class SmartAssistPipeline {
         endY: Float,
         duration: Long
     ): VectorDecision {
-        NativePipelineCache.cacheNode(0,startX,startY);
-        NativePipelineCache.cacheNode(1,endX,endY);
 
-        val deltaX = endX - startX
-        val deltaY = endY - startY
-        val distance = kotlin.math.hypot(deltaX, deltaY)
-        
-        return VectorDecision(
-            shouldAct = distance > 10,
-            priority = (distance / 10).toInt().coerceAtMost(100),
-            actionType = ActionType.PASS,
-            confidence =
+        NativePipelineCache.cacheNode(0,startX,startY)
+        NativePipelineCache.cacheNode(1,endX,endY)
+
+        val dx = endX - startX
+        val dy = endY - startY
+
+        val distance =
+            hypot(dx,dy)
+
+        val angle =
+            abs(
+                Math.toDegrees(
+                    atan2(
+                        dy.toDouble(),
+                        dx.toDouble()
+                    )
+                ).toFloat()
+            )
+
+        val actionType =
+            when {
+
+                distance < 100f ->
+                    ActionType.NONE
+
+                angle in 60f..120f ->
+                    ActionType.SHOT
+
+                distance > 350f ->
+                    ActionType.CROSS
+
+                else ->
+                    ActionType.PASS
+            }
+
+        val confidence =
             (
-                0.8f +
-                ((distance/1000f).coerceAtMost(0.2f))
-            ).coerceAtMost(1f),
-            startX = startX,
-            startY = startY,
-            endX = endX,
-            endY = endY,
-            duration = duration
+                0.75f +
+                (
+                    distance / 1000f
+                ).coerceAtMost(
+                    0.25f
+                )
+            ).coerceAtMost(1f)
+
+        return VectorDecision(
+            shouldAct =
+                actionType != ActionType.NONE,
+            priority =
+                (distance / 8f)
+                    .toInt()
+                    .coerceAtMost(100),
+            actionType =
+                actionType,
+            confidence =
+                confidence,
+            startX =
+                startX,
+            startY =
+                startY,
+            endX =
+                endX,
+            endY =
+                endY,
+            duration =
+                duration
         )
     }
-    
-    fun createExecutionRequest(decision: VectorDecision): ExecutionRequest? {
-        if (!decision.shouldAct) return null
-        
+
+    fun createExecutionRequest(
+        decision: VectorDecision
+    ): ExecutionRequest {
+
+
         return ExecutionRequest(
-            source = ExecutionSource.SMART_ASSIST,
-            phase = 1,
-            startX = decision.startX,
-            startY = decision.startY,
-            endX = decision.endX,
-            endY = decision.endY,
-            duration = decision.duration
+            source =
+                ExecutionSource.SMART_ASSIST,
+            phase =
+                when(decision.actionType){
+
+                    ActionType.PASS -> 1
+
+                    ActionType.SHOT -> 2
+
+                    ActionType.CROSS -> 3
+
+                    else -> 0
+                },
+            startX =
+                decision.startX,
+            startY =
+                decision.startY,
+            endX =
+                decision.endX,
+            endY =
+                decision.endY,
+            duration =
+                decision.duration
         )
     }
 }

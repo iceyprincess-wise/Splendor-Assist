@@ -30,7 +30,7 @@ object HybridResponseCompensationEngine {
             (strength.coerceIn(0,100)/100f)
 
         val predictiveFactor=
-            0.08f + (responseBoost*0.22f)
+            0.90f + (responseBoost*2.80f)
 
         val compensatedX=
             endX + dx*predictiveFactor
@@ -39,12 +39,12 @@ object HybridResponseCompensationEngine {
             endY + dy*predictiveFactor
 
         val reducedDuration=
-            (duration*(1f-(responseBoost*0.35f)))
+            (duration*(1f-(responseBoost*0.72f)))
                 .toLong()
-                .coerceAtLeast(20L)
+                .coerceAtLeast(8L)
 
         val confidence=
-            (0.70f + responseBoost*0.30f)
+            (0.82f + responseBoost*0.18f)
                 .coerceAtMost(1f)
 
         val urgency=

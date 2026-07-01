@@ -18,7 +18,7 @@ object ForwardRunOpportunityEngine {
 
         return ForwardRunResult(
             runBoost=
-                1f + (factor * 0.35f),
+                1f + (factor * 0.80f),
 
             laneScore=
                 (distance/1000f)

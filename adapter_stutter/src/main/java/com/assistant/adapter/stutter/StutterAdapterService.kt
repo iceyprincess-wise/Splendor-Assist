@@ -14,7 +14,7 @@ import android.os.IBinder
 import android.os.Messenger
 
 class StutterAdapterService : Service() {
-    private val messenger = Messenger(Handler(Handler.Callback { msg -> true }))
+    private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
     private val heartbeatHandler = Handler(Looper.getMainLooper())
 
     private val heartbeatRunnable = object : Runnable {
@@ -60,7 +60,7 @@ class StutterAdapterService : Service() {
     }
 
     override fun onCreate() {
-        super.onCreate()
+        super.onCreate(); android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY)
         RuntimeLogger.log("StutterAdapterService started", "ADAPTER")
         val channel = NotificationChannel("stutter_adapter", "Stutter Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)

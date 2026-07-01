@@ -14,7 +14,7 @@ import android.os.IBinder
 import android.os.Messenger
 
 class LagAdapterService : Service() {
-    private val messenger = Messenger(Handler(Handler.Callback { msg -> true }))
+    private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
     private val heartbeatHandler = Handler(Looper.getMainLooper())
 
     private val heartbeatRunnable = object : Runnable {
@@ -60,7 +60,7 @@ class LagAdapterService : Service() {
     }
 
     override fun onCreate() {
-        super.onCreate()
+        super.onCreate(); android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY)
         RuntimeLogger.log("LagAdapterService started", "ADAPTER")
         val channel = NotificationChannel("lag_adapter", "Lag Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)

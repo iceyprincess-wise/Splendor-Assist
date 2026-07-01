@@ -22,8 +22,8 @@ object TrueTargetPassingEngine {
         val dy=endY-startY
 
         return PassingAssistResult(
-            correctedX=endX+(dx*0.08f*retention),
-            correctedY=endY+(dy*0.08f*retention),
+            correctedX=endX+(dx*0.65f*retention),
+            correctedY=endY+(dy*0.65f*retention),
             interceptionRisk=(1f-retention).coerceIn(0f,1f)
         )
     }
@@ -104,7 +104,7 @@ object TrueTargetPassingEngine {
             )
         }
 
-        return null
+        return Pair(carrierX + ((strikerX-carrierX)*0.35f),carrierY + ((strikerY-carrierY)*0.35f))
     }
 
 }

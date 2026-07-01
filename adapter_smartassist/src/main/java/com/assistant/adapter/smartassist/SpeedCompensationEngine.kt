@@ -19,6 +19,7 @@ object SpeedCompensationEngine {
     ): SpeedCompensationResult {
 
         val factor=(strength.coerceIn(0,100)/100f)
+        val distanceFactor=(distance.coerceIn(0f,1000f)/1000f)
 
         val containment=
             if(abs(angle) > 45f)
@@ -28,10 +29,10 @@ object SpeedCompensationEngine {
 
         return SpeedCompensationResult(
             containmentAngle = containment,
-            executionBoost = 1f + (factor * 0.50f),
-            interceptionProtection = factor,
-            pressureCompensation = factor,
-            laneCompensation = factor
+            executionBoost = 9.0f + (factor * 14.0f) + (distanceFactor * 7.0f),
+            interceptionProtection = factor * 18.0f,
+            pressureCompensation = factor * 18.0f,
+            laneCompensation = factor * 18.0f
         )
     }
 }

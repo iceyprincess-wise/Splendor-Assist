@@ -1,17 +1,45 @@
 package com.assistant.adapter.smartassist
 
 import android.content.Context
+import java.util.concurrent.atomic.AtomicBoolean
 
 class AccessibilitySurvivalEngine(
     private val context: Context? = null
 ) {
+
     companion object {
-        @JvmStatic fun connected() {}
-        @JvmStatic fun interrupted() {}
-        @JvmStatic fun missing() {}
+        private val connectedState = AtomicBoolean(false)
+
+        @JvmStatic
+        fun connected() {
+            connectedState.set(true)
+        }
+
+        @JvmStatic
+        fun interrupted() {
+            connectedState.set(false)
+        }
+
+        @JvmStatic
+        fun missing() {
+            connectedState.set(false)
+        }
+
+        @JvmStatic
+        fun active(): Boolean {
+            return connectedState.get()
+        }
     }
 
-    fun isReady(): Boolean = true
-    fun protect() {}
-    fun release() {}
+    fun isReady(): Boolean {
+        return active()
+    }
+
+    fun protect() {
+        connected()
+    }
+
+    fun release() {
+        interrupted()
+    }
 }

@@ -50,7 +50,7 @@ object DiagnosticsEngine {
         if (file.exists()) file.delete()
     }
 
-    fun getRuntimeReport(context: Context): String {
+    fun getRuntimeReport(): String {
         val currentUptime = (SystemClock.elapsedRealtime() - sessionStartTime) / 1000
         val runtimeHours = currentUptime / 3600
         val runtimeMinutes = (currentUptime % 3600) / 60

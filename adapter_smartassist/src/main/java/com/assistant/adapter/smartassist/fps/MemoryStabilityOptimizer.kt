@@ -14,11 +14,11 @@ class MemoryStabilityOptimizer(
 
     override fun onTrimMemory(level:Int){
         if(level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW){
-            Runtime.getRuntime()
+            Runtime.getRuntime().gc()
         }
     }
 
-    override fun onLowMemory(){}
+    override fun onLowMemory(){ Runtime.getRuntime().gc() }
 
     override fun onConfigurationChanged(
         newConfig:Configuration

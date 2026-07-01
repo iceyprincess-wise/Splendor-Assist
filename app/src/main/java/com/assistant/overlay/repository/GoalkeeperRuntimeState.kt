@@ -1,7 +1,7 @@
 package com.assistant.overlay.repository
 
 object GoalkeeperRuntimeState {
-    @Volatile var enabled = false
+    @Volatile var enabled = true
     @Volatile var aggressiveMode = false
     @Volatile var positioning = 50
     @Volatile var reactions = 50

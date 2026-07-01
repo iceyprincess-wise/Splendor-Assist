@@ -1,5 +1,7 @@
 package com.assistant.execution
 
+import com.assistant.diagnostic.RuntimeLogger
+
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,19 +36,20 @@ data class BusStatistics(
 )
 
 object CentralExecutionBus {
-    private val queue = ConcurrentLinkedQueue<ExecutionRequest>()
+    private val queue = java.util.concurrent.PriorityBlockingQueue<ExecutionRequest>(11, java.util.Comparator { r1, r2 -> com.assistant.execution.HybridExecutionTerminal.priority(r2.source).compareTo(com.assistant.execution.HybridExecutionTerminal.priority(r1.source)) })
     private val accepted = AtomicLong(0)
     private val consumed = AtomicLong(0)
     private val _statistics = MutableStateFlow(BusStatistics())
     val statistics: StateFlow<BusStatistics> = _statistics.asStateFlow()
     
-    private var isRunning = false
+    private var isRunning = true
     
     fun submit(request: ExecutionRequest): Boolean {
         if (!isRunning) return false
         return try {
             queue.offer(request)
             accepted.incrementAndGet()
+            RuntimeLogger.execution("BUS_SUBMIT","source=${request.source} phase=${request.phase}")
             updateStatistics()
             true
         } catch (e: Exception) {
@@ -58,6 +61,7 @@ object CentralExecutionBus {
         val request = queue.poll()
         if (request != null) {
             consumed.incrementAndGet()
+            RuntimeLogger.execution("BUS_CONSUME","source=${request.source} phase=${request.phase}")
             updateStatistics()
         }
         return request

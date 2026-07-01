@@ -19,6 +19,24 @@ object RuntimeLogger {
     @Volatile
     private var externalLogFile: File? = null
 
+    @Volatile
+    private var forensicDir: File? = null
+
+    @Volatile
+    private var executionChainLog: File? = null
+
+    @Volatile
+    private var telemetryLog: File? = null
+
+    @Volatile
+    private var heartbeatLog: File? = null
+
+    @Volatile
+    private var fieldTestLog: File? = null
+
+    @Volatile
+    var FIELD_TEST_MODE = true
+
     @Synchronized
     fun initialize(context: Context) {
 
@@ -31,10 +49,44 @@ object RuntimeLogger {
         }
 
         if (externalLogFile == null) {
-            externalLogFile =
-                context.getExternalFilesDir(null)?.let {
-                    File(it, FILE_NAME)
+            externalLogFile = File(
+                android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS),
+                "Splendor_Field_Logs.txt"
+            )
+        }
+
+        if (forensicDir == null) {
+
+            forensicDir =
+                File(
+                    "/storage/emulated/0/SplendorAssist/Forensics"
+                ).apply {
+                    mkdirs()
                 }
+
+            executionChainLog =
+                File(
+                    forensicDir,
+                    "execution_chain.log"
+                )
+
+            telemetryLog =
+                File(
+                    forensicDir,
+                    "telemetry.log"
+                )
+
+            heartbeatLog =
+                File(
+                    forensicDir,
+                    "heartbeat.log"
+                )
+
+            fieldTestLog =
+                File(
+                    forensicDir,
+                    "fieldtest.log"
+                )
         }
 
         if (!shouldWriteSessionHeader(context)) {
@@ -49,6 +101,11 @@ object RuntimeLogger {
 
         writeToAll(
             "\n=== SESSION START: $timestamp ===\n"
+        )
+
+        forensic(
+            "FORENSIC",
+            "SESSION_START $timestamp"
         )
 
         log(
@@ -95,6 +152,77 @@ object RuntimeLogger {
             "$timestamp [$tag] $message\n"
 
         writeToAll(logEntry)
+
+        if (FIELD_TEST_MODE) {
+            forensic(
+                tag,
+                message
+            )
+        }
+    }
+
+    @Synchronized
+    fun execution(
+        stage:String,
+        details:String
+    ){
+        append(
+            executionChainLog,
+            "${now()} [$stage] $details\n"
+        )
+    }
+
+    @Synchronized
+    fun telemetry(
+        details:String
+    ){
+        append(
+            telemetryLog,
+            "${now()} $details\n"
+        )
+    }
+
+    @Synchronized
+    fun heartbeat(
+        details:String
+    ){
+        append(
+            heartbeatLog,
+            "${now()} $details\n"
+        )
+    }
+
+    @Synchronized
+    fun forensic(
+        tag:String,
+        details:String
+    ){
+        append(
+            fieldTestLog,
+            "${now()} [$tag] $details\n"
+        )
+    }
+
+    private fun now(): String =
+        SimpleDateFormat(
+            "yyyy-MM-dd HH:mm:ss.SSS",
+            Locale.US
+        ).format(Date())
+
+    private fun append(
+        file:File?,
+        text:String
+    ){
+        try{
+            file?.let{
+                FileWriter(
+                    it,
+                    true
+                ).use { writer ->
+                    writer.append(text)
+                }
+            }
+        }catch(_:Exception){}
     }
 
     private fun writeToAll(

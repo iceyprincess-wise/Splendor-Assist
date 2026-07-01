@@ -34,7 +34,7 @@ class NetAdapterService : Service() {
         }
     }
 
-    private val messenger = Messenger(Handler(Handler.Callback { msg -> true }))
+    private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
 
     override fun onCreate() {
         super.onCreate()

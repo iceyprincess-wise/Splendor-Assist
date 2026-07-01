@@ -38,7 +38,8 @@ class SmartAssistAdapterService : Service() {
                     details = "Heartbeat active"
                 )
             )
-            RuntimeLogger.log("SmartAssist heartbeat", "HEALTH")
+            RuntimeLogger.log("SmartAssist heartbeat","HEALTH")
+            RuntimeLogger.heartbeat("adapter_smartassist ACTIVE")
             heartbeatHandler.postDelayed(this, 10000)
         }
     }

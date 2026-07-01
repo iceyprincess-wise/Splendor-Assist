@@ -34,6 +34,9 @@ object WingBlockEngine {
             )
         }
 
-        return null
+        return WingBlockResult(
+            wingerX,
+            wingerY
+        )
     }
 }

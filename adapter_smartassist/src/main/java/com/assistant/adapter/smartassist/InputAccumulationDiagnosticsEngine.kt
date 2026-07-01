@@ -18,8 +18,8 @@ object InputAccumulationDiagnosticsEngine {
 
         return InputDiagnosticsResult(
             overchargeRisk=risk,
-            latencyScore=(1f-risk),
-            stabilityScore=(1f-risk)
+            latencyScore=((1f-risk)*4f),
+            stabilityScore=((1f-risk)*4f)
         )
     }
 }
