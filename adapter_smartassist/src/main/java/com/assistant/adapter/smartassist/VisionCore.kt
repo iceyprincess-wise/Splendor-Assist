@@ -142,6 +142,81 @@ SceneTracker.update(
           frame.height.toFloat()
       )
 
+  val passingGraph =
+      PassingLaneGraphEngine.build(
+          scene,
+          pressure
+      )
+
+
+  val throughBallAnalysis =
+      ThroughBallLaneAnalysisEngine.analyze(
+          passingGraph
+      )
+
+  val crossingLaneAnalysis =
+      CrossingLaneAnalysisEngine.analyze(
+          passingGraph
+      )
+
+  val shootingLaneAnalysis =
+      ShootingLaneAnalysisEngine.analyze(
+          scene,
+          passingGraph
+      )
+
+  val blockedLanePredictionAnalysis =
+      BlockedLanePredictionEngine.analyze(
+          passingGraph
+      )
+
+  val defenderInterceptionPredictionAnalysis =
+      DefenderInterceptionPredictionEngine.analyze(
+          scene,
+          passingGraph
+      )
+
+  val openSpaceDetectionResult =
+      OpenSpaceDetectionEngine.analyze(
+          occupancy,
+          pressure,
+          frame.width.toFloat(),
+          frame.height.toFloat()
+      )
+
+  val receiverRankingResult =
+      ReceiverRankingEngine.analyze(
+          passingGraph
+      )
+
+  val runPredictionResult =
+      RunPredictionEngine.analyze(
+          scene
+      )
+
+  val overlapDetectionResult =
+      OverlapDetectionEngine.analyze(
+          runPredictionResult
+      )
+
+  val counterattackDetectionResult =
+      CounterattackDetectionEngine.analyze(
+          scene,
+          teamShape,
+          offensiveLine
+      )
+
+  val fastBreakDetectionResult =
+      FastBreakDetectionEngine.analyze(
+          scene
+      )
+
+  val offsideRiskEstimationResult =
+      OffsideRiskEstimationEngine.analyze(
+          passingGraph
+      )
+
+
 
     Phase3WorldStateStore.update(
         Phase3WorldState(
@@ -155,7 +230,20 @@ SceneTracker.update(
             defensiveLine = defensiveLine,
             offensiveLine = offensiveLine,
             occupancy = occupancy,
-            pressure = pressure
+            pressure = pressure,
+            passingGraph = passingGraph,
+            throughBallAnalysis = throughBallAnalysis,
+            crossingLaneAnalysis = crossingLaneAnalysis,
+            shootingLaneAnalysis = shootingLaneAnalysis,
+            blockedLanePredictionAnalysis = blockedLanePredictionAnalysis,
+            defenderInterceptionPredictionAnalysis = defenderInterceptionPredictionAnalysis,
+            openSpaceDetectionResult = openSpaceDetectionResult,
+            receiverRankingResult = receiverRankingResult,
+            runPredictionResult = runPredictionResult,
+            overlapDetectionResult = overlapDetectionResult,
+            counterattackDetectionResult = counterattackDetectionResult,
+            fastBreakDetectionResult = fastBreakDetectionResult,
+            offsideRiskEstimationResult = offsideRiskEstimationResult
         )
     )
 

@@ -13,7 +13,45 @@ data class Phase3WorldState(
     val occupancy: SpaceOccupancyResult =
         SpaceOccupancyResult(0,0, emptyArray()),
     val pressure: PressureFieldResult =
-        PressureFieldResult(0,0, emptyArray())
+        PressureFieldResult(0,0, emptyArray()),
+    val passingGraph: PassingLaneGraph =
+        PassingLaneGraph(),
+
+    val throughBallAnalysis: ThroughBallLaneAnalysis =
+        ThroughBallLaneAnalysis(),
+
+    val crossingLaneAnalysis: CrossingLaneAnalysis =
+        CrossingLaneAnalysis(),
+
+    val shootingLaneAnalysis: ShootingLaneAnalysis =
+        ShootingLaneAnalysis(),
+
+    val blockedLanePredictionAnalysis: BlockedLanePredictionAnalysis =
+        BlockedLanePredictionAnalysis(),
+
+    val defenderInterceptionPredictionAnalysis: DefenderInterceptionPredictionAnalysis =
+        DefenderInterceptionPredictionAnalysis(),
+
+    val openSpaceDetectionResult: OpenSpaceDetectionResult =
+        OpenSpaceDetectionResult(),
+
+    val receiverRankingResult: ReceiverRankingResult =
+        ReceiverRankingResult(),
+
+    val runPredictionResult: RunPredictionResult =
+        RunPredictionResult(),
+
+    val overlapDetectionResult: OverlapDetectionResult =
+        OverlapDetectionResult(),
+
+    val counterattackDetectionResult: CounterattackDetectionResult =
+        CounterattackDetectionResult(),
+
+    val fastBreakDetectionResult: FastBreakDetectionResult =
+        FastBreakDetectionResult(),
+
+    val offsideRiskEstimationResult: OffsideRiskEstimationResult =
+        OffsideRiskEstimationResult()
 )
 
 object Phase3WorldStateStore {

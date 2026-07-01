@@ -107,4 +107,45 @@ object TrueTargetPassingEngine {
         return Pair(carrierX + ((strikerX-carrierX)*0.35f),carrierY + ((strikerY-carrierY)*0.35f))
     }
 
+
+    fun currentPassingGraph(): PassingLaneGraph =
+        Phase3WorldStateStore.current().passingGraph
+
+
+    fun currentThroughBallAnalysis(): ThroughBallLaneAnalysis =
+        Phase3WorldStateStore.current().throughBallAnalysis
+
+    fun currentCrossingLaneAnalysis(): CrossingLaneAnalysis =
+        Phase3WorldStateStore.current().crossingLaneAnalysis
+
+    fun currentShootingLaneAnalysis(): ShootingLaneAnalysis =
+        Phase3WorldStateStore.current().shootingLaneAnalysis
+
+    fun currentBlockedLanePredictionAnalysis(): BlockedLanePredictionAnalysis =
+        Phase3WorldStateStore.current().blockedLanePredictionAnalysis
+
+    fun currentDefenderInterceptionPredictionAnalysis(): DefenderInterceptionPredictionAnalysis =
+        Phase3WorldStateStore.current().defenderInterceptionPredictionAnalysis
+
+    fun currentOpenSpaceDetectionResult(): OpenSpaceDetectionResult =
+        Phase3WorldStateStore.current().openSpaceDetectionResult
+
+    fun currentReceiverRankingResult(): ReceiverRankingResult =
+        Phase3WorldStateStore.current().receiverRankingResult
+
+    fun currentRunPredictionResult(): RunPredictionResult =
+        Phase3WorldStateStore.current().runPredictionResult
+
+    fun currentOverlapDetectionResult(): OverlapDetectionResult =
+        Phase3WorldStateStore.current().overlapDetectionResult
+
+    fun currentCounterattackDetectionResult(): CounterattackDetectionResult =
+        Phase3WorldStateStore.current().counterattackDetectionResult
+
+    fun currentFastBreakDetectionResult(): FastBreakDetectionResult =
+        Phase3WorldStateStore.current().fastBreakDetectionResult
+
+    fun currentOffsideRiskEstimationResult(): OffsideRiskEstimationResult =
+        Phase3WorldStateStore.current().offsideRiskEstimationResult
+
 }

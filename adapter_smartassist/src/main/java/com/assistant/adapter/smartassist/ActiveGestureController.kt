@@ -214,12 +214,141 @@ class ActiveGestureController(
                 (distance.toInt().coerceIn(0,100)),
                 strength
             )
+        val passingGraph =
+            TrueTargetPassingEngine.currentPassingGraph()
+
+        val selectedPassingLane =
+            passingGraph.lanes
+                .firstOrNull {
+                    !it.blocked
+                }
+
+        val receiverRankingResult =
+            TrueTargetPassingEngine.currentReceiverRankingResult()
+
+        val preferredReceiver =
+            receiverRankingResult.receivers.firstOrNull()
+
+        val runPredictionResult =
+            TrueTargetPassingEngine.currentRunPredictionResult()
+
+        val predictedRun =
+            runPredictionResult.runs.firstOrNull{
+                it.player.id==preferredReceiver?.player?.id
+            }
+
+        val overlapDetectionResult =
+            TrueTargetPassingEngine.currentOverlapDetectionResult()
+
+        val overlapRun =
+            overlapDetectionResult.overlaps.firstOrNull{
+                it.runner.id==preferredReceiver?.player?.id &&
+                it.viable
+            }
+
+        val passTargetX =
+            overlapRun?.supportX
+                ?: predictedRun?.predictedX
+                ?: preferredReceiver?.player?.x
+                ?: selectedPassingLane
+                    ?.receiver
+                    ?.x
+                ?: predictiveX
+
+        val passTargetY =
+            overlapRun?.supportY
+                ?: predictedRun?.predictedY
+                ?: preferredReceiver?.player?.y
+                ?: selectedPassingLane
+                    ?.receiver
+                    ?.y
+                ?: predictiveY
+
+        val throughBallAnalysis =
+            TrueTargetPassingEngine.currentThroughBallAnalysis()
+
+        val selectedThroughLane =
+            throughBallAnalysis.lanes
+                .firstOrNull {
+                    it.viable
+                }
+
+        val throughReceiverX =
+            selectedThroughLane
+                ?.lane
+                ?.receiver
+                ?.x
+                ?: predictiveX
+
+        val throughReceiverY =
+            selectedThroughLane
+                ?.lane
+                ?.receiver
+                ?.y
+                ?: predictiveY
+
+        val throughLead =
+            selectedThroughLane
+                ?.leadDistance
+                ?: 0f
+
+        val blockedLanePredictionAnalysis =
+            TrueTargetPassingEngine.currentBlockedLanePredictionAnalysis()
+
+        val predictedBlockedLane =
+            blockedLanePredictionAnalysis.lanes
+                .firstOrNull {
+                    it.predictedBlocked
+                }
+
+        val effectivePassTargetX =
+            if (
+                predictedBlockedLane?.lane == selectedPassingLane
+            ) predictiveX else passTargetX
+
+        val effectivePassTargetY =
+            if (
+                predictedBlockedLane?.lane == selectedPassingLane
+            ) predictiveY else passTargetY
+
+        val defenderInterceptionPredictionAnalysis =
+            TrueTargetPassingEngine.currentDefenderInterceptionPredictionAnalysis()
+
+        val predictedInterception =
+            defenderInterceptionPredictionAnalysis.lanes
+                .firstOrNull {
+                    it.predictedIntercept &&
+                    it.lane == selectedPassingLane
+                }
+
+        val optimizedPassTargetX =
+            predictedInterception
+                ?.let {
+                    effectivePassTargetX +
+                    (
+                        effectivePassTargetX -
+                        it.predictedInterceptX
+                    )*0.45f
+                }
+                ?: effectivePassTargetX
+
+        val optimizedPassTargetY =
+            predictedInterception
+                ?.let {
+                    effectivePassTargetY +
+                    (
+                        effectivePassTargetY -
+                        it.predictedInterceptY
+                    )*0.45f
+                }
+                ?: effectivePassTargetY
+
         val passAssist =
             TrueTargetPassingEngine.optimize(
                 startX,
                 startY,
-                predictiveX,
-                predictiveY,
+                optimizedPassTargetX,
+                optimizedPassTargetY,
                 magneticFeet.touchRetention
             )
 
@@ -228,8 +357,8 @@ class ActiveGestureController(
             startY,
             startX,
             startY,
-            predictiveX,
-            predictiveY,
+            throughReceiverX,
+            throughReceiverY - throughLead,
             predictiveX + 50f,
             predictiveY + 50f
         )
@@ -237,24 +366,74 @@ class ActiveGestureController(
         AdaptiveLoftedThroughEngine(latencyInputEngine).executeOptimalLoftedThrough(
             startX,
             startY,
-            predictiveX,
-            predictiveY,
+            throughReceiverX,
+            throughReceiverY,
             1f,
             1f,
             1000f
         )
 
+        val openSpaceDetectionResult =
+            TrueTargetPassingEngine.currentOpenSpaceDetectionResult()
+
+        val selectedOpenSpace =
+            openSpaceDetectionResult.cells
+                .firstOrNull {
+                    it.viable
+                }
+
+        val crossingLaneAnalysis =
+            TrueTargetPassingEngine.currentCrossingLaneAnalysis()
+
+        val selectedCrossLane =
+            crossingLaneAnalysis.lanes
+                .firstOrNull {
+                    it.viable
+                }
+
+        val crossTargetX =
+            selectedCrossLane
+                ?.targetX
+                ?: selectedOpenSpace
+                    ?.centerX
+                ?: passAssist.correctedX
+
+        val crossTargetY =
+            selectedCrossLane
+                ?.targetY
+                ?: selectedOpenSpace
+                    ?.centerY
+                ?: passAssist.correctedY
+
         val crossAssist =
             CrossPrecisionEngine.calculate(
-                passAssist.correctedX,
-                passAssist.correctedY,
+                crossTargetX,
+                crossTargetY,
                 strength
             )
+
+        val counterattackDetectionResult =
+            TrueTargetPassingEngine.currentCounterattackDetectionResult()
+
+        val fastBreakDetectionResult =
+            TrueTargetPassingEngine.currentFastBreakDetectionResult()
+
+        val offsideRiskEstimationResult =
+            TrueTargetPassingEngine.currentOffsideRiskEstimationResult()
+
+        val safestLane =
+            offsideRiskEstimationResult.lanes
+                .firstOrNull{
+                    it.safe
+                }
 
         val receiverEngagement =
             ReceiverEngagementEngine.evaluate(
                 distance,
-                magneticFeet.touchRetention
+                magneticFeet.touchRetention +
+                (counterattackDetectionResult.confidence*0.15f) +
+                (fastBreakDetectionResult.confidence*0.10f) -
+                ((safestLane?.risk ?: 0f)*0.10f)
             )
 
         val forwardRun =
@@ -263,10 +442,34 @@ class ActiveGestureController(
                 strength
             )
 
+        val shootingLaneAnalysis =
+            TrueTargetPassingEngine.currentShootingLaneAnalysis()
+
+        val selectedShootingLane =
+            shootingLaneAnalysis.lanes
+                .firstOrNull {
+                    it.viable
+                }
+
+        val shootingPressure =
+            (
+                1f -
+                (
+                    selectedShootingLane
+                        ?.confidence
+                        ?: 0.75f
+                )
+            ).coerceIn(0f,1f)
+
+        val shotDistance =
+            selectedShootingLane
+                ?.distance
+                ?: distance
+
         val shotAnalysis =
             ShotOpportunityAnalysisEngine.analyze(
-                distance,
-                0.25f
+                shotDistance,
+                shootingPressure
             )
 
         val defenseAuthority =
