@@ -1,5 +1,14 @@
 package com.assistant.adapter.smartassist
 
+
+
+data class AdaptiveModeAuthority(
+    val mode:Int,
+    val shotScore:Float,
+    val passScore:Float,
+    val crossScore:Float
+)
+
 object GameplayDecisionEngine {
 
 
@@ -19,6 +28,84 @@ object GameplayDecisionEngine {
     private var previousBallY = 0f
     private var previousGoalkeeperX = 0f
     private var previousGoalkeeperY = 0f
+
+    
+
+    fun selectVisionAdaptiveMode(
+        hasBall:Boolean,
+        shotAuthority:Float,
+        passAuthority:Float,
+        crossAuthority:Float,
+        visionConfidence:Float,
+        tacticalConfidence:Float,
+        intelligenceConfidence:Float,
+        runtimeCalibration:Float,
+        onlineAdaptation:Float,
+        temporal:TemporalMemoryState
+    ):AdaptiveModeAuthority{
+
+        if(!hasBall){
+            return AdaptiveModeAuthority(
+                0,
+                shotAuthority,
+                passAuthority,
+                crossAuthority
+            )
+        }
+
+        val temporalGain =
+            (
+                temporal.temporalConfidence +
+                temporal.exponentialMovingAverage +
+                temporal.rollingMean +
+                temporal.historyStability +
+                runtimeCalibration +
+                onlineAdaptation
+            ) / 6f
+
+        val shotScore =
+            shotAuthority * 0.55f +
+            intelligenceConfidence * 0.15f +
+            tacticalConfidence * 0.10f +
+            temporalGain * 0.10f +
+            visionConfidence * 0.10f
+
+        val passScore =
+            passAuthority * 0.55f +
+            tacticalConfidence * 0.15f +
+            temporalGain * 0.10f +
+            runtimeCalibration * 0.10f +
+            visionConfidence * 0.10f
+
+        val crossScore =
+            crossAuthority * 0.55f +
+            tacticalConfidence * 0.10f +
+            temporalGain * 0.10f +
+            onlineAdaptation * 0.15f +
+            visionConfidence * 0.10f
+
+        val mode =
+            if(
+                shotScore >= passScore &&
+                shotScore >= crossScore
+            ){
+                2
+            }else if(
+                passScore >= crossScore
+            ){
+                1
+            }else{
+                0
+            }
+
+        return AdaptiveModeAuthority(
+            mode,
+            shotScore,
+            passScore,
+            crossScore
+        )
+    }
+
 
     fun decide(
         mode: Int,

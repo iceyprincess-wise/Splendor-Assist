@@ -242,14 +242,26 @@ class ActiveGestureController(
                 (decisionDistance / 2500f).coerceIn(0f,1f)
             ) / 6f
 
-        val mode =
-            when {
-                !hasBall -> 0
-                shotAuthority >= passAuthority &&
-                shotAuthority >= crossAuthority -> 2
-                passAuthority >= crossAuthority -> 1
-                else -> 0
-            }
+        val adaptiveModeAuthority =
+            GameplayDecisionEngine.selectVisionAdaptiveMode(
+                hasBall = hasBall,
+                shotAuthority = shotAuthority,
+                passAuthority = passAuthority,
+                crossAuthority = crossAuthority,
+                visionConfidence = visionProximityConfidence,
+                tacticalConfidence =
+                    worldState.tacticalAnalyticsResult.confidence,
+                intelligenceConfidence =
+                    worldState.tacticalIntelligenceResult.confidence,
+                runtimeCalibration =
+                    worldState.runtimeConfidenceCalibrationResult.calibratedConfidence,
+                onlineAdaptation =
+                    worldState.onlineParameterAdaptationResult.adaptationGain,
+                temporal =
+                    worldState.temporalMemoryState
+            )
+
+        val mode = adaptiveModeAuthority.mode
 
         val adaptiveDecisionAuthority =
             (
