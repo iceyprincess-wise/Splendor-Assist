@@ -66,58 +66,168 @@ class ActiveGestureController(
             telemetry.ballX != 0f ||
             telemetry.ballY != 0f
 
-        val pressureScore =
-            (1000f /
-            telemetry.opponentDistance.coerceAtLeast(1f))
-                .coerceAtMost(10f)
 
-        val movementScore =
-            telemetry.playerVelocity
+        val worldState =
+            Phase3WorldStateStore.current()
+
+        val pressureMap =
+            worldState.pressure
+
+        val scenePlayers =
+            SceneTracker.current().trackedPlayers
+
+        val defenderCount =
+            scenePlayers.count {
+                !it.isUserTeam
+            }
+
+        val pressureCellX =
+            (
+                (
+                    telemetry.ballX.coerceIn(
+                        0f,
+                        1f.coerceAtLeast(distance)
+                    ) /
+                    1f.coerceAtLeast(distance)
+                ) *
+                pressureMap.columns
+            ).toInt().coerceIn(
+                0,
+                pressureMap.columns-1
+            )
+
+        val pressureCellY =
+            (
+                (
+                    telemetry.ballY.coerceIn(
+                        0f,
+                        1f.coerceAtLeast(distance)
+                    ) /
+                    1f.coerceAtLeast(distance)
+                ) *
+                pressureMap.rows
+            ).toInt().coerceIn(
+                0,
+                pressureMap.rows-1
+            )
+
+        val visionPressure =
+            pressureMap.pressure
+                .getOrNull(pressureCellY)
+                ?.getOrNull(pressureCellX)
+                ?: 0f
+
+        val defenderDensity =
+            (defenderCount/11f)
+                .coerceIn(0f,1f)
+
+        val trajectory =
+            BallTrajectoryPredictor.current()
+
+        val scene =
+            SceneTracker.current()
+
+        val movementSpeed =
+            scene.trackedBallSpeed
                 .coerceAtLeast(0f)
 
-        val goalkeeperOffset =
-            kotlin.math.abs(
-                telemetry.goalkeeperX -
-                telemetry.ballX
-            ) / 120f
+        val decisionDistance =
+            distance
 
-        val goalkeeperBias =
+        val goalFrameDetected =
+            scene.goalDetected &&
+            scene.goalConfidence > 0f
+
+        val goalCenterX =
+            (scene.goalLeftX + scene.goalRightX) * 0.5f
+
+        val goalWidth =
+            (scene.goalRightX - scene.goalLeftX)
+                .coerceAtLeast(1f)
+
+        val goalkeeperVisionBias =
+            if(goalFrameDetected)
+                (
+                    kotlin.math.abs(
+                        telemetry.goalkeeperX - goalCenterX
+                    ) / goalWidth
+                ).coerceIn(0f,2f)
+            else
+                0f
+
+
+        val passingGraph =
+            TrueTargetPassingEngine.currentPassingGraph()
+
+        val bestPassingLane =
+            passingGraph.lanes.firstOrNull()
+
+        val passingGraphScore =
             (
-                telemetry.ballX -
-                telemetry.goalkeeperX
-            ) / 180f
+                bestPassingLane?.score
+                    ?: 0f
+            ).coerceIn(0f,1f)
 
-        val predictedBallTravel =
-            kotlin.math.hypot(
-                telemetry.ballVelocityX,
-                telemetry.ballVelocityY
-            ).coerceAtMost(12f)
+        val shootingLaneAnalysis =
+            TrueTargetPassingEngine.currentShootingLaneAnalysis()
+
+        val bestShootingLane =
+            shootingLaneAnalysis.lanes
+                .firstOrNull {
+                    it.viable
+                }
+
+        val shootingLaneScore =
+            (
+                bestShootingLane?.confidence
+                    ?: 0f
+            ).coerceIn(0f,1f)
+
+        val crossingLaneAnalysis =
+            TrueTargetPassingEngine.currentCrossingLaneAnalysis()
+
+        val bestCrossingLane =
+            crossingLaneAnalysis.lanes
+                .firstOrNull {
+                    it.viable
+                }
+
+        val crossingLaneScore =
+            (
+                bestCrossingLane?.confidence
+                    ?: 0f
+            ).coerceIn(0f,1f)
 
         val shotScore =
-            goalkeeperOffset +
-            movementScore +
-            pressureScore +
-            telemetry.confidence +
-            (predictedBallTravel * 0.60f) +
-            goalkeeperBias.coerceIn(-2f,2f)
+            shootingLaneScore +
+            goalkeeperVisionBias +
+            scene.goalConfidence
 
         val passScore =
-            movementScore +
-            (1f - pressureScore.coerceAtMost(1f)) +
-            telemetry.confidence +
-            (predictedBallTravel * 0.35f) -
-            (goalkeeperBias * 0.30f)
+            passingGraphScore +
+            trajectory.speed
+                .coerceAtMost(12f)
 
         val crossScore =
-            (distance / 350f) +
-            (movementScore * 0.50f) +
-            (predictedBallTravel * 0.50f) +
-            kotlin.math.abs(goalkeeperBias * 0.20f)
+            crossingLaneScore +
+            scene.fieldConfidence
+
+        val visionProximityConfidence =
+            (
+                visionPressure +
+                scene.goalConfidence +
+                scene.fieldConfidence +
+                passingGraphScore +
+                shootingLaneScore +
+                crossingLaneScore +
+                telemetry.confidence +
+                (1f - (goalkeeperVisionBias * 0.5f).coerceIn(0f,1f))
+            ).coerceIn(0f,8f) / 8f
 
         val mode =
             when {
 
-                distance < 80f ->
+                visionProximityConfidence < 0.35f ->
                     0
 
                 hasBall &&
@@ -140,20 +250,23 @@ class ActiveGestureController(
             }
 
         val decisionScore =
-            when (mode) {
-                2 -> shotScore
-                1 -> passScore
-                else -> crossScore
-            }
+            (
+                when (mode) {
+                    2 -> shotScore
+                    1 -> passScore
+                    else -> crossScore
+                }
+            ) + visionProximityConfidence
 
         val telemetryBoost =
             (
-                telemetry.playerVelocity * 12f +
+                movementSpeed * 12f +
                 telemetry.confidence * 18f +
                 (
-                    1000f /
-                    telemetry.opponentDistance.coerceAtLeast(1f)
-                ).coerceAtMost(12f)
+                    visionPressure +
+                    defenderDensity
+                ).coerceIn(0f,1f).coerceAtMost(12f) +
+                (visionProximityConfidence * 12f)
             ).toInt()
 
         val strength =
@@ -214,9 +327,6 @@ class ActiveGestureController(
                 (distance.toInt().coerceIn(0,100)),
                 strength
             )
-        val passingGraph =
-            TrueTargetPassingEngine.currentPassingGraph()
-
         val selectedPassingLane =
             passingGraph.lanes
                 .firstOrNull {
@@ -382,9 +492,6 @@ class ActiveGestureController(
                     it.viable
                 }
 
-        val crossingLaneAnalysis =
-            TrueTargetPassingEngine.currentCrossingLaneAnalysis()
-
         val selectedCrossLane =
             crossingLaneAnalysis.lanes
                 .firstOrNull {
@@ -442,9 +549,6 @@ class ActiveGestureController(
                 strength
             )
 
-        val shootingLaneAnalysis =
-            TrueTargetPassingEngine.currentShootingLaneAnalysis()
-
         val selectedShootingLane =
             shootingLaneAnalysis.lanes
                 .firstOrNull {
@@ -500,8 +604,13 @@ class ActiveGestureController(
             )
 
         val telemetryAuthority =
-            ((telemetry.playerVelocity * 4f) +
-            ((1000f / telemetry.opponentDistance.coerceAtLeast(1f)) * 2f))
+            ((movementSpeed * 4f) +
+            (
+                (
+                    visionPressure +
+                    defenderDensity
+                ).coerceIn(0f,1f) * 2f
+            ))
 
         val arbitration =
             AuthorityArbitrationEngine.arbitrate(
