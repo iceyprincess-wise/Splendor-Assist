@@ -14,6 +14,18 @@ data class Phase3WorldState(
         SpaceOccupancyResult(0,0, emptyArray()),
     val pressure: PressureFieldResult =
         PressureFieldResult(0,0, emptyArray()),
+    val tacticalMapResult: TacticalMapResult =
+        TacticalMapResult(),
+
+    val defensiveCompactnessResult: DefensiveCompactnessResult =
+        DefensiveCompactnessResult(),
+
+    val wingOverloadDetectionResult: WingOverloadDetectionResult =
+        WingOverloadDetectionResult(),
+
+    val centralOverloadDetectionResult: CentralOverloadDetectionResult =
+        CentralOverloadDetectionResult(),
+
     val passingGraph: PassingLaneGraph =
         PassingLaneGraph(),
 
@@ -51,7 +63,28 @@ data class Phase3WorldState(
         FastBreakDetectionResult(),
 
     val offsideRiskEstimationResult: OffsideRiskEstimationResult =
-        OffsideRiskEstimationResult()
+        OffsideRiskEstimationResult(),
+
+    val pressingRecognitionResult: PressingRecognitionResult =
+        PressingRecognitionResult(),
+
+    val counterPressRecognitionResult: CounterPressRecognitionResult =
+        CounterPressRecognitionResult(),
+
+    val buildUpRecognitionResult: BuildUpRecognitionResult =
+        BuildUpRecognitionResult(),
+
+    val possessionStyleRecognitionResult: PossessionStyleRecognitionResult =
+        PossessionStyleRecognitionResult(),
+
+    val tacticalAnalyticsResult: TacticalAnalyticsResult =
+        TacticalAnalyticsResult(),
+
+    val tacticalBehaviorRecognitionResult: TacticalBehaviorRecognitionResult =
+        TacticalBehaviorRecognitionResult(),
+
+    val tacticalIntelligenceResult: TacticalIntelligenceResult =
+        TacticalIntelligenceResult()
 )
 
 object Phase3WorldStateStore {

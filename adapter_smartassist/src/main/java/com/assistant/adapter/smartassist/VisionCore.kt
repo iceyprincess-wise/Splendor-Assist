@@ -142,6 +142,37 @@ SceneTracker.update(
           frame.height.toFloat()
       )
 
+  val tacticalMapResult =
+      TacticalMapGenerationEngine.compute(
+          scene,
+          occupancy,
+          pressure,
+          teamShape,
+          defensiveLine,
+          offensiveLine
+      )
+
+  val defensiveCompactnessResult =
+      DefensiveCompactnessEngine.compute(
+          scene,
+          defensiveLine,
+          teamShape
+      )
+
+  val wingOverloadDetectionResult =
+      WingOverloadDetectionEngine.compute(
+          scene,
+          occupancy,
+          pressure
+      )
+
+  val centralOverloadDetectionResult =
+      CentralOverloadDetectionEngine.compute(
+          scene,
+          occupancy,
+          pressure
+      )
+
   val passingGraph =
       PassingLaneGraphEngine.build(
           scene,
@@ -211,6 +242,65 @@ SceneTracker.update(
           scene
       )
 
+  val pressingRecognitionResult =
+      PressingRecognitionEngine.analyze(
+          pressure,
+          defensiveCompactnessResult,
+          formation
+      )
+
+  val counterPressRecognitionResult =
+      CounterPressRecognitionEngine.analyze(
+          scene,
+          possession,
+          pressure
+      )
+
+  val buildUpRecognitionResult =
+      BuildUpRecognitionEngine.analyze(
+          formation,
+          teamShape,
+          passingGraph
+      )
+
+  val possessionStyleRecognitionResult =
+      PossessionStyleRecognitionEngine.analyze(
+          possession,
+          passingGraph,
+          pressure
+      )
+
+  val tacticalAnalyticsResult =
+      TacticalAnalyticsEngine.analyze(
+          tacticalMapResult,
+          defensiveCompactnessResult,
+          wingOverloadDetectionResult,
+          centralOverloadDetectionResult,
+          pressingRecognitionResult,
+          counterPressRecognitionResult,
+          buildUpRecognitionResult,
+          possessionStyleRecognitionResult
+      )
+
+
+  val tacticalBehaviorRecognitionResult =
+      TacticalBehaviorRecognitionEngine.analyze(
+          tacticalAnalyticsResult,
+          formation,
+          teamShape
+      )
+
+
+  
+  val tacticalIntelligenceResult =
+      TacticalIntelligenceEngine.analyze(
+          tacticalAnalyticsResult,
+          tacticalBehaviorRecognitionResult,
+          state
+      )
+
+
+
   val offsideRiskEstimationResult =
       OffsideRiskEstimationEngine.analyze(
           passingGraph
@@ -231,6 +321,10 @@ SceneTracker.update(
             offensiveLine = offensiveLine,
             occupancy = occupancy,
             pressure = pressure,
+            tacticalMapResult = tacticalMapResult,
+            defensiveCompactnessResult = defensiveCompactnessResult,
+            wingOverloadDetectionResult = wingOverloadDetectionResult,
+            centralOverloadDetectionResult = centralOverloadDetectionResult,
             passingGraph = passingGraph,
             throughBallAnalysis = throughBallAnalysis,
             crossingLaneAnalysis = crossingLaneAnalysis,
@@ -243,7 +337,14 @@ SceneTracker.update(
             overlapDetectionResult = overlapDetectionResult,
             counterattackDetectionResult = counterattackDetectionResult,
             fastBreakDetectionResult = fastBreakDetectionResult,
-            offsideRiskEstimationResult = offsideRiskEstimationResult
+            offsideRiskEstimationResult = offsideRiskEstimationResult,
+            pressingRecognitionResult = pressingRecognitionResult,
+            counterPressRecognitionResult = counterPressRecognitionResult,
+            buildUpRecognitionResult = buildUpRecognitionResult,
+            possessionStyleRecognitionResult = possessionStyleRecognitionResult,
+            tacticalAnalyticsResult = tacticalAnalyticsResult,
+            tacticalBehaviorRecognitionResult = tacticalBehaviorRecognitionResult,
+            tacticalIntelligenceResult = tacticalIntelligenceResult
         )
     )
 
