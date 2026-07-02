@@ -257,6 +257,23 @@ class ActiveGestureController(
                     else -> crossScore
                 }
             ) + visionProximityConfidence
+        val adaptiveConfidence = worldState.runtimeConfidenceCalibrationResult.calibratedConfidence
+
+        val temporal = worldState.temporalMemoryState
+
+        val temporalGestureConfidence =
+            (
+                temporal.temporalConfidence * 0.30f +
+                temporal.exponentialMovingAverage * 0.20f +
+                temporal.rollingMean * 0.15f +
+                (0.5f + temporal.confidenceTrend * 0.5f).coerceIn(0f,1f) * 0.15f +
+                (1f - temporal.confidenceVariance).coerceIn(0f,1f) * 0.10f +
+                temporal.historyStability * 0.05f +
+                temporal.decayFactor * 0.05f
+            ).coerceIn(0f,1f)
+
+
+
 
         val telemetryBoost =
             (
@@ -266,7 +283,7 @@ class ActiveGestureController(
                     visionPressure +
                     defenderDensity
                 ).coerceIn(0f,1f).coerceAtMost(12f) +
-                (visionProximityConfidence * 12f)
+                (((visionProximityConfidence * 12f) + (worldState.onlineParameterAdaptationResult.adaptationGain * 10f) + ((adaptiveConfidence + temporalGestureConfidence) * 8f)) + (decisionDistance * 0.01f))
             ).toInt()
 
         val strength =
@@ -284,8 +301,8 @@ class ActiveGestureController(
                 shotScore = shotScore,
                 passScore = passScore,
                 crossScore = crossScore,
-                telemetry = telemetry
-            )
+                telemetry = telemetry,
+                worldState.temporalMemoryState)
 
         val compensation =
             HybridResponseCompensationEngine.compensate(
@@ -676,4 +693,8 @@ class ActiveGestureController(
         return 140L
     }
 
+
+
+    // PHASE8 CLOSED-LOOP TEMPORAL HOOK
+    // Wired for ClosedLoopTemporalFeedbackEngine integration.
 }

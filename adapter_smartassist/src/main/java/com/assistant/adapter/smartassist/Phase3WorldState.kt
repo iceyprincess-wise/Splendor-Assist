@@ -84,7 +84,31 @@ data class Phase3WorldState(
         TacticalBehaviorRecognitionResult(),
 
     val tacticalIntelligenceResult: TacticalIntelligenceResult =
-        TacticalIntelligenceResult()
+        TacticalIntelligenceResult(),
+
+    val opponentBehaviourLearningResult: OpponentBehaviourLearningResult =
+        OpponentBehaviourLearningResult(),
+
+    val playerTendencyLearningResult: PlayerTendencyLearningResult =
+        PlayerTendencyLearningResult(),
+
+    val preferredPassingLaneLearningResult: PreferredPassingLaneLearningResult =
+        PreferredPassingLaneLearningResult(),
+
+    val shootingHabitLearningResult: ShootingHabitLearningResult =
+        ShootingHabitLearningResult(),
+
+    val formationAdaptationResult: FormationAdaptationResult =
+        FormationAdaptationResult(),
+
+    val runtimeConfidenceCalibrationResult: RuntimeConfidenceCalibrationResult =
+        RuntimeConfidenceCalibrationResult(),
+
+    val onlineParameterAdaptationResult: OnlineParameterAdaptationResult =
+        OnlineParameterAdaptationResult(),
+
+    val temporalMemoryState: TemporalMemoryState =
+        TemporalMemoryEngine.initialize()
 )
 
 object Phase3WorldStateStore {
@@ -96,6 +120,7 @@ object Phase3WorldStateStore {
         latest = state
     }
 
-    fun current(): Phase3WorldState =
+    fun current(
+): Phase3WorldState =
         latest
 }

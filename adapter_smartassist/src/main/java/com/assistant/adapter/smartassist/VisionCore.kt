@@ -291,17 +291,86 @@ SceneTracker.update(
       )
 
 
+      val previousTemporalMemory =
+          Phase3WorldStateStore.current().temporalMemoryState
+
+      val temporalMemoryState =
+          TemporalMemoryEngine.update(
+              previousTemporalMemory,
+              tacticalBehaviorRecognitionResult.confidence
+          )
+
+
+
   
   val tacticalIntelligenceResult =
       TacticalIntelligenceEngine.analyze(
           tacticalAnalyticsResult,
           tacticalBehaviorRecognitionResult,
-          state
+          state,
+          temporalMemoryState
       )
 
 
 
-  val offsideRiskEstimationResult =
+  
+
+      val opponentBehaviourLearningResult =
+          OpponentBehaviourLearningEngine.analyze(
+              tacticalIntelligenceResult,
+              state,
+              temporalMemoryState
+          )
+
+      val playerTendencyLearningResult =
+          PlayerTendencyLearningEngine.analyze(
+              tacticalIntelligenceResult,
+              state,
+              temporalMemoryState
+          )
+
+      val preferredPassingLaneLearningResult =
+          PreferredPassingLaneLearningEngine.analyze(
+              passingGraph,
+              tacticalIntelligenceResult,
+              temporalMemoryState
+          )
+
+      val shootingHabitLearningResult =
+          ShootingHabitLearningEngine.analyze(
+              shootingLaneAnalysis,
+              tacticalIntelligenceResult,
+              temporalMemoryState
+          )
+
+
+      val formationAdaptationResult =
+          FormationAdaptationEngine.analyze(
+              tacticalIntelligenceResult,
+              opponentBehaviourLearningResult,
+              playerTendencyLearningResult,
+              temporalMemoryState
+          )
+
+      val runtimeConfidenceCalibrationResult =
+          RuntimeConfidenceCalibrationEngine.analyze(
+              tacticalIntelligenceResult,
+              formationAdaptationResult,
+              preferredPassingLaneLearningResult,
+              shootingHabitLearningResult,
+              temporalMemoryState
+          )
+
+      val onlineParameterAdaptationResult =
+          OnlineParameterAdaptationEngine.analyze(
+              runtimeConfidenceCalibrationResult,
+              state,
+              temporalMemoryState
+          )
+
+
+
+val offsideRiskEstimationResult =
       OffsideRiskEstimationEngine.analyze(
           passingGraph
       )
@@ -344,11 +413,23 @@ SceneTracker.update(
             possessionStyleRecognitionResult = possessionStyleRecognitionResult,
             tacticalAnalyticsResult = tacticalAnalyticsResult,
             tacticalBehaviorRecognitionResult = tacticalBehaviorRecognitionResult,
-            tacticalIntelligenceResult = tacticalIntelligenceResult
-        )
+            tacticalIntelligenceResult = tacticalIntelligenceResult,
+            opponentBehaviourLearningResult = opponentBehaviourLearningResult,
+            playerTendencyLearningResult = playerTendencyLearningResult,
+            preferredPassingLaneLearningResult = preferredPassingLaneLearningResult,
+            shootingHabitLearningResult = shootingHabitLearningResult,
+            formationAdaptationResult = formationAdaptationResult,
+            runtimeConfidenceCalibrationResult = runtimeConfidenceCalibrationResult,
+            onlineParameterAdaptationResult = onlineParameterAdaptationResult,
+            temporalMemoryState = temporalMemoryState
+)
     )
 
 
 return state
     }
+
+
+    // PHASE8 CLOSED-LOOP TEMPORAL HOOK
+    // Wired for ClosedLoopTemporalFeedbackEngine integration.
 }

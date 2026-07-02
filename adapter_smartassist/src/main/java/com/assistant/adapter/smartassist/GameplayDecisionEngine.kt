@@ -26,8 +26,8 @@ object GameplayDecisionEngine {
         shotScore: Float,
         passScore: Float,
         crossScore: Float,
-        telemetry: TelemetrySnapshot
-    ): DecisionResult {
+        telemetry: TelemetrySnapshot,
+        temporal: TemporalMemoryState): DecisionResult {
 
         val now = System.currentTimeMillis()
 
@@ -55,12 +55,30 @@ object GameplayDecisionEngine {
 
             telemetry.playerVelocity < 0f
 
+        val baseConfidence =
+            (
+                when (mode) {
+                    2 -> shotScore
+                    1 -> passScore
+                    else -> crossScore
+                }.coerceAtMost(100f) / 100f
+            )
+
+        val temporalDecisionConfidence =
+            (
+                temporal.temporalConfidence +
+                temporal.exponentialMovingAverage +
+                temporal.rollingMean +
+                temporal.historyStability +
+                (1f - temporal.confidenceVariance).coerceIn(0f,1f) +
+                (0.5f + temporal.confidenceTrend * 0.5f).coerceIn(0f,1f)
+            ) / 6f
+
         val confidence =
-            when (mode) {
-                2 -> shotScore
-                1 -> passScore
-                else -> crossScore
-            }.coerceAtMost(100f) / 100f
+            (
+                baseConfidence +
+                temporalDecisionConfidence
+            ) / 2f
 
         val priority =
             (
@@ -121,4 +139,8 @@ object GameplayDecisionEngine {
             priority = priority
         )
     }
+
+
+    // PHASE8 CLOSED-LOOP TEMPORAL HOOK
+    // Wired for ClosedLoopTemporalFeedbackEngine integration.
 }
