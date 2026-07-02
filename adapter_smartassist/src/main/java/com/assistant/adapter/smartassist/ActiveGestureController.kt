@@ -198,19 +198,27 @@ class ActiveGestureController(
                     ?: 0f
             ).coerceIn(0f,1f)
 
-        val shotScore =
-            shootingLaneScore +
-            goalkeeperVisionBias +
-            scene.goalConfidence
+        val shotAuthority =
+            (
+                shootingLaneScore +
+                worldState.tacticalIntelligenceResult.confidence +
+                worldState.runtimeConfidenceCalibrationResult.calibratedConfidence
+            ).coerceIn(0f,1f)
 
-        val passScore =
-            passingGraphScore +
-            trajectory.speed
-                .coerceAtMost(12f)
+        val passAuthority =
+            (
+                passingGraphScore +
+                trajectory.speed.coerceIn(0f,1f) +
+                worldState.buildUpRecognitionResult.confidence +
+                worldState.possessionStyleRecognitionResult.confidence
+            ).coerceIn(0f,1f)
 
-        val crossScore =
-            crossingLaneScore +
-            scene.fieldConfidence
+        val crossAuthority =
+            (
+                crossingLaneScore +
+                worldState.wingOverloadDetectionResult.confidence +
+                worldState.runtimeConfidenceCalibrationResult.calibratedConfidence
+            ).coerceIn(0f,1f)
 
         val visionProximityConfidence =
             (
@@ -224,85 +232,55 @@ class ActiveGestureController(
                 (1f - (goalkeeperVisionBias * 0.5f).coerceIn(0f,1f))
             ).coerceIn(0f,8f) / 8f
 
+        val decisionAuthority =
+            (
+                shotAuthority +
+                passAuthority +
+                crossAuthority +
+                worldState.tacticalAnalyticsResult.confidence +
+                worldState.temporalMemoryState.temporalConfidence +
+                (decisionDistance / 2500f).coerceIn(0f,1f)
+            ) / 6f
+
         val mode =
             when {
-
-                visionProximityConfidence < 0.35f ->
-                    0
-
-                hasBall &&
-                shotScore >= passScore &&
-                shotScore >= crossScore ->
-                    2
-
-                passScore >= crossScore ->
-                    1
-
-                else ->
-                    0
+                !hasBall -> 0
+                shotAuthority >= passAuthority &&
+                shotAuthority >= crossAuthority -> 2
+                passAuthority >= crossAuthority -> 1
+                else -> 0
             }
 
-        val baseStrength =
-            when (mode) {
-                1 -> SmartAssistRepository.configuration().passThreshold
-                2 -> SmartAssistRepository.configuration().shotThreshold
-                else -> SmartAssistRepository.configuration().crossThreshold
-            }
-
-        val decisionScore =
+        val adaptiveDecisionAuthority =
             (
-                when (mode) {
-                    2 -> shotScore
-                    1 -> passScore
-                    else -> crossScore
-                }
-            ) + visionProximityConfidence
-        val adaptiveConfidence = worldState.runtimeConfidenceCalibrationResult.calibratedConfidence
-
-        val temporal = worldState.temporalMemoryState
-
-        val temporalGestureConfidence =
-            (
-                temporal.temporalConfidence * 0.30f +
-                temporal.exponentialMovingAverage * 0.20f +
-                temporal.rollingMean * 0.15f +
-                (0.5f + temporal.confidenceTrend * 0.5f).coerceIn(0f,1f) * 0.15f +
-                (1f - temporal.confidenceVariance).coerceIn(0f,1f) * 0.10f +
-                temporal.historyStability * 0.05f +
-                temporal.decayFactor * 0.05f
-            ).coerceIn(0f,1f)
-
-
-
-
-        val telemetryBoost =
-            (
-                movementSpeed * 12f +
-                telemetry.confidence * 18f +
-                (
-                    visionPressure +
-                    defenderDensity
-                ).coerceIn(0f,1f).coerceAtMost(12f) +
-                (((visionProximityConfidence * 12f) + (worldState.onlineParameterAdaptationResult.adaptationGain * 10f) + ((adaptiveConfidence + temporalGestureConfidence) * 8f)) + (decisionDistance * 0.01f))
-            ).toInt()
+                decisionAuthority +
+                shotAuthority +
+                passAuthority +
+                crossAuthority +
+                worldState.runtimeConfidenceCalibrationResult.calibratedConfidence +
+                worldState.onlineParameterAdaptationResult.adaptationGain +
+                worldState.temporalMemoryState.temporalConfidence +
+                worldState.tacticalAnalyticsResult.confidence +
+                visionProximityConfidence
+            ) / 9f
 
         val strength =
             (
-                baseStrength +
-                decisionScore.toInt() +
-                telemetryBoost
-            ).coerceIn(0,100)
-
+                adaptiveDecisionAuthority
+                    .coerceIn(0f,1f) * 100f
+            ).toInt().coerceIn(0,100)
 
         val decision =
             GameplayDecisionEngine.decide(
                 mode = mode,
                 strength = strength,
-                shotScore = shotScore,
-                passScore = passScore,
-                crossScore = crossScore,
+                shotAuthority = shotAuthority,
+                passAuthority = passAuthority,
+                crossAuthority = crossAuthority,
+                decisionAuthority = decisionAuthority,
                 telemetry = telemetry,
-                worldState.temporalMemoryState)
+                temporal = worldState.temporalMemoryState
+            )
 
         val compensation =
             HybridResponseCompensationEngine.compensate(
@@ -693,8 +671,4 @@ class ActiveGestureController(
         return 140L
     }
 
-
-
-    // PHASE8 CLOSED-LOOP TEMPORAL HOOK
-    // Wired for ClosedLoopTemporalFeedbackEngine integration.
 }

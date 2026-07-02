@@ -26,11 +26,38 @@ object HybridResponseCompensationEngine {
 
         val distance=hypot(dx,dy)
 
-        val responseBoost=
-            (strength.coerceIn(0,100)/100f)
+        val worldState=
+
+            Phase3WorldStateStore.current()
+
+        val temporal=
+            worldState.temporalMemoryState
+
+        val adaptiveConfidence=
+            worldState.runtimeConfidenceCalibrationResult.calibratedConfidence
+
+        val adaptationGain=
+            worldState.onlineParameterAdaptationResult.adaptationGain
+
+        val responseBoost =
+            (
+                adaptiveConfidence +
+                adaptationGain +
+                temporal.temporalConfidence +
+                temporal.exponentialMovingAverage +
+                temporal.rollingMean +
+                (strength.coerceIn(0,100) / 100f)
+            ) / 6f
 
         val predictiveFactor=
-            0.90f + (responseBoost*2.80f)
+            (
+                temporal.exponentialMovingAverage+
+                temporal.rollingMean+
+                temporal.temporalConfidence+
+                adaptiveConfidence+
+                adaptationGain+
+                responseBoost
+            )/6f
 
         val compensatedX=
             endX + dx*predictiveFactor
@@ -38,19 +65,30 @@ object HybridResponseCompensationEngine {
         val compensatedY=
             endY + dy*predictiveFactor
 
+        val durationScale=
+            (1f-(predictiveFactor*temporal.temporalConfidence))
+                .coerceIn(0.15f,1f)
+
         val reducedDuration=
-            (duration*(1f-(responseBoost*0.72f)))
+            (duration*durationScale)
                 .toLong()
                 .coerceAtLeast(8L)
 
         val confidence=
-            (0.82f + responseBoost*0.18f)
-                .coerceAtMost(1f)
+            (
+                adaptiveConfidence+
+                temporal.temporalConfidence+
+                predictiveFactor
+            )/3f
 
         val urgency=
-            (distance/8f)
+            (
+                (distance/8f)*
+                (1f+temporal.confidenceTrend)*
+                (1f+adaptationGain)
+            )
                 .toInt()
-                .coerceAtMost(100)
+                .coerceIn(0,100)
 
         return CompensationResult(
             compensatedX,

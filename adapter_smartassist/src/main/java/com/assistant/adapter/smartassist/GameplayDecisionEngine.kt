@@ -23,9 +23,10 @@ object GameplayDecisionEngine {
     fun decide(
         mode: Int,
         strength: Int,
-        shotScore: Float,
-        passScore: Float,
-        crossScore: Float,
+        shotAuthority: Float,
+        passAuthority: Float,
+        crossAuthority: Float,
+        decisionAuthority: Float,
         telemetry: TelemetrySnapshot,
         temporal: TemporalMemoryState): DecisionResult {
 
@@ -55,16 +56,16 @@ object GameplayDecisionEngine {
 
             telemetry.playerVelocity < 0f
 
-        val baseConfidence =
-            (
-                when (mode) {
-                    2 -> shotScore
-                    1 -> passScore
-                    else -> crossScore
-                }.coerceAtMost(100f) / 100f
-            )
+        val normalizedShotAuthority =
+            shotAuthority.coerceIn(0f,1f)
 
-        val temporalDecisionConfidence =
+        val normalizedPassAuthority =
+            passAuthority.coerceIn(0f,1f)
+
+        val normalizedCrossAuthority =
+            crossAuthority.coerceIn(0f,1f)
+
+        val adaptiveAuthority =
             (
                 temporal.temporalConfidence +
                 temporal.exponentialMovingAverage +
@@ -74,18 +75,28 @@ object GameplayDecisionEngine {
                 (0.5f + temporal.confidenceTrend * 0.5f).coerceIn(0f,1f)
             ) / 6f
 
+        val visionAuthority =
+            when (mode) {
+                2 -> normalizedShotAuthority
+                1 -> normalizedPassAuthority
+                else -> normalizedCrossAuthority
+            }
+
         val confidence =
             (
-                baseConfidence +
-                temporalDecisionConfidence
-            ) / 2f
+                visionAuthority * 0.60f +
+                decisionAuthority.coerceIn(0f,1f) * 0.25f +
+                adaptiveAuthority * 0.15f
+            ).coerceIn(0f,1f)
 
         val priority =
             (
-                strength +
-                (telemetry.playerVelocity * 8f).toInt() +
-                (telemetry.confidence * 20f).toInt()
-            ).coerceIn(0,100)
+                (
+                    visionAuthority * 0.55f +
+                    decisionAuthority.coerceIn(0f,1f) * 0.30f +
+                    adaptiveAuthority * 0.15f
+                ).coerceIn(0f,1f) * 100f
+            ).toInt().coerceIn(0,100)
 
         val stableMode =
             if (

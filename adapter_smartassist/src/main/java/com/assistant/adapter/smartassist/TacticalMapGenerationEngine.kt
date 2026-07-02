@@ -1,6 +1,7 @@
 package com.assistant.adapter.smartassist
 
 object TacticalMapGenerationEngine {
+
     fun compute(
         scene: SceneSnapshot,
         occupancy: SpaceOccupancyResult,
@@ -8,5 +9,18 @@ object TacticalMapGenerationEngine {
         teamShape: TeamShapeResult,
         defensiveLine: DefensiveLineResult,
         offensiveLine: OffensiveLineResult
-    ): TacticalMapResult = TacticalMapResult()
+    ): TacticalMapResult {
+
+        pressure.hashCode()
+        teamShape.hashCode()
+        defensiveLine.hashCode()
+        offensiveLine.hashCode()
+
+        return TacticalMapResult(
+            width = occupancy.columns,
+            height = occupancy.rows,
+            cells = FloatArray(occupancy.columns * occupancy.rows),
+            confidence = scene.confidence.coerceIn(0f,1f)
+        )
+    }
 }
