@@ -10,5 +10,7 @@ object TacticalAnalyticsEngine{
         counterPress:CounterPressRecognitionResult,
         buildUp:BuildUpRecognitionResult,
         possession:PossessionStyleRecognitionResult
-    ):TacticalAnalyticsResult= TacticalAnalyticsResult()
+    ):TacticalAnalyticsResult{
+        return TacticalAnalyticsResult()
+    }
 }

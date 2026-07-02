@@ -5,5 +5,7 @@ object TacticalBehaviorRecognitionEngine{
         analytics:TacticalAnalyticsResult,
         formation:FormationResult,
         teamShape:TeamShapeResult
-    ):TacticalBehaviorRecognitionResult= TacticalBehaviorRecognitionResult()
+    ):TacticalBehaviorRecognitionResult{
+        return TacticalBehaviorRecognitionResult()
+    }
 }
