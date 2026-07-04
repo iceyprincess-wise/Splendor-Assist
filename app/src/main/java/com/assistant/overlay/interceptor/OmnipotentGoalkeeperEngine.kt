@@ -30,6 +30,7 @@ import com.assistant.execution.ExecutionSource
 import com.assistant.adapter.smartassist.SmartAssistAccessibilityEngine
 import com.assistant.overlay.repository.GoalkeeperRuntimeState;
 import com.assistant.adapter.smartassist.TelemetryCoordinator;
+import com.assistant.adapter.smartassist.TelemetryRepository
 
 
 
@@ -204,7 +205,24 @@ TelemetryCoordinator.updatePlayerMotion(
         } catch (e: Exception) {}
 
         
-processGoalkeeperDefensiveLayer(width/2f, height*0.8f, 0f, 2.2f, width/2f, height*0.9f, width/2f, height*0.7f, width*0.9f, height*0.7f)
+run {
+    val t = TelemetryRepository.current()
+
+    processGoalkeeperDefensiveLayer(
+        ballX = if (t.ballX != 0f) t.ballX else width / 2f,
+        ballY = if (t.ballY != 0f) t.ballY else height * 0.8f,
+        ballVx = t.ballVelocityX,
+        ballVy = if (t.ballVelocityY != 0f) t.ballVelocityY else 2.2f,
+        gkX = if (t.goalkeeperX != 0f) t.goalkeeperX else width / 2f,
+        gkY = if (t.goalkeeperY != 0f) t.goalkeeperY else height * 0.9f,
+        nearestAttackerX = width / 2f,
+        nearestAttackerY = height * 0.7f,
+        pressureButtonX = width * 0.9f,
+        pressureButtonY = height * 0.7f,
+        screenWidth = width.toFloat(),
+        screenHeight = height.toFloat()
+    )
+}
         if (anomalyDetected) {
 
     

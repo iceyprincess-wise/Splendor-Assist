@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#0D47A1">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,83 +13,97 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="SMART ASSIST CONTROL ROOM"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="22sp"/>
+            android:text="Smart Assist Control Room"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"/>
 
-        <Switch
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/swEnabled"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="ENABLE SMART ASSIST"
-            android:textColor="#FFFFFF"
-            android:layout_marginTop="20dp"/>
+            android:layout_marginTop="16dp"
+            android:text="Enable Smart Assist"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="PASS ASSIST"
-            android:textColor="#FFFFFF"/>
-
-        <SeekBar
-            android:id="@+id/passSeek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="100"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SHOT ASSIST"
-            android:textColor="#FFFFFF"/>
-
-        <SeekBar
-            android:id="@+id/shotSeek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="100"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="CROSS ASSIST"
-            android:textColor="#FFFFFF"/>
-
-        <SeekBar
-            android:id="@+id/crossSeek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="100"/>
-
-        <Switch
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/swPanic"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="ENABLE PANIC ASSIST"
-            android:textColor="#FFFFFF"
-            android:layout_marginTop="20dp"/>
+            android:text="Panic Mode"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Pass Threshold"/>
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/passSeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:valueFrom="0"
+            android:valueTo="100"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Shot Threshold"/>
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/shotSeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:valueFrom="0"
+            android:valueTo="100"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cross Threshold"/>
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/crossSeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:valueFrom="0"
+            android:valueTo="100"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Runtime Authority"/>
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/authoritySeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:valueFrom="0"
+            android:valueTo="100"/>
+
+        <TextView
+            android:id="@+id/tvAuthorityValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dp"
+            android:text="50%"/>
 
         <TextView
             android:id="@+id/tvRuntime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:layout_marginTop="20dp"/>
+            android:layout_marginTop="12dp"/>
 
         <TextView
             android:id="@+id/tvMetrics"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#00FFAA"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="8dp"/>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="SAVE"
-            android:layout_marginTop="20dp"/>
+            android:layout_marginTop="24dp"
+            android:text="Save"/>
 
     </LinearLayout>
 

@@ -28,6 +28,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <LinearLayout
+    android:tag="PHASE10_MATERIAL3_LAYOUT_MARKER"
         android:id="@+id/ll_tactical_stats"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -25,6 +25,26 @@ data class RuntimePerformanceState(
 
 object RuntimePerformanceCoordinator {
 
+    private var masterAuthority:Int = 100
+
+    fun updateAuthority(authority:Int){
+        masterAuthority = authority.coerceIn(0,100)
+    }
+
+    fun authority():Int = masterAuthority
+
+    fun runtimeAuthority(): Int = authority().coerceIn(0,100) * 10
+
+    fun goalkeeperAuthority(): Int = runtimeAuthority()
+
+    fun interceptionAuthority(): Int = runtimeAuthority()
+
+    fun smartAssistAuthority(): Int = runtimeAuthority()
+
+
+
+
+
     @Volatile
     private var state = RuntimePerformanceState()
 

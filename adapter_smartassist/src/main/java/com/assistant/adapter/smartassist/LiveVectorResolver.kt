@@ -38,7 +38,14 @@ object LiveVectorResolver {
 
         val duration = (90L - (t.playerVelocity * 40f).toLong()).coerceIn(35L, 120L)
 
-        // ALWAYS act — engines stay alive. Real data just sharpens the target.
-        return LiveVector(startX, startY, endX, endY, duration, true)
+        // Preserve fallback vectors, but expose whether telemetry is actually live.
+        return LiveVector(
+            startX = startX,
+            startY = startY,
+            endX = endX,
+            endY = endY,
+            duration = duration,
+            hasRealData = hasReal
+        )
     }
 }

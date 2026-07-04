@@ -16,7 +16,13 @@ class SmartAssistControlRoomBridge(
         repository.updatePanicMode(panic)
     }
     
-    fun updateThresholds(pass: Int, shot: Int, cross: Int) {
+    
+    fun updateAuthority(authority:Int){
+        repository.updateAuthority(authority)
+        RuntimePerformanceCoordinator.updateAuthority(authority)
+    }
+
+fun updateThresholds(pass: Int, shot: Int, cross: Int) {
         repository.updateThresholds(pass, shot, cross)
     }
     

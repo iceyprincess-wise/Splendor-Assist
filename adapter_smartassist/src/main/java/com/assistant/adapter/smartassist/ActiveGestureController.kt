@@ -657,13 +657,11 @@ class ActiveGestureController(
                 duration = boostedDuration
             )
 
-        HybridExecutionTerminal.route(request)
-
-        SmartAssistAccessibilityEngine.globalInstance
-            ?.executeDirectRequest(request)
+        val accepted =
+            HybridExecutionTerminal.route(request)
 
         RuntimeLogger.log(
-            "SmartAssist submitted mode=$mode distance=${distance.toInt()} strength=$strength panic=${SmartAssistRepository.panicActive()}",
+            "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()}",
             "SMART_ASSIST"
         )
     }

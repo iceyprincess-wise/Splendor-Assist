@@ -6,6 +6,7 @@
     android:fillViewport="true">
 
     <LinearLayout
+    android:tag="PHASE10_MATERIAL3_LAYOUT_MARKER"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -46,7 +47,7 @@
             android:padding="12dp"
             android:background="@drawable/banner_premium"/>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBack"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

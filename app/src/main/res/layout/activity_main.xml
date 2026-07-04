@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:background="#173A6A">
+    <com.google.android.material.card.MaterialCardView
+    android:tag="PHASE10_MATERIAL_DASHBOARD_CARD_MARKER"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="18dp"
+    app:cardUseCompatPadding="true">
+
     <LinearLayout
+    android:tag="PHASE10_MATERIAL3_LAYOUT_MARKER"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -19,11 +29,11 @@
             android:text="Runtime Control Center" android:textColor="#B8CCE6"
             android:layout_marginBottom="20dp"/>
 
-        <Button android:id="@+id/btnStartEngine"
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnStartEngine"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="START ENGINE" android:textStyle="bold"
             android:background="@drawable/button_premium" android:textColor="#FFFFFF"/>
-        <Button android:id="@+id/btnViewLogs"
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnViewLogs"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="12dp" android:text="VIEW LOGS"
             android:background="@drawable/button_premium" android:textColor="#FFFFFF"/>
@@ -235,9 +245,43 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
+
+
+
+    <LinearLayout
+        android:id="@+id/runtimeStatusCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/txtRuntimeStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Runtime"/>
+
+        <TextView
+            android:id="@+id/txtVisionStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vision"/>
+
+        <TextView
+            android:id="@+id/txtDiagnosticsStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Diagnostics"/>
+
+    </LinearLayout>
+
+
+
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:text="v1.0-SECURE-LOCKED • Adapter Build"
             android:textColor="#6B8AAA" android:textSize="11sp"
             android:layout_marginTop="24dp" android:layout_gravity="center_horizontal"/>
-    </LinearLayout>
+    </LinearLayout></com.google.android.material.card.MaterialCardView>
+
 </ScrollView>

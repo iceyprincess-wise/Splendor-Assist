@@ -14,7 +14,7 @@ data class SmartAssistMetricsState(
     val uptimeSeconds: Long = 0
 )
 
-class SmartAssistMetrics {
+object SmartAssistMetrics {
     
     private val _state = MutableStateFlow(SmartAssistMetricsState())
     val state: StateFlow<SmartAssistMetricsState> = _state.asStateFlow()

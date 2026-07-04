@@ -18,10 +18,20 @@ import com.assistant.overlay.database.TheaterDatabase
 import java.io.File
 import java.util.concurrent.Executors
 import android.widget.Toast
+import com.assistant.overlay.dvr.DvrRuntimeCoordinator
+import com.assistant.overlay.dvr.DvrRuntimeState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.assistant.overlay.ui.adapter.MatchHistoryAdapter
 import com.assistant.overlay.storage.MediaStoreStorageEngine
+import com.assistant.adapter.smartassist.RuntimePerformanceCoordinator
+import com.assistant.adapter.smartassist.RuntimeDiagnosticsRegistry
+import com.assistant.adapter.smartassist.RuntimeVisualizationRegistry
+import com.assistant.adapter.smartassist.RuntimeOverlayHub
+import com.assistant.adapter.smartassist.VisionOverlayRegistry
+import com.assistant.adapter.smartassist.FPSMonitor
+import com.assistant.adapter.smartassist.VisionLatencyMonitor
+import com.assistant.adapter.smartassist.ConfidenceHeatmap
 
 class AnalyticsTheaterActivity : AppCompatActivity() {
 
@@ -40,10 +50,57 @@ class AnalyticsTheaterActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_analytics_theater)
+        
+        title = "Analytics Theater • LIVE"
+
+
+        
+
+setContentView(R.layout.activity_analytics_theater)
 
         playerView = findViewById(R.id.dvr_player_view)
         btnSaveRom = findViewById(R.id.btn_save_rom)
+
+        btnSaveRom.setOnLongClickListener {
+        
+                    when {
+        
+                        DvrRuntimeCoordinator.recording() -> {
+        
+                            DvrRuntimeCoordinator.saving()
+        
+                            Toast.makeText(
+                                this,
+                                "Saving recording...",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+        
+                        DvrRuntimeCoordinator.armed() -> {
+        
+                            DvrRuntimeCoordinator.startRecording()
+        
+                            Toast.makeText(
+                                this,
+                                "Recording started",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+        
+                        else -> {
+        
+                            DvrRuntimeCoordinator.arm()
+        
+                            Toast.makeText(
+                                this,
+                                "Recorder armed",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+        
+                    true
+                }
         tvCountdown = findViewById(R.id.tv_ttl_countdown)
 
         rvMatchHistory = findViewById(R.id.rv_match_history)
@@ -138,5 +195,44 @@ class AnalyticsTheaterActivity : AppCompatActivity() {
         exoPlayer?.release()
         exoPlayer = null
         dbQueryExecutor.shutdown()
+    }
+
+    private fun refreshAnalyticsRuntime() {
+
+        runCatching {
+            RuntimePerformanceCoordinator.synchronizeExistingPerformanceEngines()
+        }
+
+        runCatching {
+            RuntimePerformanceCoordinator.synchronizeRuntimePipeline()
+        }
+
+        runCatching {
+            RuntimeDiagnosticsRegistry.refresh()
+        }
+
+        runCatching {
+            RuntimeVisualizationRegistry.refresh()
+        }
+
+        runCatching {
+            FPSMonitor.refresh()
+        }
+
+        runCatching {
+            VisionLatencyMonitor.refresh()
+        }
+
+        runCatching {
+            ConfidenceHeatmap.refresh()
+        }
+
+        runCatching {
+            VisionOverlayRegistry.enableAll()
+        }
+
+        runCatching {
+            RuntimeOverlayHub.enableDiagnostics()
+        }
     }
 }

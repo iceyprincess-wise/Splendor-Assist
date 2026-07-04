@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:gravity="center"
-    android:src="@drawable/splendor_assist_logo" />
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="13%"
+    android:insetTop="13%"
+    android:insetRight="13%"
+    android:insetBottom="13%">
+
+    <bitmap
+        android:gravity="center"
+        android:src="@drawable/splendor_assist_logo"/>
+
+</inset>

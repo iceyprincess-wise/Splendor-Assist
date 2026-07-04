@@ -5,6 +5,15 @@ import com.assistant.adapter.smartassist.SmartAssistRepository
 import com.assistant.overlay.database.MatchAnalyticsEntity
 import com.assistant.survival.OverlaySurvivalEngine
 import com.assistant.overlay.database.TheaterDatabase
+import com.assistant.overlay.metrics.SmartAssistMetrics
+import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
+import com.assistant.overlay.notification.RuntimeNotificationCoordinator
+import com.assistant.overlay.dvr.DvrRuntimeCoordinator
+import com.assistant.overlay.dvr.DvrSessionCoordinator
+import com.assistant.overlay.dvr.MatchSessionEngine
+import com.assistant.overlay.runtime.PerformanceGovernor
+import com.assistant.overlay.analytics.LiveMatchAnalytics
+import com.assistant.overlay.storage.MediaStoreStorageEngine
 import java.util.UUID
 import java.util.concurrent.Executors
 
@@ -24,6 +33,8 @@ import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.Image
 import android.media.ImageReader
+import android.media.MediaRecorder
+import android.view.Surface
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
@@ -53,6 +64,14 @@ import java.util.concurrent.locks.ReentrantLock
 
 class OverlayService : Service(), ComponentCallbacks2 {
 
+    // PHASE17_RUNTIME_GUARDS
+    @Volatile
+    private var runtimeInitialized = false
+
+    @Volatile
+    private var recorderInitialized = false
+
+
     companion object {
         private const val CHANNEL_ID = "efootball_assistant_channel"
         private const val NOTIFICATION_ID = 101
@@ -68,6 +87,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var virtualDisplay: VirtualDisplay? = null
     private var imageReader: ImageReader? = null
     private var projectionCallback: MediaProjection.Callback? = null
+
+    private var mediaRecorder: MediaRecorder? = null
+    private var recordingFile: File? = null
+
+    private var activeAnalyticsMatchId:String?=null
+    private var activeRecordingStart:Long=0L
+    private var recorderVirtualDisplay: VirtualDisplay? = null
+
+
     private var perfHintSession: PerformanceHintManager.Session? = null
     private var ocrIoThread: android.os.HandlerThread? = null
     private var ocrIoHandler: android.os.Handler? = null
@@ -83,7 +111,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    override fun onCreate() {
+    
+override fun onCreate() {
+
+        if(runtimeInitialized){
+            return
+        }
+
+        runtimeInitialized=true
+
         super.onCreate()
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         // Anti-Cheat defense disabled to prevent HyperOS false-positive kill
@@ -207,8 +243,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
             override fun onStop() {
                 super.onStop()
                 Handler(Looper.getMainLooper()).post {
-                    SmartAssistRepository.clearPanic()
-                    stopSelf()
+                                        stopSelf()
                 }
             }
         }
@@ -327,8 +362,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             !detectedText.contains("Start Engine", true) &&
                             !detectedText.contains("View Logs", true) &&
                             !detectedText.contains("Activate All Adapters", true) &&
-                            !detectedText.contains("MATCH DETECTED", true) &&
-                            !detectedText.contains("PANIC ACTIVE", true) &&
+                            !detectedText.contains("🫆", true) &&
+                            !detectedText.contains("🫆", true) &&
                             !detectedText.contains("ENGINE READY", true) &&
                             !detectedText.contains("BLOCKED:", true) &&
                             !detectedText.contains("Audit :", true) &&
@@ -364,8 +399,30 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                 .matchDetections
                                 .incrementAndGet()
 
+                            MatchSessionEngine.onGameplayFrame()
+
+                            DvrSessionCoordinator.beginSession()
+
+                            val recording =
+                                DvrRuntimeCoordinator.recording()
+
+                            val recordingAllowed =
+                                PerformanceGovernor.allowRecording(
+                                    applicationContext,
+                                    thermalLevel = 0
+                                )
+
+                            RuntimeNotificationCoordinator.update(
+                                context = applicationContext,
+                                antiban = true,
+                                matchDetected = true,
+                                recording =
+                                    recording && recordingAllowed,
+                                saved = false
+                            )
+
                             RuntimeLogger.log(
-                                "MATCH DETECTED -> PANIC ACTIVE",
+                                "🫆",
                                 "SMART_ASSIST"
                             )
 
@@ -379,6 +436,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                     val now =
                                         System.currentTimeMillis()
 
+                                    activeAnalyticsMatchId=matchId
+                                    activeRecordingStart=now
+
                                     val analytics =
                                         MatchAnalyticsEntity(
                                             matchId = matchId,
@@ -386,10 +446,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                             endTimestamp = now,
                                             dvrVideoPath = "",
                                             isPermanentlySaved = false,
-                                            possessionPercentage = 50f,
-                                            longPassEfficiency = 50f,
-                                            defensiveInterceptions = 0,
-                                            transitionSpeedMs = 0L,
+                                            possessionPercentage =
+                                                LiveMatchAnalytics.possession(),
+
+                                            longPassEfficiency =
+                                                LiveMatchAnalytics.passing(),
+
+                                            defensiveInterceptions =
+                                                LiveMatchAnalytics.interceptions(),
+
+                                            transitionSpeedMs =
+                                                LiveMatchAnalytics.transition(),
                                             errorTimelineJson = "[]"
                                         )
 
@@ -419,13 +486,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             }
 
                             updateOverlayVisuals(
-                                "MATCH DETECTED [PANIC ACTIVE]",
+                                "🫆",
                                 Color.GREEN
                             )
 
                             Handler(Looper.getMainLooper()).postDelayed({
-                                SmartAssistRepository.clearPanic()
-                            }, 3000)
+                                                            }, 3000)
                         }
                     }
 
@@ -441,17 +507,254 @@ class OverlayService : Service(), ComponentCallbacks2 {
         isRunning = true
         processingThread = Thread {
             Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST)
-            while (isRunning) { try { Thread.sleep(50) } catch (e: InterruptedException) { break } }
+            while (isRunning) {
+
+                try {
+
+                    MatchSessionEngine.heartbeat()
+
+                    Thread.sleep(50)
+
+                } catch (e: InterruptedException) {
+
+                    break
+                }
+            }
         }.apply { start() }
     }
 
-    override fun onDestroy() {
+    
+    
+private fun startRuntimeRecorder() {
+
+        if (!DvrSessionCoordinator.active())
+            return
+
+        if (mediaRecorder != null)
+            return
+
+        if (recorderInitialized) {
+            return
+        }
+
+        recorderInitialized = true
+
+        RuntimeLogger.log(
+            "Runtime recorder armed",
+            "DVR"
+        )
+
+        val dir =
+            File(cacheDir,"runtime_recordings")
+
+        dir.mkdirs()
+
+        recordingFile =
+            File(
+                dir,
+                "match_" +
+                System.currentTimeMillis() +
+                ".mp4"
+            )
+
+        mediaRecorder =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MediaRecorder(this)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaRecorder()
+            }.apply {
+
+                setVideoSource(
+                    MediaRecorder.VideoSource.SURFACE
+                )
+
+                setOutputFormat(
+                    MediaRecorder.OutputFormat.MPEG_4
+                )
+
+                setVideoEncoder(
+                    MediaRecorder.VideoEncoder.H264
+                )
+
+                setVideoFrameRate(30)
+
+                setVideoEncodingBitRate(
+                    4_000_000
+                )
+
+                setVideoSize(
+                    imageReader!!.width,
+                    imageReader!!.height
+                )
+
+                setOutputFile(
+                    recordingFile!!.absolutePath
+                )
+
+                prepare()
+            }
+
+        recorderVirtualDisplay =
+            mediaProjection?.createVirtualDisplay(
+
+                "SplendorRecorder",
+
+                imageReader!!.width,
+
+                imageReader!!.height,
+
+                resources.displayMetrics.densityDpi,
+
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+
+                mediaRecorder!!.surface,
+
+                null,
+
+                null
+
+            )
+
+        mediaRecorder!!.start()
+    }
+
+    
+private fun stopRuntimeRecorder() {
+
+        recorderInitialized=false
+
+
+        try {
+            mediaRecorder?.stop()
+        } catch (_: Exception) {
+        }
+
+        try {
+            mediaRecorder?.release()
+        } catch (_: Exception) {
+        }
+
+        try {
+            recorderVirtualDisplay?.release()
+        } catch (_: Exception) {
+        }
+
+        recorderVirtualDisplay = null
+        val completedRecording =
+            recordingFile
+
+        mediaRecorder = null
+        recordingFile = null
+
+        completedRecording?.let {
+
+            try {
+
+                MediaStoreStorageEngine.saveToRom(
+                    context = applicationContext,
+                    matchId =
+                        System.currentTimeMillis()
+                            .toString(),
+                    sourcePath =
+                        it.absolutePath
+                ){
+
+                    try{
+
+                        activeAnalyticsMatchId?.let{ id->
+
+                            TheaterDatabase
+                                .getDatabase(applicationContext)
+                                .theaterDao()
+                                .insertMatchData(
+
+                                    MatchAnalyticsEntity(
+
+                                        matchId=id,
+
+                                        startTimestamp=
+                                            activeRecordingStart,
+
+                                        endTimestamp=
+                                            System.currentTimeMillis(),
+
+                                        dvrVideoPath=
+                                            completedRecording.absolutePath,
+
+                                        isPermanentlySaved=true,
+
+                                        possessionPercentage=
+                                            LiveMatchAnalytics.possession(),
+
+                                        longPassEfficiency=
+                                            LiveMatchAnalytics.passing(),
+
+                                        defensiveInterceptions=
+                                            LiveMatchAnalytics.interceptions(),
+
+                                        transitionSpeedMs=
+                                            LiveMatchAnalytics.transition(),
+
+                                        errorTimelineJson="[]"
+                                    )
+                                )
+                        }
+
+                    }catch(_:Exception){}
+
+                    RuntimeNotificationCoordinator.update(
+                        context = applicationContext,
+                        antiban = true,
+                        matchDetected = false,
+                        recording = false,
+                        saved = true
+                    )
+
+                    DvrSessionCoordinator.completeSave()
+
+                    RuntimeLogger.log(
+                        "Recording exported",
+                        "DVR"
+                    )
+
+                }
+
+            } catch(e:Exception){
+
+                RuntimeLogger.log(
+                    "Export failed",
+                    "DVR"
+                )
+            }
+
+        }
+
+        DvrSessionCoordinator.finishSession()
+
+        RuntimeNotificationCoordinator.update(
+            context = applicationContext,
+            antiban = true,
+            matchDetected = false,
+            recording = false,
+            saved = true
+        )
+
+        RuntimeLogger.log(
+            "Runtime recorder stopped",
+            "DVR"
+        )
+    }
+
+override fun onDestroy() {
         OverlaySurvivalEngine.destroyed()
         isRunning = false
-        SmartAssistRepository.clearPanic()
+        // PHASE10_PANIC_PERSISTENCE_KEEP_STATE
         try { windowManager.removeViewImmediate(overlayView) } catch (_: Exception) {}
         try { imageReader?.setOnImageAvailableListener(null, null) } catch (_: Exception) {}
         try { projectionCallback?.let { mediaProjection?.unregisterCallback(it) } } catch (_: Exception) {}
+        stopRuntimeRecorder()
+
         virtualDisplay?.release()
         virtualDisplay = null
         imageReader?.close()
@@ -475,7 +778,7 @@ fun startTrajectoryWatchdog(overlayView: android.view.View, handler: android.os.
             0L <= 3000L
 
             if (!panicActive && SmartAssistRepository.panicActive()) {
-                SmartAssistRepository.clearPanic()
+                // PHASE10_PANIC_PERSISTENCE_KEEP_STATE
             }
 
             if (panicActive) {

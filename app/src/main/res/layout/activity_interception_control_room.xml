@@ -1,111 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#1A1A2E">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="🛡️ Interception Control Room"
-        android:textColor="#FFFFFF"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"/>
-
-    <Switch
-        android:id="@+id/switch_enabled"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Enable Interception"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="8dp"/>
-
-    <Switch
-        android:id="@+id/switch_auto_intercept"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Auto Intercept"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="16dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Awareness"
-        android:textColor="#AAAAAA"
-        android:layout_marginBottom="4dp"/>
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="vertical"
+        android:padding="20dp">
 
-        <SeekBar
-            android:id="@+id/seekbar_awareness"
-            android:layout_width="0dp"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:max="100"/>
+            android:text="Interception Control Room"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_enabled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Enable Interception"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_auto_intercept"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Auto Intercept"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Awareness"/>
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/seekbar_awareness"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:valueFrom="0"
+            android:valueTo="100"/>
 
         <TextView
             android:id="@+id/text_awareness_value"
-            android:layout_width="50dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="50%"
-            android:textColor="#FFFFFF"
-            android:gravity="end"/>
-    </LinearLayout>
+            android:text="50%"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Prediction"
-        android:textColor="#AAAAAA"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="4dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Prediction"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <SeekBar
+        <com.google.android.material.slider.Slider
             android:id="@+id/seekbar_prediction"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:max="100"/>
+            android:valueFrom="0"
+            android:valueTo="100"/>
 
         <TextView
             android:id="@+id/text_prediction_value"
-            android:layout_width="50dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="50%"
-            android:textColor="#FFFFFF"
-            android:gravity="end"/>
+            android:text="50%"/>
+
+        <TextView
+            android:id="@+id/text_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="INACTIVE"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Save Settings"/>
+
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/text_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="INACTIVE"
-        android:textColor="#FF4444"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="24dp"/>
-
-    <Button
-        android:id="@+id/button_save"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Save Settings"
-        android:layout_marginTop="24dp"/>
-</LinearLayout>
+</ScrollView>

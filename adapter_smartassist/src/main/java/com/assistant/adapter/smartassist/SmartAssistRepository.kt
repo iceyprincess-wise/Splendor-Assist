@@ -10,7 +10,8 @@ data class SmartAssistConfiguration(
     val passThreshold: Int = 50,
     val shotThreshold: Int = 50,
     val crossThreshold: Int = 50,
-    val panicThreshold: Int = 80
+    val panicThreshold: Int = 80,
+    val authority: Int = 100
 )
 
 data class SmartAssistState(
@@ -29,6 +30,7 @@ class SmartAssistRepository(context: Context) {
         private const val KEY_SHOT = "shot_threshold"
         private const val KEY_CROSS = "cross_threshold"
         private const val KEY_PANIC_THRESHOLD = "panic_threshold"
+        private const val KEY_AUTHORITY = "authority"
         
         // Static accessor for controllers that need it
         private var instance: SmartAssistRepository? = null
@@ -38,12 +40,19 @@ class SmartAssistRepository(context: Context) {
         fun panicActive(): Boolean = staticState.panicMode
         fun configuration(): SmartAssistConfiguration = staticState.configuration
         
+        // PHASE10_PANIC_PERSISTENCE_FINAL_MARKER
         fun activatePanic() {
-            staticState = staticState.copy(panicMode = true)
+            instance?.updatePanicMode(true)
+                ?: run {
+                    staticState = staticState.copy(panicMode = true)
+                }
         }
         
         fun clearPanic() {
-            staticState = staticState.copy(panicMode = false)
+            instance?.updatePanicMode(false)
+                ?: run {
+                    staticState = staticState.copy(panicMode = false)
+                }
         }
     }
     
@@ -68,7 +77,8 @@ class SmartAssistRepository(context: Context) {
                 passThreshold = prefs.getInt(KEY_PASS, 50),
                 shotThreshold = prefs.getInt(KEY_SHOT, 50),
                 crossThreshold = prefs.getInt(KEY_CROSS, 50),
-                panicThreshold = prefs.getInt(KEY_PANIC_THRESHOLD, 80)
+                panicThreshold = prefs.getInt(KEY_PANIC_THRESHOLD, 80),
+                authority = prefs.getInt(KEY_AUTHORITY,100)
             )
         )
     }
@@ -81,6 +91,7 @@ class SmartAssistRepository(context: Context) {
             putInt(KEY_SHOT, newState.configuration.shotThreshold)
             putInt(KEY_CROSS, newState.configuration.crossThreshold)
             putInt(KEY_PANIC_THRESHOLD, newState.configuration.panicThreshold)
+            putInt(KEY_AUTHORITY, newState.configuration.authority)
             apply()
         }
         _state.value = newState.copy(lastUpdated = System.currentTimeMillis())
@@ -94,5 +105,16 @@ class SmartAssistRepository(context: Context) {
             passThreshold = pass, shotThreshold = shot, crossThreshold = cross
         )))
     
-    fun getCurrentState(): SmartAssistState = _state.value
+    
+    fun updateAuthority(authority:Int)=
+        saveState(
+            _state.value.copy(
+                configuration =
+                    _state.value.configuration.copy(
+                        authority = authority
+                    )
+            )
+        )
+
+fun getCurrentState(): SmartAssistState = _state.value
 }
