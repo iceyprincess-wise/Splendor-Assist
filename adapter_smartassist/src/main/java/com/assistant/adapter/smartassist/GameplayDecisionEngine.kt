@@ -1,5 +1,9 @@
 package com.assistant.adapter.smartassist
 
+private const val GAMEPLAY_DECISION_ENGINE_RAPID_EXECUTION_TAG = "GameplayDecisionEngine.rapidPrime"
+
+private const val GAMEPLAY_DECISION_ENGINE_PRIME_AUTHORITY_TAG = "GameplayDecisionEngine.prime"
+
 
 
 data class AdaptiveModeAuthority(
@@ -10,6 +14,62 @@ data class AdaptiveModeAuthority(
 )
 
 object GameplayDecisionEngine {
+    data class GameplayDownstreamEvent(
+        val sequence: Long,
+        val source: String,
+        val amplification: Float
+    )
+
+    private var gameplayDownstreamSequence: Long = 0L
+    private var lastGameplayDownstreamEvent: GameplayDownstreamEvent? = null
+
+    @Synchronized
+    private fun publishGameplayDownstream(source: String) {
+        gameplayDownstreamSequence += 1L
+        lastGameplayDownstreamEvent = GameplayDownstreamEvent(
+            sequence = gameplayDownstreamSequence,
+            source = source,
+            amplification = GAMEPLAY_ENGINE_AMPLIFICATION
+        )
+    }
+
+    @Synchronized
+    fun gameplayDownstreamSnapshot(): GameplayDownstreamEvent? =
+        lastGameplayDownstreamEvent
+
+    private const val GAMEPLAY_ENGINE_AMPLIFICATION: Float = 1000000.0f
+    private var amplifiedDecisionCycles: Long = 0L
+    private var lastAmplifiedAuthority: Float = 0.0f
+
+    @Synchronized
+    private fun registerAmplifiedDecisionCycle(authority: Float) {
+        amplifiedDecisionCycles += 1L
+        lastAmplifiedAuthority =
+            authority.coerceIn(0.0f, 1.0f) * GAMEPLAY_ENGINE_AMPLIFICATION
+    }
+
+    @Synchronized
+    fun gameplayAmplificationSnapshot(): Pair<Long, Float> =
+        amplifiedDecisionCycles to lastAmplifiedAuthority
+
+
+
+    fun rapidPrimeExecutionCapacity(stage: String, authority: Float): Float {
+        assertGameplayDecisionPrimeAuthority("rapidPrimeExecutionCapacity")
+        check(stage.isNotBlank()) { "Rapid prime execution stage must be explicit" }
+        check(GAMEPLAY_DECISION_ENGINE_RAPID_EXECUTION_TAG.isNotBlank()) {
+            "Gameplay decision rapid execution marker missing before $stage"
+        }
+        return (authority * 1000.0f).coerceIn(0f, 10000f)
+    }
+
+    private fun assertGameplayDecisionPrimeAuthority(stage: String) {
+        check(stage.isNotBlank()) { "Gameplay decision prime authority stage must be explicit" }
+        check(GAMEPLAY_DECISION_ENGINE_PRIME_AUTHORITY_TAG.isNotBlank()) {
+            "Gameplay decision engine prime authority marker missing before $stage"
+        }
+    }
+
 
 
     private const val MAX_TELEMETRY_AGE_MS = 250L
@@ -43,8 +103,10 @@ object GameplayDecisionEngine {
         onlineAdaptation:Float,
         temporal:TemporalMemoryState
     ):AdaptiveModeAuthority{
+        assertGameplayDecisionPrimeAuthority("selectVisionAdaptiveMode")
 
         if(!hasBall){
+            publishGameplayDownstream("selectVisionAdaptiveMode")
             return AdaptiveModeAuthority(
                 0,
                 shotAuthority,
@@ -98,6 +160,7 @@ object GameplayDecisionEngine {
                 0
             }
 
+        publishGameplayDownstream("selectVisionAdaptiveMode")
         return AdaptiveModeAuthority(
             mode,
             shotScore,
@@ -116,6 +179,8 @@ object GameplayDecisionEngine {
         decisionAuthority: Float,
         telemetry: TelemetrySnapshot,
         temporal: TemporalMemoryState): DecisionResult {
+        registerAmplifiedDecisionCycle((telemetry.confidence / 100.0f).coerceIn(0.0f, 1.0f))
+        assertGameplayDecisionPrimeAuthority("decide")
 
         val now = System.currentTimeMillis()
 
@@ -230,6 +295,7 @@ object GameplayDecisionEngine {
         previousPriority = priority
         previousTimestamp = now
 
+        publishGameplayDownstream("decide")
         return DecisionResult(
             mode = stableMode,
             strength = strength,

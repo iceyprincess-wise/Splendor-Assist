@@ -47,6 +47,10 @@ object RuntimeLogger {
                     FILE_NAME
                 )
         }
+        if (segmentDir == null) {
+            segmentDir = File(context.filesDir, "runtime_hour_segments").apply { mkdirs() }
+        }
+        reconcileExpired()
 
         if (externalLogFile == null) {
             externalLogFile = File(
@@ -136,6 +140,80 @@ object RuntimeLogger {
         }
     }
 
+
+    data class HourBucket(
+        val hourStart: Long,
+        val expiresAt: Long,
+        val count: Long
+    )
+
+    private const val RETENTION_MS = 10_800_000L
+    private const val HOUR_MS = 3_600_000L
+    private const val PAGE_SIZE = 250
+    private var segmentDir: File? = null
+
+    @Synchronized
+    fun reconcileExpired(now: Long = System.currentTimeMillis()) {
+        segmentDir?.listFiles()?.forEach { file ->
+            val hour = file.name.removePrefix("hour_").removeSuffix(".log").toLongOrNull()
+            if (hour != null && now >= hour + HOUR_MS + RETENTION_MS) file.delete()
+        }
+    }
+
+    @Synchronized
+    fun hourBuckets(now: Long = System.currentTimeMillis()): List<HourBucket> {
+        reconcileExpired(now)
+        return segmentDir?.listFiles()
+            ?.mapNotNull { file ->
+                val hour = file.name.removePrefix("hour_").removeSuffix(".log").toLongOrNull()
+                hour?.let { HourBucket(it, it + HOUR_MS + RETENTION_MS, countLines(file)) }
+            }?.filter { now < it.expiresAt }?.sortedByDescending { it.hourStart }.orEmpty()
+    }
+
+    @Synchronized
+    fun readHourPage(hourStart: Long, page: Int, size: Int = PAGE_SIZE): List<String> {
+        reconcileExpired()
+        val file = File(segmentDir ?: return emptyList(), "hour_$hourStart.log")
+        if (!file.exists()) return emptyList()
+        val from = page.coerceAtLeast(0) * size.coerceIn(1, PAGE_SIZE)
+        return file.bufferedReader().useLines {
+            it.drop(from).take(size.coerceIn(1, PAGE_SIZE)).toList()
+        }
+    }
+
+    @Synchronized
+    fun copyHour(hourStart: Long): String {
+        reconcileExpired()
+        val file = File(segmentDir ?: return "", "hour_$hourStart.log")
+        return if (file.exists()) file.readText() else ""
+    }
+
+    @Synchronized
+    fun deleteHour(hourStart: Long): Boolean {
+        val file = File(segmentDir ?: return false, "hour_$hourStart.log")
+        return !file.exists() || file.delete()
+    }
+
+    @Synchronized
+    fun deleteAllOwnedLogs(): Boolean {
+        val segments = segmentDir?.listFiles()?.all { it.delete() } ?: true
+        val internal = internalLogFile?.let { !it.exists() || it.delete() } ?: true
+        return segments && internal
+    }
+
+    private fun countLines(file: File): Long =
+        file.bufferedReader().use { reader ->
+            var count = 0L
+            while (reader.readLine() != null) count++
+            count
+        }
+
+    private fun appendSegment(text: String, now: Long) {
+        val dir = segmentDir ?: return
+        val hour = now - now % HOUR_MS
+        FileWriter(File(dir, "hour_$hour.log"), true).use { it.append(text) }
+    }
+
     @Synchronized
     fun log(
         message: String,
@@ -144,13 +222,14 @@ object RuntimeLogger {
 
         val timestamp =
             SimpleDateFormat(
-                "HH:mm:ss.SSS",
+                "yyyy-MM-dd HH:mm:ss.SSS",
                 Locale.US
             ).format(Date())
 
         val logEntry =
             "$timestamp [$tag] $message\n"
 
+        appendSegment(logEntry, System.currentTimeMillis())
         writeToAll(logEntry)
 
         if (FIELD_TEST_MODE) {

@@ -19,6 +19,10 @@ import com.assistant.adapter.smartassist.VisionOverlayRegistry
 import com.assistant.adapter.smartassist.FPSMonitor
 import com.assistant.adapter.smartassist.VisionLatencyMonitor
 import com.assistant.adapter.smartassist.ConfidenceHeatmap
+import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.execution.CentralExecutionBus
+import com.assistant.execution.ExecutionRequest
+import com.assistant.execution.ExecutionSource
 
 class SmartAssistControlRoomActivity : AppCompatActivity() {
 
@@ -61,10 +65,21 @@ setContentView(R.layout.activity_smartassist_control_room)
         }
 
         fun refreshMetrics() {
+            val gameplay = SmartAssistMetrics.gameplayDownstreamRuntimeSnapshot()
+            val amplified = SmartAssistMetrics.gameplayAmplificationRuntimeSnapshot()
+            val magneticFeet = SmartAssistMetrics.magneticFeetRuntimeSnapshot()
+            val crossingLane = SmartAssistMetrics.crossingLaneRuntimeSnapshot()
+
             findViewById<TextView>(R.id.tvMetrics).text =
                 "Submitted=${SmartAssistMetrics.requestsSubmitted.get()}\n" +
                 "Executed=${SmartAssistMetrics.requestsExecuted.get()}\n" +
-                "Trajectory=${SmartAssistMetrics.trajectoryProduced.get()}"
+                "Trajectory=${SmartAssistMetrics.trajectoryProduced.get()}\n" +
+                "Gameplay=${gameplay["source"]} Seq=${gameplay["sequence"]} Active=${gameplay["active"]}\n" +
+                "DecisionCycles=${amplified["decisionCycles"]} Authority=${amplified["lastAuthority"]}\n" +
+                "MagneticFeet Seq=${magneticFeet["sequence"]} Touch=${magneticFeet["touchRetention"]} " +
+                "Control=${magneticFeet["possessionControl"]}\n" +
+                "Crossing Seq=${crossingLane["sequence"]} Lanes=${crossingLane["laneCount"]} " +
+                "Viable=${crossingLane["viableLaneCount"]} Best=${crossingLane["bestConfidence"]}"
         }
 
         refreshRuntime()
