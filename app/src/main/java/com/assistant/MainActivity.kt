@@ -1,4 +1,5 @@
 package com.assistant
+import com.assistant.DiagnosisRoomActivity
 
 import android.app.Activity
 import android.content.Context
@@ -273,7 +274,7 @@ override fun onResume() {
         )
     )
 }
-        findViewById<View>(com.assistant.overlay.R.id.cardDiagnostics).setOnClickListener { openFutureRoom("Diagnostics") }
+        findViewById<View>(com.assistant.overlay.R.id.cardDiagnostics).setOnClickListener { startActivity(Intent(this, DiagnosisRoomActivity::class.java)) }
         findViewById<View>(com.assistant.overlay.R.id.cardFutureRooms).setOnClickListener { openFutureRoom("Future Rooms") }
     }
 

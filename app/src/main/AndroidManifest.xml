@@ -37,6 +37,8 @@
         </activity>
 
         <activity android:name="com.assistant.ErrorActivity" android:exported="false" />
+        <activity android:name="com.assistant.DiagnosisDetailActivity" android:exported="false" />
+        <activity android:name="com.assistant.DiagnosisRoomActivity" android:exported="false" />
         <activity android:name="com.assistant.LogActivity" android:exported="false" />
         <activity android:name="com.assistant.SplashActivity" android:exported="false" />
         <activity android:name="com.assistant.WelcomeActivity" android:exported="false" />
