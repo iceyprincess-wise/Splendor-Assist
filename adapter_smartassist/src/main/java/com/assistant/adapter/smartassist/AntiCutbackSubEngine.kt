@@ -11,7 +11,7 @@ import kotlin.math.sin
 
 /**
  * [PRIME AUTHORITATIVE ENGINE] — Physical Isolation & Bus Gated Anti-Cutback Defense
- * Hardened from raw field patch to eliminate hardcoded resolution traps and bus overlapping.
+ * Hardened for hyper-responsive budget device input streaming.
  */
 class AntiCutbackSubEngine(
     private val inputEngine: LatencyDefeatingInputEngine
@@ -20,7 +20,8 @@ class AntiCutbackSubEngine(
     companion object {
         @Volatile
         private var lastExecutionTimestamp = 0L
-        private const val DEBOUNCE_COOLDOWN_MS = 110L
+        // UPGRADE: Throttled down from 110ms to 33ms to match a fluid 30FPS hardware canvas refresh rate
+        private const val DEBOUNCE_COOLDOWN_MS = 33L
     }
 
     fun blockCutbackPassingLanes(
@@ -40,7 +41,7 @@ class AntiCutbackSubEngine(
         val leftTouchlineThreshold = screenWidth * 0.20f
         val rightTouchlineThreshold = screenWidth * 0.80f
 
-        val isWingerAtBaseline = wingerY > baselineThreshold && 
+        val isWingerAtBaseline = wingerY > baselineThreshold &&
             (wingerX < leftTouchlineThreshold || wingerX > rightTouchlineThreshold)
 
         if (!isWingerAtBaseline) return false
@@ -54,7 +55,8 @@ class AntiCutbackSubEngine(
             (laneMidpointX - myNearestDefenderX).toDouble()
         )
 
-        val swipeRadius = screenHeight * 0.12f
+        // UPGRADE: Slightly expand the swipe radius factor to ensure the micro-swipe registers authoritatively on low-spec displays
+        val swipeRadius = screenHeight * 0.15f 
         val runX = (joystickX + (cos(targetAngle) * swipeRadius)).toFloat().coerceIn(0f, screenWidth)
         val runY = (joystickY + (sin(targetAngle) * swipeRadius)).toFloat().coerceIn(0f, screenHeight)
 
@@ -66,7 +68,7 @@ class AntiCutbackSubEngine(
             startY = joystickY,
             endX = runX,
             endY = runY,
-            duration = 45L
+            duration = 35L // UPGRADE: Snappier stroke execution path (35ms instead of 45ms) to defeat input latency
         )
 
         val submitted = CentralExecutionBus.submit(request)
