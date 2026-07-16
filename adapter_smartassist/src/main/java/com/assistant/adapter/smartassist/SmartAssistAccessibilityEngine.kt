@@ -62,41 +62,25 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
                 val request = CentralExecutionBus.consume()
                 if (request != null) {
-                    val path = Path().apply {
-                        moveTo(request.startX, request.startY)
-                        lineTo(request.endX, request.endY)
-                    }
-
-                    val stroke = GestureDescription.StrokeDescription(
-                        path,
-                        0,
-                        request.duration.coerceAtMost(85L)
+                    SmartAssistMetrics.recordBusConsumed(request)
+                    val effectiveDuration = request.duration.coerceAtMost(85L)
+                    dispatcher.injectWinningVector(
+                        request.startX,
+                        request.startY,
+                        request.endX,
+                        request.endY,
+                        effectiveDuration
                     )
-
-                    val builder = GestureDescription.Builder().apply {
-                        addStroke(stroke)
-                    }
-
-                    isDispatching = true
-                    val dispatched = dispatchGesture(builder.build(), object : GestureResultCallback() {
-                        override fun onCompleted(gestureDescription: GestureDescription?) {
-                            super.onCompleted(gestureDescription)
-                            isDispatching = false
-                        }
-                        override fun onCancelled(gestureDescription: GestureDescription?) {
-                            super.onCancelled(gestureDescription)
-                            isDispatching = false
-                        }
-                    }, null)
-                    if (!dispatched) isDispatching = false
-                    if (dispatched) {
-                        RuntimeLogger.execution("GESTURE_SUCCESS","phase=${request.phase}")
-                        SmartAssistMetrics.executeRequest()
-                        RuntimeLogger.log("Gesture executed phase=${request.phase}", "SMART_ASSIST")
-                    } else {
-                        RuntimeLogger.execution("GESTURE_FAILED","phase=${request.phase}")
-                        RuntimeLogger.log("Gesture dispatch failed", "SMART_ASSIST")
-                    }
+                    SmartAssistMetrics.recordBusDispatchResult(request, true)
+                    SmartAssistMetrics.executeRequest()
+                    RuntimeLogger.execution(
+                        "BUS_TO_CONTROLLER",
+                        "phase=${request.phase} duration=$effectiveDuration"
+                    )
+                    RuntimeLogger.log(
+                        "Bus request delegated to ActiveGestureController phase=${request.phase}",
+                        "SMART_ASSIST"
+                    )
                 }
             } catch (e: Exception) {
                 RuntimeLogger.log("Bus execution error: ${e.message}", "SMART_ASSIST")

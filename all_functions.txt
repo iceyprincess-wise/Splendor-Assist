@@ -1,7 +1,0 @@
-app/src/main/java/com/assistant/App.kt:fun initializeGoalkeeperSubsystem(context: android.content.Context) {
-app/src/main/java/com/assistant/OverlayService.kt:fun startTrajectoryWatchdog(overlayView: android.view.View, handler: android.os.Handler) {
-app/src/main/java/com/assistant/App.kt.pre_lock_008:fun initializeGoalkeeperSubsystem(context: android.content.Context) {
-app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt:fun AccessibilityService.triggerUniversalAssist(actionPhase: Int, x1: Float, y1: Float, x2: Float, y2: Float) {
-app/src/main/java/com/assistant/overlay/interceptor/SmartAssistAccessibilityEngine.kt.pre_fix:fun AccessibilityService.triggerUniversalAssist(actionPhase: Int, x1: Float, y1: Float, x2: Float, y2: Float) {
-app/src/main/java/com/assistant/GlobalCrashHandler.kt:fun bindDiagnosticsInterceptor(context: android.content.Context) {
-app/src/main/java/com/assistant/App.kt.pre_lock_006:fun initializeGoalkeeperSubsystem(context: android.content.Context) {

@@ -28,6 +28,7 @@ class DiagnosisDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         RuntimeLogger.reconcileExpired()
         RuntimeDiagnosticsRegistry.refresh()
+        SmartAssistMetrics.runGameplayHeartbeat("DiagnosisDetailActivity opened")
         engine = intent.getStringExtra(EXTRA_ENGINE) ?: "RuntimeLogger"
         setContentView(buildPage())
         render()
@@ -80,6 +81,21 @@ class DiagnosisDetailActivity : AppCompatActivity() {
             appendLine("Metrics:")
             appendLine(metricsFor(engine))
             appendLine()
+            appendLine("Activation diagnostics:")
+            appendLine(activationFor(engine))
+            appendLine()
+            appendLine("Gameplay heartbeat diagnostics:")
+            appendLine(SmartAssistMetrics.gameplayHeartbeatRuntimeSnapshot())
+            appendLine()
+            appendLine("Controller entry diagnostics:")
+            appendLine(SmartAssistMetrics.controllerEntryRuntimeSnapshot())
+            appendLine()
+            appendLine("Bus execution diagnostics:")
+            appendLine(SmartAssistMetrics.busExecutionRuntimeSnapshot())
+            appendLine()
+            appendLine("Goalkeeper shadow diagnostics:")
+            appendLine(SmartAssistMetrics.goalkeeperShadowRuntimeSnapshot())
+            appendLine()
             appendLine("Runtime traces:")
             appendLine(filteredLogs(engine).ifBlank { "No app-owned trace found yet for this engine." })
             appendLine()
@@ -126,6 +142,13 @@ class DiagnosisDetailActivity : AppCompatActivity() {
         "SmartAssistControlRoomActivity" -> "Control Room consumes SmartAssistMetrics and displays runtime status."
         "RuntimeLogger" -> "RuntimeLogger source files are tailed below from app-owned locations."
         else -> "No metrics."
+    }
+
+    private fun activationFor(name: String): String = when (name) {
+        "MagneticFeetEngine" -> SmartAssistMetrics.magneticFeetActivationRuntimeSnapshot().toString()
+        "GameplayDecisionEngine" -> SmartAssistMetrics.gameplayActivationRuntimeSnapshot().toString()
+        "CrossingLaneAnalysisEngine" -> "Crossing lane sequence changes prove VisionCore is repeatedly calling analyze()."
+        else -> "No dedicated activation diagnostics for this component yet."
     }
 
     private fun filteredLogs(name: String): String {

@@ -16,6 +16,69 @@ import android.graphics.Path
 import kotlin.math.abs
 import kotlin.math.atan2
 
+data class ControllerEntryDiagnostics(
+    val entryCalls: Long,
+    val blockedCalls: Long,
+    val lastReason: String,
+    val lastStartX: Float,
+    val lastStartY: Float,
+    val lastEndX: Float,
+    val lastEndY: Float,
+    val lastDuration: Long,
+    val lastUpdatedMs: Long
+)
+
+object ActiveGestureControllerDiagnostics {
+    private var entryCalls: Long = 0L
+    private var blockedCalls: Long = 0L
+    private var lastReason: String = "not entered yet"
+    private var lastStartX: Float = 0f
+    private var lastStartY: Float = 0f
+    private var lastEndX: Float = 0f
+    private var lastEndY: Float = 0f
+    private var lastDuration: Long = 0L
+    private var lastUpdatedMs: Long = 0L
+
+    @Synchronized
+    fun snapshot(): ControllerEntryDiagnostics =
+        ControllerEntryDiagnostics(
+            entryCalls,
+            blockedCalls,
+            lastReason,
+            lastStartX,
+            lastStartY,
+            lastEndX,
+            lastEndY,
+            lastDuration,
+            lastUpdatedMs
+        )
+
+    @Synchronized
+    fun entered(
+        startX: Float,
+        startY: Float,
+        endX: Float,
+        endY: Float,
+        duration: Long
+    ) {
+        entryCalls += 1L
+        lastReason = "injectWinningVector entered"
+        lastStartX = startX
+        lastStartY = startY
+        lastEndX = endX
+        lastEndY = endY
+        lastDuration = duration
+        lastUpdatedMs = System.currentTimeMillis()
+    }
+
+    @Synchronized
+    fun blocked(reason: String) {
+        blockedCalls += 1L
+        lastReason = reason
+        lastUpdatedMs = System.currentTimeMillis()
+    }
+}
+
 class ActiveGestureController(
     private val service: AccessibilityService
 ) {
@@ -36,8 +99,10 @@ class ActiveGestureController(
         endY: Float,
         duration: Long
     ) {
+        ActiveGestureControllerDiagnostics.entered(startX, startY, endX, endY, duration)
 
         if (!SmartAssistRepository.enabled()) {
+            ActiveGestureControllerDiagnostics.blocked("SmartAssist disabled before controller execution")
             RuntimeLogger.log("SmartAssist disabled, ignoring vector", "SMART_ASSIST")
             return
         }

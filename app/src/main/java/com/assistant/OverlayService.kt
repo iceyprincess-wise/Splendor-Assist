@@ -387,13 +387,35 @@ override fun onCreate() {
                                 reusableBitmap?.width?.toFloat() ?: 1080f,
                                 reusableBitmap?.height?.toFloat() ?: 2400f
                             )
-                            if (lv.hasRealData) {
-                                val pipe = com.assistant.adapter.smartassist.SmartAssistPipeline()
-                                val dec = pipe.computeOptimalVector(lv.startX, lv.startY, lv.endX, lv.endY, lv.duration)
-                                if (dec.shouldAct) {
-                                    com.assistant.execution.CentralExecutionBus.submit(pipe.createExecutionRequest(dec))
-                                }
+                            val pipe = com.assistant.adapter.smartassist.SmartAssistPipeline()
+                            val vectorDx = lv.endX - lv.startX
+                            val vectorDy = lv.endY - lv.startY
+                            val vectorDistance = kotlin.math.hypot(vectorDx, vectorDy)
+                            val dec = if (lv.hasRealData) {
+                                pipe.computeOptimalVector(
+                                    lv.startX,
+                                    lv.startY,
+                                    lv.endX,
+                                    lv.endY,
+                                    lv.duration
+                                )
+                            } else {
+                                null
                             }
+                            val submitted = if (dec?.shouldAct == true) {
+                                com.assistant.execution.CentralExecutionBus.submit(
+                                    pipe.createExecutionRequest(dec)
+                                )
+                            } else {
+                                false
+                            }
+                            RuntimeLogger.log(
+                                "SMART_ASSIST_GATE real=${lv.hasRealData} " +
+                                    "distance=${vectorDistance.toInt()} duration=${lv.duration} " +
+                                    "action=${dec?.actionType ?: "NO_REAL_DATA"} " +
+                                    "shouldAct=${dec?.shouldAct ?: false} submitted=$submitted",
+                                "SMART_ASSIST"
+                            )
 
                             RuntimeMetricsRegistry
                                 .matchDetections

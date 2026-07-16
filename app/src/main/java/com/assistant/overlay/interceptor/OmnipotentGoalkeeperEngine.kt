@@ -81,6 +81,10 @@ object OmnipotentGoalkeeperEngine {
                 )
 
                 if (CentralExecutionBus.submit(rushRequest)) {
+                    com.assistant.adapter.smartassist.SmartAssistMetrics.recordGoalkeeperShadow(
+                        rushRequest,
+                        "phase-5 goalkeeper rush submitted unchanged as shadow-observed emergency gesture"
+                    )
                     lastGkLayerTimestamp = now
                     com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER 1v1 rush triggered dist=${attackerToGkDistance.toInt()}", "GOALKEEPER")
                     return true
@@ -112,6 +116,10 @@ object OmnipotentGoalkeeperEngine {
             )
 
             if (CentralExecutionBus.submit(reflexRequest)) {
+                com.assistant.adapter.smartassist.SmartAssistMetrics.recordGoalkeeperShadow(
+                    reflexRequest,
+                    "phase-6 goalkeeper reflex submitted unchanged as shadow-observed emergency gesture"
+                )
                 lastGkLayerTimestamp = now
                 com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER close-range reflex pulse triggered", "GOALKEEPER")
                 return true

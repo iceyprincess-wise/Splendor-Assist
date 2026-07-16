@@ -14,6 +14,54 @@ data class AdaptiveModeAuthority(
 )
 
 object GameplayDecisionEngine {
+    data class GameplayActivationDiagnostics(
+        val adaptiveModeCalls: Long,
+        val decideCalls: Long,
+        val lastHasBall: Boolean,
+        val lastMode: Int,
+        val lastStrength: Int,
+        val lastReason: String,
+        val lastUpdatedMs: Long
+    )
+
+    private var adaptiveModeCalls: Long = 0L
+    private var decideCalls: Long = 0L
+    private var lastGameplayHasBall: Boolean = false
+    private var lastGameplayMode: Int = 0
+    private var lastGameplayStrength: Int = 0
+    private var lastGameplayReason: String = "not called yet"
+    private var lastGameplayUpdatedMs: Long = 0L
+
+    @Synchronized
+    fun gameplayActivationDiagnostics(): GameplayActivationDiagnostics =
+        GameplayActivationDiagnostics(
+            adaptiveModeCalls,
+            decideCalls,
+            lastGameplayHasBall,
+            lastGameplayMode,
+            lastGameplayStrength,
+            lastGameplayReason,
+            lastGameplayUpdatedMs
+        )
+
+    @Synchronized
+    private fun recordAdaptiveModeActivation(hasBall: Boolean, mode: Int, reason: String) {
+        adaptiveModeCalls += 1L
+        lastGameplayHasBall = hasBall
+        lastGameplayMode = mode
+        lastGameplayReason = reason
+        lastGameplayUpdatedMs = System.currentTimeMillis()
+    }
+
+    @Synchronized
+    private fun recordDecisionActivation(mode: Int, strength: Int, reason: String) {
+        decideCalls += 1L
+        lastGameplayMode = mode
+        lastGameplayStrength = strength
+        lastGameplayReason = reason
+        lastGameplayUpdatedMs = System.currentTimeMillis()
+    }
+
     data class GameplayDownstreamEvent(
         val sequence: Long,
         val source: String,
@@ -104,6 +152,7 @@ object GameplayDecisionEngine {
         temporal:TemporalMemoryState
     ):AdaptiveModeAuthority{
         assertGameplayDecisionPrimeAuthority("selectVisionAdaptiveMode")
+        recordAdaptiveModeActivation(hasBall, 0, if (hasBall) "adaptive mode evaluation" else "no ball: fallback mode")
 
         if(!hasBall){
             publishGameplayDownstream("selectVisionAdaptiveMode")
@@ -179,6 +228,7 @@ object GameplayDecisionEngine {
         decisionAuthority: Float,
         telemetry: TelemetrySnapshot,
         temporal: TemporalMemoryState): DecisionResult {
+        recordDecisionActivation(mode, strength, "decide called by runtime path")
         registerAmplifiedDecisionCycle((telemetry.confidence / 100.0f).coerceIn(0.0f, 1.0f))
         assertGameplayDecisionPrimeAuthority("decide")
 

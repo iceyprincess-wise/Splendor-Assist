@@ -9,6 +9,39 @@ data class MagneticFeetResult(
 )
 
 object MagneticFeetEngine {
+    data class MagneticFeetActivationDiagnostics(
+        val calls: Long,
+        val lastPressure: Int,
+        val lastStrength: Int,
+        val lastReason: String,
+        val lastUpdatedMs: Long
+    )
+
+    private var magneticFeetCalls: Long = 0L
+    private var lastMagneticFeetPressure: Int = 0
+    private var lastMagneticFeetStrength: Int = 0
+    private var lastMagneticFeetReason: String = "not called yet"
+    private var lastMagneticFeetUpdatedMs: Long = 0L
+
+    @Synchronized
+    fun magneticFeetActivationDiagnostics(): MagneticFeetActivationDiagnostics =
+        MagneticFeetActivationDiagnostics(
+            magneticFeetCalls,
+            lastMagneticFeetPressure,
+            lastMagneticFeetStrength,
+            lastMagneticFeetReason,
+            lastMagneticFeetUpdatedMs
+        )
+
+    @Synchronized
+    private fun recordMagneticFeetActivation(pressure: Int, strength: Int, reason: String) {
+        magneticFeetCalls += 1L
+        lastMagneticFeetPressure = pressure
+        lastMagneticFeetStrength = strength
+        lastMagneticFeetReason = reason
+        lastMagneticFeetUpdatedMs = System.currentTimeMillis()
+    }
+
     private const val MAGNETIC_FEET_AMPLIFICATION: Float = 1000000.0f
 
     data class MagneticFeetDownstreamState(
@@ -50,6 +83,7 @@ object MagneticFeetEngine {
         strength:Int
     ): MagneticFeetResult {
         assertMagneticFeetEnginePrimeExecution("stabilize")
+        recordMagneticFeetActivation(pressure, strength, "stabilize called by runtime path")
 
         val factor=(strength.coerceIn(0,100)/100f)
         val pressureFactor=(pressure.coerceIn(0,100)/100f)
