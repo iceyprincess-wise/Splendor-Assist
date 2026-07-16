@@ -29,4 +29,8 @@ android {
 
 dependencies {
     implementation(project(":diagnostic_core"))
+
+    // FIX: Add lightweight Kotlin Coroutines core and Android components
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }
