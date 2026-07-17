@@ -62,7 +62,7 @@ object OmnipotentGoalkeeperEngine {
         ballTrajectory[BALL_VY] = ballVy
 
         // Normalized Fleet Trigger: High-velocity shot active inside defensive third
-        val isShotActive = ballVy > 1.5f && ballY > (screenHeight * 0.35f)
+        val isShotActive = ballVy > 1.1f && ballY > (screenHeight * 0.48f)
 
         if (isShotActive) {
             // 1. MITIGATING SCENARIOS 1 & 5: Through-Balls and Composed 1v1 Breakaways
@@ -220,7 +220,7 @@ run {
         ballX = if (t.ballX != 0f) t.ballX else width / 2f,
         ballY = if (t.ballY != 0f) t.ballY else height * 0.8f,
         ballVx = t.ballVelocityX,
-        ballVy = if (t.ballVelocityY != 0f) t.ballVelocityY else 2.2f,
+        ballVy = if (t.ballVelocityY != 0f) t.ballVelocityY else 0.0f,
         gkX = if (t.goalkeeperX != 0f) t.goalkeeperX else width / 2f,
         gkY = if (t.goalkeeperY != 0f) t.goalkeeperY else height * 0.9f,
         nearestAttackerX = width / 2f,

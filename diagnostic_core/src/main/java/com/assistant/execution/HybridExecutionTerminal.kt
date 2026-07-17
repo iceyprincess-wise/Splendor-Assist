@@ -9,9 +9,9 @@ object HybridExecutionTerminal {
     ): Int {
 
         return when(source) {
-            ExecutionSource.SMART_ASSIST -> 100
-            ExecutionSource.GOALKEEPER -> 90
-            ExecutionSource.INTERCEPTION -> 80
+            ExecutionSource.GOALKEEPER -> 100
+            ExecutionSource.INTERCEPTION -> 90
+            ExecutionSource.SMART_ASSIST -> 80
             ExecutionSource.STUTTER -> 70
             ExecutionSource.FUTURE_ENGINE -> 50
         }

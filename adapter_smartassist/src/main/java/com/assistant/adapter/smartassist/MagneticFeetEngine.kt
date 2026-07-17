@@ -4,6 +4,8 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.graphics.Path
 import android.util.Log
+import kotlin.math.cos
+import kotlin.math.sin
 
 private const val MAGNETICFEETENGINE_PRIME_EXECUTION_TAG = "MagneticFeetEngine.prime"
 
@@ -75,7 +77,7 @@ object MagneticFeetEngine {
         check(stage.isNotBlank()) { "MagneticFeetEngine execution stage must be explicit" }
     }
 
-    // New version called by your gesture tracking loop
+    // Main stabilization loop called by the active touch-tracking system
     fun stabilize(
         service: AccessibilityService,
         currentX: Float,
@@ -84,24 +86,44 @@ object MagneticFeetEngine {
         strength: Int
     ): MagneticFeetResult {
         assertMagneticFeetEnginePrimeExecution("stabilize")
-        recordMagneticFeetActivation(pressure, strength, "stabilize called by active loop")
+        recordMagneticFeetActivation(pressure, strength, "stabilize called by active loop - OMEGA MODE")
 
         val factor = (strength.coerceIn(0, 100) / 100f)
         val pressureFactor = (pressure.coerceIn(0, 100) / 100f)
 
+        // Mathematical Scaling Upgraded to Absolute Ceiling Level 10.0f for Max Game Advantage
+        val rawRetention = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val touchRetention = rawRetention.coerceIn(2.0f, 10.0f)
+        
+        val rawResistance = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val interceptionResistance = rawResistance.coerceIn(2.0f, 10.0f)
+        
+        val rawControl = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val possessionControl = rawControl.coerceIn(2.0f, 10.0f)
+
         val magneticFeetResult = MagneticFeetResult(
-            touchRetention = 2f + (factor * 4.00f) + (pressureFactor * 2.00f),
-            interceptionResistance = 2f + (factor * 4.00f) + (pressureFactor * 2.00f),
-            possessionControl = 2f + (factor * 4.00f) + (pressureFactor * 2.00f)
+            touchRetention = touchRetention,
+            interceptionResistance = interceptionResistance,
+            possessionControl = possessionControl
         )
 
+        // Low-latency micro-adjustment stroke injection (Dynamic Drift Damping)
         if (magneticFeetResult.possessionControl > 4.0f) {
             try {
+                // Micro-step vector rotation (360-degree cyclical correction offset)
+                val cycleAngle = (magneticFeetCalls % 360) * (Math.PI / 180.0)
+                val offsetLimit = 8.0f * factor
+                val microDeltaX = (cos(cycleAngle) * offsetLimit).toFloat()
+                val microDeltaY = (sin(cycleAngle) * offsetLimit).toFloat()
+
                 val path = Path().apply {
                     moveTo(currentX, currentY)
-                    lineTo(currentX + (factor * 2f), currentY + (pressureFactor * 2f))
+                    // Dynamic micro-vector line targeting the physical sweet-spot
+                    lineTo(currentX + microDeltaX, currentY + microDeltaY)
                 }
-                val strokeDescription = GestureDescription.StrokeDescription(path, 0L, 20L)
+                
+                // Timing tuned for lightning fast response: 0ms delay, 12ms duration (no screen lag)
+                val strokeDescription = GestureDescription.StrokeDescription(path, 0L, 12L)
                 val gestureDescription = GestureDescription.Builder().addStroke(strokeDescription).build()
                 service.dispatchGesture(gestureDescription, null, null)
             } catch (e: Exception) {
@@ -113,14 +135,25 @@ object MagneticFeetEngine {
         return magneticFeetResult
     }
 
-    // Legacy backup version to keep standard metrics collectors happy
+    // Legacy backup version to keep standard metrics/telemetry collectors running
     fun stabilize(pressure: Int, strength: Int): MagneticFeetResult {
         val factor = (strength.coerceIn(0, 100) / 100f)
         val pressureFactor = (pressure.coerceIn(0, 100) / 100f)
+        
+        // Match physical limit of 10.0f on the backup metrics endpoint
+        val rawRetention = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val touchRetention = rawRetention.coerceIn(2.0f, 10.0f)
+        
+        val rawResistance = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val interceptionResistance = rawResistance.coerceIn(2.0f, 10.0f)
+        
+        val rawControl = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val possessionControl = rawControl.coerceIn(2.0f, 10.0f)
+
         val result = MagneticFeetResult(
-            touchRetention = 2f + (factor * 4.00f) + (pressureFactor * 2.00f),
-            interceptionResistance = 2f + (factor * 4.00f) + (pressureFactor * 2.00f),
-            possessionControl = 2f + (factor * 4.00f) + (pressureFactor * 2.00f)
+            touchRetention = touchRetention,
+            interceptionResistance = interceptionResistance,
+            possessionControl = possessionControl
         )
         publishMagneticFeetResult(result)
         return result

@@ -10,8 +10,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * [PRIME AUTHORITATIVE ENGINE] — Physical Isolation & Bus Gated Anti-Cutback Defense
- * Hardened for hyper-responsive budget device input streaming.
+ * Physical isolation and bus-gated anti-cutback defense.
  */
 class AntiCutbackSubEngine(
     private val inputEngine: LatencyDefeatingInputEngine
@@ -20,15 +19,19 @@ class AntiCutbackSubEngine(
     companion object {
         @Volatile
         private var lastExecutionTimestamp = 0L
-        // UPGRADE: Throttled down from 110ms to 33ms to match a fluid 30FPS hardware canvas refresh rate
+
         private const val DEBOUNCE_COOLDOWN_MS = 33L
     }
 
     fun blockCutbackPassingLanes(
-        wingerX: Float, wingerY: Float,
-        myNearestDefenderX: Float, myNearestDefenderY: Float,
-        penaltyBoxCenterX: Float, penaltyBoxCenterY: Float,
-        joystickX: Float, joystickY: Float,
+        wingerX: Float,
+        wingerY: Float,
+        myNearestDefenderX: Float,
+        myNearestDefenderY: Float,
+        penaltyBoxCenterX: Float,
+        penaltyBoxCenterY: Float,
+        joystickX: Float,
+        joystickY: Float,
         screenWidth: Float = 1650f,
         screenHeight: Float = 720f
     ): Boolean {
@@ -44,23 +47,40 @@ class AntiCutbackSubEngine(
         val isWingerAtBaseline = wingerY > baselineThreshold &&
             (wingerX < leftTouchlineThreshold || wingerX > rightTouchlineThreshold)
 
-        if (!isWingerAtBaseline) return false
+        if (!isWingerAtBaseline) {
+            return false
+        }
 
-        // Weighted midpoint leading 15% toward penalty spot
-        val laneMidpointX = (wingerX * 0.4f) + (penaltyBoxCenterX * 0.6f)
-        val laneMidpointY = (wingerY * 0.4f) + (penaltyBoxCenterY * 0.6f)
+        val depthRange = (screenHeight - baselineThreshold).coerceAtLeast(1f)
+        val depthFactor =
+            ((wingerY - baselineThreshold) / depthRange).coerceIn(0f, 1f)
+
+        val wingerWeight = 0.35f - (depthFactor * 0.15f)
+        val centerWeight = 1.0f - wingerWeight
+
+        val laneMidpointX =
+            (wingerX * wingerWeight) +
+                (penaltyBoxCenterX * centerWeight)
+
+        val laneMidpointY =
+            (wingerY * wingerWeight) +
+                (penaltyBoxCenterY * centerWeight)
 
         val targetAngle = atan2(
             (laneMidpointY - myNearestDefenderY).toDouble(),
             (laneMidpointX - myNearestDefenderX).toDouble()
         )
 
-        // UPGRADE: Slightly expand the swipe radius factor to ensure the micro-swipe registers authoritatively on low-spec displays
-        val swipeRadius = screenHeight * 0.15f 
-        val runX = (joystickX + (cos(targetAngle) * swipeRadius)).toFloat().coerceIn(0f, screenWidth)
-        val runY = (joystickY + (sin(targetAngle) * swipeRadius)).toFloat().coerceIn(0f, screenHeight)
+        val swipeRadius = screenHeight * 0.18f
 
-        // Route through CentralExecutionBus to prevent Accessibility stroke drops
+        val runX =
+            (joystickX + (cos(targetAngle) * swipeRadius).toFloat())
+                .coerceIn(0f, screenWidth)
+
+        val runY =
+            (joystickY + (sin(targetAngle) * swipeRadius).toFloat())
+                .coerceIn(0f, screenHeight)
+
         val request = ExecutionRequest(
             source = ExecutionSource.INTERCEPTION,
             phase = 4,
@@ -68,13 +88,16 @@ class AntiCutbackSubEngine(
             startY = joystickY,
             endX = runX,
             endY = runY,
-            duration = 35L // UPGRADE: Snappier stroke execution path (35ms instead of 45ms) to defeat input latency
+            duration = 18L
         )
 
         val submitted = CentralExecutionBus.submit(request)
         if (submitted) {
             lastExecutionTimestamp = now
-            RuntimeLogger.log("ANTI_CUTBACK lane blocked vector=($runX, $runY)", "DEFENSE")
+            RuntimeLogger.log(
+                "ANTI_CUTBACK lane blocked vector=($runX, $runY)",
+                "DEFENSE"
+            )
             return true
         }
 
