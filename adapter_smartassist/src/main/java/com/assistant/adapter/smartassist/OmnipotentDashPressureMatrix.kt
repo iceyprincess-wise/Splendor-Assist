@@ -7,13 +7,12 @@ import com.assistant.execution.ExecutionSource
 import kotlin.math.hypot
 
 /**
- * [PRIME AUTHORITATIVE ENGINE] — Dash Pressure Matrix & Anchor Preservation
- * Hardened from raw field patch to normalize distance ratios and unpack directly into bus.
+ * Dash pressure matrix and anchor preservation.
  */
-@Suppress("UNUSED_PARAMETER")
 object OmnipotentDashPressureMatrix {
 
     private val entityCoordinates = FloatArray(8)
+
     private const val BALL_X = 0
     private const val BALL_Y = 1
     private const val DEF_X = 2
@@ -22,18 +21,28 @@ object OmnipotentDashPressureMatrix {
     private const val DEF_HOME_Y = 5
     private const val OPP_X = 6
     private const val OPP_Y = 7
-    @Volatile private var lastMatrixTimestamp = 0L
+
+    @Volatile
+    private var lastMatrixTimestamp = 0L
 
     fun computeHighAuthorityDefensiveVector(
-        ballX: Float, ballY: Float,
-        defX: Float, defY: Float,
-        defHomeX: Float, defHomeY: Float,
-        oppX: Float, oppY: Float,
+        ballX: Float,
+        ballY: Float,
+        defX: Float,
+        defY: Float,
+        defHomeX: Float,
+        defHomeY: Float,
+        oppX: Float,
+        oppY: Float,
         isPlayerHoldingPressure: Boolean,
-        joystickX: Float = 250f, joystickY: Float = 550f,
+        joystickX: Float = 250f,
+        joystickY: Float = 550f,
         screenWidth: Float = 1650f,
         screenHeight: Float = 720f
     ): Long {
+        val safeWidth = screenWidth.coerceAtLeast(1f)
+        val safeHeight = screenHeight.coerceAtLeast(1f)
+
         entityCoordinates[BALL_X] = ballX
         entityCoordinates[BALL_Y] = ballY
         entityCoordinates[DEF_X] = defX
@@ -43,34 +52,64 @@ object OmnipotentDashPressureMatrix {
         entityCoordinates[OPP_X] = oppX
         entityCoordinates[OPP_Y] = oppY
 
-        val distanceToOpponent = hypot((oppX - defX).toDouble(), (oppY - defY).toDouble()).toFloat()
-        val compactThreshold = screenWidth * 0.085f
+        val distanceToOpponent =
+            hypot(
+                (oppX - defX).toDouble(),
+                (oppY - defY).toDouble()
+            ).toFloat()
+
+        val compactThreshold = safeWidth * 0.085f
 
         val targetX: Float
         val targetY: Float
 
         if (isPlayerHoldingPressure) {
             if (distanceToOpponent > compactThreshold) {
-                targetX = defHomeX + (ballX - defHomeX) * 0.25f
-                targetY = defHomeY + (ballY - defHomeY) * 0.25f
+                val interceptAggression =
+                    (1f - (distanceToOpponent / safeWidth))
+                        .coerceIn(0.25f, 0.85f)
+
+                targetX =
+                    (defHomeX + ((ballX - defHomeX) * interceptAggression))
+                        .coerceIn(0f, safeWidth)
+
+                targetY =
+                    (defHomeY + ((ballY - defHomeY) * interceptAggression))
+                        .coerceIn(0f, safeHeight)
             } else {
                 val dx = ballX - oppX
                 val dy = ballY - oppY
-                val mag = hypot(dx.toDouble(), dy.toDouble()).toFloat()
-                
-                val dirX = if (mag > 0) dx / mag else 0f
-                val dirY = if (mag > 0) dy / mag else 0f
 
-                targetX = (ballX + (dirX * 22f)).coerceIn(0f, screenWidth)
-                targetY = (ballY + (dirY * 22f)).coerceIn(0f, screenHeight)
+                val magnitude =
+                    hypot(dx.toDouble(), dy.toDouble()).toFloat()
+
+                val dirX =
+                    if (magnitude > 0f) dx / magnitude else 0f
+
+                val dirY =
+                    if (magnitude > 0f) dy / magnitude else 0f
+
+                val pressureForce = 22f
+
+                targetX =
+                    (ballX + (dirX * pressureForce))
+                        .coerceIn(0f, safeWidth)
+
+                targetY =
+                    (ballY + (dirY * pressureForce))
+                        .coerceIn(0f, safeHeight)
             }
         } else {
-            targetX = defHomeX
-            targetY = defHomeY
+            targetX = defHomeX.coerceIn(0f, safeWidth)
+            targetY = defHomeY.coerceIn(0f, safeHeight)
         }
 
         val now = System.currentTimeMillis()
-        if (isPlayerHoldingPressure && now - lastMatrixTimestamp >= 120L) {
+
+        if (
+            isPlayerHoldingPressure &&
+            now - lastMatrixTimestamp >= 120L
+        ) {
             val request = ExecutionRequest(
                 source = ExecutionSource.INTERCEPTION,
                 phase = 8,
@@ -80,17 +119,26 @@ object OmnipotentDashPressureMatrix {
                 endY = targetY,
                 duration = 42L
             )
+
             if (CentralExecutionBus.submit(request)) {
                 lastMatrixTimestamp = now
-                RuntimeLogger.log("DASH_PRESSURE matrix executed target=($targetX, $targetY)", "DEFENSE")
+
+                RuntimeLogger.log(
+                    "DASH_PRESSURE matrix executed target=($targetX, $targetY)",
+                    "DEFENSE"
+                )
             }
         }
 
         val packedX = targetX.toBits().toLong()
         val packedY = targetY.toBits().toLong()
+
         return (packedX shl 32) or (packedY and 0xFFFFFFFFL)
     }
 
-    fun unpackX(packed: Long): Float = Float.fromBits((packed shr 32).toInt())
-    fun unpackY(packed: Long): Float = Float.fromBits(packed.toInt())
+    fun unpackX(packed: Long): Float =
+        Float.fromBits((packed shr 32).toInt())
+
+    fun unpackY(packed: Long): Float =
+        Float.fromBits(packed.toInt())
 }
