@@ -19,7 +19,9 @@ object LowBlockContainmentEngine {
         defenders: List<Pair<Float, Float>>
     ): DefensiveContainmentResult {
         if (defenders.isEmpty()) {
-            return DefensiveContainmentResult()
+            return DefensiveContainmentResult(
+                movements = emptyList()
+            )
         }
 
         val safeWidth = pitchWidth.coerceAtLeast(1f)
