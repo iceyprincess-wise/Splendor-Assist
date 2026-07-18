@@ -80,8 +80,14 @@ object ShieldAssistEngine {
         opponentDistance: Float
     ): Long {
         if (opponentDistance <= 0f) return 45L
-        val proximityBonus = Math.round(100.0f / max(opponentDistance / 100.0f, 0.1f))
-        val dynamicDuration = 45L + proximityBonus
+        val proximityBonus =
+            Math.round(
+                100.0f / max(opponentDistance / 100.0f, 0.1f)
+            )
+        val velocityBonus =
+            (playerVelocity.coerceAtLeast(0f) * 10f).toLong()
+                .coerceIn(0L, 15L)
+        val dynamicDuration = 45L + proximityBonus + velocityBonus
         return dynamicDuration.coerceAtLeast(45L).coerceAtMost(120L)
     }
 }

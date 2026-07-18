@@ -45,9 +45,6 @@ object DefenderInterceptionPredictionEngine {
 
             if (laneDistance <= 0f) return@forEach
 
-            val laneUnitX = laneDx / laneDistance
-            val laneUnitY = laneDy / laneDistance
-
             // 2. Identify the single highest-threat defender using Point-to-Segment Math
             var primaryThreatDefender: TrackedPlayer? = null
             var lowestTimeToIntercept = Float.MAX_VALUE

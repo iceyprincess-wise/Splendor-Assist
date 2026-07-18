@@ -379,14 +379,25 @@ class ActiveGestureController(
                 strength
             )
 
-        val shieldActive =
-            ShieldAssistEngine.shouldEngageShield(
-                speedComp.executionBoost,
-                distance
+        val movementAngleDegrees =
+            Math.toDegrees(
+                atan2(
+                     deltaY.toDouble(),
+                     deltaX.toDouble()
+                )
+            ).toFloat()
+
+        val agility =
+            AgilityEngine.computeAgility(
+                playerVelocity = speedComp.executionBoost,
+                opponentDistance = distance,
+                movementAngleDegrees = movementAngleDegrees,
+                possessionConfidence = telemetry.confidence,
+                turnIntensity = kotlin.math.abs(angle) / 180f
             )
 
         val shieldAuthority =
-            if(shieldActive) 20f else 0f
+            agility.stabilityBoost
 
         val touchRecovery =
             TouchRecoveryEngine.recover(
