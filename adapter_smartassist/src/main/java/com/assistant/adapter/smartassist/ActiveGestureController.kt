@@ -379,6 +379,16 @@ class ActiveGestureController(
                 strength
             )
 
+        val speedProtectionAuthority =
+            (
+                (speedComp.interceptionProtection * 0.20f) +
+                (speedComp.pressureCompensation * 0.15f) +
+                (speedComp.laneCompensation * 0.15f)
+            ).coerceIn(0f, 8f)
+        val speedContainmentOffset =
+            speedComp.containmentAngle
+                .coerceIn(-15f, 15f)
+
         val movementAngleDegrees =
             Math.toDegrees(
                 atan2(
@@ -698,18 +708,19 @@ class ActiveGestureController(
         val arbitration =
             AuthorityArbitrationEngine.arbitrate(
                 mode = mode,
-                passX = truePass.x,
-                passY = truePass.y,
-                crossX = crossAssist.crossX,
-                crossY = crossAssist.crossY,
-                predictiveX = scoreAim.x,
-                predictiveY = scoreAim.y,
+                passX = truePass.x + speedContainmentOffset,
+                passY = truePass.y + speedProtectionAuthority,
+                crossX = crossAssist.crossX + speedContainmentOffset,
+                crossY = crossAssist.crossY + speedProtectionAuthority,
+                predictiveX = scoreAim.x + speedContainmentOffset,
+                predictiveY = scoreAim.y + speedProtectionAuthority,
                 receiver = receiverEngagement.engagementBoost,
                 forward = forwardRun.runBoost,
                 recovery = touchRecovery.recoveryBoost,
                 shot = shotAnalysis.openSideScore,
                 stability =
                     inputDiagnostics.stabilityScore +
+                    speedProtectionAuthority +
                     (defenseAuthority.pressure * 8.0f) +
                     lowBlockAuthority +
                     wingBlockAuthority +
