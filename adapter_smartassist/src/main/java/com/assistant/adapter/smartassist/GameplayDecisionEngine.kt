@@ -1,4 +1,5 @@
 package com.assistant.adapter.smartassist
+
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantLock
