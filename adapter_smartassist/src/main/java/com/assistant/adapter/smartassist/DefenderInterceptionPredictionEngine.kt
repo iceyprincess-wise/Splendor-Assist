@@ -1,6 +1,7 @@
 package com.assistant.adapter.smartassist
 
 import kotlin.math.hypot
+import kotlin.random.Random
 
 data class DefenderInterceptionPrediction(
     val lane: PassingLane,
@@ -17,9 +18,9 @@ data class DefenderInterceptionPredictionAnalysis(
 object DefenderInterceptionPredictionEngine {
 
     // Physical constants tuned for professional, low-latency companion execution
-    private const val ESTIMATED_BALL_SPEED = 1450.0f          // Average pass velocity in pixels/units per second
-    private const val DEFENDER_MAX_SPEED = 420.0f            // Average defender sprint velocity
-    private const val DEFENDER_REACTION_LATENCY_SEC = 0.12f  // Reaction delay/inertia before sprinting
+    private const val BASE_ESTIMATED_BALL_SPEED = 1450.0f    // Average pass velocity in pixels/units per second
+    private const val BASE_DEFENDER_MAX_SPEED = 420.0f      // Average defender sprint velocity
+    private const val BASE_DEFENDER_REACTION_LATENCY = 0.12f // Reaction delay/inertia before sprinting
     private const val SAFE_PASS_BUFFER_SEC = 0.08f           // Safe buffer time required to guarantee completion
 
     fun analyze(
@@ -33,6 +34,11 @@ object DefenderInterceptionPredictionEngine {
         }
 
         val result = ArrayList<DefenderInterceptionPrediction>()
+
+        // Dynamically perturb environmental metrics per analysis frame to mask computational constants
+        val ballSpeedFuzz = BASE_ESTIMATED_BALL_SPEED + (Random.nextFloat() * 30.0f - 15.0f) // +/- 15 units variance
+        val defSpeedFuzz = BASE_DEFENDER_MAX_SPEED + (Random.nextFloat() * 10.0f - 5.0f)
+        val reactionLatencyFuzz = BASE_DEFENDER_REACTION_LATENCY + (Random.nextFloat() * 0.01f - 0.005f)
 
         graph.lanes.forEach { lane ->
             val passer = lane.passer
@@ -73,8 +79,8 @@ object DefenderInterceptionPredictionEngine {
                 ).toFloat()
 
                 // Calculate time variables (Seconds)
-                val timeForBallToReachC = ballTravelDistance / ESTIMATED_BALL_SPEED
-                
+                val timeForBallToReachC = ballTravelDistance / ballSpeedFuzz
+
                 // Defender capability projection (accounting for current velocity direction alignment)
                 val defVelX = defender.velocityX
                 val defVelY = defender.velocityY
@@ -93,12 +99,12 @@ object DefenderInterceptionPredictionEngine {
                 }
 
                 // Estimated Time-to-Intercept for this defender (accounting for startup inertia)
-                val defenderTimeToC = (defenderDistanceToPath / DEFENDER_MAX_SPEED) + 
-                                      DEFENDER_REACTION_LATENCY_SEC - directionAlignmentBonus
+                val defenderTimeToC = (defenderDistanceToPath / defSpeedFuzz) +
+                                      reactionLatencyFuzz - directionAlignmentBonus
 
                 // Interception window threat scoring
                 val timeDifference = timeForBallToReachC - defenderTimeToC
-                
+
                 // Continuous mathematical curve for risk estimation
                 val calculatedRisk = when {
                     timeDifference >= SAFE_PASS_BUFFER_SEC -> {
@@ -131,17 +137,21 @@ object DefenderInterceptionPredictionEngine {
 
             // 3. Extrapolate future intercept coordinates if defender has high risk
             val finalDefender = primaryThreatDefender!!
-            val finalInterceptX: Float
-            val finalInterceptY: Float
+            var finalInterceptX: Float
+            var finalInterceptY: Float
+
+            // Inject organic float coordinate fuzzing to prevent absolute identical linear signatures
+            val subPixelJitterX = Random.nextFloat() * 0.8f - 0.4f // +/- 0.4 units coordinate wobble
+            val subPixelJitterY = Random.nextFloat() * 0.8f - 0.4f
 
             if (maximumCalculatedRisk > 0.40f) {
                 // Highly realistic prediction point offset by defender's current velocity/momentum
-                finalInterceptX = bestInterceptX + (finalDefender.velocityX * 0.25f)
-                finalInterceptY = bestInterceptY + (finalDefender.velocityY * 0.25f)
+                finalInterceptX = bestInterceptX + (finalDefender.velocityX * 0.25f) + subPixelJitterX
+                finalInterceptY = bestInterceptY + (finalDefender.velocityY * 0.25f) + subPixelJitterY
             } else {
                 // If risk is low, fall back to default mathematical projection midpoint of closest threat
-                finalInterceptX = bestInterceptX
-                finalInterceptY = bestInterceptY
+                finalInterceptX = bestInterceptX + subPixelJitterX
+                finalInterceptY = bestInterceptY + subPixelJitterY
             }
 
             result += DefenderInterceptionPrediction(

@@ -6,6 +6,7 @@ import android.graphics.Path
 import android.util.Log
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.random.Random
 
 private const val MAGNETICFEETENGINE_PRIME_EXECUTION_TAG = "MagneticFeetEngine.prime"
 
@@ -94,10 +95,10 @@ object MagneticFeetEngine {
         // Mathematical Scaling Upgraded to Absolute Ceiling Level 10.0f for Max Game Advantage
         val rawRetention = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
         val touchRetention = rawRetention.coerceIn(2.0f, 10.0f)
-        
+
         val rawResistance = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
         val interceptionResistance = rawResistance.coerceIn(2.0f, 10.0f)
-        
+
         val rawControl = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
         val possessionControl = rawControl.coerceIn(2.0f, 10.0f)
 
@@ -113,17 +114,25 @@ object MagneticFeetEngine {
                 // Micro-step vector rotation (360-degree cyclical correction offset)
                 val cycleAngle = (magneticFeetCalls % 360) * (Math.PI / 180.0)
                 val offsetLimit = 8.0f * factor
-                val microDeltaX = (cos(cycleAngle) * offsetLimit).toFloat()
-                val microDeltaY = (sin(cycleAngle) * offsetLimit).toFloat()
+                
+                // Introduce dynamic humanization noise to break machine pattern footprints
+                val horizontalNoise = Random.nextFloat() * 1.4f - 0.7f // +/- 0.7 pixel micro-variance
+                val verticalNoise = Random.nextFloat() * 1.4f - 0.7f
+                
+                val microDeltaX = (cos(cycleAngle) * offsetLimit).toFloat() + horizontalNoise
+                val microDeltaY = (sin(cycleAngle) * offsetLimit).toFloat() + verticalNoise
 
                 val path = Path().apply {
                     moveTo(currentX, currentY)
                     // Dynamic micro-vector line targeting the physical sweet-spot
                     lineTo(currentX + microDeltaX, currentY + microDeltaY)
                 }
+
+                // Variable timing humanized tightly between 11ms and 14ms to mask fixed 12ms signatures
+                val adaptiveDuration = Random.nextLong(11, 15) // 11ms to 14ms bounds
+                val microStartDelay = Random.nextLong(0, 2)    // Scrambles packet timing rhythm
                 
-                // Timing tuned for lightning fast response: 0ms delay, 12ms duration (no screen lag)
-                val strokeDescription = GestureDescription.StrokeDescription(path, 0L, 12L)
+                val strokeDescription = GestureDescription.StrokeDescription(path, microStartDelay, adaptiveDuration)
                 val gestureDescription = GestureDescription.Builder().addStroke(strokeDescription).build()
                 service.dispatchGesture(gestureDescription, null, null)
             } catch (e: Exception) {
@@ -139,14 +148,14 @@ object MagneticFeetEngine {
     fun stabilize(pressure: Int, strength: Int): MagneticFeetResult {
         val factor = (strength.coerceIn(0, 100) / 100f)
         val pressureFactor = (pressure.coerceIn(0, 100) / 100f)
-        
+
         // Match physical limit of 10.0f on the backup metrics endpoint
         val rawRetention = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
         val touchRetention = rawRetention.coerceIn(2.0f, 10.0f)
-        
+
         val rawResistance = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
         val interceptionResistance = rawResistance.coerceIn(2.0f, 10.0f)
-        
+
         val rawControl = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
         val possessionControl = rawControl.coerceIn(2.0f, 10.0f)
 

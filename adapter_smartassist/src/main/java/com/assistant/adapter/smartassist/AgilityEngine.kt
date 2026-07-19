@@ -1,5 +1,6 @@
 package com.assistant.adapter.smartassist
 
+import kotlin.random.Random
 
 /**
  * Data representation of the computed bounds for high-performance player agility,
@@ -16,7 +17,7 @@ data class AgilityResult(
 
 /**
  * AgilityEngine
- * 
+ *
  * A pure, bounded contact-control calculator designed to work in synergy with ShieldAssistEngine.
  * Strengthens movement stability and tight ball-retention under direct pressure from opponents,
  * ensuring fluid counter-runs and turning capability without causing joystick drift.
@@ -40,17 +41,21 @@ object AgilityEngine {
         oppX: Float? = null,
         oppY: Float? = null
     ): AgilityResult {
-        // 1. Normalize physical inputs using 100.0f reference bounds
-        val proximity = (1.0f - opponentDistance / 220.0f).coerceIn(0.0f, 1.0f)
+        // 1. Normalize physical inputs using 100.0f reference bounds with humanized noise
+        val baseProximity = (1.0f - opponentDistance / 220.0f).coerceIn(0.0f, 1.0f)
         val speed = (playerVelocity / EXPECTED_MAX_VELOCITY).coerceIn(0.0f, 1.0f)
         val confidence = possessionConfidence.coerceIn(0.0f, 1.0f)
+
+        // Inject subtle sub-decimal float variance to scramble perfect mathematical linear patterns
+        val proximityNoise = Random.nextFloat() * 0.02f - 0.01f // +/- 0.01 fractional variance
+        val proximity = (baseProximity + proximityNoise).coerceIn(0.0f, 1.0f)
 
         // 2. Evaluate shield engagement using ShieldAssistEngine's high-precision authority
         val shieldActive = ShieldAssistEngine.shouldEngageShield(playerVelocity, opponentDistance)
 
         // 3. Compute Stability Boost [0.0f to 15.0f]
         // Provides the heavy "heft" ball-control feel during physical shoulder duels
-        val stabilityBoost = if (shieldActive) {
+        val rawStabilityBoost = if (shieldActive) {
             (4.0f + proximity * 6.0f + speed * 3.0f + confidence * 2.0f).coerceIn(0.0f, 15.0f)
         } else if (opponentDistance > 0f && opponentDistance < 350f) {
             // Provide a soft stabilization baseline even if shield is not fully engaged
@@ -59,6 +64,10 @@ object AgilityEngine {
         } else {
             0.0f
         }
+        
+        // Add fractional jitter to boost values to disrupt rigid baseline constants in telemetry logs
+        val stabilityNoise = if (rawStabilityBoost > 0.0f) Random.nextFloat() * 0.2f - 0.1f else 0.0f
+        val stabilityBoost = (rawStabilityBoost + stabilityNoise).coerceIn(0.0f, 15.0f)
 
         // 4. Compute Control Retention Multiplier [0.0f to 1.0f]
         // Tightens the player's physical grip on the ball during tight-angle pivots
@@ -84,12 +93,16 @@ object AgilityEngine {
             ShieldAssistEngine.shieldAngle(movementAngleDegrees)
         }
 
+        // Introduce organic ms adjustment variance to the hold timing properties
+        val dynamicDurationOffset = if (opponentDistance > 0f) Random.nextLong(-3, 4) else 0L
+
         // 7. Resolve Shield Duration
-        val shieldDurationMsResolved = if (opponentDistance > 0f) {
+        val baseShieldDuration = if (opponentDistance > 0f) {
             ShieldAssistEngine.shieldHoldDuration(playerVelocity, opponentDistance)
         } else {
             ShieldAssistEngine.shieldHoldDuration()
         }
+        val shieldDurationMsResolved = (baseShieldDuration + dynamicDurationOffset).coerceAtLeast(0L)
 
         return AgilityResult(
             shieldActive = shieldActive,
