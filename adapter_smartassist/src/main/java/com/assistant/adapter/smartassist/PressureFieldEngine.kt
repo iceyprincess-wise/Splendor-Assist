@@ -1,6 +1,7 @@
 package com.assistant.adapter.smartassist
 
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 object PressureFieldEngine {
 
@@ -22,8 +23,12 @@ object PressureFieldEngine {
         for (row in 0 until GRID_ROWS) {
             for (col in 0 until GRID_COLUMNS) {
 
-                val x = (col + 0.5f) * frameWidth / GRID_COLUMNS
-                val y = (row + 0.5f) * frameHeight / GRID_ROWS
+                // Introduce spatial coordinate fuzzing to break up rigid cell tracking borders
+                val horizontalFuzz = Random.nextFloat() * 0.08f - 0.04f // Tiny cell offset bounds
+                val verticalFuzz = Random.nextFloat() * 0.08f - 0.04f
+
+                val x = (col + 0.5f + horizontalFuzz) * frameWidth / GRID_COLUMNS
+                val y = (row + 0.5f + verticalFuzz) * frameHeight / GRID_ROWS
 
                 var pressure = 0f
 
@@ -48,9 +53,15 @@ object PressureFieldEngine {
         }
 
         if (maxValue > 0f) {
+            // Add a minute float variance to disrupt absolute identical mathematical normalized limits
+            val normalizationJitter = Random.nextFloat() * 0.002f - 0.001f
+            val dynamicMax = maxValue + (maxValue * normalizationJitter)
+
             grid.forEachIndexed { r, _ ->
                 grid[r].indices.forEach { c ->
-                    grid[r][c] /= maxValue
+                    if (dynamicMax > 0f) {
+                        grid[r][c] /= dynamicMax
+                    }
                 }
             }
         }

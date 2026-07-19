@@ -12,29 +12,17 @@ class InterceptionControlRoomBridge(
     private val repository: InterceptionRepository
 ) {
 
-    private val scope =
-        CoroutineScope(
-            SupervisorJob() +
-            Dispatchers.Default
-        )
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Default
+    )
 
     fun start() {
-
         scope.launch {
-
             repository.state.collectLatest { state ->
-
-                InterceptionRuntimeRegistry.enabled =
-                    state.enabled
-
-                InterceptionRuntimeRegistry.autoIntercept =
-                    state.autoIntercept
-
-                InterceptionRuntimeRegistry.awareness =
-                    state.awareness
-
-                InterceptionRuntimeRegistry.prediction =
-                    state.prediction
+                InterceptionRuntimeRegistry.enabled = state.enabled
+                InterceptionRuntimeRegistry.autoIntercept = state.autoIntercept
+                InterceptionRuntimeRegistry.awareness = state.awareness
+                InterceptionRuntimeRegistry.prediction = state.prediction
             }
         }
     }

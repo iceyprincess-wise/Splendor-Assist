@@ -2,6 +2,7 @@ package com.assistant.adapter.smartassist
 
 import android.util.Log
 import kotlin.math.pow
+import kotlin.random.Random
 
 data class DefenseAuthorityResult(
     val containment: Float,
@@ -57,18 +58,22 @@ object DefenseAuthorityEngine {
         val normalizedRetention =
             retention.coerceIn(0f, 10f) / 10f
 
+        // Continuous mathematical curve noise injection to scramble predictable telemetry profiles
+        val containmentNoise = Random.nextFloat() * 0.16f - 0.08f // Subtle fractional variance
+        val interceptionNoise = Random.nextFloat() * 0.16f - 0.08f
+
         val containment =
             (
                 (normalizedRecovery * 5.5f) +
                     (tacticalIntensity * 3.5f) +
-                    (proximityFactor * 2.5f)
+                    (proximityFactor * 2.5f) + containmentNoise
                 ).coerceIn(0f, 10f)
 
         val interception =
             (
                 (normalizedRetention * 5.5f) +
                     (tacticalIntensity * 3.5f) +
-                    (proximityFactor * 2.5f)
+                    (proximityFactor * 2.5f) + interceptionNoise
                 ).coerceIn(0f, 10f)
 
         val pressure =
@@ -90,10 +95,12 @@ object DefenseAuthorityEngine {
             lastUpdateMs = System.currentTimeMillis()
         }
 
-        if (evaluationCount % 500L == 0L) {
+        // Dynamically shift log evaluation limits to break up structural cadence logs
+        val loggingInterval = 500L + Random.nextLong(-15, 16)
+        if (evaluationCount % loggingInterval == 0L) {
             Log.d(
                 "DefenseAuthorityEngine",
-                "Defense authority containment=$containment interception=$interception pressure=$pressure"
+                "Defense authority containment=$containment interception=$interception pressure=$pressure [Dynamic Interval]"
             )
         }
 
