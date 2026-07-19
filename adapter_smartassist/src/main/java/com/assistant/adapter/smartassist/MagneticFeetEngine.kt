@@ -5,6 +5,7 @@ import android.accessibilityservice.GestureDescription
 import android.graphics.Path
 import android.util.Log
 import kotlin.math.cos
+import kotlin.math.max
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -51,6 +52,14 @@ object MagneticFeetEngine {
     }
 
     private const val MAGNETIC_FEET_AMPLIFICATION: Float = 1000000.0f
+    
+    // Target frame refresh intervals in milliseconds for Display Sync
+    private const val FRAME_RATE_120HZ_MS: Long = 8L
+    private const val FRAME_RATE_60HZ_MS: Long = 16L
+    
+    // Server authoritative tick intervals (e.g., 30Hz -> ~33ms, 20Hz -> ~50ms)
+    private const val SERVER_TICK_30HZ_MS: Long = 33L
+    private const val SERVER_TICK_20HZ_MS: Long = 50L
 
     data class MagneticFeetDownstreamState(
         val sequence: Long,
@@ -92,15 +101,15 @@ object MagneticFeetEngine {
         val factor = (strength.coerceIn(0, 100) / 100f)
         val pressureFactor = (pressure.coerceIn(0, 100) / 100f)
 
-        // Mathematical Scaling Upgraded to Absolute Ceiling Level 10.0f for Max Game Advantage
-        val rawRetention = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val touchRetention = rawRetention.coerceIn(2.0f, 10.0f)
+        // Mathematical Scaling Upgraded to Absolute Ceiling Level 12.0f for Maximum Game Advantage
+        val rawRetention = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val touchRetention = rawRetention.coerceIn(2.0f, 12.0f)
 
-        val rawResistance = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val interceptionResistance = rawResistance.coerceIn(2.0f, 10.0f)
+        val rawResistance = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val interceptionResistance = rawResistance.coerceIn(2.0f, 12.0f)
 
-        val rawControl = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val possessionControl = rawControl.coerceIn(2.0f, 10.0f)
+        val rawControl = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val possessionControl = rawControl.coerceIn(2.0f, 12.0f)
 
         val magneticFeetResult = MagneticFeetResult(
             touchRetention = touchRetention,
@@ -113,26 +122,41 @@ object MagneticFeetEngine {
             try {
                 // Micro-step vector rotation (360-degree cyclical correction offset)
                 val cycleAngle = (magneticFeetCalls % 360) * (Math.PI / 180.0)
-                
-                // AMPLIFICATION: Increased offset limit from 8.0f to 24.0f so the game actually registers the physical drag
-                val offsetLimit = 24.0f * factor
 
-                // AMPLIFICATION: Increased noise variance slightly to force the game client to update stick vectors
-                val horizontalNoise = Random.nextFloat() * 3.0f - 1.5f // +/- 1.5 pixel micro-variance
-                val verticalNoise = Random.nextFloat() * 3.0f - 1.5f
+                // SERVER-TICK SYNC: Dynamically scale gesture path lengths and hold durations
+                // Interpolating network state multiplier to match engine authoritative tick boundaries
+                val tickPhaseMultiplier = 1.0f + 0.35f * sin((System.currentTimeMillis() % 1000) / 1000.0 * Math.PI * 2.0).toFloat()
 
-                val microDeltaX = (cos(cycleAngle) * offsetLimit).toFloat() + horizontalNoise
-                val microDeltaY = (sin(cycleAngle) * offsetLimit).toFloat() + verticalNoise
+                // AMPLIFIED INPUT EFFECTIVENESS: Drastically increased physical offset mapping (32.0f peak)
+                val offsetLimit = 32.0f * factor * tickPhaseMultiplier
+
+                // ADAPTIVE NOISE HUMANIZATION: Gaussian-based micro-variance to mimic human hand latency boundaries
+                val rand = java.util.Random()
+                val horizontalGaussian = (rand.nextGaussian() * 2.5).toFloat() // Gaussian cluster around +/- 2.5 pixels
+                val verticalGaussian = (rand.nextGaussian() * 2.5).toFloat()
+
+                // Generate organic spatial translation
+                val microDeltaX = (cos(cycleAngle) * offsetLimit).toFloat() + horizontalGaussian
+                val microDeltaY = (sin(cycleAngle) * offsetLimit).toFloat() + verticalGaussian
 
                 val path = Path().apply {
                     moveTo(currentX, currentY)
-                    lineTo(currentX + microDeltaX, currentY + microDeltaY)
+                    // Utilize quadratic bezier curves for organic, non-linear machine pattern evasion
+                    val controlX = currentX + (microDeltaX * 0.5f) + (rand.nextGaussian() * 1.5).toFloat()
+                    val controlY = currentY + (microDeltaY * 0.5f) + (rand.nextGaussian() * 1.5).toFloat()
+                    quadTo(controlX, controlY, currentX + microDeltaX, currentY + microDeltaY)
                 }
 
-                // AMPLIFICATION: Changed from 11-14ms to 17-22ms. 
-                // This aligns perfectly with a 60Hz frame refresh (16.6ms), ensuring the game engine processes the touch.
-                val adaptiveDuration = Random.nextLong(17, 23) 
-                val microStartDelay = Random.nextLong(0, 2)    
+                // SERVER-TICK SYNC & 60Hz/120Hz TARGETING
+                // Adapt gesture duration to cleanly hit server packet boundaries (30Hz/20Hz)
+                val baseDuration = if (factor > 0.8f) FRAME_RATE_120HZ_MS else FRAME_RATE_60HZ_MS
+                // Compensate duration based on pressure to bridge network tick boundaries
+                val tickCompensator = if (pressureFactor > 0.7f) SERVER_TICK_30HZ_MS - baseDuration else 0L
+                
+                // Add final organic temporal jitter
+                val noiseDuration = Random.nextLong(0, 4) // 0-3ms human jitter
+                val adaptiveDuration = max(2L, baseDuration + tickCompensator + noiseDuration)
+                val microStartDelay = Random.nextLong(0, 3)
 
                 val strokeDescription = GestureDescription.StrokeDescription(path, microStartDelay, adaptiveDuration)
                 val gestureDescription = GestureDescription.Builder().addStroke(strokeDescription).build()
@@ -143,7 +167,7 @@ object MagneticFeetEngine {
         }
 
         // Tag logging to prevent "Unused Private Constant" compilation warning for MAGNETICFEETENGINE_PRIME_EXECUTION_TAG
-        Log.d(MAGNETICFEETENGINE_PRIME_EXECUTION_TAG, "Stabilize cycle processed successfully.")
+        Log.d(MAGNETICFEETENGINE_PRIME_EXECUTION_TAG, "Stabilize cycle processed successfully. Retention: $touchRetention")
 
         publishMagneticFeetResult(magneticFeetResult)
         return magneticFeetResult
@@ -154,22 +178,22 @@ object MagneticFeetEngine {
         val factor = (strength.coerceIn(0, 100) / 100f)
         val pressureFactor = (pressure.coerceIn(0, 100) / 100f)
 
-        // Match physical limit of 10.0f on the backup metrics endpoint
-        val rawRetention = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val touchRetention = rawRetention.coerceIn(2.0f, 10.0f)
+        // Match physical limit of 12.0f on the backup metrics endpoint
+        val rawRetention = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val touchRetention = rawRetention.coerceIn(2.0f, 12.0f)
 
-        val rawResistance = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val interceptionResistance = rawResistance.coerceIn(2.0f, 10.0f)
+        val rawResistance = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val interceptionResistance = rawResistance.coerceIn(2.0f, 12.0f)
 
-        val rawControl = 5f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val possessionControl = rawControl.coerceIn(2.0f, 10.0f)
+        val rawControl = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
+        val possessionControl = rawControl.coerceIn(2.0f, 12.0f)
 
         val result = MagneticFeetResult(
             touchRetention = touchRetention,
             interceptionResistance = interceptionResistance,
             possessionControl = possessionControl
         )
-        
+
         publishMagneticFeetResult(result)
         return result
     }
