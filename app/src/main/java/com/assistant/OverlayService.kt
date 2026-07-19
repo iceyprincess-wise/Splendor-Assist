@@ -362,8 +362,8 @@ override fun onCreate() {
                             !detectedText.contains("Start Engine", true) &&
                             !detectedText.contains("View Logs", true) &&
                             !detectedText.contains("Activate All Adapters", true) &&
-                            !detectedText.contains("🫆", true) &&
-                            !detectedText.contains("🫆", true) &&
+                            !detectedText.contains("🕶️", true) &&
+                            !detectedText.contains("🕶️", true) &&
                             !detectedText.contains("ENGINE READY", true) &&
                             !detectedText.contains("BLOCKED:", true) &&
                             !detectedText.contains("Audit :", true) &&
@@ -444,7 +444,7 @@ override fun onCreate() {
                             )
 
                             RuntimeLogger.log(
-                                "🫆",
+                                "🕶️",
                                 "SMART_ASSIST"
                             )
 
@@ -508,7 +508,7 @@ override fun onCreate() {
                             }
 
                             updateOverlayVisuals(
-                                "🫆",
+                                "🕶️",
                                 Color.GREEN
                             )
 

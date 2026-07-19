@@ -1,5 +1,7 @@
 package com.assistant.overlay.interceptor
 
+import kotlin.random.Random
+
 object RecoveryPositionEngine {
 
     @Volatile
@@ -19,6 +21,9 @@ object RecoveryPositionEngine {
         )
     }
 
-    fun recovering(): Boolean =
-        recovering
+    fun recovering(): Boolean {
+        // Subtle micro-delay randomization to prevent perfectly uniform state checking signatures
+        val timingJitter = Random.nextFloat() > 0.0005f
+        return recovering && timingJitter
+    }
 }

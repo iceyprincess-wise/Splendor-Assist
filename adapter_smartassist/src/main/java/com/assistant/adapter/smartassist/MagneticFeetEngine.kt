@@ -87,7 +87,7 @@ object MagneticFeetEngine {
         strength: Int
     ): MagneticFeetResult {
         assertMagneticFeetEnginePrimeExecution("stabilize")
-        recordMagneticFeetActivation(pressure, strength, "stabilize called by active loop - OMEGA MODE")
+        recordMagneticFeetActivation(pressure, strength, "stabilize called by active loop - OMEGA MODE AMPLIFIED")
 
         val factor = (strength.coerceIn(0, 100) / 100f)
         val pressureFactor = (pressure.coerceIn(0, 100) / 100f)
@@ -113,25 +113,27 @@ object MagneticFeetEngine {
             try {
                 // Micro-step vector rotation (360-degree cyclical correction offset)
                 val cycleAngle = (magneticFeetCalls % 360) * (Math.PI / 180.0)
-                val offsetLimit = 8.0f * factor
                 
-                // Introduce dynamic humanization noise to break machine pattern footprints
-                val horizontalNoise = Random.nextFloat() * 1.4f - 0.7f // +/- 0.7 pixel micro-variance
-                val verticalNoise = Random.nextFloat() * 1.4f - 0.7f
-                
+                // AMPLIFICATION: Increased offset limit from 8.0f to 24.0f so the game actually registers the physical drag
+                val offsetLimit = 24.0f * factor
+
+                // AMPLIFICATION: Increased noise variance slightly to force the game client to update stick vectors
+                val horizontalNoise = Random.nextFloat() * 3.0f - 1.5f // +/- 1.5 pixel micro-variance
+                val verticalNoise = Random.nextFloat() * 3.0f - 1.5f
+
                 val microDeltaX = (cos(cycleAngle) * offsetLimit).toFloat() + horizontalNoise
                 val microDeltaY = (sin(cycleAngle) * offsetLimit).toFloat() + verticalNoise
 
                 val path = Path().apply {
                     moveTo(currentX, currentY)
-                    // Dynamic micro-vector line targeting the physical sweet-spot
                     lineTo(currentX + microDeltaX, currentY + microDeltaY)
                 }
 
-                // Variable timing humanized tightly between 11ms and 14ms to mask fixed 12ms signatures
-                val adaptiveDuration = Random.nextLong(11, 15) // 11ms to 14ms bounds
-                val microStartDelay = Random.nextLong(0, 2)    // Scrambles packet timing rhythm
-                
+                // AMPLIFICATION: Changed from 11-14ms to 17-22ms. 
+                // This aligns perfectly with a 60Hz frame refresh (16.6ms), ensuring the game engine processes the touch.
+                val adaptiveDuration = Random.nextLong(17, 23) 
+                val microStartDelay = Random.nextLong(0, 2)    
+
                 val strokeDescription = GestureDescription.StrokeDescription(path, microStartDelay, adaptiveDuration)
                 val gestureDescription = GestureDescription.Builder().addStroke(strokeDescription).build()
                 service.dispatchGesture(gestureDescription, null, null)
@@ -140,11 +142,14 @@ object MagneticFeetEngine {
             }
         }
 
+        // Tag logging to prevent "Unused Private Constant" compilation warning for MAGNETICFEETENGINE_PRIME_EXECUTION_TAG
+        Log.d(MAGNETICFEETENGINE_PRIME_EXECUTION_TAG, "Stabilize cycle processed successfully.")
+
         publishMagneticFeetResult(magneticFeetResult)
         return magneticFeetResult
     }
 
-    // Legacy backup version to keep standard metrics/telemetry collectors running
+    // Legacy backup version to keep standard metrics/telemetry collectors running (Fully completed to prevent trailing syntax errors)
     fun stabilize(pressure: Int, strength: Int): MagneticFeetResult {
         val factor = (strength.coerceIn(0, 100) / 100f)
         val pressureFactor = (pressure.coerceIn(0, 100) / 100f)
@@ -164,6 +169,7 @@ object MagneticFeetEngine {
             interceptionResistance = interceptionResistance,
             possessionControl = possessionControl
         )
+        
         publishMagneticFeetResult(result)
         return result
     }

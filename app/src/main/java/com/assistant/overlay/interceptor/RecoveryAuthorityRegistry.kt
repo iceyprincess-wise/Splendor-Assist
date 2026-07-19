@@ -1,4 +1,3 @@
-
 package com.assistant.overlay.interceptor
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -6,18 +5,13 @@ import java.util.concurrent.atomic.AtomicInteger
 object RecoveryAuthorityRegistry {
 
     @Volatile
-    var lastTarget: RecoveryTarget =
-        RecoveryTarget.CENTER
+    var lastTarget: RecoveryTarget = RecoveryTarget.CENTER
 
-    val centerRecoveries =
-        AtomicInteger()
+    val centerRecoveries = AtomicInteger()
 
-    val leftRecoveries =
-        AtomicInteger()
+    val leftRecoveries = AtomicInteger()
 
-    val rightRecoveries =
-        AtomicInteger()
+    val rightRecoveries = AtomicInteger()
 
-    val goalAreaRecoveries =
-        AtomicInteger()
+    val goalAreaRecoveries = AtomicInteger()
 }

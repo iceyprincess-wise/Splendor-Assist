@@ -37,8 +37,8 @@ object RuntimeNotificationCoordinator{
 
         val text=buildString{
 
-            append(if(antiban)"🔄 AntiBan  " else "")
-            append(if(matchDetected)"🫆 Match  " else "")
+            append(if(antiban)"🎶 AntiBan  " else "")
+            append(if(matchDetected)"🕶️ Match  " else "")
             append(if(recording)"🎥 Recording  " else "")
             append(if(saved)"💾 Saved" else "")
         }
