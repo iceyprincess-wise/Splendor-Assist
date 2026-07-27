@@ -25,12 +25,12 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         var isDispatching = false
 
         // =========================================================================
-        // ADVANCED ENGINEERING CONSTANTS 
+        // ADVANCED ENGINEERING CONSTANTS
         // =========================================================================
         private const val SERVER_TICK_RATE_MS = 16.6667f // 60Hz Server-Tick bounds for packet sync
         private const val MAX_SAFE_DURATION_MS = 85L     // Absolute input cap to avoid system ANR flags
         private const val NOISE_AMPLITUDE_PX = 3.85f     // Micro-variance vector bounds for humanization
-        private const val BUS_POLL_RATE_MS = 8L          // Nyquist-compliant sub-frame polling (was 10L)
+        private const val BUS_POLL_RATE_MS = 8L          // Nyquist-compliant sub-frame polling
     }
 
     private lateinit var dispatcher: ActiveGestureController
@@ -40,9 +40,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     // =========================================================================
     // CORE MATH & OPTIMIZATION UTILITIES
     // =========================================================================
-    
+
     /**
-     * ADAPTIVE NOISE HUMANIZATION: Applies micro-pixel shifts using fast thread-local random 
+     * ADAPTIVE NOISE HUMANIZATION: Applies micro-pixel shifts using fast thread-local random
      * generators. Prevents rigid machine pathing and evades server-side heuristic flags.
      */
     private fun applyHumanizedNoise(value: Float): Float {
@@ -88,11 +88,17 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
             val syncedDuration = synchronizeToTickRate(request.duration)
 
+            // 1. Declare the tick first
+            val authoritativeTick = AccessibilitySurvivalEngine.getInstance(null).getTickSyncTimestamp()
+
+            // 2. Pass it into the StrokeDescription instead of 0L
             val stroke = GestureDescription.StrokeDescription(
                 optimizedPath,
-                0L,
+                authoritativeTick, // Variable is now used here
                 syncedDuration
             )
+            
+            // (Feed authoritativeTick into your GestureDescription / MotionEvent builder)
 
             val gesture = GestureDescription.Builder()
                 .addStroke(stroke)
@@ -119,7 +125,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 val request = CentralExecutionBus.consume()
                 if (request != null) {
                     SmartAssistMetrics.recordBusConsumed(request)
-                    
+
                     // Hardware-aligned packet injection timing
                     val syncedDuration = synchronizeToTickRate(request.duration)
 
@@ -159,7 +165,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                         applyHumanizedNoise(request.endY),
                         syncedDuration
                     )
-                    
+
                     SmartAssistMetrics.recordBusDispatchResult(request, true)
                     SmartAssistMetrics.executeRequest()
                     RuntimeLogger.execution(
@@ -178,7 +184,10 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
     override fun onServiceConnected() {
         TelemetryCoordinator.initializeTransport("127.0.0.1", 8080)
-        
+
+        // Boot the Survival Engine with Max Impact Protection
+        AccessibilitySurvivalEngine.getInstance(this).protect()
+
         // Elevate IO prioritization to the absolute maximum allowable Android scheduler tier
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
 
@@ -198,14 +207,14 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             RuntimeLogger.log("SmartAssist disabled, trigger dropped", "SMART_ASSIST")
             return
         }
-        
+
         // Dynamically scale base 50L request to precise hardware ticks
         val syncedDuration = synchronizeToTickRate(50L)
         dispatcher.injectWinningVector(
-            applyHumanizedNoise(x1), 
-            applyHumanizedNoise(y1), 
-            applyHumanizedNoise(x2), 
-            applyHumanizedNoise(y2), 
+            applyHumanizedNoise(x1),
+            applyHumanizedNoise(y1),
+            applyHumanizedNoise(x2),
+            applyHumanizedNoise(y2),
             syncedDuration
         )
     }
@@ -218,6 +227,19 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         busHandler.removeCallbacks(busRunnable)
         busThread.quitSafely()
         AccessibilitySurvivalEngine.interrupted()
+        AccessibilitySurvivalEngine.getInstance(this).release()
         RuntimeLogger.log("SmartAssistAccessibilityEngine interrupted", "SMART_ASSIST")
+    }
+
+    override fun onUnbind(intent: android.content.Intent?): Boolean {
+        // Fired when the accessibility service is toggled off in settings
+        AccessibilitySurvivalEngine.getInstance(this).release()
+        return super.onUnbind(intent)
+    }
+
+    override fun onDestroy() {
+        // Absolute fail-safe termination
+        AccessibilitySurvivalEngine.getInstance(this).release()
+        super.onDestroy()
     }
 }
