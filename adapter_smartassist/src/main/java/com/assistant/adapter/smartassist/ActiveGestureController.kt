@@ -417,9 +417,26 @@ class ActiveGestureController(
 
         val magneticFeet =
             MagneticFeetEngine.stabilize(
-                (distance.toInt().coerceIn(0,100)),
+                distance.toInt().coerceIn(0, 100),
                 strength
             )
+
+        /*
+         * Magnetic Feet contributes bounded specialist signals. Normalizing
+         * here prevents it from overpowering the other arbitration engines.
+         */
+        val magneticTouchAuthority =
+            (magneticFeet.touchRetention / 10.0f)
+                .coerceIn(0.0f, 1.0f)
+
+        val magneticInterceptionAuthority =
+            (magneticFeet.interceptionResistance / 10.0f)
+                .coerceIn(0.0f, 1.0f)
+
+        val magneticPossessionAuthority =
+            (magneticFeet.possessionControl / 10.0f)
+                .coerceIn(0.0f, 1.0f)
+
         val selectedPassingLane =
             passingGraph.lanes
                 .firstOrNull {
@@ -630,10 +647,13 @@ class ActiveGestureController(
         val receiverEngagement =
             ReceiverEngagementEngine.evaluate(
                 distance,
-                magneticFeet.touchRetention +
-                (counterattackDetectionResult.confidence*0.15f) +
-                (fastBreakDetectionResult.confidence*0.10f) -
-                ((safestLane?.risk ?: 0f)*0.10f)
+                (
+                    magneticFeet.touchRetention +
+                        (magneticPossessionAuthority * 1.25f) +
+                        (counterattackDetectionResult.confidence * 0.15f) +
+                        (fastBreakDetectionResult.confidence * 0.10f) -
+                        ((safestLane?.risk ?: 0f) * 0.10f)
+                ).coerceIn(0.0f, 10.0f)
             )
 
         val forwardRun =
@@ -674,7 +694,10 @@ class ActiveGestureController(
                 distance,
                 strength,
                 touchRecovery.recoveryBoost,
-                magneticFeet.touchRetention
+                (
+                    magneticFeet.touchRetention +
+                        (magneticInterceptionAuthority * 1.50f)
+                ).coerceIn(0.0f, 10.0f)
             )
 
         val lowBlockAuthority = (defenseAuthority.containment * 10.0f)
@@ -721,6 +744,9 @@ class ActiveGestureController(
                 stability =
                     inputDiagnostics.stabilityScore +
                     speedProtectionAuthority +
+                    (magneticTouchAuthority * 0.75f) +
+                    (magneticPossessionAuthority * 0.75f) +
+                    (magneticInterceptionAuthority * 0.50f) +
                     (defenseAuthority.pressure * 8.0f) +
                     lowBlockAuthority +
                     wingBlockAuthority +

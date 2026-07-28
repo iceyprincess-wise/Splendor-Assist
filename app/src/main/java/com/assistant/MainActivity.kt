@@ -200,8 +200,13 @@ override fun onResume() {
 
             when (permissionStage) {
 
-                PermissionStage.AUTOSTART_WAIT ->
-                    showAutoStartConfirmation()
+                PermissionStage.AUTOSTART_WAIT -> {
+                    if (ComplianceState.battery(this)) {
+                        showAutoStartConfirmation()
+                    } else {
+                        checkBatteryAndProceed()
+                    }
+                }
 
                 else ->
                     checkBatteryAndProceed()
@@ -391,10 +396,12 @@ override fun onResume() {
     // PHASE10_BATTERY_VENDOR_MARKER
 
     private fun launchIfExists(intent: Intent): Boolean {
-        return if (intent.resolveActivity(packageManager) != null) {
+        return try {
             startActivity(intent)
             true
-        } else {
+        } catch (_: android.content.ActivityNotFoundException) {
+            false
+        } catch (_: SecurityException) {
             false
         }
     }
@@ -450,7 +457,7 @@ override fun onResume() {
             ),
 
             Intent(
-                Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.parse("package:$packageName")
             ),
 
@@ -470,22 +477,6 @@ override fun onResume() {
 
 
     private fun checkBatteryAndProceed() {
-
-        if (!true) {
-            Toast.makeText(
-                this,
-                "Set Your Optimization first",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            startActivity(
-                Intent(
-                    this,
-                    SmartAssistControlRoomActivity::class.java
-                )
-            )
-            return
-        }
 
         try {
 

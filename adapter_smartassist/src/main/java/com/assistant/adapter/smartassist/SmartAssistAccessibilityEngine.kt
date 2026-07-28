@@ -80,35 +80,72 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
+        if (isDispatching) {
+            return false
+        }
+
+        isDispatching = true
+
         return try {
             val optimizedPath = generatePrecisionPath(
-                request.startX, request.startY,
-                request.endX, request.endY
+                request.startX,
+                request.startY,
+                request.endX,
+                request.endY
             )
-
             val syncedDuration = synchronizeToTickRate(request.duration)
 
-            // 1. Declare the tick first
-            val authoritativeTick = AccessibilitySurvivalEngine.getInstance(null).getTickSyncTimestamp()
-
-            // 2. Pass it into the StrokeDescription instead of 0L
             val stroke = GestureDescription.StrokeDescription(
                 optimizedPath,
-                authoritativeTick, // Variable is now used here
+                0L,
                 syncedDuration
             )
-            
-            // (Feed authoritativeTick into your GestureDescription / MotionEvent builder)
-
             val gesture = GestureDescription.Builder()
                 .addStroke(stroke)
                 .build()
 
-            RuntimeLogger.execution("DIRECT_DISPATCH", "phase=${request.phase} synced_duration=$syncedDuration")
+            RuntimeLogger.execution(
+                "DIRECT_DISPATCH",
+                "source=${request.source} phase=${request.phase} duration=$syncedDuration"
+            )
 
-            dispatchGesture(gesture, null, null)
+            val accepted = dispatchGesture(
+                gesture,
+                object : GestureResultCallback() {
+                    override fun onCompleted(
+                        gestureDescription: GestureDescription?
+                    ) {
+                        isDispatching = false
+                        RuntimeLogger.execution(
+                            "DIRECT_DISPATCH_COMPLETED",
+                            "source=${request.source} phase=${request.phase}"
+                        )
+                    }
+
+                    override fun onCancelled(
+                        gestureDescription: GestureDescription?
+                    ) {
+                        isDispatching = false
+                        RuntimeLogger.execution(
+                            "DIRECT_DISPATCH_CANCELLED",
+                            "source=${request.source} phase=${request.phase}"
+                        )
+                    }
+                },
+                null
+            )
+
+            if (!accepted) {
+                isDispatching = false
+            }
+
+            accepted
         } catch (e: Exception) {
-            RuntimeLogger.log("Direct dispatch vector crash: ${e.message}", "SMART_ASSIST")
+            isDispatching = false
+            RuntimeLogger.log(
+                "Direct dispatch vector crash: ${e.message}",
+                "SMART_ASSIST"
+            )
             false
         }
     }
@@ -126,51 +163,18 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 if (request != null) {
                     SmartAssistMetrics.recordBusConsumed(request)
 
-                    // Hardware-aligned packet injection timing
-                    val syncedDuration = synchronizeToTickRate(request.duration)
+                    // A consumed request is already planned and routed.
+                    // Execute it once instead of feeding it back through the controller.
+                    val accepted = executeDirectRequest(request)
 
-                    // =========================================================================
-                    // ACTIVE UPGRADE INTEGRATION BLOCK (Preserved & Optimized)
-                    // =========================================================================
-                    try {
-                        // 1. Live Magnetic Feet physical touch stabilization (Tweaked coefficients)
-                        MagneticFeetEngine.stabilize(
-                            service = this@SmartAssistAccessibilityEngine,
-                            currentX = applyHumanizedNoise(request.startX),
-                            currentY = applyHumanizedNoise(request.startY),
-                            pressure = 55, // Optimized dynamic vector mapping pressure
-                            strength = 85  // Raised for 120Hz display execution boundaries
-                        )
-
-                        // 2. Active Attacker target stabilization backup pipeline
-                        val dummySnapshot = SceneSnapshot(0L)
-                        val dummyPossession = BallPossessionResult(hasPossession = true, ownerIndex = 0, confidence = 0.85f)
-                        ActiveAttackerEngine.compute(
-                            service = this@SmartAssistAccessibilityEngine,
-                            currentX = request.startX,
-                            currentY = request.startY,
-                            scene = dummySnapshot,
-                            possession = dummyPossession
-                        )
-                    } catch (e: Exception) {
-                        RuntimeLogger.log("Sub-engine active pipeline sync skipped: ${e.message}", "SMART_ASSIST")
+                    SmartAssistMetrics.recordBusDispatchResult(request, accepted)
+                    if (accepted) {
+                        SmartAssistMetrics.executeRequest()
                     }
-                    // =========================================================================
 
-                    // Dispatch mapped coordinates with Nyquist-variance humanization
-                    dispatcher.injectWinningVector(
-                        applyHumanizedNoise(request.startX),
-                        applyHumanizedNoise(request.startY),
-                        applyHumanizedNoise(request.endX),
-                        applyHumanizedNoise(request.endY),
-                        syncedDuration
-                    )
-
-                    SmartAssistMetrics.recordBusDispatchResult(request, true)
-                    SmartAssistMetrics.executeRequest()
                     RuntimeLogger.execution(
-                        "BUS_TO_CONTROLLER",
-                        "phase=${request.phase} duration=$syncedDuration"
+                        "BUS_DISPATCH",
+                        "source=${request.source} phase=${request.phase} accepted=$accepted"
                     )
                 }
             } catch (e: Exception) {
@@ -223,22 +227,37 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // Purposely blanked out. Avoids VM garbage collection overhead during rapid layout events.
     }
 
+    private fun stopExecutionLoop() {
+        if (::busHandler.isInitialized) {
+            busHandler.removeCallbacks(busRunnable)
+        }
+        if (::busThread.isInitialized) {
+            busThread.quitSafely()
+        }
+        isDispatching = false
+        if (globalInstance === this) {
+            globalInstance = null
+        }
+    }
+
     override fun onInterrupt() {
-        busHandler.removeCallbacks(busRunnable)
-        busThread.quitSafely()
+        stopExecutionLoop()
         AccessibilitySurvivalEngine.interrupted()
         AccessibilitySurvivalEngine.getInstance(this).release()
-        RuntimeLogger.log("SmartAssistAccessibilityEngine interrupted", "SMART_ASSIST")
+        RuntimeLogger.log(
+            "SmartAssistAccessibilityEngine interrupted",
+            "SMART_ASSIST"
+        )
     }
 
     override fun onUnbind(intent: android.content.Intent?): Boolean {
-        // Fired when the accessibility service is toggled off in settings
+        stopExecutionLoop()
         AccessibilitySurvivalEngine.getInstance(this).release()
         return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
-        // Absolute fail-safe termination
+        stopExecutionLoop()
         AccessibilitySurvivalEngine.getInstance(this).release()
         super.onDestroy()
     }

@@ -37,10 +37,21 @@ class DvrProjectionService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        dvrThread = HandlerThread("DvrIOLoop", Process.THREAD_PRIORITY_VIDEO).apply {
-            start()
-            dvrHandler = Handler(looper)
-        }
+        val dvrThreadPriority =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                Process.THREAD_PRIORITY_VIDEO
+            } else {
+                Process.THREAD_PRIORITY_DISPLAY
+            }
+
+        dvrThread =
+            HandlerThread(
+                "DvrIOLoop",
+                dvrThreadPriority
+            ).apply {
+                start()
+                dvrHandler = Handler(looper)
+            }
         videoBuffer = ByteBuffer.allocateDirect(BUFFER_CAPACITY)
     }
 
@@ -56,11 +67,18 @@ class DvrProjectionService : Service() {
             .setContentText("Recording in background")
             .setSmallIcon(android.R.drawable.ic_menu_camera)
             .build()
+        val foregroundType =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+            } else {
+                0
+            }
+
         ServiceCompat.startForeground(
             this,
             1001,
             notification,
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+            foregroundType
         )
         dvrHandler?.post { executeRollingRecord() }
         return START_STICKY

@@ -3,17 +3,28 @@ package com.assistant.overlay.interceptor
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.graphics.Path
+import android.os.Build
 import android.os.PerformanceHintManager
-import android.content.Context
 import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
+import androidx.annotation.RequiresApi
 
 // 🔒 [SECURITY GUARD LOCK ACTIVE]
 // 1000% OMNIPOTENT TIER: Zero-Allocation & Hyper-Velocity Router
 class GodTierExecutionEngine(private val service: AccessibilityService) {
 
-    private val hintManager = service.getSystemService(Context.PERFORMANCE_HINT_SERVICE) as? PerformanceHintManager
+    private val hintManager: PerformanceHintManager?
+        get() =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                performanceHintManagerApi31()
+            } else {
+                null
+            }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun performanceHintManagerApi31(): PerformanceHintManager? =
+        service.getSystemService(PerformanceHintManager::class.java)
     private var hintSession: PerformanceHintManager.Session? = null
 
     // PRE-ALLOCATED MEMORY POOLS (Eliminates GC Pauses during execution)
@@ -22,13 +33,17 @@ class GodTierExecutionEngine(private val service: AccessibilityService) {
     init {
         // Pin ADPF to MediaTek Helio G81 max clock speed with a 2ms target
         val tids = intArrayOf(android.os.Process.myTid())
-        hintSession = hintManager?.createHintSession(tids, 2_000_000L) 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            hintSession = createHintSessionApi31(tids)
+        } 
     }
 
     // [UNIVERSAL HARDWARE INJECTION ROUTER]
     fun executeOmnipotentAction(actionPhase: Int, startX: Float, startY: Float, endX: Float, endY: Float) {
         // 1. PIN CPU TO PREVENT MICRO-STUTTER
-        hintSession?.reportActualWorkDuration(1_000_000L) 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            reportActualWorkDurationApi31(1_000_000L)
+        } 
 
         // 2. REUSE MEMORY BUFFERS (Zero Allocation)
         cachedPath.reset()
@@ -71,4 +86,17 @@ class GodTierExecutionEngine(private val service: AccessibilityService) {
             )
         )
     }
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun createHintSessionApi31(
+        tids: IntArray
+    ): PerformanceHintManager.Session? =
+        hintManager?.createHintSession(tids, 2_000_000L)
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun reportActualWorkDurationApi31(
+        durationNanos: Long
+    ) {
+        hintSession?.reportActualWorkDuration(durationNanos)
+    }
+
 }

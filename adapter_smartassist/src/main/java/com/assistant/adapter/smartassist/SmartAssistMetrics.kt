@@ -263,14 +263,6 @@ object SmartAssistMetrics {
         val crossing = CrossingLaneAnalysisEngine.crossingLaneAnalysisEngineSnapshot()
         val laneCount = crossing?.result?.lanes?.size ?: 0
         val bestConfidence = crossing?.result?.lanes?.maxOfOrNull { it.confidence } ?: 0.0f
-        val syntheticPressure = (laneCount * 10).coerceIn(0, 100)
-        val syntheticStrength = ((bestConfidence * 100.0f).toInt()).coerceIn(0, 100)
-
-        MagneticFeetEngine.stabilize(
-            pressure = syntheticPressure,
-            strength = syntheticStrength
-        )
-
         val temporal = TemporalMemoryState(
             temporalConfidence = bestConfidence.coerceIn(0.0f, 1.0f),
             exponentialMovingAverage = bestConfidence.coerceIn(0.0f, 1.0f),

@@ -3,7 +3,6 @@ package com.assistant
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
-import android.os.Environment
 import android.provider.Settings
 import java.io.File
 import java.io.PrintWriter
@@ -62,15 +61,21 @@ class GlobalCrashHandler(
 
         private fun getLogFile(ctx: Context?, baseName: String, append: Boolean): File {
             val candidates = mutableListOf<File>()
-            try { candidates.add(File("/sdcard/Download")) } catch (_: Throwable) {}
             try {
-                @Suppress("DEPRECATION")
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.let { candidates.add(it) }
-            } catch (_: Throwable) {}
-            try { ctx?.getExternalFilesDir(null)?.let { candidates.add(it) } } catch (_: Throwable) {}
-            try { ctx?.filesDir?.let { candidates.add(it) } } catch (_: Throwable) {}
+                ctx?.filesDir?.let { candidates.add(it) }
+            } catch (_: Throwable) {
+            }
+            try {
+                ctx?.getExternalFilesDir(null)?.let { candidates.add(it) }
+            } catch (_: Throwable) {
+            }
 
-            var baseDir = candidates.firstOrNull { it.exists() || it.mkdirs() } ?: File("/data/local/tmp")
+            val baseDir =
+                candidates.firstOrNull {
+                    it.exists() || it.mkdirs()
+                } ?: throw IllegalStateException(
+                    "No writable application crash directory"
+                )
 
             val dot = baseName.lastIndexOf('.')
             val name = if (dot > 0) baseName.substring(0, dot) else baseName

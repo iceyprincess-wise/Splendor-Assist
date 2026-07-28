@@ -1,15 +1,10 @@
 package com.assistant.adapter.smartassist
 
 import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.GestureDescription
-import android.graphics.Path
 import android.util.Log
-import kotlin.math.cos
-import kotlin.math.max
-import kotlin.math.sin
-import kotlin.random.Random
 
-private const val MAGNETICFEETENGINE_PRIME_EXECUTION_TAG = "MagneticFeetEngine.prime"
+private const val MAGNETICFEETENGINE_PRIME_EXECUTION_TAG =
+    "MagneticFeetEngine.prime"
 
 data class MagneticFeetResult(
     val touchRetention: Float,
@@ -18,6 +13,7 @@ data class MagneticFeetResult(
 )
 
 object MagneticFeetEngine {
+
     data class MagneticFeetActivationDiagnostics(
         val calls: Long,
         val lastPressure: Int,
@@ -26,68 +22,54 @@ object MagneticFeetEngine {
         val lastUpdatedMs: Long
     )
 
-    private var magneticFeetCalls: Long = 0L
-    private var lastMagneticFeetPressure: Int = 0
-    private var lastMagneticFeetStrength: Int = 0
-    private var lastMagneticFeetReason: String = "not called yet"
-    private var lastMagneticFeetUpdatedMs: Long = 0L
-
-    @Synchronized
-    fun magneticFeetActivationDiagnostics(): MagneticFeetActivationDiagnostics =
-        MagneticFeetActivationDiagnostics(
-            magneticFeetCalls,
-            lastMagneticFeetPressure,
-            lastMagneticFeetStrength,
-            lastMagneticFeetReason,
-            lastMagneticFeetUpdatedMs
-        )
-
-    @Synchronized
-    private fun recordMagneticFeetActivation(pressure: Int, strength: Int, reason: String) {
-        magneticFeetCalls += 1L
-        lastMagneticFeetPressure = pressure
-        lastMagneticFeetStrength = strength
-        lastMagneticFeetReason = reason
-        lastMagneticFeetUpdatedMs = System.currentTimeMillis()
-    }
-
-    private const val MAGNETIC_FEET_AMPLIFICATION: Float = 1000000.0f
-    
-    // Target frame refresh intervals in milliseconds for Display Sync
-    private const val FRAME_RATE_120HZ_MS: Long = 8L
-    private const val FRAME_RATE_60HZ_MS: Long = 16L
-    
-    // Server authoritative tick intervals (e.g., 30Hz -> ~33ms, 20Hz -> ~50ms)
-    private const val SERVER_TICK_30HZ_MS: Long = 33L
-    private const val SERVER_TICK_20HZ_MS: Long = 50L
-
     data class MagneticFeetDownstreamState(
         val sequence: Long,
         val amplification: Float,
         val result: MagneticFeetResult
     )
 
+    /*
+     * Retained for compatibility with existing metrics and UI consumers.
+     * It is now a neutral model-version marker rather than a fictional
+     * physical amplification factor.
+     */
+    private const val MAGNETIC_FEET_AMPLIFICATION: Float = 1.0f
+
+    private const val INPUT_MIN = 0
+    private const val INPUT_MAX = 100
+
+    private const val RESULT_MIN = 0.0f
+    private const val RESULT_MAX = 10.0f
+
+    private var magneticFeetCalls: Long = 0L
+    private var lastMagneticFeetPressure: Int = 0
+    private var lastMagneticFeetStrength: Int = 0
+    private var lastMagneticFeetReason: String = "not called yet"
+    private var lastMagneticFeetUpdatedMs: Long = 0L
+
     private var magneticFeetSequence: Long = 0L
     private var lastMagneticFeetState: MagneticFeetDownstreamState? = null
 
     @Synchronized
-    private fun publishMagneticFeetResult(result: MagneticFeetResult) {
-        magneticFeetSequence += 1L
-        lastMagneticFeetState = MagneticFeetDownstreamState(
-            sequence = magneticFeetSequence,
-            amplification = MAGNETIC_FEET_AMPLIFICATION,
-            result = result
+    fun magneticFeetActivationDiagnostics(): MagneticFeetActivationDiagnostics =
+        MagneticFeetActivationDiagnostics(
+            calls = magneticFeetCalls,
+            lastPressure = lastMagneticFeetPressure,
+            lastStrength = lastMagneticFeetStrength,
+            lastReason = lastMagneticFeetReason,
+            lastUpdatedMs = lastMagneticFeetUpdatedMs
         )
-    }
 
     @Synchronized
-    fun magneticFeetSnapshot(): MagneticFeetDownstreamState? = lastMagneticFeetState
+    fun magneticFeetSnapshot(): MagneticFeetDownstreamState? =
+        lastMagneticFeetState
 
-    private fun assertMagneticFeetEnginePrimeExecution(stage: String) {
-        check(stage.isNotBlank()) { "MagneticFeetEngine execution stage must be explicit" }
-    }
-
-    // Main stabilization loop called by the active touch-tracking system
+    /*
+     * Compatibility overload for callers that still possess service and
+     * coordinate context. Physical dispatch belongs to the accessibility
+     * service's single authoritative dispatch path, not this calculation
+     * engine.
+     */
     fun stabilize(
         service: AccessibilityService,
         currentX: Float,
@@ -95,106 +77,167 @@ object MagneticFeetEngine {
         pressure: Int,
         strength: Int
     ): MagneticFeetResult {
-        assertMagneticFeetEnginePrimeExecution("stabilize")
-        recordMagneticFeetActivation(pressure, strength, "stabilize called by active loop - OMEGA MODE AMPLIFIED")
+        assertMagneticFeetEnginePrimeExecution("service-context stabilize")
 
-        val factor = (strength.coerceIn(0, 100) / 100f)
-        val pressureFactor = (pressure.coerceIn(0, 100) / 100f)
+        val coordinatesUsable =
+            currentX.isFinite() &&
+                currentY.isFinite() &&
+                currentX >= 0.0f &&
+                currentY >= 0.0f
 
-        // Mathematical Scaling Upgraded to Absolute Ceiling Level 12.0f for Maximum Game Advantage
-        val rawRetention = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val touchRetention = rawRetention.coerceIn(2.0f, 12.0f)
+        val serviceReady =
+            service.rootInActiveWindow != null
 
-        val rawResistance = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val interceptionResistance = rawResistance.coerceIn(2.0f, 12.0f)
+        val contextReason = when {
+            !coordinatesUsable ->
+                "service-context calculation; unusable coordinates"
 
-        val rawControl = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val possessionControl = rawControl.coerceIn(2.0f, 12.0f)
+            serviceReady ->
+                "service-context calculation; accessibility context available"
 
-        val magneticFeetResult = MagneticFeetResult(
-            touchRetention = touchRetention,
-            interceptionResistance = interceptionResistance,
-            possessionControl = possessionControl
-        )
-
-        // Low-latency micro-adjustment stroke injection (Dynamic Drift Damping)
-        if (magneticFeetResult.possessionControl > 4.0f) {
-            try {
-                // Micro-step vector rotation (360-degree cyclical correction offset)
-                val cycleAngle = (magneticFeetCalls % 360) * (Math.PI / 180.0)
-
-                // SERVER-TICK SYNC: Dynamically scale gesture path lengths and hold durations
-                // Interpolating network state multiplier to match engine authoritative tick boundaries
-                val tickPhaseMultiplier = 1.0f + 0.35f * sin((System.currentTimeMillis() % 1000) / 1000.0 * Math.PI * 2.0).toFloat()
-
-                // AMPLIFIED INPUT EFFECTIVENESS: Drastically increased physical offset mapping (32.0f peak)
-                val offsetLimit = 32.0f * factor * tickPhaseMultiplier
-
-                // ADAPTIVE NOISE HUMANIZATION: Gaussian-based micro-variance to mimic human hand latency boundaries
-                val rand = java.util.Random()
-                val horizontalGaussian = (rand.nextGaussian() * 2.5).toFloat() // Gaussian cluster around +/- 2.5 pixels
-                val verticalGaussian = (rand.nextGaussian() * 2.5).toFloat()
-
-                // Generate organic spatial translation
-                val microDeltaX = (cos(cycleAngle) * offsetLimit).toFloat() + horizontalGaussian
-                val microDeltaY = (sin(cycleAngle) * offsetLimit).toFloat() + verticalGaussian
-
-                val path = Path().apply {
-                    moveTo(currentX, currentY)
-                    // Utilize quadratic bezier curves for organic, non-linear machine pattern evasion
-                    val controlX = currentX + (microDeltaX * 0.5f) + (rand.nextGaussian() * 1.5).toFloat()
-                    val controlY = currentY + (microDeltaY * 0.5f) + (rand.nextGaussian() * 1.5).toFloat()
-                    quadTo(controlX, controlY, currentX + microDeltaX, currentY + microDeltaY)
-                }
-
-                // SERVER-TICK SYNC & 60Hz/120Hz TARGETING
-                // Adapt gesture duration to cleanly hit server packet boundaries (30Hz/20Hz)
-                val baseDuration = if (factor > 0.8f) FRAME_RATE_120HZ_MS else FRAME_RATE_60HZ_MS
-                // Compensate duration based on pressure to bridge network tick boundaries
-                val tickCompensator = if (pressureFactor > 0.7f) SERVER_TICK_30HZ_MS - baseDuration else 0L
-                
-                // Add final organic temporal jitter
-                val noiseDuration = Random.nextLong(0, 4) // 0-3ms human jitter
-                val adaptiveDuration = max(2L, baseDuration + tickCompensator + noiseDuration)
-                val microStartDelay = Random.nextLong(0, 3)
-
-                val strokeDescription = GestureDescription.StrokeDescription(path, microStartDelay, adaptiveDuration)
-                val gestureDescription = GestureDescription.Builder().addStroke(strokeDescription).build()
-                service.dispatchGesture(gestureDescription, null, null)
-            } catch (e: Exception) {
-                Log.e("MagneticFeet", "Micro-gesture stabilization skipped: ${e.message}")
-            }
+            else ->
+                "service-context calculation; accessibility context unavailable"
         }
 
-        // Tag logging to prevent "Unused Private Constant" compilation warning for MAGNETICFEETENGINE_PRIME_EXECUTION_TAG
-        Log.d(MAGNETICFEETENGINE_PRIME_EXECUTION_TAG, "Stabilize cycle processed successfully. Retention: $touchRetention")
+        val result = calculate(
+            pressure = pressure,
+            strength = strength
+        )
 
-        publishMagneticFeetResult(magneticFeetResult)
-        return magneticFeetResult
+        publishInvocation(
+            pressure = pressure,
+            strength = strength,
+            reason = contextReason,
+            result = result
+        )
+
+        Log.d(
+            MAGNETICFEETENGINE_PRIME_EXECUTION_TAG,
+            "Service-context calculation completed at " +
+                "(${currentX.toInt()},${currentY.toInt()}); " +
+                "retention=${result.touchRetention}"
+        )
+
+        return result
     }
 
-    // Legacy backup version to keep standard metrics/telemetry collectors running (Fully completed to prevent trailing syntax errors)
-    fun stabilize(pressure: Int, strength: Int): MagneticFeetResult {
-        val factor = (strength.coerceIn(0, 100) / 100f)
-        val pressureFactor = (pressure.coerceIn(0, 100) / 100f)
+    /*
+     * Primary controller path. This overload computes bounded assistance
+     * signals only; it never dispatches Android gestures.
+     */
+    fun stabilize(
+        pressure: Int,
+        strength: Int
+    ): MagneticFeetResult {
+        assertMagneticFeetEnginePrimeExecution("controller stabilize")
 
-        // Match physical limit of 12.0f on the backup metrics endpoint
-        val rawRetention = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val touchRetention = rawRetention.coerceIn(2.0f, 12.0f)
+        val result = calculate(
+            pressure = pressure,
+            strength = strength
+        )
 
-        val rawResistance = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val interceptionResistance = rawResistance.coerceIn(2.0f, 12.0f)
+        publishInvocation(
+            pressure = pressure,
+            strength = strength,
+            reason = "controller calculation",
+            result = result
+        )
 
-        val rawControl = 6f + (factor * 4.00f) + (pressureFactor * 2.00f)
-        val possessionControl = rawControl.coerceIn(2.0f, 12.0f)
+        return result
+    }
 
-        val result = MagneticFeetResult(
+    /*
+     * Produces three related but distinct signals:
+     *
+     * touchRetention:
+     *     close-control stability, weighted toward configured strength.
+     *
+     * interceptionResistance:
+     *     resistance under nearby pressure, weighted toward pressure.
+     *
+     * possessionControl:
+     *     balanced control with an interaction bonus when both inputs agree.
+     *
+     * Inputs are normalized to 0..1 and outputs remain inside 0..10.
+     */
+    private fun calculate(
+        pressure: Int,
+        strength: Int
+    ): MagneticFeetResult {
+        val normalizedPressure =
+            pressure.coerceIn(INPUT_MIN, INPUT_MAX) / 100.0f
+
+        val normalizedStrength =
+            strength.coerceIn(INPUT_MIN, INPUT_MAX) / 100.0f
+
+        /*
+         * The agreement term prevents one extreme input from unrealistically
+         * maximizing the complete model. It remains bounded to 0..1.
+         */
+        val agreement =
+            (normalizedPressure * normalizedStrength)
+                .coerceIn(0.0f, 1.0f)
+
+        val touchRetention =
+            (
+                1.0f +
+                    (normalizedStrength * 6.0f) +
+                    (normalizedPressure * 1.5f) +
+                    (agreement * 1.5f)
+            ).coerceIn(RESULT_MIN, RESULT_MAX)
+
+        val interceptionResistance =
+            (
+                1.0f +
+                    (normalizedPressure * 5.5f) +
+                    (normalizedStrength * 2.0f) +
+                    (agreement * 1.5f)
+            ).coerceIn(RESULT_MIN, RESULT_MAX)
+
+        val possessionControl =
+            (
+                1.0f +
+                    (normalizedStrength * 3.5f) +
+                    (normalizedPressure * 2.5f) +
+                    (agreement * 3.0f)
+            ).coerceIn(RESULT_MIN, RESULT_MAX)
+
+        return MagneticFeetResult(
             touchRetention = touchRetention,
             interceptionResistance = interceptionResistance,
             possessionControl = possessionControl
         )
-
-        publishMagneticFeetResult(result)
-        return result
     }
+
+    @Synchronized
+    private fun publishInvocation(
+        pressure: Int,
+        strength: Int,
+        reason: String,
+        result: MagneticFeetResult
+    ) {
+        magneticFeetCalls += 1L
+        lastMagneticFeetPressure =
+            pressure.coerceIn(INPUT_MIN, INPUT_MAX)
+        lastMagneticFeetStrength =
+            strength.coerceIn(INPUT_MIN, INPUT_MAX)
+        lastMagneticFeetReason = reason
+        lastMagneticFeetUpdatedMs = System.currentTimeMillis()
+
+        magneticFeetSequence += 1L
+        lastMagneticFeetState =
+            MagneticFeetDownstreamState(
+                sequence = magneticFeetSequence,
+                amplification = MAGNETIC_FEET_AMPLIFICATION,
+                result = result
+            )
+    }
+
+    private fun assertMagneticFeetEnginePrimeExecution(stage: String) {
+        check(stage.isNotBlank()) {
+            "MagneticFeetEngine execution stage must be explicit"
+        }
+    }
+
+
 }

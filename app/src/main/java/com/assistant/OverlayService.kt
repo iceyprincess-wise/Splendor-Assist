@@ -1,4 +1,6 @@
 package com.assistant
+
+import android.annotation.SuppressLint
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.RuntimeMetricsRegistry
 import com.assistant.adapter.smartassist.SmartAssistRepository
@@ -133,7 +135,7 @@ override fun onCreate() {
     private fun initializePerformanceMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
-                val hintManager = getSystemService(Context.PERFORMANCE_HINT_SERVICE) as? PerformanceHintManager
+                val hintManager = getSystemService(PerformanceHintManager::class.java)
                 perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 8333333L)
             } catch (e: Exception) {}
         }
@@ -203,6 +205,7 @@ override fun onCreate() {
         startForeground(NOTIFICATION_ID, notification)
     }
 
+    @SuppressLint("InflateParams")
     private fun initializeOverlayUI() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager

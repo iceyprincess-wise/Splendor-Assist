@@ -3,9 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+<uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -41,7 +39,6 @@
         <activity android:name="com.assistant.DiagnosisDetailActivity" android:exported="false" />
         <activity android:name="com.assistant.DiagnosisRoomActivity" android:exported="false" />
         <activity android:name="com.assistant.LogActivity" android:exported="false" />
-        <activity android:name="com.assistant.SplashActivity" android:exported="false" />
         <activity android:name="com.assistant.WelcomeActivity" android:exported="false" />
         <activity android:name="com.assistant.UpdateActivity" android:exported="false" />
 
