@@ -1,6 +1,5 @@
 package com.assistant.adapter.smartassist.contributors
 
-import com.assistant.adapter.smartassist.TrueTargetPassingEngine
 import com.assistant.runtime.ActionClass
 import com.assistant.runtime.EngineCapability
 import com.assistant.runtime.EngineContribution
@@ -13,10 +12,9 @@ object PassingContributor : GameplayContributor {
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall || frame.viableLaneCount <= 0) return null
-        val graph = try { TrueTargetPassingEngine.currentPassingGraph() } catch (_: Throwable) { null }
-        val lane = graph?.lanes?.firstOrNull { !it.blocked } ?: return null
-        val rx = lane.receiver?.x ?: return null
-        val ry = lane.receiver?.y ?: return null
+        val rx = frame.passTargetX
+        val ry = frame.passTargetY
+        if (rx <= 0f && ry <= 0f) return null
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.PASS,

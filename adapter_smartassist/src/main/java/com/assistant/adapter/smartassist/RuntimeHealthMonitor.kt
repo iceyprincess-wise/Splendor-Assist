@@ -2,6 +2,7 @@ package com.assistant.adapter.smartassist
 
 import com.assistant.runtime.GameplayEngineRegistry
 import java.util.concurrent.atomic.AtomicLong
+import com.assistant.diagnostic.registry.AdapterHealthRegistry
 
 /*
  * RuntimeHealthMonitor answers one question:
@@ -79,6 +80,13 @@ object RuntimeHealthMonitor {
                     ((contributions["offered"] as? Number)?.toLong() ?: 0L) > 0L
                 )
 
+        val boosterAlive =
+            try {
+                AdapterHealthRegistry.getAll().isNotEmpty()
+            } catch (_: Throwable) {
+                false
+            }
+
         val degraded = mutableListOf<String>()
 
         if (!accessibilityAlive) degraded += "accessibility-not-ready"
@@ -88,6 +96,7 @@ object RuntimeHealthMonitor {
         if (!busAlive) degraded += "bus-idle"
         if (!dispatchAlive) degraded += "dispatch-stale"
         if (!gameplayAlive) degraded += "gameplay-idle"
+        if (!boosterAlive) degraded += "booster-not-ready"
 
         return HealthState(
             accessibilityAlive = accessibilityAlive,
@@ -112,6 +121,7 @@ object RuntimeHealthMonitor {
             "busAlive" to state.busAlive,
             "dispatchAlive" to state.dispatchAlive,
             "gameplayAlive" to state.gameplayAlive,
+            "boosterAlive" to try { AdapterHealthRegistry.getAll().isNotEmpty() } catch (_: Throwable) { false },
             "degradedReasons" to state.degradedReasons.joinToString(","),
             "lastEvaluatedMs" to state.lastEvaluatedMs,
             "evaluations" to evaluations.get()

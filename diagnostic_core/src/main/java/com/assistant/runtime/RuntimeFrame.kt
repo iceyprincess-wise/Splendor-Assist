@@ -14,6 +14,8 @@ data class RuntimeFrame(
     val opponentCount: Int,
     val laneCount: Int,
     val viableLaneCount: Int,
+    val passTargetX: Float,
+    val passTargetY: Float,
     val bestLaneConfidence: Float,
     val defenderDensity: Float,
     val confidence: Float,

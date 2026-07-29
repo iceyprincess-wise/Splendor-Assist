@@ -105,41 +105,67 @@ class DiagnosisDetailActivity : AppCompatActivity() {
     }
 
     private fun purpose(name: String): String = when (name) {
-        "MagneticFeetEngine" -> "Touch retention, interception resistance and possession control."
-        "GameplayDecisionEngine" -> "Adaptive mode, decision stability and gameplay authority."
-        "CrossingLaneAnalysisEngine" -> "Crossing lane viability, target and confidence."
-        "SmartAssistMetrics" -> "Request, execution, trajectory and engine diagnostic counters."
-        "SmartAssistControlRoomActivity" -> "Control room UI and runtime metric display."
+        "MagneticFeetEngine" -> "Touch retention, interception resistance and possession control in the new contributor runtime."
+        "GameplayDecisionEngine" -> "Legacy gameplay decision engine diagnostics alongside the new RuntimeDecisionLoop truth surface."
+        "CrossingLaneAnalysisEngine" -> "Crossing lane viability and confidence feeding RuntimeFrame assembly."
+        "SmartAssistMetrics" -> "Runtime truth surface for coordinator, health, frame, decision, contribution and execution state."
+        "SmartAssistControlRoomActivity" -> "Control room UI displaying runtime truth instead of legacy engine-local labels."
         "RuntimeLogger" -> "Runtime, execution, telemetry, heartbeat and field-test evidence."
         else -> "Unknown engine."
     }
 
     private fun chain(name: String): String = when (name) {
-        "MagneticFeetEngine" -> "ActiveGestureController -> MagneticFeetEngine.stabilize -> pass/engagement/defense consumers -> metrics."
-        "GameplayDecisionEngine" -> "ActiveGestureController -> GameplayDecisionEngine -> DecisionResult -> CentralExecutionBus -> gesture execution."
-        "CrossingLaneAnalysisEngine" -> "VisionCore -> CrossingLaneAnalysisEngine -> Phase3WorldStateStore -> TrueTargetPassingEngine -> ActiveGestureController."
-        "SmartAssistMetrics" -> "Engines/accessibility/controller -> SmartAssistMetrics -> Control Room + Diagnosis Room."
-        "SmartAssistControlRoomActivity" -> "Dashboard/control-room navigation -> SmartAssistControlRoomActivity -> SmartAssistMetrics."
+        "MagneticFeetEngine" -> "RuntimeFrame -> MagneticFeetContributor -> RuntimeDecisionLoop -> registry/decision surfaces."
+        "GameplayDecisionEngine" -> "Legacy ActiveGestureController path; runtime truth now flows through RuntimeDecisionLoop."
+        "CrossingLaneAnalysisEngine" -> "VisionCore -> CrossingLaneAnalysisEngine -> FrameAssembler -> RuntimeFrame -> contributors."
+        "SmartAssistMetrics" -> "RuntimeCoordinator/FrameAssembler/RuntimeDecisionLoop/ContributionRegistry/GestureExecutionAuthority -> SmartAssistMetrics -> Control Room + Diagnosis Room."
+        "SmartAssistControlRoomActivity" -> "Dashboard/control-room navigation -> SmartAssistControlRoomActivity -> runtime truth surfaces."
         "RuntimeLogger" -> "App/components -> RuntimeLogger -> app-owned log segments and forensic files."
         else -> "No chain."
     }
 
     private fun stateFor(name: String): String = when (name) {
         "MagneticFeetEngine" -> MagneticFeetEngine.magneticFeetSnapshot()?.toString() ?: "No MagneticFeet snapshot yet."
-        "GameplayDecisionEngine" -> "downstream=${GameplayDecisionEngine.gameplayDownstreamSnapshot()}\namplification=${GameplayDecisionEngine.gameplayAmplificationSnapshot()}"
-        "CrossingLaneAnalysisEngine" -> CrossingLaneAnalysisEngine.crossingLaneAnalysisEngineSnapshot()?.toString() ?: "No CrossingLane snapshot yet."
-        "SmartAssistMetrics" -> "submitted=${SmartAssistMetrics.requestsSubmitted.get()}, executed=${SmartAssistMetrics.requestsExecuted.get()}, trajectory=${SmartAssistMetrics.trajectoryProduced.get()}"
-        "SmartAssistControlRoomActivity" -> "Owns visible SmartAssist runtime/metrics UI. Latest metrics are read from SmartAssistMetrics."
+        "GameplayDecisionEngine" -> "decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot()
+        "CrossingLaneAnalysisEngine" -> "crossing=" + SmartAssistMetrics.crossingLaneRuntimeSnapshot() + "\nframe=" + com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot()
+        "SmartAssistMetrics" -> buildString {
+            appendLine("runtime=" + com.assistant.adapter.smartassist.RuntimeCoordinator.runtimeState())
+            appendLine("health=" + com.assistant.adapter.smartassist.RuntimeHealthMonitor.runtimeHealthSnapshot())
+            appendLine("frame=" + com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot())
+            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+            appendLine("contributions=" + com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot())
+            appendLine("execution=" + com.assistant.adapter.smartassist.GestureExecutionAuthority.executionRuntimeSnapshot())
+            appendLine("registry=" + com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot())
+        }
+        "SmartAssistControlRoomActivity" -> "Displays runtime, health, frame, decision, contribution, execution and registry truth."
         "RuntimeLogger" -> "Owns runtime logs, hourly retention segments, execution, telemetry, heartbeat and field-test traces."
         else -> "Unknown."
     }
 
     private fun metricsFor(name: String): String = when (name) {
-        "MagneticFeetEngine" -> SmartAssistMetrics.magneticFeetRuntimeSnapshot().toString()
-        "GameplayDecisionEngine" -> SmartAssistMetrics.gameplayDownstreamRuntimeSnapshot().toString() + "\n" + SmartAssistMetrics.gameplayAmplificationRuntimeSnapshot()
-        "CrossingLaneAnalysisEngine" -> SmartAssistMetrics.crossingLaneRuntimeSnapshot().toString()
-        "SmartAssistMetrics" -> "submitted=${SmartAssistMetrics.requestsSubmitted.get()}, executed=${SmartAssistMetrics.requestsExecuted.get()}, trajectory=${SmartAssistMetrics.trajectoryProduced.get()}"
-        "SmartAssistControlRoomActivity" -> "Control Room consumes SmartAssistMetrics and displays runtime status."
+        "MagneticFeetEngine" -> buildString {
+            appendLine("magneticFeet=" + SmartAssistMetrics.magneticFeetRuntimeSnapshot())
+            appendLine("registry=" + com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot())
+            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+        }
+        "GameplayDecisionEngine" -> buildString {
+            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+            appendLine("legacyActivation=" + SmartAssistMetrics.gameplayActivationRuntimeSnapshot())
+        }
+        "CrossingLaneAnalysisEngine" -> buildString {
+            appendLine("crossing=" + SmartAssistMetrics.crossingLaneRuntimeSnapshot())
+            appendLine("frame=" + com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot())
+        }
+        "SmartAssistMetrics" -> buildString {
+            appendLine("runtime=" + com.assistant.adapter.smartassist.RuntimeCoordinator.runtimeState())
+            appendLine("health=" + com.assistant.adapter.smartassist.RuntimeHealthMonitor.runtimeHealthSnapshot())
+            appendLine("frame=" + com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot())
+            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+            appendLine("contributions=" + com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot())
+            appendLine("execution=" + com.assistant.adapter.smartassist.GestureExecutionAuthority.executionRuntimeSnapshot())
+            appendLine("registry=" + com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot())
+        }
+        "SmartAssistControlRoomActivity" -> "Control Room consumes runtime truth surfaces and displays live runtime state."
         "RuntimeLogger" -> "RuntimeLogger source files are tailed below from app-owned locations."
         else -> "No metrics."
     }

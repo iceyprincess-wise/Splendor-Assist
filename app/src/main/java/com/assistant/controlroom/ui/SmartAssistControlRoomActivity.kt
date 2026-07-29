@@ -65,21 +65,37 @@ setContentView(R.layout.activity_smartassist_control_room)
         }
 
         fun refreshMetrics() {
-            val gameplay = SmartAssistMetrics.gameplayDownstreamRuntimeSnapshot()
-            val amplified = SmartAssistMetrics.gameplayAmplificationRuntimeSnapshot()
-            val magneticFeet = SmartAssistMetrics.magneticFeetRuntimeSnapshot()
-            val crossingLane = SmartAssistMetrics.crossingLaneRuntimeSnapshot()
+            val runtime =
+                com.assistant.adapter.smartassist.RuntimeCoordinator.runtimeState()
+            val health =
+                com.assistant.adapter.smartassist.RuntimeHealthMonitor.runtimeHealthSnapshot()
+            val frame =
+                com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot()
+            val decision =
+                com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot()
+            val contributions =
+                com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot()
+            val execution =
+                com.assistant.adapter.smartassist.GestureExecutionAuthority
+                    .executionRuntimeSnapshot()
+            val registry =
+                com.assistant.runtime.GameplayEngineRegistry
+                    .registryRuntimeSnapshot()
 
             findViewById<TextView>(R.id.tvMetrics).text =
-                "Submitted=${SmartAssistMetrics.requestsSubmitted.get()}\n" +
-                "Executed=${SmartAssistMetrics.requestsExecuted.get()}\n" +
-                "Trajectory=${SmartAssistMetrics.trajectoryProduced.get()}\n" +
-                "Gameplay=${gameplay["source"]} Seq=${gameplay["sequence"]} Active=${gameplay["active"]}\n" +
-                "DecisionCycles=${amplified["decisionCycles"]} Authority=${amplified["lastAuthority"]}\n" +
-                "MagneticFeet Seq=${magneticFeet["sequence"]} Touch=${magneticFeet["touchRetention"]} " +
-                "Control=${magneticFeet["possessionControl"]}\n" +
-                "Crossing Seq=${crossingLane["sequence"]} Lanes=${crossingLane["laneCount"]} " +
-                "Viable=${crossingLane["viableLaneCount"]} Best=${crossingLane["bestConfidence"]}"
+                buildString {
+                    append("RuntimeReady=${runtime["runtimeReady"]}\n")
+                    append("Permissions=${runtime["permissionsVerified"]} Accessibility=${runtime["accessibilityReady"]} Capture=${runtime["captureReady"]} Booster=${runtime["boosterReady"]}\n")
+                    append("Health=${health["degradedReasons"]}\n")
+                    append("Frame Trusted=${frame["trusted"]} Ball=${frame["hasBall"]} Lanes=${frame["viableLanes"]} Conf=${frame["confidence"]}\n")
+                    append("Decision Routed=${decision["routed"]} IdleUntrusted=${decision["idleUntrusted"]} IdleNoContribution=${decision["idleNoContribution"]}\n")
+                    append("LastAction=${decision["lastAction"]} Weight=${decision["lastWeight"]}\n")
+                    append("Contributions Offered=${contributions["offered"]} Drained=${contributions["drained"]} Pending=${contributions["pending"]}\n")
+                    append("Execution Requested=${execution["requested"]} Accepted=${execution["accepted"]} Failed=${execution["failed"]}\n")
+                    append("Registry Engines=${registry["engines"]} CollectCycles=${registry["collectCycles"]}\n")
+                    append("Registry Names=${registry["names"]}\n")
+                    append("Registry Contributed=${registry["contributed"]}")
+                }
         }
 
         refreshRuntime()

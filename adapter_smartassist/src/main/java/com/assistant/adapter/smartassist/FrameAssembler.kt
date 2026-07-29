@@ -24,6 +24,9 @@ object FrameAssembler {
         val lanes = crossing?.result?.lanes.orEmpty()
         val laneCount = lanes.size
         val viable = lanes.count { it.viable }
+        val bestLane = lanes.firstOrNull { it.viable }
+        val passTargetX = bestLane?.targetX ?: 0f
+        val passTargetY = bestLane?.targetY ?: 0f
         val bestConf = lanes.maxOfOrNull { it.confidence } ?: 0f
 
         val telemetry = try { TelemetryRepository.current() } catch (_: Throwable) { null }
@@ -50,6 +53,8 @@ object FrameAssembler {
             opponentCount = opponents,
             laneCount = laneCount,
             viableLaneCount = viable,
+            passTargetX = passTargetX,
+            passTargetY = passTargetY,
             bestLaneConfidence = bestConf,
             defenderDensity = if (players.isNotEmpty())
                 opponents.toFloat() / players.size else 0f,
@@ -76,6 +81,8 @@ object FrameAssembler {
             "players" to f.playerCount,
             "opponents" to f.opponentCount,
             "viableLanes" to f.viableLaneCount,
+            "passTargetX" to f.passTargetX,
+            "passTargetY" to f.passTargetY,
             "confidence" to f.confidence,
             "trusted" to f.trusted
         )

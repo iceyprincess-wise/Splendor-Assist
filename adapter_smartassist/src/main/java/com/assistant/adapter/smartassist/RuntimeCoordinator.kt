@@ -4,6 +4,7 @@ import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.execution.CentralExecutionBus
 import java.util.concurrent.atomic.AtomicBoolean
 import com.assistant.runtime.GameplayEngineRegistry
+import com.assistant.diagnostic.registry.AdapterHealthRegistry
 
 /*
  * Owns ignition order, gate state, and shutdown for the gameplay runtime.
@@ -65,6 +66,20 @@ object RuntimeCoordinator {
             transition("G3 BOOSTER_READY")
         }
         evaluate()
+    }
+
+    @Synchronized
+    fun refreshBoosterReadyFromRegistry() {
+        val healthy =
+            try {
+                AdapterHealthRegistry.getAll().isNotEmpty()
+            } catch (_: Throwable) {
+                false
+            }
+
+        if (healthy) {
+            reportBoosterReady()
+        }
     }
 
     @Synchronized
@@ -131,6 +146,7 @@ object RuntimeCoordinator {
     )
 
     private fun evaluate() {
+        refreshBoosterReadyFromRegistry()
         if (!accessibilityReady.get() || !captureReady.get()) return
         if (busEnabled.get()) return
 
