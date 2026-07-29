@@ -11,6 +11,7 @@ import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
 import java.util.concurrent.ThreadLocalRandom
+import com.assistant.adapter.smartassist.GestureExecutionAuthority
 
 /**
  * High-performance, low-overhead gesture injector optimized for 60Hz/120Hz display 
@@ -121,7 +122,7 @@ class LatencyDefeatingInputEngine(
         // Execute injection on the main application looper thread to satisfy Android security constraints
         mainHandler.post {
             try {
-                service.dispatchGesture(
+                GestureExecutionAuthority.execute(service, 
                     gesture,
                     object : AccessibilityService.GestureResultCallback() {
                         override fun onCompleted(gestureDescription: GestureDescription?) {

@@ -240,4 +240,15 @@ object MagneticFeetEngine {
     }
 
 
+    @Synchronized
+    fun reset() {
+        magneticFeetCalls = 0L
+        lastMagneticFeetPressure = 0
+        lastMagneticFeetStrength = 0
+        lastMagneticFeetReason = "not called yet"
+        lastMagneticFeetUpdatedMs = 0L
+        magneticFeetSequence = 0L
+        lastMagneticFeetState = null
+    }
+
 }

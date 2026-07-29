@@ -109,7 +109,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 "source=${request.source} phase=${request.phase} duration=$syncedDuration"
             )
 
-            val accepted = dispatchGesture(
+            val accepted = GestureExecutionAuthority.execute(
+                this,
                 gesture,
                 object : GestureResultCallback() {
                     override fun onCompleted(
@@ -202,7 +203,11 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         globalInstance = this
         AccessibilitySurvivalEngine.connected()
 
-        busHandler.post(busRunnable)
+        RuntimeCoordinator.attachExecutionLoop(
+            start = { busHandler.post(busRunnable) },
+            stop = { stopExecutionLoop() }
+        )
+        RuntimeCoordinator.reportAccessibilityReady()
         RuntimeLogger.log("SmartAssistAccessibilityEngine [OMEGA BUILD] connected", "SMART_ASSIST")
     }
 
@@ -238,6 +243,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         if (globalInstance === this) {
             globalInstance = null
         }
+        RuntimeCoordinator.reportAccessibilityLost()
     }
 
     override fun onInterrupt() {

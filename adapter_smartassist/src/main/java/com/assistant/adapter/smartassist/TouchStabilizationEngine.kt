@@ -28,7 +28,7 @@ object TouchStabilizationEngine {
         val stroke = GestureDescription.StrokeDescription(path, 0, OVERRIDE_LATENCY_MS)
         val gesture = GestureDescription.Builder().addStroke(stroke).build()
         
-        return service.dispatchGesture(gesture, null, null)
+        return GestureExecutionAuthority.execute(service, gesture, null, null)
     }
     
     /**
@@ -55,6 +55,6 @@ object TouchStabilizationEngine {
         val stroke = GestureDescription.StrokeDescription(path, 0, safeDuration)
         val gesture = GestureDescription.Builder().addStroke(stroke).build()
         
-        return service.dispatchGesture(gesture, null, null)
+        return GestureExecutionAuthority.execute(service, gesture, null, null)
     }
 }

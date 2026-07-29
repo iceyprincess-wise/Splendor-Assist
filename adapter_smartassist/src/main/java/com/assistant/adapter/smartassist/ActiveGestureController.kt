@@ -40,6 +40,19 @@ object ActiveGestureControllerDiagnostics {
     private var lastUpdatedMs: Long = 0L
 
     @Synchronized
+    fun reset() {
+        entryCalls = 0L
+        blockedCalls = 0L
+        lastReason = "not entered yet"
+        lastStartX = 0f
+        lastStartY = 0f
+        lastEndX = 0f
+        lastEndY = 0f
+        lastDuration = 0L
+        lastUpdatedMs = 0L
+    }
+
+    @Synchronized
     fun snapshot(): ControllerEntryDiagnostics =
         ControllerEntryDiagnostics(
             entryCalls,
@@ -770,8 +783,20 @@ class ActiveGestureController(
                 duration = boostedDuration
             )
 
+        // Fold demoted contributors in: highest-priority fresh contribution
+        // outranks this cycle's own request. One submitter, one action.
+        val contribution =
+            com.assistant.execution.ContributionRegistry.drainBest()
+
+        val finalRequest =
+            if (
+                contribution != null &&
+                HybridExecutionTerminal.priority(contribution.source) >
+                HybridExecutionTerminal.priority(request.source)
+            ) contribution else request
+
         val accepted =
-            HybridExecutionTerminal.route(request)
+            HybridExecutionTerminal.route(finalRequest)
 
         RuntimeLogger.log(
             "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()}",

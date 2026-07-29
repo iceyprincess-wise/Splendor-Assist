@@ -120,6 +120,7 @@ class MainActivity : AppCompatActivity() {
 
         bindHomeButtons()
         refreshRoomBulbs()
+        refreshRuntimeHub()
         refreshRuntimeDashboard()
         updateRuntimeDashboardCards()
     }
@@ -224,6 +225,15 @@ override fun onResume() {
             permissionPipelineActive = true
             checkBatteryAndProceed()
         }
+
+        findViewById<Button>(com.assistant.overlay.R.id.btnStopEngine)
+            .setOnClickListener {
+                permissionPipelineActive = false
+                permissionPipelineStarted = false
+                stopService(Intent(this, OverlayService::class.java))
+                com.assistant.adapter.smartassist.RuntimeCoordinator.shutdown()
+                refreshRuntimeHub()
+            }
 
         findViewById<Button>(com.assistant.overlay.R.id.btnViewLogs)
     .setOnClickListener {
@@ -601,6 +611,29 @@ private fun checkAccessibilityAndProceed() {
                 .show()
     
         }
+
+    private fun refreshRuntimeHub() {
+        val view = findViewById<android.widget.TextView>(
+            com.assistant.overlay.R.id.txtRuntimeHub
+        ) ?: return
+
+        val runtime =
+            com.assistant.adapter.smartassist.RuntimeCoordinator.runtimeState()
+        val contributions =
+            com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot()
+        val execution =
+            com.assistant.adapter.smartassist.GestureExecutionAuthority
+                .executionRuntimeSnapshot()
+
+        view.text = buildString {
+            append("=== RUNTIME ===\n")
+            runtime.forEach { (k, v) -> append("$k = $v\n") }
+            append("\n=== CONTRIBUTIONS ===\n")
+            contributions.forEach { (k, v) -> append("$k = $v\n") }
+            append("\n=== EXECUTION ===\n")
+            execution.forEach { (k, v) -> append("$k = $v\n") }
+        }
+    }
 
 }
 

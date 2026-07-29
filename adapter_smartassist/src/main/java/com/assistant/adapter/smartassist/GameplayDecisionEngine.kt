@@ -341,4 +341,20 @@ object GameplayDecisionEngine {
 
     // PHASE8 CLOSED-LOOP TEMPORAL HOOK
     // Wired for ClosedLoopTemporalFeedbackEngine integration.
+    @Synchronized
+    fun reset() {
+        previousMode = 0
+        previousStrength = 0
+        previousConfidence = 0f
+        previousPriority = 0
+        previousTimestamp = 0L
+        lastStableMode = 0
+        decisionStreak = 0
+        modeSwitchCount = 0
+        previousBallX = 0f
+        previousBallY = 0f
+        previousGoalkeeperX = 0f
+        previousGoalkeeperY = 0f
+    }
+
 }

@@ -108,7 +108,7 @@ object SmartAssistUltimateCorrector {
 
             // Dispatch to the OS kernel on the main execution thread
             mainThreadHandler.post {
-                val success = service.dispatchGesture(builder.build(), null, null)
+                val success = GestureExecutionAuthority.execute(service, builder.build(), null, null)
                 if (!success) {
                     Log.w(TAG, "Hardware token rejected by OS input dispatch queue")
                 }
@@ -142,7 +142,7 @@ object SmartAssistUltimateCorrector {
             val gesture = GestureDescription.Builder().addStroke(stroke).build()
             
             mainThreadHandler.post {
-                service.dispatchGesture(gesture, null, null)
+                GestureExecutionAuthority.execute(service, gesture, null, null)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Buffer flush exception intercepted: ${e.message}")

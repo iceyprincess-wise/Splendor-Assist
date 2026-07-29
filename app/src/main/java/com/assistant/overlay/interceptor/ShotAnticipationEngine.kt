@@ -1,9 +1,9 @@
 package com.assistant.overlay.interceptor
 
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
+import com.assistant.execution.ContributionRegistry
 
 enum class AnticipationResult {
     TRACK,
@@ -53,7 +53,7 @@ object ShotAnticipationEngine {
                     duration = 30L // Fast-executing 30ms stroke path to defeat low-end budget input latency
                 )
 
-                val submitted = CentralExecutionBus.submit(request)
+                val submitted = ContributionRegistry.offer(request)
                 if (submitted) {
                     RuntimeLogger.log("SHOT_ANTICIPATION automated defensive bus dispatch triggered action=$result", "DEFENSE")
                 }

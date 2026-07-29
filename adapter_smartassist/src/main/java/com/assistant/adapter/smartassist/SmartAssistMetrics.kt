@@ -293,4 +293,50 @@ object SmartAssistMetrics {
             "lastUpdatedMs" to gameplayHeartbeatLastUpdatedMs
         )
 
+    // ==== Decision mirror ====
+    // Written by com.assistant.overlay.metrics.SmartAssistMetrics so that
+    // decision-level counters and request-level counters share one reader.
+    private val decisionsMade = AtomicLong()
+    private val decisionActions = AtomicLong()
+    private val decisionErrors = AtomicLong()
+    private val decisionTimeTotal = AtomicLong()
+    @Volatile private var lastDecisionMs: Long = 0L
+    @Volatile private var lastDecisionUpdatedMs: Long = 0L
+
+    fun recordDecisionMirror(durationMs: Long, triggeredAction: Boolean) {
+        decisionsMade.incrementAndGet()
+        decisionTimeTotal.addAndGet(durationMs)
+        if (triggeredAction) {
+            decisionActions.incrementAndGet()
+        }
+        lastDecisionMs = durationMs
+        lastDecisionUpdatedMs = System.currentTimeMillis()
+    }
+
+    fun recordDecisionErrorMirror() {
+        decisionErrors.incrementAndGet()
+        lastDecisionUpdatedMs = System.currentTimeMillis()
+    }
+
+    fun resetDecisionMirror() {
+        decisionsMade.set(0L)
+        decisionActions.set(0L)
+        decisionErrors.set(0L)
+        decisionTimeTotal.set(0L)
+        lastDecisionMs = 0L
+        lastDecisionUpdatedMs = 0L
+    }
+
+    fun decisionRuntimeSnapshot(): Map<String, Any> {
+        val made = decisionsMade.get()
+        return mapOf(
+            "decisionsMade" to made,
+            "actionsTriggered" to decisionActions.get(),
+            "errorCount" to decisionErrors.get(),
+            "avgDecisionTimeMs" to if (made > 0L) decisionTimeTotal.get() / made else 0L,
+            "lastDecisionTimeMs" to lastDecisionMs,
+            "lastUpdatedMs" to lastDecisionUpdatedMs
+        )
+    }
+
 }

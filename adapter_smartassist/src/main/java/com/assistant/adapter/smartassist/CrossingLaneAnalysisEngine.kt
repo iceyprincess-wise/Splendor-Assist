@@ -83,4 +83,10 @@ object CrossingLaneAnalysisEngine {
         publishCrossingLaneAnalysisEngineResult(crossingLaneAnalysisResult)
         return crossingLaneAnalysisResult
     }
+    @Synchronized
+    fun reset() {
+        crossingLaneAnalysisSequence = 0L
+        lastCrossingLaneAnalysisEngineState = null
+    }
+
 }

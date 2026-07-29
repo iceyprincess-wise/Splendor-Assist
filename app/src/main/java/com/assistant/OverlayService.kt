@@ -284,6 +284,7 @@ override fun onCreate() {
                     com.assistant.adapter.smartassist.VisionCore.process(
                         normalized
                     )
+                    com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
 
                 com.assistant.adapter.smartassist.GameStateBuilder.update(
                     state
@@ -406,7 +407,7 @@ override fun onCreate() {
                                 null
                             }
                             val submitted = if (dec?.shouldAct == true) {
-                                com.assistant.execution.CentralExecutionBus.submit(
+                                com.assistant.execution.ContributionRegistry.offer(
                                     pipe.createExecutionRequest(dec)
                                 )
                             } else {
@@ -772,6 +773,7 @@ private fun stopRuntimeRecorder() {
     }
 
 override fun onDestroy() {
+        com.assistant.adapter.smartassist.RuntimeCoordinator.shutdown()
         OverlaySurvivalEngine.destroyed()
         isRunning = false
         // PHASE10_PANIC_PERSISTENCE_KEEP_STATE

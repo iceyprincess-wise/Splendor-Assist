@@ -2,12 +2,12 @@ package com.assistant.adapter.smartassist
 
 import com.assistant.adapter.smartassist.fps.LatencyDefeatingInputEngine
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
+import com.assistant.execution.ContributionRegistry
 
 /**
  * Physical isolation and bus-gated anti-cutback defense.
@@ -91,7 +91,7 @@ class AntiCutbackSubEngine(
             duration = 18L
         )
 
-        val submitted = CentralExecutionBus.submit(request)
+        val submitted = ContributionRegistry.offer(request)
         if (submitted) {
             lastExecutionTimestamp = now
             RuntimeLogger.log(

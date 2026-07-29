@@ -1,11 +1,11 @@
 package com.assistant.adapter.smartassist
 
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
 import kotlin.math.hypot
 import kotlin.random.Random
+import com.assistant.execution.ContributionRegistry
 
 /**
  * [PRIME AUTHORITATIVE ENGINE] — Hybrid Omnipotent Matrix & Focal Target Intercept
@@ -97,7 +97,7 @@ object HybridOmnipotentMatrixEngine {
                 endY = targetY,
                 duration = adaptiveDuration
             )
-            if (CentralExecutionBus.submit(request)) {
+            if (ContributionRegistry.offer(request)) {
                 lastMatrixTimestamp = now
                 RuntimeLogger.log("GODSPEED_INTERCEPT executed target=($targetX, $targetY) duration=${adaptiveDuration}ms", "DEFENSE")
             }

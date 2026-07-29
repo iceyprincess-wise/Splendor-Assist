@@ -1,11 +1,11 @@
 package com.assistant.adapter.smartassist
 
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
 import kotlin.math.hypot
 import kotlin.random.Random
+import com.assistant.execution.ContributionRegistry
 
 /**
  * Dash pressure matrix and anchor preservation.
@@ -115,7 +115,7 @@ object OmnipotentDashPressureMatrix {
                 duration = adaptiveDuration
             )
 
-            if (CentralExecutionBus.submit(request)) {
+            if (ContributionRegistry.offer(request)) {
                 lastMatrixTimestamp = now
 
                 RuntimeLogger.log(

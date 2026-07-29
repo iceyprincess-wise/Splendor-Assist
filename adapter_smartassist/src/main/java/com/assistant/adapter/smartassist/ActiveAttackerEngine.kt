@@ -147,7 +147,7 @@ object ActiveAttackerEngine {
                 val gestureDescription = GestureDescription.Builder().addStroke(strokeDescription).build()
 
                 // Dispatch micro-adjustments directly to Android Window Compositor
-                service.dispatchGesture(gestureDescription, null, null)
+                GestureExecutionAuthority.execute(service, gestureDescription, null, null)
             } catch (e: Exception) {
                 Log.e("ActiveAttacker", "Attacking gesture stabilization skipped - OMEGA ACTIVE: ${e.message}")
             }

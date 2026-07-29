@@ -2,7 +2,6 @@ package com.assistant.adapter.smartassist
 
 import com.assistant.adapter.smartassist.fps.LatencyDefeatingInputEngine
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
 import java.util.concurrent.ThreadLocalRandom
@@ -12,6 +11,7 @@ import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
+import com.assistant.execution.ContributionRegistry
 
 /**
  * [PRIME AUTHORITATIVE ENGINE] — Bus Gated & Predictive Perpendicular Evasion
@@ -118,7 +118,7 @@ class AutoEvadeEngine(
             duration = authoritativeDuration
         )
 
-        if (CentralExecutionBus.submit(evadeRequest)) {
+        if (ContributionRegistry.offer(evadeRequest)) {
             lastEvadeTimestamp = now
             RuntimeLogger.log(
                 "AUTO_EVADE dynamic_slip v=(${evadeTargetX.toInt()}, ${evadeTargetY.toInt()}) dur=${authoritativeDuration}ms pred_dist=${closingDistance.toInt()}", 

@@ -1,5 +1,6 @@
 package com.assistant.overlay.metrics
 
+import com.assistant.adapter.smartassist.SmartAssistMetrics as RuntimeMetrics
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,25 +15,33 @@ data class SmartAssistMetricsState(
     val uptimeSeconds: Long = 0
 )
 
+/*
+ * Decision-level metrics facade for overlay callers.
+ *
+ * Public API is unchanged. Every write is mirrored into the canonical
+ * runtime metrics object (adapter_smartassist) so control rooms and
+ * diagnosis screens observe one source of truth instead of two objects
+ * that happen to share a name.
+ */
 object SmartAssistMetrics {
-    
+
     private val _state = MutableStateFlow(SmartAssistMetricsState())
     val state: StateFlow<SmartAssistMetricsState> = _state.asStateFlow()
-    
+
     private val decisionsCounter = AtomicLong(0)
     private val actionsCounter = AtomicLong(0)
     private val errorsCounter = AtomicLong(0)
     private val decisionTimeAccumulator = AtomicLong(0)
     private var startTime: Long = System.currentTimeMillis()
-    
+
     fun recordDecision(durationMs: Long, triggeredAction: Boolean) {
         val decisions = decisionsCounter.incrementAndGet()
         val totalTime = decisionTimeAccumulator.addAndGet(durationMs)
-        
+
         if (triggeredAction) {
             actionsCounter.incrementAndGet()
         }
-        
+
         _state.value = SmartAssistMetricsState(
             decisionsMade = decisions,
             actionsTriggered = actionsCounter.get(),
@@ -41,13 +50,16 @@ object SmartAssistMetrics {
             errorCount = errorsCounter.get(),
             uptimeSeconds = (System.currentTimeMillis() - startTime) / 1000
         )
+
+        RuntimeMetrics.recordDecisionMirror(durationMs, triggeredAction)
     }
-    
+
     fun recordError() {
         errorsCounter.incrementAndGet()
         _state.value = _state.value.copy(errorCount = errorsCounter.get())
+        RuntimeMetrics.recordDecisionErrorMirror()
     }
-    
+
     fun reset() {
         decisionsCounter.set(0)
         actionsCounter.set(0)
@@ -55,7 +67,8 @@ object SmartAssistMetrics {
         decisionTimeAccumulator.set(0)
         startTime = System.currentTimeMillis()
         _state.value = SmartAssistMetricsState()
+        RuntimeMetrics.resetDecisionMirror()
     }
-    
+
     fun getSnapshot(): SmartAssistMetricsState = _state.value
 }

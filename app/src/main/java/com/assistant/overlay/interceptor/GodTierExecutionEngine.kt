@@ -5,10 +5,10 @@ import android.accessibilityservice.GestureDescription
 import android.graphics.Path
 import android.os.Build
 import android.os.PerformanceHintManager
-import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
 import androidx.annotation.RequiresApi
+import com.assistant.execution.ContributionRegistry
 
 // 🔒 [SECURITY GUARD LOCK ACTIVE]
 // 1000% OMNIPOTENT TIER: Zero-Allocation & Hyper-Velocity Router
@@ -74,7 +74,7 @@ class GodTierExecutionEngine(private val service: AccessibilityService) {
             else -> cachedPath.lineTo(endX, endY)
         }
 
-        CentralExecutionBus.submit(
+        ContributionRegistry.offer(
             ExecutionRequest(
                 source = ExecutionSource.SMART_ASSIST,
                 phase = actionPhase,
