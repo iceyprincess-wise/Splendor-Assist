@@ -92,14 +92,28 @@ object RuntimeCoordinator {
      * vision -> stores -> diagnostics. Each reset is independently guarded
      * so one missing hook cannot abort the shutdown chain.
      */
+    /*
+     * Shutdown is the exact reverse of warmUpEngines() ignition order:
+     * loop/frame/registry first, then gameplay engines, then stores/diagnostics.
+     * Each guarded so one missing hook cannot abort the chain.
+     */
     private fun resetRuntimeState() {
+        // 1. Decision plumbing (last things ignited -> first reset)
+        try { RuntimeDecisionLoop.reset() } catch (_: Throwable) {}
+        try { com.assistant.runtime.GameplayEngineRegistry.resetAll() } catch (_: Throwable) {}
+        try { FrameAssembler.reset() } catch (_: Throwable) {}
         try { com.assistant.execution.ContributionRegistry.clear() } catch (_: Throwable) {}
         try { GestureExecutionAuthority.reset() } catch (_: Throwable) {}
-        try { MagneticFeetEngine.reset() } catch (_: Throwable) {}
+
+        // 2. Gameplay engines (reverse of ignition)
         try { GameplayDecisionEngine.reset() } catch (_: Throwable) {}
+        try { MagneticFeetEngine.reset() } catch (_: Throwable) {}
         try { CrossingLaneAnalysisEngine.reset() } catch (_: Throwable) {}
+
+        // 3. Diagnostics
         try { ActiveGestureControllerDiagnostics.reset() } catch (_: Throwable) {}
         try { SmartAssistMetrics.reset() } catch (_: Throwable) {}
+        try { RuntimeHealthMonitor.reset() } catch (_: Throwable) {}
     }
 
     @Synchronized

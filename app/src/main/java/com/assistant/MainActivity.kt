@@ -52,6 +52,14 @@ class MainActivity : AppCompatActivity() {
 
     private var permissionStage = PermissionStage.BATTERY
 
+    private val hubRefreshHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val hubRefreshTick = object : Runnable {
+        override fun run() {
+            refreshRuntimeHub()
+            hubRefreshHandler.postDelayed(this, 1000L)
+        }
+    }
+
 
 
     // PHASE17_PERMISSION_PIPELINE
@@ -215,6 +223,7 @@ override fun onResume() {
         }
 
         synchronizeApplicationRuntime()
+        hubRefreshHandler.post(hubRefreshTick)
         super.onResume()
         refreshRoomBulbs()
     }
@@ -491,6 +500,8 @@ override fun onResume() {
         try {
 
             if (ComplianceState.battery(this)) {
+                com.assistant.adapter.smartassist.RuntimeCoordinator
+                    .reportPermissionsVerified()
                 checkAccessibilityAndProceed()
                 return
             }
@@ -624,15 +635,40 @@ private fun checkAccessibilityAndProceed() {
         val execution =
             com.assistant.adapter.smartassist.GestureExecutionAuthority
                 .executionRuntimeSnapshot()
+        val health =
+            com.assistant.adapter.smartassist.RuntimeHealthMonitor
+                .runtimeHealthSnapshot()
+        val frame =
+            com.assistant.adapter.smartassist.FrameAssembler
+                .frameRuntimeSnapshot()
+        val decision =
+            com.assistant.adapter.smartassist.RuntimeDecisionLoop
+                .decisionRuntimeSnapshot()
+        val registry =
+            com.assistant.runtime.GameplayEngineRegistry
+                .registryRuntimeSnapshot()
 
         view.text = buildString {
             append("=== RUNTIME ===\n")
             runtime.forEach { (k, v) -> append("$k = $v\n") }
+            append("\n=== HEALTH ===\n")
+            health.forEach { (k, v) -> append("$k = $v\n") }
+            append("\n=== FRAME ===\n")
+            frame.forEach { (k, v) -> append("$k = $v\n") }
+            append("\n=== DECISION ===\n")
+            decision.forEach { (k, v) -> append("$k = $v\n") }
             append("\n=== CONTRIBUTIONS ===\n")
             contributions.forEach { (k, v) -> append("$k = $v\n") }
             append("\n=== EXECUTION ===\n")
             execution.forEach { (k, v) -> append("$k = $v\n") }
+            append("\n=== REGISTRY ===\n")
+            registry.forEach { (k, v) -> append("$k = $v\n") }
         }
+    }
+
+    override fun onPause() {
+        hubRefreshHandler.removeCallbacks(hubRefreshTick)
+        super.onPause()
     }
 
 }

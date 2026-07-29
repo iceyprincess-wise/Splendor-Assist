@@ -409,13 +409,12 @@ override fun onCreate() {
                             } else {
                                 null
                             }
-                            val submitted = if (dec?.shouldAct == true) {
-                                com.assistant.execution.ContributionRegistry.offer(
-                                    pipe.createExecutionRequest(dec)
-                                )
-                            } else {
-                                false
-                            }
+                            // Task 4: OverlayService no longer offers directly.
+                            // The six registered contributors are the sole gameplay
+                            // producers, driven once per frame by RuntimeDecisionLoop
+                            // (invoked in this same capture block). This ends the
+                            // duplicate-producer flood (the frozen 406/83 SHOT spam).
+                            val submitted = dec?.shouldAct == true
                             RuntimeLogger.log(
                                 "SMART_ASSIST_GATE real=${lv.hasRealData} " +
                                     "distance=${vectorDistance.toInt()} duration=${lv.duration} " +

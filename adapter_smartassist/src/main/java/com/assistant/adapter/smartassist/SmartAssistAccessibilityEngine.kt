@@ -65,16 +65,18 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
      */
     private fun generatePrecisionPath(startX: Float, startY: Float, endX: Float, endY: Float): Path {
         val path = Path()
-        val safeStartX = applyHumanizedNoise(startX)
-        val safeStartY = applyHumanizedNoise(startY)
+        // Coordinates must never be negative -- Android Path throws otherwise.
+        // Clamp AFTER humanization so noise cannot push a near-zero value negative.
+        val safeStartX = applyHumanizedNoise(startX).coerceAtLeast(0f)
+        val safeStartY = applyHumanizedNoise(startY).coerceAtLeast(0f)
         path.moveTo(safeStartX, safeStartY)
 
         if (startX == endX && startY == endY) {
-            // Zero-distance tap stabilization
             path.lineTo(safeStartX, safeStartY)
         } else {
-            // High-frequency transit calculation
-            path.lineTo(applyHumanizedNoise(endX), applyHumanizedNoise(endY))
+            val safeEndX = applyHumanizedNoise(endX).coerceAtLeast(0f)
+            val safeEndY = applyHumanizedNoise(endY).coerceAtLeast(0f)
+            path.lineTo(safeEndX, safeEndY)
         }
         return path
     }
@@ -207,8 +209,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             start = { busHandler.post(busRunnable) },
             stop = { stopExecutionLoop() }
         )
+        RuntimeCoordinator.reportPermissionsVerified()
         RuntimeCoordinator.reportAccessibilityReady()
-        RuntimeLogger.log("SmartAssistAccessibilityEngine [OMEGA BUILD] connected", "SMART_ASSIST")
+        RuntimeLogger.log("SmartAssistAccessibilityEngine [OMEGA BUILD] connected BUILD_MARKER=REMAP-STEP6-CONTRIBUTORS", "SMART_ASSIST")
     }
 
     fun triggerInstantExecution(x1: Float, y1: Float, x2: Float, y2: Float) {

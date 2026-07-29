@@ -8,7 +8,7 @@ import com.assistant.runtime.RuntimeFrame
 
 object EvadeContributor : GameplayContributor {
     override val engineName = "Evade"
-    override val capabilities = setOf(EngineCapability.EVADE, EngineCapability.MOVEMENT)
+    override val capabilities = setOf(EngineCapability.MOVEMENT)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
