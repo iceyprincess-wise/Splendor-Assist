@@ -3,6 +3,7 @@ package com.assistant.adapter.smartassist
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.execution.CentralExecutionBus
 import java.util.concurrent.atomic.AtomicBoolean
+import com.assistant.runtime.GameplayEngineRegistry
 
 /*
  * Owns ignition order, gate state, and shutdown for the gameplay runtime.
@@ -151,6 +152,21 @@ object RuntimeCoordinator {
         try { GameplayDecisionEngine.gameplayActivationDiagnostics() } catch (_: Throwable) {}
         try { TrueTargetPassingEngine.currentReceiverRankingResult() } catch (_: Throwable) {}
         try { SmartAssistMetrics.snapshot() } catch (_: Throwable) {}
+        try {
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.MagneticFeetContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.PassingContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.ShotContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.SupportContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.DefenseContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.EvadeContributor)
+        } catch (_: Throwable) {}
+        try { GameplayEngineRegistry.warmAll() } catch (_: Throwable) {}
     }
 
     private fun transition(stage: String) {

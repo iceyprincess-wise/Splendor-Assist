@@ -285,6 +285,9 @@ override fun onCreate() {
                         normalized
                     )
                     com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
+                    val frame =
+                        com.assistant.adapter.smartassist.FrameAssembler.assemble()
+                    com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
 
                 com.assistant.adapter.smartassist.GameStateBuilder.update(
                     state
