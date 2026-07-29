@@ -117,6 +117,8 @@ object RuntimeCoordinator {
         try { RuntimeDecisionLoop.reset() } catch (_: Throwable) {}
         try { com.assistant.runtime.GameplayEngineRegistry.resetAll() } catch (_: Throwable) {}
         try { FrameAssembler.reset() } catch (_: Throwable) {}
+        try { BallTelemetryBridge.reset() } catch (_: Throwable) {}
+        try { com.assistant.events.EventHubs.resetAll() } catch (_: Throwable) {}
         try { com.assistant.execution.ContributionRegistry.clear() } catch (_: Throwable) {}
         try { GestureExecutionAuthority.reset() } catch (_: Throwable) {}
 
@@ -195,6 +197,20 @@ object RuntimeCoordinator {
                 com.assistant.adapter.smartassist.contributors.DefenseContributor)
             com.assistant.runtime.GameplayEngineRegistry.register(
                 com.assistant.adapter.smartassist.contributors.EvadeContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.AttackingVectorContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.CrossContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.AgilityContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.WingBlockContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.DashPressureContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.InterceptMatrixContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.TouchRecoveryContributor)
         } catch (_: Throwable) {}
         try { GameplayEngineRegistry.warmAll() } catch (_: Throwable) {}
     }
@@ -202,6 +218,11 @@ object RuntimeCoordinator {
     private fun transition(stage: String) {
         lastTransition = stage
         lastTransitionMs = System.currentTimeMillis()
-        RuntimeLogger.log("RuntimeCoordinator: $stage", "RUNTIME")
+        // Task 14: gate transitions are RUNTIME-channel events.
+        try {
+            com.assistant.events.RuntimeEventHub.emit("gate", stage)
+        } catch (_: Throwable) {
+            RuntimeLogger.log("RuntimeCoordinator: $stage", "RUNTIME")
+        }
     }
 }

@@ -663,6 +663,9 @@ private fun checkAccessibilityAndProceed() {
             execution.forEach { (k, v) -> append("$k = $v\n") }
             append("\n=== REGISTRY ===\n")
             registry.forEach { (k, v) -> append("$k = $v\n") }
+            append("\n=== EVENTS ===\n")
+            com.assistant.events.EventHubs.eventRuntimeSnapshot()
+                .forEach { (k, v) -> append("$k = $v\n") }
         }
     }
 

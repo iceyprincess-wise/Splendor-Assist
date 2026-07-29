@@ -211,6 +211,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         )
         RuntimeCoordinator.reportPermissionsVerified()
         RuntimeCoordinator.reportAccessibilityReady()
+        try { com.assistant.events.SystemEventHub.emit("accessibility-connected") } catch (_: Throwable) {}
         RuntimeLogger.log("SmartAssistAccessibilityEngine [OMEGA BUILD] connected BUILD_MARKER=REMAP-STEP6-CONTRIBUTORS", "SMART_ASSIST")
     }
 
@@ -247,6 +248,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             globalInstance = null
         }
         RuntimeCoordinator.reportAccessibilityLost()
+        try { com.assistant.events.SystemEventHub.emit("accessibility-lost") } catch (_: Throwable) {}
     }
 
     override fun onInterrupt() {

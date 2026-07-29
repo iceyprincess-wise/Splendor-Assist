@@ -41,6 +41,13 @@ object GestureExecutionAuthority {
         return try {
             val result = service.dispatchGesture(gesture, callback, handler)
             if (result) accepted.incrementAndGet() else rejected.incrementAndGet()
+            try {
+                com.assistant.events.GameplayEventHub.emit(
+                    if (result) "dispatch-accepted" else "dispatch-rejected",
+                    "origin=$lastOrigin"
+                )
+            } catch (_: Throwable) {
+            }
             lastAccepted = result
             result
         } catch (e: Exception) {

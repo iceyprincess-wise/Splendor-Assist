@@ -284,6 +284,7 @@ override fun onCreate() {
                     com.assistant.adapter.smartassist.VisionCore.process(
                         normalized
                     )
+                    com.assistant.BoosterIgnition.ensureIgnited(this)
                     com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
                     val frame =
                         com.assistant.adapter.smartassist.FrameAssembler.assemble()

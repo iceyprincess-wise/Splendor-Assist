@@ -55,7 +55,16 @@ object RuntimeDecisionLoop {
         }
 
         val accepted = HybridExecutionTerminal.route(request)
-        if (accepted) routed.incrementAndGet()
+        if (accepted) {
+            routed.incrementAndGet()
+            try {
+                com.assistant.events.GameplayEventHub.emit(
+                    "routed",
+                    "source=${request.source} phase=${request.phase}"
+                )
+            } catch (_: Throwable) {
+            }
+        }
         lastAction = describe(best, emergency)
         lastWeight = best?.weight ?: 0f
         return accepted

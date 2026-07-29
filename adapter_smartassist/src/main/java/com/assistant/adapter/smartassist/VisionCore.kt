@@ -45,6 +45,10 @@ val motion =
         ball
     )
 
+// Single writer of ball telemetry: publishes only on a real detection so
+// FrameAssembler can mark the frame trusted and all contributors activate.
+BallTelemetryBridge.publish(ball)
+
 
 
 val players =
