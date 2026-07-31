@@ -124,6 +124,7 @@ override fun onCreate() {
 
         super.onCreate()
         RuntimeLogger.log("OverlayService started", "OVERLAY")
+        com.assistant.vision.ForegroundGate.install(application)
         // Anti-Cheat defense disabled to prevent HyperOS false-positive kill
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()
@@ -220,6 +221,15 @@ override fun onCreate() {
             PixelFormat.TRANSLUCENT
         )
         windowManager.addView(overlayView, layoutParams)
+
+        // GAP1B-A: report the leaves we paint so capture/OCR ignores them.
+        // Re-published on every layout pass, so status-text resizes stay masked.
+        overlayView.post {
+            com.assistant.vision.OverlaySelfMask.publishHierarchy("hud", overlayView)
+        }
+        overlayView.viewTreeObserver.addOnGlobalLayoutListener {
+            com.assistant.vision.OverlaySelfMask.publishHierarchy("hud", overlayView)
+        }
         OverlaySurvivalEngine.attached()
         updateOverlayVisuals("GUARD LOCK: SECURE [ANTI-BAN ON]", Color.GREEN)
         startTrajectoryWatchdog(
@@ -266,9 +276,21 @@ override fun onCreate() {
             finalWidth = (metrics.widthPixels * scale).toInt() and 0xFFFFFFFE.toInt()
             finalHeight = (metrics.heightPixels * scale).toInt() and 0xFFFFFFFE.toInt()
         }
+        // GAP1B-B: map screen coords -> captured-image coords
+        com.assistant.vision.OverlaySelfMask.setCaptureScale(
+            finalWidth,
+            finalHeight,
+            if (scale > 0f) (finalWidth / scale).toInt() else finalWidth,
+            if (scale > 0f) (finalHeight / scale).toInt() else finalHeight
+        )
         imageReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
         imageReader?.setOnImageAvailableListener({ reader ->
             val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
+            // GAP1C: our own Control Room / Diagnosis screens are not game truth
+            if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
+                image.close()
+                return@setOnImageAvailableListener
+            }
             try {
                 
                 val scanBuffer = image.planes[0].buffer.duplicate()
@@ -285,6 +307,7 @@ override fun onCreate() {
                         normalized
                     )
                     com.assistant.BoosterIgnition.ensureIgnited(this)
+                    com.assistant.AppContributorRegistration.ensureRegistered()
                     com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
                     val frame =
                         com.assistant.adapter.smartassist.FrameAssembler.assemble()
@@ -295,7 +318,16 @@ override fun onCreate() {
                 )
 
                 com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
-            } catch (_: Exception) {}
+            } catch (t: Throwable) {
+                // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
+                // escape here, killing the capture thread and the whole process.
+                try {
+                    RuntimeLogger.log(
+                        "CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message,
+                        "FAULT"
+                    )
+                } catch (_: Throwable) {}
+            }
             if (System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS) {
                 lastOcrTime = System.currentTimeMillis()
                 processImageForOCR(image)
@@ -341,15 +373,32 @@ override fun onCreate() {
                             image.width,
                             image.height
                         )
-                } catch (_: Exception) {}
+                } catch (t: Throwable) {
+                // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
+                // escape here, killing the capture thread and the whole process.
+                try {
+                    RuntimeLogger.log(
+                        "CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message,
+                        "FAULT"
+                    )
+                } catch (_: Throwable) {}
+            }
 
                 recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))
                     .addOnSuccessListener { visionText ->
 
                         val detectedText =
-                            visionText.text
+                            visionText.textBlocks
+                                .asSequence()
+                                .filterNot {
+                                    com.assistant.vision.OverlaySelfMask
+                                        .isSelfDrawnCapture(it.boundingBox)
+                                }
+                                .joinToString(" ") { it.text }
                                 .replace("\n", " ")
                                 .take(120)
+
+                        com.assistant.vision.OverlaySelfMask.tickAndLog()
 
                         if (detectedText.isNotBlank()) {
                             RuntimeMetricsRegistry
@@ -776,13 +825,41 @@ private fun stopRuntimeRecorder() {
     }
 
 override fun onDestroy() {
+        com.assistant.vision.OverlaySelfMask.clearPrefix("hud")
         com.assistant.adapter.smartassist.RuntimeCoordinator.shutdown()
         OverlaySurvivalEngine.destroyed()
         isRunning = false
         // PHASE10_PANIC_PERSISTENCE_KEEP_STATE
-        try { windowManager.removeViewImmediate(overlayView) } catch (_: Exception) {}
-        try { imageReader?.setOnImageAvailableListener(null, null) } catch (_: Exception) {}
-        try { projectionCallback?.let { mediaProjection?.unregisterCallback(it) } } catch (_: Exception) {}
+        try { windowManager.removeViewImmediate(overlayView) } catch (t: Throwable) {
+                // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
+                // escape here, killing the capture thread and the whole process.
+                try {
+                    RuntimeLogger.log(
+                        "CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message,
+                        "FAULT"
+                    )
+                } catch (_: Throwable) {}
+            }
+        try { imageReader?.setOnImageAvailableListener(null, null) } catch (t: Throwable) {
+                // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
+                // escape here, killing the capture thread and the whole process.
+                try {
+                    RuntimeLogger.log(
+                        "CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message,
+                        "FAULT"
+                    )
+                } catch (_: Throwable) {}
+            }
+        try { projectionCallback?.let { mediaProjection?.unregisterCallback(it) } } catch (t: Throwable) {
+                // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
+                // escape here, killing the capture thread and the whole process.
+                try {
+                    RuntimeLogger.log(
+                        "CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message,
+                        "FAULT"
+                    )
+                } catch (_: Throwable) {}
+            }
         stopRuntimeRecorder()
 
         virtualDisplay?.release()

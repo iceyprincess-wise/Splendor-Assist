@@ -27,6 +27,9 @@ object RuntimeCoordinator {
     private var startExecutionLoop: (() -> Unit)? = null
     private var stopExecutionLoopCallback: (() -> Unit)? = null
 
+    // recursion guard: evaluate() must never re-enter itself
+    private val evaluating = AtomicBoolean(false)
+
     @Volatile private var lastTransition: String = "cold"
     @Volatile private var lastTransitionMs: Long = 0L
 
@@ -54,18 +57,24 @@ object RuntimeCoordinator {
 
     @Synchronized
     fun reportCaptureReady() {
+        // Fires on EVERY captured frame. Once the runtime is up there is nothing
+        // left to evaluate, so skip the work instead of re-scanning the registry.
         if (captureReady.compareAndSet(false, true)) {
             transition("G2 CAPTURE_READY")
+            evaluate()
+        } else if (!runtimeReady.get()) {
+            evaluate()
         }
-        evaluate()
     }
 
     @Synchronized
     fun reportBoosterReady() {
+        // Only a genuine state CHANGE may trigger evaluation. Calling evaluate()
+        // unconditionally here is what closed the recursion cycle.
         if (boosterReady.compareAndSet(false, true)) {
             transition("G3 BOOSTER_READY")
+            evaluate()
         }
-        evaluate()
     }
 
     @Synchronized
@@ -77,8 +86,10 @@ object RuntimeCoordinator {
                 false
             }
 
-        if (healthy) {
-            reportBoosterReady()
+        // Set the gate DIRECTLY. Calling reportBoosterReady() from here created
+        // the cycle: evaluate -> refresh -> report -> evaluate -> ...
+        if (healthy && boosterReady.compareAndSet(false, true)) {
+            transition("G3 BOOSTER_READY")
         }
     }
 
@@ -125,6 +136,7 @@ object RuntimeCoordinator {
         // 2. Gameplay engines (reverse of ignition)
         try { GameplayDecisionEngine.reset() } catch (_: Throwable) {}
         try { MagneticFeetEngine.reset() } catch (_: Throwable) {}
+        try { OverloadPlaystyleEngine.reset() } catch (_: Throwable) {}
         try { CrossingLaneAnalysisEngine.reset() } catch (_: Throwable) {}
 
         // 3. Diagnostics
@@ -148,6 +160,17 @@ object RuntimeCoordinator {
     )
 
     private fun evaluate() {
+        // Hard stop against any future cycle. @Synchronized does NOT help here:
+        // Java monitors are reentrant, so the same thread re-enters freely.
+        if (!evaluating.compareAndSet(false, true)) return
+        try {
+            evaluateInner()
+        } finally {
+            evaluating.set(false)
+        }
+    }
+
+    private fun evaluateInner() {
         refreshBoosterReadyFromRegistry()
         if (!accessibilityReady.get() || !captureReady.get()) return
         if (busEnabled.get()) return
@@ -181,6 +204,7 @@ object RuntimeCoordinator {
         try { SmartAssistRepository.enabled() } catch (_: Throwable) {}
         try { CrossingLaneAnalysisEngine.crossingLaneAnalysisEngineSnapshot() } catch (_: Throwable) {}
         try { MagneticFeetEngine.magneticFeetSnapshot() } catch (_: Throwable) {}
+        try { OverloadPlaystyleEngine.overloadRuntimeSnapshot() } catch (_: Throwable) {}
         try { GameplayDecisionEngine.gameplayActivationDiagnostics() } catch (_: Throwable) {}
         try { TrueTargetPassingEngine.currentReceiverRankingResult() } catch (_: Throwable) {}
         try { SmartAssistMetrics.snapshot() } catch (_: Throwable) {}
@@ -211,6 +235,24 @@ object RuntimeCoordinator {
                 com.assistant.adapter.smartassist.contributors.InterceptMatrixContributor)
             com.assistant.runtime.GameplayEngineRegistry.register(
                 com.assistant.adapter.smartassist.contributors.TouchRecoveryContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.OverloadPlaystyleContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.TruePassContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.ReceiverEngagementContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.ForwardRunContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.ShotOpportunityContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.DefenseAuthorityContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.ShotAnticipationContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.KeeperFeedbackContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.DashAnchorContributor)
         } catch (_: Throwable) {}
         try { GameplayEngineRegistry.warmAll() } catch (_: Throwable) {}
     }

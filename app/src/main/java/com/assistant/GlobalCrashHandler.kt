@@ -37,17 +37,19 @@ class GlobalCrashHandler(
 
     companion object {
         @Volatile private var installed = false
+        @Volatile private var appCtxRef: Context? = null
 
         fun install(ctx: Context) {
             if (installed) return
             installed = true
             val appCtx = ctx.applicationContext
+            appCtxRef = appCtx
             Thread.setDefaultUncaughtExceptionHandler(GlobalCrashHandler(appCtx))
         }
 
         fun logFeatureFault(feature: String, message: String) {
             try {
-                val f = getLogFile(null, "splendor_health.log", true)
+                val f = getLogFile(appCtxRef, "splendor_health.log", true)
                 val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
                 f.appendText("[$ts] $feature: $message\n")
             } catch (_: Throwable) {}
@@ -61,6 +63,14 @@ class GlobalCrashHandler(
 
         private fun getLogFile(ctx: Context?, baseName: String, append: Boolean): File {
             val candidates = mutableListOf<File>()
+            // FIX: user-visible Downloads FIRST, else reports hide in internal storage
+            try {
+                val dl = android.os.Environment.getExternalStoragePublicDirectory(
+                    android.os.Environment.DIRECTORY_DOWNLOADS
+                )
+                if (dl != null && (dl.exists() || dl.mkdirs())) candidates.add(dl)
+            } catch (_: Throwable) {
+            }
             try {
                 ctx?.filesDir?.let { candidates.add(it) }
             } catch (_: Throwable) {

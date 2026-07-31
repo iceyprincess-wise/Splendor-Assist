@@ -47,6 +47,12 @@ object TelemetryCoordinator {
             )
         )
 
+        // GAP2: record WHEN we saw the ball, so confidence can decay with age
+        if (x != 0f || y != 0f) {
+            VisionTrust.stampBall(1f)
+            VisionTrust.pushMotion(velocityX, velocityY)
+        }
+
         RuntimeLogger.telemetry("ball=($x,$y) velocity=($velocityX,$velocityY)")
     }
 

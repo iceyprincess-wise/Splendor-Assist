@@ -14,6 +14,20 @@ private const val DRIFT_FILTER_BETA = 0.90f          // Jitter filter strength (
 private const val MIN_PULSE_INTERVAL_NS = 7_000_000L // ~142Hz micro-tick limit for extreme physical response (7ms) (increased for faster response)
 private const val OMEGA_TURNING_THRESHOLD = 6.0f     // Joystick displacement speed to trigger instant turning update (increased for faster turning)
 
+
+/*
+ * Pure dash-anchor result. Added so the anchor concept can contribute a target
+ * vector without owning input dispatch. The instance method
+ * processHighSpeedDribble(...) is unchanged.
+ */
+data class DashAnchorResult(
+    val anchorX: Float,
+    val anchorY: Float,
+    val dragVelocity: Float,
+    val turning: Boolean,
+    val strength: Float
+)
+
 class MagneticDashAnchor(
     private val inputEngine: LatencyDefeatingInputEngine
 ) {
@@ -106,4 +120,40 @@ class MagneticDashAnchor(
             }
         }
     }
+    companion object {
+        private const val PURE_DRIFT_BETA = 0.55f
+        private const val PURE_TURN_THRESHOLD = 6.0f
+
+        /*
+         * Stateless anchor computation: drift-filtered directional target plus a
+         * bounded strength. Callable without an input engine, so a contributor
+         * can use it while the instance path keeps driving pulses.
+         */
+        @JvmStatic
+        fun computeAnchorTarget(
+            dashX: Float,
+            dashY: Float,
+            directionalX: Float,
+            directionalY: Float
+        ): DashAnchorResult {
+            val dx = directionalX - dashX
+            val dy = directionalY - dashY
+            val velocity = hypot(dx.toDouble(), dy.toDouble()).toFloat()
+
+            val filteredX = (PURE_DRIFT_BETA * directionalX) + ((1f - PURE_DRIFT_BETA) * dashX)
+            val filteredY = (PURE_DRIFT_BETA * directionalY) + ((1f - PURE_DRIFT_BETA) * dashY)
+
+            val turning = velocity > PURE_TURN_THRESHOLD
+            val strength = (velocity / 40f).coerceIn(0f, 1f)
+
+            return DashAnchorResult(
+                anchorX = filteredX.coerceAtLeast(0f),
+                anchorY = filteredY.coerceAtLeast(0f),
+                dragVelocity = velocity,
+                turning = turning,
+                strength = strength
+            )
+        }
+    }
+
 }

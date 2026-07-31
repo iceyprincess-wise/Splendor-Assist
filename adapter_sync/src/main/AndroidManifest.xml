@@ -11,7 +11,7 @@
         <service
             android:name=".SyncAdapterService"
             android:exported="true"
-            android:process=":kernel_sync"
+            android:process=":kernel"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                       android:value="Synchronizes frame updates and graphics commands during system rendering events."/>

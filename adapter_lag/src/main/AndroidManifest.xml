@@ -11,7 +11,7 @@
         <service
             android:name=".LagAdapterService"
             android:exported="true"
-            android:process=":kernel_lag"
+            android:process=":kernel"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                       android:value="Monitors application responsiveness and lag conditions."/>

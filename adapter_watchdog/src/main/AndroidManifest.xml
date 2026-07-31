@@ -11,7 +11,7 @@
         <service
             android:name=".WatchdogAdapterService"
             android:exported="true"
-            android:process=":kernel_watchdog"
+            android:process=":kernel"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                       android:value="Supervises adapter health, failures and recovery telemetry."/>

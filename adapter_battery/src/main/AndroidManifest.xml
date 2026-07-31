@@ -11,7 +11,7 @@
         <service
             android:name=".BatteryAdapterService"
             android:exported="true"
-            android:process=":kernel_battery"
+            android:process=":kernel"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                       android:value="Monitors battery state and power conditions."/>

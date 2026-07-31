@@ -49,4 +49,28 @@ object VisionOverlayRegistry {
         VisionDebugOverlay.refresh()
         refresh()
     }
+
+    // ---- SELF-MASK (GAP1A): overlays we drew ourselves, excluded from ingestion ----
+    private val selfRects = java.util.concurrent.ConcurrentHashMap<String, android.graphics.Rect>()
+
+    fun publishBounds(tag: String, r: android.graphics.Rect) {
+        selfRects[tag] = android.graphics.Rect(r)
+    }
+
+    fun clearBounds(tag: String) {
+        selfRects.remove(tag)
+    }
+
+    fun isSelfDrawn(x: Int, y: Int): Boolean {
+        if (selfRects.isEmpty()) return false
+        for (r in selfRects.values) if (r.contains(x, y)) return true
+        return false
+    }
+
+    fun isSelfDrawn(x: Float, y: Float): Boolean = isSelfDrawn(x.toInt(), y.toInt())
+
+    fun selfMask(): List<android.graphics.Rect> = selfRects.values.toList()
+
+    fun selfMaskCount(): Int = selfRects.size
+
 }

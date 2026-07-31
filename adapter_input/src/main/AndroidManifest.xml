@@ -11,7 +11,7 @@
         <service
             android:name=".InputAdapterService"
             android:exported="true"
-            android:process=":kernel_input"
+            android:process=":kernel"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                       android:value="Coordinates input hardware event data collection pipelines."/>

@@ -115,9 +115,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Thread.setDefaultUncaughtExceptionHandler(
-            GlobalCrashHandler(this)
-        )
+        // single install lives in App.onCreate; this is idempotent
+        GlobalCrashHandler.install(this)
 
         setContentView(
             com.assistant.overlay.R.layout.activity_main

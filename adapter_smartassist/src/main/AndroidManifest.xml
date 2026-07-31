@@ -10,7 +10,7 @@
         <service
             android:name=".SmartAssistAdapterService"
             android:exported="true"
-            android:process=":kernel_smartassist"
+            android:process=":kernel"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                       android:value="Coordinates SmartAssist orchestration and decision telemetry."/>

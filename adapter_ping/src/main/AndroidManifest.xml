@@ -11,7 +11,7 @@
         <service
             android:name=".PingAdapterService"
             android:exported="true"
-            android:process=":kernel_ping"
+            android:process=":kernel"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                       android:value="Monitors network latency and connectivity telemetry."/>

@@ -15,6 +15,9 @@ class App : Application() {
         // Install crash catcher FIRST - before anything else
         GlobalCrashHandler.install(this)
 
+        // catches SIGKILL deaths no exception handler can see
+        DeathWatch.install(this)
+
         // Initialize forensic runtime logger
         com.assistant.diagnostic.RuntimeLogger.initialize(this)
         // Optional: baseline health snapshot
