@@ -147,7 +147,15 @@ chk "legacy labels removed from control room" "! grep -q 'DecisionCycles=' $APP/
 
 echo
 echo "=============================================="
-printf ' TOTAL: %s PASS / %s FAIL\n' "$PASS" "$FAIL"
+printf ' TOTAL: %s PASS / %s FAIL\
+echo
+echo "[20] Net adapter engine stack"
+chk "71 net engine stack ignited" "grep -q 'Net engine stack ignited' adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt"
+chk "72 carrier profiles (MTN/Airtel)" "grep -q 'AIRTEL' adapter_net/src/main/java/com/assistant/adapter/net/CarrierProfileEngine.kt"
+chk "73 real rtt probe publishes" "grep -q 'publishNet' adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt"
+chk "74 telemetry surface exists" "test -f diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt"
+chk "75 heartbeat carries probe truth" "grep -q 'NetProbeEngine.summary()' adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt"
+n' "$PASS" "$FAIL"
 
 
 echo "=============================================="

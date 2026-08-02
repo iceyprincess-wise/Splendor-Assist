@@ -26,7 +26,7 @@ class NetAdapterService : Service() {
                     lastHeartbeat = System.currentTimeMillis(),
                     errorCount = 0,
                     recoveryCount = 0,
-                    details = "Heartbeat active"
+                    details = NetProbeEngine.summary()
                     )
                 )
                 RuntimeLogger.log("NetAdapter heartbeat", "HEALTH")
@@ -59,12 +59,26 @@ class NetAdapterService : Service() {
             )
         )
 
+        // ---- NET ENGINE STACK IGNITION ----
+        CarrierProfileEngine.detect(this)
+        NetworkStateEngine.start(this)
+        NetProbeEngine.start(this)
+        RadioKeepAliveEngine.start()
+        DnsWarmupEngine.start()
+        CongestionSentinelEngine.start()
+        RuntimeLogger.log("Net engine stack ignited: 6 engines", "NET")
+
         heartbeatHandler.post(heartbeatRunnable)
         RuntimeLogger.log("NetAdapter heartbeat scheduler started", "HEALTH")
     }
 
 
     override fun onDestroy() {
+        NetworkStateEngine.stop()
+        NetProbeEngine.stop()
+        RadioKeepAliveEngine.stop()
+        DnsWarmupEngine.stop()
+        CongestionSentinelEngine.stop()
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
         RuntimeLogger.log("NetAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()

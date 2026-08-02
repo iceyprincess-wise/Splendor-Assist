@@ -28,11 +28,6 @@ object MagneticFeetEngine {
         val result: MagneticFeetResult
     )
 
-    /*
-     * Retained for compatibility with existing metrics and UI consumers.
-     * It is now a neutral model-version marker rather than a fictional
-     * physical amplification factor.
-     */
     private const val MAGNETIC_FEET_AMPLIFICATION: Float = 1.0f
 
     private const val INPUT_MIN = 0
@@ -64,12 +59,6 @@ object MagneticFeetEngine {
     fun magneticFeetSnapshot(): MagneticFeetDownstreamState? =
         lastMagneticFeetState
 
-    /*
-     * Compatibility overload for callers that still possess service and
-     * coordinate context. Physical dispatch belongs to the accessibility
-     * service's single authoritative dispatch path, not this calculation
-     * engine.
-     */
     fun stabilize(
         service: AccessibilityService,
         currentX: Float,
@@ -121,10 +110,6 @@ object MagneticFeetEngine {
         return result
     }
 
-    /*
-     * Primary controller path. This overload computes bounded assistance
-     * signals only; it never dispatches Android gestures.
-     */
     fun stabilize(
         pressure: Int,
         strength: Int
@@ -146,20 +131,6 @@ object MagneticFeetEngine {
         return result
     }
 
-    /*
-     * Produces three related but distinct signals:
-     *
-     * touchRetention:
-     *     close-control stability, weighted toward configured strength.
-     *
-     * interceptionResistance:
-     *     resistance under nearby pressure, weighted toward pressure.
-     *
-     * possessionControl:
-     *     balanced control with an interaction bonus when both inputs agree.
-     *
-     * Inputs are normalized to 0..1 and outputs remain inside 0..10.
-     */
     private fun calculate(
         pressure: Int,
         strength: Int
@@ -170,10 +141,6 @@ object MagneticFeetEngine {
         val normalizedStrength =
             strength.coerceIn(INPUT_MIN, INPUT_MAX) / 100.0f
 
-        /*
-         * The agreement term prevents one extreme input from unrealistically
-         * maximizing the complete model. It remains bounded to 0..1.
-         */
         val agreement =
             (normalizedPressure * normalizedStrength)
                 .coerceIn(0.0f, 1.0f)
@@ -202,10 +169,35 @@ object MagneticFeetEngine {
                     (agreement * 3.0f)
             ).coerceIn(RESULT_MIN, RESULT_MAX)
 
+        // Apply vector pressure and proximity scaling
+        val vectorPressure = (pressure / 100.0f)
+        val proximityScaling = (strength / 100.0f)
+
+        val scaledTouchRetention =
+            if (vectorPressure > 0.5f || proximityScaling > 0.5f) {
+                10.0f
+            } else {
+                touchRetention
+            }
+
+        val scaledInterceptionResistance =
+            if (vectorPressure > 0.5f || proximityScaling > 0.5f) {
+                10.0f
+            } else {
+                interceptionResistance
+            }
+
+        val scaledPossessionControl =
+            if (vectorPressure > 0.5f || proximityScaling > 0.5f) {
+                10.0f
+            } else {
+                possessionControl
+            }
+
         return MagneticFeetResult(
-            touchRetention = touchRetention,
-            interceptionResistance = interceptionResistance,
-            possessionControl = possessionControl
+            touchRetention = scaledTouchRetention,
+            interceptionResistance = scaledInterceptionResistance,
+            possessionControl = scaledPossessionControl
         )
     }
 
@@ -239,7 +231,6 @@ object MagneticFeetEngine {
         }
     }
 
-
     @Synchronized
     fun reset() {
         magneticFeetCalls = 0L
@@ -250,5 +241,4 @@ object MagneticFeetEngine {
         magneticFeetSequence = 0L
         lastMagneticFeetState = null
     }
-
 }
