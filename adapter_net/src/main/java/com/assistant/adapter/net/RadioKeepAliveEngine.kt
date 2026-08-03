@@ -1,14 +1,15 @@
 package com.assistant.adapter.net
 
+// V2 PROACTIVE
 import com.assistant.diagnostic.RuntimeLogger
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 
 /**
- * Keeps the cellular radio out of deep sleep between plays with a 1-byte UDP
- * packet on the carrier profile cadence - the first pass of a counterattack
- * stops paying radio wake-up tax. Skipped on WIFI.
+ * V2: cadence adapts - when the link is dirty the radio is pinned at high
+ * power MORE often (every profile/2 s, floor 4s), because a dirty link plus
+ * a sleepy radio compounds into the worst first-touch latency.
  */
 object RadioKeepAliveEngine {
 
@@ -21,16 +22,18 @@ object RadioKeepAliveEngine {
         val t = Thread {
             while (running) {
                 val p = CarrierProfileEngine.current
+                var cadence = p.keepAliveSeconds
                 if (p.name != "WIFI") {
+                    if (NetProbeEngine.quality != "GOOD") cadence = maxOf(4, p.keepAliveSeconds / 2)
                     try {
                         DatagramSocket().use { s ->
                             s.send(DatagramPacket(ByteArray(1), 1, InetAddress.getByName("8.8.8.8"), 53))
                         }
                         if (++sent % 20L == 0L)
-                            RuntimeLogger.log("keepalive sent=" + sent + " cadence=" + p.keepAliveSeconds + "s", "NET")
+                            RuntimeLogger.log("keepalive sent=" + sent + " cadence=" + cadence + "s", "NET")
                     } catch (_: Throwable) { }
                 }
-                try { Thread.sleep(p.keepAliveSeconds * 1000L) } catch (_: Throwable) { return@Thread }
+                try { Thread.sleep(cadence * 1000L) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "net-keepalive"; t.start()

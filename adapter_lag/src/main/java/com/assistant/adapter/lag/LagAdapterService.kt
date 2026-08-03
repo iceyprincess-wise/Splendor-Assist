@@ -118,6 +118,14 @@ class LagAdapterService : Service() {
         
         // Initialize Choreographer for 120Hz/60Hz display sync
         initFrameSync()
+
+        // ---- LAG ENGINE STACK IGNITION [V2 PROACTIVE] ----
+        com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.initialize(this)
+        DisplayProfileEngine.detect(this)
+        FramePacingEngine.start()
+        MainThreadStallEngine.start()
+        LagVerdictEngine.start()
+        RuntimeLogger.log("Lag engine stack ignited: 4 engines [V2 PROACTIVE]", "LAG")
     }
 
     private fun setupForegroundService() {
@@ -148,7 +156,7 @@ class LagAdapterService : Service() {
         if (data != null && data.containsKey("targetX") && data.containsKey("targetY")) {
             val targetX = data.getFloat("targetX")
             val targetY = data.getFloat("targetY")
-            val generatedGesture = generateOptimizedGesture(targetX, targetY)
+            generateOptimizedGesture(targetX, targetY)
             RuntimeLogger.log("Generated precision gesture to ($targetX, $targetY) mapping ready.", "GESTURE")
             // Gesture is now pre-calculated and stabilized for the active view-layer injector.
         }
@@ -180,7 +188,12 @@ class LagAdapterService : Service() {
         path.lineTo(dragEndX, dragEndY)
         
         // 2. Server-Tick Sync (Scaling holds to network boundaries)
-        val pingComp = currentPingDriftMs
+        // real measured RTT from the net stack (same process, in-memory read);
+        // falls back to scheduler drift only if the probe has no data yet
+        val measuredRtt = try {
+            com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentNet().rttMs.toLong()
+        } catch (_: Throwable) { 0L }
+        val pingComp = if (measuredRtt > 0L) measuredRtt else currentPingDriftMs
         val baseHoldDuration = 15L // Base human minimal threshold
         
         // Dynamically scale hold duration to cross server packet boundaries
@@ -197,6 +210,13 @@ class LagAdapterService : Service() {
             false // Will continue: false for independent micro-bursts
         )
         
+        // publish the RTT-scaled hold as ADVICE for the single dispatch owner;
+        // this process cannot and must not inject gestures itself
+        try {
+            com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
+                .publishGestureTiming(finalHoldDuration)
+        } catch (_: Throwable) { }
+
         return GestureDescription.Builder()
             .addStroke(strokeDescription)
             .build()
@@ -207,6 +227,9 @@ class LagAdapterService : Service() {
             Choreographer.getInstance().removeFrameCallback(frameCallback)
         }
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
+        FramePacingEngine.stop()
+        MainThreadStallEngine.stop()
+        LagVerdictEngine.stop()
         lagHandlerThread.quitSafely()
         RuntimeLogger.log("LagAdapterService optimized engine stopped", "HEALTH")
         super.onDestroy()

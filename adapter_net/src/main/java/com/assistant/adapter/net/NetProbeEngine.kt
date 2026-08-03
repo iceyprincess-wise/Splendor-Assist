@@ -1,5 +1,6 @@
 package com.assistant.adapter.net
 
+// V2 PROACTIVE
 import android.content.Context
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
@@ -7,20 +8,23 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 /**
- * Measures REAL round-trip latency + jitter on a live cadence and publishes it.
- * Replaces guessed constants (the old hardcoded 60ms) with measured truth.
+ * V2: median-of-3 sampling kills single-sample noise; cadence is ADAPTIVE -
+ * 2s while the link is dirty, 5s when clean. On a link where jitter exceeds
+ * RTT, one sample is a lie; three tell the truth.
  */
 object NetProbeEngine {
 
     private val TARGETS = listOf("8.8.8.8" to 53, "1.1.1.1" to 53)
-    private const val PROBE_EVERY_MS = 5000L
-    private const val TIMEOUT_MS = 1500
-    private const val ALPHA = 0.3f
+    private const val FAST_MS = 2000L
+    private const val CALM_MS = 5000L
+    private const val TIMEOUT_MS = 1200
+    private const val ALPHA = 0.35f
 
     @Volatile private var running = false
     @Volatile var rtt = 0f; private set
     @Volatile var jitter = 0f; private set
     @Volatile var quality = "UNKNOWN"; private set
+    @Volatile var lastRawMs = -1L; private set
     @Volatile private var probes = 0L
     @Volatile private var failures = 0L
 
@@ -32,8 +36,9 @@ object NetProbeEngine {
             var tick = 0L
             while (running) {
                 probeOnce()
-                if (++tick % 4L == 0L) RuntimeLogger.log(summary(), "NETPROBE")
-                try { Thread.sleep(PROBE_EVERY_MS) } catch (_: Throwable) { return@Thread }
+                if (++tick % 6L == 0L) RuntimeLogger.log(summary(), "NETPROBE")
+                val nap = if (quality == "GOOD") CALM_MS else FAST_MS
+                try { Thread.sleep(nap) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "net-probe"; t.start()
@@ -41,21 +46,33 @@ object NetProbeEngine {
 
     fun stop() { running = false }
 
-    private fun probeOnce() {
-        var sample = -1L
+    /** single raw connect, shared with the burst mapper */
+    fun rawSample(): Long {
         for ((host, port) in TARGETS) {
-            sample = tcpRtt(host, port)
-            if (sample >= 0) break
+            val s = tcpRtt(host, port)
+            if (s >= 0) return s
+        }
+        return -1L
+    }
+
+    private fun probeOnce() {
+        val samples = ArrayList<Long>(3)
+        repeat(3) {
+            val s = rawSample()
+            if (s >= 0) samples.add(s)
+            try { Thread.sleep(60) } catch (_: Throwable) { }
         }
         probes++
-        if (sample < 0) {
-            failures++; quality = "BAD"
+        if (samples.isEmpty()) {
+            failures++; quality = "BAD"; lastRawMs = -1L
         } else {
-            val s = sample.toFloat()
-            if (rtt == 0f) rtt = s else {
-                val diff = Math.abs(s - rtt)
+            samples.sort()
+            val median = samples[samples.size / 2].toFloat()
+            lastRawMs = median.toLong()
+            if (rtt == 0f) rtt = median else {
+                val diff = Math.abs(median - rtt)
                 jitter = jitter * (1 - ALPHA) + diff * ALPHA
-                rtt = rtt * (1 - ALPHA) + s * ALPHA
+                rtt = rtt * (1 - ALPHA) + median * ALPHA
             }
             val p = CarrierProfileEngine.current
             quality = when {
@@ -76,6 +93,7 @@ object NetProbeEngine {
 
     fun summary(): String =
         "rtt=" + String.format("%.0f", rtt) + "ms jitter=" + String.format("%.0f", jitter) +
-        "ms " + quality + " carrier=" + CarrierProfileEngine.current.name +
+        "ms " + quality + " loss=" + String.format("%.0f", PacketLossProbeEngine.lossPct) +
+        "% carrier=" + CarrierProfileEngine.current.name +
         " probes=" + probes + " fail=" + failures
 }

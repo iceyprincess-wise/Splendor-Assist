@@ -1,22 +1,20 @@
 package com.assistant.adapter.net
 
+// V2 PROACTIVE
 import com.assistant.diagnostic.RuntimeLogger
 import java.net.InetAddress
 
-/**
- * Pre-resolves game-relevant hostnames so no lookup happens cold mid-match,
- * and re-warms the OS DNS cache before entries expire. A cold DNS lookup on
- * mobile can cost 100-300ms exactly when a connection is being re-established.
- */
+/** V2: fixed host list (previous list had 2 dead names) and failures are named. */
 object DnsWarmupEngine {
 
     private val HOSTS = listOf(
-        "konami.net", "cdn.konami.net", "google.com", "cloudflare.com"
+        "www.konami.com", "www.google.com", "www.cloudflare.com", "one.one.one.one"
     )
     private const val REWARM_MS = 90_000L
 
     @Volatile private var running = false
-    @Volatile private var warmed = 0L
+    @Volatile private var rounds = 0L
+    private val reported = HashSet<String>()
 
     fun start() {
         if (running) return
@@ -25,11 +23,12 @@ object DnsWarmupEngine {
             while (running) {
                 var ok = 0
                 for (h in HOSTS) {
-                    try { InetAddress.getByName(h); ok++ } catch (_: Throwable) { }
+                    try { InetAddress.getByName(h); ok++ } catch (_: Throwable) {
+                        if (reported.add(h)) RuntimeLogger.log("dns FAIL host=" + h, "NET")
+                    }
                 }
-                warmed++
-                if (warmed % 5L == 1L)
-                    RuntimeLogger.log("dns warm " + ok + "/" + HOSTS.size + " hosts", "NET")
+                rounds++
+                if (rounds % 5L == 1L) RuntimeLogger.log("dns warm " + ok + "/" + HOSTS.size, "NET")
                 try { Thread.sleep(REWARM_MS) } catch (_: Throwable) { return@Thread }
             }
         }

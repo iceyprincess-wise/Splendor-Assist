@@ -143,18 +143,33 @@ chk "67 evaluate has reentrancy guard" "grep -q 'evaluating.compareAndSet' adapt
 chk "68 capture thread survives Errors" "grep -q 'catch (t: Throwable)' app/src/main/java/com/assistant/OverlayService.kt"
 chk "69 booster gate set directly" "grep -q 'healthy && boosterReady.compareAndSet' adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt"
 chk "70 single kernel process" "test \$(grep -rhoE 'android:process=\":[a-z_]+\"' adapter_*/src/main/AndroidManifest.xml | sort -u | wc -l) -eq 1"
+
+echo
+echo "[20] Net adapter engine stack"
+chk "71 nine-engine ignition" "grep -q '9 engines' adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt"
+chk "72 carrier profiles MTN-Airtel" "grep -q 'AIRTEL' adapter_net/src/main/java/com/assistant/adapter/net/CarrierProfileEngine.kt"
+chk "73 real rtt probe publishes" "grep -q 'publishNet' adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt"
+chk "74 telemetry surface exists" "test -f diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt"
+chk "75 heartbeat carries probe truth" "grep -q 'NetProbeEngine.summary' adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt"
+chk "76 packet loss probe" "test -f adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt"
+chk "77 spike burst mapper" "test -f adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt"
+chk "78 action window published" "grep -q 'publishActionWindow' adapter_net/src/main/java/com/assistant/adapter/net/ActionWindowEngine.kt"
+chk "79 adaptive probe cadence" "grep -q 'FAST_MS' adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt"
+chk "80 action window stale-guarded" "grep -q 'currentActionWindow' diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt"
+
+echo
+echo "[21] Lag adapter engine stack"
+chk "81 lag frame pacing real" "grep -q 'postFrameCallback' adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt"
+chk "82 main-thread stall probe" "test -f adapter_lag/src/main/java/com/assistant/adapter/lag/MainThreadStallEngine.kt"
+chk "83 display profile detected" "grep -q 'refreshRate' adapter_lag/src/main/java/com/assistant/adapter/lag/DisplayProfileEngine.kt"
+chk "84 device verdict published" "grep -q 'publishDisplay' adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt"
+chk "85 gesture uses measured rtt" "grep -q 'currentNet' adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt"
 chk "legacy labels removed from control room" "! grep -q 'DecisionCycles=' $APP/controlroom/ui/SmartAssistControlRoomActivity.kt"
 
 echo
 echo "=============================================="
 printf ' TOTAL: %s PASS / %s FAIL\
 echo
-echo "[20] Net adapter engine stack"
-chk "71 net engine stack ignited" "grep -q 'Net engine stack ignited' adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt"
-chk "72 carrier profiles (MTN/Airtel)" "grep -q 'AIRTEL' adapter_net/src/main/java/com/assistant/adapter/net/CarrierProfileEngine.kt"
-chk "73 real rtt probe publishes" "grep -q 'publishNet' adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt"
-chk "74 telemetry surface exists" "test -f diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt"
-chk "75 heartbeat carries probe truth" "grep -q 'NetProbeEngine.summary()' adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt"
 n' "$PASS" "$FAIL"
 
 

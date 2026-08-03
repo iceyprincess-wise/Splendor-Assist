@@ -26,7 +26,7 @@ class NetAdapterService : Service() {
                     lastHeartbeat = System.currentTimeMillis(),
                     errorCount = 0,
                     recoveryCount = 0,
-                    details = NetProbeEngine.summary()
+                    details = NetProbeEngine.summary() + " | window=" + ActionWindowEngine.state()
                     )
                 )
                 RuntimeLogger.log("NetAdapter heartbeat", "HEALTH")
@@ -66,7 +66,10 @@ class NetAdapterService : Service() {
         RadioKeepAliveEngine.start()
         DnsWarmupEngine.start()
         CongestionSentinelEngine.start()
-        RuntimeLogger.log("Net engine stack ignited: 6 engines", "NET")
+        PacketLossProbeEngine.start()
+        SpikeBurstEngine.start()
+        ActionWindowEngine.start()
+        RuntimeLogger.log("Net engine stack ignited: 9 engines [V2 PROACTIVE]", "NET")
 
         heartbeatHandler.post(heartbeatRunnable)
         RuntimeLogger.log("NetAdapter heartbeat scheduler started", "HEALTH")
@@ -79,6 +82,9 @@ class NetAdapterService : Service() {
         RadioKeepAliveEngine.stop()
         DnsWarmupEngine.stop()
         CongestionSentinelEngine.stop()
+        PacketLossProbeEngine.stop()
+        SpikeBurstEngine.stop()
+        ActionWindowEngine.stop()
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
         RuntimeLogger.log("NetAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()
