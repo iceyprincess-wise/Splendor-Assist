@@ -1,50 +1,60 @@
 package com.assistant.adapter.lag
 
-// V2.2 PROACTIVE - cadence-aware
+// V3 AGGRESSIVE - mixture-aware, direct jitter
 import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
- * V2.2: grades jank against the CURRENT EFFECTIVE CADENCE, not the panel max.
- * A 30fps game delivering steady 33.3ms frames on a 90Hz panel is ON TARGET,
- * not jank (V2.1 counted every such frame and pinned the verdict at CHOKING).
- * Cadence = median of the last 32 gaps, quantized to vsync multiples,
- * recomputed every 2s. Jank = falling off that cadence.
+ * V3: no single-cadence guessing. On an adaptive 90Hz panel running a 30fps
+ * game, frames legally arrive at 1x/2x/3x vsync - the ENEMY is irregularity,
+ * not any particular multiple. So we grade:
+ *   jitterMs   - EWMA of |gap - prevGap| (beat-to-beat wobble, the felt stutter)
+ *   stability  - share of frames in the window's dominant vsync bucket
+ *   hard stalls - gap > 100ms (absolute; a real freeze at any cadence)
  */
 object FramePacingEngine {
 
     private const val ALPHA = 0.2f
     private const val REPORT_EVERY_MS = 20_000L
-    private const val RING = 32
+    private const val STALL_MS = 100f
 
     @Volatile private var running = false
     @Volatile var avgGapMs = 0f; private set
+    @Volatile var jitterMs = 0f; private set
+    @Volatile var stabilityPct = 100f; private set
+    @Volatile var stallsPerMin = 0f; private set
     @Volatile var worstGapMs = 0f; private set
-    @Volatile var jankPerMin = 0f; private set
-    @Volatile var cadenceMs = 0f; private set
     @Volatile private var lastNanos = 0L
-    @Volatile private var windowJank = 0L
-    @Volatile private var hardStalls = 0L
+    @Volatile private var lastGap = 0f
     @Volatile private var frames = 0L
+    @Volatile private var totalStalls = 0L
 
-    private val ring = FloatArray(RING)
-    @Volatile private var ringIdx = 0
+    // per-window vsync-multiple buckets: [1x, 2x, 3x, 4x+] + stalls
+    private val bucket = LongArray(4)
+    @Volatile private var winStalls = 0L
+    @Volatile private var winFrames = 0L
 
     private val callback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
             if (!running) return
             if (lastNanos > 0L) {
                 val gap = (frameTimeNanos - lastNanos) / 1_000_000f
-                frames++
-                ring[ringIdx % RING] = gap
-                ringIdx++
+                frames++; winFrames++
                 avgGapMs = if (avgGapMs == 0f) gap else avgGapMs * (1 - ALPHA) + gap * ALPHA
+                if (lastGap > 0f) {
+                    val d = Math.abs(gap - lastGap)
+                    jitterMs = jitterMs * (1 - ALPHA) + d * ALPHA
+                }
+                lastGap = gap
                 if (gap > worstGapMs) worstGapMs = gap
-                val base = if (cadenceMs > 0f) cadenceMs else DisplayProfileEngine.vsyncBudgetMs
-                if (gap > maxOf(base * 3f, 100f)) { hardStalls++; windowJank++ }
-                else if (gap > base * 1.75f) windowJank++
+                if (gap > STALL_MS) { winStalls++; totalStalls++ }
+                else {
+                    val v = DisplayProfileEngine.vsyncBudgetMs
+                    val m = Math.round(gap / v).coerceIn(1, 4)
+                    bucket[m - 1]++
+                }
             }
             lastNanos = frameTimeNanos
             Choreographer.getInstance().postFrameCallback(this)
@@ -57,38 +67,25 @@ object FramePacingEngine {
         Handler(Looper.getMainLooper()).post {
             Choreographer.getInstance().postFrameCallback(callback)
         }
-        // cadence tracker: every 2s, median of ring quantized to vsync multiples
-        val c = Thread {
-            while (running) {
-                try { Thread.sleep(2000) } catch (_: Throwable) { return@Thread }
-                try {
-                    val n = minOf(ringIdx, RING)
-                    if (n >= 8) {
-                        val copy = ring.copyOf(n).also { it.sort() }
-                        val median = copy[n / 2]
-                        val budget = DisplayProfileEngine.vsyncBudgetMs
-                        val mult = Math.round(median / budget).coerceIn(1, 6)
-                        cadenceMs = mult * budget
-                    }
-                } catch (_: Throwable) { }
-            }
-        }
-        c.isDaemon = true; c.name = "lag-cadence"; c.start()
-
         val t = Thread {
             while (running) {
                 try { Thread.sleep(REPORT_EVERY_MS) } catch (_: Throwable) { return@Thread }
-                val winMin = REPORT_EVERY_MS / 60000f
-                jankPerMin = windowJank / winMin
-                val effFps = if (cadenceMs > 0f) Math.round(1000f / cadenceMs) else 0
-                RuntimeLogger.log("frames=" + frames +
-                    " cadence=" + String.format("%.1f", cadenceMs) + "ms/" + effFps + "fps" +
-                    " avgGap=" + String.format("%.1f", avgGapMs) +
-                    "ms worst=" + String.format("%.0f", worstGapMs) +
-                    "ms jank/min=" + String.format("%.1f", jankPerMin) +
-                    " hardStalls=" + hardStalls, "LAGFRAME")
-                windowJank = 0L
-                worstGapMs = 0f
+                try {
+                    val counted = bucket.sum().coerceAtLeast(1L)
+                    val dominant = bucket.max()
+                    stabilityPct = dominant * 100f / counted
+                    val winMin = REPORT_EVERY_MS / 60000f
+                    stallsPerMin = winStalls / winMin
+                    val mix = bucket.joinToString("/") { (it * 100 / counted).toString() }
+                    RuntimeLogger.log("frames=" + frames +
+                        " mix=" + mix + "% stability=" + String.format("%.0f", stabilityPct) +
+                        "% jitter=" + String.format("%.1f", jitterMs) +
+                        "ms worst=" + String.format("%.0f", worstGapMs) +
+                        "ms stalls/min=" + String.format("%.1f", stallsPerMin) +
+                        " total=" + totalStalls, "LAGFRAME")
+                    for (i in bucket.indices) bucket[i] = 0L
+                    winStalls = 0L; winFrames = 0L; worstGapMs = 0f
+                } catch (_: Throwable) { }
             }
         }
         t.isDaemon = true; t.name = "lag-frame-report"; t.start()

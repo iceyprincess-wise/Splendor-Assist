@@ -1,19 +1,21 @@
 package com.assistant.adapter.lag
 
-// V2.2 PROACTIVE - cadence-aware verdict
+// V3.1 - confirmed flips, thermal context
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 /**
- * V2.2: SMOOTH means "holding the game's own cadence" - 30fps on target is
- * SMOOTH even on a 90Hz panel. CHOKING means falling OFF that cadence:
- * gap blowing past it, stall storms, or jank bursts.
+ * V3.1: a verdict change must be seen on 2 CONSECUTIVE polls (4s) before it
+ * flips - a single mtStall blip no longer whipsaws JITTERY<->CHOKING five
+ * times in 20 seconds. Heartbeat carries the thermal status so storms and
+ * throttling can be correlated straight from the log.
  */
 object LagVerdictEngine {
 
     @Volatile private var running = false
     @Volatile var verdict = "UNKNOWN"; private set
-    @Volatile private var flips = 0L
+    @Volatile private var candidate = "UNKNOWN"
+    @Volatile private var streak = 0
     @Volatile private var lastHeartbeat = 0L
 
     fun start() {
@@ -22,36 +24,37 @@ object LagVerdictEngine {
         val t = Thread {
             while (running) {
                 try {
-                    val cadence = if (FramePacingEngine.cadenceMs > 0f)
-                        FramePacingEngine.cadenceMs else DisplayProfileEngine.vsyncBudgetMs
-                    val gap = FramePacingEngine.avgGapMs
-                    val stall = MainThreadStallEngine.avgLatenessMs
-                    val jank = FramePacingEngine.jankPerMin
+                    val jit = FramePacingEngine.jitterMs
+                    val stab = FramePacingEngine.stabilityPct
+                    val stallRate = FramePacingEngine.stallsPerMin
+                    val mtStall = MainThreadStallEngine.avgLatenessMs
                     val spm = MainThreadStallEngine.spikesPerMin
-                    val next = when {
-                        gap > cadence * 2.5f || stall > 120f || jank > 30f || spm > 20f -> "CHOKING"
-                        gap > cadence * 1.5f || stall > 50f || jank > 10f || spm > 6f -> "STRAINED"
-                        gap > 0f -> "SMOOTH"
+                    val raw = when {
+                        stallRate > 12f || mtStall > 120f || spm > 20f -> "CHOKING"
+                        jit > 10f || stab < 65f -> "JITTERY"
+                        FramePacingEngine.avgGapMs > 0f -> "SMOOTH"
                         else -> "UNKNOWN"
                     }
+                    if (raw == candidate) streak++ else { candidate = raw; streak = 1 }
                     val now = System.currentTimeMillis()
-                    val effFps = Math.round(1000f / cadence)
-                    if (next != verdict) {
-                        flips++
-                        RuntimeLogger.log("DEVICE " + verdict + " -> " + next +
-                            " (cadence=" + effFps + "fps gap=" + String.format("%.1f", gap) +
-                            "ms stall=" + String.format("%.0f", stall) +
-                            "ms jank/min=" + String.format("%.1f", jank) +
-                            " stalls/min=" + String.format("%.1f", spm) + ")", "LAGVERDICT")
-                        verdict = next
+                    if (candidate != verdict && streak >= 2) {
+                        RuntimeLogger.log("DEVICE " + verdict + " -> " + candidate +
+                            " (jitter=" + String.format("%.1f", jit) +
+                            "ms stability=" + String.format("%.0f", stab) +
+                            "% stalls/min=" + String.format("%.1f", stallRate) +
+                            " mtStall=" + String.format("%.0f", mtStall) +
+                            "ms therm=" + ThermalPeekEngine.status + ")", "LAGVERDICT")
+                        verdict = candidate
                         lastHeartbeat = now
                     } else if (now - lastHeartbeat >= 60_000L) {
                         lastHeartbeat = now
                         RuntimeLogger.log("DEVICE " + verdict +
-                            " (cadence=" + effFps + "fps gap=" + String.format("%.1f", gap) +
-                            "ms jank/min=" + String.format("%.1f", jank) + ")", "LAGVERDICT")
+                            " (jitter=" + String.format("%.1f", jit) +
+                            "ms stability=" + String.format("%.0f", stab) +
+                            "% therm=" + ThermalPeekEngine.status + ")", "LAGVERDICT")
                     }
-                    PerformanceTelemetryRegistry.publishDisplay(gap, jank, stall, verdict)
+                    PerformanceTelemetryRegistry.publishDisplay(
+                        FramePacingEngine.avgGapMs, stallRate, mtStall, verdict)
                 } catch (_: Throwable) { }
                 try { Thread.sleep(2000) } catch (_: Throwable) { return@Thread }
             }

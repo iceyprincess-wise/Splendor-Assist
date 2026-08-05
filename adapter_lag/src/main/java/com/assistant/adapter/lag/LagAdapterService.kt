@@ -125,6 +125,8 @@ class LagAdapterService : Service() {
         FramePacingEngine.start()
         MainThreadStallEngine.start()
         LagVerdictEngine.start()
+        LoadShedGovernor.start()
+        ThermalPeekEngine.init(this)
         RuntimeLogger.log("Lag engine stack ignited: 4 engines [V2 PROACTIVE]", "LAG")
     }
 
@@ -230,6 +232,8 @@ class LagAdapterService : Service() {
         FramePacingEngine.stop()
         MainThreadStallEngine.stop()
         LagVerdictEngine.stop()
+        LoadShedGovernor.stop()
+        ThermalPeekEngine.stop()
         lagHandlerThread.quitSafely()
         RuntimeLogger.log("LagAdapterService optimized engine stopped", "HEALTH")
         super.onDestroy()

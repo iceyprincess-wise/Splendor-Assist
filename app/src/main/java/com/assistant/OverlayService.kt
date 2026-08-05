@@ -328,7 +328,12 @@ override fun onCreate() {
                     )
                 } catch (_: Throwable) {}
             }
-            if (System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS) {
+            val shedFactor = when (com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentLoadShed()) {
+                "HEAVY" -> 4L
+                "LIGHT" -> 2L
+                else -> 1L
+            }
+            if (System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS * shedFactor) {
                 lastOcrTime = System.currentTimeMillis()
                 processImageForOCR(image)
             } else {

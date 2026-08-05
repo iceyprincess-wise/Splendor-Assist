@@ -164,6 +164,17 @@ chk "82 main-thread stall probe" "test -f adapter_lag/src/main/java/com/assistan
 chk "83 display profile detected" "grep -q 'refreshRate' adapter_lag/src/main/java/com/assistant/adapter/lag/DisplayProfileEngine.kt"
 chk "84 device verdict published" "grep -q 'publishDisplay' adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt"
 chk "85 gesture uses measured rtt" "grep -q 'currentNet' adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt"
+
+echo
+echo "[22] Lag V3 aggressive elimination"
+chk "86 jitter measured directly" "grep -q 'jitterMs' adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt"
+chk "87 verdict knows JITTERY" "grep -q 'JITTERY' adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt"
+chk "88 load-shed governor exists" "test -f adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt"
+chk "89 shed advice published" "grep -q 'publishLoadShed' diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt"
+chk "90 ocr obeys shed advice" "grep -q 'currentLoadShed' app/src/main/java/com/assistant/OverlayService.kt"
+chk "91 verdict flips confirmed" "grep -q 'streak >= 2' adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt"
+chk "92 governor min-hold" "grep -q 'MIN_HOLD_MS' adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt"
+chk "93 thermal peek armed" "grep -q 'ThermalPeekEngine.init' adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt"
 chk "legacy labels removed from control room" "! grep -q 'DecisionCycles=' $APP/controlroom/ui/SmartAssistControlRoomActivity.kt"
 
 echo

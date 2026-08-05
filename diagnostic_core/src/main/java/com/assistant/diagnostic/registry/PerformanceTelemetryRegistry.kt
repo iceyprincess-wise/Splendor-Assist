@@ -138,4 +138,31 @@ object PerformanceTelemetryRegistry {
     @JvmStatic
     fun recommendedHoldMs(): Long =
         if (System.currentTimeMillis() - holdStampMs < 15_000L) holdMs else 0L
+
+    // ---- LOAD SHED (lag governor -> main-process capture pipeline) ----
+    @Volatile private var shed = "NONE"
+    @Volatile private var shedMs = 0L
+    @Volatile private var sfile: File? = null
+
+    @JvmStatic
+    fun publishLoadShed(level: String) {
+        shed = level; shedMs = System.currentTimeMillis()
+        try {
+            if (sfile == null) sfile = file?.parentFile?.let { File(it, "perf_loadshed.txt") }
+            sfile?.writeText(level + "|" + shedMs)
+        } catch (_: Throwable) { }
+    }
+
+    /** Stale-aware: advice older than 15s means the governor is gone - run full. */
+    @JvmStatic
+    fun currentLoadShed(): String {
+        val now = System.currentTimeMillis()
+        if (now - shedMs < 15_000L) return shed
+        try {
+            if (sfile == null) sfile = file?.parentFile?.let { File(it, "perf_loadshed.txt") }
+            val p = (sfile?.takeIf { it.exists() }?.readText() ?: return "NONE").split("|")
+            if (p.size >= 2 && now - (p[1].toLongOrNull() ?: 0L) < 15_000L) return p[0]
+        } catch (_: Throwable) { }
+        return "NONE"
+    }
 }
