@@ -145,6 +145,7 @@ object AdminConfigStore {
     @Volatile private var appCtx: Context? = null
 
     fun initialize(context: Context) {
+        AdminLiveStats.initialize(context)
         if (prefs != null) return
         val ctx = context.applicationContext
         appCtx = ctx

@@ -176,6 +176,7 @@ class AdminSettingsActivity : Activity() {
             textSize = 13f
             setPadding(0, 0, 0, dp(6))
         })
+        navButton(root, "Refresh detector reading") { showSettings(adapter, engine) }
         val picks = AdminTuningDetector.picksFor(engine)
         if (picks.isNotEmpty()) {
             navButton(root, "Apply Detector picks for this engine") {
