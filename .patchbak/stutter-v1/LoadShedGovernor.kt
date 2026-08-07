@@ -26,10 +26,7 @@ object LoadShedGovernor {
         val t = Thread {
             while (running) {
                 try {
-                    // FAST PATH: a SEIZURE burst escalates immediately -
-                    // sub-second truth beats the 20s window when a freeze hits
-                    val burst = PerformanceTelemetryRegistry.currentStutterState()
-                    val want = if (burst == "SEIZURE") "HEAVY" else when (LagVerdictEngine.verdict) {
+                    val want = when (LagVerdictEngine.verdict) {
                         "CHOKING" -> "HEAVY"
                         "JITTERY" -> "LIGHT"
                         else -> "NONE"

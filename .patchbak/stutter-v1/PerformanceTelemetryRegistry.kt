@@ -165,21 +165,4 @@ object PerformanceTelemetryRegistry {
         } catch (_: Throwable) { }
         return "NONE"
     }
-
-    // ---- STUTTER (sub-second burst state: CALM / HICCUP / OSCILLATION / SEIZURE) ----
-    @Volatile private var stState = "CALM"
-    @Volatile private var stBursts = 0f
-    @Volatile private var stWorst = 0f
-    @Volatile private var stMs = 0L
-
-    @JvmStatic
-    fun publishStutter(state: String, bursts60s: Float, worstMs: Float) {
-        stState = state; stBursts = bursts60s; stWorst = worstMs
-        stMs = System.currentTimeMillis()
-    }
-
-    /** Stale-aware: older than 15s reads CALM. Same-process in-memory, never blocks. */
-    @JvmStatic
-    fun currentStutterState(): String =
-        if (System.currentTimeMillis() - stMs < 15_000L) stState else "CALM"
 }

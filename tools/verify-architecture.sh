@@ -1,3 +1,11 @@
+
+echo
+echo "[23] Stutter adapter burst stack"
+chk "94 burst radar 1s slices" "grep -q 'sliceStart' adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt"
+chk "95 burst forensics classify" "grep -q 'SEIZURE' adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt"
+chk "96 stutter state published" "grep -q 'publishStutter' diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt"
+chk "97 governor seizure fast path" "grep -q 'currentStutterState' adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt"
+chk "98 hardcoded 60hz gone" "! grep -q 'TARGET_FPS_60_MS' adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterAdapterService.kt"
 #!/data/data/com.termux/files/usr/bin/bash
 cd "$HOME/projects/Splendor-Assist" || exit 1
 
