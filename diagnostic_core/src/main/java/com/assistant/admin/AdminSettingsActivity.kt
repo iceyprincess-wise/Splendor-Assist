@@ -17,12 +17,19 @@ import com.assistant.diagnostic.RuntimeLogger
 /**
  * PIN-gated admin panel - the engine setup room.
  *
- * Navigation: PIN -> Adapter -> Category/Engine -> that engine's settings.
- * Engines are grouped in plain-language categories (SPEED / SHIELD / BRAIN)
- * with a one-line job description each. Every setting carries a GUIDE in
- * layman language plus a live DETECTOR line that recommends a value from
- * what this device is measuring right now. Saved values apply on each
- * engine's next tick - no restart, no rebuild, no code tweaking.
+ * Navigation: PIN -> Adapter -> Categories (plain-language groups of
+ * engines) -> Engine -> that engine's settings.
+ *
+ * Every setting carries:
+ *  - a GUIDE readout in plain language (what it is, raise/lower, advantage/
+ *    disadvantage, tweak spots incl. risk + gaming cheat spot)
+ *  - a live DETECTOR line computed from THIS device's measurements right
+ *    now, plus one tap to apply all detector picks for the engine.
+ *
+ * Saved values are picked up on each engine's next loop tick - no restart,
+ * no rebuild, no code tweaking. Screens build themselves from
+ * AdminConfigStore.TUNABLES: exposing a new engine is just adding its
+ * Tunables + guides.
  */
 class AdminSettingsActivity : Activity() {
 
@@ -81,12 +88,6 @@ class AdminSettingsActivity : Activity() {
         })
     }
 
-    private fun small(list: LinearLayout, text: String, size: Float = 12f, padTop: Int = 0) {
-        list.addView(TextView(this).apply {
-            this.text = text; textSize = size; setPadding(0, dp(padTop), 0, dp(4))
-        })
-    }
-
     // ---------- screen 1: PIN ----------
 
     private fun showPinGate() {
@@ -123,7 +124,10 @@ class AdminSettingsActivity : Activity() {
                         else a + "  (" + engines.size + " engines - " + settings + " settings)"
             navButton(root, label) { showEngines(a) }
         }
-        small(root, "Values save live and apply on each engine's next tick. Mirror: Download/SplendorAssist/admin_config.json", 12f, 12)
+        root.addView(TextView(this).apply {
+            text = "Values save live and apply on each engine's next tick. Mirror: Download/SplendorAssist/admin_config.json"
+            textSize = 12f; setPadding(0, dp(12), 0, 0)
+        })
         mount(root)
     }
 
@@ -133,25 +137,23 @@ class AdminSettingsActivity : Activity() {
         screen = Screen.ENGINES
         curAdapter = adapter
         val root = page()
-        title(root, adapter, "Pick an engine. Each group tells you what tweaking it gets you.")
-        val engines = AdminConfigStore.enginesFor(adapter)
-        if (engines.isEmpty()) {
-            small(root, "No tunables wired into the admin store for this adapter yet.\n\nWhen this adapter's engine constants are migrated, each engine will appear here automatically with its own settings, guides and detector.", 14f, 8)
+        title(root, adapter, "Pick an engine")
+        val cats = AdminConfigStore.categoriesFor(adapter)
+        if (cats.isEmpty()) {
+            root.addView(TextView(this).apply {
+                text = "No tunables wired into the admin store for this adapter yet.\n\nWhen this adapter's engine constants are migrated, each engine will appear here automatically with its own settings, guides and detector."
+                textSize = 14f; setPadding(0, dp(8), 0, dp(8))
+            })
         } else {
-            val grouped = engines.groupBy { AdminConfigStore.categoryFor(it) }
-            val order = listOf(AdminConfigStore.CAT_SPEED, AdminConfigStore.CAT_SHIELD,
-                               AdminConfigStore.CAT_BRAIN, AdminConfigStore.CAT_GENERAL)
-            for (cat in order) {
-                val list = grouped[cat] ?: continue
+            for ((cat, engines) in cats) {
                 root.addView(TextView(this).apply {
-                    text = cat; textSize = 14f; setTypeface(typeface, Typeface.BOLD)
+                    text = cat
+                    textSize = 14f; setTypeface(typeface, Typeface.BOLD)
                     setPadding(0, dp(14), 0, dp(4))
                 })
-                for (e in list) {
+                for (e in engines) {
                     val n = AdminConfigStore.tunablesFor(adapter, e).size
                     navButton(root, e + "  (" + n + " settings)") { showSettings(adapter, e) }
-                    val blurb = AdminConfigStore.engineBlurb(e)
-                    if (blurb.isNotEmpty()) small(root, blurb)
                 }
             }
         }
@@ -167,12 +169,21 @@ class AdminSettingsActivity : Activity() {
         editors.clear()
         val root = page()
         title(root, engine, adapter + " - applies on next tick")
-        val blurb = AdminConfigStore.engineBlurb(engine)
-        if (blurb.isNotEmpty()) small(root, blurb)
 
-        // live detector banner
-        small(root, AdminTuningDetector.liveLine(), 12f, 6)
-        val picks = AdminTuningDetector.picksFor(engine).associateBy { it.key }
+        // ---- live detector header ----
+        root.addView(TextView(this).apply {
+            text = AdminTuningDetector.liveLine()
+            textSize = 13f
+            setPadding(0, 0, 0, dp(6))
+        })
+        val picks = AdminTuningDetector.picksFor(engine)
+        if (picks.isNotEmpty()) {
+            navButton(root, "Apply Detector picks for this engine") {
+                for (p in picks) editors[p.key]?.setText(fmt(p.value))
+                Toast.makeText(this, "Detector values filled in - press Save to apply", Toast.LENGTH_SHORT).show()
+            }
+        }
+        val pickByKey = picks.associateBy { it.key }
 
         for (t in AdminConfigStore.tunablesFor(adapter, engine)) {
             root.addView(TextView(this).apply {
@@ -180,7 +191,10 @@ class AdminSettingsActivity : Activity() {
                 textSize = 15f; setTypeface(typeface, Typeface.BOLD)
                 setPadding(0, dp(14), 0, 0)
             })
-            small(root, t.key + "   -   default " + fmt(t.def))
+            root.addView(TextView(this).apply {
+                text = t.key + "   -   default " + fmt(t.def)
+                textSize = 11f
+            })
             val e = EditText(this).apply {
                 inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
                 setText(fmt(AdminConfigStore.get(t.key, t.def)))
@@ -188,8 +202,15 @@ class AdminSettingsActivity : Activity() {
             editors[t.key] = e
             root.addView(e)
 
-            val pick = picks[t.key]
-            if (pick != null) small(root, "DETECTOR says " + fmt(pick.value) + " for your device - " + pick.why)
+            val pick = pickByKey[t.key]
+            if (pick != null) {
+                root.addView(TextView(this).apply {
+                    text = "DETECTOR says " + fmt(pick.value) + " - " + pick.why
+                    textSize = 12f
+                    setTypeface(typeface, Typeface.BOLD)
+                    setPadding(dp(4), dp(2), 0, 0)
+                })
+            }
 
             val guide = AdminTuningGuide.forKey(t.key)
             if (guide != null) {
@@ -211,14 +232,6 @@ class AdminSettingsActivity : Activity() {
                 }
                 root.addView(toggle)
                 root.addView(body)
-            }
-        }
-
-        if (picks.isNotEmpty()) {
-            navButton(root, "Fill all with Detector picks") {
-                var filled = 0
-                for ((k, p) in picks) { editors[k]?.setText(fmt(p.value)); filled++ }
-                Toast.makeText(this, filled.toString() + " fields filled - review, then Save", Toast.LENGTH_SHORT).show()
             }
         }
 
