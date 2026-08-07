@@ -39,7 +39,9 @@ object AdminConfigStore {
     const val CAT_GUARD = "Network Guard - spots trouble before you feel it"
     const val CAT_DECISION = "Play Decision - the final GO / HOLD traffic light"
     const val CAT_BASELINE = "Your Network Baseline - what counts as normal for YOUR line"
-    const val CAT_SMOOTH = "Smoothness"
+    const val CAT_LAG_RADAR = "Lag Radar - watches every frame so even silent micro-lag is caught"
+    const val CAT_LAG_JUDGE = "Lag Judge - weighs the evidence and names the problem"
+    const val CAT_LAG_RESCUE = "Lag Rescue - sheds weight instantly once lag is confirmed"
 
     private val ENGINE_CATEGORY: Map<String, String> = mapOf(
         // Net Adapter
@@ -53,13 +55,18 @@ object AdminConfigStore {
         "ActionWindowEngine" to CAT_DECISION,
         "CarrierProfileEngine" to CAT_BASELINE,
         // Lag Adapter
-        "FramePacingEngine" to CAT_SMOOTH,
-        "LoadShedGovernor" to CAT_SMOOTH
+        "FramePacingEngine" to CAT_LAG_RADAR,
+        "MainThreadStallEngine" to CAT_LAG_RADAR,
+        "DisplayProfileEngine" to CAT_LAG_RADAR,
+        "ThermalPeekEngine" to CAT_LAG_RADAR,
+        "LagVerdictEngine" to CAT_LAG_JUDGE,
+        "LoadShedGovernor" to CAT_LAG_RESCUE
     )
 
     /** Category display order inside an adapter. */
     private val CATEGORY_ORDER: List<String> =
-        listOf(CAT_SPEED, CAT_GUARD, CAT_DECISION, CAT_BASELINE, CAT_SMOOTH)
+        listOf(CAT_SPEED, CAT_GUARD, CAT_DECISION, CAT_BASELINE,
+               CAT_LAG_RADAR, CAT_LAG_JUDGE, CAT_LAG_RESCUE)
 
     fun categoryOf(engine: String): String = ENGINE_CATEGORY[engine] ?: "Other"
 
@@ -112,11 +119,33 @@ object AdminConfigStore {
         Tunable("net.profile.rtt_ms",          "Ping pass-line override (0 = auto)",        0f,     ADAPTER_NET, "CarrierProfileEngine"),
         Tunable("net.profile.jitter_tol_ms",   "Wobble allowance override (0 = auto)",      0f,     ADAPTER_NET, "CarrierProfileEngine"),
         Tunable("net.profile.keepalive_s",     "Keep-awake rhythm override (0 = auto)",     0f,     ADAPTER_NET, "CarrierProfileEngine"),
+
+        // ---- LAG ADAPTER ----
         // FramePacingEngine
         Tunable("lag.frame.alpha",             "Memory dial: newest frame weight (0-1)",    0.2f,   ADAPTER_LAG, "FramePacingEngine"),
         Tunable("lag.frame.report_ms",         "Smoothness report rhythm (ms)",             20000f, ADAPTER_LAG, "FramePacingEngine"),
         Tunable("lag.frame.stall_ms",          "A frame slower than this is a freeze (ms)", 100f,   ADAPTER_LAG, "FramePacingEngine"),
+        // MainThreadStallEngine
+        Tunable("lag.stall.cadence_ms",        "Busy-thread poke rhythm (ms)",              250f,   ADAPTER_LAG, "MainThreadStallEngine"),
+        Tunable("lag.stall.spike_ms",          "An answer later than this is a choke (ms)", 80f,    ADAPTER_LAG, "MainThreadStallEngine"),
+        Tunable("lag.stall.alpha",             "Memory dial: newest poke weight (0-1)",     0.25f,  ADAPTER_LAG, "MainThreadStallEngine"),
+        Tunable("lag.stall.report_ms",         "Choke report rhythm (ms)",                  10000f, ADAPTER_LAG, "MainThreadStallEngine"),
+        // DisplayProfileEngine
+        Tunable("lag.display.game_fps",        "Game frame rate (eFootball = 30)",          30f,    ADAPTER_LAG, "DisplayProfileEngine"),
+        // ThermalPeekEngine
+        Tunable("lag.thermal.poll_ms",         "Heat check rhythm (ms)",                    10000f, ADAPTER_LAG, "ThermalPeekEngine"),
+        // LagVerdictEngine
+        Tunable("lag.verdict.poll_ms",         "Judge check rhythm (ms)",                   2000f,  ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.jitter_ms",       "JITTERY when frame wobble above (ms)",      10f,    ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.stability_pct",   "JITTERY when steady beat below (%)",        65f,    ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.choke_stalls",    "CHOKING when freezes per minute above",     12f,    ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.choke_mtstall_ms","CHOKING when thread delay above (ms)",      120f,   ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.choke_spikes",    "CHOKING when chokes per minute above",      20f,    ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.confirm_polls",   "Checks needed to confirm a change",         2f,     ADAPTER_LAG, "LagVerdictEngine"),
         // LoadShedGovernor
+        Tunable("lag.shed.poll_ms",            "Rescue check rhythm (ms)",                  2000f,  ADAPTER_LAG, "LoadShedGovernor"),
+        Tunable("lag.shed.arm_polls",          "Checks to confirm before helping",          2f,     ADAPTER_LAG, "LoadShedGovernor"),
+        Tunable("lag.shed.release_polls",      "Checks to confirm before standing down",    5f,     ADAPTER_LAG, "LoadShedGovernor"),
         Tunable("lag.shed.min_hold_ms",        "Minimum helping time once started (ms)",    8000f,  ADAPTER_LAG, "LoadShedGovernor")
     )
 
