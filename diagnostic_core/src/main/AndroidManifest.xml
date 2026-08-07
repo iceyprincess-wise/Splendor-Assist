@@ -4,8 +4,13 @@
     <application>
         <activity
             android:name="com.assistant.admin.AdminSettingsActivity"
-            android:exported="false"
-            android:label="Admin Settings" />
+            android:exported="true"
+            android:label="Splendor Admin">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
