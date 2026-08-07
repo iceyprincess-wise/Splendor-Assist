@@ -1,22 +1,26 @@
 package com.assistant.adapter.lag
 
-// V2.1 PROACTIVE - zero main-thread I/O
+// V3 ADMIN-WIRED - zero main-thread I/O, every knob answers the admin store live
 import android.os.Handler
 import android.os.Looper
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
- * V2.1: the probe on the main looper now ONLY measures - no logging, no file
- * I/O on the thread under test (the old version wrote a log line during the
- * very stalls it was measuring). A background reporter summarizes every 10s,
- * one line, only when stalls actually happened.
+ * Pokes the main thread on a fixed rhythm and measures how late the answer
+ * comes back - lateness IS the choke other engines cannot see. The probe
+ * only measures (no logging/IO on the thread under test); a background
+ * reporter summarizes. V3: cadence, spike line, smoothing and report rhythm
+ * are all admin-tunable and re-read every cycle - values apply on the very
+ * next poke, no restart.
  */
 object MainThreadStallEngine {
 
-    private const val CADENCE_MS = 250L
-    private const val SPIKE_MS = 80L
-    private const val ALPHA = 0.25f
-    private const val REPORT_MS = 10_000L
+    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    private val CADENCE_MS: Long get() = AdminConfigStore.getLong("lag.stall.cadence_ms", 250L)
+    private val SPIKE_MS: Long get() = AdminConfigStore.getLong("lag.stall.spike_ms", 80L)
+    private val ALPHA: Float get() = AdminConfigStore.get("lag.stall.alpha", 0.25f)
+    private val REPORT_MS: Long get() = AdminConfigStore.getLong("lag.stall.report_ms", 10_000L)
 
     @Volatile private var running = false
     @Volatile var avgLatenessMs = 0f; private set
@@ -31,27 +35,31 @@ object MainThreadStallEngine {
         override fun run() {
             if (!running) return
             val late = (System.currentTimeMillis() - expected).coerceAtLeast(0L)
+            val a = ALPHA
             avgLatenessMs = if (avgLatenessMs == 0f) late.toFloat()
-                            else avgLatenessMs * (1 - ALPHA) + late * ALPHA
+                            else avgLatenessMs * (1 - a) + late * a
             if (late >= SPIKE_MS) {
                 winSpikes++; totalSpikes++
                 if (late > winMax) winMax = late
             }
-            expected = System.currentTimeMillis() + CADENCE_MS
-            handler.postDelayed(this, CADENCE_MS)
+            val cad = if (CADENCE_MS > 0) CADENCE_MS else 1L
+            expected = System.currentTimeMillis() + cad
+            handler.postDelayed(this, cad)
         }
     }
 
     fun start() {
         if (running) return
         running = true
-        probe.expected = System.currentTimeMillis() + CADENCE_MS
-        handler.postDelayed(probe, CADENCE_MS)
+        val cad = if (CADENCE_MS > 0) CADENCE_MS else 1L
+        probe.expected = System.currentTimeMillis() + cad
+        handler.postDelayed(probe, cad)
         val t = Thread {
             while (running) {
-                try { Thread.sleep(REPORT_MS) } catch (_: Throwable) { return@Thread }
-                val winMin = REPORT_MS / 60000f
-                spikesPerMin = winSpikes / winMin
+                val windowMs = if (REPORT_MS > 0) REPORT_MS else 1L
+                try { Thread.sleep(windowMs) } catch (_: Throwable) { return@Thread }
+                val winMin = windowMs / 60000f
+                spikesPerMin = if (winMin > 0f) winSpikes / winMin else 0f
                 if (winSpikes > 0L) {
                     RuntimeLogger.log("stalls n=" + winSpikes + " max=" + winMax +
                         "ms avg=" + String.format("%.0f", avgLatenessMs) +
