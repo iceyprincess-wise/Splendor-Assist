@@ -2,6 +2,7 @@ package com.assistant.adapter.lag
 
 // V3.1 - no flapping
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.admin.AdminConfigStore
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 /**
@@ -12,7 +13,7 @@ import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
  */
 object LoadShedGovernor {
 
-    private const val MIN_HOLD_MS = 8000L
+    private val MIN_HOLD_MS get() = AdminConfigStore.getMs("shed_min_hold_ms")
 
     @Volatile private var running = false
     @Volatile var level = "NONE"; private set

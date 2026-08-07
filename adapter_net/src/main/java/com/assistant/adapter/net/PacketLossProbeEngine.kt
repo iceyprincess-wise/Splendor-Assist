@@ -2,6 +2,7 @@ package com.assistant.adapter.net
 
 // V2 PROACTIVE
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.admin.AdminConfigStore
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
@@ -14,10 +15,10 @@ import kotlin.random.Random
  */
 object PacketLossProbeEngine {
 
-    private const val ROUND_MS = 4000L
-    private const val PER_ROUND = 4
-    private const val REPLY_TIMEOUT_MS = 700
-    private const val ALPHA = 0.3f
+    private val ROUND_MS get() = AdminConfigStore.getMs("loss_round_ms")
+    private val PER_ROUND get() = AdminConfigStore.getInt("loss_per_round")
+    private val REPLY_TIMEOUT_MS get() = AdminConfigStore.getInt("loss_reply_timeout_ms")
+    private val ALPHA get() = AdminConfigStore.get("loss_alpha")
 
     @Volatile private var running = false
     @Volatile var lossPct = 0f; private set
@@ -29,13 +30,15 @@ object PacketLossProbeEngine {
         val t = Thread {
             while (running) {
                 try {
+                    val perRound = PER_ROUND
                     var ok = 0
-                    repeat(PER_ROUND) {
+                    repeat(perRound) {
                         if (queryOnce()) ok++
                         try { Thread.sleep(80) } catch (_: Throwable) { }
                     }
-                    val roundLoss = (PER_ROUND - ok) * 100f / PER_ROUND
-                    lossPct = lossPct * (1 - ALPHA) + roundLoss * ALPHA
+                    val roundLoss = (perRound - ok) * 100f / perRound
+                    val a = ALPHA
+                    lossPct = lossPct * (1 - a) + roundLoss * a
                     rounds++
                     if (roundLoss >= 50f)
                         RuntimeLogger.log("LOSS SPIKE " + String.format("%.0f", roundLoss) +

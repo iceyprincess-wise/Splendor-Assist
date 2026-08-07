@@ -2,6 +2,7 @@ package com.assistant.adapter.net
 
 // V2 PROACTIVE
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.admin.AdminConfigStore
 
 /**
  * V2: reports BOTH edges. Onset warns before lag is felt; recovery (with how
@@ -23,7 +24,9 @@ object CongestionSentinelEngine {
                 try {
                     val j = NetProbeEngine.jitter
                     val p = CarrierProfileEngine.current
-                    val rising = j > lastJitter * 1.5f && j > p.jitterToleranceMs * 0.6f
+                    val riseFactor = AdminConfigStore.get("sentinel_rise_factor")
+                    val riseFraction = AdminConfigStore.get("sentinel_rise_fraction")
+                    val rising = j > lastJitter * riseFactor && j > p.jitterToleranceMs * riseFraction
                     val over = j > p.jitterToleranceMs
                     val now = rising || over
                     if (now && !congested) {
@@ -39,7 +42,7 @@ object CongestionSentinelEngine {
                     congested = now
                     lastJitter = j
                 } catch (_: Throwable) { }
-                try { Thread.sleep(2000) } catch (_: Throwable) { return@Thread }
+                try { Thread.sleep(AdminConfigStore.getMs("sentinel_cadence_ms")) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "net-sentinel"; t.start()

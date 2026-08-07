@@ -2,6 +2,7 @@ package com.assistant.adapter.net
 
 // V2 PROACTIVE
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.admin.AdminConfigStore
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
@@ -24,7 +25,8 @@ object RadioKeepAliveEngine {
                 val p = CarrierProfileEngine.current
                 var cadence = p.keepAliveSeconds
                 if (p.name != "WIFI") {
-                    if (NetProbeEngine.quality != "GOOD") cadence = maxOf(4, p.keepAliveSeconds / 2)
+                    if (NetProbeEngine.quality != "GOOD")
+                        cadence = maxOf(AdminConfigStore.getInt("radio_keepalive_floor_s"), p.keepAliveSeconds / 2)
                     try {
                         DatagramSocket().use { s ->
                             s.send(DatagramPacket(ByteArray(1), 1, InetAddress.getByName("8.8.8.8"), 53))

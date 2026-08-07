@@ -2,6 +2,7 @@ package com.assistant.adapter.net
 
 // V2 PROACTIVE
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.admin.AdminConfigStore
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 /**
@@ -26,10 +27,13 @@ object ActionWindowEngine {
                 try {
                     val p = CarrierProfileEngine.current
                     val loss = PacketLossProbeEngine.lossPct
+                    val holdLoss = AdminConfigStore.get("window_hold_loss_pct")
+                    val goLoss = AdminConfigStore.get("window_go_loss_pct")
+                    val jitterMult = AdminConfigStore.get("window_jitter_hold_mult")
                     val next = when {
-                        CongestionSentinelEngine.congested || loss > 10f ||
-                            NetProbeEngine.jitter > p.jitterToleranceMs * 2 -> "HOLD"
-                        NetProbeEngine.quality == "GOOD" && loss < 2f -> "GO"
+                        CongestionSentinelEngine.congested || loss > holdLoss ||
+                            NetProbeEngine.jitter > p.jitterToleranceMs * jitterMult -> "HOLD"
+                        NetProbeEngine.quality == "GOOD" && loss < goLoss -> "GO"
                         else -> "CAUTION"
                     }
                     if (next != verdict) {
@@ -45,7 +49,7 @@ object ActionWindowEngine {
                         "rtt=" + NetProbeEngine.rtt.toInt() + " jit=" + NetProbeEngine.jitter.toInt() +
                         " loss=" + loss.toInt())
                 } catch (_: Throwable) { }
-                try { Thread.sleep(2000) } catch (_: Throwable) { return@Thread }
+                try { Thread.sleep(AdminConfigStore.getMs("window_cadence_ms")) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "net-window"; t.start()

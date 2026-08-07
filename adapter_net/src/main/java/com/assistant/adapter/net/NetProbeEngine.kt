@@ -3,6 +3,7 @@ package com.assistant.adapter.net
 // V2 PROACTIVE
 import android.content.Context
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.admin.AdminConfigStore
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -15,10 +16,10 @@ import java.net.Socket
 object NetProbeEngine {
 
     private val TARGETS = listOf("8.8.8.8" to 53, "1.1.1.1" to 53)
-    private const val FAST_MS = 2000L
-    private const val CALM_MS = 5000L
-    private const val TIMEOUT_MS = 1200
-    private const val ALPHA = 0.35f
+    private val FAST_MS get() = AdminConfigStore.getMs("net_probe_fast_ms")
+    private val CALM_MS get() = AdminConfigStore.getMs("net_probe_calm_ms")
+    private val TIMEOUT_MS get() = AdminConfigStore.getInt("net_probe_timeout_ms")
+    private val ALPHA get() = AdminConfigStore.get("net_probe_alpha")
 
     @Volatile private var running = false
     @Volatile var rtt = 0f; private set
@@ -31,6 +32,7 @@ object NetProbeEngine {
     fun start(ctx: Context) {
         if (running) return
         running = true
+        AdminConfigStore.initialize(ctx.applicationContext)
         PerformanceTelemetryRegistry.initialize(ctx.applicationContext)
         val t = Thread {
             var tick = 0L
@@ -70,9 +72,10 @@ object NetProbeEngine {
             val median = samples[samples.size / 2].toFloat()
             lastRawMs = median.toLong()
             if (rtt == 0f) rtt = median else {
+                val a = ALPHA
                 val diff = Math.abs(median - rtt)
-                jitter = jitter * (1 - ALPHA) + diff * ALPHA
-                rtt = rtt * (1 - ALPHA) + median * ALPHA
+                jitter = jitter * (1 - a) + diff * a
+                rtt = rtt * (1 - a) + median * a
             }
             val p = CarrierProfileEngine.current
             quality = when {
