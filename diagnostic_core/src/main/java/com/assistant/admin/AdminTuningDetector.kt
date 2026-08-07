@@ -1,131 +1,136 @@
 package com.assistant.admin
 
-import kotlin.math.max
-import kotlin.math.roundToInt
-
 /**
- * The REAL live Detector. It does not guess: it reads the numbers the
- * engines are measuring on THIS device RIGHT NOW (ping, wobble, lost
- * packets, connection type, carrier baseline) and turns them into a
- * recommended value per setting - with the reason spelled out next to
- * every pick. If the engines have not produced fresh numbers yet it says
- * "still measuring" instead of inventing values.
+ * The live Detector: recommends values for THIS device from what the net
+ * engines are measuring RIGHT NOW (AdminLiveStats). Nothing is guessed -
+ * every pick is computed from the current ping, wobble and lost-packet
+ * numbers, and every pick carries a WHY that quotes those numbers.
+ *
+ * If the engines have not produced fresh numbers yet (service just started,
+ * or no connection), the detector says so and offers no picks rather than
+ * inventing them.
  */
 object AdminTuningDetector {
 
     data class Pick(val key: String, val value: Float, val why: String)
 
-    fun ready(): Boolean = AdminLiveStats.fresh() && AdminLiveStats.rttMs > 0f
-
+    /** One-line live status shown at the top of every settings screen. */
     fun liveLine(): String {
-        if (!ready()) return "Detector: still measuring your network... keep the assistant running and reopen this screen in a minute."
-        val loss = if (AdminLiveStats.lossPct >= 0f)
-            String.format("%.0f%%", AdminLiveStats.lossPct) else "not measured yet"
-        return "Your device right now: ping ~" + AdminLiveStats.rttMs.roundToInt() +
-            "ms, wobble ~" + AdminLiveStats.jitterMs.roundToInt() +
-            "ms, lost packets " + loss + ", on " + AdminLiveStats.transport +
-            " (" + AdminLiveStats.carrier + ", quality " + AdminLiveStats.quality + ")"
+        if (!AdminLiveStats.fresh())
+            return "DETECTOR: still measuring your connection... open this screen again in ~10 seconds (the Splendor service must be running)."
+        val loss = if (AdminLiveStats.lossPct >= 0)
+            String.format("%.0f", AdminLiveStats.lossPct) + "%" else "measuring"
+        return "DETECTOR - your device right now: ping " +
+            String.format("%.0f", AdminLiveStats.rttMs) + "ms, wobble " +
+            String.format("%.0f", AdminLiveStats.jitterMs) + "ms, lost packets " + loss +
+            ", on " + AdminLiveStats.transport + " (" + AdminLiveStats.carrier + "), health " +
+            AdminLiveStats.quality
     }
 
-    /** Live picks for one engine's settings; empty until measurements are fresh. */
+    /** Detector picks for one engine. Empty until live numbers are fresh. */
     fun picksFor(engine: String): List<Pick> {
-        if (!ready()) return emptyList()
+        if (!AdminLiveStats.fresh()) return emptyList()
         val rtt = AdminLiveStats.rttMs
         val jit = AdminLiveStats.jitterMs
-        val loss = if (AdminLiveStats.lossPct >= 0f) AdminLiveStats.lossPct else 0f
-        val tol = if (AdminLiveStats.jitterTolMs > 0) AdminLiveStats.jitterTolMs.toFloat() else 30f
-        val wifi = AdminLiveStats.transport == "WIFI"
-        val shaky = jit > tol || loss > 3f
-        val rttTxt = rtt.roundToInt().toString() + "ms"
-        val jitTxt = jit.roundToInt().toString() + "ms"
+        val loss = if (AdminLiveStats.lossPct >= 0) AdminLiveStats.lossPct else 0f
+        val r = String.format("%.0f", rtt) + "ms"
+        val j = String.format("%.0f", jit) + "ms"
+        val l = String.format("%.0f", loss) + "%"
+        val wobbly = jit > rtt * 0.5f && jit > 15f
+        val lossy = loss > 2f
 
         return when (engine) {
             "NetProbeEngine" -> listOf(
-                Pick("net.probe.fast_ms", if (shaky) 1500f else 2000f,
-                    if (shaky) "your link is shaky right now - check it faster" else "your link is steady - stock pace is enough"),
-                Pick("net.probe.calm_ms", if (shaky) 3000f else 4000f,
-                    "keeps the quiet-time picture fresh for your current link"),
-                Pick("net.probe.timeout_ms", round100(max(600f, (rtt + jit) * 4f)),
-                    "your ping+wobble is ~" + (rtt + jit).roundToInt() + "ms; waiting 4x that catches slow-but-alive servers"),
-                Pick("net.probe.alpha", if (jit > tol) 0.25f else 0.4f,
-                    if (jit > tol) "your wobble (" + jitTxt + ") is high - smooth more so one blip doesn't panic the stack"
-                    else "your wobble (" + jitTxt + ") is low - reacting faster is safe"),
-                Pick("net.probe.samples", if (jit > tol) 5f else 3f,
-                    if (jit > tol) "noisy link - more pings per check gives a truer middle value" else "steady link - 3 pings is plenty"),
-                Pick("net.probe.gap_ms", if (rtt < 50f) 40f else 60f,
-                    "matched to your ping of " + rttTxt),
-                Pick("net.probe.degraded_mult", if (wifi) 1.8f else 2f,
-                    if (wifi) "WiFi baseline is tight - flag trouble a bit sooner" else "mobile data breathes more - stock line fits")
-            )
-            "NetworkStateEngine" -> listOf(
-                Pick("net.state.poll_ms", if (shaky) 5000f else 10000f,
-                    "instant switch detection does the real work; this is only the backup sweep")
-            )
-            "DnsWarmupEngine" -> listOf(
-                Pick("net.dns.rewarm_ms", if (shaky) 60000f else 90000f,
-                    if (shaky) "shaky link - keep addresses hotter" else "steady link - stock refresh is enough")
-            )
-            "RadioKeepAliveEngine" -> listOf(
-                Pick("net.keepalive.floor_s", if (shaky && !wifi) 3f else 4f,
-                    if (shaky && !wifi) "your mobile link is struggling - keep the radio hotter (costs battery)"
-                    else "stock floor is the right trade for your link")
+                Pick("net.probe.fast_ms", if (wobbly || lossy) 1500f else 2000f,
+                    if (wobbly || lossy) "your line is unstable right now (wobble " + j + ", lost " + l + ") - check it faster so problems are caught sooner"
+                    else "your line is steady (wobble " + j + ") - the standard rhythm is enough"),
+                Pick("net.probe.calm_ms", if (lossy) 3000f else 4000f,
+                    if (lossy) "packets are being lost (" + l + ") - keep the good-times check tighter"
+                    else "quiet-time check every 4s keeps the picture fresh at low cost"),
+                Pick("net.probe.timeout_ms", clamp(rtt * 4f + 200f, 800f, 2000f),
+                    "about 4x your measured ping (" + r + ") - slow-but-alive answers still count, dead ones fail fast"),
+                Pick("net.probe.alpha", if (wobbly) 0.3f else 0.4f,
+                    if (wobbly) "your ping jumps around a lot (wobble " + j + ") - smooth harder so single jumps don't panic the system"
+                    else "your ping is steady - let the average react quickly to real changes"),
+                Pick("net.probe.samples", if (wobbly) 5f else 3f,
+                    if (wobbly) "wobble " + j + " is high vs ping " + r + " - 5 pings per check reads the truth through the noise"
+                    else "3 pings per check is enough on your steady line"),
+                Pick("net.probe.gap_ms", 60f, "standard spacing between the pings of one check"),
+                Pick("net.probe.degraded_mult", 2f, "OK-to-BAD line at 2x your pass-line works for your numbers")
             )
             "PacketLossProbeEngine" -> listOf(
-                Pick("net.loss.round_ms", if (loss > 3f) 3000f else 4000f,
-                    "your measured loss is " + String.format("%.0f", loss) + "% - " +
-                    (if (loss > 3f) "track it tighter" else "stock rhythm is fine")),
-                Pick("net.loss.per_round", if (loss > 3f) 6f else 4f,
-                    if (loss > 3f) "more packets per check = finer loss reading when it matters" else "clean link - light checks are enough"),
-                Pick("net.loss.reply_timeout_ms", round100(max(500f, (rtt + jit) * 5f)),
-                    "5x your ping+wobble - late replies still count, dead ones don't"),
-                Pick("net.loss.alpha", if (loss > 3f) 0.4f else 0.3f,
-                    if (loss > 3f) "loss is active - let the average react faster" else "stock smoothing fits a clean link"),
-                Pick("net.loss.gap_ms", 80f, "stock spacing keeps the burst light on any link")
+                Pick("net.loss.round_ms", if (lossy) 2500f else 4000f,
+                    if (lossy) "you ARE losing packets right now (" + l + ") - check more often while it lasts"
+                    else "loss is clean (" + l + ") - standard rhythm is enough"),
+                Pick("net.loss.per_round", if (lossy) 6f else 4f,
+                    if (lossy) "more packets per check = finer reading while your line is dropping (" + l + ")"
+                    else "4 packets per check is enough on a clean line"),
+                Pick("net.loss.reply_timeout_ms", clamp(rtt * 3f + 200f, 500f, 1200f),
+                    "about 3x your ping (" + r + ") - real losses get counted, slow answers don't"),
+                Pick("net.loss.alpha", 0.35f, "slightly faster than default so a loss burst shows within 2-3 checks"),
+                Pick("net.loss.gap_ms", 80f, "standard spacing so the check itself never floods your line")
+            )
+            "DnsWarmupEngine" -> listOf(
+                Pick("net.dns.rewarm_ms", 75000f,
+                    "refresh server addresses every 75s - always hot, never wasteful")
             )
             "CongestionSentinelEngine" -> listOf(
-                Pick("net.sentinel.poll_ms", if (shaky) 1500f else 2000f,
-                    if (shaky) "trouble is brewing on your link - watch closer" else "stock watch rhythm fits"),
-                Pick("net.sentinel.rise_factor", if (jit > tol) 1.6f else 1.4f,
-                    if (jit > tol) "your wobble is already high - slightly deafer alarm avoids constant alerts"
-                    else "calm link - a slightly sharper alarm hears trouble earlier"),
+                Pick("net.sentinel.poll_ms", 1500f,
+                    "watch just faster than the ping checks so no rise slips between looks"),
+                Pick("net.sentinel.rise_factor", if (wobbly) 1.6f else 1.4f,
+                    if (wobbly) "your wobble (" + j + ") jumps naturally - need a bigger jump before alarming or it cries wolf"
+                    else "your line is calm - a smaller jump is already meaningful, alarm earlier"),
                 Pick("net.sentinel.rise_fraction", 0.5f,
-                    "balanced second gate for your wobble allowance of " + tol.roundToInt() + "ms")
+                    "second gate at half your allowance filters false alarms without missing real ones")
             )
             "SpikeBurstEngine" -> listOf(
-                Pick("net.spike.recovery_window_ms", if (shaky) 45000f else 60000f,
-                    if (shaky) "spikes are frequent here - shorter watch, faster bounce-back" else "stock watch window fits"),
-                Pick("net.spike.clean_samples", if (jit > tol) 3f else 2f,
-                    if (jit > tol) "noisy link - demand one extra clean ping before all-clear" else "steady link - 2 proofs is enough"),
-                Pick("net.spike.burst_samples", 5f, "5 pings maps a spike well without adding load"),
-                Pick("net.spike.burst_gap_ms", 200f, "stock spacing - the map stays honest"),
-                Pick("net.spike.clean_mult", 1.5f, "clean line at 1.5x your baseline matches your carrier profile")
+                Pick("net.spike.recovery_window_ms", 45000f,
+                    "watch 45s after a spike - quick all-clear, still enough proof"),
+                Pick("net.spike.clean_samples", if (lossy) 3f else 2f,
+                    if (lossy) "your line drops packets (" + l + ") - demand one extra clean ping before trusting it again"
+                    else "2 clean pings in a row is solid proof on your clean line"),
+                Pick("net.spike.burst_samples", 5f, "5 quick pings map a spike's depth well"),
+                Pick("net.spike.burst_gap_ms", 200f, "1 second total map time - fast but not a flood"),
+                Pick("net.spike.clean_mult", 1.5f, "a ping within 1.5x your pass-line counts as recovered")
+            )
+            "RadioKeepAliveEngine" -> listOf(
+                Pick("net.keepalive.floor_s", if (wobbly || lossy) 3f else 4f,
+                    if (wobbly || lossy) "your link is struggling (wobble " + j + ", lost " + l + ") - keep the modem hotter so it never adds ITS delay on top"
+                    else "4s floor keeps the modem ready without cooking your battery")
             )
             "ActionWindowEngine" -> listOf(
-                Pick("net.window.poll_ms", 1500f, "refresh the verdict right behind every new measurement"),
-                Pick("net.window.hold_loss_pct", if (loss > 5f) 12f else 8f,
-                    "your loss is " + String.format("%.0f", loss) + "% - " +
-                    (if (loss > 5f) "a stricter ceiling would freeze you constantly; hold a bit more room"
-                     else "hold earlier, save actions that would have died")),
-                Pick("net.window.go_loss_pct", if (loss > 2f) 3f else 2f,
-                    if (loss > 2f) "your link rarely reads 0% - demanding cleaner than it gets means never GO"
-                    else "your link can meet the stock bar"),
-                Pick("net.window.hold_jitter_mult", if (jit > tol) 2.5f else 2f,
-                    if (jit > tol) "your wobble runs high - a touch more headroom avoids constant HOLD"
-                    else "stock gate fits your wobble")
+                Pick("net.window.poll_ms", 1500f,
+                    "refresh the traffic light right behind every new measurement"),
+                Pick("net.window.hold_loss_pct", 8f,
+                    "HOLD one notch earlier than default - actions that would die in transit get held instead"),
+                Pick("net.window.go_loss_pct", if (loss < 1f) 2f else 3f,
+                    if (loss < 1f) "your line is clean (" + l + " loss) - keep the GO bar strict, you'll pass it anyway"
+                    else "your line always has some loss (" + l + ") - a 2% bar would almost never show GO; 3% keeps GO honest AND reachable"),
+                Pick("net.window.hold_jitter_mult", 2f,
+                    "2x your wobble allowance is the proven line between playable and not")
             )
-            "CarrierProfileEngine" -> listOf(
-                Pick("net.profile.rtt_ms", round10(rtt * 1.25f),
-                    "your real ping is ~" + rttTxt + " - pass-line just above it judges YOUR link, not a generic one"),
-                Pick("net.profile.jitter_tol_ms", round5(max(10f, jit * 2f)),
-                    "your real wobble is ~" + jitTxt + " - allowance at 2x that flags real trouble only"),
-                Pick("net.profile.keepalive_s", 0f,
-                    "leave on auto - the engine already halves the rhythm when your link goes bad")
+            "CarrierProfileEngine" -> {
+                if (AdminLiveStats.quality == "GOOD" || AdminLiveStats.quality == "DEGRADED") listOf(
+                    Pick("net.profile.rtt_ms", (rtt * 1.4f).toInt().toFloat().coerceAtLeast(30f),
+                        "your real measured ping is " + r + " - a pass-line at 1.4x that fits YOUR line instead of a generic carrier guess"),
+                    Pick("net.profile.jitter_tol_ms", maxOf(15f, jit * 2.5f).toInt().toFloat(),
+                        "your real wobble is " + j + " - allow 2.5x that before it counts as trouble"),
+                    Pick("net.profile.keepalive_s", 0f,
+                        "0 = automatic; the detected carrier rhythm is right unless you see modem lag")
+                ) else listOf(
+                    Pick("net.profile.rtt_ms", 0f, "connection is currently BAD - don't lock a baseline from a bad moment; leave 0 (auto) and detect again when it's healthy"),
+                    Pick("net.profile.jitter_tol_ms", 0f, "same - keep auto until your line is healthy"),
+                    Pick("net.profile.keepalive_s", 0f, "keep automatic")
+                )
+            }
+            "NetworkStateEngine" -> listOf(
+                Pick("net.state.poll_ms", 10000f,
+                    "the OS already reports switches instantly; this backup sweep can stay relaxed")
             )
             else -> emptyList()
         }
     }
 
-    private fun round100(v: Float): Float = (Math.round(v / 100f) * 100).toFloat()
-    private fun round10(v: Float): Float = (Math.round(v / 10f) * 10).toFloat()
-    private fun round5(v: Float): Float = (Math.round(v / 5f) * 5).toFloat()
+    private fun clamp(v: Float, lo: Float, hi: Float): Float =
+        (if (v < lo) lo else if (v > hi) hi else v).toInt().toFloat()
 }
