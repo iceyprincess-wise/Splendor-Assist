@@ -84,7 +84,7 @@ object AdminTuningDetector {
             )
             "CongestionSentinelEngine" -> listOf(
                 Pick("net.sentinel.poll_ms", if (shaky) 1500f else 2000f,
-                    if (shaky) "trouble is近 - watch closer" else "stock watch rhythm fits"),
+                    if (shaky) "trouble is brewing on your link - watch closer" else "stock watch rhythm fits"),
                 Pick("net.sentinel.rise_factor", if (jit > tol) 1.6f else 1.4f,
                     if (jit > tol) "your wobble is already high - slightly deafer alarm avoids constant alerts"
                     else "calm link - a slightly sharper alarm hears trouble earlier"),
