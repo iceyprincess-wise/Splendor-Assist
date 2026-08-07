@@ -1,12 +1,14 @@
 package com.assistant.adapter.net
 
-// V2 PROACTIVE
+// V3 INSTANT-REFLEX
 import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
  * V2: reports BOTH edges. Onset warns before lag is felt; recovery (with how
  * long the dirty window lasted) tells the runtime when aggression is safe again.
+ * V3: reads the override-aware wobble allowance, so an admin baseline override
+ * re-tunes congestion detection on the next poll.
  */
 object CongestionSentinelEngine {
 
@@ -28,15 +30,15 @@ object CongestionSentinelEngine {
             while (running) {
                 try {
                     val j = NetProbeEngine.jitter
-                    val p = CarrierProfileEngine.current
-                    val rising = j > lastJitter * RISE_FACTOR && j > p.jitterToleranceMs * RISE_FRACTION
-                    val over = j > p.jitterToleranceMs
+                    val tol = CarrierProfileEngine.jitterTolMs.toFloat()
+                    val rising = j > lastJitter * RISE_FACTOR && j > tol * RISE_FRACTION
+                    val over = j > tol
                     val now = rising || over
                     if (now && !congested) {
                         congestedSinceMs = System.currentTimeMillis()
                         warnings++
                         RuntimeLogger.log("CONGESTION ONSET jitter=" + String.format("%.0f", j) +
-                            "ms tol=" + p.jitterToleranceMs + "ms n=" + warnings, "NET")
+                            "ms tol=" + tol.toInt() + "ms n=" + warnings, "NET")
                     } else if (!now && congested) {
                         val dur = (System.currentTimeMillis() - congestedSinceMs) / 1000L
                         RuntimeLogger.log("CONGESTION CLEARED after " + dur + "s jitter=" +
@@ -45,7 +47,8 @@ object CongestionSentinelEngine {
                     congested = now
                     lastJitter = j
                 } catch (_: Throwable) { }
-                try { Thread.sleep(POLL_MS) } catch (_: Throwable) { return@Thread }
+                val nap = POLL_MS
+                try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "net-sentinel"; t.start()

@@ -1,17 +1,21 @@
 package com.assistant.adapter.net
 
-// V2 PROACTIVE
+// V3 INSTANT-REFLEX
 import android.content.Context
 import com.assistant.admin.AdminConfigStore
+import com.assistant.admin.AdminLiveStats
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 import java.net.InetSocketAddress
 import java.net.Socket
 
 /**
- * V2: median-of-3 sampling kills single-sample noise; cadence is ADAPTIVE -
- * 2s while the link is dirty, 5s when clean. On a link where jitter exceeds
- * RTT, one sample is a lie; three tell the truth.
+ * V3: every knob answers to the admin store on the very next cycle - sample
+ * count, sample gap, cadences, timeout, smoothing and the DEGRADED line are
+ * all live-tunable with no hidden clamps. On a link change the engine is
+ * woken INSTANTLY (no waiting out the nap), history is wiped and the first
+ * fresh verdict lands within one probe cycle. Publishes live stats for the
+ * admin Detector.
  */
 object NetProbeEngine {
 
@@ -21,7 +25,11 @@ object NetProbeEngine {
     private val CALM_MS: Long get() = AdminConfigStore.getLong("net.probe.calm_ms", 5000L)
     private val TIMEOUT_MS: Int get() = AdminConfigStore.getInt("net.probe.timeout_ms", 1200)
     private val ALPHA: Float get() = AdminConfigStore.get("net.probe.alpha", 0.35f)
+    private val SAMPLES: Int get() = AdminConfigStore.getInt("net.probe.samples", 3)
+    private val GAP_MS: Long get() = AdminConfigStore.getLong("net.probe.gap_ms", 60L)
+    private val DEGRADED_MULT: Float get() = AdminConfigStore.get("net.probe.degraded_mult", 2f)
 
+    private val lock = Object()
     @Volatile private var running = false
     @Volatile var rtt = 0f; private set
     @Volatile var jitter = 0f; private set
@@ -41,13 +49,24 @@ object NetProbeEngine {
                 probeOnce()
                 if (++tick % 6L == 0L) RuntimeLogger.log(summary(), "NETPROBE")
                 val nap = if (quality == "GOOD") CALM_MS else FAST_MS
-                try { Thread.sleep(nap) } catch (_: Throwable) { return@Thread }
+                try {
+                    synchronized(lock) { lock.wait(if (nap > 0) nap else 1L) }
+                } catch (_: InterruptedException) { }
             }
         }
         t.isDaemon = true; t.name = "net-probe"; t.start()
     }
 
-    fun stop() { running = false }
+    fun stop() { running = false; wake() }
+
+    /** Link changed: wipe history and probe again NOW - no waiting out the nap. */
+    fun onLinkChanged() {
+        rtt = 0f; jitter = 0f; quality = "UNKNOWN"; lastRawMs = -1L
+        wake()
+        RuntimeLogger.log("link changed - history wiped, instant re-probe", "NETPROBE")
+    }
+
+    private fun wake() { synchronized(lock) { lock.notifyAll() } }
 
     /** single raw connect, shared with the burst mapper */
     fun rawSample(): Long {
@@ -59,11 +78,13 @@ object NetProbeEngine {
     }
 
     private fun probeOnce() {
-        val samples = ArrayList<Long>(3)
-        repeat(3) {
+        val n = if (SAMPLES < 1) 1 else SAMPLES
+        val gap = GAP_MS
+        val samples = ArrayList<Long>(n)
+        repeat(n) {
             val s = rawSample()
             if (s >= 0) samples.add(s)
-            try { Thread.sleep(60) } catch (_: Throwable) { }
+            if (gap > 0) try { Thread.sleep(gap) } catch (_: Throwable) { }
         }
         probes++
         if (samples.isEmpty()) {
@@ -78,15 +99,20 @@ object NetProbeEngine {
                 jitter = jitter * (1 - a) + diff * a
                 rtt = rtt * (1 - a) + median * a
             }
-            val p = CarrierProfileEngine.current
+            val base = CarrierProfileEngine.baselineRttMs
+            val tol = CarrierProfileEngine.jitterTolMs
             quality = when {
-                rtt <= p.expectedRttMs && jitter <= p.jitterToleranceMs -> "GOOD"
-                rtt <= p.expectedRttMs * 2 -> "DEGRADED"
+                rtt <= base && jitter <= tol -> "GOOD"
+                rtt <= base * DEGRADED_MULT -> "DEGRADED"
                 else -> "BAD"
             }
         }
         PerformanceTelemetryRegistry.publishNet(
             rtt, jitter, quality, CarrierProfileEngine.current.name, NetworkStateEngine.transport)
+        AdminLiveStats.publishProbe(
+            rtt, jitter, quality, CarrierProfileEngine.current.name,
+            CarrierProfileEngine.baselineRttMs, CarrierProfileEngine.jitterTolMs,
+            NetworkStateEngine.transport)
     }
 
     private fun tcpRtt(host: String, port: Int): Long = try {

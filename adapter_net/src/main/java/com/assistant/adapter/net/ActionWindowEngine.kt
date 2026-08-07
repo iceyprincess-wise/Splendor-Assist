@@ -1,16 +1,18 @@
 package com.assistant.adapter.net
 
-// V2 PROACTIVE
+// V3 INSTANT-REFLEX
 import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 /**
- * THE OUTPUT OF THE WHOLE STACK: one verdict, refreshed every 2s.
+ * THE OUTPUT OF THE WHOLE STACK: one verdict, refreshed on an admin-tunable
+ * cadence.
  *   GO      - link clean: full-speed decisions are safe
  *   CAUTION - degraded: prefer shorter, safer actions
  *   HOLD    - spike/loss in progress: worst moment to commit a long play
- * Published for the main runtime to read non-blocking.
+ * Published for the main runtime to read non-blocking. V3: reads the
+ * override-aware wobble allowance.
  */
 object ActionWindowEngine {
 
@@ -31,11 +33,11 @@ object ActionWindowEngine {
         val t = Thread {
             while (running) {
                 try {
-                    val p = CarrierProfileEngine.current
+                    val tol = CarrierProfileEngine.jitterTolMs.toFloat()
                     val loss = PacketLossProbeEngine.lossPct
                     val next = when {
                         CongestionSentinelEngine.congested || loss > HOLD_LOSS_PCT ||
-                            NetProbeEngine.jitter > p.jitterToleranceMs * HOLD_JITTER_MULT -> "HOLD"
+                            NetProbeEngine.jitter > tol * HOLD_JITTER_MULT -> "HOLD"
                         NetProbeEngine.quality == "GOOD" && loss < GO_LOSS_PCT -> "GO"
                         else -> "CAUTION"
                     }
@@ -52,7 +54,8 @@ object ActionWindowEngine {
                         "rtt=" + NetProbeEngine.rtt.toInt() + " jit=" + NetProbeEngine.jitter.toInt() +
                         " loss=" + loss.toInt())
                 } catch (_: Throwable) { }
-                try { Thread.sleep(POLL_MS) } catch (_: Throwable) { return@Thread }
+                val nap = POLL_MS
+                try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "net-window"; t.start()

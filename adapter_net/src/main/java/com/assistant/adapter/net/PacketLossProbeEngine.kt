@@ -1,7 +1,8 @@
 package com.assistant.adapter.net
 
-// V2 PROACTIVE
+// V3 INSTANT-REFLEX
 import com.assistant.admin.AdminConfigStore
+import com.assistant.admin.AdminLiveStats
 import com.assistant.diagnostic.RuntimeLogger
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -10,20 +11,26 @@ import kotlin.random.Random
 
 /**
  * Measures PACKET LOSS - the metric TCP probes cannot see. Sends real UDP DNS
- * queries and counts replies. Loss is what actually eats passes in eFootball:
- * a lost packet is a lost input, not a late one.
+ * queries and counts replies. V3: queries alternate between two independent
+ * resolvers (8.8.8.8 / 1.1.1.1) so a single resolver hiccup no longer reads
+ * as link loss; the gap between queries is admin-tunable; live loss is
+ * published for the admin Detector.
  */
 object PacketLossProbeEngine {
+
+    private val RESOLVERS = listOf("8.8.8.8", "1.1.1.1")
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
     private val ROUND_MS: Long get() = AdminConfigStore.getLong("net.loss.round_ms", 4000L)
     private val PER_ROUND: Int get() = AdminConfigStore.getInt("net.loss.per_round", 4)
     private val REPLY_TIMEOUT_MS: Int get() = AdminConfigStore.getInt("net.loss.reply_timeout_ms", 700)
     private val ALPHA: Float get() = AdminConfigStore.get("net.loss.alpha", 0.3f)
+    private val GAP_MS: Long get() = AdminConfigStore.getLong("net.loss.gap_ms", 80L)
 
     @Volatile private var running = false
     @Volatile var lossPct = 0f; private set
     @Volatile private var rounds = 0L
+    @Volatile private var seq = 0L
 
     fun start() {
         if (running) return
@@ -31,15 +38,17 @@ object PacketLossProbeEngine {
         val t = Thread {
             while (running) {
                 try {
-                    val perRound = PER_ROUND
+                    val perRound = if (PER_ROUND < 1) 1 else PER_ROUND
+                    val gap = GAP_MS
                     var ok = 0
                     repeat(perRound) {
                         if (queryOnce()) ok++
-                        try { Thread.sleep(80) } catch (_: Throwable) { }
+                        if (gap > 0) try { Thread.sleep(gap) } catch (_: Throwable) { }
                     }
                     val roundLoss = (perRound - ok) * 100f / perRound
                     val a = ALPHA
                     lossPct = lossPct * (1 - a) + roundLoss * a
+                    AdminLiveStats.publishLoss(lossPct)
                     rounds++
                     if (roundLoss >= 50f)
                         RuntimeLogger.log("LOSS SPIKE " + String.format("%.0f", roundLoss) +
@@ -47,7 +56,8 @@ object PacketLossProbeEngine {
                     else if (rounds % 15L == 0L)
                         RuntimeLogger.log("loss avg=" + String.format("%.0f", lossPct) + "% rounds=" + rounds, "NETLOSS")
                 } catch (_: Throwable) { }
-                try { Thread.sleep(ROUND_MS) } catch (_: Throwable) { return@Thread }
+                val nap = ROUND_MS
+                try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "net-loss"; t.start()
@@ -56,11 +66,12 @@ object PacketLossProbeEngine {
     fun stop() { running = false }
 
     private fun queryOnce(): Boolean = try {
+        val host = RESOLVERS[(seq++ % RESOLVERS.size).toInt()]
         val id = Random.nextInt(0x0000FFFF)
         val q = dnsQuery(id)
         DatagramSocket().use { s ->
             s.soTimeout = REPLY_TIMEOUT_MS
-            s.send(DatagramPacket(q, q.size, InetAddress.getByName("8.8.8.8"), 53))
+            s.send(DatagramPacket(q, q.size, InetAddress.getByName(host), 53))
             val buf = ByteArray(512)
             val resp = DatagramPacket(buf, buf.size)
             s.receive(resp)
