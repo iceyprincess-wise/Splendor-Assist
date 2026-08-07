@@ -1,14 +1,19 @@
 package com.assistant.adapter.net
 
 // V2 PROACTIVE
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.admin.AdminConfigStore
 
 /**
  * V2: reports BOTH edges. Onset warns before lag is felt; recovery (with how
  * long the dirty window lasted) tells the runtime when aggression is safe again.
  */
 object CongestionSentinelEngine {
+
+    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    private val POLL_MS: Long get() = AdminConfigStore.getLong("net.sentinel.poll_ms", 2000L)
+    private val RISE_FACTOR: Float get() = AdminConfigStore.get("net.sentinel.rise_factor", 1.5f)
+    private val RISE_FRACTION: Float get() = AdminConfigStore.get("net.sentinel.rise_fraction", 0.6f)
 
     @Volatile private var running = false
     @Volatile var congested = false; private set
@@ -24,9 +29,7 @@ object CongestionSentinelEngine {
                 try {
                     val j = NetProbeEngine.jitter
                     val p = CarrierProfileEngine.current
-                    val riseFactor = AdminConfigStore.get("sentinel_rise_factor")
-                    val riseFraction = AdminConfigStore.get("sentinel_rise_fraction")
-                    val rising = j > lastJitter * riseFactor && j > p.jitterToleranceMs * riseFraction
+                    val rising = j > lastJitter * RISE_FACTOR && j > p.jitterToleranceMs * RISE_FRACTION
                     val over = j > p.jitterToleranceMs
                     val now = rising || over
                     if (now && !congested) {
@@ -42,7 +45,7 @@ object CongestionSentinelEngine {
                     congested = now
                     lastJitter = j
                 } catch (_: Throwable) { }
-                try { Thread.sleep(AdminConfigStore.getMs("sentinel_cadence_ms")) } catch (_: Throwable) { return@Thread }
+                try { Thread.sleep(POLL_MS) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "net-sentinel"; t.start()

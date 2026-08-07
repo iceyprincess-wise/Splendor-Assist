@@ -2,8 +2,8 @@ package com.assistant.adapter.net
 
 // V2 PROACTIVE
 import android.content.Context
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.admin.AdminConfigStore
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -16,10 +16,11 @@ import java.net.Socket
 object NetProbeEngine {
 
     private val TARGETS = listOf("8.8.8.8" to 53, "1.1.1.1" to 53)
-    private val FAST_MS get() = AdminConfigStore.getMs("net_probe_fast_ms")
-    private val CALM_MS get() = AdminConfigStore.getMs("net_probe_calm_ms")
-    private val TIMEOUT_MS get() = AdminConfigStore.getInt("net_probe_timeout_ms")
-    private val ALPHA get() = AdminConfigStore.get("net_probe_alpha")
+    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    private val FAST_MS: Long get() = AdminConfigStore.getLong("net.probe.fast_ms", 2000L)
+    private val CALM_MS: Long get() = AdminConfigStore.getLong("net.probe.calm_ms", 5000L)
+    private val TIMEOUT_MS: Int get() = AdminConfigStore.getInt("net.probe.timeout_ms", 1200)
+    private val ALPHA: Float get() = AdminConfigStore.get("net.probe.alpha", 0.35f)
 
     @Volatile private var running = false
     @Volatile var rtt = 0f; private set
@@ -32,8 +33,8 @@ object NetProbeEngine {
     fun start(ctx: Context) {
         if (running) return
         running = true
-        AdminConfigStore.initialize(ctx.applicationContext)
         PerformanceTelemetryRegistry.initialize(ctx.applicationContext)
+        AdminConfigStore.initialize(ctx.applicationContext)
         val t = Thread {
             var tick = 0L
             while (running) {
@@ -72,8 +73,8 @@ object NetProbeEngine {
             val median = samples[samples.size / 2].toFloat()
             lastRawMs = median.toLong()
             if (rtt == 0f) rtt = median else {
-                val a = ALPHA
                 val diff = Math.abs(median - rtt)
+                val a = ALPHA
                 jitter = jitter * (1 - a) + diff * a
                 rtt = rtt * (1 - a) + median * a
             }

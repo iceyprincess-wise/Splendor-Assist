@@ -1,8 +1,8 @@
 package com.assistant.adapter.net
 
 // V2 PROACTIVE
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.admin.AdminConfigStore
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 /**
@@ -13,6 +13,12 @@ import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
  * Published for the main runtime to read non-blocking.
  */
 object ActionWindowEngine {
+
+    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    private val POLL_MS: Long get() = AdminConfigStore.getLong("net.window.poll_ms", 2000L)
+    private val HOLD_LOSS_PCT: Float get() = AdminConfigStore.get("net.window.hold_loss_pct", 10f)
+    private val GO_LOSS_PCT: Float get() = AdminConfigStore.get("net.window.go_loss_pct", 2f)
+    private val HOLD_JITTER_MULT: Float get() = AdminConfigStore.get("net.window.hold_jitter_mult", 2f)
 
     @Volatile private var running = false
     @Volatile var verdict = "UNKNOWN"; private set
@@ -27,13 +33,10 @@ object ActionWindowEngine {
                 try {
                     val p = CarrierProfileEngine.current
                     val loss = PacketLossProbeEngine.lossPct
-                    val holdLoss = AdminConfigStore.get("window_hold_loss_pct")
-                    val goLoss = AdminConfigStore.get("window_go_loss_pct")
-                    val jitterMult = AdminConfigStore.get("window_jitter_hold_mult")
                     val next = when {
-                        CongestionSentinelEngine.congested || loss > holdLoss ||
-                            NetProbeEngine.jitter > p.jitterToleranceMs * jitterMult -> "HOLD"
-                        NetProbeEngine.quality == "GOOD" && loss < goLoss -> "GO"
+                        CongestionSentinelEngine.congested || loss > HOLD_LOSS_PCT ||
+                            NetProbeEngine.jitter > p.jitterToleranceMs * HOLD_JITTER_MULT -> "HOLD"
+                        NetProbeEngine.quality == "GOOD" && loss < GO_LOSS_PCT -> "GO"
                         else -> "CAUTION"
                     }
                     if (next != verdict) {
@@ -49,7 +52,7 @@ object ActionWindowEngine {
                         "rtt=" + NetProbeEngine.rtt.toInt() + " jit=" + NetProbeEngine.jitter.toInt() +
                         " loss=" + loss.toInt())
                 } catch (_: Throwable) { }
-                try { Thread.sleep(AdminConfigStore.getMs("window_cadence_ms")) } catch (_: Throwable) { return@Thread }
+                try { Thread.sleep(POLL_MS) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "net-window"; t.start()

@@ -1,8 +1,8 @@
 package com.assistant.adapter.net
 
 // V2 PROACTIVE
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.admin.AdminConfigStore
 import java.net.InetAddress
 
 /** V2: fixed host list (previous list had 2 dead names) and failures are named. */
@@ -11,7 +11,8 @@ object DnsWarmupEngine {
     private val HOSTS = listOf(
         "www.konami.com", "www.google.com", "www.cloudflare.com", "one.one.one.one"
     )
-    private val REWARM_MS get() = AdminConfigStore.getMs("dns_rewarm_ms")
+    // ADMIN-TUNABLE (default = original hard-coded value)
+    private val REWARM_MS: Long get() = AdminConfigStore.getLong("net.dns.rewarm_ms", 90_000L)
 
     @Volatile private var running = false
     @Volatile private var rounds = 0L

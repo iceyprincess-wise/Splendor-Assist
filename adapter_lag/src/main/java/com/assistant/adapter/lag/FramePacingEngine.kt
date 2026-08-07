@@ -4,8 +4,8 @@ package com.assistant.adapter.lag
 import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.admin.AdminConfigStore
 
 /**
  * V3: no single-cadence guessing. On an adaptive 90Hz panel running a 30fps
@@ -17,9 +17,10 @@ import com.assistant.diagnostic.admin.AdminConfigStore
  */
 object FramePacingEngine {
 
-    private val ALPHA get() = AdminConfigStore.get("frame_alpha")
-    private val REPORT_EVERY_MS get() = AdminConfigStore.getMs("frame_report_every_ms")
-    private val STALL_MS get() = AdminConfigStore.get("frame_stall_ms")
+    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    private val ALPHA: Float get() = AdminConfigStore.get("lag.frame.alpha", 0.2f)
+    private val REPORT_EVERY_MS: Long get() = AdminConfigStore.getLong("lag.frame.report_ms", 20_000L)
+    private val STALL_MS: Float get() = AdminConfigStore.get("lag.frame.stall_ms", 100f)
 
     @Volatile private var running = false
     @Volatile var avgGapMs = 0f; private set

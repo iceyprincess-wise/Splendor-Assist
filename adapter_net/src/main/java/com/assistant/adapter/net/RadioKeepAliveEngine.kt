@@ -1,8 +1,8 @@
 package com.assistant.adapter.net
 
 // V2 PROACTIVE
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.admin.AdminConfigStore
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
@@ -13,6 +13,9 @@ import java.net.InetAddress
  * a sleepy radio compounds into the worst first-touch latency.
  */
 object RadioKeepAliveEngine {
+
+    // ADMIN-TUNABLE (default = original hard-coded value)
+    private val FLOOR_S: Int get() = AdminConfigStore.getInt("net.keepalive.floor_s", 4)
 
     @Volatile private var running = false
     @Volatile private var sent = 0L
@@ -25,8 +28,7 @@ object RadioKeepAliveEngine {
                 val p = CarrierProfileEngine.current
                 var cadence = p.keepAliveSeconds
                 if (p.name != "WIFI") {
-                    if (NetProbeEngine.quality != "GOOD")
-                        cadence = maxOf(AdminConfigStore.getInt("radio_keepalive_floor_s"), p.keepAliveSeconds / 2)
+                    if (NetProbeEngine.quality != "GOOD") cadence = maxOf(FLOOR_S, p.keepAliveSeconds / 2)
                     try {
                         DatagramSocket().use { s ->
                             s.send(DatagramPacket(ByteArray(1), 1, InetAddress.getByName("8.8.8.8"), 53))

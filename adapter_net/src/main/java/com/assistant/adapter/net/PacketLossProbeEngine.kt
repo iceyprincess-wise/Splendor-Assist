@@ -1,8 +1,8 @@
 package com.assistant.adapter.net
 
 // V2 PROACTIVE
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.admin.AdminConfigStore
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
@@ -15,10 +15,11 @@ import kotlin.random.Random
  */
 object PacketLossProbeEngine {
 
-    private val ROUND_MS get() = AdminConfigStore.getMs("loss_round_ms")
-    private val PER_ROUND get() = AdminConfigStore.getInt("loss_per_round")
-    private val REPLY_TIMEOUT_MS get() = AdminConfigStore.getInt("loss_reply_timeout_ms")
-    private val ALPHA get() = AdminConfigStore.get("loss_alpha")
+    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    private val ROUND_MS: Long get() = AdminConfigStore.getLong("net.loss.round_ms", 4000L)
+    private val PER_ROUND: Int get() = AdminConfigStore.getInt("net.loss.per_round", 4)
+    private val REPLY_TIMEOUT_MS: Int get() = AdminConfigStore.getInt("net.loss.reply_timeout_ms", 700)
+    private val ALPHA: Float get() = AdminConfigStore.get("net.loss.alpha", 0.3f)
 
     @Volatile private var running = false
     @Volatile var lossPct = 0f; private set
