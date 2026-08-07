@@ -15,18 +15,14 @@ import android.widget.Toast
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
- * PIN-gated admin panel — the engine setup room.
+ * PIN-gated admin panel - the engine setup room.
  *
- * Navigation: PIN -> Adapter -> Engine -> that engine's tunables.
- * Every tunable carries a GUIDE readout (anatomy, code reaction on
- * raise/lower, advantage/disadvantage, tweak spots) from AdminTuningGuide.
- * Saved values are picked up on each engine's next loop tick — no
- * restart, no rebuild, no code tweaking.
- *
- * The screens build themselves from AdminConfigStore.TUNABLES: exposing a
- * new engine (even 50 of them) is just adding its Tunables + guides.
- * Adapters listed in AdminConfigStore.ADAPTERS always get a button, even
- * before their constants are migrated.
+ * Navigation: PIN -> Adapter -> Category/Engine -> that engine's settings.
+ * Engines are grouped in plain-language categories (SPEED / SHIELD / BRAIN)
+ * with a one-line job description each. Every setting carries a GUIDE in
+ * layman language plus a live DETECTOR line that recommends a value from
+ * what this device is measuring right now. Saved values apply on each
+ * engine's next tick - no restart, no rebuild, no code tweaking.
  */
 class AdminSettingsActivity : Activity() {
 
@@ -43,11 +39,12 @@ class AdminSettingsActivity : Activity() {
         showPinGate()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         when (screen) {
             Screen.SETTINGS -> showEngines(curAdapter)
             Screen.ENGINES -> showAdapters()
-            else -> super.onBackPressed()
+            else -> @Suppress("DEPRECATION") super.onBackPressed()
         }
     }
 
@@ -84,6 +81,12 @@ class AdminSettingsActivity : Activity() {
         })
     }
 
+    private fun small(list: LinearLayout, text: String, size: Float = 12f, padTop: Int = 0) {
+        list.addView(TextView(this).apply {
+            this.text = text; textSize = size; setPadding(0, dp(padTop), 0, dp(4))
+        })
+    }
+
     // ---------- screen 1: PIN ----------
 
     private fun showPinGate() {
@@ -112,38 +115,44 @@ class AdminSettingsActivity : Activity() {
     private fun showAdapters() {
         screen = Screen.ADAPTERS
         val root = page()
-        title(root, "Splendor Admin — Engine Room", "Pick an adapter")
+        title(root, "Splendor Admin - Engine Room", "Pick an adapter")
         for (a in AdminConfigStore.ADAPTERS) {
             val engines = AdminConfigStore.enginesFor(a)
             val settings = AdminConfigStore.TUNABLES.count { it.adapter == a }
             val label = if (engines.isEmpty()) a + "  (coming soon)"
-                        else a + "  (" + engines.size + " engines · " + settings + " settings)"
+                        else a + "  (" + engines.size + " engines - " + settings + " settings)"
             navButton(root, label) { showEngines(a) }
         }
-        root.addView(TextView(this).apply {
-            text = "Values save live and apply on each engine's next tick. Mirror: Download/SplendorAssist/admin_config.json"
-            textSize = 12f; setPadding(0, dp(12), 0, 0)
-        })
+        small(root, "Values save live and apply on each engine's next tick. Mirror: Download/SplendorAssist/admin_config.json", 12f, 12)
         mount(root)
     }
 
-    // ---------- screen 3: engines of one adapter ----------
+    // ---------- screen 3: engines of one adapter, grouped by category ----------
 
     private fun showEngines(adapter: String) {
         screen = Screen.ENGINES
         curAdapter = adapter
         val root = page()
-        title(root, adapter, "Pick an engine")
+        title(root, adapter, "Pick an engine. Each group tells you what tweaking it gets you.")
         val engines = AdminConfigStore.enginesFor(adapter)
         if (engines.isEmpty()) {
-            root.addView(TextView(this).apply {
-                text = "No tunables wired into the admin store for this adapter yet.\n\nWhen this adapter's engine constants are migrated, each engine will appear here automatically with its own settings and guides."
-                textSize = 14f; setPadding(0, dp(8), 0, dp(8))
-            })
+            small(root, "No tunables wired into the admin store for this adapter yet.\n\nWhen this adapter's engine constants are migrated, each engine will appear here automatically with its own settings, guides and detector.", 14f, 8)
         } else {
-            for (e in engines) {
-                val n = AdminConfigStore.tunablesFor(adapter, e).size
-                navButton(root, e + "  (" + n + " settings)") { showSettings(adapter, e) }
+            val grouped = engines.groupBy { AdminConfigStore.categoryFor(it) }
+            val order = listOf(AdminConfigStore.CAT_SPEED, AdminConfigStore.CAT_SHIELD,
+                               AdminConfigStore.CAT_BRAIN, AdminConfigStore.CAT_GENERAL)
+            for (cat in order) {
+                val list = grouped[cat] ?: continue
+                root.addView(TextView(this).apply {
+                    text = cat; textSize = 14f; setTypeface(typeface, Typeface.BOLD)
+                    setPadding(0, dp(14), 0, dp(4))
+                })
+                for (e in list) {
+                    val n = AdminConfigStore.tunablesFor(adapter, e).size
+                    navButton(root, e + "  (" + n + " settings)") { showSettings(adapter, e) }
+                    val blurb = AdminConfigStore.engineBlurb(e)
+                    if (blurb.isNotEmpty()) small(root, blurb)
+                }
             }
         }
         navButton(root, "< Back to adapters") { showAdapters() }
@@ -157,7 +166,13 @@ class AdminSettingsActivity : Activity() {
         curAdapter = adapter; curEngine = engine
         editors.clear()
         val root = page()
-        title(root, engine, adapter + " · applies on next tick")
+        title(root, engine, adapter + " - applies on next tick")
+        val blurb = AdminConfigStore.engineBlurb(engine)
+        if (blurb.isNotEmpty()) small(root, blurb)
+
+        // live detector banner
+        small(root, AdminTuningDetector.liveLine(), 12f, 6)
+        val picks = AdminTuningDetector.picksFor(engine).associateBy { it.key }
 
         for (t in AdminConfigStore.tunablesFor(adapter, engine)) {
             root.addView(TextView(this).apply {
@@ -165,16 +180,16 @@ class AdminSettingsActivity : Activity() {
                 textSize = 15f; setTypeface(typeface, Typeface.BOLD)
                 setPadding(0, dp(14), 0, 0)
             })
-            root.addView(TextView(this).apply {
-                text = t.key + "   ·   default " + fmt(t.def)
-                textSize = 11f
-            })
+            small(root, t.key + "   -   default " + fmt(t.def))
             val e = EditText(this).apply {
                 inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
                 setText(fmt(AdminConfigStore.get(t.key, t.def)))
             }
             editors[t.key] = e
             root.addView(e)
+
+            val pick = picks[t.key]
+            if (pick != null) small(root, "DETECTOR says " + fmt(pick.value) + " for your device - " + pick.why)
 
             val guide = AdminTuningGuide.forKey(t.key)
             if (guide != null) {
@@ -185,17 +200,25 @@ class AdminSettingsActivity : Activity() {
                     setPadding(dp(8), dp(4), 0, dp(4))
                 }
                 val toggle = Button(this).apply {
-                    text = "Guide ▾"
+                    text = "Guide"
                     isAllCaps = false
                     textSize = 12f
                     setOnClickListener {
                         val open = body.visibility == View.VISIBLE
                         body.visibility = if (open) View.GONE else View.VISIBLE
-                        text = if (open) "Guide ▾" else "Guide ▴"
+                        text = if (open) "Guide" else "Hide guide"
                     }
                 }
                 root.addView(toggle)
                 root.addView(body)
+            }
+        }
+
+        if (picks.isNotEmpty()) {
+            navButton(root, "Fill all with Detector picks") {
+                var filled = 0
+                for ((k, p) in picks) { editors[k]?.setText(fmt(p.value)); filled++ }
+                Toast.makeText(this, filled.toString() + " fields filled - review, then Save", Toast.LENGTH_SHORT).show()
             }
         }
 
