@@ -39,9 +39,9 @@ object AdminConfigStore {
     const val CAT_GUARD = "Network Guard - spots trouble before you feel it"
     const val CAT_DECISION = "Play Decision - the final GO / HOLD traffic light"
     const val CAT_BASELINE = "Your Network Baseline - what counts as normal for YOUR line"
-    const val CAT_LAG_RADAR = "Lag Radar - measures every frame and freeze, even silent micro-lag"
-    const val CAT_LAG_JUDGE = "Lag Judge - decides how bad it is, tweak for zero missed lag"
-    const val CAT_LAG_RESCUE = "Lag Rescue - drops extra work the instant lag is confirmed"
+    const val CAT_LAG_RADAR = "Lag Radar - feels every micro-freeze the moment it happens"
+    const val CAT_LAG_JUDGE = "Lag Judge - decides how bad it is, no false alarms"
+    const val CAT_LAG_RESCUE = "Lag Rescue - drops extra work so the game gets the whole phone"
 
     private val ENGINE_CATEGORY: Map<String, String> = mapOf(
         // Net Adapter
@@ -121,33 +121,33 @@ object AdminConfigStore {
         Tunable("net.profile.jitter_tol_ms",   "Wobble allowance override (0 = auto)",      0f,     ADAPTER_NET, "CarrierProfileEngine"),
         Tunable("net.profile.keepalive_s",     "Keep-awake rhythm override (0 = auto)",     0f,     ADAPTER_NET, "CarrierProfileEngine"),
 
-        // ================== LAG ADAPTER ==================
+        // ---------------- LAG ADAPTER ----------------
         // FramePacingEngine
         Tunable("lag.frame.alpha",             "Memory dial: newest frame weight (0-1)",    0.2f,   ADAPTER_LAG, "FramePacingEngine"),
         Tunable("lag.frame.report_ms",         "Smoothness report rhythm (ms)",             20000f, ADAPTER_LAG, "FramePacingEngine"),
         Tunable("lag.frame.stall_ms",          "A frame slower than this is a freeze (ms)", 100f,   ADAPTER_LAG, "FramePacingEngine"),
         // MainThreadStallEngine
-        Tunable("lag.stall.cadence_ms",        "Busy-thread poke rhythm (ms)",              250f,   ADAPTER_LAG, "MainThreadStallEngine"),
+        Tunable("lag.stall.cadence_ms",        "Touch-delay poke rhythm (ms)",              250f,   ADAPTER_LAG, "MainThreadStallEngine"),
         Tunable("lag.stall.spike_ms",          "A delay above this is a choke (ms)",        80f,    ADAPTER_LAG, "MainThreadStallEngine"),
         Tunable("lag.stall.alpha",             "Memory dial: newest poke weight (0-1)",     0.25f,  ADAPTER_LAG, "MainThreadStallEngine"),
         Tunable("lag.stall.report_ms",         "Choke summary rhythm (ms)",                 10000f, ADAPTER_LAG, "MainThreadStallEngine"),
-        // ThermalPeekEngine
-        Tunable("lag.thermal.poll_ms",         "Heat check rhythm (ms)",                    10000f, ADAPTER_LAG, "ThermalPeekEngine"),
-        // DisplayProfileEngine
-        Tunable("lag.display.game_fps",        "Game frame rate (eFootball = 30)",          30f,    ADAPTER_LAG, "DisplayProfileEngine"),
         // LagVerdictEngine
         Tunable("lag.verdict.poll_ms",         "Judge check rhythm (ms)",                   2000f,  ADAPTER_LAG, "LagVerdictEngine"),
-        Tunable("lag.verdict.jitter_ms",       "Stutter alarm: frame wobble above (ms)",    10f,    ADAPTER_LAG, "LagVerdictEngine"),
-        Tunable("lag.verdict.stability_pct",   "Stutter alarm: steady beat below (%)",      65f,    ADAPTER_LAG, "LagVerdictEngine"),
-        Tunable("lag.verdict.choke_stalls",    "Heavy alarm: freezes per minute above",     12f,    ADAPTER_LAG, "LagVerdictEngine"),
-        Tunable("lag.verdict.choke_mtstall_ms","Heavy alarm: thread delay above (ms)",      120f,   ADAPTER_LAG, "LagVerdictEngine"),
-        Tunable("lag.verdict.choke_spikes",    "Heavy alarm: chokes per minute above",      20f,    ADAPTER_LAG, "LagVerdictEngine"),
-        Tunable("lag.verdict.confirm_polls",   "Checks that must agree before verdict",     2f,     ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.jitter_ms",       "JITTERY when frame wobble above (ms)",      10f,    ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.stability_pct",   "JITTERY when steady beat below (%)",        65f,    ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.choke_stalls",    "CHOKING when freezes/min above",            12f,    ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.choke_mtstall_ms","CHOKING when touch delay above (ms)",       120f,   ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.choke_spikes",    "CHOKING when chokes/min above",             20f,    ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.confirm_polls",   "Checks that must agree before verdict flips",2f,    ADAPTER_LAG, "LagVerdictEngine"),
         // LoadShedGovernor
         Tunable("lag.shed.poll_ms",            "Rescue check rhythm (ms)",                  2000f,  ADAPTER_LAG, "LoadShedGovernor"),
         Tunable("lag.shed.arm_polls",          "Checks to agree before help starts",        2f,     ADAPTER_LAG, "LoadShedGovernor"),
         Tunable("lag.shed.release_polls",      "Clean checks before help stands down",      5f,     ADAPTER_LAG, "LoadShedGovernor"),
-        Tunable("lag.shed.min_hold_ms",        "Minimum helping time once started (ms)",    8000f,  ADAPTER_LAG, "LoadShedGovernor")
+        Tunable("lag.shed.min_hold_ms",        "Minimum helping time once started (ms)",    8000f,  ADAPTER_LAG, "LoadShedGovernor"),
+        // ThermalPeekEngine
+        Tunable("lag.thermal.poll_ms",         "Heat check rhythm (ms)",                    10000f, ADAPTER_LAG, "ThermalPeekEngine"),
+        // DisplayProfileEngine
+        Tunable("lag.display.game_fps",        "Game frame rate lock (fps)",                30f,    ADAPTER_LAG, "DisplayProfileEngine")
     )
 
     // ---- grouping helpers for the panel ----
