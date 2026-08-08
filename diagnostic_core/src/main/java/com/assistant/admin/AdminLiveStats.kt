@@ -5,9 +5,9 @@ import org.json.JSONObject
 import java.io.File
 
 /**
- * Live readings published by the net AND lag engines so the admin panel's
- * Detector can recommend values from what THIS device is measuring RIGHT
- * NOW - no guessing.
+ * Live readings published by the net, lag AND stutter engines so the admin
+ * panel's Detector can recommend values from what THIS device is measuring
+ * RIGHT NOW - no guessing.
  *
  * The engines run in separate processes from the admin screen, so
  * in-memory fields alone are invisible to the panel. Every publish
@@ -43,6 +43,14 @@ object AdminLiveStats {
     @Volatile var shedLevel = "NONE"; private set
     @Volatile var lagUpdatedMs = 0L; private set
 
+    // ---- stutter side ----
+    @Volatile var sBurstsPerMin = -1f; private set    // -1 = not measured yet
+    @Volatile var sWorstMs = 0f; private set
+    @Volatile var sFrames = 0; private set
+    @Volatile var sState = "MEASURING"; private set
+    @Volatile var sPanelHz = 0f; private set
+    @Volatile var stutterUpdatedMs = 0L; private set
+
     @Volatile private var appCtx: Context? = null
 
     /** Idempotent; called from AdminConfigStore.initialize in every process. */
@@ -74,6 +82,13 @@ object AdminLiveStats {
         save()
     }
 
+    fun publishStutter(bpm: Float, worst: Float, frames: Int, state: String, hz: Float) {
+        sBurstsPerMin = bpm; sWorstMs = worst; sFrames = frames
+        sState = state; sPanelHz = hz
+        stutterUpdatedMs = System.currentTimeMillis()
+        save()
+    }
+
     /** True when net probe numbers are fresh enough to trust (within 30s). */
     fun fresh(): Boolean {
         if (!memFresh()) load()
@@ -86,11 +101,20 @@ object AdminLiveStats {
         return memLagFresh()
     }
 
+    /** True when stutter numbers are fresh enough to trust (within 30s). */
+    fun stutterFresh(): Boolean {
+        if (!memStutterFresh()) load()
+        return memStutterFresh()
+    }
+
     private fun memFresh(): Boolean =
         probeUpdatedMs > 0 && System.currentTimeMillis() - probeUpdatedMs < 30_000L
 
     private fun memLagFresh(): Boolean =
         lagUpdatedMs > 0 && System.currentTimeMillis() - lagUpdatedMs < 30_000L
+
+    private fun memStutterFresh(): Boolean =
+        stutterUpdatedMs > 0 && System.currentTimeMillis() - stutterUpdatedMs < 30_000L
 
     // ---- cross-process snapshot ----
 
@@ -100,8 +124,8 @@ object AdminLiveStats {
     private fun save() {
         try {
             val f = file() ?: return
-            // merge-on-write: keep the other side's newer numbers when two
-            // processes (net kernel / lag process) share the snapshot file
+            // merge-on-write: keep the other sides' newer numbers when several
+            // processes (net / lag / stutter) share the snapshot file
             load()
             val o = JSONObject()
             o.put("rtt", rttMs.toDouble()); o.put("jitter", jitterMs.toDouble())
@@ -115,6 +139,9 @@ object AdminLiveStats {
             o.put("lagVerdict", lagVerdict); o.put("thermal", thermal)
             o.put("panelHz", panelHz.toDouble()); o.put("shed", shedLevel)
             o.put("lagAt", lagUpdatedMs)
+            o.put("sBpm", sBurstsPerMin.toDouble()); o.put("sWorst", sWorstMs.toDouble())
+            o.put("sFrames", sFrames); o.put("sState", sState)
+            o.put("sHz", sPanelHz.toDouble()); o.put("sAt", stutterUpdatedMs)
             f.writeText(o.toString())
         } catch (_: Throwable) { }
     }
@@ -153,6 +180,15 @@ object AdminLiveStats {
                 panelHz = o.optDouble("panelHz", 0.0).toFloat()
                 shedLevel = o.optString("shed", "NONE")
                 lagUpdatedMs = gAt
+            }
+            val sAt = o.optLong("sAt")
+            if (sAt > stutterUpdatedMs) {
+                sBurstsPerMin = o.optDouble("sBpm", -1.0).toFloat()
+                sWorstMs = o.optDouble("sWorst", 0.0).toFloat()
+                sFrames = o.optInt("sFrames", 0)
+                sState = o.optString("sState", "MEASURING")
+                sPanelHz = o.optDouble("sHz", 0.0).toFloat()
+                stutterUpdatedMs = sAt
             }
         } catch (_: Throwable) { }
     }
