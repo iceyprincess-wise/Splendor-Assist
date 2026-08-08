@@ -9,6 +9,14 @@ import java.util.concurrent.atomic.AtomicLong
  * Engines must never touch these stores directly after this exists — they
  * receive this frame instead. Guarded per-store so one missing store cannot
  * abort frame assembly.
+ *
+ * REPAIRED (Task B): hasBall was derived from raw stored coordinates, so
+ * once a ball had EVER been seen the flag stayed true forever (it read
+ * true even on the app's own home screen). Every defensive contributor
+ * gated on !hasBall (keeper, intercept) was therefore permanently locked
+ * out. hasBall now additionally requires the ball sighting to be FRESH
+ * (VisionTrust age-decay window) - stale coordinates no longer claim
+ * possession.
  */
 object FrameAssembler {
 
@@ -33,7 +41,11 @@ object FrameAssembler {
         val telemetry = try { TelemetryRepository.current() } catch (_: Throwable) { null }
         val ballX = telemetry?.ballX ?: 0f
         val ballY = telemetry?.ballY ?: 0f
-        val hasBall = ballX != 0f || ballY != 0f
+        // possession is only claimed on a FRESH sighting - stale stored
+        // coordinates said "we have the ball" forever and starved every
+        // !hasBall-gated contributor (keeper, intercept) of its turn
+        val ballFresh = VisionTrust.ballTrust() > 0f
+        val hasBall = ballFresh && (ballX != 0f || ballY != 0f)
 
         val scene = try { SceneTracker.current() } catch (_: Throwable) { null }
         val players = scene?.trackedPlayers.orEmpty()
