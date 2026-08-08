@@ -55,6 +55,38 @@ object AdapterHealthRegistry {
         return snapshots.values.toList()
     }
 
+    /*
+     * Cross-process truth. The adapters (net / lag / stutter ...) heartbeat
+     * from their OWN processes: their updates land in their process's
+     * in-memory map and in the shared persistence file - never in this
+     * process's map. Anything that gates on adapter health from the main
+     * runtime (booster gate, health monitor) must therefore merge the
+     * persisted snapshots with the local ones, preferring the freshest
+     * heartbeat per adapter.
+     */
+    @Synchronized
+    fun getAllLive(): List<AdapterHealthSnapshot> {
+        val merged = HashMap<String, AdapterHealthSnapshot>()
+
+        applicationContext?.let { ctx ->
+            try {
+                HealthPersistenceStore.readAll(ctx).forEach {
+                    merged[it.adapterName] = it
+                }
+            } catch (_: Throwable) {
+            }
+        }
+
+        snapshots.values.forEach { local ->
+            val existing = merged[local.adapterName]
+            if (existing == null || local.lastHeartbeat > existing.lastHeartbeat) {
+                merged[local.adapterName] = local
+            }
+        }
+
+        return merged.values.toList()
+    }
+
     @Synchronized
     fun get(name: String): AdapterHealthSnapshot? {
         return snapshots[name]

@@ -79,9 +79,16 @@ object RuntimeCoordinator {
 
     @Synchronized
     fun refreshBoosterReadyFromRegistry() {
+        // Adapters heartbeat from their OWN processes; getAllLive() merges the
+        // persisted cross-process snapshots. Only a FRESH heartbeat proves a
+        // booster adapter is actually alive right now - an old file entry
+        // from a previous session must not open the gate.
+        val now = System.currentTimeMillis()
         val healthy =
             try {
-                AdapterHealthRegistry.getAll().isNotEmpty()
+                AdapterHealthRegistry.getAllLive().any {
+                    now - it.lastHeartbeat <= 120_000L
+                }
             } catch (_: Throwable) {
                 false
             }
@@ -114,11 +121,6 @@ object RuntimeCoordinator {
     }
 
     /*
-     * Reverse ignition order: execution -> arbitration -> gameplay ->
-     * vision -> stores -> diagnostics. Each reset is independently guarded
-     * so one missing hook cannot abort the shutdown chain.
-     */
-    /*
      * Shutdown is the exact reverse of warmUpEngines() ignition order:
      * loop/frame/registry first, then gameplay engines, then stores/diagnostics.
      * Each guarded so one missing hook cannot abort the chain.
@@ -146,18 +148,27 @@ object RuntimeCoordinator {
     }
 
     @Synchronized
-    fun runtimeState(): Map<String, Any> = mapOf(
-        "permissionsVerified" to permissionsVerified.get(),
-        "accessibilityReady" to accessibilityReady.get(),
-        "captureReady" to captureReady.get(),
-        "boosterReady" to boosterReady.get(),
-        "enginesWarm" to enginesWarm.get(),
-        "busEnabled" to busEnabled.get(),
-        "runtimeReady" to runtimeReady.get(),
-        "lastTransition" to lastTransition,
-        "lastTransitionMs" to lastTransitionMs,
-        "busPending" to CentralExecutionBus.pendingCount()
-    )
+    fun runtimeState(): Map<String, Any> {
+        // Heal the booster latch lazily: the adapters usually heartbeat AFTER
+        // this runtime reached G6, and no gate event fires again after that -
+        // so without this re-check boosterReady stayed false forever even
+        // while every adapter was alive and heartbeating.
+        if (!boosterReady.get()) {
+            refreshBoosterReadyFromRegistry()
+        }
+        return mapOf(
+            "permissionsVerified" to permissionsVerified.get(),
+            "accessibilityReady" to accessibilityReady.get(),
+            "captureReady" to captureReady.get(),
+            "boosterReady" to boosterReady.get(),
+            "enginesWarm" to enginesWarm.get(),
+            "busEnabled" to busEnabled.get(),
+            "runtimeReady" to runtimeReady.get(),
+            "lastTransition" to lastTransition,
+            "lastTransitionMs" to lastTransitionMs,
+            "busPending" to CentralExecutionBus.pendingCount()
+        )
+    }
 
     private fun evaluate() {
         // Hard stop against any future cycle. @Synchronized does NOT help here:
