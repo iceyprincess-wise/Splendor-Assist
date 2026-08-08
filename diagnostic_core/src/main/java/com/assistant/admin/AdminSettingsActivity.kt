@@ -170,9 +170,9 @@ class AdminSettingsActivity : Activity() {
         val root = page()
         title(root, engine, adapter + " - applies on next tick")
 
-        // ---- live detector header ----
+        // ---- live detector header (per adapter) ----
         root.addView(TextView(this).apply {
-            text = AdminTuningDetector.liveLine()
+            text = AdminTuningDetector.liveLine(adapter)
             textSize = 13f
             setPadding(0, 0, 0, dp(6))
         })
@@ -213,7 +213,7 @@ class AdminSettingsActivity : Activity() {
                 })
             }
 
-            val guide = AdminTuningGuide.forKey(t.key)
+            val guide = AdminTuningGuide.forKey(t.key) ?: AdminTuningGuideLag.forKey(t.key)
             if (guide != null) {
                 val body = TextView(this).apply {
                     text = AdminTuningGuide.render(guide)
