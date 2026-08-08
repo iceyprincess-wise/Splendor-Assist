@@ -1,220 +1,251 @@
 package com.assistant.admin
 
 /**
- * Layman field guide for every LAG adapter tunable. Same structure and
- * same honesty rule as AdminTuningGuide: every line is read from what the
- * code actually does - no guessing. The live Detector on the settings
- * screen computes device-specific values; when the two disagree, trust
- * the Detector.
+ * Field guide for the LAG adapter tunables, written in plain language for a
+ * non-technical admin. Every line is read from what the code actually does -
+ * no guessing. Reuses AdminTuningGuide.Guide so both guides render the same.
  *
- * Returns AdminTuningGuide.Guide so the panel renders both guides the
- * same way.
+ * "Gaming cheat spot" = the prime pick for smooth pro gaming on a typical
+ * phone. The live DETECTOR on the settings screen goes further and computes
+ * values from YOUR device's measurements - when the two disagree, trust the
+ * Detector, it is looking at your actual device.
  */
 object AdminTuningGuideLag {
 
     fun forKey(key: String): AdminTuningGuide.Guide? = GUIDES[key]
 
-    private fun g(what: String, raise: String, lower: String, pro: String, con: String,
-                  bestMin: String, bestMax: String, risk: String, cheat: String) =
-        AdminTuningGuide.Guide(what, raise, lower, pro, con, bestMin, bestMax, risk, cheat)
-
     private val GUIDES: Map<String, AdminTuningGuide.Guide> = mapOf(
 
+        // ---------------- FramePacingEngine ----------------
+        "lag.frame.alpha" to AdminTuningGuide.Guide(
+            what = "The memory dial (0 to 1) for the smoothness reading. The app watches every single frame your screen draws; this decides how much the newest frame counts versus history when it averages how smooth things are.",
+            raise = "The reading chases the newest frames - a developing stutter is flagged very fast, but one single slow frame can also swing the reading and cause a false alarm.",
+            lower = "The reading moves calmly and ignores one-off slow frames, but a real slowdown takes a little longer to show up.",
+            pro = "Sets the reaction speed of the number every other lag engine trusts.",
+            con = "Too high and one heavy frame looks like a trend; too low and real lag hides for seconds.",
+            bestMin = "0.1 (very calm)",
+            bestMax = "0.35 (very alert)",
+            risk = "Above 0.6 - every isolated slow frame yanks the reading around and the judge flip-flops.",
+            cheat = "0.25 - sees real slowdowns a beat sooner than stock while staying calm."
+        ),
+        "lag.frame.report_ms" to AdminTuningGuide.Guide(
+            what = "How often (ms) the frame watcher hands its smoothness summary (steady-beat %, freezes, worst gap) to the rest of the system.",
+            raise = "Longer, smoother-looking summaries - but a fresh lag episode waits longer to appear in a report.",
+            lower = "Fresher summaries more often - the judge works with newer facts, tiny extra bookkeeping.",
+            pro = "Sets how current the 'how smooth are we' story is.",
+            con = "Very short windows make the numbers noisy because too few frames are counted per window.",
+            bestMin = "10000",
+            bestMax = "30000",
+            risk = "Below 2000 - noisy, spammy reports that add overhead and insight nothing.",
+            cheat = "15000 - catches a lag episode one report earlier than stock."
+        ),
+        "lag.frame.stall_ms" to AdminTuningGuide.Guide(
+            what = "A frame gap longer than this many milliseconds is counted as a FREEZE - the line between 'one slow frame' and 'the game visibly hung'.",
+            raise = "Only big freezes get counted - micro-freezes slip under the radar and no rescue comes for them.",
+            lower = "Smaller hiccups start counting as freezes - rescue comes earlier, but ordinary heavy frames may trigger it for nothing.",
+            pro = "Defines the exact pain level the rescue system responds to.",
+            con = "Set near your screen's normal frame time, normal rendering gets branded as freezing.",
+            bestMin = "80",
+            bestMax = "150",
+            risk = "Below 35 - every tiny skipped beat is a 'freeze'; rescue never stands down and quality suffers non-stop.",
+            cheat = "90 - catches a real felt freeze while ignoring single heavy frames. The Detector computes the exact number from your screen."
+        ),
+
         // ---------------- MainThreadStallEngine ----------------
-        "lag.stall.cadence_ms" to g(
-            what = "The app pokes its own brain (the main thread) on this rhythm and times how late the answer comes back. A late answer means the phone is choked - the exact choke that delays your touches.",
-            raise = "Pokes come less often - lighter on the phone, but a short choke can happen and finish between two pokes and never get seen.",
-            lower = "Pokes come more often - even the shortest choke is caught, at a tiny extra cost of work.",
-            pro = "This is the radar for invisible micro-lag: chokes too short to see but long enough to eat a touch.",
-            con = "The poke itself is feather-light, but a silly-fast rhythm adds pointless busy-work.",
-            bestMin = "150",
+        "lag.stall.cadence_ms" to AdminTuningGuide.Guide(
+            what = "The app pokes its own main thread on this rhythm (ms) and measures how late each poke answers. A late answer means the phone was choked at that moment - the invisible lag you feel as heavy, delayed touch.",
+            raise = "Fewer pokes - lighter on the phone, but short chokes can hide between two pokes and go uncounted.",
+            lower = "More pokes - even the shortest choke gets caught, at a tiny extra cost per second.",
+            pro = "This is the net that catches the silent micro-lag no frame counter can see.",
+            con = "The poke itself is nearly free, but a silly-fast rhythm just measures itself.",
+            bestMin = "100",
             bestMax = "500",
-            risk = "Below 50 - the measuring itself becomes load on an already bottlenecked phone.",
+            risk = "Below 50 - the measuring rhythm becomes its own load and pollutes the reading.",
             cheat = "200 - no choke a player could feel fits between two pokes."
         ),
-        "lag.stall.spike_ms" to g(
-            what = "How late the answer must be (in ms) before it is booked as a choke. This defines what officially counts as micro-lag.",
-            raise = "Only serious delays get booked - fewer alarms, but small feelable hiccups pass unrecorded.",
-            lower = "Even tiny delays get booked - nothing slips by, but normal scheduling noise starts inflating the count.",
-            pro = "You decide exactly where 'busy' ends and 'choking' begins.",
-            con = "Set far too low, the count screams constantly and the judge over-reacts.",
+        "lag.stall.spike_ms" to AdminTuningGuide.Guide(
+            what = "A poke answered later than this many ms counts as a CHOKE. This is the sensitivity line for the touch-delay net.",
+            raise = "Only heavy chokes count - fewer alarms, but light chokes that still feel sticky go unreported.",
+            lower = "Lighter chokes get counted - earlier warnings, but normal tiny delays may start counting too.",
+            pro = "You choose exactly what 'the phone hesitated' means.",
+            con = "Below your device's natural noise level it alarms at rest.",
             bestMin = "50",
             bestMax = "120",
-            risk = "Below 20 - ordinary phone housekeeping gets booked as chokes; the rescue never rests and costs you smoothness.",
-            cheat = "66 - two game frames: the first moment a delayed touch is actually feelable."
+            risk = "Below 20 - ordinary scheduling noise gets branded as chokes; the count becomes meaningless.",
+            cheat = "66 - two missed 30fps game beats; anything past that a player can feel. The Detector tunes this above YOUR device's rest noise."
         ),
-        "lag.stall.alpha" to g(
-            what = "Memory dial (0-1) for the average choke delay - how much the newest poke counts versus history.",
-            raise = "The average chases the newest readings - reacts fast, jumps around.",
-            lower = "The average moves calmly - steady, but a real choke-up takes longer to show.",
-            pro = "Sets how quickly 'device is choking' becomes visible to the judge.",
-            con = "Extremes make the reading twitchy or sleepy - both mislead the judge.",
+        "lag.stall.alpha" to AdminTuningGuide.Guide(
+            what = "Memory dial (0 to 1) for the average touch delay - how much the newest poke counts versus history.",
+            raise = "The delay number reacts fast - real chokes show almost instantly, single blips also swing it more.",
+            lower = "The number moves smoothly - stable, but a real choke-up takes several pokes to register.",
+            pro = "Balances alarm speed against false alarms for the touch-delay reading.",
+            con = "Extremes make the number twitchy or sleepy - both mislead the judge.",
             bestMin = "0.15",
             bestMax = "0.4",
-            risk = "Above 0.7 - one long poke swings the whole verdict on its own.",
+            risk = "Above 0.7 - a single late poke can shove the average over the emergency line by itself.",
             cheat = "0.3 - a real choke-up shows within 2-3 pokes, single blips stay ignored."
         ),
-        "lag.stall.report_ms" to g(
-            what = "How often the choke counter is summarized into chokes-per-minute (the number the judge reads).",
-            raise = "Smoother, slower-moving summary - a fresh burst of chokes reaches the judge later.",
-            lower = "Fresher summaries - the judge reacts to a burst sooner, slightly more bookkeeping.",
-            pro = "Controls how live the chokes-per-minute number is.",
-            con = "Very short windows make the number jumpy.",
+        "lag.stall.report_ms" to AdminTuningGuide.Guide(
+            what = "How often (ms) the choke counter is summarized into chokes-per-minute for the judge.",
+            raise = "Steadier count, older news - the judge reacts to chokes later.",
+            lower = "Fresher count more often - slightly noisier number.",
+            pro = "Sets how live the chokes-per-minute figure is.",
+            con = "Very short windows exaggerate: one choke in 2 seconds reads as 30/min.",
             bestMin = "5000",
             bestMax = "20000",
-            risk = "Below 2000 - the maths gets noisy and the judge flip-flops.",
-            cheat = "10000 - fresh numbers every 10 seconds, all match long."
+            risk = "Below 2000 - single chokes explode into huge per-minute numbers and cause panic verdicts.",
+            cheat = "10000 - live enough for the judge, zero waste."
         ),
 
         // ---------------- ThermalPeekEngine ----------------
-        "lag.thermal.poll_ms" to g(
-            what = "How often the app asks Android for the official heat status. Heat is the silent lag-maker: a hot phone slows ITSELF down on purpose.",
-            raise = "Heat checked less often - fine when cool, but a heat wave is noticed later.",
-            lower = "Heat tracked more closely - warming trends are caught as they start.",
-            pro = "Free evidence: when lag storms line up with SEVERE heat, you know the true enemy.",
-            con = "Heat moves slowly - checking very fast adds nothing.",
-            bestMin = "5000",
-            bestMax = "30000",
-            risk = "Below 1000 - pointless hammering of a value that changes over minutes.",
-            cheat = "10000 - stock; drop to 5000 only when the Detector shows your phone running hot."
+        "lag.thermal.poll_ms" to AdminTuningGuide.Guide(
+            what = "How often (ms) the app asks Android for the phone's heat level. When a phone gets hot it silently slows itself down - that slowdown IS lag with a hidden cause.",
+            raise = "Heat is checked less often - a rising heat level is caught later, so a heat-lag storm gets blamed on the wrong suspect for longer.",
+            lower = "Heat changes are caught sooner - the reading is nearly free, so faster costs almost nothing.",
+            pro = "Tells you WHICH enemy you face: heat throttling or scheduling trouble - the fixes are different.",
+            con = "The reading only changes every so often anyway; checking insanely fast adds nothing.",
+            bestMin = "3000",
+            bestMax = "20000",
+            risk = "Below 1000 - pure busy-work; the heat level does not change that fast.",
+            cheat = "10000 normally, 5000 when your phone already runs warm - exactly what the Detector picks from your live heat."
         ),
 
         // ---------------- DisplayProfileEngine ----------------
-        "lag.display.game_fps" to g(
-            what = "The frame rate your game is locked at (eFootball = 30). Every freeze-line and choke-line is calculated FROM this number, so it must state the truth.",
-            raise = "Tells the maths the game draws faster - all lines get stricter. Only correct if the game truly runs faster.",
-            lower = "Tells the maths the game draws slower - all lines get looser. Only correct if the game truly runs slower.",
-            pro = "When the game changes its lock one day, one number here re-tunes the whole adapter - no rebuild.",
-            con = "A wrong value here quietly mis-tunes everything built on it.",
-            bestMin = "30 (eFootball's real lock)",
+        "lag.display.game_fps" to AdminTuningGuide.Guide(
+            what = "The frame rate your game is locked at. eFootball runs locked at 30. Every freeze and choke line in the lag system is computed FROM this number, so it must state the truth.",
+            raise = "Tell it a higher number only if the game truly runs faster (say a future 60fps update) - lines get stricter to match the faster game.",
+            lower = "Tell it a lower number only if the game truly runs slower - lines relax to match.",
+            pro = "When the game changes its lock one day, you fix the whole lag system HERE with one number - no rebuild.",
+            con = "Setting a number that does not match the real game skews every freeze line at once.",
+            bestMin = "30 (eFootball today)",
             bestMax = "60 (only if the game truly runs 60)",
-            risk = "Any value that is not the game's REAL frame rate - the whole adapter grades against a lie.",
-            cheat = "30 - the truth. This dial is for facts, not for boosting."
+            risk = "Any number the game does NOT actually run at - the whole lag system grades against a lie. (0 or blank safely falls back to 30.)",
+            cheat = "30 - the truth for eFootball. Truth IS the cheat here."
         ),
 
         // ---------------- LagVerdictEngine ----------------
-        "lag.verdict.poll_ms" to g(
-            what = "How often the judge reads all the radar numbers and names the device state: SMOOTH, JITTERY or CHOKING.",
-            raise = "Verdicts update more slowly - the rescue starts later when lag begins.",
-            lower = "Verdicts track the radar near-live - help arrives sooner, tiny extra work.",
-            pro = "The reaction-speed dial for the entire rescue chain.",
-            con = "Faster than the radar updates adds nothing (it re-reads the same numbers).",
+        "lag.verdict.poll_ms" to AdminTuningGuide.Guide(
+            what = "How often (ms) the judge reads all the lag measurements and names the device state: SMOOTH, JITTERY or CHOKING. Rescue reacts to this name.",
+            raise = "Verdicts lag behind reality - rescue starts later after real trouble begins.",
+            lower = "Verdicts track reality near-live - rescue starts sooner, tiny extra cost.",
+            pro = "The single dial for how fast the whole protection chain reacts.",
+            con = "Much faster than the measurements refresh just re-reads the same numbers.",
             bestMin = "1000",
-            bestMax = "3000",
-            risk = "Above 5000 - lag is well underway before the verdict even flips.",
-            cheat = "1500 - with 2 agreeing checks, real lag is confirmed in ~3 seconds."
+            bestMax = "4000",
+            risk = "Above 8000 - trouble parties for 8 seconds before the judge even looks.",
+            cheat = "1500 - with 2 agreeing checks, real lag is confirmed in about 3 seconds."
         ),
-        "lag.verdict.jitter_ms" to g(
-            what = "Frame wobble above this many ms = JITTERY. Wobble is the unevenness between frames - the thing your eye feels as stutter even when the average looks fine.",
-            raise = "More wobble tolerated before flagging - fewer alarms, micro-stutter runs longer unflagged.",
-            lower = "Flags earlier - protection sooner, but normal wobble may keep it permanently flagged.",
-            pro = "Directly sets how much visible unevenness you accept.",
-            con = "Must respect your device's natural idle wobble or it cries wolf.",
-            bestMin = "6",
-            bestMax = "20",
-            risk = "Below your idle wobble (see Detector) - permanently JITTERY, rescue never rests, quality drops for nothing.",
-            cheat = "2.5x your idle wobble - silent at rest, instant on real stutter. The Detector computes it."
+        "lag.verdict.jitter_ms" to AdminTuningGuide.Guide(
+            what = "Frame wobble above this many ms makes the judge say JITTERY - the light-warning level that arms gentle help.",
+            raise = "More wobble is tolerated before the warning - fewer warnings, later gentle help.",
+            lower = "Warnings come at milder wobble - earlier help, but normal wobble may trigger it constantly.",
+            pro = "Sets your personal line between 'fine' and 'starting to stutter'.",
+            con = "Below your device's natural wobble it cries wolf non-stop and help never stands down.",
+            bestMin = "8",
+            bestMax = "25",
+            risk = "Below your device's resting wobble (see the Detector line) - permanent false JITTERY.",
+            cheat = "Trust the Detector: it sets this at 2.5x YOUR device's resting wobble - silent at rest, instant in real stutter."
         ),
-        "lag.verdict.stability_pct" to g(
-            what = "The radar sorts frames into rhythm groups; this is the share (%) that must sit in the main group. Below it = the beat is broken = JITTERY.",
-            raise = "Demands a steadier beat - catches subtle rhythm breakdown, may flag phones that are naturally a bit loose.",
-            lower = "Tolerates a looser beat - fewer flags, subtle breakdown passes.",
-            pro = "Catches the 'not one big freeze, just everything slightly off' lag that wobble alone can miss.",
-            con = "Adaptive screens naturally spread frames across groups - too strict misreads them.",
-            bestMin = "50",
-            bestMax = "75",
-            risk = "Above 85 - normal adaptive-screen behaviour reads as breakdown; permanently JITTERY.",
-            cheat = "15 points below your idle steady beat (see Detector) - real breakdown crosses it, nothing else does."
+        "lag.verdict.stability_pct" to AdminTuningGuide.Guide(
+            what = "The steady-beat score is the share of frames landing on their expected beat. Below this %, the judge says JITTERY.",
+            raise = "Stricter smoothness demand - warnings come earlier, possibly too eagerly.",
+            lower = "More irregularity tolerated - fewer warnings, later help.",
+            pro = "Catches the 'nothing froze but it feels off' kind of lag that wobble alone can miss.",
+            con = "Set above your device's natural score it alarms at rest.",
+            bestMin = "40",
+            bestMax = "70",
+            risk = "Above your device's resting steady-beat (see the Detector line) - permanent false alarm.",
+            cheat = "15 points below YOUR resting score - exactly what the Detector computes."
         ),
-        "lag.verdict.choke_stalls" to g(
-            what = "Screen freezes per minute above this = CHOKING (the red alert that triggers heavy help).",
-            raise = "More freezes tolerated before the alarm - heavy help comes later.",
-            lower = "Alarm comes earlier - a struggling match gets rescued sooner.",
-            pro = "Sets exactly how many visible freezes per minute you are willing to live with.",
-            con = "Too low and brief rough patches trigger heavy measures that themselves cost quality.",
+        "lag.verdict.choke_stalls" to AdminTuningGuide.Guide(
+            what = "Visible freezes per minute above this makes the judge declare CHOKING - the emergency state that triggers heavy rescue.",
+            raise = "More freezes tolerated before emergency - heavy help comes later.",
+            lower = "Emergency declared sooner - heavy help earlier, but occasional harmless freezes may over-trigger it.",
+            pro = "Direct control over when the big guns come out.",
+            con = "Heavy rescue drops non-essential work - calling it for nothing costs quality.",
             bestMin = "5",
             bestMax = "15",
-            risk = "0-2 - one bad second per minute keeps heavy mode latched on.",
-            cheat = "8 - on a bottlenecked phone, call the big guns early."
+            risk = "Above 30 - the game is a slideshow before help ever arrives.",
+            cheat = "8 - already unplayable territory; call the emergency while the match is still winnable."
         ),
-        "lag.verdict.choke_mtstall_ms" to g(
-            what = "Average touch delay above this many ms = CHOKING. This is the 'my touches feel late' line.",
-            raise = "More touch delay tolerated - alarm later.",
-            lower = "Alarm earlier - but every phone has some natural delay; below that it never stops alarming.",
-            pro = "Directly guards the thing that matters most in play: how fast your input lands.",
-            con = "Needs to sit well above your device's natural idle delay.",
-            bestMin = "80",
+        "lag.verdict.choke_mtstall_ms" to AdminTuningGuide.Guide(
+            what = "Average touch delay above this many ms also declares CHOKING - the second emergency trigger, for when the phone is choked even between freezes.",
+            raise = "Bigger touch delay tolerated - emergency later.",
+            lower = "Emergency at lighter delay - earlier, possibly too early on a naturally slow device.",
+            pro = "Catches chokes that freeze counting misses (heavy hands with no visible freeze).",
+            con = "Below your device's resting delay it lives in emergency mode.",
+            bestMin = "100",
             bestMax = "200",
-            risk = "Below your idle touch delay (see Detector) - permanent CHOKING, heavy mode never releases.",
-            cheat = "4x your idle touch delay, never below 100 - the Detector computes it."
+            risk = "Below your device's resting touch delay (see the Detector line) - permanent emergency, quality destroyed for nothing.",
+            cheat = "4x YOUR resting touch delay - the Detector computes it; a true emergency, never idle noise."
         ),
-        "lag.verdict.choke_spikes" to g(
-            what = "Chokes per minute (from the poke radar) above this = CHOKING. Catches machine-gun micro-lag that never produces one big freeze.",
-            raise = "More frequent micro-chokes tolerated before the red alert.",
-            lower = "Red alert on lighter machine-gun lag - earlier rescue.",
-            pro = "The dedicated trap for 'nothing looks frozen but everything feels late'.",
-            con = "Tied to the choke line above - if that line is very low, this fills up with noise.",
+        "lag.verdict.choke_spikes" to AdminTuningGuide.Guide(
+            what = "Chokes per minute above this also declares CHOKING - the machine-gun trigger: many small chokes with no single big freeze.",
+            raise = "More rapid-fire chokes tolerated before emergency.",
+            lower = "Emergency on lighter machine-gun choking - earlier heavy help.",
+            pro = "The third net - stutter-storms trip this even when the other two stay quiet.",
+            con = "Too low and busy-but-fine moments read as emergencies.",
             bestMin = "10",
             bestMax = "30",
-            risk = "Below 5 - normal busy moments read as choking.",
-            cheat = "15 - rapid-fire micro-lag gets caught within one report window."
+            risk = "Below 5 - normal background housekeeping can read as an emergency.",
+            cheat = "15 - past this it feels like heavy hands even with zero big freezes; trap it here."
         ),
-        "lag.verdict.confirm_polls" to g(
-            what = "How many judge checks in a row must agree before the verdict actually changes.",
-            raise = "Rock-steady verdicts, but each extra check delays the rescue by one judge rhythm.",
-            lower = "Verdicts flip faster - at 1, a single odd reading whipsaws the whole system.",
-            pro = "The anti-flip-flop shield: verdicts mean something.",
-            con = "Every extra confirmation is reaction time lost.",
+        "lag.verdict.confirm_polls" to AdminTuningGuide.Guide(
+            what = "How many judge checks in a row must agree before the verdict actually changes. The anti-flip-flop shield.",
+            raise = "Rock-solid verdicts that never flap - but every real change waits that many checks to be believed.",
+            lower = "Verdicts change faster - at 1, a single blip can flip the state and rescue thrashes.",
+            pro = "Kills verdict flip-flopping, which feels worse than the lag itself.",
+            con = "Each extra check delays confirmed rescue by one poll.",
             bestMin = "2",
             bestMax = "3",
-            risk = "1 - one blip flips the verdict; rescue arms and disarms in circles, which feels WORSE than the lag.",
-            cheat = "2 - confirmed fast, immune to single blips."
+            risk = "1 - single-blip whipsawing; 5+ - rescue arrives seconds after the pain started.",
+            cheat = "2 - confirmed in two checks, immune to single blips."
         ),
 
         // ---------------- LoadShedGovernor ----------------
-        "lag.shed.poll_ms" to g(
-            what = "How often the rescue re-reads the verdict and decides its help level: NONE, LIGHT or HEAVY. A detected freeze burst skips the queue and escalates INSTANTLY regardless.",
-            raise = "Level changes happen on a slower beat - calmer, later help.",
-            lower = "Help level tracks the verdict tighter.",
-            pro = "Second reaction-speed dial, after the judge's own rhythm.",
-            con = "The instant freeze fast-path already covers emergencies - this only paces normal changes.",
-            bestMin = "1000",
-            bestMax = "3000",
-            risk = "Above 5000 - the rescue lags behind the judge it is supposed to serve.",
-            cheat = "1500 - rescue rides right behind the judge."
-        ),
-        "lag.shed.arm_polls" to g(
-            what = "How many agreeing rescue checks before help actually STARTS (escalation).",
-            raise = "Help starts later but never by mistake.",
-            lower = "Help starts sooner - at 1, ghosts can trigger it.",
-            pro = "Keeps rescue honest without making it slow.",
-            con = "Each extra check is seconds of unhelped lag.",
-            bestMin = "1",
-            bestMax = "3",
-            risk = "Above 4 - the lag moment is over before help even arrives.",
-            cheat = "2 - armed in ~3 seconds, ghost-proof."
-        ),
-        "lag.shed.release_polls" to g(
-            what = "How many clean checks in a row before help STOPS (stand-down).",
-            raise = "Help lingers longer after trouble - safer, slower return to full quality.",
-            lower = "Faster return to full quality - too low and it flip-flops.",
-            pro = "Stand-down slower than arm-up is exactly what stops the thrash.",
-            con = "Every extra check delays full quality after the storm.",
-            bestMin = "3",
-            bestMax = "6",
-            risk = "1 - one calm second ends help and the next wave hits unprotected: shed-release-shed thrash.",
-            cheat = "4 - one beat quicker than stock, still flap-proof."
-        ),
-        "lag.shed.min_hold_ms" to g(
-            what = "Once help starts, the minimum time it stays on before ANY level change is allowed - the anti-thrash timer.",
-            raise = "Steadier help periods; full quality returns more slowly after short bursts.",
-            lower = "Snappier recovery; too low and levels oscillate.",
-            pro = "One dial deciding between stability and responsiveness of the whole rescue.",
-            con = "A wrong value only shows its cost when load gets spiky.",
+        "lag.shed.min_hold_ms" to AdminTuningGuide.Guide(
+            what = "Once rescue changes its help level, this is the minimum ms it must hold that level before changing again. The anti-thrash timer.",
+            raise = "Very steady help periods - but full quality returns sluggishly after short trouble.",
+            lower = "Snappier return to full quality - with growing risk of rapid on/off flapping.",
+            pro = "One dial deciding between stability and responsiveness of the whole rescue system.",
+            con = "A wrong value only shows its cost when trouble comes in waves.",
             bestMin = "5000",
             bestMax = "15000",
-            risk = "Below 2000 - constant level flip-flopping feels worse than the lag it fights.",
-            cheat = "6000 - quick quality recovery, clear of the thrash zone. Detector says 10000 when your phone is hot."
+            risk = "Below 2000 - help flaps on/off; the flapping feels worse than the lag it fights.",
+            cheat = "6000 - quick quality recovery, clear of the thrash zone. The Detector says 10000 when your phone runs warm (heat lag comes in waves)."
+        ),
+        "lag.shed.poll_ms" to AdminTuningGuide.Guide(
+            what = "How often (ms) rescue re-reads the judge's verdict and decides whether to raise or lower its help level.",
+            raise = "Rescue reacts later to a verdict change.",
+            lower = "Rescue rides right behind the judge - help arrives sooner.",
+            pro = "Keeps the verdict-to-help delay short. Real freezes skip the queue instantly regardless (the emergency fast path always runs).",
+            con = "Faster than the judge's own rhythm adds nothing - it re-reads the same verdict.",
+            bestMin = "1000",
+            bestMax = "4000",
+            risk = "Above 8000 - the judge shouts CHOKING and rescue strolls in seconds later.",
+            cheat = "1500 - matches the judge's cheat rhythm one-to-one."
+        ),
+        "lag.shed.arm_polls" to AdminTuningGuide.Guide(
+            what = "How many rescue checks in a row must want MORE help before help actually increases.",
+            raise = "Help arms more cautiously - fewer false starts, later real help.",
+            lower = "Help arms faster - at 1, a single bad check triggers it.",
+            pro = "Stops one bad moment from dropping quality for nothing.",
+            con = "Every extra check is one more poll of pain before help.",
+            bestMin = "1",
+            bestMax = "3",
+            risk = "Above 5 - by the time help arms, the bad spell may already be over.",
+            cheat = "2 - armed in ~3 seconds, never by mistake."
+        ),
+        "lag.shed.release_polls" to AdminTuningGuide.Guide(
+            what = "How many CLEAN checks in a row are needed before help stands down completely.",
+            raise = "Help lingers longer after trouble - very safe, quality returns later.",
+            lower = "Quality returns sooner - but trouble that comes in waves may catch the system with its guard just dropped.",
+            pro = "The guard-down dial: how sure 'it's over' must be.",
+            con = "Each extra check keeps reduced quality one poll longer.",
+            bestMin = "3",
+            bestMax = "6",
+            risk = "1 - guard drops on one good moment and the next wave lands unprotected.",
+            cheat = "4 - one beat quicker back to full quality than stock, still flap-proof."
         )
     )
 }
