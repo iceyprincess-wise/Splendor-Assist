@@ -170,7 +170,7 @@ class AdminSettingsActivity : Activity() {
         val root = page()
         title(root, engine, adapter + " - applies on next tick")
 
-        // ---- live detector header ----
+        // ---- live detector header (per adapter) ----
         root.addView(TextView(this).apply {
             text = AdminTuningDetector.liveLine(adapter)
             textSize = 13f
