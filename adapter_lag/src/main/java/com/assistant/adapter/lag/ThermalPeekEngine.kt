@@ -1,18 +1,23 @@
 package com.assistant.adapter.lag
 
-// V3.1 - thermal evidence probe
+// V3 ADMIN-WIRED - thermal evidence probe, live rhythm
 import android.content.Context
 import android.os.Build
 import android.os.PowerManager
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
- * One cheap system reading: the OS thermal status. If the 7-minute storms
- * correlate with SEVERE+ status, the enemy is throttling and the thermal
- * adapter is the next weapon. If status stays NONE/LIGHT through a storm,
- * throttling is exonerated and scheduler contention becomes prime suspect.
+ * One cheap system reading: the OS thermal status. If lag storms correlate
+ * with SEVERE+ status, the enemy is heat throttling; if status stays
+ * NONE/LIGHT through a storm, throttling is exonerated and scheduling
+ * contention becomes prime suspect. V3: the check rhythm is admin-tunable
+ * and re-read every cycle.
  */
 object ThermalPeekEngine {
+
+    // ADMIN-TUNABLE (default = original hard-coded value)
+    private val POLL_MS: Long get() = AdminConfigStore.getLong("lag.thermal.poll_ms", 10_000L)
 
     @Volatile private var pm: PowerManager? = null
     @Volatile private var running = false
@@ -44,7 +49,8 @@ object ThermalPeekEngine {
                         RuntimeLogger.log("THERMAL STATUS -> " + s, "LAGTHERM")
                     }
                 } catch (_: Throwable) { }
-                try { Thread.sleep(10_000) } catch (_: Throwable) { return@Thread }
+                val nap = POLL_MS
+                try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "lag-thermal-peek"; t.start()

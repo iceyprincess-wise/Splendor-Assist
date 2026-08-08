@@ -1,18 +1,24 @@
 package com.assistant.adapter.lag
 
-// V3.1 - no flapping
+// V3 ADMIN-WIRED - quick to arm, slow to thrash, every knob live
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 /**
- * V3.1: ANY level change (including LIGHT<->HEAVY, which V3 let flap five
- * times in 21s) now needs the target wanted on consecutive polls AND at
- * least 8s since the last change. Escalation confirms in 2 polls, release
- * to NONE in 5 - shedding stays quick to arm, slow to thrash.
+ * The rescue: when the judge says the device is struggling, this raises the
+ * shed level (NONE / LIGHT / HEAVY) that the rest of the runtime obeys to
+ * drop non-essential work. A SEIZURE stutter burst escalates IMMEDIATELY
+ * (fast path, no waiting). V3: poll rhythm, arm/release confirm counts and
+ * the minimum hold are all admin-tunable, re-read every poll.
  */
 object LoadShedGovernor {
 
-    private const val MIN_HOLD_MS = 8000L
+    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    private val MIN_HOLD_MS: Long get() = AdminConfigStore.getLong("lag.shed.min_hold_ms", 8000L)
+    private val POLL_MS: Long get() = AdminConfigStore.getLong("lag.shed.poll_ms", 2000L)
+    private val ARM_POLLS: Int get() = AdminConfigStore.getInt("lag.shed.arm_polls", 2)
+    private val RELEASE_POLLS: Int get() = AdminConfigStore.getInt("lag.shed.release_polls", 5)
 
     @Volatile private var running = false
     @Volatile var level = "NONE"; private set
@@ -27,7 +33,7 @@ object LoadShedGovernor {
             while (running) {
                 try {
                     // FAST PATH: a SEIZURE burst escalates immediately -
-                    // sub-second truth beats the 20s window when a freeze hits
+                    // sub-second truth beats the report window when a freeze hits
                     val burst = PerformanceTelemetryRegistry.currentStutterState()
                     val want = if (burst == "SEIZURE") "HEAVY" else when (LagVerdictEngine.verdict) {
                         "CHOKING" -> "HEAVY"
@@ -35,7 +41,9 @@ object LoadShedGovernor {
                         else -> "NONE"
                     }
                     if (want == candidate) streak++ else { candidate = want; streak = 1 }
-                    val need = if (candidate == "NONE") 5 else 2
+                    val arm = if (ARM_POLLS < 1) 1 else ARM_POLLS
+                    val rel = if (RELEASE_POLLS < 1) 1 else RELEASE_POLLS
+                    val need = if (candidate == "NONE") rel else arm
                     val now = System.currentTimeMillis()
                     if (candidate != level && streak >= need &&
                         (lastChangeMs == 0L || now - lastChangeMs >= MIN_HOLD_MS)) {
@@ -46,7 +54,8 @@ object LoadShedGovernor {
                     }
                     PerformanceTelemetryRegistry.publishLoadShed(level)
                 } catch (_: Throwable) { }
-                try { Thread.sleep(2000) } catch (_: Throwable) { return@Thread }
+                val nap = POLL_MS
+                try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "lag-loadshed"; t.start()

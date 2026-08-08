@@ -16,6 +16,7 @@ import android.os.Message
 import android.os.Messenger
 import android.os.Process
 import android.view.Choreographer
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
@@ -60,7 +61,7 @@ class LagAdapterService : Service() {
                     lastHeartbeat = System.currentTimeMillis(),
                     errorCount = 0,
                     recoveryCount = 0,
-                    details = "Optimized High-Frequency Engine Active. Drift: ${currentPingDriftMs}ms"
+                    details = "Optimized High-Frequency Engine Active. Drift: ${currentPingDriftMs}ms | device=" + LagVerdictEngine.verdict + " shed=" + LoadShedGovernor.level
                 )
             )
             RuntimeLogger.log("LagAdapter heartbeat sync completed", "HEALTH")
@@ -119,7 +120,11 @@ class LagAdapterService : Service() {
         // Initialize Choreographer for 120Hz/60Hz display sync
         initFrameSync()
 
-        // ---- LAG ENGINE STACK IGNITION [V2 PROACTIVE] ----
+        // ---- LAG ENGINE STACK IGNITION [V3 ADMIN-WIRED] ----
+        // CRITICAL: load the admin store in THIS process so every saved
+        // admin value is actually obeyed by the lag engines (without this
+        // they silently fall back to compiled defaults).
+        AdminConfigStore.initialize(this)
         com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.initialize(this)
         DisplayProfileEngine.detect(this)
         FramePacingEngine.start()
@@ -127,7 +132,7 @@ class LagAdapterService : Service() {
         LagVerdictEngine.start()
         LoadShedGovernor.start()
         ThermalPeekEngine.init(this)
-        RuntimeLogger.log("Lag engine stack ignited: 4 engines [V2 PROACTIVE]", "LAG")
+        RuntimeLogger.log("Lag engine stack ignited: 6 engines [V3 ADMIN-WIRED]", "LAG")
     }
 
     private fun setupForegroundService() {

@@ -1,6 +1,6 @@
 package com.assistant.adapter.stutter
 
-// V2 BURST
+// V3 ADMIN-WIRED
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,16 +10,17 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.Messenger
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 /**
- * V2: the hardcoded-60Hz spike logger is gone (panel budget is detected),
- * per-spike log spam is gone (forensics aggregates), and the dead vector
- * math is gone. This node now runs the burst radar + forensics and its
- * heartbeat carries live burst truth.
+ * V3: the admin store is loaded in THIS process so every saved admin value
+ * is actually obeyed by the stutter engines; the new PanelWatchEngine keeps
+ * the radar's screen-beat truthful the instant an adaptive panel switches
+ * rhythm. Heartbeat carries live burst truth.
  */
 class StutterAdapterService : Service() {
 
@@ -36,7 +37,8 @@ class StutterAdapterService : Service() {
                     errorCount = 0,
                     recoveryCount = 0,
                     details = "burst=" + BurstForensicsEngine.state +
-                        " bursts/min=" + StutterPulseEngine.burstsPerMin
+                        " bursts/min=" + StutterPulseEngine.burstsPerMin +
+                        " panel=" + StutterPulseEngine.panelHz + "Hz"
                 )
             )
             RuntimeLogger.log("StutterAdapter heartbeat burst=" +
@@ -48,7 +50,7 @@ class StutterAdapterService : Service() {
     override fun onCreate() {
         super.onCreate()
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY)
-        RuntimeLogger.log("StutterAdapterService started - BURST RADAR V2", "ADAPTER")
+        RuntimeLogger.log("StutterAdapterService started - BURST RADAR V3", "ADAPTER")
 
         val channel = NotificationChannel("stutter_adapter", "Stutter Core", NotificationManager.IMPORTANCE_MIN)
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
@@ -57,11 +59,16 @@ class StutterAdapterService : Service() {
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .build())
 
+        // ---- STUTTER ENGINE STACK IGNITION [V3 ADMIN-WIRED] ----
+        // CRITICAL: load the admin store in THIS process so every saved
+        // admin value is actually obeyed by the stutter engines.
+        AdminConfigStore.initialize(this)
         PerformanceTelemetryRegistry.initialize(this)
         StutterPulseEngine.detectPanel(this)
         StutterPulseEngine.start()
+        PanelWatchEngine.start(this)
         BurstForensicsEngine.startDecay()
-        RuntimeLogger.log("Stutter engine stack ignited: burst radar + forensics [V2 BURST]", "STUTTER")
+        RuntimeLogger.log("Stutter engine stack ignited: 3 engines [V3 ADMIN-WIRED]", "STUTTER")
 
         heartbeatHandler.post(heartbeatRunnable)
     }
@@ -69,6 +76,8 @@ class StutterAdapterService : Service() {
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
         StutterPulseEngine.stop()
+        PanelWatchEngine.stop()
+        BurstForensicsEngine.stopDecay()
         RuntimeLogger.log("StutterAdapter stopped", "HEALTH")
         super.onDestroy()
     }

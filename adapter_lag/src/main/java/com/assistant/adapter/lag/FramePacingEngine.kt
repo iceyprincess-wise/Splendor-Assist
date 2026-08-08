@@ -4,6 +4,7 @@ package com.assistant.adapter.lag
 import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
+import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
@@ -16,9 +17,10 @@ import com.assistant.diagnostic.RuntimeLogger
  */
 object FramePacingEngine {
 
-    private const val ALPHA = 0.2f
-    private const val REPORT_EVERY_MS = 20_000L
-    private const val STALL_MS = 100f
+    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    private val ALPHA: Float get() = AdminConfigStore.get("lag.frame.alpha", 0.2f)
+    private val REPORT_EVERY_MS: Long get() = AdminConfigStore.getLong("lag.frame.report_ms", 20_000L)
+    private val STALL_MS: Float get() = AdminConfigStore.get("lag.frame.stall_ms", 100f)
 
     @Volatile private var running = false
     @Volatile var avgGapMs = 0f; private set
@@ -42,10 +44,11 @@ object FramePacingEngine {
             if (lastNanos > 0L) {
                 val gap = (frameTimeNanos - lastNanos) / 1_000_000f
                 frames++; winFrames++
-                avgGapMs = if (avgGapMs == 0f) gap else avgGapMs * (1 - ALPHA) + gap * ALPHA
+                val a = ALPHA
+                avgGapMs = if (avgGapMs == 0f) gap else avgGapMs * (1 - a) + gap * a
                 if (lastGap > 0f) {
                     val d = Math.abs(gap - lastGap)
-                    jitterMs = jitterMs * (1 - ALPHA) + d * ALPHA
+                    jitterMs = jitterMs * (1 - a) + d * a
                 }
                 lastGap = gap
                 if (gap > worstGapMs) worstGapMs = gap
@@ -69,12 +72,13 @@ object FramePacingEngine {
         }
         val t = Thread {
             while (running) {
-                try { Thread.sleep(REPORT_EVERY_MS) } catch (_: Throwable) { return@Thread }
+                val windowMs = REPORT_EVERY_MS
+                try { Thread.sleep(windowMs) } catch (_: Throwable) { return@Thread }
                 try {
                     val counted = bucket.sum().coerceAtLeast(1L)
                     val dominant = bucket.max()
                     stabilityPct = dominant * 100f / counted
-                    val winMin = REPORT_EVERY_MS / 60000f
+                    val winMin = windowMs / 60000f
                     stallsPerMin = winStalls / winMin
                     val mix = bucket.joinToString("/") { (it * 100 / counted).toString() }
                     RuntimeLogger.log("frames=" + frames +
