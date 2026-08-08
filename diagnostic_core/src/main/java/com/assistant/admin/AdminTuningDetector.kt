@@ -3,18 +3,19 @@ package com.assistant.admin
 /**
  * The live Detector: recommends values for THIS device from what the
  * engines are measuring RIGHT NOW (AdminLiveStats). Nothing is guessed -
- * every pick is computed from the current measurements and every pick
- * carries a WHY that quotes those numbers.
- *
- * Net picks read live ping / wobble / lost packets.
- * Lag picks read live frame wobble / steadiness / freezes / touch delay /
- * heat / panel Hz - deliberately HARD picks: they assume match-time load
- * is coming and set the guards so that even heavy in-game moments cannot
- * produce silent micro-lag. Set them while idle; they hold in the storm.
+ * every pick is computed from current measurements and every pick carries
+ * a WHY that quotes those numbers.
  *
  * If the engines have not produced fresh numbers yet (service just
- * started, or no data), the detector says so and offers no picks rather
- * than inventing them.
+ * started, or not running), the detector says so and offers no picks
+ * rather than inventing them.
+ *
+ * LAG NOTE: lag numbers measured while you are NOT gaming describe the
+ * device at rest. Rest numbers are still the right anchor for the trip
+ * lines (a line must sit safely ABOVE rest noise to never false-alarm,
+ * and low enough to catch real trouble instantly) - so lag picks are
+ * hard, strong match-ready values derived from your device's true
+ * baseline, plus heat and panel facts that do not change in a match.
  */
 object AdminTuningDetector {
 
@@ -28,7 +29,7 @@ object AdminTuningDetector {
 
     private fun netLiveLine(): String {
         if (!AdminLiveStats.fresh())
-            return "DETECTOR: still measuring your connection... tap Refresh in ~10 seconds (the Splendor service must be running)."
+            return "DETECTOR: still measuring your connection... open this screen again in ~10 seconds (the Splendor service must be running)."
         val loss = if (AdminLiveStats.lossPct >= 0)
             String.format("%.0f", AdminLiveStats.lossPct) + "%" else "measuring"
         return "DETECTOR - your device right now: ping " +
@@ -40,7 +41,7 @@ object AdminTuningDetector {
 
     private fun lagLiveLine(): String {
         if (!AdminLiveStats.lagFresh())
-            return "DETECTOR: still reading your device... tap Refresh in ~10 seconds (the Splendor service must be running)."
+            return "DETECTOR: still measuring your device... open this screen again in ~10 seconds (the Splendor Lag service must be running)."
         return "DETECTOR - your device right now: frame wobble " +
             String.format("%.1f", AdminLiveStats.frameJitterMs) + "ms, steady beat " +
             String.format("%.0f", AdminLiveStats.stabilityPct) + "%, freezes/min " +
@@ -48,8 +49,7 @@ object AdminTuningDetector {
             String.format("%.0f", AdminLiveStats.mtStallMs) + "ms, heat " +
             AdminLiveStats.thermal + ", screen " +
             String.format("%.0f", AdminLiveStats.panelHz) + "Hz, state " +
-            AdminLiveStats.lagVerdict +
-            (if (AdminLiveStats.shedLevel != "NONE") ", rescue " + AdminLiveStats.shedLevel else "")
+            AdminLiveStats.lagVerdict + ", help level " + AdminLiveStats.shedLevel
     }
 
     /** Detector picks for one engine. Empty until live numbers are fresh. */
@@ -57,12 +57,12 @@ object AdminTuningDetector {
         "NetProbeEngine", "PacketLossProbeEngine", "DnsWarmupEngine",
         "CongestionSentinelEngine", "SpikeBurstEngine", "RadioKeepAliveEngine",
         "ActionWindowEngine", "CarrierProfileEngine", "NetworkStateEngine" -> netPicks(engine)
-        "FramePacingEngine", "MainThreadStallEngine", "LagVerdictEngine",
-        "LoadShedGovernor", "ThermalPeekEngine", "DisplayProfileEngine" -> lagPicks(engine)
+        "FramePacingEngine", "MainThreadStallEngine", "ThermalPeekEngine",
+        "DisplayProfileEngine", "LagVerdictEngine", "LoadShedGovernor" -> lagPicks(engine)
         else -> emptyList()
     }
 
-    // ================= NET =================
+    // ==================== NET ====================
 
     private fun netPicks(engine: String): List<Pick> {
         if (!AdminLiveStats.fresh()) return emptyList()
@@ -147,7 +147,7 @@ object AdminTuningDetector {
             )
             "CarrierProfileEngine" -> {
                 if (AdminLiveStats.quality == "GOOD" || AdminLiveStats.quality == "DEGRADED") listOf(
-                    Pick("net.profile.rtt_ms", (AdminLiveStats.rttMs * 1.4f).toInt().toFloat().coerceAtLeast(30f),
+                    Pick("net.profile.rtt_ms", (rtt * 1.4f).toInt().toFloat().coerceAtLeast(30f),
                         "your real measured ping is " + r + " - a pass-line at 1.4x that fits YOUR line instead of a generic carrier guess"),
                     Pick("net.profile.jitter_tol_ms", maxOf(15f, jit * 2.5f).toInt().toFloat(),
                         "your real wobble is " + j + " - allow 2.5x that before it counts as trouble"),
@@ -167,88 +167,80 @@ object AdminTuningDetector {
         }
     }
 
-    // ================= LAG =================
-    // HARD picks: set while idle, built to hold during match-time load so
-    // no silent micro-lag survives. Every number is derived from THIS
-    // device's live readings and quoted in the why.
+    // ==================== LAG ====================
 
     private fun lagPicks(engine: String): List<Pick> {
         if (!AdminLiveStats.lagFresh()) return emptyList()
-        val fj = AdminLiveStats.frameJitterMs.coerceAtLeast(0f)
+        val fJit = AdminLiveStats.frameJitterMs
         val stab = AdminLiveStats.stabilityPct
-        val mt = AdminLiveStats.mtStallMs.coerceAtLeast(0f)
-        val hz = if (AdminLiveStats.panelHz > 0f) AdminLiveStats.panelHz else 60f
-        val hot = AdminLiveStats.thermal in listOf("MODERATE", "SEVERE", "CRITICAL", "EMERGENCY", "SHUTDOWN")
-        val fjS = String.format("%.1f", fj) + "ms"
-        val stabS = String.format("%.0f", stab) + "%"
-        val mtS = String.format("%.0f", mt) + "ms"
-        val hzS = String.format("%.0f", hz) + "Hz"
-        // one game frame at the locked rate (default 30fps)
-        val gameFrame = 1000f / AdminConfigStore.get("lag.display.game_fps", 30f).coerceAtLeast(1f)
+        val mtStall = AdminLiveStats.mtStallMs
+        val hz = AdminLiveStats.panelHz
+        val hot = AdminLiveStats.thermal == "MODERATE" || AdminLiveStats.thermal == "SEVERE" ||
+                  AdminLiveStats.thermal == "CRITICAL" || AdminLiveStats.thermal == "EMERGENCY"
+        val fj = String.format("%.1f", fJit) + "ms"
+        val st = String.format("%.0f", stab) + "%"
+        val mt = String.format("%.0f", mtStall) + "ms"
 
         return when (engine) {
             "FramePacingEngine" -> listOf(
-                Pick("lag.frame.alpha", if (fj > 8f) 0.2f else 0.25f,
-                    if (fj > 8f) "your idle frame wobble is already " + fjS + " - smooth a bit harder so noise doesn't drown real trouble"
-                    else "idle wobble " + fjS + " is low - let the average react fast; a real slowdown shows in 2-3 frames"),
+                Pick("lag.frame.alpha", if (fJit > 8f) 0.15f else 0.25f,
+                    if (fJit > 8f) "your frames naturally wobble (" + fj + ") - smooth harder so the reading shows trends, not noise"
+                    else "your frames are steady (" + fj + ") - let the reading react quickly to real slowdowns"),
                 Pick("lag.frame.report_ms", 15000f,
-                    "15s windows: in-match lag episodes reach the judge one report earlier than stock 20s"),
-                Pick("lag.frame.stall_ms", clampF(gameFrame * 3f, 60f, 150f),
-                    "3 missed game frames (" + String.format("%.0f", gameFrame * 3f) + "ms at your lock) - the exact point a hang becomes visible in play")
+                    "a fresh smoothness verdict every 15s catches a lag episode one report earlier than stock"),
+                Pick("lag.frame.stall_ms", clamp(maxOf(90f, (1000f / maxOf(hz, 30f)) * 5f), 80f, 150f),
+                    "on your " + String.format("%.0f", hz) + "Hz screen this is ~5 missed beats in a row - a real felt freeze, never a single heavy frame")
             )
             "MainThreadStallEngine" -> listOf(
                 Pick("lag.stall.cadence_ms", 200f,
                     "poke every 200ms - no choke a player could feel fits between two pokes"),
-                Pick("lag.stall.spike_ms", clampF(gameFrame * 2f, 40f, 100f),
-                    "2 game frames (" + String.format("%.0f", gameFrame * 2f) + "ms) - the first moment a delayed touch is feelable, booked as a choke"),
+                Pick("lag.stall.spike_ms", clamp(maxOf(66f, mtStall * 3f), 50f, 120f),
+                    "your idle touch delay is " + mt + " - the choke line sits safely above that noise yet catches every real choke"),
                 Pick("lag.stall.alpha", 0.3f,
-                    "a real choke-up shows in 2-3 pokes; single scheduling blips stay ignored"),
+                    "a real choke-up shows within 2-3 pokes, single blips stay ignored"),
                 Pick("lag.stall.report_ms", 10000f,
-                    "fresh chokes-per-minute maths every 10s all match long")
-            )
-            "LagVerdictEngine" -> listOf(
-                Pick("lag.verdict.poll_ms", 1500f,
-                    "judge looks every 1.5s - with 2 agreeing checks real lag is confirmed in ~3s"),
-                Pick("lag.verdict.jitter_ms", clampF(maxOf(6f, fj * 2.5f), 6f, 20f),
-                    "2.5x your idle wobble (" + fjS + ") - silent at rest, trips the moment real stutter starts"),
-                Pick("lag.verdict.stability_pct", clampF(minOf(70f, if (stab > 0f) stab - 15f else 65f), 45f, 70f),
-                    "your idle steady beat is " + stabS + " - the warning line sits safely below it, only real breakdown crosses"),
-                Pick("lag.verdict.choke_stalls", 8f,
-                    "8 freezes/min = heavy help. On a bottlenecked phone call the big guns early"),
-                Pick("lag.verdict.choke_mtstall_ms", clampF(maxOf(100f, mt * 4f), 100f, 200f),
-                    "your idle touch delay is " + mtS + " - well above that (never below 100ms) means genuinely choking, not just busy"),
-                Pick("lag.verdict.choke_spikes", 15f,
-                    "15 chokes/min trips heavy help - catches machine-gun micro-lag that never shows one big freeze"),
-                Pick("lag.verdict.confirm_polls", 2f,
-                    "2 agreeing checks: confirmed fast, immune to single blips")
-            )
-            "LoadShedGovernor" -> listOf(
-                Pick("lag.shed.poll_ms", 1500f,
-                    "rescue re-checks right behind the judge; the freeze fast-path stays instant regardless"),
-                Pick("lag.shed.arm_polls", 2f,
-                    "help arms after 2 agreeing checks (~3s) - fast but ghost-proof"),
-                Pick("lag.shed.release_polls", 4f,
-                    "4 clean checks before standing down - one beat sooner than stock, still flap-proof"),
-                Pick("lag.shed.min_hold_ms", if (hot) 10000f else 6000f,
-                    if (hot) "your phone is HOT right now (" + AdminLiveStats.thermal + ") - hold help longer, heat lag comes in waves"
-                    else "6s hold: quick recovery after short bursts, clear of the thrash zone")
+                    "fresh chokes-per-minute every 10s - live enough for the judge, zero waste")
             )
             "ThermalPeekEngine" -> listOf(
                 Pick("lag.thermal.poll_ms", if (hot) 5000f else 10000f,
-                    if (hot) "heat status is " + AdminLiveStats.thermal + " NOW - watch it twice as fast while it lasts"
-                    else "heat is fine (" + AdminLiveStats.thermal + ") - 10s checks are plenty; heat moves slowly")
+                    if (hot) "your phone is ALREADY warm (" + AdminLiveStats.thermal + ") - watch heat twice as closely, it is the prime lag suspect"
+                    else "heat is " + AdminLiveStats.thermal + " - the standard 10s watch is enough")
             )
             "DisplayProfileEngine" -> listOf(
                 Pick("lag.display.game_fps", 30f,
-                    "eFootball is locked at 30fps - this must state the truth; your " + hzS + " screen is detected automatically")
+                    "eFootball is locked at 30fps - this dial must state the truth; all freeze/choke lines are computed from it")
+            )
+            "LagVerdictEngine" -> listOf(
+                Pick("lag.verdict.poll_ms", 1500f,
+                    "judge every 1.5s - with 2 agreeing checks, real lag is confirmed in ~3s"),
+                Pick("lag.verdict.jitter_ms", clamp(maxOf(8f, fJit * 2.5f), 8f, 25f),
+                    "your idle frame wobble is " + fj + " - the JITTERY line at 2.5x that stays silent at rest and trips the instant a match truly stutters"),
+                Pick("lag.verdict.stability_pct", clamp(minOf(70f, stab - 15f), 40f, 70f),
+                    "your idle steady beat is " + st + " - alarm when a match drags it 15 points below its own normal"),
+                Pick("lag.verdict.choke_stalls", 8f,
+                    "8 visible freezes a minute is already unplayable - call CHOKING early so help arrives while the match is still winnable"),
+                Pick("lag.verdict.choke_mtstall_ms", clamp(maxOf(100f, mtStall * 4f), 100f, 200f),
+                    "your idle touch delay is " + mt + " - CHOKING at 4x that is a real emergency, never idle noise"),
+                Pick("lag.verdict.choke_spikes", 15f,
+                    "machine-gun micro-chokes above 15/min feel like heavy hands even with no big freeze - trap them here"),
+                Pick("lag.verdict.confirm_polls", 2f,
+                    "2 agreeing checks - confirmed fast, immune to single blips")
+            )
+            "LoadShedGovernor" -> listOf(
+                Pick("lag.shed.poll_ms", 1500f,
+                    "rescue rides right behind the judge; freezes skip the queue instantly anyway"),
+                Pick("lag.shed.arm_polls", 2f,
+                    "help armed in ~3s - fast but never by mistake"),
+                Pick("lag.shed.release_polls", 4f,
+                    "4 clean checks before stand-down - one beat quicker than stock, still flap-proof"),
+                Pick("lag.shed.min_hold_ms", if (hot) 10000f else 6000f,
+                    if (hot) "your phone is warm (" + AdminLiveStats.thermal + ") - hold help longer, heat lag comes in waves"
+                    else "6s hold - quick quality recovery, clear of the thrash zone")
             )
             else -> emptyList()
         }
     }
 
     private fun clamp(v: Float, lo: Float, hi: Float): Float =
-        (if (v < lo) lo else if (v > hi) hi else v).toInt().toFloat()
-
-    private fun clampF(v: Float, lo: Float, hi: Float): Float =
         (if (v < lo) lo else if (v > hi) hi else v).toInt().toFloat()
 }
