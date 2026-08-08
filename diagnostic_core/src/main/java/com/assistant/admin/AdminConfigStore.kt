@@ -39,9 +39,9 @@ object AdminConfigStore {
     const val CAT_GUARD = "Network Guard - spots trouble before you feel it"
     const val CAT_DECISION = "Play Decision - the final GO / HOLD traffic light"
     const val CAT_BASELINE = "Your Network Baseline - what counts as normal for YOUR line"
-    const val CAT_LAG_RADAR = "Lag Radar - measures every freeze and choke, even silent micro ones"
-    const val CAT_LAG_JUDGE = "Lag Judge - decides how bad it is, instantly and honestly"
-    const val CAT_LAG_RESCUE = "Lag Rescue - drops extra work so the game stays smooth"
+    const val CAT_LAG_RADAR = "Lag Radar - measures every frame, touch and degree of heat, catches even silent micro-lag"
+    const val CAT_LAG_JUDGE = "Lag Judge - decides the exact moment your device counts as lagging"
+    const val CAT_LAG_RESCUE = "Lag Rescue - drops extra work instantly so the game gets the whole phone"
 
     private val ENGINE_CATEGORY: Map<String, String> = mapOf(
         // Net Adapter
@@ -64,10 +64,9 @@ object AdminConfigStore {
     )
 
     /** Category display order inside an adapter. */
-    private val CATEGORY_ORDER: List<String> = listOf(
-        CAT_SPEED, CAT_GUARD, CAT_DECISION, CAT_BASELINE,
-        CAT_LAG_RADAR, CAT_LAG_JUDGE, CAT_LAG_RESCUE
-    )
+    private val CATEGORY_ORDER: List<String> =
+        listOf(CAT_SPEED, CAT_GUARD, CAT_DECISION, CAT_BASELINE,
+               CAT_LAG_RADAR, CAT_LAG_JUDGE, CAT_LAG_RESCUE)
 
     fun categoryOf(engine: String): String = ENGINE_CATEGORY[engine] ?: "Other"
 
@@ -127,7 +126,7 @@ object AdminConfigStore {
         Tunable("lag.frame.report_ms",         "Smoothness report rhythm (ms)",             20000f, ADAPTER_LAG, "FramePacingEngine"),
         Tunable("lag.frame.stall_ms",          "A frame slower than this is a freeze (ms)", 100f,   ADAPTER_LAG, "FramePacingEngine"),
         // MainThreadStallEngine
-        Tunable("lag.stall.cadence_ms",        "Choke-check poke rhythm (ms)",              250f,   ADAPTER_LAG, "MainThreadStallEngine"),
+        Tunable("lag.stall.cadence_ms",        "Touch-delay poke rhythm (ms)",              250f,   ADAPTER_LAG, "MainThreadStallEngine"),
         Tunable("lag.stall.spike_ms",          "A poke later than this is a choke (ms)",    80f,    ADAPTER_LAG, "MainThreadStallEngine"),
         Tunable("lag.stall.alpha",             "Memory dial: newest poke weight (0-1)",     0.25f,  ADAPTER_LAG, "MainThreadStallEngine"),
         Tunable("lag.stall.report_ms",         "Choke report rhythm (ms)",                  10000f, ADAPTER_LAG, "MainThreadStallEngine"),
@@ -138,11 +137,11 @@ object AdminConfigStore {
         // LagVerdictEngine
         Tunable("lag.verdict.poll_ms",         "Judge check rhythm (ms)",                   2000f,  ADAPTER_LAG, "LagVerdictEngine"),
         Tunable("lag.verdict.jitter_ms",       "JITTERY when frame wobble above (ms)",      10f,    ADAPTER_LAG, "LagVerdictEngine"),
-        Tunable("lag.verdict.stability_pct",   "JITTERY when steady beat below (%)",        65f,    ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.stability_pct",   "JITTERY when steady-beat below (%)",        65f,    ADAPTER_LAG, "LagVerdictEngine"),
         Tunable("lag.verdict.choke_stalls",    "CHOKING when freezes/min above",            12f,    ADAPTER_LAG, "LagVerdictEngine"),
         Tunable("lag.verdict.choke_mtstall_ms","CHOKING when touch delay above (ms)",       120f,   ADAPTER_LAG, "LagVerdictEngine"),
         Tunable("lag.verdict.choke_spikes",    "CHOKING when chokes/min above",             20f,    ADAPTER_LAG, "LagVerdictEngine"),
-        Tunable("lag.verdict.confirm_polls",   "Checks that must agree before flip",        2f,     ADAPTER_LAG, "LagVerdictEngine"),
+        Tunable("lag.verdict.confirm_polls",   "Checks that must agree before verdict flips",2f,    ADAPTER_LAG, "LagVerdictEngine"),
         // LoadShedGovernor
         Tunable("lag.shed.min_hold_ms",        "Minimum helping time once started (ms)",    8000f,  ADAPTER_LAG, "LoadShedGovernor"),
         Tunable("lag.shed.poll_ms",            "Rescue check rhythm (ms)",                  2000f,  ADAPTER_LAG, "LoadShedGovernor"),
