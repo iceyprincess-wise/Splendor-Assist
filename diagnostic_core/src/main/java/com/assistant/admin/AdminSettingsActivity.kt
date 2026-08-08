@@ -26,6 +26,11 @@ import com.assistant.diagnostic.RuntimeLogger
  *  - a live DETECTOR line computed from THIS device's measurements right
  *    now, plus one tap to apply all detector picks for the engine.
  *
+ * The HOME screen carries the Worst-Moment Dashboard: when a moment worse
+ * than anything before is measured, its adapter shows a NEW entry naming
+ * the exact engine to open; that engine's screen offers one-tap apply of
+ * the picks archived from that exact moment.
+ *
  * Saved values are picked up on each engine's next loop tick - no restart,
  * no rebuild, no code tweaking. Screens build themselves from
  * AdminConfigStore.TUNABLES: exposing a new engine is just adding its
@@ -111,7 +116,7 @@ class AdminSettingsActivity : Activity() {
         mount(root)
     }
 
-    // ---------- screen 2: adapters ----------
+    // ---------- screen 2: adapters + Worst-Moment Dashboard ----------
 
     private fun showAdapters() {
         screen = Screen.ADAPTERS
@@ -124,6 +129,37 @@ class AdminSettingsActivity : Activity() {
                         else a + "  (" + engines.size + " engines - " + settings + " settings)"
             navButton(root, label) { showEngines(a) }
         }
+
+        // ---- Worst-Moment Dashboard ----
+        root.addView(TextView(this).apply {
+            text = "Worst-Moment Dashboard"
+            textSize = 15f; setTypeface(typeface, Typeface.BOLD)
+            setPadding(0, dp(18), 0, dp(2))
+        })
+        root.addView(TextView(this).apply {
+            text = "When a moment WORSE than anything before is measured, the setup computed from that exact moment is archived. NEW = not located yet. Open the named engine and tap 'Apply worst-moment archive picks'."
+            textSize = 11f; setPadding(0, 0, 0, dp(6))
+        })
+        for (a in AdminConfigStore.ADAPTERS) {
+            val m = AdminWorstMoments.moment(a)
+            if (m == null) {
+                root.addView(TextView(this).apply {
+                    text = "- " + a + ": nothing archived yet (no bad-enough moment measured)"
+                    textSize = 12f; setPadding(0, dp(4), 0, 0)
+                })
+            } else {
+                val isNew = m.atMs > m.seenAtMs
+                root.addView(TextView(this).apply {
+                    text = (if (isNew) "NEW!  " else "") + "- " + a + " (" +
+                        AdminWorstMoments.fmtWhen(m.atMs) + "): " + m.summary +
+                        "\n   Apply at: " + m.driver
+                    textSize = 12f
+                    if (isNew) setTypeface(typeface, Typeface.BOLD)
+                    setPadding(0, dp(4), 0, 0)
+                })
+            }
+        }
+
         root.addView(TextView(this).apply {
             text = "Values save live and apply on each engine's next tick. Mirror: Download/SplendorAssist/admin_config.json"
             textSize = 12f; setPadding(0, dp(12), 0, 0)
@@ -136,6 +172,7 @@ class AdminSettingsActivity : Activity() {
     private fun showEngines(adapter: String) {
         screen = Screen.ENGINES
         curAdapter = adapter
+        AdminWorstMoments.markSeen(adapter)
         val root = page()
         title(root, adapter, "Pick an engine")
         val cats = AdminConfigStore.categoriesFor(adapter)
@@ -186,6 +223,21 @@ class AdminSettingsActivity : Activity() {
         }
         val pickByKey = picks.associateBy { it.key }
 
+        // ---- worst-moment archive for this engine ----
+        val worst = AdminWorstMoments.moment(adapter)
+        val archived = AdminWorstMoments.archivedPicks(adapter, engine)
+        if (worst != null && archived.isNotEmpty()) {
+            root.addView(TextView(this).apply {
+                text = "WORST-MOMENT ARCHIVE (" + AdminWorstMoments.fmtWhen(worst.atMs) + "): " + worst.summary
+                textSize = 12f; setTypeface(typeface, Typeface.BOLD)
+                setPadding(0, dp(8), 0, 0)
+            })
+            navButton(root, "Apply worst-moment archive picks") {
+                for ((k, v) in archived) editors[k]?.setText(fmt(v))
+                Toast.makeText(this, "Worst-moment values filled in - press Save to apply", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         for (t in AdminConfigStore.tunablesFor(adapter, engine)) {
             root.addView(TextView(this).apply {
                 text = t.label
@@ -209,6 +261,14 @@ class AdminSettingsActivity : Activity() {
                     text = "DETECTOR says " + fmt(pick.value) + " - " + pick.why
                     textSize = 12f
                     setTypeface(typeface, Typeface.BOLD)
+                    setPadding(dp(4), dp(2), 0, 0)
+                })
+            }
+            val av = archived[t.key]
+            if (av != null) {
+                root.addView(TextView(this).apply {
+                    text = "WORST-MOMENT pick: " + fmt(av)
+                    textSize = 12f
                     setPadding(dp(4), dp(2), 0, 0)
                 })
             }

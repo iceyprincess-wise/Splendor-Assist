@@ -15,6 +15,10 @@ import java.io.File
  * filesDir (shared by every process of this app); readers transparently
  * reload that snapshot whenever their own in-memory copy is stale.
  * No permissions, no extra threads, no polling loops.
+ *
+ * Every publish also hands the moment to AdminWorstMoments, which archives
+ * the Detector setup whenever a moment worse than anything before is
+ * measured (scoring runs first, so quiet moments cost nothing).
  */
 object AdminLiveStats {
 
@@ -56,6 +60,7 @@ object AdminLiveStats {
     /** Idempotent; called from AdminConfigStore.initialize in every process. */
     fun initialize(context: Context) {
         if (appCtx == null) appCtx = context.applicationContext
+        AdminWorstMoments.initialize(context)
     }
 
     fun publishProbe(rtt: Float, jitter: Float, q: String, carrierName: String,
@@ -64,12 +69,14 @@ object AdminLiveStats {
         baselineRttMs = baseRtt; jitterTolMs = jitTol; transport = trans
         probeUpdatedMs = System.currentTimeMillis()
         save()
+        try { AdminWorstMoments.consider(AdminConfigStore.ADAPTER_NET) } catch (_: Throwable) { }
     }
 
     fun publishLoss(pct: Float) {
         lossPct = pct
         lossUpdatedMs = System.currentTimeMillis()
         save()
+        try { AdminWorstMoments.consider(AdminConfigStore.ADAPTER_NET) } catch (_: Throwable) { }
     }
 
     fun publishLag(gap: Float, fJitter: Float, stability: Float, stalls: Float,
@@ -80,6 +87,7 @@ object AdminLiveStats {
         lagVerdict = verdict; thermal = therm; panelHz = hz; shedLevel = shed
         lagUpdatedMs = System.currentTimeMillis()
         save()
+        try { AdminWorstMoments.consider(AdminConfigStore.ADAPTER_LAG) } catch (_: Throwable) { }
     }
 
     fun publishStutter(bpm: Float, worst: Float, frames: Int, state: String, hz: Float) {
@@ -87,6 +95,7 @@ object AdminLiveStats {
         sState = state; sPanelHz = hz
         stutterUpdatedMs = System.currentTimeMillis()
         save()
+        try { AdminWorstMoments.consider(AdminConfigStore.ADAPTER_STUTTER) } catch (_: Throwable) { }
     }
 
     /** True when net probe numbers are fresh enough to trust (within 30s). */
