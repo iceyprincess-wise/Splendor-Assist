@@ -42,6 +42,8 @@ object AdminConfigStore {
     const val CAT_LAG_RADAR = "Lag Radar - measures every frame, touch and degree of heat, catches even silent micro-lag"
     const val CAT_LAG_JUDGE = "Lag Judge - decides the exact moment your device counts as lagging"
     const val CAT_LAG_RESCUE = "Lag Rescue - drops extra work instantly so the game gets the whole phone"
+    const val CAT_ST_RADAR = "Stutter Radar - watches every single second of your screen for micro-stutter bursts"
+    const val CAT_ST_JUDGE = "Stutter Forensics - names each stutter: hiccup, rhythm attack, or freeze"
 
     private val ENGINE_CATEGORY: Map<String, String> = mapOf(
         // Net Adapter
@@ -60,13 +62,18 @@ object AdminConfigStore {
         "ThermalPeekEngine" to CAT_LAG_RADAR,
         "DisplayProfileEngine" to CAT_LAG_RADAR,
         "LagVerdictEngine" to CAT_LAG_JUDGE,
-        "LoadShedGovernor" to CAT_LAG_RESCUE
+        "LoadShedGovernor" to CAT_LAG_RESCUE,
+        // Stutter Adapter
+        "StutterPulseEngine" to CAT_ST_RADAR,
+        "PanelWatchEngine" to CAT_ST_RADAR,
+        "BurstForensicsEngine" to CAT_ST_JUDGE
     )
 
     /** Category display order inside an adapter. */
     private val CATEGORY_ORDER: List<String> =
         listOf(CAT_SPEED, CAT_GUARD, CAT_DECISION, CAT_BASELINE,
-               CAT_LAG_RADAR, CAT_LAG_JUDGE, CAT_LAG_RESCUE)
+               CAT_LAG_RADAR, CAT_LAG_JUDGE, CAT_LAG_RESCUE,
+               CAT_ST_RADAR, CAT_ST_JUDGE)
 
     fun categoryOf(engine: String): String = ENGINE_CATEGORY[engine] ?: "Other"
 
@@ -119,6 +126,21 @@ object AdminConfigStore {
         Tunable("net.profile.rtt_ms",          "Ping pass-line override (0 = auto)",        0f,     ADAPTER_NET, "CarrierProfileEngine"),
         Tunable("net.profile.jitter_tol_ms",   "Wobble allowance override (0 = auto)",      0f,     ADAPTER_NET, "CarrierProfileEngine"),
         Tunable("net.profile.keepalive_s",     "Keep-awake rhythm override (0 = auto)",     0f,     ADAPTER_NET, "CarrierProfileEngine"),
+
+        // ---------------- STUTTER ADAPTER ----------------
+        // StutterPulseEngine
+        Tunable("stutter.pulse.burst_mult",    "A frame is LATE above (x screen beat)",     2f,     ADAPTER_STUTTER, "StutterPulseEngine"),
+        Tunable("stutter.pulse.min_frames",    "Late frames in one slice = a burst",        2f,     ADAPTER_STUTTER, "StutterPulseEngine"),
+        Tunable("stutter.pulse.slice_ms",      "Watch slice length (ms)",                   1000f,  ADAPTER_STUTTER, "StutterPulseEngine"),
+        Tunable("stutter.pulse.publish_ms",    "Live readout rhythm (ms)",                  5000f,  ADAPTER_STUTTER, "StutterPulseEngine"),
+        // PanelWatchEngine
+        Tunable("stutter.panel.poll_ms",       "Backup screen-rhythm sweep (ms)",           5000f,  ADAPTER_STUTTER, "PanelWatchEngine"),
+        // BurstForensicsEngine
+        Tunable("stutter.forensics.seizure_ms","A frame slower than this is a FREEZE (ms)", 150f,   ADAPTER_STUTTER, "BurstForensicsEngine"),
+        Tunable("stutter.forensics.osc_bursts","Bursts in window = rhythm attack",          3f,     ADAPTER_STUTTER, "BurstForensicsEngine"),
+        Tunable("stutter.forensics.osc_window_ms","Rhythm-attack look-back window (ms)",    15000f, ADAPTER_STUTTER, "BurstForensicsEngine"),
+        Tunable("stutter.forensics.calm_after_ms","Quiet time before CALM returns (ms)",    10000f, ADAPTER_STUTTER, "BurstForensicsEngine"),
+        Tunable("stutter.forensics.decay_poll_ms","Calm-check rhythm (ms)",                 5000f,  ADAPTER_STUTTER, "BurstForensicsEngine"),
 
         // ---------------- LAG ADAPTER ----------------
         // FramePacingEngine

@@ -213,7 +213,9 @@ class AdminSettingsActivity : Activity() {
                 })
             }
 
-            val guide = AdminTuningGuide.forKey(t.key) ?: AdminTuningGuideLag.forKey(t.key)
+            val guide = AdminTuningGuide.forKey(t.key)
+                ?: AdminTuningGuideLag.forKey(t.key)
+                ?: AdminTuningGuideStutter.forKey(t.key)
             if (guide != null) {
                 val body = TextView(this).apply {
                     text = AdminTuningGuide.render(guide)

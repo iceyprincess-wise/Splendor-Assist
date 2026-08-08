@@ -6,12 +6,11 @@ package com.assistant.admin
  * every pick is computed from current measurements, and every pick carries
  * a WHY that quotes those numbers.
  *
- * Net picks come from live ping/wobble/loss. Lag picks come from the
- * device's measured resting frame wobble, steady-beat score, touch delay
- * and heat - measured at setup time, then padded with headroom so the
- * chosen lines hold up under real gaming load (trouble = the measurement
- * rising far above the resting truth; the padding is what makes the values
- * strong enough for the heat of a match).
+ * Net picks come from live ping/wobble/loss. Lag and stutter picks come
+ * from the device's measured resting truth (frame wobble, steady-beat,
+ * touch delay, heat, burst picture, real panel beat) padded with headroom
+ * so the chosen lines hold up under real gaming load: silent at rest,
+ * tripped instantly by real in-game trouble.
  *
  * If the engines have not produced fresh numbers yet (service just started,
  * or no connection), the detector says so and offers no picks rather than
@@ -24,6 +23,7 @@ object AdminTuningDetector {
     /** One-line live status shown at the top of every settings screen. */
     fun liveLine(adapter: String): String = when (adapter) {
         AdminConfigStore.ADAPTER_LAG -> lagLiveLine()
+        AdminConfigStore.ADAPTER_STUTTER -> stutterLiveLine()
         else -> netLiveLine()
     }
 
@@ -51,6 +51,19 @@ object AdminTuningDetector {
             AdminLiveStats.lagVerdict + ", help level " + AdminLiveStats.shedLevel
     }
 
+    private fun stutterLiveLine(): String {
+        if (!AdminLiveStats.stutterFresh())
+            return "DETECTOR: still measuring your screen... tap Refresh in ~10 seconds (the Splendor service must be running)."
+        val bpm = if (AdminLiveStats.sBurstsPerMin >= 0f) AdminLiveStats.sBurstsPerMin else 0f
+        val last = if (AdminLiveStats.sWorstMs > 0f)
+            String.format("%.0f", AdminLiveStats.sWorstMs) + "ms (" + AdminLiveStats.sFrames + " late frames)"
+            else "none yet"
+        return "DETECTOR - your screen right now: micro-stutter bursts " +
+            String.format("%.0f", bpm) + "/min, last burst " + last +
+            ", state " + AdminLiveStats.sState + ", screen " +
+            String.format("%.0f", AdminLiveStats.sPanelHz) + "Hz"
+    }
+
     /** Detector picks for one engine. Empty until live numbers are fresh. */
     fun picksFor(engine: String): List<Pick> = when (engine) {
         "NetProbeEngine", "PacketLossProbeEngine", "DnsWarmupEngine",
@@ -60,6 +73,8 @@ object AdminTuningDetector {
         "FramePacingEngine", "MainThreadStallEngine", "ThermalPeekEngine",
         "DisplayProfileEngine", "LagVerdictEngine", "LoadShedGovernor" ->
             if (AdminLiveStats.lagFresh()) lagPicks(engine) else emptyList()
+        "StutterPulseEngine", "PanelWatchEngine", "BurstForensicsEngine" ->
+            if (AdminLiveStats.stutterFresh()) stutterPicks(engine) else emptyList()
         else -> emptyList()
     }
 
@@ -247,6 +262,57 @@ object AdminTuningDetector {
                 Pick("lag.shed.release_polls", 4f,
                     "4 clean checks before standing down - one beat quicker than stock, still flap-proof")
             )
+            else -> emptyList()
+        }
+    }
+
+    // ================= STUTTER =================
+    //
+    // Stutter picks are anchored to the screen's REAL beat and the resting
+    // burst picture, padded with headroom: silent while you set up, tripped
+    // instantly by real in-game stutter - values strong enough for the heat
+    // of a match.
+
+    private fun stutterPicks(engine: String): List<Pick> {
+        val bpm = AdminLiveStats.sBurstsPerMin.coerceAtLeast(0f)
+        val hz = if (AdminLiveStats.sPanelHz > 0f) AdminLiveStats.sPanelHz else 60f
+        val vsync = 1000f / hz
+        val busy = bpm > 1f
+        val bS = String.format("%.0f", bpm)
+        val hzS = String.format("%.0f", hz)
+
+        return when (engine) {
+            "StutterPulseEngine" -> listOf(
+                Pick("stutter.pulse.burst_mult", if (busy) 2.5f else 2f,
+                    if (busy) "your screen already skips at rest (" + bS + " bursts/min) - raise the late-line so resting noise doesn't drown real stutter"
+                    else "your screen is clean at rest (" + bS + " bursts/min) - 2x your " + hzS + "Hz beat is the proven felt-stutter line"),
+                Pick("stutter.pulse.min_frames", 2f,
+                    "one late frame is normal phone life; two inside a single second is a real burst"),
+                Pick("stutter.pulse.slice_ms", 1000f,
+                    "1-second slices are the natural heartbeat of felt stutter - shorter splits bursts, longer blurs them"),
+                Pick("stutter.pulse.publish_ms", 5000f,
+                    "live readout every 5s - fresh whenever you open this screen, invisible cost")
+            )
+            "PanelWatchEngine" -> listOf(
+                Pick("stutter.panel.poll_ms", 5000f,
+                    "the OS reports screen-rhythm switches instantly; this backup sweep can stay relaxed")
+            )
+            "BurstForensicsEngine" -> {
+                val seiz = clamp(maxOf(100f, vsync * 8f), 100f, 200f)
+                listOf(
+                    Pick("stutter.forensics.seizure_ms", seiz,
+                        "about 8 missed beats of YOUR " + hzS + "Hz screen - a freeze anyone feels, never one heavy frame"),
+                    Pick("stutter.forensics.osc_bursts", 3f,
+                        "3 bursts inside the window is a rhythm, not bad luck - name it and let the rescue act"),
+                    Pick("stutter.forensics.osc_window_ms", 15000f,
+                        "15s window matches how rhythmic stutter actually arrives in waves"),
+                    Pick("stutter.forensics.calm_after_ms", if (busy) 12000f else 8000f,
+                        if (busy) "your screen bursts even at rest (" + bS + "/min) - demand 12 quiet seconds so CALM isn't declared inside an ongoing attack"
+                        else "clean screen at rest - 8 quiet seconds is real proof, all-clear one beat quicker than stock"),
+                    Pick("stutter.forensics.decay_poll_ms", 3000f,
+                        "check for calm a beat faster than stock so full confidence returns promptly")
+                )
+            }
             else -> emptyList()
         }
     }
