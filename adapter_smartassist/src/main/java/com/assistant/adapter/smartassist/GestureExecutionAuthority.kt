@@ -14,6 +14,17 @@ import java.util.concurrent.atomic.AtomicLong
  * to measure latency, count acceptance, log failure, and later enforce
  * cancellation policy. Callers keep their Boolean contract unchanged.
  *
+ * ORIGIN ATTRIBUTION (fixed this round): previously this walked the full
+ * thread stack trace (Thread.currentThread().stackTrace) on EVERY dispatch
+ * to discover the caller's class name. That is a per-action array
+ * allocation plus a full stack walk on the hottest path in the app -
+ * pure garbage-collector pressure and dead time multiplied by every
+ * single gesture, on a device that is already RAM-starved. Attribution
+ * is now an explicit, zero-cost parameter with a default; callers that
+ * have not yet been onboarded are counted as "unattributed" instead of
+ * taxing every action to find out who they were. Passing real origins is
+ * part of the per-engine onboarding pass.
+ *
  * GridRecentsInterceptor is a separate accessibility UI domain and is
  * deliberately NOT routed through this authority.
  */
@@ -32,10 +43,11 @@ object GestureExecutionAuthority {
         service: AccessibilityService,
         gesture: GestureDescription,
         callback: AccessibilityService.GestureResultCallback? = null,
-        handler: Handler? = null
+        handler: Handler? = null,
+        origin: String = "unattributed"
     ): Boolean {
         requested.incrementAndGet()
-        lastOrigin = originOfCaller()
+        lastOrigin = origin
         lastUpdatedMs = System.currentTimeMillis()
 
         return try {
@@ -44,7 +56,7 @@ object GestureExecutionAuthority {
             try {
                 com.assistant.events.GameplayEventHub.emit(
                     if (result) "dispatch-accepted" else "dispatch-rejected",
-                    "origin=$lastOrigin"
+                    "origin=$origin"
                 )
             } catch (_: Throwable) {
             }
@@ -54,26 +66,12 @@ object GestureExecutionAuthority {
             failed.incrementAndGet()
             lastAccepted = false
             RuntimeLogger.log(
-                "Gesture execution failed origin=$lastOrigin: ${e.message}",
+                "Gesture execution failed origin=$origin: ${e.message}",
                 "SMART_ASSIST"
             )
             false
         }
     }
-
-    private fun originOfCaller(): String =
-        try {
-            Thread.currentThread().stackTrace
-                .firstOrNull {
-                    it.className.contains("com.assistant") &&
-                        !it.className.contains("GestureExecutionAuthority")
-                }
-                ?.className
-                ?.substringAfterLast('.')
-                ?: "unknown"
-        } catch (_: Throwable) {
-            "unknown"
-        }
 
     fun executionRuntimeSnapshot(): Map<String, Any> = mapOf(
         "requested" to requested.get(),
