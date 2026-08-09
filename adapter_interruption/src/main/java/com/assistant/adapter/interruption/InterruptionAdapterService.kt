@@ -1,8 +1,5 @@
 package com.assistant.adapter.interruption
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.IntentFilter
@@ -13,14 +10,20 @@ import android.os.IBinder
 import android.os.Process
 import android.telephony.TelephonyManager
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
+import java.util.concurrent.atomic.AtomicInteger
 
 class InterruptionAdapterService : Service() {
 
     private lateinit var workerThread: HandlerThread
 
     private lateinit var interruptionHandler: Handler
+
+    // Task C item (e): real error accounting - failures were logged but
+    // errorCount was hardcoded 0, so the health verdict could never see them.
+    private val errorCount = AtomicInteger(0)
 
     private val interruptionRunnable =
         object : Runnable {
@@ -97,7 +100,7 @@ class InterruptionAdapterService : Service() {
                             adapterName = "adapter_interruption",
                             status = state.severity,
                             lastHeartbeat = System.currentTimeMillis(),
-                            errorCount = 0,
+                            errorCount = errorCount.get(),
                             recoveryCount = 0,
                             details =
                                 "battery=${state.batteryLevel}," +
@@ -116,6 +119,7 @@ class InterruptionAdapterService : Service() {
                     )
 
                 } catch (e: Exception) {
+                    errorCount.incrementAndGet()
                     RuntimeLogger.log(
                         "InterruptionAdapter heartbeat failed :: ${e.javaClass.simpleName}",
                         "HEALTH"
@@ -148,31 +152,9 @@ class InterruptionAdapterService : Service() {
         interruptionHandler =
             Handler(workerThread.looper)
 
-        val channel =
-            NotificationChannel(
-                "interruption_adapter",
-                "Interruption Core",
-                NotificationManager.IMPORTANCE_MIN
-            )
-
-        getSystemService(
-            NotificationManager::class.java
-        )?.createNotificationChannel(channel)
-
-        startForeground(
-            9998,
-            Notification.Builder(
-                this,
-                "interruption_adapter"
-            )
-                .setContentTitle(
-                    "Splendor Interruption Node"
-                )
-                .setSmallIcon(
-                    android.R.drawable.ic_menu_info_details
-                )
-                .build()
-        )
+        // Unified foundation notification (Task C item (e)) - replaces the
+        // per-node "Splendor Interruption Node" row on ID 9998.
+        NodeNotificationHub.attach(this, "adapter_interruption")
 
         interruptionHandler.post(
             interruptionRunnable
@@ -196,6 +178,8 @@ class InterruptionAdapterService : Service() {
             workerThread.quitSafely()
         } catch (_: Exception) {
         }
+
+        NodeNotificationHub.detach(this, "adapter_interruption")
 
         super.onDestroy()
     }

@@ -1,11 +1,7 @@
 package com.assistant.adapter.lag
 
 import android.accessibilityservice.GestureDescription
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.graphics.Path
 import android.os.Handler
@@ -18,6 +14,7 @@ import android.os.Process
 import android.view.Choreographer
 import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 import java.util.concurrent.atomic.AtomicLong
@@ -32,9 +29,7 @@ class LagAdapterService : Service() {
 
     companion object {
         private const val ADAPTER_NAME = "adapter_lag"
-        private const val NOTIFICATION_ID = 9993
-        private const val CHANNEL_ID = "lag_adapter_channel"
-        
+
         // Approximate server tick interval (e.g., 30Hz network tick)
         private const val BASE_SERVER_TICK_RATE_MS = 33L 
     }
@@ -96,9 +91,11 @@ class LagAdapterService : Service() {
         super.onCreate()
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
         RuntimeLogger.log("LagAdapterService optimized initialization", "ADAPTER")
-        
-        setupForegroundService()
-        
+
+        // Unified foundation notification (Task C item (e)) - replaces the
+        // per-node row on ID 9993, which collided with input/battery/boot.
+        NodeNotificationHub.attach(this, ADAPTER_NAME)
+
         lagHandlerThread.start()
         lagHandler = Handler(lagHandlerThread.looper)
         heartbeatHandler = Handler(Looper.getMainLooper())
@@ -135,22 +132,6 @@ class LagAdapterService : Service() {
         RuntimeLogger.log("Lag engine stack ignited: 6 engines [V3 ADMIN-WIRED]", "LAG")
     }
 
-    private fun setupForegroundService() {
-        val channel = NotificationChannel(CHANNEL_ID, "Lag Core Engine", NotificationManager.IMPORTANCE_MIN).apply {
-            description = "High-Performance Touch Injector"
-        }
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
-
-        val notification = Notification.Builder(this, CHANNEL_ID)
-            .setContentTitle("Splendor Lag Node: Active")
-            .setContentText("Micro-gesture tick sync engaged")
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .build()
-            
-        startForeground(NOTIFICATION_ID, notification)
-    }
-
     private fun initFrameSync() {
         Handler(Looper.getMainLooper()).post {
             Choreographer.getInstance().postFrameCallback(frameCallback)
@@ -164,17 +145,18 @@ class LagAdapterService : Service() {
             val targetX = data.getFloat("targetX")
             val targetY = data.getFloat("targetY")
             generateOptimizedGesture(targetX, targetY)
-            RuntimeLogger.log("Generated precision gesture to ($targetX, $targetY) mapping ready.", "GESTURE")
-            // Gesture is now pre-calculated and stabilized for the active view-layer injector.
+            RuntimeLogger.log("Gesture timing advice published for ($targetX, $targetY)", "GESTURE")
         }
     }
 
     /**
-     * Mathematical precision micro-gesture engine.
-     * Features:
-     * 1. Adaptive Noise Humanization (prevents static pattern detection)
-     * 2. Server-Tick Sync (scales paths/holds to network drift)
-     * 3. Vector mapping with micro-variance bounds
+     * Timing-advice engine. Honesty note (Task C): this process cannot and
+     * must not inject gestures - the single dispatch owner is the
+     * accessibility engine. The GestureDescription built here is a local
+     * calculation whose only real output is the RTT-scaled hold duration
+     * published to PerformanceTelemetryRegistry as ADVICE for the dispatch
+     * owner. The log line above says exactly that, instead of implying an
+     * injection that never happens.
      */
     private fun generateOptimizedGesture(startX: Float, startY: Float): GestureDescription {
         val path = Path()
@@ -240,6 +222,7 @@ class LagAdapterService : Service() {
         LoadShedGovernor.stop()
         ThermalPeekEngine.stop()
         lagHandlerThread.quitSafely()
+        NodeNotificationHub.detach(this, ADAPTER_NAME)
         RuntimeLogger.log("LagAdapterService optimized engine stopped", "HEALTH")
         super.onDestroy()
     }
