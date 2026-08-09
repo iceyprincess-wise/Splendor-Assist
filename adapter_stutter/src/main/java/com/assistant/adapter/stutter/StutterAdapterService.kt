@@ -1,9 +1,6 @@
 package com.assistant.adapter.stutter
 
 // V3 ADMIN-WIRED
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Handler
@@ -12,6 +9,7 @@ import android.os.Looper
 import android.os.Messenger
 import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
@@ -52,12 +50,9 @@ class StutterAdapterService : Service() {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY)
         RuntimeLogger.log("StutterAdapterService started - BURST RADAR V3", "ADAPTER")
 
-        val channel = NotificationChannel("stutter_adapter", "Stutter Core", NotificationManager.IMPORTANCE_MIN)
-        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
-        startForeground(9993, Notification.Builder(this, "stutter_adapter")
-            .setContentTitle("Splendor Stutter Node")
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .build())
+        // Unified foundation notification (Task C item (e)) - this node was
+        // the SEVENTH service on colliding foreground ID 9993.
+        NodeNotificationHub.attach(this, "adapter_stutter")
 
         // ---- STUTTER ENGINE STACK IGNITION [V3 ADMIN-WIRED] ----
         // CRITICAL: load the admin store in THIS process so every saved
@@ -78,6 +73,7 @@ class StutterAdapterService : Service() {
         StutterPulseEngine.stop()
         PanelWatchEngine.stop()
         BurstForensicsEngine.stopDecay()
+        NodeNotificationHub.detach(this, "adapter_stutter")
         RuntimeLogger.log("StutterAdapter stopped", "HEALTH")
         super.onDestroy()
     }

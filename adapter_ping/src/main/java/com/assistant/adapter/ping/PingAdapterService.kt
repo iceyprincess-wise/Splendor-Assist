@@ -1,11 +1,9 @@
 package com.assistant.adapter.ping
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Handler
@@ -19,6 +17,9 @@ class PingAdapterService : Service() {
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
     private val heartbeatHandler = Handler(Looper.getMainLooper())
 
+    @Volatile private var lastResolveMs = -1L
+    @Volatile private var lastQuality = "UNKNOWN"
+
     private val heartbeatRunnable = object : Runnable {
         override fun run() {
             AdapterHealthRegistry.update(
@@ -28,7 +29,7 @@ class PingAdapterService : Service() {
                     lastHeartbeat = System.currentTimeMillis(),
                     errorCount = 0,
                     recoveryCount = 0,
-                    details = "Heartbeat active"
+                    details = "dnsResolve=${lastResolveMs}ms quality=$lastQuality"
                 )
             )
             RuntimeLogger.log("PingAdapter heartbeat", "HEALTH")
@@ -42,6 +43,14 @@ class PingAdapterService : Service() {
     private val pingExecutor =
         Executors.newSingleThreadExecutor()
 
+    /*
+     * HONESTY NOTE (Task C): this probe measures DNS RESOLUTION time, not
+     * network round-trip - the OS resolver may answer from cache in ~0ms.
+     * The real RTT authority is adapter_net's NetProbeEngine; this node's
+     * reading is a coarse connectivity indicator only, and its log line and
+     * health details now say exactly what it measures instead of calling it
+     * "latency".
+     */
     private val pingRunnable = object : Runnable {
 
         override fun run() {
@@ -56,23 +65,27 @@ class PingAdapterService : Service() {
                     InetAddress
                         .getByName("google.com")
 
-                    val latency =
+                    val resolveMs =
                         System.currentTimeMillis() - start
 
                     val quality =
                         when {
-                            latency < 100 -> "GOOD"
-                            latency < 300 -> "FAIR"
+                            resolveMs < 100 -> "GOOD"
+                            resolveMs < 300 -> "FAIR"
                             else -> "POOR"
                         }
 
+                    lastResolveMs = resolveMs
+                    lastQuality = quality
+
                     RuntimeLogger.log(
-                        "PING latency=${latency}ms quality=$quality",
+                        "PING dnsResolve=${resolveMs}ms quality=$quality (connectivity indicator, not RTT)",
                         "PING"
                     )
 
                 } catch (e: Exception) {
 
+                    lastQuality = "OFFLINE"
                     RuntimeLogger.log(
                         "PING connectivity check failed",
                         "PING"
@@ -87,14 +100,10 @@ class PingAdapterService : Service() {
     override fun onCreate() {
         super.onCreate()
         RuntimeLogger.log("PingAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("ping_adapter", "Ping Core", NotificationManager.IMPORTANCE_MIN)
-        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
-        
-        val notification = Notification.Builder(this, "ping_adapter")
-            .setContentTitle("Splendor Ping Node")
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .build()
-        startForeground(9993, notification)
+
+        // Unified foundation notification (Task C item (e)) - this node was
+        // the FIFTH service on colliding foreground ID 9993.
+        NodeNotificationHub.attach(this, "adapter_ping")
 
         AdapterHealthRegistry.update(
             AdapterHealthSnapshot(
@@ -119,6 +128,7 @@ class PingAdapterService : Service() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
         pingHandler.removeCallbacks(pingRunnable)
         pingExecutor.shutdownNow()
+        NodeNotificationHub.detach(this, "adapter_ping")
         RuntimeLogger.log("PingAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()
     }

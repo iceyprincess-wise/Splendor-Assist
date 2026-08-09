@@ -1,18 +1,14 @@
 package com.assistant.adapter.sync
+import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.os.IBinder
-import android.os.Message
 import android.os.Messenger
-import android.view.Choreographer
 
 class SyncAdapterService : Service() {
     private val heartbeatHandler = Handler(Looper.getMainLooper())
@@ -37,14 +33,10 @@ class SyncAdapterService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        val channel = NotificationChannel("sync_adapter", "Sync Core", NotificationManager.IMPORTANCE_MIN)
-        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
-        
-        val notification = Notification.Builder(this, "sync_adapter")
-            .setContentTitle("Splendor Sync Node")
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .build()
-        startForeground(9992, notification)
+
+        // Unified foundation notification (Task C item (e)) - replaces the
+        // per-node row on ID 9992.
+        NodeNotificationHub.attach(this, "adapter_sync")
 
         AdapterHealthRegistry.update(
             AdapterHealthSnapshot(
@@ -63,6 +55,7 @@ class SyncAdapterService : Service() {
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
+        NodeNotificationHub.detach(this, "adapter_sync")
         super.onDestroy()
     }
 
