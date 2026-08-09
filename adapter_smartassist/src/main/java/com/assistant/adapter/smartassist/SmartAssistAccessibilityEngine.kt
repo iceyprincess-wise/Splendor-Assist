@@ -24,6 +24,26 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         @Volatile
         var isDispatching = false
 
+        /*
+         * DISPATCH LATCH WATCHDOG (Task B repair).
+         *
+         * The busy latch was a bare boolean cleared ONLY by the gesture's
+         * completion callback. When that callback never came back (observed
+         * in the field: ONE dispatch per whole session), the latch stayed
+         * true forever, the bus consumer short-circuited on every tick, and
+         * every routed action rotted in the queue - the entire app went
+         * silent after its first gesture while every counter upstream kept
+         * counting. The latch is now timestamped and force-cleared when held
+         * far beyond any legal gesture duration (max 85ms, timeout 400ms).
+         */
+        @Volatile
+        private var dispatchStartedMs = 0L
+        private const val DISPATCH_LATCH_TIMEOUT_MS = 400L
+
+        private fun latchStuck(): Boolean =
+            isDispatching &&
+                System.currentTimeMillis() - dispatchStartedMs > DISPATCH_LATCH_TIMEOUT_MS
+
         // =========================================================================
         // ADVANCED ENGINEERING CONSTANTS
         // =========================================================================
@@ -83,10 +103,20 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
     fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
         if (isDispatching) {
-            return false
+            // A latch held past any legal gesture duration is a corpse, not a
+            // dispatch in flight - clear it instead of refusing forever.
+            if (!latchStuck()) {
+                return false
+            }
+            isDispatching = false
+            RuntimeLogger.log(
+                "dispatch latch watchdog: stuck latch force-cleared (direct)",
+                "SMART_ASSIST"
+            )
         }
 
         isDispatching = true
+        dispatchStartedMs = System.currentTimeMillis()
 
         return try {
             val optimizedPath = generatePrecisionPath(
@@ -156,6 +186,16 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     private val busRunnable = object : Runnable {
         override fun run() {
             try {
+                // Watchdog FIRST: a lost gesture callback must never freeze
+                // the consumer for the rest of the session.
+                if (latchStuck()) {
+                    isDispatching = false
+                    RuntimeLogger.log(
+                        "dispatch latch watchdog: stuck latch force-cleared (bus)",
+                        "SMART_ASSIST"
+                    )
+                }
+
                 // Short-circuit evaluations to preserve maximum CPU thermal budget
                 if (!SmartAssistRepository.enabled() || isDispatching) {
                     busHandler.postDelayed(this, BUS_POLL_RATE_MS)
@@ -212,7 +252,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         RuntimeCoordinator.reportPermissionsVerified()
         RuntimeCoordinator.reportAccessibilityReady()
         try { com.assistant.events.SystemEventHub.emit("accessibility-connected") } catch (_: Throwable) {}
-        RuntimeLogger.log("SmartAssistAccessibilityEngine [OMEGA BUILD] connected BUILD_MARKER=REMAP-STEP6-CONTRIBUTORS", "SMART_ASSIST")
+        RuntimeLogger.log("SmartAssistAccessibilityEngine [OMEGA BUILD] connected BUILD_MARKER=TASKB-DISPATCH-WATCHDOG", "SMART_ASSIST")
     }
 
     fun triggerInstantExecution(x1: Float, y1: Float, x2: Float, y2: Float) {
