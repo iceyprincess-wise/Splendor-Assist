@@ -1,11 +1,9 @@
 package com.assistant.adapter.net
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Handler
@@ -39,14 +37,9 @@ class NetAdapterService : Service() {
     override fun onCreate() {
         super.onCreate()
         RuntimeLogger.log("NetAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("net_adapter", "Net Core", NotificationManager.IMPORTANCE_MIN)
-        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
-        
-        val notification = Notification.Builder(this, "net_adapter")
-            .setContentTitle("Splendor Net Node")
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .build()
-        startForeground(9994, notification)
+
+        // Unified foundation notification (Task C item (e)).
+        NodeNotificationHub.attach(this, "adapter_net")
 
         AdapterHealthRegistry.update(
             AdapterHealthSnapshot(
@@ -86,6 +79,7 @@ class NetAdapterService : Service() {
         SpikeBurstEngine.stop()
         ActionWindowEngine.stop()
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
+        NodeNotificationHub.detach(this, "adapter_net")
         RuntimeLogger.log("NetAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
