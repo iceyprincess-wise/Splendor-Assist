@@ -14,26 +14,24 @@ import java.util.concurrent.atomic.AtomicLong
  * once a ball had EVER been seen the flag stayed true forever. hasBall now
  * requires the sighting to be FRESH (VisionTrust age-decay window).
  *
- * REPAIRED (Task C - THE ROOT CAUSE OF "engines work, then go dead"):
- * frame confidence was derived ONLY from crossing-lane confidence
- * (bestConf of CrossingLaneAnalysisEngine). Crossing lanes exist mainly in
- * box/wing situations - so during those phases confidence > 0, the frame
- * was trusted, and every contributor fired (keeper saving "like a maniac").
- * The moment play moved to a phase with no viable crossing lane, bestConf
- * was 0 -> confidence 0 -> frame UNTRUSTED -> RuntimeDecisionLoop returned
- * before collecting ANY contribution. The entire 31-contributor stack -
- * tackling, interception, magnetic feet, agility, attackers - went dead
- * simultaneously, then "revived" when a crossing lane appeared again.
- * Nothing was broken inside those engines; their input feed was being
- * zeroed out by an unrelated signal.
+ * REPAIRED (Task C round 1): frame confidence was crossing-lane-only,
+ * zeroing the whole contributor stack in any phase without a viable
+ * crossing lane. Confidence now follows fresh ball trust.
  *
- * Fix: a frame is now as confident as its FRESH BALL SIGHTING (age-decayed
- * VisionTrust ball trust). Lane confidence can only RAISE it, never zero
- * it. VisionTrust.frameTrusted still gates everything (game foreground,
- * sane entity counts, latency, trust floor) - no trust is invented.
+ * REPAIRED (Task C round 2 - FIELD-LOG PROVEN): hasBall meant "ball is
+ * VISIBLE", not "WE possess it". The 18:38 field session shows the result:
+ * hasBall=true for essentially the whole match, so every contributor gated
+ * on !hasBall - ThreatPriority, CrossClaim, KeeperBias, PanicSave,
+ * BallPress, and with them tackling/interception behaviour - recorded
+ * ZERO contributions all session while the attack-side engines ran 6574
+ * cycles. The keeper wasn't dying; it was never allowed to speak because
+ * "ball on screen" was read as "we have it".
  *
- * EXTENDED (Task C item (d)): goal detector output rides in the frame so
- * SHOT/CROSS contributors never fabricate a target.
+ * Fix: hasBall now follows the REAL possession verdict from
+ * BallPossessionEngine (via Phase3WorldState) whenever that verdict has
+ * usable confidence; the fresh-sighting rule remains as fallback only when
+ * possession has no data yet (cold start). Admin-tunable floor:
+ *   assist.possession.min_conf (default 0.20)
  */
 object FrameAssembler {
 
@@ -58,11 +56,26 @@ object FrameAssembler {
         val telemetry = try { TelemetryRepository.current() } catch (_: Throwable) { null }
         val ballX = telemetry?.ballX ?: 0f
         val ballY = telemetry?.ballY ?: 0f
-        // possession is only claimed on a FRESH sighting - stale stored
-        // coordinates said "we have the ball" forever and starved every
-        // !hasBall-gated contributor (keeper, intercept) of its turn
         val ballTrustNow = VisionTrust.ballTrust()
-        val hasBall = ballTrustNow > 0f && (ballX != 0f || ballY != 0f)
+        val ballSeen = ballTrustNow > 0f && (ballX != 0f || ballY != 0f)
+
+        /*
+         * ROOT-CAUSE FIX (round 2): possession, not visibility.
+         * BallPossessionEngine already computes true ownership every vision
+         * cycle; the frame just never consumed it.
+         */
+        val possession = try {
+            Phase3WorldStateStore.current().possession
+        } catch (_: Throwable) { null }
+        val possessionMinConf = try {
+            com.assistant.admin.AdminConfigStore.get("assist.possession.min_conf", 0.20f)
+        } catch (_: Throwable) { 0.20f }
+        val hasBall =
+            if (possession != null && possession.confidence >= possessionMinConf) {
+                ballSeen && possession.hasPossession
+            } else {
+                ballSeen // cold-start fallback: old fresh-sighting semantics
+            }
 
         val scene = try { SceneTracker.current() } catch (_: Throwable) { null }
         val players = scene?.trackedPlayers.orEmpty()
@@ -89,20 +102,13 @@ object FrameAssembler {
             if (laneCount > 0) viable.toFloat() / laneCount.toFloat() else 0f
         )
 
-        /*
-         * ROOT-CAUSE FIX (see class doc): confidence follows the fresh ball
-         * sighting, with lane data only able to raise it. frameTrusted still
-         * hard-gates: foreground, entity sanity, latency, trust floor.
-         */
+        // Confidence follows the fresh ball sighting; lanes can only raise it.
         val rawConfidence = maxOf(bestConf, ballTrustNow).coerceIn(0f, 1f)
         val confidence =
             if (VisionTrust.frameTrusted(players.size, opponents)) rawConfidence else 0f
 
         VisionTrust.tickAndLog()
 
-        // Task C: goal detector output, taken as-is. A goal is only
-        // "detected" for contributors when the detector says so AND the
-        // box is geometrically sane (right of left, bottom below top).
         val goalDetected =
             (scene?.goalDetected ?: false) &&
                 (scene?.goalConfidence ?: 0f) > 0f &&

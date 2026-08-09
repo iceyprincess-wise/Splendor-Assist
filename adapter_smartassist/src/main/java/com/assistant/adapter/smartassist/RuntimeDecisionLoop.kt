@@ -1,5 +1,6 @@
 package com.assistant.adapter.smartassist
 
+import com.assistant.admin.AdminConfigStore
 import com.assistant.execution.ContributionRegistry
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
@@ -17,8 +18,20 @@ import java.util.concurrent.atomic.AtomicLong
  *         -> also fold in ContributionRegistry.drainBest (emergency submitters)
  *         -> ONE ExecutionRequest routed through the terminal
  *
- * This is what was missing: nothing drained contributions once the bus->
- * controller feedback loop was removed. Now the capture loop drives it.
+ * REPAIRED (Task C - FIELD-LOG PROVEN): arbitration was raw max-weight.
+ * The 18:38 session shows what that produced: MagneticFeet (a MOVE-class
+ * stabilizer that fires with authority~1.0 on EVERY possession frame) won
+ * nearly every cycle - lastAction=MagneticFeet:MOVE, weight=1.0 - so 6131
+ * accepted dispatches were overwhelmingly ball-position taps while Shot
+ * won 1767, PassLane 907, CrossDelivery 23. Actions existed; they were
+ * being outvoted by a stabilizer.
+ *
+ * Fix: ACTION-CLASS ARBITRATION SCALING. Real match actions (SHOT, PASS,
+ * CROSS, DEFEND, KEEPER, EVADE) keep full weight; MOVE support is scaled
+ * down so it wins only when nothing real is on offer. Admin-tunable live:
+ *   assist.decision.move_scale (default 0.45)
+ * Raise it if movement support feels too weak, lower it if MOVE spam
+ * returns - no rebuild needed.
  */
 object RuntimeDecisionLoop {
 
@@ -30,6 +43,15 @@ object RuntimeDecisionLoop {
     @Volatile private var lastAction: String = "none"
     @Volatile private var lastWeight: Float = 0f
     @Volatile private var lastUpdatedMs: Long = 0L
+
+    private fun classScale(actionClass: ActionClass): Float =
+        when (actionClass) {
+            ActionClass.MOVE ->
+                try { AdminConfigStore.get("assist.decision.move_scale", 0.45f) }
+                catch (_: Throwable) { 0.45f }
+            ActionClass.NONE -> 0f
+            else -> 1f
+        }
 
     /* Called once per assembled frame by OverlayService's capture loop. */
     fun onFrame(frame: RuntimeFrame): Boolean {
@@ -43,7 +65,8 @@ object RuntimeDecisionLoop {
         }
 
         val contributions = GameplayEngineRegistry.collect(frame)
-        val best: EngineContribution? = contributions.maxByOrNull { it.weight }
+        val best: EngineContribution? =
+            contributions.maxByOrNull { it.weight * classScale(it.actionClass) }
 
         val emergency = ContributionRegistry.drainBest()
 
