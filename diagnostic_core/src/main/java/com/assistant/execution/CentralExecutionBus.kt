@@ -189,6 +189,22 @@ object CentralExecutionBus {
         }
     }
 
+    /*
+     * Non-destructive look at the highest-priority fresh request. Purges
+     * stale corpses first (attributed to staleDrops exactly like consume()).
+     *
+     * This exists for the dispatcher's preemption decision: while a gesture
+     * is in flight, the dispatcher needs to know whether something MORE
+     * important than the in-flight action is waiting - without consuming
+     * it prematurely. Returns only the source; the request itself stays
+     * queued until consume().
+     */
+    fun peekSource(): ExecutionSource? =
+        synchronized(mutationLock) {
+            purgeStaleLocked()
+            queue.peek()?.request?.source
+        }
+
     fun start() {
         running.set(true)
         updateStatistics()

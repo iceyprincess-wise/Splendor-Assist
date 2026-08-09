@@ -9,9 +9,11 @@ import android.os.Process
 import android.view.accessibility.AccessibilityEvent
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.execution.CentralExecutionBus
+import com.assistant.execution.ExecutionSource
 import com.assistant.execution.HybridExecutionTerminal
 import com.assistant.adapter.smartassist.AccessibilitySurvivalEngine
 import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToLong
@@ -25,27 +27,45 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         var isDispatching = false
 
         /*
-         * DISPATCH LATCH - Task B round 4.
+         * DISPATCH LATCH - Task C round.
          *
-         * Field logs proved the gesture completion callback NEVER fires on
-         * this device/OS build: every single dispatch's latch had to be
-         * force-cleared by the 400ms watchdog (hundreds of 'stuck latch
-         * force-cleared' lines per match). That watchdog saved the session
-         * from total silence, but it taxed EVERY action with a dead 400ms -
-         * capping the whole app at ~2.5 actions/second while the decision
-         * loop was approving dozens per second.
+         * History: field logs proved the gesture completion callback NEVER
+         * fires on this device/OS build. Round 3's 400ms watchdog rescued
+         * every action at the cost of a dead 400ms tax (~2.5 actions/s cap).
+         * Round 4 made the latch self-timed at duration+40ms.
          *
-         * The latch is now SELF-TIMED: a gesture physically cannot outlive
-         * its own duration (hard cap 85ms), so the latch is released on a
-         * schedule of duration+40ms by the dispatcher itself. The callback,
-         * when it does fire, releases earlier; the watchdog stays only as a
-         * last-resort backstop at 250ms. Effective throughput rises from
-         * ~2.5/s to the decision loop's real pace.
+         * This round removes the remaining dead time and the head-of-line
+         * blocking that round 4 left behind:
+         *
+         * 1. The release margin drops 40ms -> 8ms (one bus-poll period).
+         *    The margin only ever existed to absorb scheduler jitter on the
+         *    release runnable; 40ms of it was pure dead air on every action.
+         *
+         * 2. PRIORITY PREEMPTION. Round 4 serialized everything: while any
+         *    gesture was in flight, the consumer refused to consume - so a
+         *    GOALKEEPER request (120ms lifetime) arriving mid-dispatch could
+         *    expire waiting behind a routine SMART_ASSIST swipe. Now the
+         *    consumer peeks the bus while dispatching, and if the waiting
+         *    request outranks the in-flight one, it dispatches immediately.
+         *    Android's gesture injection cancels the in-flight gesture when
+         *    a new one is dispatched - which is exactly the semantics an
+         *    emergency demands: the save preempts the pass.
+         *
+         * 3. MEASURED, not asserted: the dispatcher counts accepted
+         *    dispatches and logs the real actions/second every 10s
+         *    (DISPATCH_RATE log line). Physics note for honesty: distinct
+         *    gestures cannot overlap from one service - at the 16ms minimum
+         *    duration the theoretical ceiling is ~40-60 completed actions/s,
+         *    and dispatching faster than that CANCELS earlier actions before
+         *    they land. The goal is zero artificial dead time + never letting
+         *    an emergency wait, not a fantasy number.
          */
         @Volatile
         private var dispatchStartedMs = 0L
+        @Volatile
+        private var dispatchingPriority = Int.MIN_VALUE
         private const val DISPATCH_LATCH_TIMEOUT_MS = 250L
-        private const val LATCH_RELEASE_MARGIN_MS = 40L
+        private const val LATCH_RELEASE_MARGIN_MS = 8L
 
         private fun latchStuck(): Boolean =
             isDispatching &&
@@ -58,11 +78,15 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         private const val MAX_SAFE_DURATION_MS = 85L     // Absolute input cap to avoid system ANR flags
         private const val NOISE_AMPLITUDE_PX = 3.85f     // Micro-variance vector bounds for humanization
         private const val BUS_POLL_RATE_MS = 8L          // Nyquist-compliant sub-frame polling
+        private const val DISPATCH_RATE_WINDOW_MS = 10_000L
     }
 
     private lateinit var dispatcher: ActiveGestureController
     private lateinit var busHandler: Handler
     private lateinit var busThread: HandlerThread
+
+    private val windowDispatches = AtomicLong(0L)
+    @Volatile private var windowStartMs = 0L
 
     // =========================================================================
     // CORE MATH & OPTIMIZATION UTILITIES
@@ -118,6 +142,22 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         }, durationMs + LATCH_RELEASE_MARGIN_MS)
     }
 
+    private fun recordDispatchForRate() {
+        val now = System.currentTimeMillis()
+        if (windowStartMs == 0L) windowStartMs = now
+        windowDispatches.incrementAndGet()
+        val elapsed = now - windowStartMs
+        if (elapsed >= DISPATCH_RATE_WINDOW_MS) {
+            val count = windowDispatches.getAndSet(0L)
+            windowStartMs = now
+            val perSecond = count * 1000f / elapsed.coerceAtLeast(1L)
+            RuntimeLogger.execution(
+                "DISPATCH_RATE",
+                "actions=$count window=${elapsed}ms rate=${"%.1f".format(perSecond)}/s"
+            )
+        }
+    }
+
     fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
         if (isDispatching) {
             // A latch held past any legal gesture duration is a corpse, not a
@@ -130,6 +170,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
         isDispatching = true
         dispatchStartedMs = System.currentTimeMillis()
+        dispatchingPriority = HybridExecutionTerminal.priority(request.source)
         val startedAt = dispatchStartedMs
 
         return try {
@@ -171,7 +212,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                         if (dispatchStartedMs == startedAt) isDispatching = false
                     }
                 },
-                null
+                null,
+                origin = "bus:${request.source}"
             )
 
             if (!accepted) {
@@ -179,8 +221,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             } else {
                 // Field-proven: the callback above never fires on this OS build.
                 // The gesture cannot outlive its own duration, so the dispatcher
-                // releases its own latch on schedule - no 400ms dead tax per action.
+                // releases its own latch on schedule - no dead tax per action.
                 scheduleLatchRelease(startedAt, syncedDuration)
+                recordDispatchForRate()
             }
 
             accepted
@@ -207,10 +250,35 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     )
                 }
 
-                // Short-circuit evaluations to preserve maximum CPU thermal budget
-                if (!SmartAssistRepository.enabled() || isDispatching) {
+                if (!SmartAssistRepository.enabled()) {
                     busHandler.postDelayed(this, BUS_POLL_RATE_MS)
                     return
+                }
+
+                if (isDispatching) {
+                    /*
+                     * PRIORITY PREEMPTION: an in-flight gesture no longer
+                     * blocks the whole pipeline unconditionally. If the
+                     * highest-priority waiting request outranks the one in
+                     * flight (e.g. GOALKEEPER over SMART_ASSIST), release
+                     * the latch and consume it NOW - the OS cancels the
+                     * in-flight gesture on the new dispatch, which is the
+                     * correct trade in an emergency. Equal or lower priority
+                     * still waits its turn.
+                     */
+                    val headSource = CentralExecutionBus.peekSource()
+                    val preempt =
+                        headSource != null &&
+                            HybridExecutionTerminal.priority(headSource) > dispatchingPriority
+                    if (!preempt) {
+                        busHandler.postDelayed(this, BUS_POLL_RATE_MS)
+                        return
+                    }
+                    isDispatching = false
+                    RuntimeLogger.execution(
+                        "BUS_PREEMPT",
+                        "head=$headSource overIntPriority=$dispatchingPriority"
+                    )
                 }
 
                 val request = CentralExecutionBus.consume()
@@ -263,7 +331,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         RuntimeCoordinator.reportPermissionsVerified()
         RuntimeCoordinator.reportAccessibilityReady()
         try { com.assistant.events.SystemEventHub.emit("accessibility-connected") } catch (_: Throwable) {}
-        RuntimeLogger.log("SmartAssistAccessibilityEngine [OMEGA BUILD] connected BUILD_MARKER=TASKB-SELFTIMED-LATCH", "SMART_ASSIST")
+        RuntimeLogger.log("SmartAssistAccessibilityEngine [OMEGA BUILD] connected BUILD_MARKER=TASKC-PREEMPTIVE-DISPATCH", "SMART_ASSIST")
     }
 
     fun triggerInstantExecution(x1: Float, y1: Float, x2: Float, y2: Float) {
