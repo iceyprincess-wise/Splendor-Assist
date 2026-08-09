@@ -18,10 +18,22 @@ object VisionCore {
         
 
 
-val ballCandidate =
+val heuristicCandidate =
     BallCandidateEngine.select(
         filteredBlobs
     )
+
+/*
+ * Task C: trained detector first. When a real TFLite model is loaded AND
+ * has produced a real on-device inference, its ball wins this frame; the
+ * heuristic candidate above is still computed every frame as the always-on
+ * fallback and cross-check reference. With no model asset present the
+ * engine returns null and behaviour is IDENTICAL to the pure-heuristic
+ * pipeline - nothing is faked in either direction.
+ */
+val ballCandidate =
+    TrainedDetectionEngine.ballCandidateOrNull(frame, heuristicCandidate)
+        ?: heuristicCandidate
 
 val ball =
     BallDetector.detect(
