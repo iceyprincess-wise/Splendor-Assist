@@ -46,6 +46,7 @@ object AdminConfigStore {
     const val CAT_ST_RADAR = "Stutter Radar - watches every single second of your screen for micro-stutter bursts"
     const val CAT_ST_JUDGE = "Stutter Forensics - names each stutter: hiccup, rhythm attack, or freeze"
     const val CAT_ASSIST_TRUST = "Vision Trust - decides when the game picture is believed enough for engines to act"
+    const val CAT_ASSIST_ARBITRATION = "Play Arbitration - which engine's action wins each frame and when you count as having the ball"
 
     private val ENGINE_CATEGORY: Map<String, String> = mapOf(
         // Net Adapter
@@ -71,14 +72,18 @@ object AdminConfigStore {
         "BurstForensicsEngine" to CAT_ST_JUDGE,
         // SmartAssist Adapter
         "VisionTrust" to CAT_ASSIST_TRUST,
-        "SceneTracker" to CAT_ASSIST_TRUST
+        "SceneTracker" to CAT_ASSIST_TRUST,
+        "FrameAssembler" to CAT_ASSIST_ARBITRATION,
+        "RuntimeDecisionLoop" to CAT_ASSIST_ARBITRATION,
+        "MagneticFeetContributor" to CAT_ASSIST_ARBITRATION
     )
 
     /** Category display order inside an adapter. */
     private val CATEGORY_ORDER: List<String> =
         listOf(CAT_SPEED, CAT_GUARD, CAT_DECISION, CAT_BASELINE,
                CAT_LAG_RADAR, CAT_LAG_JUDGE, CAT_LAG_RESCUE,
-               CAT_ST_RADAR, CAT_ST_JUDGE, CAT_ASSIST_TRUST)
+               CAT_ST_RADAR, CAT_ST_JUDGE, CAT_ASSIST_TRUST,
+               CAT_ASSIST_ARBITRATION)
 
     fun categoryOf(engine: String): String = ENGINE_CATEGORY[engine] ?: "Other"
 
@@ -187,7 +192,13 @@ object AdminConfigStore {
         Tunable("assist.track.assoc_dist",     "Match a player to last position within (px)",120f,  ADAPTER_ASSIST, "SceneTracker"),
         Tunable("assist.track.dup_dist",       "Two marks this close are one player (px)",  12f,    ADAPTER_ASSIST, "SceneTracker"),
         Tunable("assist.track.memory_frames",  "Frames a lost player is remembered",        15f,    ADAPTER_ASSIST, "SceneTracker"),
-        Tunable("assist.track.max_tracks",     "Most players tracked at once",              30f,    ADAPTER_ASSIST, "SceneTracker")
+        Tunable("assist.track.max_tracks",     "Most players tracked at once",              30f,    ADAPTER_ASSIST, "SceneTracker"),
+        // FrameAssembler (possession verdict - Task C field-log fix)
+        Tunable("assist.possession.min_conf",  "Trust possession verdict above (0-1)",      0.20f,  ADAPTER_ASSIST, "FrameAssembler"),
+        // RuntimeDecisionLoop (action-class arbitration - Task C field-log fix)
+        Tunable("assist.decision.move_scale",  "Movement-support vote scale (0-1)",         0.45f,  ADAPTER_ASSIST, "RuntimeDecisionLoop"),
+        // MagneticFeetContributor (support cap - Task C field-log fix)
+        Tunable("assist.contrib.magneticfeet.cap", "MagneticFeet max vote (0-1)",           0.35f,  ADAPTER_ASSIST, "MagneticFeetContributor")
     )
 
     // ---- grouping helpers for the panel ----
