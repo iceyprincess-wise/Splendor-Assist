@@ -11,6 +11,11 @@ package com.assistant.adapter.smartassist
  * This bridge is the single writer of ball telemetry. It publishes ONLY on a
  * real detection, and derives velocity from its own previous position so it
  * needs no other engine's internals.
+ *
+ * Task B repair: every real detection now ALSO stamps VisionTrust - the
+ * trust gate reads an age-decayed ball sighting, and starving it meant the
+ * trusted flag barely ever opened even mid-match. Stamping at the single
+ * writer guarantees the trust chain is fed exactly when the telemetry is.
  */
 object BallTelemetryBridge {
 
@@ -30,6 +35,11 @@ object BallTelemetryBridge {
             return
         }
 
+        // Feed the trust chain at the source: without this stamp,
+        // ballTrust() decays to zero and the trusted gate locks the whole
+        // contributor stack out no matter what the detectors see.
+        try { VisionTrust.stampBall(ball.confidence) } catch (_: Throwable) { }
+
         val vx = if (hasPrevious) ball.x - previousX else 0f
         val vy = if (hasPrevious) ball.y - previousY else 0f
 
@@ -45,6 +55,8 @@ object BallTelemetryBridge {
             lastUpdatedMs = System.currentTimeMillis()
         } catch (_: Throwable) {
         }
+
+        try { VisionTrust.pushMotion(vx, vy) } catch (_: Throwable) { }
 
         previousX = ball.x
         previousY = ball.y

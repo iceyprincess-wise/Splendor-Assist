@@ -30,9 +30,10 @@ object AdminConfigStore {
     const val ADAPTER_NET = "Net Adapter"
     const val ADAPTER_STUTTER = "Stutter Adapter"
     const val ADAPTER_LAG = "Lag Adapter"
+    const val ADAPTER_ASSIST = "SmartAssist Adapter"
 
     /** Fixed panel order. Adapters with no tunables yet still get a button. */
-    val ADAPTERS: List<String> = listOf(ADAPTER_NET, ADAPTER_STUTTER, ADAPTER_LAG)
+    val ADAPTERS: List<String> = listOf(ADAPTER_NET, ADAPTER_STUTTER, ADAPTER_LAG, ADAPTER_ASSIST)
 
     // ---- plain-language engine categories (panel groups engines under these) ----
     const val CAT_SPEED = "Network Speed - tweak these for the fastest possible response"
@@ -44,6 +45,7 @@ object AdminConfigStore {
     const val CAT_LAG_RESCUE = "Lag Rescue - drops extra work instantly so the game gets the whole phone"
     const val CAT_ST_RADAR = "Stutter Radar - watches every single second of your screen for micro-stutter bursts"
     const val CAT_ST_JUDGE = "Stutter Forensics - names each stutter: hiccup, rhythm attack, or freeze"
+    const val CAT_ASSIST_TRUST = "Vision Trust - decides when the game picture is believed enough for engines to act"
 
     private val ENGINE_CATEGORY: Map<String, String> = mapOf(
         // Net Adapter
@@ -66,14 +68,17 @@ object AdminConfigStore {
         // Stutter Adapter
         "StutterPulseEngine" to CAT_ST_RADAR,
         "PanelWatchEngine" to CAT_ST_RADAR,
-        "BurstForensicsEngine" to CAT_ST_JUDGE
+        "BurstForensicsEngine" to CAT_ST_JUDGE,
+        // SmartAssist Adapter
+        "VisionTrust" to CAT_ASSIST_TRUST,
+        "SceneTracker" to CAT_ASSIST_TRUST
     )
 
     /** Category display order inside an adapter. */
     private val CATEGORY_ORDER: List<String> =
         listOf(CAT_SPEED, CAT_GUARD, CAT_DECISION, CAT_BASELINE,
                CAT_LAG_RADAR, CAT_LAG_JUDGE, CAT_LAG_RESCUE,
-               CAT_ST_RADAR, CAT_ST_JUDGE)
+               CAT_ST_RADAR, CAT_ST_JUDGE, CAT_ASSIST_TRUST)
 
     fun categoryOf(engine: String): String = ENGINE_CATEGORY[engine] ?: "Other"
 
@@ -168,7 +173,21 @@ object AdminConfigStore {
         Tunable("lag.shed.min_hold_ms",        "Minimum helping time once started (ms)",    8000f,  ADAPTER_LAG, "LoadShedGovernor"),
         Tunable("lag.shed.poll_ms",            "Rescue check rhythm (ms)",                  2000f,  ADAPTER_LAG, "LoadShedGovernor"),
         Tunable("lag.shed.arm_polls",          "Checks to agree before help starts",        2f,     ADAPTER_LAG, "LoadShedGovernor"),
-        Tunable("lag.shed.release_polls",      "Clean checks before help stands down",      5f,     ADAPTER_LAG, "LoadShedGovernor")
+        Tunable("lag.shed.release_polls",      "Clean checks before help stands down",      5f,     ADAPTER_LAG, "LoadShedGovernor"),
+
+        // ---------------- SMARTASSIST ADAPTER ----------------
+        // VisionTrust (the gate every contributor stands behind)
+        Tunable("assist.trust.fresh_ms",       "Ball sighting fully fresh below (ms)",      120f,   ADAPTER_ASSIST, "VisionTrust"),
+        Tunable("assist.trust.stale_ms",       "Ball sighting worthless after (ms)",        400f,   ADAPTER_ASSIST, "VisionTrust"),
+        Tunable("assist.trust.latency_ms",     "Reject frame when vision delay above (ms)", 180f,   ADAPTER_ASSIST, "VisionTrust"),
+        Tunable("assist.trust.floor",          "Act only when ball trust above (0-1)",      0.55f,  ADAPTER_ASSIST, "VisionTrust"),
+        Tunable("assist.trust.lane_floor",     "Lane confidence needs trust above (0-1)",   0.35f,  ADAPTER_ASSIST, "VisionTrust"),
+        Tunable("assist.trust.entity_max",     "Reject frame when players counted above",   30f,    ADAPTER_ASSIST, "VisionTrust"),
+        // SceneTracker (the tracked picture of the pitch)
+        Tunable("assist.track.assoc_dist",     "Match a player to last position within (px)",120f,  ADAPTER_ASSIST, "SceneTracker"),
+        Tunable("assist.track.dup_dist",       "Two marks this close are one player (px)",  12f,    ADAPTER_ASSIST, "SceneTracker"),
+        Tunable("assist.track.memory_frames",  "Frames a lost player is remembered",        15f,    ADAPTER_ASSIST, "SceneTracker"),
+        Tunable("assist.track.max_tracks",     "Most players tracked at once",              30f,    ADAPTER_ASSIST, "SceneTracker")
     )
 
     // ---- grouping helpers for the panel ----

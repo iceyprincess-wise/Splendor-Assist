@@ -1,5 +1,7 @@
 package com.assistant.adapter.smartassist
 
+import com.assistant.admin.AdminConfigStore
+
 /**
  * GAP 2 + GAP 3 — VISION TRUST
  *
@@ -9,18 +11,24 @@ package com.assistant.adapter.smartassist
  *
  * Self-contained on purpose. Nothing here reaches into an engine, so any engine
  * may read it without creating a dependency, and it can be nano-upgraded alone.
+ *
+ * V3 (Task B): every gate answers the admin store live (defaults = the old
+ * hard-coded values). These gates decide whether the ENTIRE contributor
+ * stack is allowed to act - on a slower device the fixed 180ms latency
+ * ceiling and 400ms sighting window were chronically rejecting honest
+ * frames with no way to tune them without a rebuild.
  */
 object VisionTrust {
 
-    // ---------------- tunables ----------------
-    private const val FRESH_MS = 120L
-    private const val STALE_MS = 400L
-    private const val LATENCY_LIMIT_MS = 180f
-    private const val TRUST_FLOOR = 0.55f
-    private const val LANE_FLOOR = 0.35f
+    // ---------------- tunables (ADMIN-TUNABLE, defaults = original values) ----------------
+    private val FRESH_MS: Long get() = AdminConfigStore.getLong("assist.trust.fresh_ms", 120L)
+    private val STALE_MS: Long get() = AdminConfigStore.getLong("assist.trust.stale_ms", 400L)
+    private val LATENCY_LIMIT_MS: Float get() = AdminConfigStore.get("assist.trust.latency_ms", 180f)
+    private val TRUST_FLOOR: Float get() = AdminConfigStore.get("assist.trust.floor", 0.55f)
+    private val LANE_FLOOR: Float get() = AdminConfigStore.get("assist.trust.lane_floor", 0.35f)
 
     /** a real match cannot contain more than this many tracked entities */
-    private const val SANE_ENTITY_MAX = 30
+    private val SANE_ENTITY_MAX: Int get() = AdminConfigStore.getInt("assist.trust.entity_max", 30)
 
     // ---------------- gap 1c: is the game actually on screen ----------------
     @Volatile private var foregroundIsGame = false
@@ -69,10 +77,13 @@ object VisionTrust {
     fun ballTrust(nowMs: Long = android.os.SystemClock.elapsedRealtime()): Float {
         if (lastBallStampMs == 0L) return 0f
         val age = nowMs - lastBallStampMs
+        val fresh = FRESH_MS
+        val stale = STALE_MS
+        val span = (stale - fresh).coerceAtLeast(1L)
         val decay = when {
-            age <= FRESH_MS -> 1f
-            age >= STALE_MS -> 0f
-            else -> 1f - (age - FRESH_MS).toFloat() / (STALE_MS - FRESH_MS).toFloat()
+            age <= fresh -> 1f
+            age >= stale -> 0f
+            else -> 1f - (age - fresh).toFloat() / span.toFloat()
         }
         return (lastBallConfidence * decay).coerceIn(0f, 1f)
     }
@@ -83,7 +94,8 @@ object VisionTrust {
      */
     @JvmStatic
     fun entityCountSane(players: Int, opponents: Int): Boolean {
-        if (players > SANE_ENTITY_MAX || opponents > SANE_ENTITY_MAX) {
+        val max = SANE_ENTITY_MAX
+        if (players > max || opponents > max) {
             insaneRejects++
             return false
         }

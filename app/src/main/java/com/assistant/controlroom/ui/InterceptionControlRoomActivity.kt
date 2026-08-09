@@ -1,30 +1,42 @@
 package com.assistant.controlroom.ui
 
-import com.assistant.adapter.smartassist.SmartAssistRepository
 import android.os.Bundle
+import android.view.ViewGroup
 import android.widget.Button
-import com.google.android.material.slider.Slider
-import com.google.android.material.materialswitch.MaterialSwitch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.slider.Slider
 import com.assistant.overlay.R
 import com.assistant.overlay.repository.InterceptionRepository
+import com.assistant.adapter.smartassist.FrameAssembler
+import com.assistant.adapter.smartassist.GestureExecutionAuthority
+import com.assistant.adapter.smartassist.RuntimeCoordinator
+import com.assistant.adapter.smartassist.RuntimeDecisionLoop
+import com.assistant.adapter.smartassist.RuntimeHealthMonitor
+import com.assistant.adapter.smartassist.RuntimePerformanceCoordinator
+import com.assistant.adapter.smartassist.SmartAssistRepository
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import com.assistant.adapter.smartassist.RuntimePerformanceCoordinator
-import com.assistant.adapter.smartassist.RuntimeDiagnosticsRegistry
-import com.assistant.adapter.smartassist.RuntimeVisualizationRegistry
-import com.assistant.adapter.smartassist.RuntimeOverlayHub
-import com.assistant.adapter.smartassist.VisionOverlayRegistry
-import com.assistant.adapter.smartassist.FPSMonitor
-import com.assistant.adapter.smartassist.VisionLatencyMonitor
-import com.assistant.adapter.smartassist.ConfidenceHeatmap
 
+/*
+ * Interception control room.
+ *
+ * Settings half: the InterceptionRepository sliders/switches (unchanged).
+ * Live half: reads the SAME runtime surfaces the SmartAssist control room
+ * reads and answers the interception questions truthfully:
+ *  - is the InterceptMatrix contributor registered and is its gate
+ *    (frame.trusted && !frame.hasBall) open right now?
+ *  - what does the field read look like (players, opponents, lanes, zones)
+ *    - the inputs the intercept-vector math runs on
+ *  - are decisions flowing and gestures being accepted?
+ */
 class InterceptionControlRoomActivity : AppCompatActivity() {
 
     private lateinit var repository: InterceptionRepository
+    private var liveText: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +52,8 @@ class InterceptionControlRoomActivity : AppCompatActivity() {
         val textPrediction = findViewById<TextView>(R.id.text_prediction_value)
         val textStatus = findViewById<TextView>(R.id.text_status)
         val buttonSave = findViewById<Button>(R.id.button_save)
+
+        installLivePanel(textStatus)
 
         lifecycleScope.launch {
             repository.state.collectLatest { state ->
@@ -83,60 +97,67 @@ class InterceptionControlRoomActivity : AppCompatActivity() {
         }
     }
 
-    // PHASE10_CONTROLROOM_RUNTIME_MARKER
-
-    // PHASE10_ENGINE_STATUS_REFRESH_MARKER
-    private fun refreshEngineStatus() {
-        runCatching {
-            RuntimePerformanceCoordinator.synchronizeExistingPerformanceEngines()
+    /* Live runtime panel injected under the status line - no layout edit needed. */
+    private fun installLivePanel(anchor: TextView) {
+        val parent = anchor.parent as? ViewGroup ?: return
+        val refresh = Button(this).apply {
+            text = "Refresh live interception status"
+            isAllCaps = false
+            setOnClickListener { liveText?.text = liveInterceptionStatus() }
         }
-        runCatching {
-            RuntimePerformanceCoordinator.synchronizeRuntimePipeline()
+        val live = TextView(this).apply {
+            textSize = 12f
+            setPadding(0, 16, 0, 16)
         }
-        runCatching {
-            RuntimeDiagnosticsRegistry.enableRuntimeDiagnostics()
-        }
-        runCatching {
-            RuntimeVisualizationRegistry.enableVisualization()
-        }
-        runCatching {
-            VisionOverlayRegistry.enableAll()
-        }
-        runCatching {
-            RuntimeOverlayHub.enableDiagnostics()
-        }
+        val index = parent.indexOfChild(anchor) + 1
+        parent.addView(refresh, index)
+        parent.addView(live, index + 1)
+        liveText = live
+        live.text = liveInterceptionStatus()
     }
 
-    private fun refreshRuntimeStatus() {
-        refreshEngineStatus()
+    private fun liveInterceptionStatus(): String = try {
+        val runtime = RuntimeCoordinator.runtimeState()
+        val health = RuntimeHealthMonitor.runtimeHealthSnapshot()
+        val frame = FrameAssembler.frameRuntimeSnapshot()
+        val decision = RuntimeDecisionLoop.decisionRuntimeSnapshot()
+        val execution = GestureExecutionAuthority.executionRuntimeSnapshot()
+        val registry =
+            com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot()
 
-        runCatching {
-            RuntimePerformanceCoordinator.synchronizeExistingPerformanceEngines()
+        val trusted = frame["trusted"] as? Boolean ?: false
+        val hasBall = frame["hasBall"] as? Boolean ?: false
+        val gate = when {
+            !trusted -> "CLOSED - no trusted game frame yet (open the game; interception is silent on menus)"
+            hasBall -> "CLOSED - you have the ball (interception hunts while the OPPONENT has it)"
+            else -> "OPEN - live frames, hunting intercept vectors"
         }
-        runCatching {
-            RuntimePerformanceCoordinator.synchronizeRuntimePipeline()
+        val registered =
+            (registry["names"]?.toString() ?: "").contains("InterceptMatrix")
+
+        buildString {
+            append("INTERCEPT GATE: ").append(gate).append('\n')
+            append("InterceptMatrix contributor registered = ").append(registered).append('\n')
+            append("Field read: players=").append(frame["players"])
+                .append(" opponents=").append(frame["opponents"])
+                .append(" lanes=").append(frame["viableLanes"])
+                .append(" zones=").append(frame["zones"]).append('\n')
+            append("Frame confidence=").append(frame["confidence"])
+                .append(" trusted=").append(trusted)
+                .append(" hasBall=").append(hasBall).append('\n')
+            append("Decisions=").append(decision["decisions"])
+                .append(" routed=").append(decision["routed"])
+                .append(" lastAction=").append(decision["lastAction"])
+                .append(" weight=").append(decision["lastWeight"]).append('\n')
+            append("Execution: requested=").append(execution["requested"])
+                .append(" accepted=").append(execution["accepted"])
+                .append(" failed=").append(execution["failed"]).append('\n')
+            append("Runtime ready=").append(runtime["runtimeReady"])
+                .append(" busPending=").append(runtime["busPending"]).append('\n')
+            append("Health: ").append(health["degradedReasons"])
         }
-        runCatching {
-            RuntimeDiagnosticsRegistry.refresh()
-        }
-        runCatching {
-            RuntimeVisualizationRegistry.refresh()
-        }
-        runCatching {
-            VisionOverlayRegistry.enableAll()
-        }
-        runCatching {
-            RuntimeOverlayHub.enableDiagnostics()
-        }
-        runCatching {
-            FPSMonitor.refresh()
-        }
-        runCatching {
-            VisionLatencyMonitor.refresh()
-        }
-        runCatching {
-            ConfidenceHeatmap.refresh()
-        }
+    } catch (t: Throwable) {
+        "Live interception status unavailable: " + (t.message ?: "runtime not started yet")
     }
 
     override fun onResume() {
@@ -144,5 +165,6 @@ class InterceptionControlRoomActivity : AppCompatActivity() {
         RuntimePerformanceCoordinator.updateAuthority(
             SmartAssistRepository.configuration().authority
         )
+        liveText?.text = liveInterceptionStatus()
     }
 }

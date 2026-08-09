@@ -212,7 +212,20 @@ object CentralExecutionBus {
 
     fun consumedCount(): Long = consumed.get()
 
-    fun pendingCount(): Int = queue.size
+    /*
+     * Truthful pending count. Requests carry hard per-source lifetimes
+     * (120-750ms); anything older is already undeliverable - consume()
+     * would discard it on sight. Leaving corpses in the queue poisoned
+     * this reading (the idle "busPending = 2..4" reports): they counted
+     * as pending while being nothing but stale bodies awaiting a consumer
+     * that had no reason to run. Purge them here, attributed to staleDrops
+     * exactly as consume() would have done.
+     */
+    fun pendingCount(): Int =
+        synchronized(mutationLock) {
+            purgeStaleLocked()
+            queue.size
+        }
 
     fun dropStatistics(): DropStatistics =
         DropStatistics(
@@ -222,6 +235,22 @@ object CentralExecutionBus {
             superseded = supersededDrops.get(),
             capacity = capacityDrops.get()
         )
+
+    private fun purgeStaleLocked() {
+        val now = System.currentTimeMillis()
+        var dropped = 0L
+        val iterator = queue.iterator()
+        while (iterator.hasNext()) {
+            if (requestIsStale(iterator.next().request, now)) {
+                iterator.remove()
+                dropped++
+            }
+        }
+        if (dropped > 0L) {
+            staleDrops.addAndGet(dropped)
+            updateStatisticsLocked()
+        }
+    }
 
     private fun requestIsValid(
         request: ExecutionRequest
