@@ -1,5 +1,6 @@
 package com.assistant.adapter.lmk
 
+import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 
@@ -9,76 +10,84 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Looper
 import android.os.Messenger
 import android.os.Process
+import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * LMK ADAPTER NODE (Task C upgrade).
+ *
+ * 1. FAKE METRIC REMOVED. The old workload runnable "measured"
+ *    System.nanoTime() minus System.nanoTime() - literally nothing - and
+ *    reported that fabricated ~0ns duration to PerformanceHintEngine every
+ *    5 seconds. The performance-hint machinery was being tuned against a
+ *    lie. It now reports the REAL measured duration of the real work this
+ *    node performs (lifecycle capture + rehydration cycle). If that work
+ *    is cheap, the hint says cheap - truthfully.
+ *
+ * 2. OFF THE MAIN THREAD. All periodic work moved from the main looper to
+ *    a dedicated HandlerThread; the main thread stays free for binder
+ *    traffic. Periodic serialization on main was avoidable jitter.
+ *
+ * 3. REAL ERROR COUNTS. errorCount was hardcoded 0 - a failing capture
+ *    could never surface in a health verdict. Failures now count and the
+ *    last error rides in the health details.
+ */
 class LmkAdapterService : Service() {
 
-    private val heartbeatHandler = Handler(Looper.getMainLooper())
-    private val lifecycleHandler = Handler(Looper.getMainLooper())
-    private val rehydrationHandler = Handler(Looper.getMainLooper())
+    private lateinit var workThread: HandlerThread
+    private lateinit var workHandler: Handler
 
-    private val workloadHandler = Handler(Looper.getMainLooper())
+    private val errorCount = AtomicInteger(0)
+    @Volatile private var lastError: String = "none"
 
     private val heartbeatRunnable = object : Runnable {
         override fun run() {
-            AdapterHealthRegistry.update(
-                AdapterHealthSnapshot(
-                    adapterName = "adapter_lmk",
-                    status = "ACTIVE",
-                    lastHeartbeat = System.currentTimeMillis(),
-                    errorCount = 0,
-                    recoveryCount = 0,
-                    details = "Heartbeat active"
+            publishHealth(
+                if (errorCount.get() == 0) "Heartbeat active"
+                else "Heartbeat active; lastError=$lastError"
+            )
+            workHandler.postDelayed(this, 10_000L)
+        }
+    }
+
+    /*
+     * One measured work cycle: capture lifecycle state, persist any
+     * rehydratable snapshot, report the ACTUAL duration of that work.
+     * This replaces three separate timers (5s fake-workload, 15s lifecycle,
+     * 20s rehydration) with one truthful 15s cycle.
+     */
+    private val workCycleRunnable = object : Runnable {
+        override fun run() {
+            val start = System.nanoTime()
+            try {
+                LifecycleSerializationEngine.capture(
+                    componentName = "com.assistant",
+                    lifecycleState = "SERVICE_ACTIVE"
                 )
-            )
-            heartbeatHandler.postDelayed(this, 10000)
-        }
-    }
-
-    private val lifecycleRunnable = object : Runnable {
-        override fun run() {
-            LifecycleSerializationEngine.capture(
-                componentName = "com.assistant",
-                lifecycleState = "SERVICE_ACTIVE"
-            )
-            lifecycleHandler.postDelayed(this, 15000)
-        }
-    }
-
-    private val rehydrationRunnable = object : Runnable {
-        override fun run() {
-            RehydrationEngine.restore("com.assistant")?.let {
-                RehydrationRepository.save(it)
+                RehydrationEngine.restore("com.assistant")?.let {
+                    RehydrationRepository.save(it)
+                }
+                val duration = System.nanoTime() - start
+                PerformanceHintEngine.reportActualWorkload(
+                    this@LmkAdapterService,
+                    duration.coerceAtLeast(1L)
+                )
+            } catch (e: Exception) {
+                errorCount.incrementAndGet()
+                lastError = e.message ?: e.javaClass.simpleName
+                RuntimeLogger.log("LMK work cycle failed: $lastError", "LMK_ERROR")
             }
-            rehydrationHandler.postDelayed(this, 20000)
-        }
-
-    }
-
-    private val workloadRunnable = object : Runnable {
-        override fun run() {
-            val startTime = System.nanoTime()
-
-            val simulatedWorkload = System.nanoTime()
-
-            val duration =
-                simulatedWorkload - startTime
-
-            PerformanceHintEngine.reportActualWorkload(
-                this@LmkAdapterService,
-                duration.coerceAtLeast(1L)
-            )
-            workloadHandler.postDelayed(this, 5000)
+            workHandler.postDelayed(this, 15_000L)
         }
     }
-
 
     private val messenger =
         Messenger(
-            Handler { msg ->
+            Handler(Looper.getMainLooper()) { msg ->
                 when (msg.what) {
                     101 -> {
                         Process.setThreadPriority(
@@ -100,7 +109,6 @@ class LmkAdapterService : Service() {
                 "LMK Core",
                 NotificationManager.IMPORTANCE_MIN
             )
-
         getSystemService(NotificationManager::class.java)
             ?.createNotificationChannel(channel)
 
@@ -109,32 +117,37 @@ class LmkAdapterService : Service() {
                 .setContentTitle("Splendor LMK Node")
                 .setSmallIcon(android.R.drawable.ic_menu_info_details)
                 .build()
-
         startForeground(9991, notification)
 
-        heartbeatHandler.post(heartbeatRunnable)
-        lifecycleHandler.post(lifecycleRunnable)
-        rehydrationHandler.post(rehydrationRunnable)
+        workThread = HandlerThread("LmkAdapterWork").apply { start() }
+        workHandler = Handler(workThread.looper)
 
-        workloadHandler.post(workloadRunnable)
+        workHandler.post(heartbeatRunnable)
+        workHandler.post(workCycleRunnable)
 
+        publishHealth("Foreground service running")
+    }
+
+    private fun publishHealth(details: String) {
         AdapterHealthRegistry.update(
             AdapterHealthSnapshot(
                 adapterName = "adapter_lmk",
                 status = "ACTIVE",
                 lastHeartbeat = System.currentTimeMillis(),
-                errorCount = 0,
+                errorCount = errorCount.get(),
                 recoveryCount = 0,
-                details = "Foreground service running"
+                details = details
             )
         )
     }
 
     override fun onDestroy() {
-        heartbeatHandler.removeCallbacks(heartbeatRunnable)
-        lifecycleHandler.removeCallbacks(lifecycleRunnable)
-        rehydrationHandler.removeCallbacks(rehydrationRunnable)
-        workloadHandler.removeCallbacks(workloadRunnable)
+        if (::workHandler.isInitialized) {
+            workHandler.removeCallbacksAndMessages(null)
+        }
+        if (::workThread.isInitialized) {
+            workThread.quitSafely()
+        }
         super.onDestroy()
     }
 
