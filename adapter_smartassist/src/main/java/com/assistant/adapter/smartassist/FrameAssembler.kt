@@ -17,6 +17,11 @@ import java.util.concurrent.atomic.AtomicLong
  * out. hasBall now additionally requires the ball sighting to be FRESH
  * (VisionTrust age-decay window) - stale coordinates no longer claim
  * possession.
+ *
+ * EXTENDED (Task C item (d)): the goal detector's real output (goal frame
+ * box, confidence, goalkeeper position) now rides in the frame. This is
+ * what unblocks SHOT/CROSS contributors WITHOUT fabricated targets - they
+ * aim at coordinates the vision pipeline actually produced, or stay silent.
  */
 object FrameAssembler {
 
@@ -80,6 +85,15 @@ object FrameAssembler {
 
         VisionTrust.tickAndLog()
 
+        // Task C: goal detector output, taken as-is. A goal is only
+        // "detected" for contributors when the detector says so AND the
+        // box is geometrically sane (right of left, bottom below top).
+        val goalDetected =
+            (scene?.goalDetected ?: false) &&
+                (scene?.goalConfidence ?: 0f) > 0f &&
+                (scene?.goalRightX ?: 0f) > (scene?.goalLeftX ?: 0f) &&
+                (scene?.goalBottomY ?: 0f) > (scene?.goalTopY ?: 0f)
+
         val frame = RuntimeFrame(
             frameId = id,
             timestampMs = System.currentTimeMillis(),
@@ -98,7 +112,16 @@ object FrameAssembler {
             zones = zones,
             confidence = confidence,
             enabled = enabled,
-            panic = panic
+            panic = panic,
+            goalDetected = goalDetected,
+            goalLeftX = scene?.goalLeftX ?: 0f,
+            goalRightX = scene?.goalRightX ?: 0f,
+            goalTopY = scene?.goalTopY ?: 0f,
+            goalBottomY = scene?.goalBottomY ?: 0f,
+            goalConfidence = scene?.goalConfidence ?: 0f,
+            goalkeeperVisible = scene?.goalkeeperVisible ?: false,
+            goalkeeperX = scene?.goalkeeperX ?: 0f,
+            goalkeeperY = scene?.goalkeeperY ?: 0f
         )
         lastFrame = frame
         return frame
@@ -122,6 +145,8 @@ object FrameAssembler {
             "zones" to "L${f.zones.leftOurs}v${f.zones.leftTheirs} M${f.zones.midOurs}v${f.zones.midTheirs} R${f.zones.rightOurs}v${f.zones.rightTheirs}",
             "passTargetX" to f.passTargetX,
             "passTargetY" to f.passTargetY,
+            "goalDetected" to f.goalDetected,
+            "goalConfidence" to f.goalConfidence,
             "confidence" to f.confidence,
             "trusted" to f.trusted
         )

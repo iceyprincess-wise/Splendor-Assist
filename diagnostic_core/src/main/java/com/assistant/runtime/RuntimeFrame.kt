@@ -35,9 +35,27 @@ data class RuntimeFrame(
     val zones: ZoneDistribution,
     val confidence: Float,
     val enabled: Boolean,
-    val panic: Boolean
+    val panic: Boolean,
+    /*
+     * Task C item (d): REAL goal-frame data from the goal detector, carried
+     * through the frame so SHOT/CROSS contributors never have to fabricate
+     * a target. All zeros + goalDetected=false when the detector has no
+     * goal in view - contributors gate on goalDetected, not on coordinates.
+     */
+    val goalDetected: Boolean = false,
+    val goalLeftX: Float = 0f,
+    val goalRightX: Float = 0f,
+    val goalTopY: Float = 0f,
+    val goalBottomY: Float = 0f,
+    val goalConfidence: Float = 0f,
+    val goalkeeperVisible: Boolean = false,
+    val goalkeeperX: Float = 0f,
+    val goalkeeperY: Float = 0f
 ) {
     val trusted: Boolean get() = enabled && confidence > 0f
+    val goalCenterX: Float get() = (goalLeftX + goalRightX) * 0.5f
+    val goalCenterY: Float get() = (goalTopY + goalBottomY) * 0.5f
+    val goalWidth: Float get() = (goalRightX - goalLeftX).coerceAtLeast(0f)
 }
 
 data class EngineContribution(
