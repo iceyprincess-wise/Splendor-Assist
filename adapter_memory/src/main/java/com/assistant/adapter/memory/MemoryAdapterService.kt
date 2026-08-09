@@ -1,13 +1,11 @@
 package com.assistant.adapter.memory
 
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 
 import android.app.ActivityManager
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.ComponentCallbacks2
 import android.content.Context
@@ -40,9 +38,7 @@ import kotlin.random.Random
  *    system-wide and pauses our own hot path - self-inflicted stutter
  *    dressed up as recovery. Removed. On CRITICAL the node now triggers
  *    AggressiveMemoryHoarding.executePurge (cooldown-guarded inside the
- *    engine), which acts on the actual RAM consumers. Loophole closed:
- *    that engine existed but the pressure path NEVER invoked it - it was
- *    dead code presented as capability.
+ *    engine), which acts on the actual RAM consumers.
  *
  * 3. onTrimMemory WIRED. The OS's own pressure signal (ComponentCallbacks2)
  *    was ignored entirely. Any trim signal at RUNNING_LOW or worse now
@@ -50,13 +46,12 @@ import kotlin.random.Random
  *    An epoch guard ensures a forced pass replaces the pending chain
  *    rather than forking a second polling loop.
  *
- * 4. NOTIFICATION ID COLLISION FIXED. This service and InputAdapterService
- *    both called startForeground(9993). Same app, same ID: the second
- *    notification silently replaces the first, and stopping either service
- *    can strip the other's foreground status - turning it into LMK bait.
- *    Memory now owns 9994. (Full notification unification is item (c).)
+ * 4. UNIFIED NOTIFICATION. This node previously collided with the input
+ *    node on foreground ID 9993 (silent replacement; stopping one service
+ *    could strip the other's foreground protection). Both now attach to
+ *    the single shared NodeNotificationHub row.
  *
- * 5. TRUTHFUL HEALTH. Health details now carry the live tier and availMB,
+ * 5. TRUTHFUL HEALTH. Health details carry the live tier and availMB,
  *    not a static "Heartbeat active" string.
  */
 class MemoryAdapterService : Service() {
@@ -89,36 +84,14 @@ class MemoryAdapterService : Service() {
         isRunning = true
         RuntimeLogger.log("MemoryAdapterService started: PRESSURE-TIERED NODE", "ADAPTER")
 
-        setupForegroundService()
+        // Unified foundation notification (Task C item (c)).
+        NodeNotificationHub.attach(this, "adapter_memory")
         activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
 
         publishHealth("Foreground service running - tiered pressure response")
 
         scheduleNextHeartbeat(10_000L)
         forceTelemetryPass(500L)
-    }
-
-    private fun setupForegroundService() {
-        val channelId = "memory_adapter"
-        val channel = NotificationChannel(
-            channelId,
-            "Memory Core Engine",
-            NotificationManager.IMPORTANCE_MIN
-        ).apply {
-            description = "Pressure-tiered memory node"
-            setShowBadge(false)
-        }
-        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
-
-        val notification = Notification.Builder(this, channelId)
-            .setContentTitle("Splendor Memory Node")
-            .setContentText("Active Memory Stabilization")
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .setCategory(Notification.CATEGORY_SERVICE)
-            .build()
-
-        // 9994: unique. 9993 collided with InputAdapterService (see class doc #4).
-        startForeground(9994, notification)
     }
 
     /*
@@ -218,6 +191,7 @@ class MemoryAdapterService : Service() {
         isRunning = false
         RuntimeLogger.log("MemoryAdapterService shutting down: Canceling Executors", "ADAPTER")
         executorService.shutdownNow()
+        NodeNotificationHub.detach(this, "adapter_memory")
         super.onDestroy()
     }
 

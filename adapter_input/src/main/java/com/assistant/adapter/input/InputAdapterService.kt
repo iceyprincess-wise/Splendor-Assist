@@ -1,11 +1,9 @@
 package com.assistant.adapter.input
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Handler
@@ -37,14 +35,11 @@ class InputAdapterService : Service() {
     override fun onCreate() {
         super.onCreate()
         RuntimeLogger.log("InputAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("input_adapter", "Input Core", NotificationManager.IMPORTANCE_MIN)
-        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
-        
-        val notification = Notification.Builder(this, "input_adapter")
-            .setContentTitle("Splendor Input Node")
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .build()
-        startForeground(9993, notification)
+
+        // Unified foundation notification (Task C item (c)) - replaces the
+        // per-node "Splendor Input Node" row on ID 9993, which collided
+        // with the memory node's ID.
+        NodeNotificationHub.attach(this, "adapter_input")
 
         AdapterHealthRegistry.update(
             AdapterHealthSnapshot(
@@ -64,6 +59,7 @@ class InputAdapterService : Service() {
 
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
+        NodeNotificationHub.detach(this, "adapter_input")
         RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
         super.onDestroy()
     }

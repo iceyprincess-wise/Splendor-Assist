@@ -1,12 +1,10 @@
 package com.assistant.adapter.lmk
 
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Handler
@@ -35,6 +33,9 @@ import java.util.concurrent.atomic.AtomicInteger
  * 3. REAL ERROR COUNTS. errorCount was hardcoded 0 - a failing capture
  *    could never surface in a health verdict. Failures now count and the
  *    last error rides in the health details.
+ *
+ * 4. UNIFIED NOTIFICATION. Per-node "Splendor LMK Node" row replaced by
+ *    the shared NodeNotificationHub row (Task C item (c)).
  */
 class LmkAdapterService : Service() {
 
@@ -103,21 +104,8 @@ class LmkAdapterService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        val channel =
-            NotificationChannel(
-                "lmk_adapter",
-                "LMK Core",
-                NotificationManager.IMPORTANCE_MIN
-            )
-        getSystemService(NotificationManager::class.java)
-            ?.createNotificationChannel(channel)
-
-        val notification =
-            Notification.Builder(this, "lmk_adapter")
-                .setContentTitle("Splendor LMK Node")
-                .setSmallIcon(android.R.drawable.ic_menu_info_details)
-                .build()
-        startForeground(9991, notification)
+        // Unified foundation notification (Task C item (c)).
+        NodeNotificationHub.attach(this, "adapter_lmk")
 
         workThread = HandlerThread("LmkAdapterWork").apply { start() }
         workHandler = Handler(workThread.looper)
@@ -148,6 +136,7 @@ class LmkAdapterService : Service() {
         if (::workThread.isInitialized) {
             workThread.quitSafely()
         }
+        NodeNotificationHub.detach(this, "adapter_lmk")
         super.onDestroy()
     }
 

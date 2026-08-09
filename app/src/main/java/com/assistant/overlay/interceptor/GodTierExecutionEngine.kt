@@ -10,8 +10,10 @@ import com.assistant.execution.ExecutionSource
 import androidx.annotation.RequiresApi
 import com.assistant.execution.ContributionRegistry
 
-// 🔒 [SECURITY GUARD LOCK ACTIVE]
-// 1000% OMNIPOTENT TIER: Zero-Allocation & Hyper-Velocity Router
+// Guard Lock removed (Task C item (c)): this file is ordinary, reviewable,
+// modifiable code like everything else in the repo. No component is exempt
+// from tracing, health verdicts, or repair.
+// Zero-Allocation & Hyper-Velocity Router
 class GodTierExecutionEngine(private val service: AccessibilityService) {
 
     private val hintManager: PerformanceHintManager?
