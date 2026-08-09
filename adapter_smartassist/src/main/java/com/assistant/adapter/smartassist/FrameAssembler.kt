@@ -11,17 +11,29 @@ import java.util.concurrent.atomic.AtomicLong
  * abort frame assembly.
  *
  * REPAIRED (Task B): hasBall was derived from raw stored coordinates, so
- * once a ball had EVER been seen the flag stayed true forever (it read
- * true even on the app's own home screen). Every defensive contributor
- * gated on !hasBall (keeper, intercept) was therefore permanently locked
- * out. hasBall now additionally requires the ball sighting to be FRESH
- * (VisionTrust age-decay window) - stale coordinates no longer claim
- * possession.
+ * once a ball had EVER been seen the flag stayed true forever. hasBall now
+ * requires the sighting to be FRESH (VisionTrust age-decay window).
  *
- * EXTENDED (Task C item (d)): the goal detector's real output (goal frame
- * box, confidence, goalkeeper position) now rides in the frame. This is
- * what unblocks SHOT/CROSS contributors WITHOUT fabricated targets - they
- * aim at coordinates the vision pipeline actually produced, or stay silent.
+ * REPAIRED (Task C - THE ROOT CAUSE OF "engines work, then go dead"):
+ * frame confidence was derived ONLY from crossing-lane confidence
+ * (bestConf of CrossingLaneAnalysisEngine). Crossing lanes exist mainly in
+ * box/wing situations - so during those phases confidence > 0, the frame
+ * was trusted, and every contributor fired (keeper saving "like a maniac").
+ * The moment play moved to a phase with no viable crossing lane, bestConf
+ * was 0 -> confidence 0 -> frame UNTRUSTED -> RuntimeDecisionLoop returned
+ * before collecting ANY contribution. The entire 31-contributor stack -
+ * tackling, interception, magnetic feet, agility, attackers - went dead
+ * simultaneously, then "revived" when a crossing lane appeared again.
+ * Nothing was broken inside those engines; their input feed was being
+ * zeroed out by an unrelated signal.
+ *
+ * Fix: a frame is now as confident as its FRESH BALL SIGHTING (age-decayed
+ * VisionTrust ball trust). Lane confidence can only RAISE it, never zero
+ * it. VisionTrust.frameTrusted still gates everything (game foreground,
+ * sane entity counts, latency, trust floor) - no trust is invented.
+ *
+ * EXTENDED (Task C item (d)): goal detector output rides in the frame so
+ * SHOT/CROSS contributors never fabricate a target.
  */
 object FrameAssembler {
 
@@ -49,8 +61,8 @@ object FrameAssembler {
         // possession is only claimed on a FRESH sighting - stale stored
         // coordinates said "we have the ball" forever and starved every
         // !hasBall-gated contributor (keeper, intercept) of its turn
-        val ballFresh = VisionTrust.ballTrust() > 0f
-        val hasBall = ballFresh && (ballX != 0f || ballY != 0f)
+        val ballTrustNow = VisionTrust.ballTrust()
+        val hasBall = ballTrustNow > 0f && (ballX != 0f || ballY != 0f)
 
         val scene = try { SceneTracker.current() } catch (_: Throwable) { null }
         val players = scene?.trackedPlayers.orEmpty()
@@ -77,9 +89,12 @@ object FrameAssembler {
             if (laneCount > 0) viable.toFloat() / laneCount.toFloat() else 0f
         )
 
-        // GAP2: a frame from our own UI, or built on a stale sighting,
-        // or claiming an impossible entity count, carries no confidence.
-        val rawConfidence = bestConf.coerceIn(0f, 1f)
+        /*
+         * ROOT-CAUSE FIX (see class doc): confidence follows the fresh ball
+         * sighting, with lane data only able to raise it. frameTrusted still
+         * hard-gates: foreground, entity sanity, latency, trust floor.
+         */
+        val rawConfidence = maxOf(bestConf, ballTrustNow).coerceIn(0f, 1f)
         val confidence =
             if (VisionTrust.frameTrusted(players.size, opponents)) rawConfidence else 0f
 

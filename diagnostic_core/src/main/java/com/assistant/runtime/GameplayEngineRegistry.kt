@@ -1,5 +1,6 @@
 package com.assistant.runtime
 
+import com.assistant.diagnostic.RuntimeLogger
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
@@ -31,8 +32,26 @@ object GameplayEngineRegistry {
                 lastContribution[c.engineName] = contribution
                 contributed[c.engineName] = (contributed[c.engineName] ?: 0L) + 1L
                 out.add(contribution)
-            } catch (_: Throwable) {
-                failures[c.engineName] = (failures[c.engineName] ?: 0L) + 1L
+            } catch (t: Throwable) {
+                /*
+                 * Task C: a throwing engine used to die in TOTAL SILENCE -
+                 * the failure was counted into a map nobody printed, so an
+                 * engine could be dead for an entire session with zero
+                 * evidence. First failure and every 50th are now logged
+                 * loudly with the reason; the count also rides in
+                 * engineStates() so the control room can render it.
+                 */
+                val n = (failures[c.engineName] ?: 0L) + 1L
+                failures[c.engineName] = n
+                if (n == 1L || n % 50L == 0L) {
+                    try {
+                        RuntimeLogger.log(
+                            "ENGINE FAILURE ${c.engineName} x$n: " +
+                                (t.message ?: t.javaClass.simpleName),
+                            "RUNTIME"
+                        )
+                    } catch (_: Throwable) {}
+                }
             }
         }
         return out
@@ -56,8 +75,9 @@ object GameplayEngineRegistry {
         val last = lastContribution[c.engineName]
         mapOf(
             "engine" to c.engineName,
-            "capabilities" to c.capabilities.joinToString(","),
+            "capabilities" to c.capabilities.joinToString(",") ,
             "contributions" to (contributed[c.engineName] ?: 0L),
+            "failures" to (failures[c.engineName] ?: 0L),
             "lastAction" to (last?.actionClass?.name ?: "none"),
             "lastWeight" to (last?.weight ?: 0f)
         )

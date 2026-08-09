@@ -1,12 +1,10 @@
 package com.assistant.adapter.watchdog
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 import com.assistant.survival.ProcessSurvivalRegistry
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Handler
@@ -18,6 +16,8 @@ class WatchdogAdapterService : Service() {
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
     private val heartbeatHandler = Handler(Looper.getMainLooper())
 
+    @Volatile private var lastScan = "no scan yet"
+
     private val heartbeatRunnable = object : Runnable {
         override fun run() {
             AdapterHealthRegistry.update(
@@ -27,7 +27,7 @@ class WatchdogAdapterService : Service() {
                     lastHeartbeat = System.currentTimeMillis(),
                     errorCount = 0,
                     recoveryCount = 0,
-                    details = "Heartbeat active"
+                    details = "scan: $lastScan"
                 )
             )
             RuntimeLogger.log("Watchdog heartbeat", "HEALTH")
@@ -41,30 +41,40 @@ class WatchdogAdapterService : Service() {
     private val watchdogRunnable = object : Runnable {
         override fun run() {
 
+            var offline = 0
+            var degraded = 0
+
             AdapterHealthRegistry.getAll().forEach { snapshot ->
 
                 val status =
                     AdapterHealthRegistry.effectiveStatus(snapshot.adapterName)
 
-                
-ProcessSurvivalRegistry.update(
-    snapshot.adapterName,
-    status
-)
+                ProcessSurvivalRegistry.update(
+                    snapshot.adapterName,
+                    status
+                )
 
                 when (status) {
 
-                    "OFFLINE" -> RuntimeLogger.log(
-                        "WATCHDOG OFFLINE: ${snapshot.adapterName}",
-                        "WATCHDOG"
-                    )
+                    "OFFLINE" -> {
+                        offline++
+                        RuntimeLogger.log(
+                            "WATCHDOG OFFLINE: ${snapshot.adapterName}",
+                            "WATCHDOG"
+                        )
+                    }
 
-                    "DEGRADED" -> RuntimeLogger.log(
-                        "WATCHDOG DEGRADED: ${snapshot.adapterName}",
-                        "WATCHDOG"
-                    )
+                    "DEGRADED" -> {
+                        degraded++
+                        RuntimeLogger.log(
+                            "WATCHDOG DEGRADED: ${snapshot.adapterName}",
+                            "WATCHDOG"
+                        )
+                    }
                 }
             }
+
+            lastScan = "offline=$offline degraded=$degraded"
 
             watchdogHandler.postDelayed(this, 15000)
         }
@@ -73,14 +83,11 @@ ProcessSurvivalRegistry.update(
     override fun onCreate() {
         super.onCreate()
         RuntimeLogger.log("WatchdogAdapterService started", "ADAPTER")
-        val channel = NotificationChannel("watchdog_adapter", "Watchdog Core", NotificationManager.IMPORTANCE_MIN)
-        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
-        
-        val notification = Notification.Builder(this, "watchdog_adapter")
-            .setContentTitle("Splendor Watchdog Node")
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .build()
-        startForeground(9993, notification)
+
+        // Unified foundation notification (Task C item (e) completion) -
+        // this node was the NINTH service on colliding foreground ID 9993;
+        // it was missed in the first conversion batches.
+        NodeNotificationHub.attach(this, "adapter_watchdog")
 
         AdapterHealthRegistry.update(
             AdapterHealthSnapshot(
@@ -104,6 +111,7 @@ ProcessSurvivalRegistry.update(
     override fun onDestroy() {
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
         watchdogHandler.removeCallbacks(watchdogRunnable)
+        NodeNotificationHub.detach(this, "adapter_watchdog")
         RuntimeLogger.log("Watchdog heartbeat stopped", "HEALTH")
         super.onDestroy()
     }
