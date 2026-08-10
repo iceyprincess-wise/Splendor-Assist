@@ -1,0 +1,1026 @@
+# Splendor-Assist Deep Static Audit
+
+- Time: `2026-08-10T20:18:08`
+- Root: `/data/data/com.termux/files/home/projects/Splendor-Assist`
+- Mode: **READ-ONLY**
+
+## Summary
+- Files inspected: **488**
+- Kotlin/Java: **401**
+- XML: **49**
+- Gradle/KTS: **19**
+- Read errors: **0**
+
+## Findings
+
+- **HIGH** `SILENT_FAILURE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:133` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:172` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:179` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/DisplayProfileEngine.kt:37` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt:92` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:207` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:76` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:56` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/ThermalPeekEngine.kt:51` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_net/src/main/java/com/assistant/adapter/net/ActionWindowEngine.kt:56` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_net/src/main/java/com/assistant/adapter/net/CongestionSentinelEngine.kt:49` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_net/src/main/java/com/assistant/adapter/net/DnsWarmupEngine.kt:45` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt:54` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt:87` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:55` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:84` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:46` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:58` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_net/src/main/java/com/assistant/adapter/net/RadioKeepAliveEngine.kt:39` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:42` — Empty catch block swallows an exception.
+- **HIGH** `DUPLICATE_DECLARATION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AccessibilitySurvivalEngine.kt:0` — Class/object/interface name 'AccessibilitySurvivalEngine' appears in 2 files: adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AccessibilitySurvivalEngine.kt | app/src/main/java/com/assistant/survival/AccessibilitySurvivalEngine.kt
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTelemetryBridge.kt:41` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTelemetryBridge.kt:56` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTelemetryBridge.kt:59` — Empty catch block swallows an exception.
+- **HIGH** `DUPLICATE_DECLARATION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTrajectoryPredictor.kt:0` — Class/object/interface name 'Prediction' appears in 2 files: adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTrajectoryPredictor.kt | adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GoalkeeperTrajectoryPredictor.kt
+- **HIGH** `INPUT_OWNER` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GestureExecutionAuthority.kt:54` — dispatchGesture() call found; verify this is an intentional single dispatch owner.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GestureExecutionAuthority.kt:61` — Empty catch block swallows an exception.
+- **HIGH** `DUPLICATE_DECLARATION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GodTierExecutionEngine.kt:0` — Class/object/interface name 'GodTierExecutionEngine' appears in 2 files: adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GodTierExecutionEngine.kt | app/src/main/java/com/assistant/overlay/interceptor/GodTierExecutionEngine.kt
+- **HIGH** `INPUT_OWNER` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GridRecentsInterceptor.kt:152` — dispatchGesture() call found; verify this is an intentional single dispatch owner.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/LowLatencyNetworkThread.kt:35` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:130` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:131` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:132` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:133` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:134` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:135` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:136` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:139` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:140` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:141` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:142` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:145` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:146` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:147` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:212` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:213` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:214` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:215` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:216` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:217` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:218` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:219` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:220` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:221` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:267` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:268` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt:88` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:333` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:370` — Empty catch block swallows an exception.
+- **HIGH** `DUPLICATE_DECLARATION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistControlRoomBridge.kt:0` — Class/object/interface name 'SmartAssistControlRoomBridge' appears in 2 files: adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistControlRoomBridge.kt | app/src/main/java/com/assistant/overlay/bridge/SmartAssistControlRoomBridge.kt
+- **HIGH** `DUPLICATE_DECLARATION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistMetrics.kt:0` — Class/object/interface name 'SmartAssistMetrics' appears in 2 files: adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistMetrics.kt | app/src/main/java/com/assistant/overlay/metrics/SmartAssistMetrics.kt
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:210` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionTrust.kt:183` — Empty catch block swallows an exception.
+- **HIGH** `DUPLICATE_DECLARATION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotContributor.kt:0` — Class/object/interface name 'ShotContributor' appears in 2 files: adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotContributor.kt | app/src/main/java/com/assistant/contributors/ShotContributor.kt
+- **HIGH** `SILENT_FAILURE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt:58` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt:88` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:52` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:67` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt:53` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt:112` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/DashboardInjector.kt:43` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/DeathWatch.kt:55` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/DeathWatch.kt:64` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/DeathWatch.kt:66` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/DeathWatch.kt:78` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/DeathWatch.kt:86` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/DeathWatch.kt:100` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/DeathWatch.kt:168` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/DeathWatch.kt:197` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/DeathWatch.kt:218` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:31` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:55` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:72` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:76` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:80` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/IgnitionEngine.kt:66` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:141` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:193` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:329` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:389` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:582` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:713` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:718` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:723` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:787` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:846` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:856` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/OverlayService.kt:866` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/PingEliminatorVpnService.kt:200` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/PingEliminatorVpnService.kt:230` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/UpdateActivity.kt:115` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/WelcomeActivity.kt:82` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt:28` — Empty catch block swallows an exception.
+- **HIGH** `DUPLICATE_DECLARATION` — `app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperStateMachine.kt:0` — Class/object/interface name 'GoalkeeperState' appears in 2 files: app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperStateMachine.kt | app/src/main/java/com/assistant/overlay/repository/GoalkeeperRepository.kt
+- **HIGH** `DUPLICATE_DECLARATION` — `app/src/main/java/com/assistant/overlay/ui/AnalyticsTheaterActivity.kt:0` — Class/object/interface name 'AnalyticsTheaterActivity' appears in 2 files: app/src/main/java/com/assistant/overlay/ui/AnalyticsTheaterActivity.kt | diagnostic_core/src/main/java/com/assistant/diagnostic/AnalyticsTheaterActivity.kt
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt:247` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/vision/ForegroundGate.kt:50` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/vision/ForegroundGate.kt:72` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `app/src/main/java/com/assistant/vision/OverlaySelfMask.kt:178` — Empty catch block swallows an exception.
+- **HIGH** `DUPLICATE_DECLARATION` — `diagnostic_core/src/main/java/com/assistant/admin/AdminConfigStore.kt:0` — Class/object/interface name 'AdminConfigStore' appears in 2 files: diagnostic_core/src/main/java/com/assistant/admin/AdminConfigStore.kt | diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:72` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:79` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:90` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:98` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:155` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:202` — Empty catch block swallows an exception.
+- **HIGH** `DUPLICATE_DECLARATION` — `diagnostic_core/src/main/java/com/assistant/admin/AdminSettingsActivity.kt:0` — Class/object/interface name 'AdminSettingsActivity' appears in 2 files: diagnostic_core/src/main/java/com/assistant/admin/AdminSettingsActivity.kt | diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminSettingsActivity.kt
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminWorstMoments.kt:215` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminWorstMoments.kt:259` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:304` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:76` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:85` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:94` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:109` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/persistence/HealthPersistenceStore.kt:71` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/AdapterHealthRegistry.kt:76` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:38` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:53` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:76` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:88` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:107` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:119` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:153` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:165` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/events/RuntimeEvents.kt:65` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt:18` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt:22` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt:53` — Empty catch block swallows an exception.
+- **HIGH** `SILENT_FAILURE` — `diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt:61` — Empty catch block swallows an exception.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:74` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `NULLABILITY` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/AudioProtectionEngine.kt:37` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:60` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:133` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:172` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:179` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_lag/src/main/java/com/assistant/adapter/lag/DisplayProfileEngine.kt:37` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt:73` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt:76` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt:92` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:184` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:207` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:36` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:76` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:78` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:32` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:56` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:58` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/MainThreadStallEngine.kt:57` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/MainThreadStallEngine.kt:60` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/ThermalPeekEngine.kt:30` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_lag/src/main/java/com/assistant/adapter/lag/ThermalPeekEngine.kt:51` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/ThermalPeekEngine.kt:53` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/LmkAdapterService.kt:80` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_memory/src/main/java/com/assistant/adapter/memory/AggressiveMemoryHoarding.kt:87` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:18` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:60` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/ActionWindowEngine.kt:33` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/ActionWindowEngine.kt:56` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/ActionWindowEngine.kt:58` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/CarrierProfileEngine.kt:50` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/CongestionSentinelEngine.kt:29` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/CongestionSentinelEngine.kt:49` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/CongestionSentinelEngine.kt:51` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/DnsWarmupEngine.kt:32` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/DnsWarmupEngine.kt:36` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/DnsWarmupEngine.kt:45` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt:46` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt:54` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt:87` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt:87` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt:122` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:47` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:50` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:55` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:57` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:84` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:38` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:46` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:46` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:58` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:60` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:81` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/RadioKeepAliveEngine.kt:28` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/RadioKeepAliveEngine.kt:39` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/RadioKeepAliveEngine.kt:41` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:30` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:42` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:42` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:57` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:57` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:65` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:66` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:86` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AccessibilitySurvivalEngine.kt:46` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AccessibilitySurvivalEngine.kt:131` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AccessibilitySurvivalEngine.kt:143` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveAttackerEngine.kt:151` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTelemetryBridge.kt:41` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTelemetryBridge.kt:56` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTelemetryBridge.kt:59` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `NULLABILITY` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DefenderInterceptionPredictionEngine.kt:139` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameAssembler.kt:47` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameAssembler.kt:56` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameAssembler.kt:69` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameAssembler.kt:72` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameAssembler.kt:80` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameAssembler.kt:97` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameAssembler.kt:98` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GestureExecutionAuthority.kt:18` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GestureExecutionAuthority.kt:61` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GridRecentsInterceptor.kt:142` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InputResponsivenessCoordinator.kt:147` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InputResponsivenessCoordinator.kt:161` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InputResponsivenessCoordinator.kt:171` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/LowLatencyNetworkThread.kt:9` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/LowLatencyNetworkThread.kt:35` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/MagneticDashAnchor.kt:118` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:92` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:130` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:131` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:132` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:133` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:134` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:135` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:136` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:139` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:140` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:141` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:142` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:145` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:146` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:147` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:212` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:213` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:214` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:215` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:216` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:217` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:218` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:219` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:220` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:221` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:267` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:268` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:277` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt:51` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt:88` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeHealthMonitor.kt:125` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `NULLABILITY` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SceneTracker.kt:85` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:333` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:370` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistControlRoomBridge.kt:32` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:89` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:95` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:210` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionTrust.kt:183` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/MagneticFeetContributor.kt:30` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/LatencyDefeatingInputEngine.kt:23` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/MemoryStabilityOptimizer.kt:20` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/MemoryStabilityOptimizer.kt:124` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt:58` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt:72` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt:76` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt:88` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt:92` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:47` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:50` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:52` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:54` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:67` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt:53` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt:106` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt:112` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt:114` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:64` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DashboardInjector.kt:43` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:55` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/DeathWatch.kt:63` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:64` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:66` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/DeathWatch.kt:68` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/DeathWatch.kt:71` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/DeathWatch.kt:73` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:78` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:86` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:100` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:113` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:168` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:188` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:192` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:193` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:197` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:212` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/DeathWatch.kt:218` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/DiagnosticsEngine.kt:31` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:16` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:18` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:22` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:23` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:28` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:31` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:47` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:55` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:58` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:72` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:76` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:80` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:106` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:128` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:153` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:173` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:214` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:217` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/IgnitionEngine.kt:65` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/IgnitionEngine.kt:66` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/MainActivity.kt:420` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/MainActivity.kt:422` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/MainActivity.kt:512` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/OtaGatewayEngine.kt:31` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/OtaGatewayEngine.kt:35` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/OtaGatewayEngine.kt:37` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/OverlayService.kt:83` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:132` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:141` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:171` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:193` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:263` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:329` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:349` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:353` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:389` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:392` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:562` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:582` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/OverlayService.kt:591` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/OverlayService.kt:599` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:601` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:670` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:671` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:675` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:686` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:688` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:694` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/OverlayService.kt:702` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:713` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:718` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:723` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:787` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:806` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:846` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:856` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/OverlayService.kt:866` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/PingEliminatorVpnService.kt:80` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/PingEliminatorVpnService.kt:190` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/PingEliminatorVpnService.kt:200` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/PingEliminatorVpnService.kt:215` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/PingEliminatorVpnService.kt:216` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/PingEliminatorVpnService.kt:217` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/PingEliminatorVpnService.kt:230` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/UpdateActivity.kt:115` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/UpdateActivity.kt:115` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/WelcomeActivity.kt:50` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/WelcomeActivity.kt:67` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/WelcomeActivity.kt:71` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/WelcomeActivity.kt:76` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/WelcomeActivity.kt:82` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/WelcomeActivity.kt:82` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt:24` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt:28` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/contributors/CrossClaimContributor.kt:16` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/contributors/CrossClaimContributor.kt:24` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/contributors/KeeperBiasContributor.kt:16` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/contributors/PanicSaveContributor.kt:15` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/contributors/PanicSaveContributor.kt:23` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/contributors/ThreatPriorityContributor.kt:45` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/contributors/ThreatPriorityContributor.kt:57` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/contributors/ThreatPriorityContributor.kt:65` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/controlroom/ui/GoalkeeperControlRoomActivity.kt:160` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/controlroom/ui/InterceptionControlRoomActivity.kt:159` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/core/AdapterIpcBridge.kt:61` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/overlay/bridge/SmartAssistControlRoomBridge.kt:29` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/overlay/database/TheaterCleanupReceiver.kt:18` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/overlay/database/TheaterDatabase.kt:22` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/overlay/database/TheaterDatabase.kt:24` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/overlay/dvr/DvrProjectionService.kt:116` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `NULLABILITY` — `app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:174` — Kotlin force-unwrap (!!) found; possible runtime crash boundary.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:175` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:229` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `LIFECYCLE` — `app/src/main/java/com/assistant/overlay/storage/MediaStoreStorageEngine.kt:21` — Thread/executor usage found; verify shutdown/reset ownership.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt:247` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/vision/ForegroundGate.kt:50` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/vision/ForegroundGate.kt:72` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/vision/OverlaySelfMask.kt:150` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `app/src/main/java/com/assistant/vision/OverlaySelfMask.kt:178` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminConfigStore.kt:281` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:72` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:79` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:90` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:98` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:155` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:202` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminWorstMoments.kt:57` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminWorstMoments.kt:146` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminWorstMoments.kt:215` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminWorstMoments.kt:232` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminWorstMoments.kt:246` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminWorstMoments.kt:259` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/admin/AdminWorstMoments.kt:264` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:138` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:304` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:331` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:76` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:85` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:94` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:106` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:109` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/persistence/HealthPersistenceStore.kt:71` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/persistence/HealthPersistenceStore.kt:130` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/AdapterHealthRegistry.kt:76` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:38` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:53` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:76` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:88` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:107` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:119` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:153` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:165` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/events/RuntimeEvents.kt:65` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt:18` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt:22` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt:53` — Exception appears to be caught without clear propagation/recovery.
+- **MEDIUM** `EXCEPTION_HANDLING` — `diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt:61` — Exception appears to be caught without clear propagation/recovery.
+- **LOW** `EMPTY_FILE` — `adapter_battery/proguard-rules.pro:0` — File is empty.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:0` — Function 'run' exists across 24 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:23` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:43` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_boot/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:21` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:41` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_input/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_input/src/main/java/com/assistant/adapter/input/InputAdapterService.kt:18` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_interruption/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/AudioProtectionEngine.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/AudioProtectionLock.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/CallOverlayRepository.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/CallStateMonitor.kt:0` — Function 'update' exists across 22 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/CallStateMonitor.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/CounterThrottleEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:29` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionCoordinator.kt:0` — Function 'evaluate' exists across 12 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionCoordinator.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionRepository.kt:0` — Function 'save' exists across 7 files; inspect ownership/call routing.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionRepository.kt:0` — Function 'get' exists across 8 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionRepository.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/NotificationAttenuationEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/TelephonyLock.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/TelephonyStateRepository.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/ThrottleLock.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_lag/proguard-rules.pro:0` — File is empty.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_lag/src/main/java/com/assistant/adapter/lag/DisplayProfileEngine.kt:0` — Function 'detect' exists across 9 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/DisplayProfileEngine.kt:16` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt:0` — Function 'doFrame' exists across 7 files; inspect ownership/call routing.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt:0` — Function 'start' exists across 19 files; inspect ownership/call routing.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt:0` — Function 'stop' exists across 18 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt:18` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt:41` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:30` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:50` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:67` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:82` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:16` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:15` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/MainThreadStallEngine.kt:17` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/MainThreadStallEngine.kt:33` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lag/src/main/java/com/assistant/adapter/lag/ThermalPeekEngine.kt:17` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_lmk/proguard-rules.pro:0` — File is empty.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/CompressedSnapshotRepository.kt:0` — Function 'getAll' exists across 6 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/CompressedSnapshotRepository.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/LifecycleSerializationEngine.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/LifecycleSnapshotRepository.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/LmkAdapterService.kt:48` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/LmkAdapterService.kt:64` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/PerformanceHintEngine.kt:7` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/RehydrationEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/RehydrationEngine.kt:11` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/RehydrationEngine.kt:21` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/RehydrationRepository.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/SnapshotCompressionEngine.kt:8` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/ViewInvalidationFilter.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/ViewInvalidationRepository.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_memory/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_memory/src/main/java/com/assistant/adapter/memory/AggressiveMemoryHoarding.kt:38` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_memory/src/main/java/com/assistant/adapter/memory/AggressiveMemoryHoarding.kt:56` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_memory/src/main/java/com/assistant/adapter/memory/AggressiveMemoryHoarding.kt:102` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:119` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_net/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_net/src/main/java/com/assistant/adapter/net/ActionWindowEngine.kt:17` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_net/src/main/java/com/assistant/adapter/net/CarrierProfileEngine.kt:22` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_net/src/main/java/com/assistant/adapter/net/CongestionSentinelEngine.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_net/src/main/java/com/assistant/adapter/net/DnsWarmupEngine.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt:18` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt:20` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:19` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:38` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:19` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_net/src/main/java/com/assistant/adapter/net/RadioKeepAliveEngine.kt:17` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:14` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_ping/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:23` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:54` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_scheduler/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:21` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:41` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_smartassist/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AccessibilitySurvivalEngine.kt:20` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AccessibilitySurvivalEngine.kt:74` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveAttackerEngine.kt:0` — Function 'compute' exists across 14 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveAttackerEngine.kt:16` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveDefenderEngine.kt:8` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt:0` — Function 'reset' exists across 23 files; inspect ownership/call routing.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt:0` — Function 'snapshot' exists across 9 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt:31` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AgilityEngine.kt:25` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AntiCutbackSubEngine.kt:19` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AntiCutbackSubEngine.kt:40` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AntiCutbackSubEngine.kt:51` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AntiCutbackSubEngine.kt:101` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AntiCutbackSubEngine.kt:104` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AuthorityArbitrationEngine.kt:8` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AutoEvadeEngine.kt:29` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AutoEvadeEngine.kt:57` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AutoEvadeEngine.kt:77` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AutoEvadeEngine.kt:127` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AutoEvadeEngine.kt:130` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallCandidateEngine.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallOverlay.kt:0` — Function 'current' exists across 23 files; inspect ownership/call routing.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallOverlay.kt:0` — Function 'refresh' exists across 13 files; inspect ownership/call routing.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallOverlay.kt:0` — Function 'enable' exists across 5 files; inspect ownership/call routing.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallOverlay.kt:0` — Function 'disable' exists across 5 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallOverlay.kt:10` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallOwnershipEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallPossessionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTelemetryBridge.kt:20` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTrajectoryPredictor.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BlockedLanePredictionEngine.kt:0` — Function 'analyze' exists across 29 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BlockedLanePredictionEngine.kt:15` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BoundingBoxOverlay.kt:12` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BuildUpRecognitionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CentralOverloadDetectionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ClosestPlayerEngine.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ConfidenceHeatmap.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ConnectedComponentEngine.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CounterPressRecognitionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CounterattackDetectionEngine.kt:8` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CriticalAttackingVectorEngine.kt:14` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CrossPrecisionEngine.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CrossingLaneAnalysisEngine.kt:17` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DefenderInterceptionPredictionEngine.kt:18` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DefenseAuthorityEngine.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DefensiveCompactnessEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DefensiveLineEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/EntityAssociationEngine.kt:21` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FPSMonitor.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FalseRunSequenceEngine.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FastBreakDetectionEngine.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FieldLineDetector.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FormationAdaptationEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FormationEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ForwardRunOpportunityEngine.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameAssembler.kt:36` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameDropCompensationEngine.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameNormalizer.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameScanner.kt:7` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GameStateBuilder.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GameStateFusion.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GameplayDecisionEngine.kt:26` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GestureExecutionAuthority.kt:31` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GoalDetector.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GoalOverlay.kt:10` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GoalkeeperDetector.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GoalkeeperTrajectoryPredictor.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GodTierExecutionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GridRecentsInterceptor.kt:52` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GridRecentsInterceptor.kt:186` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/HighPerformanceRuntimeLogger.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/HybridOmnipotentMatrixEngine.kt:15` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/HybridResponseCompensationEngine.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InputAccumulationDiagnosticsEngine.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InputResponsivenessCoordinator.kt:20` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/JerseyColorSegmentation.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/LiveVectorResolver.kt:10` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/LowBlockContainmentEngine.kt:10` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/MagneticDashAnchor.kt:123` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/MagneticFeetEngine.kt:15` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/MotionTracker.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/NoiseFilter.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OffensiveLineEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OffsideRiskEstimationEngine.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OmnipotentDashPressureMatrix.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OnlineParameterAdaptationEngine.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OpenSpaceDetectionEngine.kt:18` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OpponentBehaviourLearningEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OverlapDetectionEngine.kt:17` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OverloadPlaystyleEngine.kt:32` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PassingLaneGraphEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/Phase3WorldState.kt:114` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PlayerDetector.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PlayerOverlay.kt:10` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PlayerTendencyLearningEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PossessionStyleRecognitionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PreferredPassingLaneLearningEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PressingRecognitionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PressureFieldEngine.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ReceiverEngagementEngine.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ReceiverRankingEngine.kt:14` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RunPredictionEngine.kt:14` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeConfidenceCalibrationEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:17` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:206` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt:36` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt:64` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt:77` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt:108` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDiagnosticsRegistry.kt:18` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeHealthMonitor.kt:26` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeOverlayHub.kt:16` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimePerformanceCoordinator.kt:26` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeTuningPanel.kt:10` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeVisualizationRegistry.kt:16` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SceneTracker.kt:17` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ShieldAssistEngine.kt:7` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ShieldAssistEngine.kt:65` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ShootingHabitLearningEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ShootingLaneAnalysisEngine.kt:18` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ShotOpportunityAnalysisEngine.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:23` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:166` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:202` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:240` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:29` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:47` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistControlRoomBridge.kt:0` — Function 'updateEnabled' exists across 5 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistMetrics.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistRepository.kt:25` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SpaceOccupancyEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SpeedCompensationEngine.kt:25` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalAnalyticsEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalBehaviorRecognitionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalIntelligenceEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalMapGenerationEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TeamClassifier.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TeamShapeEngine.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TelemetryCoordinator.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TelemetryRepository.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TemporalMemoryEngine.kt:0` — Function 'initialize' exists across 12 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TemporalMemoryEngine.kt:7` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TemporalMemoryState.kt:32` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TemporalMemoryState.kt:33` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TemporalMemoryState.kt:37` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TemporalMemoryState.kt:38` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TemporalMemoryState.kt:39` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TemporalMemoryState.kt:40` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TemporalMemoryState.kt:42` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ThroughBallLaneAnalysisEngine.kt:14` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TouchRecoveryEngine.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TouchStabilizationEngine.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrackingConfiguration.kt:15` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:44` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:112` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:113` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:120` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:171` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrueTargetPassingEngine.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionConfiguration.kt:17` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionCore.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionDebugOverlay.kt:18` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionLatencyMonitor.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionOverlayRegistry.kt:12` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionOverlayRegistry.kt:65` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionOverlayRegistry.kt:66` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionOverlayRegistry.kt:67` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionTrust.kt:21` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionTrust.kt:56` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionTrust.kt:100` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionTrust.kt:102` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionTrust.kt:108` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionTrust.kt:110` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionTrust.kt:112` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/WingBlockEngine.kt:10` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/WingOverloadDetectionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ZeroFramePressEngine.kt:10` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/AgilityContributor.kt:0` — Function 'contribute' exists across 32 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/AgilityContributor.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/AgilityContributor.kt:11` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/AttackingVectorContributor.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/AttackingVectorContributor.kt:11` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/AttackingVectorContributor.kt:12` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/CrossContributor.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/CrossContributor.kt:11` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/CrossContributor.kt:12` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DashAnchorContributor.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DashAnchorContributor.kt:11` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DashAnchorContributor.kt:20` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DashPressureContributor.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DashPressureContributor.kt:11` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DashPressureContributor.kt:27` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DashPressureContributor.kt:28` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DefenseAuthorityContributor.kt:4` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DefenseAuthorityContributor.kt:8` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DefenseContributor.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DefenseContributor.kt:14` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DefenseContributor.kt:15` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/EvadeContributor.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/EvadeContributor.kt:14` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/EvadeContributor.kt:15` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ForwardRunContributor.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ForwardRunContributor.kt:9` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/InterceptMatrixContributor.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/InterceptMatrixContributor.kt:11` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/InterceptMatrixContributor.kt:29` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/InterceptMatrixContributor.kt:30` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/KeeperFeedbackContributor.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/KeeperFeedbackContributor.kt:18` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/KeeperFeedbackContributor.kt:19` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/MagneticFeetContributor.kt:19` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/MagneticFeetContributor.kt:24` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/OverloadPlaystyleContributor.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/OverloadPlaystyleContributor.kt:19` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/OverloadPlaystyleContributor.kt:20` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/OverloadPlaystyleContributor.kt:40` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/OverloadPlaystyleContributor.kt:41` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/PassingContributor.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/PassingContributor.kt:14` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/PassingContributor.kt:17` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ReceiverEngagementContributor.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ReceiverEngagementContributor.kt:9` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotAnticipationContributor.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotAnticipationContributor.kt:9` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotAnticipationContributor.kt:10` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotContributor.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotContributor.kt:14` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotContributor.kt:15` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotOpportunityContributor.kt:4` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotOpportunityContributor.kt:8` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotOpportunityContributor.kt:11` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/SupportContributor.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/SupportContributor.kt:14` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/TouchRecoveryContributor.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/TouchRecoveryContributor.kt:11` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/TruePassContributor.kt:4` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/TruePassContributor.kt:8` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/WingBlockContributor.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/WingBlockContributor.kt:11` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/WingBlockContributor.kt:12` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/WingBlockContributor.kt:20` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/FrameDropStabilizer.kt:22` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/FrameDropStabilizer.kt:71` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/LatencyDefeatingInputEngine.kt:30` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/LatencyDefeatingInputEngine.kt:127` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/NativePipelineCache.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_stutter/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt:21` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:23` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:39` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterAdapterService.kt:28` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt:24` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt:66` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_sync/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_sync/src/main/java/com/assistant/adapter/sync/SyncAdapterService.kt:16` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_thermal/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:22` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:42` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `EMPTY_FILE` — `adapter_watchdog/proguard-rules.pro:0` — File is empty.
+- **LOW** `GLOBAL_STATE` — `adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:21` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:41` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/AppContributorRegistration.kt:19` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/BoosterIgnition.kt:16` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/DashboardInjector.kt:22` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/DashboardInjector.kt:162` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/DeathWatch.kt:31` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/DeathWatch.kt:199` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:201` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/DiagnosticsEngine.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/EngineData.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/GlobalCrashHandler.kt:38` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/IgnitionEngine.kt:14` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/LogActivity.kt:29` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/LogActivity.kt:166` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/MainActivity.kt:56` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/MainActivity.kt:467` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/MainActivity.kt:490` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/MainActivity.kt:493` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/OtaGatewayEngine.kt:33` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `DEFERRED_WORK` — `app/src/main/java/com/assistant/OtaGatewayEngine.kt:103` — Deferred-work marker found.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/OverlayService.kt:77` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/OverlayService.kt:255` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/OverlayService.kt:885` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/PingEliminatorVpnService.kt:26` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt:17` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/compliance/ComplianceState.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/compliance/ComplianceState.kt:16` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/compliance/ComplianceState.kt:35` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/contributors/BallPressContributor.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/BallPressContributor.kt:18` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/BallPressContributor.kt:19` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/BallPressContributor.kt:21` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/contributors/CrossClaimContributor.kt:8` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossClaimContributor.kt:13` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossClaimContributor.kt:14` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossClaimContributor.kt:17` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossClaimContributor.kt:18` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossClaimContributor.kt:25` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/contributors/CrossDeliveryContributor.kt:22` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossDeliveryContributor.kt:32` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossDeliveryContributor.kt:33` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossDeliveryContributor.kt:34` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossDeliveryContributor.kt:35` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossDeliveryContributor.kt:36` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossDeliveryContributor.kt:44` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/CrossDeliveryContributor.kt:51` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/contributors/KeeperBiasContributor.kt:8` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/KeeperBiasContributor.kt:13` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/KeeperBiasContributor.kt:14` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/KeeperBiasContributor.kt:17` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/KeeperBiasContributor.kt:27` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/contributors/PanicSaveContributor.kt:7` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PanicSaveContributor.kt:12` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PanicSaveContributor.kt:13` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PanicSaveContributor.kt:16` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PanicSaveContributor.kt:17` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PanicSaveContributor.kt:24` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/contributors/PassLaneContributor.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PassLaneContributor.kt:21` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PassLaneContributor.kt:22` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PassLaneContributor.kt:23` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PassLaneContributor.kt:24` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PassLaneContributor.kt:29` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/contributors/PressEvadeContributor.kt:15` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PressEvadeContributor.kt:24` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PressEvadeContributor.kt:25` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PressEvadeContributor.kt:29` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PressEvadeContributor.kt:41` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/PressEvadeContributor.kt:48` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/contributors/ShotContributor.kt:21` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/ShotContributor.kt:30` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/ShotContributor.kt:31` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/ShotContributor.kt:32` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/ShotContributor.kt:33` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/ShotContributor.kt:39` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/contributors/ThreatPriorityContributor.kt:15` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/ThreatPriorityContributor.kt:42` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/ThreatPriorityContributor.kt:49` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/ThreatPriorityContributor.kt:50` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/ThreatPriorityContributor.kt:58` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/contributors/ThreatPriorityContributor.kt:66` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/controlroom/ControlRoomBootstrap.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/core/AdapterIpcBridge.kt:12` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/core/AdapterIpcBridge.kt:19` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/core/AdapterIpcBridge.kt:27` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/core/AdapterIpcBridge.kt:35` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/core/AdapterIpcBridge.kt:43` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/diagnostic/RuntimeMetricsRegistry.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/analytics/LiveMatchAnalytics.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/database/TheaterDatabase.kt:18` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/dvr/DvrRuntimeCoordinator.kt:7` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/dvr/DvrSessionCoordinator.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/dvr/MatchSessionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `FUNCTION_DISTRIBUTION` — `app/src/main/java/com/assistant/overlay/interceptor/BlockLeftActionEngine.kt:0` — Function 'vector' exists across 8 files; inspect ownership/call routing.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/BlockLeftActionEngine.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/BlockRightActionEngine.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/CollisionAvoidanceEngine.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/CrossClaimActionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/CrossClaimEngine.kt:9` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/CrossInterceptionEngine.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/CrossPunchActionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/DiveLeftActionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/DiveRightActionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/FarPostCoverageEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperActionRouter.kt:18` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperAdaptiveFeedbackEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperBiasRegistry.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperDecisionRegistry.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperExecutionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperMetricsRegistry.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperStateMachine.kt:13` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/HoldPositionActionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/InterceptionRuntimeRegistry.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/KeeperPositionBiasEngine.kt:16` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/LongBallCounterEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/NearPostCoverageEngine.kt:6` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:40` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:79` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:114` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:150` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:154` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/OneVsOnePanicEngine.kt:10` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/OwnGoalAvoidanceEngine.kt:12` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/PanicSaveEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/RecoveryAuthorityRegistry.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/RecoveryPositionEngine.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/RecoveryPredictionEngine.kt:10` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/RushOutActionEngine.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/ShotAnticipationEngine.kt:15` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/ShotDirectionEngine.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/ThreatClassifierEngine.kt:22` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/ThreatPriorityEngine.kt:10` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/interceptor/ThreatZoneEngine.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/metrics/SmartAssistMetrics.kt:22` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/metrics/SmartAssistMetrics.kt:26` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/notification/RuntimeNotificationCoordinator.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/repository/GoalkeeperRuntimeState.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/runtime/PerformanceGovernor.kt:7` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/overlay/runtime/PerformanceGovernor.kt:26` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/overlay/runtime/PerformanceGovernor.kt:29` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/overlay/runtime/PerformanceGovernor.kt:32` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/overlay/runtime/PerformanceGovernor.kt:34` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/overlay/storage/MediaStoreStorageEngine.kt:17` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt:14` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt:157` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/recovery/RecoveryMetricsRegistry.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/survival/AccessibilitySurvivalEngine.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/survival/AccessibilitySurvivalRegistry.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/survival/OverlaySurvivalEngine.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/survival/OverlaySurvivalRegistry.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/vision/ForegroundGate.kt:16` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/vision/ForegroundGate.kt:27` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/vision/ForegroundGate.kt:59` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/vision/ForegroundGate.kt:61` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `app/src/main/java/com/assistant/vision/OverlaySelfMask.kt:14` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/vision/OverlaySelfMask.kt:61` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/vision/OverlaySelfMask.kt:67` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `app/src/main/java/com/assistant/vision/OverlaySelfMask.kt:107` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminConfigStore.kt:28` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminLiveStats.kt:23` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminTuningDetector.kt:19` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminTuningGuide.kt:18` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminTuningGuideLag.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminTuningGuideStutter.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/admin/AdminWorstMoments.kt:32` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/audit/SelfAuditRegistry.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/controlroom/AdapterControlRoomRegistry.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/CrashInspector.kt:4` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/MachineLedger.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:25` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/notification/NodeNotificationHub.kt:31` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/persistence/HealthPersistenceStore.kt:8` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/AdapterHealthRegistry.kt:15` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/AdapterHealthRegistry.kt:99` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:11` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/events/RuntimeEvents.kt:88` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/events/RuntimeEvents.kt:89` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/events/RuntimeEvents.kt:90` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/events/RuntimeEvents.kt:92` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:37` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:110` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:116` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:123` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:130` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:138` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:151` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:162` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:172` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:293` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/execution/ContributionRegistry.kt:36` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/execution/ContributionRegistry.kt:76` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `RETURN_LITERAL` — `diagnostic_core/src/main/java/com/assistant/execution/ContributionRegistry.kt:86` — Literal return detected; inspect whether it is an intentional fallback or stub.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/execution/HybridExecutionTerminal.kt:5` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt:8` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/survival/ProcessSurvivalRegistry.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **LOW** `GLOBAL_STATE` — `diagnostic_core/src/main/java/com/assistant/survival/ResourceBudgetRegistry.kt:3` — Singleton/global-state declaration found; inspect lifecycle ownership.
+- **INFO** `COMPONENT` — `adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:16` — Android component detected: BatteryAdapterService
+- **INFO** `COMPONENT` — `adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:15` — Android component detected: BootAdapterService
+- **INFO** `COMPONENT` — `adapter_input/src/main/java/com/assistant/adapter/input/InputAdapterService.kt:14` — Android component detected: InputAdapterService
+- **INFO** `COMPONENT` — `adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:18` — Android component detected: InterruptionAdapterService
+- **INFO** `COMPONENT` — `adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:28` — Android component detected: LagAdapterService
+- **INFO** `COMPONENT` — `adapter_lmk/src/main/java/com/assistant/adapter/lmk/LmkAdapterService.kt:40` — Android component detected: LmkAdapterService
+- **INFO** `COMPONENT` — `adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:57` — Android component detected: MemoryAdapterService
+- **INFO** `COMPONENT` — `adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt:15` — Android component detected: NetAdapterService
+- **INFO** `COMPONENT` — `adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:16` — Android component detected: PingAdapterService
+- **INFO** `COMPONENT` — `adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:15` — Android component detected: SchedulerAdapterService
+- **INFO** `COMPONENT` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GridRecentsInterceptor.kt:95` — Android component detected: GridRecentsInterceptor
+- **INFO** `COMPONENT` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:21` — Android component detected: SmartAssistAccessibilityEngine
+- **INFO** `COMPONENT` — `adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:17` — Android component detected: SmartAssistAdapterService
+- **INFO** `COMPONENT` — `adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterAdapterService.kt:23` — Android component detected: StutterAdapterService
+- **INFO** `COMPONENT` — `adapter_sync/src/main/java/com/assistant/adapter/sync/SyncAdapterService.kt:13` — Android component detected: SyncAdapterService
+- **INFO** `COMPONENT` — `adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:16` — Android component detected: ThermalAdapterService
+- **INFO** `COMPONENT` — `adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:15` — Android component detected: WatchdogAdapterService
+- **INFO** `COMPONENT` — `app/src/main/java/com/assistant/OverlayService.kt:67` — Android component detected: OverlayService
+- **INFO** `COMPONENT` — `app/src/main/java/com/assistant/overlay/database/TheaterCleanupReceiver.kt:14` — Android component detected: TheaterCleanupReceiver
+- **INFO** `COMPONENT` — `app/src/main/java/com/assistant/overlay/dvr/DvrProjectionService.kt:32` — Android component detected: DvrProjectionService
+
+## Git
+
+```text
+## main...origin/main
+?? architecture-audit/
+?? tools/splendor_deep_audit.py
+```
