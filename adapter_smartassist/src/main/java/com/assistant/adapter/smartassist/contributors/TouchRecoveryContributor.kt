@@ -14,13 +14,24 @@ object TouchRecoveryContributor : GameplayContributor {
         val strength = (frame.bestLaneConfidence * 100f).toInt().coerceIn(0, 100)
         val result = TouchRecoveryEngine.recover(pressure, strength)
 
+        // After recovering the touch, drive toward the open passing lane.
+        // Returning to ballX/ballY (where the player already is) is a no-op.
+        val targetX = when {
+            frame.viableLaneCount > 0 && frame.passTargetX > 0f -> frame.passTargetX
+            else -> (frame.ballX + 60f).coerceIn(0f, 1920f)
+        }
+        val targetY = when {
+            frame.viableLaneCount > 0 && frame.passTargetY > 0f -> frame.passTargetY
+            else -> frame.ballY
+        }
+
         return EngineContribution(
-            engine = engineName,
-            actionClass = ActionClass.MOVE,
-            targetX = frame.ballX,
-            targetY = frame.ballY,
-            authority = (result.recoveryBoost / 10f).coerceIn(0f, 1f),
-            confidence = frame.confidence,
+            engine         = engineName,
+            actionClass    = ActionClass.MOVE,
+            targetX        = targetX,
+            targetY        = targetY,
+            authority      = (result.recoveryBoost / 10f).coerceIn(0f, 1f),
+            confidence     = frame.confidence,
             durationHintMs = 35L
         )
     }
