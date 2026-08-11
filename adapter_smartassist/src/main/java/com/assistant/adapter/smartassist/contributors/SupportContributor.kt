@@ -11,15 +11,27 @@ object SupportContributor : GameplayContributor {
     override val capabilities = setOf(EngineCapability.SUPPORT, EngineCapability.MOVEMENT)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        if (!frame.trusted || !frame.hasBall) return null
+        // off-ball support run: fire when a TEAMMATE has the ball, not us
+        if (!frame.trusted || frame.hasBall) return null
+        if (frame.viableLaneCount <= 0) return null
+        val targetX = frame.passTargetX.coerceAtLeast(0f)
+        val targetY = frame.passTargetY.coerceAtLeast(0f)
+        if (targetX <= 0f && targetY <= 0f) return null
+
+        // Authority: blend lane confidence with share of lanes that are viable
+        val laneShare = frame.viableLaneCount.toFloat() /
+                        frame.laneCount.toFloat().coerceAtLeast(1f)
+        val authority = (frame.bestLaneConfidence * 0.65f + laneShare * 0.35f)
+                        .coerceIn(0f, 1f)
+
         return EngineContribution(
-            engine = engineName,
-            actionClass = ActionClass.MOVE,
-            targetX = frame.ballX,
-            targetY = frame.ballY,
-            authority = (frame.bestLaneConfidence * 0.4f).coerceIn(0f, 1f),
-            confidence = frame.confidence,
-            durationHintMs = 40L
+            engine          = engineName,
+            actionClass     = ActionClass.MOVE,
+            targetX         = targetX,
+            targetY         = targetY,
+            authority       = authority,
+            confidence      = frame.confidence,
+            durationHintMs  = 40L
         )
     }
 }

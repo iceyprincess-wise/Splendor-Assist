@@ -7,6 +7,8 @@ object ReceiverEngagementContributor : GameplayContributor {
     override val capabilities = setOf(EngineCapability.SUPPORT, EngineCapability.PASSING)
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
+        // Without a viable lane, passTargetX/Y = 0 → corrupted distance calculation
+        if (frame.viableLaneCount <= 0) return null
         val d = hypot(frame.passTargetX - frame.ballX, frame.passTargetY - frame.ballY)
         val r = ReceiverEngagementEngine.evaluate(d, frame.bestLaneConfidence * 10f)
         return EngineContribution(engineName, ActionClass.PASS,
