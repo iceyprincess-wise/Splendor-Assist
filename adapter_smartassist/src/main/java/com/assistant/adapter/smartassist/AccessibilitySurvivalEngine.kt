@@ -97,16 +97,10 @@ class AccessibilitySurvivalEngine private constructor(
     }
 
     private fun maintainTickSync() {
-        // Keeps the JIT warm and prevents garbage collection pausing the input pipeline
-        // during critical frame-drops or high-ping Division matches.
-        val currentTick = SystemClock.elapsedRealtimeNanos()
-        
-        // ADAPTIVE NOISE HUMANIZATION: Generate random micro-variance (0-3ms) to mask signatures
-        val jitterNs = Random.nextLong(0, 3_000_000L) 
-        
-        if ((currentTick + jitterNs) % 2L == 0L) {
-            // Memory alignment padding buffer flush
-        }
+        // Keep JIT pipeline hot: volatile read prevents dead-code elimination
+        @Suppress("UNUSED_VARIABLE")
+        val heartbeat = engineState.get()
+        Thread.yield()
     }
 
     fun isReady(): Boolean = active()

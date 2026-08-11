@@ -120,8 +120,18 @@ class ActiveGestureController(
             return
         }
 
-        antiCutbackEngine.blockCutbackPassingLanes(endX, endY, startX, startY, 825f, 360f, 250f, 550f)
-        autoEvadeEngine.monitorAttackingSpace(startX, startY, 250f, 550f, endX, endY, 0f, 0f)
+        val earlyScene = SceneTracker.current()
+        val nearestOppEarly = earlyScene.trackedPlayers
+            .filter { !it.isUserTeam }
+            .minByOrNull { p -> (p.x - startX) * (p.x - startX) + (p.y - startY) * (p.y - startY) }
+        val earlyTraj = BallTrajectoryPredictor.current()
+        antiCutbackEngine.blockCutbackPassingLanes(
+            nearestOppEarly?.x ?: endX, nearestOppEarly?.y ?: endY,
+            startX, startY, 825f, 360f, 250f, 550f)
+        autoEvadeEngine.monitorAttackingSpace(
+            startX, startY, 250f, 550f,
+            nearestOppEarly?.x ?: endX, nearestOppEarly?.y ?: endY,
+            earlyTraj.velocityX, earlyTraj.velocityY)
         val scoreAim = CriticalAttackingVectorEngine.computeAbsoluteScoringVector(startX, startY, 1500f, 360f, 1620f, 280f, 1620f, 440f)
         OmnipotentDashPressureMatrix.computeHighAuthorityDefensiveVector(endX, endY, startX, startY, startX, startY + 50f, endX, endY, true)
         HybridOmnipotentMatrixEngine.computeGodspeedInterceptVector(startX, startY, endX, endY, 0f, 0f, endX, endY, 0f, 0f, false)
@@ -140,9 +150,12 @@ class ActiveGestureController(
         val telemetry =
             TelemetryRepository.current()
 
-        val hasBall =
-            telemetry.ballX != 0f ||
-            telemetry.ballY != 0f
+        val hasBall = run {
+            val own = Phase3WorldStateStore.current().ownership
+            own.hasOwner &&
+                SceneTracker.current().trackedPlayers
+                    .getOrNull(own.ownerIndex)?.isUserTeam == true
+        }
 
 
         val worldState =
@@ -161,33 +174,15 @@ class ActiveGestureController(
 
         val pressureCellX =
             (
-                (
-                    telemetry.ballX.coerceIn(
-                        0f,
-                        1f.coerceAtLeast(distance)
-                    ) /
-                    1f.coerceAtLeast(distance)
-                ) *
+                (telemetry.ballX.coerceIn(0f, 1650f) / 1650f) *
                 pressureMap.columns
-            ).toInt().coerceIn(
-                0,
-                pressureMap.columns-1
-            )
+            ).toInt().coerceIn(0, pressureMap.columns - 1)
 
         val pressureCellY =
             (
-                (
-                    telemetry.ballY.coerceIn(
-                        0f,
-                        1f.coerceAtLeast(distance)
-                    ) /
-                    1f.coerceAtLeast(distance)
-                ) *
+                (telemetry.ballY.coerceIn(0f, 720f) / 720f) *
                 pressureMap.rows
-            ).toInt().coerceIn(
-                0,
-                pressureMap.rows-1
-            )
+            ).toInt().coerceIn(0, pressureMap.rows - 1)
 
         val visionPressure =
             pressureMap.pressure
