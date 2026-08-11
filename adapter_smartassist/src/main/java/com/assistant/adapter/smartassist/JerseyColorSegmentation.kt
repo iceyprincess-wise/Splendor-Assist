@@ -22,26 +22,14 @@ object JerseyColorSegmentation {
 
         return when {
 
-            red > green + 30f &&
-            red > blue + 30f ->
-                ClassificationResult(
-                    Team.USER,
-                    1f
-                )
+            red > 140f && red > green + 50f && red > blue + 50f ->
+                ClassificationResult(Team.USER, ((red - maxOf(green, blue)) / 255f).coerceIn(0.5f, 1f))
 
-            blue > red + 30f &&
-            blue > green + 30f ->
-                ClassificationResult(
-                    Team.OPPONENT,
-                    1f
-                )
+            blue > 140f && blue > red + 50f && blue > green + 50f ->
+                ClassificationResult(Team.OPPONENT, ((blue - maxOf(red, green)) / 255f).coerceIn(0.5f, 1f))
 
-            green > red + 30f &&
-            green > blue + 30f ->
-                ClassificationResult(
-                    Team.GOALKEEPER,
-                    1f
-                )
+            green > 160f && green > red + 60f && green > blue + 60f ->
+                ClassificationResult(Team.GOALKEEPER, ((green - maxOf(red, blue)) / 255f).coerceIn(0.5f, 1f))
 
             else ->
                 ClassificationResult(

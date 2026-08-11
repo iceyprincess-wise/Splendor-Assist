@@ -96,7 +96,7 @@ object OmnipotentDashPressureMatrix {
         val now = System.currentTimeMillis()
         
         // Dynamic adaptive pacing cooldown window to mask hard 120ms signatures
-        val adaptiveCooldownMs = 120L + Random.nextLong(-8, 9) // 112ms to 128ms shifting gate
+        val adaptiveCooldownMs = 40L + Random.nextLong(-4, 5) // FIX: 120ms->40ms, was missing 7 frames per counter
 
         if (
             isPlayerHoldingPressure &&
