@@ -2,30 +2,24 @@ package com.assistant.adapter.smartassist
 
 object DefensiveLineEngine {
 
-    fun compute(
-        scene: SceneSnapshot
-    ): DefensiveLineResult {
+    /** compute() — OPPONENT back line (unchanged). */
+    fun compute(scene: SceneSnapshot): DefensiveLineResult {
+        val d = scene.trackedPlayers.filter { !it.isUserTeam }
+        if (d.isEmpty()) return DefensiveLineResult(found=false)
+        return DefensiveLineResult(true,
+            d.map{it.x}.average().toFloat(), d.minOf{it.x}, d.maxOf{it.x},
+            d.size, d.map{it.confidence}.average().toFloat())
+    }
 
-        val defenders =
-            scene.trackedPlayers.filter { !it.isUserTeam }
-
-        if (defenders.isEmpty()) {
-            return DefensiveLineResult(found = false)
-        }
-
-        val minX = defenders.minOf { it.x }
-        val maxX = defenders.maxOf { it.x }
-        val averageX = defenders.map { it.x }.average().toFloat()
-        val confidence =
-            defenders.map { it.confidence }.average().toFloat()
-
-        return DefensiveLineResult(
-            found = true,
-            averageX = averageX,
-            minX = minX,
-            maxX = maxX,
-            playerCount = defenders.size,
-            confidence = confidence
-        )
+    /** computeUserLine() — OUR back line (NEW).
+     *  Deepest 40% of user-team players by Y, capped at 5. */
+    fun computeUserLine(scene: SceneSnapshot): DefensiveLineResult {
+        val u = scene.trackedPlayers.filter { it.isUserTeam }
+        if (u.isEmpty()) return DefensiveLineResult(found=false)
+        val keep = u.sortedByDescending{it.y}
+            .take((u.size*0.4f).toInt().coerceAtLeast(1).coerceAtMost(5))
+        return DefensiveLineResult(true,
+            keep.map{it.x}.average().toFloat(), keep.minOf{it.x}, keep.maxOf{it.x},
+            keep.size, keep.map{it.confidence}.average().toFloat())
     }
 }

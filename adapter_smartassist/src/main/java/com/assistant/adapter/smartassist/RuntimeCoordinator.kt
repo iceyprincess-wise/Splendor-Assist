@@ -266,6 +266,13 @@ object RuntimeCoordinator {
                 com.assistant.adapter.smartassist.contributors.DashAnchorContributor)
             com.assistant.runtime.GameplayEngineRegistry.register(
                 com.assistant.adapter.smartassist.contributors.SpeedCompensationContributor)
+            // BATCH 4: instant intercept + build-up press + ball retention shield
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.InstantInterceptContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.BuildUpPressContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.BallRetentionShieldContributor)
         } catch (_: Throwable) {}
         try { GameplayEngineRegistry.warmAll() } catch (_: Throwable) {}
     }

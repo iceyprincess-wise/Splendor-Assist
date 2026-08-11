@@ -2,7 +2,6 @@ package com.assistant.adapter.smartassist
 
 import android.util.Log
 import kotlin.math.pow
-import kotlin.random.Random
 
 data class DefenseAuthorityResult(
     val containment: Float,
@@ -10,6 +9,7 @@ data class DefenseAuthorityResult(
     val pressure: Float
 )
 
+// FIX: removed +/-8% random noise — made identical situations produce different authority.
 object DefenseAuthorityEngine {
 
     data class DefenseEvaluationDiagnostics(
@@ -26,88 +26,29 @@ object DefenseAuthorityEngine {
     private var lastDistance: Float = 0f
     private var lastUpdateMs: Long = 0L
 
-    @Synchronized
-    fun getEvaluationDiagnostics(): DefenseEvaluationDiagnostics =
-        DefenseEvaluationDiagnostics(
-            totalEvaluations = evaluationCount,
-            maxContainmentObserved = peakContainment,
-            maxInterceptionObserved = peakInterception,
-            lastDistanceEvaluated = lastDistance,
-            lastUpdatedTimestamp = lastUpdateMs
-        )
+    @Synchronized fun getEvaluationDiagnostics() = DefenseEvaluationDiagnostics(
+        evaluationCount, peakContainment, peakInterception, lastDistance, lastUpdateMs)
 
-    fun evaluate(
-        distance: Float,
-        strength: Int,
-        recovery: Float,
-        retention: Float
-    ): DefenseAuthorityResult {
-        val normalizedStrength =
-            strength.coerceIn(0, 100) / 100f
+    fun evaluate(distance:Float, strength:Int, recovery:Float, retention:Float): DefenseAuthorityResult {
+        val ns = strength.coerceIn(0,100)/100f
+        val ti = ns.pow(1.5f)
+        val pf = 1f - (distance.coerceIn(0f,1200f)/1200f)
+        val nr = recovery.coerceIn(0f,10f)/10f
+        val nt = retention.coerceIn(0f,10f)/10f
 
-        val tacticalIntensity =
-            normalizedStrength.pow(1.5f)
-
-        val distanceLimit = 1200f
-        val proximityFactor =
-            1f - (distance.coerceIn(0f, distanceLimit) / distanceLimit)
-
-        val normalizedRecovery =
-            recovery.coerceIn(0f, 10f) / 10f
-
-        val normalizedRetention =
-            retention.coerceIn(0f, 10f) / 10f
-
-        // Continuous mathematical curve noise injection to scramble predictable telemetry profiles
-        val containmentNoise = Random.nextFloat() * 0.16f - 0.08f // Subtle fractional variance
-        val interceptionNoise = Random.nextFloat() * 0.16f - 0.08f
-
-        val containment =
-            (
-                (normalizedRecovery * 5.5f) +
-                    (tacticalIntensity * 3.5f) +
-                    (proximityFactor * 2.5f) + containmentNoise
-                ).coerceIn(0f, 10f)
-
-        val interception =
-            (
-                (normalizedRetention * 5.5f) +
-                    (tacticalIntensity * 3.5f) +
-                    (proximityFactor * 2.5f) + interceptionNoise
-                ).coerceIn(0f, 10f)
-
-        val pressure =
-            (containment + interception)
-                .coerceIn(0f, 20f)
+        val containment  = ((nr*5.5f)+(ti*3.5f)+(pf*2.5f)).coerceIn(0f,10f)
+        val interception = ((nt*5.5f)+(ti*3.5f)+(pf*2.5f)).coerceIn(0f,10f)
+        val pressure     = (containment+interception).coerceIn(0f,20f)
 
         synchronized(this) {
-            evaluationCount += 1L
-
-            if (containment > peakContainment) {
-                peakContainment = containment
-            }
-
-            if (interception > peakInterception) {
-                peakInterception = interception
-            }
-
-            lastDistance = distance
-            lastUpdateMs = System.currentTimeMillis()
+            evaluationCount++
+            if (containment  > peakContainment)  peakContainment  = containment
+            if (interception > peakInterception) peakInterception = interception
+            lastDistance = distance; lastUpdateMs = System.currentTimeMillis()
         }
+        if (evaluationCount % 500L == 0L)
+            Log.d("DefenseAuthorityEngine","containment=$containment interception=$interception pressure=$pressure")
 
-        // Dynamically shift log evaluation limits to break up structural cadence logs
-        val loggingInterval = 500L + Random.nextLong(-15, 16)
-        if (evaluationCount % loggingInterval == 0L) {
-            Log.d(
-                "DefenseAuthorityEngine",
-                "Defense authority containment=$containment interception=$interception pressure=$pressure [Dynamic Interval]"
-            )
-        }
-
-        return DefenseAuthorityResult(
-            containment = containment,
-            interception = interception,
-            pressure = pressure
-        )
+        return DefenseAuthorityResult(containment, interception, pressure)
     }
 }
