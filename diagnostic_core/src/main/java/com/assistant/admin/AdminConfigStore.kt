@@ -165,7 +165,7 @@ object AdminConfigStore {
         // ThermalPeekEngine
         Tunable("lag.thermal.poll_ms",         "Heat check rhythm (ms)",                    10000f, ADAPTER_LAG, "ThermalPeekEngine"),
         // DisplayProfileEngine
-        Tunable("lag.display.game_fps",        "Game frame rate (eFootball = 30)",          30f,    ADAPTER_LAG, "DisplayProfileEngine"),
+        Tunable("lag.display.game_fps",        "Game frame rate (eFootball = 60)",          60f,    ADAPTER_LAG, "DisplayProfileEngine"),
         // LagVerdictEngine
         Tunable("lag.verdict.poll_ms",         "Judge check rhythm (ms)",                   2000f,  ADAPTER_LAG, "LagVerdictEngine"),
         Tunable("lag.verdict.jitter_ms",       "JITTERY when frame wobble above (ms)",      10f,    ADAPTER_LAG, "LagVerdictEngine"),

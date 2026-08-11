@@ -227,8 +227,8 @@ object AdminTuningDetector {
                     else "phone is cool (" + AdminLiveStats.thermal + ") - 10s checks are plenty until it warms")
             )
             "DisplayProfileEngine" -> listOf(
-                Pick("lag.display.game_fps", 30f,
-                    "eFootball is locked at 30fps - every lag line is computed from this truth; only change it if the game itself changes")
+                Pick("lag.display.game_fps", 60f,
+                    "Set to 60fps - Redmi 15C target (every lag line is computed from this truth; only change it if the game itself changes")
             )
             "LagVerdictEngine" -> {
                 val jitLine = clamp(maxOf(10f, fj * 2.5f), 8f, 25f)
