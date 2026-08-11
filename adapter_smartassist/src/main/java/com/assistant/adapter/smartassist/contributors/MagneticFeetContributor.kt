@@ -26,7 +26,7 @@ object MagneticFeetContributor : GameplayContributor {
         val strength = (frame.bestLaneConfidence * 100f).toInt().coerceIn(0, 100)
         val result = MagneticFeetEngine.stabilize(pressure, strength)
         val cap = try {
-            AdminConfigStore.get("assist.contrib.magneticfeet.cap", 0.35f)
+            AdminConfigStore.get("assist.contrib.magneticfeet.cap", 0.65f)
         } catch (_: Throwable) { 0.35f }
         return EngineContribution(
             engine = engineName,

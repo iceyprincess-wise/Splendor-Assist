@@ -169,35 +169,10 @@ object MagneticFeetEngine {
                     (agreement * 3.0f)
             ).coerceIn(RESULT_MIN, RESULT_MAX)
 
-        // Apply vector pressure and proximity scaling
-        val vectorPressure = (pressure / 100.0f)
-        val proximityScaling = (strength / 100.0f)
-
-        val scaledTouchRetention =
-            if (vectorPressure > 0.5f || proximityScaling > 0.5f) {
-                10.0f
-            } else {
-                touchRetention
-            }
-
-        val scaledInterceptionResistance =
-            if (vectorPressure > 0.5f || proximityScaling > 0.5f) {
-                10.0f
-            } else {
-                interceptionResistance
-            }
-
-        val scaledPossessionControl =
-            if (vectorPressure > 0.5f || proximityScaling > 0.5f) {
-                10.0f
-            } else {
-                possessionControl
-            }
-
         return MagneticFeetResult(
-            touchRetention = scaledTouchRetention,
-            interceptionResistance = scaledInterceptionResistance,
-            possessionControl = scaledPossessionControl
+            touchRetention = touchRetention,
+            interceptionResistance = interceptionResistance,
+            possessionControl = possessionControl
         )
     }
 
