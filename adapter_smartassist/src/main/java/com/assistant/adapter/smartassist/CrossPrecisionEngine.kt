@@ -19,7 +19,7 @@ object CrossPrecisionEngine {
         return CrossPrecisionResult(
             crossX=x,
             crossY=y-(40f*boost),
-            confidence=2.0f+(boost*6.0f)
+            confidence=(0.60f+(boost*0.40f)).coerceIn(0f,1f)
         )
     }
 
