@@ -51,7 +51,7 @@ setContentView(R.layout.activity_smartassist_control_room)
         val shot = findViewById<Slider>(R.id.shotSeek)
         val cross = findViewById<Slider>(R.id.crossSeek)
 
-        enabled.isChecked = true
+        enabled.isChecked = SmartAssistRepository.enabled()
         panic.isChecked = SmartAssistRepository.panicActive()
         pass.value = config.passThreshold.toFloat()
         shot.value = config.shotThreshold.toFloat()
