@@ -59,11 +59,11 @@ object HybridResponseCompensationEngine {
                 responseBoost
             )/6f
 
-        val compensatedX=
-            endX + dx*predictiveFactor
+        val compensatedX =
+            (endX + dx * predictiveFactor).coerceIn(0f, 1650f)
 
-        val compensatedY=
-            endY + dy*predictiveFactor
+        val compensatedY =
+            (endY + dy * predictiveFactor).coerceIn(0f, 720f)
 
         val durationScale=
             (1f-(predictiveFactor*temporal.temporalConfidence))
