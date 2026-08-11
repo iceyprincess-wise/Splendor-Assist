@@ -2,13 +2,15 @@ package com.assistant.adapter.smartassist
 
 object BallDetector {
 
+    private const val MIN_CANDIDATE_CONFIDENCE = 0.12f
+    private const val COAST_FRAMES = 6
+
     private var lastBallX = 0f
     private var lastBallY = 0f
     private var lastRadius = 0f
     private var lastConfidence = 0f
 
     private var initialized = false
-
     private var lostFrames = 0
     private var totalFrames = 0
     private var successfulFrames = 0
@@ -19,11 +21,15 @@ object BallDetector {
 
         totalFrames++
 
-        if (candidate == null) {
-
-            initialized = false
+        if (candidate == null || candidate.score < MIN_CANDIDATE_CONFIDENCE) {
             lostFrames++
-
+            if (lostFrames > COAST_FRAMES) {
+                initialized = false
+                lastBallX = 0f
+                lastBallY = 0f
+                lastRadius = 0f
+                lastConfidence = 0f
+            }
             return BallDetectionResult(
                 detected = false,
                 x = 0f,
@@ -40,13 +46,13 @@ object BallDetector {
 
         val filteredX =
             if (initialized)
-                lastBallX * 0.65f + candidate.centerX * 0.35f
+                lastBallX * 0.55f + candidate.centerX * 0.45f
             else
                 candidate.centerX
 
         val filteredY =
             if (initialized)
-                lastBallY * 0.65f + candidate.centerY * 0.35f
+                lastBallY * 0.55f + candidate.centerY * 0.45f
             else
                 candidate.centerY
 
@@ -69,14 +75,16 @@ object BallDetector {
         lastRadius = filteredRadius
         lastConfidence = filteredConfidence
 
+        val pixelArea = (candidate.pixelCount).coerceAtLeast(1)
+
         return BallDetectionResult(
             detected = true,
             x = filteredX,
             y = filteredY,
             radius = filteredRadius,
             confidence = filteredConfidence.coerceIn(0f, 1f),
-            searchPixels = candidate.pixelCount,
-            matchedPixels = candidate.pixelCount
+            searchPixels = pixelArea,
+            matchedPixels = (pixelArea * filteredConfidence).toInt().coerceAtLeast(1)
         )
     }
 }
