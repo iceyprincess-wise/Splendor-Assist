@@ -21,7 +21,7 @@ object InstantInterceptEngine {
                         catch(_:Throwable) { return ballFallback(frame) }
 
         if (!ownership.hasOwner || ownership.owner==null) return ballFallback(frame)
-        val c = ownership.owner!!
+        val c = ownership.owner
         if (c.isUserTeam) return ballFallback(frame)
 
         val px = (c.x + c.velocityX*LOOK_AHEAD_FRAMES).coerceIn(0f,SCREEN_W)
