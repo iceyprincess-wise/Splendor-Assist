@@ -10,7 +10,7 @@ fun estimate(
     val players =
         scene.trackedPlayers
 
-    if (players.size < 7) {
+    if (players.size < 4) {
         return FormationResult(
             found = false,
             name = "Unknown",
@@ -21,7 +21,7 @@ fun estimate(
     val user =
         players.filter { it.isUserTeam }
 
-    if (user.size < 7) {
+    if (user.size < 4) {
         return FormationResult(
             found = false,
             name = "Unknown",

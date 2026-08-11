@@ -294,7 +294,7 @@ object GameplayDecisionEngine {
         try {
             stableMode = if ((!telemetryFresh || impossibleTelemetry) && lastStableMode != 0) {
                 lastStableMode
-            } else if (now - previousTimestamp < 120L && previousConfidence >= confidence) {
+            } else if (now - previousTimestamp < 34L && previousConfidence >= confidence) {
                 previousMode
             } else {
                 mode

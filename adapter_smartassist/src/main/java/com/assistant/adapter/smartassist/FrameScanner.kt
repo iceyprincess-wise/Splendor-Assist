@@ -37,7 +37,7 @@ object FrameScanner {
     fun scan(
         frame: FrameNormalizer.NormalizedFrame,
         threshold: Float = 0.60f,
-        adaptiveNoiseVariance: Int = 2, // Dynamic micro-variance default
+        adaptiveNoiseVariance: Int = 0, // 0 = no noise; ±2px was fragmenting ball blobs before BFS
         serverTickSyncScale: Float = 1.0f // Defaults to 1:1, scale for high-ping division sync
     ): List<PixelSample> {
         val width = frame.width
