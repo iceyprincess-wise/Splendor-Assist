@@ -71,15 +71,18 @@ class LatencyDefeatingInputEngine(
         // 3. Server-Tick Sync: Align length and hold parameters to hit client/server possession packets
         val baseDistance = hypot((humanizedEndX - humanizedStartX).toDouble(), (humanizedEndY - humanizedStartY).toDouble())
         val dynamicScaleFactor = if (currentPingMs > 100) 1.12f else 1.0f
+        // FIX: clamp to screen bounds after scaling — unclipped overshoot injects off-screen
         val calibratedEndX = if (baseDistance > 0) {
             (humanizedStartX + (humanizedEndX - humanizedStartX) * dynamicScaleFactor)
+                .coerceIn(0f, 1650f)
         } else {
-            humanizedEndX
+            humanizedEndX.coerceIn(0f, 1650f)
         }
         val calibratedEndY = if (baseDistance > 0) {
             (humanizedStartY + (humanizedEndY - humanizedStartY) * dynamicScaleFactor)
+                .coerceIn(0f, 720f)
         } else {
-            humanizedEndY
+            humanizedEndY.coerceIn(0f, 720f)
         }
 
         // Adjust temporal bounds to match network tick rate

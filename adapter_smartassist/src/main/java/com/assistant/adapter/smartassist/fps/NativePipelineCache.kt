@@ -23,6 +23,8 @@ object NativePipelineCache {
         endIndex:Int,
         bias:Float
     ):Long {
+        // FIX: guard both indices — unchecked access crashes on any out-of-range call
+        if (startIndex !in 0..63 || endIndex !in 0..63) return 0L
 
         val dx=
             vectorBufferX[endIndex]-
