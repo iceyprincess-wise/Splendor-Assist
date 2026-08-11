@@ -29,15 +29,26 @@ object BallDetector {
                 lastBallY = 0f
                 lastRadius = 0f
                 lastConfidence = 0f
+                return BallDetectionResult(
+                    detected = false,
+                    x = 0f, y = 0f, radius = 0f, confidence = 0f,
+                    searchPixels = 0, matchedPixels = 0
+                )
+            }
+            if (initialized) {
+                val coastFraction = 1f - (lostFrames.toFloat() / COAST_FRAMES)
+                val coastConfidence = (lastConfidence * coastFraction).coerceIn(0f, 1f)
+                return BallDetectionResult(
+                    detected = true,
+                    x = lastBallX, y = lastBallY, radius = lastRadius,
+                    confidence = coastConfidence,
+                    searchPixels = 0, matchedPixels = 0
+                )
             }
             return BallDetectionResult(
                 detected = false,
-                x = 0f,
-                y = 0f,
-                radius = 0f,
-                confidence = 0f,
-                searchPixels = 0,
-                matchedPixels = 0
+                x = 0f, y = 0f, radius = 0f, confidence = 0f,
+                searchPixels = 0, matchedPixels = 0
             )
         }
 
