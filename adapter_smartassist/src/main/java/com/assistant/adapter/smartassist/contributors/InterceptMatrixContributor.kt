@@ -50,7 +50,7 @@ object InterceptMatrixContributor : GameplayContributor {
             actionClass     = ActionClass.DEFEND,
             targetX         = tx.coerceAtLeast(0f),
             targetY         = ty.coerceAtLeast(0f),
-            authority       = (frame.defenderDensity * 0.9f).coerceIn(0f, 1f),
+            authority       = (0.50f + frame.defenderDensity * 0.50f).coerceIn(0f, 1f),
             confidence      = frame.confidence,
             durationHintMs  = 40L
         )
