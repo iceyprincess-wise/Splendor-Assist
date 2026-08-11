@@ -27,7 +27,7 @@ object MagneticFeetContributor : GameplayContributor {
         val result = MagneticFeetEngine.stabilize(pressure, strength)
         val cap = try {
             AdminConfigStore.get("assist.contrib.magneticfeet.cap", 0.65f)
-        } catch (_: Throwable) { 0.35f }
+        } catch (_: Throwable) { 0.65f }
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.MOVE,

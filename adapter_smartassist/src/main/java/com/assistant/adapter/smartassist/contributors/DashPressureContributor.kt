@@ -10,15 +10,27 @@ object DashPressureContributor : GameplayContributor {
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || frame.hasBall) return null
 
+        // Our defender position: use goalkeeper when detected, otherwise
+        // project back from ball (defender tracks ball with lag).
+        // When defX == oppX the engine geometry collapses to a zero vector.
+        val defX = if (frame.goalkeeperVisible && frame.goalkeeperX > 0f)
+            frame.goalkeeperX else (frame.ballX - 100f).coerceAtLeast(0f)
+        val defY = if (frame.goalkeeperVisible && frame.goalkeeperY > 0f)
+            frame.goalkeeperY else frame.ballY
+
+        // Opponent ball carrier = ball position (they have the ball)
+        val oppX = frame.ballX
+        val oppY = frame.ballY
+
         val packed = OmnipotentDashPressureMatrix.computeHighAuthorityDefensiveVector(
-            ballX = frame.ballX,
-            ballY = frame.ballY,
-            defX = frame.ballX,
-            defY = frame.ballY,
+            ballX  = frame.ballX,
+            ballY  = frame.ballY,
+            defX   = defX,
+            defY   = defY,
             defHomeX = 250f,
-            defHomeY = 550f,
-            oppX = frame.ballX,
-            oppY = frame.ballY,
+            defHomeY = 360f,
+            oppX   = oppX,
+            oppY   = oppY,
             isPlayerHoldingPressure = true
         )
 
@@ -28,12 +40,12 @@ object DashPressureContributor : GameplayContributor {
         if (tx <= 0f && ty <= 0f) return null
 
         return EngineContribution(
-            engine = engineName,
-            actionClass = ActionClass.DEFEND,
-            targetX = tx.coerceAtLeast(0f),
-            targetY = ty.coerceAtLeast(0f),
-            authority = frame.defenderDensity.coerceIn(0f, 1f),
-            confidence = frame.confidence,
+            engine         = engineName,
+            actionClass    = ActionClass.DEFEND,
+            targetX        = tx.coerceAtLeast(0f),
+            targetY        = ty.coerceAtLeast(0f),
+            authority      = frame.defenderDensity.coerceIn(0f, 1f),
+            confidence     = frame.confidence,
             durationHintMs = 42L
         )
     }

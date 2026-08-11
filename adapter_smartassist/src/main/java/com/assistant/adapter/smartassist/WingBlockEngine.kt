@@ -17,31 +17,24 @@ object WingBlockEngine {
         pitchWidth: Float
     ): WingBlockResult? {
 
-        // Fuzz flank check parameters subtly per evaluation to break static grid telemetry
-        val leftBoundaryFuzz = pitchWidth * (0.15f + (Random.nextFloat() * 0.01f - 0.005f))
-        val rightBoundaryFuzz = pitchWidth * (0.85f + (Random.nextFloat() * 0.01f - 0.005f))
+        val leftBoundary  = pitchWidth * (0.15f + (Random.nextFloat() * 0.01f - 0.005f))
+        val rightBoundary = pitchWidth * (0.85f + (Random.nextFloat() * 0.01f - 0.005f))
 
-        val isLeftFlank = wingerX < leftBoundaryFuzz
-        val isRightFlank = wingerX > rightBoundaryFuzz
+        val isLeftFlank  = wingerX < leftBoundary
+        val isRightFlank = wingerX > rightBoundary
 
-        // Sub-pixel position noise to ensure resulting coordinate streams look human-driven
-        val trackingNoiseX = Random.nextFloat() * 1.5f - 0.75f // +/- 0.75 units coordinate wobble
-        val trackingNoiseY = Random.nextFloat() * 1.5f - 0.75f
+        // Not a wing situation: return null so WingBlockContributor skips.
+        // Previously returned ball position (non-null), firing a redundant
+        // central press that duplicated DefenseContributor with no added value.
+        if (!isLeftFlank && !isRightFlank) return null
 
-        if (isLeftFlank || isRightFlank) {
-            val baseAnchorX = if (isLeftFlank) pitchWidth * 0.12f else pitchWidth * 0.88f
-            val blockingAnchorX = (baseAnchorX + (wingerVx * 0.2f)) + trackingNoiseX
-            val blockingAnchorY = wingerY + (wingerVy * 0.2f) + trackingNoiseY
+        val noiseX = Random.nextFloat() * 1.5f - 0.75f
+        val noiseY = Random.nextFloat() * 1.5f - 0.75f
 
-            return WingBlockResult(
-                blockingAnchorX,
-                blockingAnchorY
-            )
-        }
+        val baseAnchorX = if (isLeftFlank) pitchWidth * 0.12f else pitchWidth * 0.88f
+        val blockingAnchorX = (baseAnchorX + (wingerVx * 0.2f)) + noiseX
+        val blockingAnchorY = wingerY + (wingerVy * 0.2f) + noiseY
 
-        return WingBlockResult(
-            wingerX + trackingNoiseX,
-            wingerY + trackingNoiseY
-        )
+        return WingBlockResult(blockingAnchorX, blockingAnchorY)
     }
 }
