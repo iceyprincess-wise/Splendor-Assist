@@ -264,6 +264,8 @@ object RuntimeCoordinator {
                 com.assistant.adapter.smartassist.contributors.KeeperFeedbackContributor)
             com.assistant.runtime.GameplayEngineRegistry.register(
                 com.assistant.adapter.smartassist.contributors.DashAnchorContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.SpeedCompensationContributor)
         } catch (_: Throwable) {}
         try { GameplayEngineRegistry.warmAll() } catch (_: Throwable) {}
     }

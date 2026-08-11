@@ -2,28 +2,37 @@ package com.assistant.adapter.smartassist
 
 object GoalkeeperDetector {
 
+    private const val MIN_PIXEL_COUNT = 12
+
     fun detect(
         blobs: List<ConnectedComponentEngine.Blob>
     ): GoalkeeperDetectionResult {
 
-        val keeperBlob =
-            blobs
-                .map { blob ->
-                    blob to JerseyColorSegmentation.classify(
-                        blob.averageRed,
-                        blob.averageGreen,
-                        blob.averageBlue
-                    )
-                }
-                .filter {
-                    it.second.team ==
-                    JerseyColorSegmentation.Team.GOALKEEPER
-                }
-                .maxByOrNull {
-                    it.first.pixelCount
-                }
+        var bestBlob: ConnectedComponentEngine.Blob? = null
+        var bestScore = 0f
 
-        if (keeperBlob == null) {
+        for (blob in blobs) {
+            if (blob.pixelCount < MIN_PIXEL_COUNT) continue
+
+            val jersey = JerseyColorSegmentation.classify(
+                blob.averageRed,
+                blob.averageGreen,
+                blob.averageBlue
+            )
+            if (jersey.team != JerseyColorSegmentation.Team.GOALKEEPER) continue
+
+            // Score = jersey confidence weighted with blob size (capped so huge
+            // blobs don't dominate over a well-classified smaller one)
+            val sizeScore = (blob.pixelCount / 200f).coerceIn(0f, 1f)
+            val composite = jersey.confidence * 0.65f + sizeScore * 0.35f
+
+            if (composite > bestScore) {
+                bestScore = composite
+                bestBlob = blob
+            }
+        }
+
+        if (bestBlob == null) {
             return GoalkeeperDetectionResult(
                 detected = false,
                 x = 0f,
@@ -32,15 +41,11 @@ object GoalkeeperDetector {
             )
         }
 
-        val blob = keeperBlob.first
-
         return GoalkeeperDetectionResult(
             detected = true,
-            x = (blob.minX + blob.maxX) * 0.5f,
-            y = (blob.minY + blob.maxY) * 0.5f,
-            confidence =
-                (blob.pixelCount / 150f)
-                    .coerceIn(0f,1f)
+            x = (bestBlob.minX + bestBlob.maxX) * 0.5f,
+            y = (bestBlob.minY + bestBlob.maxY) * 0.5f,
+            confidence = bestScore.coerceIn(0f, 1f)
         )
     }
 }

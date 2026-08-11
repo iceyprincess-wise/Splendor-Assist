@@ -2,28 +2,32 @@ package com.assistant.adapter.smartassist.contributors
 
 import com.assistant.runtime.*
 
-/*
- * Keeper positioning claim.
- *
- * GoalkeeperAdaptiveFeedbackEngine lives in the app module, which this adapter
- * module cannot depend on without inverting the dependency direction. So this
- * contributor derives its claim from RuntimeFrame only -- preserving both
- * module boundaries and engine isolation.
- */
 object KeeperFeedbackContributor : GameplayContributor {
     override val engineName = "KeeperFeedback"
     override val capabilities = setOf(EngineCapability.KEEPER, EngineCapability.DEFENSE)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || frame.hasBall) return null
-        if (frame.defenderDensity < 0.5f) return null
+        // Ball must be visible to react to it
+        if (frame.ballX <= 0f && frame.ballY <= 0f) return null
+
+        // Use actual goalkeeper position when the detector has found one,
+        // otherwise aim at ball position (intercepting path)
+        val targetX = if (frame.goalkeeperVisible && frame.goalkeeperX > 0f)
+            frame.goalkeeperX else frame.ballX.coerceAtLeast(0f)
+        val targetY = if (frame.goalkeeperVisible && frame.goalkeeperY > 0f)
+            frame.goalkeeperY else frame.ballY.coerceAtLeast(0f)
+
+        // Authority: scale with how much threat is present — but never require
+        // defenderDensity >= 0.5f, which silenced the keeper on clean shots
+        val authority = (0.35f + frame.defenderDensity * 0.65f).coerceIn(0f, 1f)
 
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.KEEPER,
-            targetX = frame.ballX.coerceAtLeast(0f),
-            targetY = frame.ballY.coerceAtLeast(0f),
-            authority = (frame.defenderDensity * 0.8f).coerceIn(0f, 1f),
+            targetX = targetX,
+            targetY = targetY,
+            authority = authority,
             confidence = frame.confidence,
             durationHintMs = 28L
         )
