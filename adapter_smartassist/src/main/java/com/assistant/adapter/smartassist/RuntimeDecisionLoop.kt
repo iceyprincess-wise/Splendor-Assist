@@ -110,8 +110,8 @@ object RuntimeDecisionLoop {
         return ExecutionRequest(
             source = ExecutionSource.SMART_ASSIST,
             phase = best.actionClass.ordinal,
-            startX = frame.ballX.coerceAtLeast(0f),
-            startY = frame.ballY.coerceAtLeast(0f),
+            startX = 250f,  // FIX: joystick origin, not ball position
+            startY = 550f,
             endX = best.targetX.coerceAtLeast(0f),
             endY = best.targetY.coerceAtLeast(0f),
             duration = best.durationHintMs.coerceIn(15L, 85L)

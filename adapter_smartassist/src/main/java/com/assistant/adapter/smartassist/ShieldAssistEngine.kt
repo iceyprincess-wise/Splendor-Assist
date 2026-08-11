@@ -96,8 +96,8 @@ object ShieldAssistEngine {
         if (opponentDistance <= 0f) return 45L
         val proximityBonus =
             Math.round(
-                100.0f / max(opponentDistance / 100.0f, 0.1f)
-            )
+                100.0f / max(opponentDistance / 100.0f, 0.5f)
+            ).coerceIn(0, 60)
         val velocityBonus =
             (playerVelocity.coerceAtLeast(0f) * 10f).toLong()
                 .coerceIn(0L, 15L)
