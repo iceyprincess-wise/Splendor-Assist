@@ -273,6 +273,13 @@ object RuntimeCoordinator {
                 com.assistant.adapter.smartassist.contributors.BuildUpPressContributor)
             com.assistant.runtime.GameplayEngineRegistry.register(
                 com.assistant.adapter.smartassist.contributors.BallRetentionShieldContributor)
+            // BATCH S: TrueShot + TrueCross + SA Ultimate Corrector (#27-29)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.TrueShotContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.TrueCrossContributor)
+            com.assistant.runtime.GameplayEngineRegistry.register(
+                com.assistant.adapter.smartassist.contributors.SmartAssistUltimateCorrectorContributor)
         } catch (_: Throwable) {}
         try { GameplayEngineRegistry.warmAll() } catch (_: Throwable) {}
     }

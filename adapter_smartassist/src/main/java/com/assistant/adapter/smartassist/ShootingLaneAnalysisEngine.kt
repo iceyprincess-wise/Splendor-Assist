@@ -57,7 +57,7 @@ object ShootingLaneAnalysisEngine {
                 targetY = goalCenterY,
                 distance = distance,
                 confidence = confidence,
-                viable = !lane.blocked && confidence >= 0.40f
+                viable = !lane.blocked && confidence >= 0.12f
             )
         }
 

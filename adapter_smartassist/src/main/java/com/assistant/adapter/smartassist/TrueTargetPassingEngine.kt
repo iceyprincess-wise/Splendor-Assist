@@ -10,20 +10,42 @@ data class PassingAssistResult(
 
 object TrueTargetPassingEngine {
 
+    /**
+     * @param retention 0..1 fraction along (start->end) to land on.
+     * BUG FIX: retention now clamped. Old callers passed * 10f -> 10x overshoot.
+     */
     fun optimize(
         startX: Float, startY: Float,
         endX: Float,   endY: Float,
         retention: Float
     ): PassingAssistResult {
+        val r = retention.coerceIn(0f, 1f)
         val dx = endX - startX
         val dy = endY - startY
-        // FIX: old formula endX+(dx*0.65f*retention) overshot past receiver.
-        // Correct: arrive proportionally at startX + dx * retention.
         return PassingAssistResult(
-            correctedX       = (startX + dx * retention).coerceIn(0f, 1650f),
-            correctedY       = (startY + dy * retention).coerceIn(0f, 720f),
-            interceptionRisk = (1f - retention).coerceIn(0f, 1f)
+            correctedX       = (startX + dx * r).coerceIn(0f, 1650f),
+            correctedY       = (startY + dy * r).coerceIn(0f, 720f),
+            interceptionRisk = (1f - r).coerceIn(0f, 1f)
         )
+    }
+
+    /**
+     * Predict where receiver will be when ball arrives, aim there.
+     * Defeats SA interception where receiver runs away from ball path.
+     */
+    fun optimizeWithRunPrediction(
+        ballX: Float, ballY: Float,
+        receiverX: Float, receiverY: Float,
+        receiverVx: Float, receiverVy: Float
+    ): PassingAssistResult {
+        val dist = kotlin.math.hypot(
+            (receiverX - ballX).toDouble(), (receiverY - ballY).toDouble()
+        ).toFloat()
+        val travelS = (dist / 750f + 0.14f).coerceIn(0f, 0.55f)
+        val fps = 60f
+        val predX = (receiverX + receiverVx * fps * travelS).coerceIn(0f, 1650f)
+        val predY = (receiverY + receiverVy * fps * travelS).coerceIn(0f, 720f)
+        return optimize(ballX, ballY, predX, predY, 1.0f)
     }
 
     fun interceptionVector(
