@@ -5,6 +5,7 @@ import com.assistant.admin.AdminConfigStore
 import com.assistant.admin.AdminLiveStats
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
+import com.assistant.diagnostic.AdapterSignalBus
 
 /**
  * The judge: reads every lag measurement and names the state -
@@ -67,6 +68,7 @@ object LagVerdictEngine {
                             "ms stability=" + String.format("%.0f", stab) +
                             "% therm=" + ThermalPeekEngine.status + ")", "LAGVERDICT")
                     }
+                    AdapterSignalBus.publishLag(verdict)
                     PerformanceTelemetryRegistry.publishDisplay(
                         FramePacingEngine.avgGapMs, stallRate, mtStall, verdict)
                     AdminLiveStats.publishLag(

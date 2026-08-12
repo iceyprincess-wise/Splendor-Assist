@@ -92,7 +92,7 @@ object AdaptiveKinematicsEngine {
 // CORE ENGINE IMPLEMENTATION: OMEGA GRID RECENTS INTERCEPTOR
 // -----------------------------------------------------------------------------------------
 
-abstract class GridRecentsInterceptor : AccessibilityService(), ActionSignalCaller, BareMetalInjectionSink {
+open class GridRecentsInterceptor : AccessibilityService(), ActionSignalCaller, BareMetalInjectionSink {
 
     private val systemRecentsPackages = setOf(
         "com.android.systemui",
@@ -128,19 +128,9 @@ abstract class GridRecentsInterceptor : AccessibilityService(), ActionSignalCall
     private fun hijackRecentAppsWithZeroLatency() {
         RuntimeLogger.log("OMEGA OVERRIDE: System Recents Hijacked.", "RECENTS_INTERCEPTOR")
         try {
-            val intent = Intent().apply {
-                // Point explicitly to YOUR application context so your GridRecentsActivity appears
-                setClassName(applicationContext.packageName, "${applicationContext.packageName}.GridRecentsActivity")
-                
-                // Exclude EXCLUDE_FROM_RECENTS so it actually registers in the Recents menu
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
-                         Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                         Intent.FLAG_ACTIVITY_NO_ANIMATION or
-                         Intent.FLAG_ACTIVITY_NO_HISTORY)
-            }
-            startActivity(intent)
+            performGlobalAction(GLOBAL_ACTION_BACK)
         } catch (e: Exception) {
-            Log.e("OmegaInterceptor", "Fallback to default activity resolver: ${e.message}")
+            RuntimeLogger.log("RECENTS back-action failed: ${e.message}", "RECENTS_INTERCEPTOR")
         }
     }
 

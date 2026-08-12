@@ -62,7 +62,8 @@ class NetAdapterService : Service() {
         PacketLossProbeEngine.start()
         SpikeBurstEngine.start()
         ActionWindowEngine.start()
-        RuntimeLogger.log("Net engine stack ignited: 9 engines [V2 PROACTIVE]", "NET")
+        ConnectionHealEngine.start(this)
+        RuntimeLogger.log("Net engine stack ignited: 10 engines [V2+HEAL]", "NET")
 
         heartbeatHandler.post(heartbeatRunnable)
         RuntimeLogger.log("NetAdapter heartbeat scheduler started", "HEALTH")
@@ -77,6 +78,7 @@ class NetAdapterService : Service() {
         CongestionSentinelEngine.stop()
         PacketLossProbeEngine.stop()
         SpikeBurstEngine.stop()
+        ConnectionHealEngine.stop()
         ActionWindowEngine.stop()
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
         NodeNotificationHub.detach(this, "adapter_net")

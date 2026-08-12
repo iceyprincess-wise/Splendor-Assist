@@ -4,6 +4,7 @@ package com.assistant.adapter.net
 import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
+import com.assistant.diagnostic.AdapterSignalBus
 
 /**
  * THE OUTPUT OF THE WHOLE STACK: one verdict, refreshed on an admin-tunable
@@ -50,6 +51,7 @@ object ActionWindowEngine {
                             "ms loss=" + String.format("%.0f", loss) + "%)", "NETWINDOW")
                         verdict = next
                     }
+                    AdapterSignalBus.publishNet(verdict)
                     PerformanceTelemetryRegistry.publishActionWindow(verdict,
                         "rtt=" + NetProbeEngine.rtt.toInt() + " jit=" + NetProbeEngine.jitter.toInt() +
                         " loss=" + loss.toInt())

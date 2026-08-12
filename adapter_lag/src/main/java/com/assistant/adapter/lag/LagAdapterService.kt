@@ -129,7 +129,8 @@ class LagAdapterService : Service() {
         LagVerdictEngine.start()
         LoadShedGovernor.start()
         ThermalPeekEngine.init(this)
-        RuntimeLogger.log("Lag engine stack ignited: 6 engines [V3 ADMIN-WIRED]", "LAG")
+        CpuGovernorEngine.start()
+        RuntimeLogger.log("Lag engine stack ignited: 7 engines [V3+CPUGOV]", "LAG")
     }
 
     private fun initFrameSync() {
@@ -220,6 +221,7 @@ class LagAdapterService : Service() {
         MainThreadStallEngine.stop()
         LagVerdictEngine.stop()
         LoadShedGovernor.stop()
+        CpuGovernorEngine.stop()
         ThermalPeekEngine.stop()
         lagHandlerThread.quitSafely()
         NodeNotificationHub.detach(this, ADAPTER_NAME)
