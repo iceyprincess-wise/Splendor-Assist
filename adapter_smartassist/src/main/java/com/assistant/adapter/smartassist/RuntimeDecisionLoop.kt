@@ -7,6 +7,7 @@ import com.assistant.execution.ExecutionSource
 import com.assistant.execution.HybridExecutionTerminal
 import com.assistant.runtime.ActionClass
 import com.assistant.runtime.EngineContribution
+import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.runtime.GameplayEngineRegistry
 import com.assistant.runtime.RuntimeFrame
 import java.util.concurrent.atomic.AtomicLong
@@ -65,8 +66,11 @@ object RuntimeDecisionLoop {
         }
 
         val contributions = GameplayEngineRegistry.collect(frame)
+        val netHold = AdapterSignalBus.netIsHold
         val best: EngineContribution? =
-            contributions.maxByOrNull { it.weight * classScale(it.actionClass) }
+            contributions
+                .filter { c -> if (netHold) c.actionClass == ActionClass.MOVE || c.actionClass == ActionClass.DEFEND else true }
+                .maxByOrNull { it.weight * classScale(it.actionClass) }
 
         val emergency = ContributionRegistry.drainBest()
 

@@ -1,6 +1,7 @@
 package com.assistant.adapter.smartassist.contributors
 
 import com.assistant.adapter.smartassist.SpeedCompensationEngine
+import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.runtime.*
 import kotlin.math.hypot
 
@@ -41,7 +42,15 @@ object SpeedCompensationContributor : GameplayContributor {
             targetY = targetY,
             authority = authority,
             confidence = frame.confidence,
-            durationHintMs = 30L
+            durationHintMs = run {
+                val p = when {
+                    AdapterSignalBus.lagIsChoking || AdapterSignalBus.memoryIsCritical -> 0.5f
+                    AdapterSignalBus.inputIsLagging -> 0.7f
+                    AdapterSignalBus.lagVerdict == "JITTERY" || AdapterSignalBus.memoryIsUnderPressure -> 0.8f
+                    else -> 1.0f
+                }
+                (30L * p).toLong().coerceIn(12L, 60L)
+            }
         )
     }
 }

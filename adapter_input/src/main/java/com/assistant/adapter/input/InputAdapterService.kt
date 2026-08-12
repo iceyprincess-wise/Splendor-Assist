@@ -53,11 +53,18 @@ class InputAdapterService : Service() {
         )
 
         heartbeatHandler.post(heartbeatRunnable)
+        InputPriorityEngine.start()
+        InputLatencyEngine.start()
+        TouchQualityEngine.start()
+        RuntimeLogger.log("Input engine stack ignited: 3 engines [LATENCY+QUALITY+PRIORITY]", "INPUT")
         RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
     }
 
 
     override fun onDestroy() {
+        InputLatencyEngine.stop()
+        TouchQualityEngine.stop()
+        InputPriorityEngine.stop()
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
         NodeNotificationHub.detach(this, "adapter_input")
         RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
