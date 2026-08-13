@@ -20,7 +20,7 @@ object LagVerdictEngine {
     private val POLL_MS: Long get() = AdminConfigStore.getLong("lag.verdict.poll_ms", 2000L)
     private val JITTER_MS: Float get() = AdminConfigStore.get("lag.verdict.jitter_ms", 10f)
     private val STABILITY_PCT: Float get() = AdminConfigStore.get("lag.verdict.stability_pct", 65f)
-    private val CHOKE_STALLS: Float get() = AdminConfigStore.get("lag.verdict.choke_stalls", 12f)
+    private val CHOKE_STALLS: Float get() = AdminConfigStore.get("lag.verdict.choke_stalls", 18f)
     private val CHOKE_MTSTALL_MS: Float get() = AdminConfigStore.get("lag.verdict.choke_mtstall_ms", 120f)
     private val CHOKE_SPIKES: Float get() = AdminConfigStore.get("lag.verdict.choke_spikes", 20f)
     private val CONFIRM_POLLS: Int get() = AdminConfigStore.getInt("lag.verdict.confirm_polls", 2)

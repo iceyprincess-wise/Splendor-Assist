@@ -6,6 +6,7 @@ import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
 object InputLatencyEngine {
     @Volatile private var running = false
+    @Volatile private var engineStartMs = 0L
     @Volatile var latencyMs = 0L; private set
     @Volatile var classification = "UNKNOWN"; private set
     @Volatile var measurements = 0L; private set
@@ -13,6 +14,7 @@ object InputLatencyEngine {
     private val mainHandler = Handler(Looper.getMainLooper())
     fun start() {
         if (running) return; running = true
+        engineStartMs = System.currentTimeMillis()
         val t = Thread {
             while (running) {
                 try { measure() } catch (_: Throwable) {}
@@ -37,6 +39,7 @@ object InputLatencyEngine {
         }
         AdapterSignalBus.publishInput(classification, latencyMs)
         if (classification == "LAGGING") {
+            if (System.currentTimeMillis()-engineStartMs<6000L) return
             RuntimeLogger.log("INPUT LAG: ${latencyMs}ms (total lag events: $lagEvents)", "INPUT")
             mainHandler.post { }
         }

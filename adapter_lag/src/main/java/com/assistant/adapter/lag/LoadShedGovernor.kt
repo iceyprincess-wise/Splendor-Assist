@@ -17,7 +17,7 @@ object LoadShedGovernor {
     // ADMIN-TUNABLE (defaults = original hard-coded values)
     private val MIN_HOLD_MS: Long get() = AdminConfigStore.getLong("lag.shed.min_hold_ms", 8000L)
     private val POLL_MS: Long get() = AdminConfigStore.getLong("lag.shed.poll_ms", 2000L)
-    private val ARM_POLLS: Int get() = AdminConfigStore.getInt("lag.shed.arm_polls", 2)
+    private val ARM_POLLS: Int get() = AdminConfigStore.getInt("lag.shed.arm_polls", 4)
     private val RELEASE_POLLS: Int get() = AdminConfigStore.getInt("lag.shed.release_polls", 5)
 
     @Volatile private var running = false
@@ -25,16 +25,20 @@ object LoadShedGovernor {
     @Volatile private var candidate = "NONE"
     @Volatile private var streak = 0
     @Volatile private var lastChangeMs = 0L
+    @Volatile private var startTimeMs = 0L
 
     fun start() {
         if (running) return
         running = true
+        startTimeMs = System.currentTimeMillis()
         val t = Thread {
             while (running) {
                 try {
                     // FAST PATH: a SEIZURE burst escalates immediately -
                     // sub-second truth beats the report window when a freeze hits
                     val burst = PerformanceTelemetryRegistry.currentStutterState()
+                    val bootAge=System.currentTimeMillis()-startTimeMs
+                    if(startTimeMs>0L&&bootAge<10_000L){try{Thread.sleep(POLL_MS.coerceAtLeast(1L))}catch(_:Throwable){return@Thread};continue}
                     val want = if (burst == "SEIZURE") "HEAVY" else when (LagVerdictEngine.verdict) {
                         "CHOKING" -> "HEAVY"
                         "JITTERY" -> "LIGHT"

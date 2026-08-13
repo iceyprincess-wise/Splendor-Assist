@@ -137,7 +137,7 @@ override fun onCreate() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 val hintManager = getSystemService(PerformanceHintManager::class.java)
-                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 8333333L)
+                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 33333333L)
             } catch (e: Exception) {}
         }
     }
@@ -596,7 +596,7 @@ override fun onCreate() {
 
                     MatchSessionEngine.heartbeat()
 
-                    Thread.sleep(50)
+                    Thread.sleep(33)
 
                 } catch (e: InterruptedException) {
 

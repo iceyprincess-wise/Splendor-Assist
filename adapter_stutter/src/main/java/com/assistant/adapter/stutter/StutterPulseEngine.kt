@@ -24,8 +24,8 @@ import com.assistant.diagnostic.RuntimeLogger
 object StutterPulseEngine {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val BURST_MULT: Float get() = AdminConfigStore.get("stutter.pulse.burst_mult", 2f)
-    private val MIN_FRAMES: Int get() = AdminConfigStore.getInt("stutter.pulse.min_frames", 2)
+    private val BURST_MULT: Float get() = AdminConfigStore.get("stutter.pulse.burst_mult", 4f)
+    private val MIN_FRAMES: Int get() = AdminConfigStore.getInt("stutter.pulse.min_frames", 3)
     private val SLICE_MS: Long get() = AdminConfigStore.getLong("stutter.pulse.slice_ms", 1000L)
     private val PUBLISH_MS: Long get() = AdminConfigStore.getLong("stutter.pulse.publish_ms", 5000L)
 

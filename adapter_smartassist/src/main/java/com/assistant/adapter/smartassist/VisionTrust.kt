@@ -39,7 +39,8 @@ object VisionTrust {
     fun onForegroundPackage(pkg: String?, gamePkgs: Set<String>) {
         val p = pkg ?: ""
         lastForegroundPkg = p
-        foregroundIsGame = p.isNotEmpty() && gamePkgs.any { p.contains(it, true) }
+        if (p.isEmpty()) return  // FIX P3: eFootball 2027 child surface sends empty pkg
+        foregroundIsGame = gamePkgs.any { p.contains(it, true) }
     }
 
     /** explicit override for callers that already resolved the decision */
