@@ -12,6 +12,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.IBinder
 import android.os.Messenger
+import com.assistant.diagnostic.AdapterSignalBus
 
 class BatteryAdapterService : Service() {
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
@@ -65,9 +66,14 @@ class BatteryAdapterService : Service() {
 
                 lastLevel = level
                 lastStatus = charging ?: -1
+                // PHASE3: publish to bus so engines can react to low battery
+                val isCharging = charging == android.os.BatteryManager.BATTERY_STATUS_CHARGING ||
+                    charging == android.os.BatteryManager.BATTERY_STATUS_FULL
+                AdapterSignalBus.publishBattery(level, isCharging)
 
+                val battLabel = if (level < 15 && !isCharging) " *** BATTERY CRITICAL ***" else ""
                 RuntimeLogger.log(
-                    "BATTERY level=${level}% status=$charging",
+                    "BATTERY level=${level}% status=$charging charging=$isCharging$battLabel",
                     "BATTERY"
                 )
 

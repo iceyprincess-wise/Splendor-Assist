@@ -3,6 +3,7 @@ package com.assistant.adapter.stutter
 // V3 ADMIN-WIRED - every classification line answers the admin store live
 import com.assistant.admin.AdminConfigStore
 import com.assistant.admin.AdminLiveStats
+import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
@@ -50,6 +51,9 @@ object BurstForensicsEngine {
         val changed = next != state
         state = next
         PerformanceTelemetryRegistry.publishStutter(state, recent.size.toFloat(), worstMs)
+        // CRITICAL FIX PHASE3: publishStutter was NEVER called — stutterIsSevere was always false.
+        // SpeedCompensationContributor, LoadShedGovernor all read this — all were blind to stutter.
+        AdapterSignalBus.publishStutter(state)
         if (changed) {
             try {
                 AdminLiveStats.publishStutter(
@@ -80,6 +84,7 @@ object BurstForensicsEngine {
                         if (state != "CALM" &&
                             (recent.isEmpty() || now - recent.last() > quiet)) {
                             state = "CALM"
+                            AdapterSignalBus.publishStutter("CALM")  // PHASE3 fix
                             PerformanceTelemetryRegistry.publishStutter("CALM", 0f, 0f)
                             try {
                                 AdminLiveStats.publishStutter(

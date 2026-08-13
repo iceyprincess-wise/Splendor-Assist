@@ -12,6 +12,7 @@ import android.os.IBinder
 import android.os.Messenger
 import java.net.InetAddress
 import java.util.concurrent.Executors
+import com.assistant.diagnostic.AdapterSignalBus
 
 class PingAdapterService : Service() {
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
@@ -77,6 +78,7 @@ class PingAdapterService : Service() {
 
                     lastResolveMs = resolveMs
                     lastQuality = quality
+                    AdapterSignalBus.publishPing(quality)  // PHASE3: feed RuntimeDecisionLoop
 
                     RuntimeLogger.log(
                         "PING dnsResolve=${resolveMs}ms quality=$quality (connectivity indicator, not RTT)",

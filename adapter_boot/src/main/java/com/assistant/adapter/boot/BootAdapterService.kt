@@ -11,6 +11,7 @@ import android.os.Looper
 import android.os.IBinder
 import android.os.Messenger
 import android.os.SystemClock
+import com.assistant.diagnostic.AdapterSignalBus
 
 class BootAdapterService : Service() {
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
@@ -52,9 +53,11 @@ class BootAdapterService : Service() {
                     else -> "STABLE"
                 }
             lastState = stabilization
-
+            // PHASE3: publish boot stability — engines can be more conservative during EARLY_BOOT
+            AdapterSignalBus.publishBootState(stabilization == "STABLE")
             RuntimeLogger.log(
-                "BOOT uptime=${uptimeSeconds}s state=$stabilization",
+                "BOOT uptime=${uptimeSeconds}s state=$stabilization" +
+                    if (stabilization == "EARLY_BOOT") " (engines running in conservative mode)" else "",
                 "BOOT"
             )
 

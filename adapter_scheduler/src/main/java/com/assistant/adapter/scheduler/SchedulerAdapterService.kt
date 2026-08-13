@@ -4,6 +4,7 @@ import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 import com.assistant.survival.ResourceBudgetRegistry
+import com.assistant.diagnostic.AdapterSignalBus
 
 import android.app.Service
 import android.content.Intent
@@ -58,16 +59,14 @@ class SchedulerAdapterService : Service() {
                 }
             }
 
-            ResourceBudgetRegistry.update(
-                active,
-                degraded,
-                offline
-            )
+            ResourceBudgetRegistry.update(active, degraded, offline)
+            // PHASE3: publish fleet state to bus so SpeedCompensation and LoadShed can react
+            AdapterSignalBus.publishFleet(offline)
 
             lastFleet = "active=$active degraded=$degraded offline=$offline"
-
+            val fleetWarn = if (offline > 2) " *** FLEET DEGRADED — $offline adapters offline ***" else ""
             RuntimeLogger.log(
-                "FLEET HEALTH active=$active degraded=$degraded offline=$offline",
+                "FLEET HEALTH active=$active degraded=$degraded offline=$offline$fleetWarn",
                 "SCHEDULER"
             )
 

@@ -12,6 +12,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.IBinder
 import android.os.Messenger
+import com.assistant.diagnostic.AdapterSignalBus
 
 class ThermalAdapterService : Service() {
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
@@ -54,9 +55,13 @@ class ThermalAdapterService : Service() {
                         powerManager?.currentThermalStatus ?: -1
 
                     lastThermalStatus = status
-
+                    AdapterSignalBus.publishThermal(status)  // PHASE3: feed SmartAssist
+                    val thermalLabel = when (status) {
+                        0 -> "NONE"; 1 -> "LIGHT"; 2 -> "MODERATE"
+                        3 -> "SEVERE"; 4 -> "CRITICAL"; 5 -> "EMERGENCY"; else -> "SHUTDOWN"
+                    }
                     RuntimeLogger.log(
-                        "THERMAL status=$status",
+                        "THERMAL status=$status ($thermalLabel)${if (status >= 3) " *** ENGINE IMPACT ***" else ""}",
                         "THERMAL"
                     )
                 }

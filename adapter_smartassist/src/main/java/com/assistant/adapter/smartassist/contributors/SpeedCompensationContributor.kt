@@ -43,9 +43,13 @@ object SpeedCompensationContributor : GameplayContributor {
             authority = authority,
             confidence = frame.confidence,
             durationHintMs = run {
+                // PHASE3: thermal + battery now properly wired into duration scaling
                 val p = when {
+                    AdapterSignalBus.thermalIsSevere -> 0.4f          // severe heat: very short gestures
+                    AdapterSignalBus.batteryCritical -> 0.5f          // critical battery: reduce load
                     AdapterSignalBus.lagIsChoking || AdapterSignalBus.memoryIsCritical -> 0.5f
                     AdapterSignalBus.inputIsLagging -> 0.7f
+                    AdapterSignalBus.stutterIsSevere -> 0.65f         // now actually works (bus was never published before)
                     AdapterSignalBus.lagVerdict == "JITTERY" || AdapterSignalBus.memoryIsUnderPressure -> 0.8f
                     else -> 1.0f
                 }

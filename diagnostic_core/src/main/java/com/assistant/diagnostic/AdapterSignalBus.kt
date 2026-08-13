@@ -22,8 +22,24 @@ object AdapterSignalBus {
     fun publishLag(verdict: String) { lagVerdict = verdict }
     fun publishStutter(state: String) { stutterState = state }
 
+    // PHASE3: new adapter signals
+    @Volatile var thermalStatus: Int = 0; private set      // 0=NONE 1=LIGHT 2=MODERATE 3=SEVERE 4=CRITICAL 5=EMERGENCY 6=SHUTDOWN
+    @Volatile var batteryLevel: Int = 100; private set
+    @Volatile var batteryCharging: Boolean = true; private set
+    @Volatile var pingQuality: String = "UNKNOWN"; private set
+    @Volatile var deviceBootStable: Boolean = false; private set
+    @Volatile var fleetDegraded: Boolean = false; private set  // true when offline adapters > 2
+
+    fun publishThermal(status: Int) { thermalStatus = status }
+    fun publishBattery(level: Int, charging: Boolean) { batteryLevel = level; batteryCharging = charging }
+    fun publishPing(quality: String) { pingQuality = quality }
+    fun publishBootState(stable: Boolean) { deviceBootStable = stable }
+    fun publishFleet(offlineCount: Int) { fleetDegraded = offlineCount > 2 }
+
+    val thermalIsSevere: Boolean get() = thermalStatus >= 3
+    val batteryCritical: Boolean get() = batteryLevel < 15 && !batteryCharging
     val netIsHold: Boolean    get() = netWindow == "HOLD"
     val lagIsChoking: Boolean get() = lagVerdict == "CHOKING"
     val stutterIsSevere: Boolean get() = stutterState == "SEIZURE"
-    val environmentHostile: Boolean get() = netIsHold || lagIsChoking || stutterIsSevere
+    val environmentHostile: Boolean get() = netIsHold || lagIsChoking || stutterIsSevere || thermalIsSevere
 }
