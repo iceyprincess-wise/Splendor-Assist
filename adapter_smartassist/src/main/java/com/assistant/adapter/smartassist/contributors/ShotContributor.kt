@@ -23,7 +23,7 @@ object ShotContributor : GameplayContributor {
 
         // Gate: only suggest shot within ~550px of goal (too far = no chance)
         val distToGoal = hypot(frame.ballX - goalCenterX, frame.ballY - goalCenterY)
-        if (distToGoal > 680f  // PHASE4B: 30fps hybrid gives accurate goal detection farther out) return null
+        if (distToGoal > 680f) return null // PHASE4B: 30fps hybrid gives accurate goal detection farther out
 
         // Authority: closer to goal + fewer defenders blocking = higher
         val proximity  = (1f - distToGoal / 550f).coerceIn(0f, 1f)

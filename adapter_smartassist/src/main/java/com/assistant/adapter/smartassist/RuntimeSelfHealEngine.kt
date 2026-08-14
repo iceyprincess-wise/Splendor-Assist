@@ -384,7 +384,7 @@ object RuntimeSelfHealEngine {
             @Suppress("UNCHECKED_CAST")
             val snap = cls.getMethod("registryRuntimeSnapshot").invoke(null) as? Map<String, Any> ?: return
             val engines = (snap["engines"] as? Int) ?: return
-            val cycles = (snap["collectCycles"] as? Long) ?: return L
+            val cycles = (snap["collectCycles"] as? Long) ?: return
             val delta = cycles - prevCollectCycles
             prevCollectCycles = cycles
 
