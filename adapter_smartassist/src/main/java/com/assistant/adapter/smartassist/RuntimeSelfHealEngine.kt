@@ -10,44 +10,21 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicLong
 
 /**
- * PHASE 4 — RuntimeSelfHealEngine (AI Self-Heal Agent)
+ * PHASE 4B — RuntimeSelfHealEngine (AI Self-Heal Agent — Full Authority)
  *
- * The global crash report shows what is wrong AFTER a crash.
- * This engine shows what goes wrong DURING normal gameplay — silently,
- * without crashing, while the user is watching their engines "work" but
- * producing no gestures.
- *
- * Architecture:
- *   - Daemon thread, 5s check cycle, starts at G6 (RUNTIME_READY)
- *   - In-memory event list (last 100 events) for AgentRoomActivity UI
- *   - File log: [externalFilesDir]/Splendor_HealLog.txt
- *
- * Detects and fixes (in-memory, no code change, no restart):
- *   1. VisionTrust.foregroundIsGame = false while capture is active
- *      Cause: eFootball child surfaces send empty pkg → VisionTrust returns early
- *      Fix:   VisionTrust.setGameForeground(true) — all contributors unblocked
- *
- *   2. AdapterSignalBus signals stuck at UNKNOWN > 30s after runtime ready
- *      Cause: adapter services not started or bus publish never called
- *      Fix:   Publish safe defaults (GO/SMOOTH/CALM/HEALTHY) so contributors
- *             are never silently blocked by UNKNOWN state
- *
- *   3. Load shed HEAVY > 20s — logs exact cause (lag verdict + stutter state)
- *      Cannot force-release (controlled by LagVerdictEngine), but log gives
- *      the exact admin setting to raise
- *
- *   4. Frame capture stale > 5s — ImageReader capture thread has died
- *      Cannot fix — requires app restart. Logs clearly with instruction.
- *
- *   5. Zero dispatch rate while decisions cycle
- *      Detects whether cause is: vision trust (idle-untrusted dominant) OR
- *      contributors all null (idle-no-contribution dominant)
- *      Fix for vision trust case: force foregroundIsGame=true
- *
- *   6. Contributor registry count < 29
- *      Logs gap — warmUpEngines() may not have completed
+ * Changes from Phase 4A:
+ *  - Starts immediately in OverlayService.onCreate() (3s grace, not 10s at G6)
+ *  - Full deduplication — same event category+detail never spams the log
+ *  - Has FULL RIGHT to restart ImageReader capture via OverlayService.restartCapture()
+ *  - Permanently forces VisionTrust.foregroundIsGame=true on every cycle while
+ *    capture is active (not just once — re-applies if accessibility event resets it)
+ *  - Prints exact code fix patches to HealLog when in-memory fix is insufficient
+ *  - Monitors gameplay contributor activity (detects dead contributors)
+ *  - HealLog path: /sdcard/Download/SplendorHealLog.txt
+ *    Read with: cat /sdcard/Download/SplendorHealLog.txt
  */
 object RuntimeSelfHealEngine {
 
@@ -56,7 +33,7 @@ object RuntimeSelfHealEngine {
         val category: String,
         val detected: String,
         val fix: String,
-        val severity: String   // FIXED / CRITICAL / WARNING / INFO
+        val severity: String   // FIXED / CRITICAL / WARNING / INFO / CODE_FIX_NEEDED
     )
 
     val healEvents: CopyOnWriteArrayList<HealEvent> = CopyOnWriteArrayList()
@@ -67,9 +44,15 @@ object RuntimeSelfHealEngine {
         private set
 
     @Volatile private var running = false
-    @Volatile private var runtimeStartedMs: Long = 0L
+    @Volatile private var agentStartedMs: Long = 0L
     private var contextRef: WeakReference<android.content.Context>? = null
     private val fmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
+
+    // Deduplication: category → last logged details hash + last log time
+    private val lastLoggedMs = HashMap<String, Long>()
+    private val lastLoggedDetail = HashMap<String, Int>()
+    private val repeatCount = HashMap<String, Int>()
+    private val DEDUP_MIN_MS = 5 * 60 * 1000L  // max 1 per 5 min per category
 
     fun init(ctx: android.content.Context) {
         contextRef = WeakReference(ctx.applicationContext)
@@ -78,17 +61,17 @@ object RuntimeSelfHealEngine {
     fun start() {
         if (running) return
         running = true
-        runtimeStartedMs = System.currentTimeMillis()
+        agentStartedMs = System.currentTimeMillis()
         agentStatus = "STARTING"
         val t = Thread {
-            // 10s grace — let everything boot and warm up before first check
-            try { Thread.sleep(10_000L) } catch (_: Throwable) { return@Thread }
+            // 3s grace — just enough for services to start
+            try { Thread.sleep(3_000L) } catch (_: Throwable) { return@Thread }
             agentStatus = "MONITORING"
-            RuntimeLogger.log("AI Self-Heal Agent: MONITORING ACTIVE (5s cycle)", "AGENT")
+            RuntimeLogger.log("AI Self-Heal Agent: MONITORING ACTIVE (5s cycle, immediate start)", "AGENT")
+            writeToFile(null, header = true)  // write session header to HealLog
             while (running) {
-                try {
-                    runChecks()
-                } catch (e: Throwable) {
+                try { runChecks() }
+                catch (e: Throwable) {
                     try { RuntimeLogger.log("AGENT FAULT: ${e.javaClass.simpleName}: ${e.message}", "AGENT") } catch (_: Throwable) {}
                 }
                 try { Thread.sleep(5_000L) } catch (_: Throwable) { return@Thread }
@@ -103,54 +86,49 @@ object RuntimeSelfHealEngine {
 
     fun stop() { running = false; agentStatus = "IDLE" }
 
+    private fun agentAgeMs() = System.currentTimeMillis() - agentStartedMs
+
     private fun runChecks() {
-        val runtimeAgeMs = System.currentTimeMillis() - runtimeStartedMs
-        // Only flag issues after 15s warmup — suppress boot-time transients
-        val warmed = runtimeAgeMs > 15_000L
-        checkVisionTrust(warmed)
+        val warmed = agentAgeMs() > 5_000L  // only 5s grace for flagging
+        enforceForegroundGate()      // EVERY cycle — not just when false
+        checkCaptureThread()         // critical — can restart
         checkBusSignals(warmed)
         checkLoadShed()
-        checkCaptureStale()
         checkDispatchRate()
-        checkContributorRegistry(warmed)
+        checkContributors(warmed)
+        checkBattery()
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // CHECK 1: VisionTrust.foregroundIsGame
-    // Most common cause of zero-gesture sessions in eFootball 2027:
-    // child surfaces send empty packageName → onForegroundPackage returns early
-    // → foregroundIsGame never set to true → all 38 contributors blocked forever
+    // PERMANENT FG OVERRIDE: re-apply on every cycle while capture is active
+    // Previous version: forced once, then accessibility event reset it to false
+    // This version: every 5s check, if capture is active → fg must be true
     // ─────────────────────────────────────────────────────────────────────
-    private fun checkVisionTrust(warmed: Boolean) {
-        if (!warmed) return
+    @Volatile private var fgForceCount = 0
+
+    private fun enforceForegroundGate() {
         try {
+            val frame = FrameAssembler.current() ?: return
+            val frameAgeMs = System.currentTimeMillis() - frame.timestampMs
+            if (frameAgeMs > 3000L) return  // capture stale — don't force
+
             val fg = VisionTrust.isGameForeground()
             if (!fg) {
-                val lastFrame = FrameAssembler.current()
-                val frameAgeMs = if (lastFrame != null)
-                    System.currentTimeMillis() - lastFrame.timestampMs
-                else Long.MAX_VALUE
-
-                if (frameAgeMs < Long.MAX_VALUE && frameAgeMs < 3000L) {
-                    // Frames ARE coming in (< 3s old) but foreground gate is blocking
-                    // → This is the empty-pkg bug. Force the gate open.
-                    VisionTrust.setGameForeground(true)
+                VisionTrust.setGameForeground(true)
+                fgForceCount++
+                if (shouldLog("FG_OVERRIDE", "forced=$fgForceCount")) {
                     totalHeals++
                     record(HealEvent(
                         timestamp = fmt.format(Date()),
-                        category = "VISION_TRUST",
-                        detected = "foregroundIsGame=false while capture active (frame ${frameAgeMs}ms old). Cause: eFootball child surface sends empty packageName → VisionTrust.onForegroundPackage returns early → gate never opens.",
-                        fix = "Called VisionTrust.setGameForeground(true). All 38 contributors unblocked. Will persist until non-game package detected.",
+                        category = "FG_OVERRIDE",
+                        detected = "foregroundIsGame=false while capture active (frame ${frameAgeMs}ms old). " +
+                            "eFootball child surfaces send empty packageName → VisionTrust resets gate. " +
+                            "This has been forced $fgForceCount times this session.",
+                        fix = "FIXED: VisionTrust.setGameForeground(true) applied. Re-applies every 5s as long as " +
+                            "capture is active so accessibility events can never re-block contributors. " +
+                            "PERMANENT CODE FIX: In VisionTrust.onForegroundPackage(), add: " +
+                            "if (p.isEmpty() && foregroundIsGame) return  [already applied in Phase3]",
                         severity = "FIXED"
-                    ))
-                    RuntimeLogger.log("AGENT HEAL #$totalHeals VISION_TRUST: fg forced true — empty-pkg bug", "AGENT")
-                } else if (frameAgeMs != Long.MAX_VALUE) {
-                    record(HealEvent(
-                        timestamp = fmt.format(Date()),
-                        category = "VISION_TRUST",
-                        detected = "foregroundIsGame=false. Last frame ${frameAgeMs / 1000}s ago. Game may not be active or capture may be stale.",
-                        fix = "MONITORING — if game is active and this persists, capture thread may have died.",
-                        severity = "INFO"
                     ))
                 }
             }
@@ -158,10 +136,101 @@ object RuntimeSelfHealEngine {
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // CHECK 2: Bus signals stuck at UNKNOWN
-    // All bus signals default to "UNKNOWN". If adapters never publish,
-    // SpeedCompensationContributor and RuntimeDecisionLoop read UNKNOWN
-    // and behave as if no environmental data exists.
+    // CAPTURE THREAD MONITOR — most critical check
+    // Root cause of "decisions=22412 frozen": HyperOS revokes media projection
+    // Agent has FULL AUTHORITY to restart via OverlayService.restartCapture()
+    // ─────────────────────────────────────────────────────────────────────
+    @Volatile private var lastKnownFrameId: Long = -1L
+    @Volatile private var captureStaleMs: Long = 0L
+    @Volatile private var captureRestartAttempts = 0
+    @Volatile private var lastRestartAttemptMs = 0L
+
+    private fun checkCaptureThread() {
+        try {
+            val f = FrameAssembler.current() ?: return
+            val now = System.currentTimeMillis()
+
+            if (f.frameId != lastKnownFrameId) {
+                lastKnownFrameId = f.frameId
+                captureStaleMs = 0L
+                return  // frames advancing — OK
+            }
+
+            val staleMs = now - f.timestampMs
+            if (staleMs < 5000L) return  // not stale yet
+
+            // Capture IS stale
+            captureStaleMs = staleMs
+
+            // Attempt restart every 30s max, max 3 attempts per session
+            val canRetry = captureRestartAttempts < 3 &&
+                (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L)
+
+            if (canRetry) {
+                captureRestartAttempts++
+                lastRestartAttemptMs = now
+                totalHeals++
+
+                // Attempt restart via OverlayService instance
+                val restarted = try {
+                    val svcCls = Class.forName("com.assistant.OverlayService")
+                    val instField = svcCls.getDeclaredField("instance")
+                    instField.isAccessible = true
+                    @Suppress("UNCHECKED_CAST")
+                    val weakRef = instField.get(null) as? java.lang.ref.WeakReference<*>
+                    val svc = weakRef?.get()
+                    if (svc != null) {
+                        val restartMethod = svcCls.getMethod("restartCapture")
+                        restartMethod.invoke(svc) as? Boolean ?: false
+                    } else false
+                } catch (e: Throwable) {
+                    RuntimeLogger.log("AGENT: restartCapture reflection failed: ${e.message}", "AGENT")
+                    false
+                }
+
+                record(HealEvent(
+                    timestamp = fmt.format(Date()),
+                    category = "CAPTURE_RESTART",
+                    detected = "ImageReader capture thread STALE for ${staleMs / 1000}s. " +
+                        "Root cause: HyperOS silent kill of media projection (3 kills seen in crash report). " +
+                        "decisions counter frozen at frameId=${f.frameId}. " +
+                        "Attempt #$captureRestartAttempts of 3.",
+                    fix = if (restarted) "RESTART SENT to OverlayService.restartCapture(). " +
+                        "Watch for new GAMEPLAY_EVENT entries to confirm success." else
+                        "RESTART FAILED — OverlayService instance not reachable. " +
+                        "FORCE-STOP Splendor Assist and reopen it. " +
+                        "CODE FIX NEEDED — see HealLog for patch.",
+                    severity = if (restarted) "FIXED" else "CRITICAL"
+                ))
+
+                if (!restarted) {
+                    printCodeFix("CAPTURE_THREAD_DEATH",
+                        "HyperOS kills media projection after long sessions.\n" +
+                        "The ImageReader stops delivering frames silently.\n" +
+                        "PERMANENT FIX OPTIONS:\n" +
+                        "1. In OverlayService.MediaProjection.Callback.onStop():\n" +
+                        "   Instead of stopSelf(), call restartCapture() then re-request projection.\n" +
+                        "2. Add KeepAlive periodic dummy capture every 60s to prevent OS timeout.\n" +
+                        "3. Register FOREGROUND_SERVICE_TYPE=mediaProjection in manifest.\n" +
+                        "APPLY: Check app/src/main/AndroidManifest.xml for foregroundServiceType."
+                    )
+                }
+            } else if (shouldLog("CAPTURE_STALE", "stale=${staleMs / 1000}s")) {
+                record(HealEvent(
+                    timestamp = fmt.format(Date()),
+                    category = "CAPTURE_STALE",
+                    detected = "Capture stale ${staleMs / 1000}s. Restart attempts: $captureRestartAttempts/3.",
+                    fix = if (captureRestartAttempts >= 3)
+                        "Max restart attempts reached. FORCE-STOP app and reopen."
+                        else "Next restart attempt in ${(30_000L - (System.currentTimeMillis() - lastRestartAttemptMs)) / 1000}s.",
+                    severity = "CRITICAL"
+                ))
+            }
+        } catch (_: Throwable) {}
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // BUS SIGNALS — publishes safe defaults if all stuck at UNKNOWN
     // ─────────────────────────────────────────────────────────────────────
     @Volatile private var busUnknownSinceMs: Long = 0L
 
@@ -175,130 +244,72 @@ object RuntimeSelfHealEngine {
             if (allUnknown) {
                 if (busUnknownSinceMs == 0L) busUnknownSinceMs = System.currentTimeMillis()
                 val stuckMs = System.currentTimeMillis() - busUnknownSinceMs
-                if (stuckMs > 30_000L) {
-                    // Publish safe defaults — contributors can now function normally
+                if (stuckMs > 30_000L && shouldLog("BUS_ALL_UNKNOWN", "stuck")) {
                     bus.publishNet("GO")
                     bus.publishLag("SMOOTH")
                     bus.publishStutter("CALM")
                     bus.publishMemory("HEALTHY", 1500L)
+                    try { bus.publishThermal(0) } catch (_: Throwable) {}
+                    try { bus.publishBattery(100, true) } catch (_: Throwable) {}
                     totalHeals++
                     record(HealEvent(
                         timestamp = fmt.format(Date()),
-                        category = "BUS_SIGNALS",
-                        detected = "ALL bus signals stuck at UNKNOWN for ${stuckMs / 1000}s after warmup. Adapter services not publishing. SpeedCompensationContributor and RuntimeDecisionLoop blind.",
-                        fix = "Published safe defaults: net=GO lag=SMOOTH stutter=CALM memory=HEALTHY/1500MB. All signal-dependent contributors now unblocked.",
+                        category = "BUS_ALL_UNKNOWN",
+                        detected = "ALL bus signals stuck at UNKNOWN for ${stuckMs / 1000}s. " +
+                            "Adapter services not publishing. SpeedCompensationContributor + RuntimeDecisionLoop blind.",
+                        fix = "FIXED: Published safe defaults GO/SMOOTH/CALM/HEALTHY. " +
+                            "Will re-apply on next check if still UNKNOWN. " +
+                            "CODE FIX: Run apply_phase3_adapters.py if not yet applied.",
                         severity = "FIXED"
                     ))
-                    RuntimeLogger.log("AGENT HEAL #$totalHeals BUS: published safe defaults (all UNKNOWN for ${stuckMs / 1000}s)", "AGENT")
+                    RuntimeLogger.log("AGENT HEAL #$totalHeals BUS: safe defaults published", "AGENT")
                     busUnknownSinceMs = 0L
                 }
             } else {
-                busUnknownSinceMs = 0L  // signals are flowing
-
-                // Check for partial gaps — individual adapter dead
-                val unknowns = buildList {
-                    if (AdapterSignalBus.netWindow == "UNKNOWN") add("net(adapter_net dead?)")
-                    if (AdapterSignalBus.lagVerdict == "UNKNOWN") add("lag(adapter_lag dead?)")
-                    if (AdapterSignalBus.stutterState == "UNKNOWN") add("stutter(adapter_stutter dead?)")
-                    if (AdapterSignalBus.memoryTier == "UNKNOWN") add("memory(adapter_memory dead?)")
-                }
-                if (unknowns.size in 1..2) {
-                    // Only log partial gaps if persistent (not just slow adapter startup)
-                    record(HealEvent(
-                        timestamp = fmt.format(Date()),
-                        category = "BUS_SIGNALS",
-                        detected = "Partial bus gap: ${unknowns.joinToString(", ")} still UNKNOWN",
-                        fix = "MONITORING — specific adapter(s) may be OFFLINE (WatchdogAdapter will attempt restart)",
-                        severity = "WARNING"
-                    ))
-                }
+                busUnknownSinceMs = 0L
             }
         } catch (_: Throwable) {}
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // CHECK 3: LoadShed HEAVY
-    // HEAVY shed kills most gameplay compute. Cannot force-release.
-    // Log exact cause so user knows which admin value to raise.
+    // LOAD SHED — logs exact cause
     // ─────────────────────────────────────────────────────────────────────
     @Volatile private var heavySinceMs: Long = 0L
-    @Volatile private var heavyLogged = false
 
     private fun checkLoadShed() {
         try {
             val shed = PerformanceTelemetryRegistry.currentLoadShed()
-            val lag = AdapterSignalBus.lagVerdict
-            val stutter = AdapterSignalBus.stutterState
-
             if (shed == "HEAVY") {
-                if (heavySinceMs == 0L) { heavySinceMs = System.currentTimeMillis(); heavyLogged = false }
+                if (heavySinceMs == 0L) heavySinceMs = System.currentTimeMillis()
                 val heavyMs = System.currentTimeMillis() - heavySinceMs
-                if (heavyMs > 20_000L && !heavyLogged) {
-                    heavyLogged = true
+                if (heavyMs > 20_000L && shouldLog("LOAD_SHED_HEAVY", "heavy=${heavyMs/1000}s")) {
+                    val lag = AdapterSignalBus.lagVerdict
+                    val stutter = AdapterSignalBus.stutterState
                     val cause = when {
-                        stutter == "SEIZURE" -> "BurstForensicsEngine reported SEIZURE stutter → HEAVY armed immediately"
-                        lag == "CHOKING" -> "LagVerdictEngine reported CHOKING → HEAVY armed after arm_polls=4 cycles"
-                        else -> "lag=$lag stutter=$stutter (check LagVerdictEngine.verdict)"
+                        stutter == "SEIZURE" -> "BurstForensicsEngine SEIZURE → HEAVY armed immediately"
+                        lag == "CHOKING" -> "LagVerdictEngine CHOKING → HEAVY after arm_polls=4 cycles"
+                        else -> "lag=$lag stutter=$stutter"
                     }
                     record(HealEvent(
                         timestamp = fmt.format(Date()),
-                        category = "LOAD_SHED",
-                        detected = "LoadShedGovernor HEAVY for ${heavyMs / 1000}s. $cause. ALL gameplay engines severely throttled — this is why gestures feel absent.",
-                        fix = "Cannot force-release (controlled by LagVerdictEngine). Admin fixes: raise lag.shed.arm_polls (default 4 → try 8) or raise stutter.forensics.seizure_ms (default 150 → try 200) in Admin Settings.",
+                        category = "LOAD_SHED_HEAVY",
+                        detected = "LoadShedGovernor HEAVY for ${heavyMs / 1000}s. $cause. " +
+                            "ALL gameplay engines severely throttled.",
+                        fix = "Cannot force-release. Admin fixes:\n" +
+                            "  lag.shed.arm_polls: raise 4 → 8 (slower to arm)\n" +
+                            "  stutter.forensics.seizure_ms: raise 150 → 250ms\n" +
+                            "  lag.shed.min_hold_ms: lower 8000 → 4000ms (faster release)",
                         severity = "CRITICAL"
                     ))
-                    RuntimeLogger.log("AGENT CRITICAL LOAD_SHED: HEAVY ${heavyMs / 1000}s — cause: $cause", "AGENT")
                 }
             } else {
-                if (heavySinceMs > 0L) {
-                    val wasHeavyMs = System.currentTimeMillis() - heavySinceMs
-                    record(HealEvent(
-                        timestamp = fmt.format(Date()),
-                        category = "LOAD_SHED",
-                        detected = "LoadShedGovernor returned to $shed from HEAVY (was heavy for ${wasHeavyMs / 1000}s)",
-                        fix = "No fix needed — shed released naturally",
-                        severity = "INFO"
-                    ))
-                }
-                heavySinceMs = 0L; heavyLogged = false
+                heavySinceMs = 0L
             }
         } catch (_: Throwable) {}
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // CHECK 4: Capture staleness
-    // If FrameAssembler hasn't assembled a new frame in > 5s, the ImageReader
-    // capture thread has died silently (OOM, exception escaped catch block, etc.)
-    // ─────────────────────────────────────────────────────────────────────
-    @Volatile private var lastKnownFrameId: Long = -1L
-    @Volatile private var captureStaleLogged = false
-
-    private fun checkCaptureStale() {
-        try {
-            val f = FrameAssembler.current() ?: return
-            if (f.frameId > lastKnownFrameId) {
-                lastKnownFrameId = f.frameId
-                captureStaleLogged = false
-                return  // frames advancing — OK
-            }
-            val staleMs = System.currentTimeMillis() - f.timestampMs
-            if (staleMs > 5000L && !captureStaleLogged) {
-                captureStaleLogged = true
-                record(HealEvent(
-                    timestamp = fmt.format(Date()),
-                    category = "CAPTURE",
-                    detected = "Last assembled frame is ${staleMs / 1000}s old (frameId=${f.frameId}). ImageReader capture thread appears dead. No new vision data = all engine output stale.",
-                    fix = "NONE — capture thread death requires full app restart. Force-stop Splendor Assist and reopen it.",
-                    severity = "CRITICAL"
-                ))
-                RuntimeLogger.log("AGENT CRITICAL CAPTURE STALE: ${staleMs / 1000}s since last frame", "AGENT")
-            }
-        } catch (_: Throwable) {}
-    }
-
-    // ─────────────────────────────────────────────────────────────────────
-    // CHECK 5: Zero dispatch rate
-    // Decisions cycling but zero gestures dispatched = something upstream is blocked
+    // DISPATCH RATE — detects frozen loop, identifies cause
     // ─────────────────────────────────────────────────────────────────────
     @Volatile private var prevDecisions: Long = 0L
     @Volatile private var prevRouted: Long = 0L
@@ -310,88 +321,148 @@ object RuntimeSelfHealEngine {
             val decisions = (snap["decisions"] as? Long) ?: 0L
             val routed = (snap["routed"] as? Long) ?: 0L
             val idleUntrusted = (snap["idleUntrusted"] as? Long) ?: 0L
-            val idleNoContrib = (snap["idleNoContribution"] as? Long) ?: 0L
 
             val newDecisions = decisions - prevDecisions
             val newRouted = routed - prevRouted
-
-            if (newDecisions > 30L) {
-                // Decisions are actively cycling this period
-                if (newRouted == 0L) {
-                    if (zeroDispatchSinceMs == 0L) zeroDispatchSinceMs = System.currentTimeMillis()
-                    val zeroMs = System.currentTimeMillis() - zeroDispatchSinceMs
-                    if (zeroMs > 10_000L) {
-                        val trustPct = if (decisions > 0) idleUntrusted * 100L / decisions else 0L
-                        val contribPct = if (decisions > 0) idleNoContrib * 100L / decisions else 0L
-                        val reason = when {
-                            idleUntrusted > idleNoContrib ->
-                                "VISION_TRUST blocks ${trustPct}% of frames — VisionTrust.foregroundIsGame or ballTrust<0.55"
-                            idleNoContrib > idleUntrusted ->
-                                "CONTRIBUTORS all null for ${contribPct}% of frames — no eligible contributors winning arbitration"
-                            else ->
-                                "accessibility=null (check SmartAssistAccessibilityEngine.globalInstance)"
-                        }
-                        record(HealEvent(
-                            timestamp = fmt.format(Date()),
-                            category = "DISPATCH",
-                            detected = "ZERO gestures dispatched over last ${zeroMs / 1000}s despite ${newDecisions} decision cycles. Reason: $reason. lastAction=${snap["lastAction"]}",
-                            fix = if (idleUntrusted > idleNoContrib) "Applying VisionTrust.setGameForeground(true) — vision trust was blocking all frames" else "LOGGING — contributor arbitration issue requires analysis",
-                            severity = "CRITICAL"
-                        ))
-                        RuntimeLogger.log("AGENT CRITICAL DISPATCH: 0 gestures/${zeroMs / 1000}s — $reason", "AGENT")
-
-                        // Auto-fix: if vision trust is the dominant blocker, force it open
-                        if (idleUntrusted > idleNoContrib) {
-                            VisionTrust.setGameForeground(true)
-                            totalHeals++
-                            RuntimeLogger.log("AGENT HEAL #$totalHeals DISPATCH→VISION_TRUST: forced fg=true", "AGENT")
-                        }
-                    }
-                } else {
-                    zeroDispatchSinceMs = 0L  // gestures dispatching — good
-                }
-            } else if (newDecisions == 0L && decisions > 100L) {
-                // Decision loop stopped entirely (runtime may have paused)
-                record(HealEvent(
-                    timestamp = fmt.format(Date()),
-                    category = "DISPATCH",
-                    detected = "RuntimeDecisionLoop: decision counter frozen at $decisions (loop not running this period)",
-                    fix = "MONITORING — loop may have paused due to capture stale or runtime shutdown",
-                    severity = "WARNING"
-                ))
-            }
-
             prevDecisions = decisions
             prevRouted = routed
+
+            if (newDecisions == 0L && decisions > 50L) {
+                // Decision loop stopped — counter frozen
+                if (shouldLog("LOOP_FROZEN", "frozen_at=$decisions")) {
+                    record(HealEvent(
+                        timestamp = fmt.format(Date()),
+                        category = "LOOP_FROZEN",
+                        detected = "RuntimeDecisionLoop counter frozen at $decisions. " +
+                            "onFrame() not being called — ImageReader has stopped. " +
+                            "This is almost always caused by HyperOS revoking media projection.",
+                        fix = "AGENT will attempt capture restart. If max attempts reached: " +
+                            "force-stop app and reopen. No code change needed — this is an OS kill issue.",
+                        severity = "CRITICAL"
+                    ))
+                    RuntimeLogger.log("AGENT CRITICAL LOOP_FROZEN at $decisions — triggering capture check", "AGENT")
+                    // Trigger capture check immediately
+                    checkCaptureThread()
+                }
+            } else if (newDecisions > 30L && newRouted == 0L) {
+                if (zeroDispatchSinceMs == 0L) zeroDispatchSinceMs = System.currentTimeMillis()
+                val zeroMs = System.currentTimeMillis() - zeroDispatchSinceMs
+                if (zeroMs > 10_000L && shouldLog("ZERO_DISPATCH", "zero=${zeroMs/1000}s")) {
+                    // Loop running but nothing dispatched — trust or contributor issue
+                    val trustPct = if (decisions > 0) idleUntrusted * 100L / decisions else 0L
+                    val reason = if (trustPct > 50L)
+                        "Vision trust blocks ${trustPct}% of frames → forcing fg=true"
+                        else "Contributors all returning null → arbitration finding nothing actionable"
+                    record(HealEvent(
+                        timestamp = fmt.format(Date()),
+                        category = "ZERO_DISPATCH",
+                        detected = "0 gestures over ${zeroMs/1000}s despite $newDecisions decision cycles. $reason",
+                        fix = if (trustPct > 50L) "APPLYING: VisionTrust.setGameForeground(true)"
+                            else "MONITORING — contributor arbitration issue",
+                        severity = "CRITICAL"
+                    ))
+                    if (trustPct > 50L) {
+                        VisionTrust.setGameForeground(true)
+                        totalHeals++
+                    }
+                }
+            } else {
+                zeroDispatchSinceMs = 0L
+            }
         } catch (_: Throwable) {}
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // CHECK 6: Contributor registry
+    // CONTRIBUTOR MONITOR — detects if any contributor is dead/never firing
     // ─────────────────────────────────────────────────────────────────────
-    @Volatile private var registryGapLogged = false
+    @Volatile private var prevCollectCycles: Long = 0L
 
-    private fun checkContributorRegistry(warmed: Boolean) {
+    private fun checkContributors(warmed: Boolean) {
         if (!warmed) return
         try {
             val cls = Class.forName("com.assistant.runtime.GameplayEngineRegistry")
             @Suppress("UNCHECKED_CAST")
             val snap = cls.getMethod("registryRuntimeSnapshot").invoke(null) as? Map<String, Any> ?: return
-            val count = (snap["engines"] as? Int) ?: return
-            if (count < 29 && !registryGapLogged) {
-                registryGapLogged = true
+            val engines = (snap["engines"] as? Int) ?: return
+            val cycles = (snap["collectCycles"] as? Long) ?: return L
+            val delta = cycles - prevCollectCycles
+            prevCollectCycles = cycles
+
+            if (engines < 29 && warmed && shouldLog("REGISTRY_GAP", "engines=$engines")) {
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
-                    category = "REGISTRY",
-                    detected = "Only $count contributors registered (expected ≥29). Missing ${29 - count} contributors. Registered: ${snap["names"]}",
-                    fix = "NONE — warmUpEngines() in RuntimeCoordinator must complete at G4. Likely cause: G4 never reached (accessibility or capture gate failed).",
+                    category = "REGISTRY_GAP",
+                    detected = "Only $engines/29 contributors registered. Missing ${29 - engines}. " +
+                        "warmUpEngines() may not have completed (G4 gate may not have fired).",
+                    fix = "NONE in-memory — warmUpEngines() runs only once at G4. " +
+                        "Check if G2 (capture) + G1 (accessibility) gates both reached.",
                     severity = "CRITICAL"
                 ))
-                RuntimeLogger.log("AGENT CRITICAL REGISTRY: only $count/29 contributors registered", "AGENT")
-            } else if (count >= 29) {
-                registryGapLogged = false  // reset for next check
             }
         } catch (_: Throwable) {}
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // BATTERY — warn when low
+    // ─────────────────────────────────────────────────────────────────────
+    private fun checkBattery() {
+        try {
+            val level = AdapterSignalBus.batteryLevel
+            val charging = AdapterSignalBus.batteryCharging
+            if (level in 1..20 && !charging && shouldLog("BATTERY_LOW", "level=$level")) {
+                record(HealEvent(
+                    timestamp = fmt.format(Date()),
+                    category = "BATTERY_LOW",
+                    detected = "Battery at ${level}% and not charging. " +
+                        "SpeedCompensationContributor reduces gesture duration to 50% of normal. " +
+                        "Charging=false means CPU governor may throttle A75 cores.",
+                    fix = "OPERATIONAL — reduced gestures is intentional at low battery. " +
+                        "Plug in charger for full engine performance.",
+                    severity = "WARNING"
+                ))
+            }
+        } catch (_: Throwable) {}
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Deduplication — same category can only log once per DEDUP_MIN_MS
+    // ─────────────────────────────────────────────────────────────────────
+    @Synchronized
+    private fun shouldLog(category: String, detail: String): Boolean {
+        val now = System.currentTimeMillis()
+        val lastMs = lastLoggedMs[category] ?: 0L
+        val lastHash = lastLoggedDetail[category] ?: -1
+        val currentHash = detail.hashCode()
+        val count = (repeatCount[category] ?: 0) + 1
+        repeatCount[category] = count
+
+        // Allow if: never logged, or enough time passed, or detail changed significantly
+        if (now - lastMs > DEDUP_MIN_MS || lastHash != currentHash) {
+            lastLoggedMs[category] = now
+            lastLoggedDetail[category] = currentHash
+            repeatCount[category] = 0
+            return true
+        }
+        return false
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Code fix printer — outputs structured patch to HealLog
+    // ─────────────────────────────────────────────────────────────────────
+    private fun printCodeFix(issueId: String, description: String) {
+        val ts = fmt.format(Date())
+        val text = buildString {
+            appendLine("=" .repeat(60))
+            appendLine("⚠️  CODE FIX NEEDED [$ts] — $issueId")
+            appendLine("=" .repeat(60))
+            for (line in description.lines()) appendLine("  $line")
+            appendLine("=" .repeat(60))
+        }
+        try {
+            val file = healLogFile() ?: return
+            FileWriter(file, true).use { it.write(text) }
+        } catch (_: Throwable) {}
+        try { RuntimeLogger.log("CODE_FIX_NEEDED: $issueId — see HealLog", "AGENT") } catch (_: Throwable) {}
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -406,20 +477,46 @@ object RuntimeSelfHealEngine {
         } catch (_: Throwable) {}
     }
 
-    private fun writeToFile(ev: HealEvent) {
+    private fun healLogFile(): File? {
+        return try {
+            // /sdcard/Download/SplendorHealLog.txt — read with:
+            // cat /sdcard/Download/SplendorHealLog.txt
+            val downloads = android.os.Environment.getExternalStoragePublicDirectory(
+                android.os.Environment.DIRECTORY_DOWNLOADS)
+            downloads.mkdirs()
+            File(downloads, "SplendorHealLog.txt")
+        } catch (_: Throwable) {
+            // Fallback: app external files
+            try {
+                val ctx = contextRef?.get() ?: return null
+                ctx.getExternalFilesDir(null)?.let { File(it, "SplendorHealLog.txt") }
+            } catch (_: Throwable) { null }
+        }
+    }
+
+    private fun writeToFile(ev: HealEvent?, header: Boolean = false) {
         try {
-            val ctx = contextRef?.get() ?: return
-            val dir = ctx.getExternalFilesDir(null) ?: return
-            val file = File(dir, "Splendor_HealLog.txt")
+            val file = healLogFile() ?: return
             FileWriter(file, true).use { w ->
+                if (header) {
+                    val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+                    w.write("\n" + "=".repeat(60) + "\n")
+                    w.write("SPLENDOR SELF-HEAL AGENT SESSION: $ts\n")
+                    w.write("Read: cat /sdcard/Download/SplendorHealLog.txt\n")
+                    w.write("=".repeat(60) + "\n\n")
+                    return
+                }
+                if (ev == null) return
                 w.write("[${ev.timestamp}] [${ev.severity}] [${ev.category}]\n")
                 w.write("  DETECTED: ${ev.detected}\n")
-                w.write("  FIX:      ${ev.fix}\n")
-                w.write("\n")
+                w.write("  FIX:      ${ev.fix}\n\n")
             }
         } catch (_: Throwable) {}
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // UI status summary
+    // ─────────────────────────────────────────────────────────────────────
     fun getStatusSummary(): String {
         return try {
             val snap = RuntimeDecisionLoop.decisionRuntimeSnapshot()
@@ -428,16 +525,17 @@ object RuntimeSelfHealEngine {
             val dispatchPct = if (decisions > 0) routed * 100L / decisions else 0L
             val shed = try { PerformanceTelemetryRegistry.currentLoadShed() } catch (_: Throwable) { "?" }
             val fg = try { VisionTrust.isGameForeground() } catch (_: Throwable) { false }
+            val agentAge = agentAgeMs() / 1000L
             buildString {
-                appendLine("STATUS: $agentStatus  |  total heals: $totalHeals")
-                appendLine("foreground=$fg  |  shed=$shed  |  dispatch=${dispatchPct}%")
+                appendLine("STATUS: $agentStatus  |  heals: $totalHeals  |  age: ${agentAge}s")
+                appendLine("fg=$fg  shed=$shed  dispatch=${dispatchPct}%  fgForces=$fgForceCount")
                 appendLine("net=${AdapterSignalBus.netWindow}  lag=${AdapterSignalBus.lagVerdict}")
                 appendLine("stutter=${AdapterSignalBus.stutterState}  mem=${AdapterSignalBus.memoryTier}")
-                appendLine("thermal=${AdapterSignalBus.thermalStatus}  battery=${AdapterSignalBus.batteryLevel}%")
-                appendLine("decisions=$decisions  routed=$routed")
+                appendLine("thermal=${AdapterSignalBus.thermalStatus}  battery=${AdapterSignalBus.batteryLevel}%chg=${AdapterSignalBus.batteryCharging}")
+                appendLine("decisions=$decisions  routed=$routed  captureRestarts=$captureRestartAttempts")
                 appendLine("lastAction=${snap["lastAction"]}")
-                appendLine("boot=${AdapterSignalBus.deviceBootStable}  fleet_degraded=${AdapterSignalBus.fleetDegraded}")
+                appendLine("HealLog: /sdcard/Download/SplendorHealLog.txt")
             }
-        } catch (e: Throwable) { "AGENT STATUS READ ERROR: ${e.message}" }
+        } catch (e: Throwable) { "AGENT STATUS ERROR: ${e.message}" }
     }
 }

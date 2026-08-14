@@ -6,10 +6,7 @@
             android:name="com.assistant.admin.AdminSettingsActivity"
             android:exported="true"
             android:label="Splendor Admin">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            <!-- PHASE4B: LAUNCHER removed — AdminSettings accessed via in-app Future Rooms nav -->
         </activity>
     </application>
 

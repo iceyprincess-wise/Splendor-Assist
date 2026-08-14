@@ -77,6 +77,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
     companion object {
         private const val CHANNEL_ID = "efootball_assistant_channel"
         private const val NOTIFICATION_ID = 101
+        // PHASE4B: agent capture restart — weak ref so we never prevent GC/destroy
+        @Volatile var instance: java.lang.ref.WeakReference<OverlayService>? = null
+            private set
     }
 
     private var isRunning = false
@@ -107,16 +110,45 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var reusableBitmap: Bitmap? = null
     private val taskExecutionLock = ReentrantLock()
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-    // PHASE4: 15fps gate — ImageReader listener fires at 90Hz (Redmi 15C display refresh)
-    // VisionCore (58 engines) + 38 contributors at 90Hz overloads Helio G81-Ultra
-    // → LoadShed HEAVY → ALL gameplay engines killed → app appears completely broken
+    // PHASE4B: 30fps HYBRID gate
+    // 33ms = 30fps capture rate. Every frame: cheap ball-only scan stamps VisionTrust.
+    // Every 2nd frame: full VisionCore (58 engines) = 15fps compute cost.
+    // Result: 30fps ball tracking accuracy + 15fps engine load on Helio G81-Ultra.
     @Volatile private var lastFrameProcessedMs = 0L
-    private val captureFrameIntervalMs = 66L  // 15fps = 1000/15
+    private val captureFrameIntervalMs = 33L  // 30fps gate
+    @Volatile private var captureFrameCount = 0L  // alternating full/light processing
 
     private val analyticsExecutor =
         Executors.newSingleThreadExecutor()
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    /**
+     * PHASE4B: Agent capture restart.
+     * Called when RuntimeSelfHealEngine detects capture thread death.
+     * Recreates the ImageReader + VirtualDisplay using the existing
+     * mediaProjection (valid until revoked by the OS).
+     * Returns true if restart was attempted, false if projection is gone.
+     */
+    fun restartCapture(): Boolean {
+        val proj = mediaProjection ?: return false
+        try {
+            RuntimeLogger.log("AGENT CAPTURE RESTART: attempting ImageReader recreation", "AGENT")
+            // Release old reader
+            try { virtualDisplay?.release() } catch (_: Throwable) {}
+            try { imageReader?.close() } catch (_: Throwable) {}
+            // Re-setup with fresh ImageReader (same dimensions as before)
+            setupMediaProjection(android.app.Activity.RESULT_OK,
+                com.assistant.EngineData.intent ?: return false)
+            lastFrameProcessedMs = 0L
+            captureFrameCount = 0L
+            RuntimeLogger.log("AGENT CAPTURE RESTART: ImageReader recreated successfully", "AGENT")
+            return true
+        } catch (e: Exception) {
+            RuntimeLogger.log("AGENT CAPTURE RESTART FAILED: ${e.message}", "AGENT")
+            return false
+        }
+    }
 
     
 override fun onCreate() {
@@ -144,7 +176,7 @@ override fun onCreate() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 val hintManager = getSystemService(PerformanceHintManager::class.java)
-                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 66666666L)  // PHASE4: 15fps target (was 30fps)
+                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 33333333L)  // PHASE4B: 30fps hybrid target
             } catch (e: Exception) {}
         }
     }
@@ -293,20 +325,22 @@ override fun onCreate() {
         imageReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
         imageReader?.setOnImageAvailableListener({ reader ->
             val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
-            // PHASE4: 15fps rate gate — listener fires at 90Hz, gate to 66ms (15fps)
+            // PHASE4B: 30fps hybrid gate — 33ms = 30fps; alternating full/light frames
             val captureNow = System.currentTimeMillis()
             if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
                 image.close()
                 return@setOnImageAvailableListener
             }
             lastFrameProcessedMs = captureNow
+            val thisFrameCount = ++captureFrameCount
+            val doFullProcessing = (thisFrameCount % 2L == 0L)  // full every 2nd frame
             // GAP1C: our own Control Room / Diagnosis screens are not game truth
             if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
                 image.close()
                 return@setOnImageAvailableListener
             }
             try {
-                
+
                 val scanBuffer = image.planes[0].buffer.duplicate()
 
                 val normalized =
@@ -316,22 +350,39 @@ override fun onCreate() {
                         image.height
                     )
 
-                val state =
-                    com.assistant.adapter.smartassist.VisionCore.process(
-                        normalized
-                    )
+                if (doFullProcessing) {
+                    // ─── FULL FRAME (15fps): all 58 engines + 38 contributors ───
+                    val state =
+                        com.assistant.adapter.smartassist.VisionCore.process(normalized)
                     com.assistant.BoosterIgnition.ensureIgnited(this)
                     com.assistant.AppContributorRegistration.ensureRegistered()
                     com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
                     val frame =
                         com.assistant.adapter.smartassist.FrameAssembler.assemble()
                     com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
-
-                com.assistant.adapter.smartassist.GameStateBuilder.update(
-                    state
-                )
-
-                com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
+                    com.assistant.adapter.smartassist.GameStateBuilder.update(state)
+                    com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine
+                        .scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
+                } else {
+                    // ─── LIGHT FRAME (30fps alt): ball-only scan → stamps VisionTrust ───
+                    // Keeps ballTrust fresh between full frames so trust never expires.
+                    // At 15fps without this, trust decays between full frames (FRESH_MS=200ms
+                    // at 66ms intervals = only 3 full frames before decay starts).
+                    try {
+                        val lightSamples =
+                            com.assistant.adapter.smartassist.FrameScanner.scan(normalized)
+                        val lightBlobs =
+                            com.assistant.adapter.smartassist.ConnectedComponentEngine.extract(lightSamples)
+                        val filteredBlobs =
+                            com.assistant.adapter.smartassist.NoiseFilter.filter(lightBlobs)
+                        val ballCandidate =
+                            com.assistant.adapter.smartassist.BallCandidateEngine.select(filteredBlobs)
+                        val ball =
+                            com.assistant.adapter.smartassist.BallDetector.detect(ballCandidate)
+                        // Stamp trust so it stays fresh until next full frame
+                        com.assistant.adapter.smartassist.BallTelemetryBridge.publish(ball)
+                    } catch (_: Throwable) {}
+                }
             } catch (t: Throwable) {
                 // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
                 // escape here, killing the capture thread and the whole process.

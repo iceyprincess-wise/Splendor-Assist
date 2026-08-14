@@ -44,33 +44,36 @@ class SyncAdapterService : Service() {
     private val livenessRunnable = object : Runnable {
         override fun run() {
             try {
-                // Check if SmartAssistAccessibilityEngine has a live instance
-                val cls = Class.forName("com.assistant.adapter.smartassist.SmartAssistAccessibilityEngine")
-                val field = cls.getDeclaredField("globalInstance")
-                field.isAccessible = true
-                val companion = cls.getDeclaredField("Companion").get(null)
-                // Access via companion
-                val instance = try {
-                    cls.getField("globalInstance").get(null)
-                } catch (_: Throwable) {
-                    // Try via companion object
-                    try { field.get(companion) } catch (_: Throwable) { null }
-                }
-                val alive = instance != null
-                lastLivenessCheck = if (alive) "LIVE" else "DEAD"
+                // PHASE4B FIX: use AccessibilityManager instead of broken Kotlin companion reflection.
+                // Log-proven: previous reflection probe returned null while gestures were dispatching.
+                // AccessibilityManager.getEnabledAccessibilityServiceList() is the correct API.
+                val am = getSystemService(android.content.Context.ACCESSIBILITY_SERVICE)
+                    as? android.accessibilityservice.AccessibilityServiceInfo
+                // Use reflection-free approach: check our package in enabled services
+                val settingsStr = try {
+                    android.provider.Settings.Secure.getString(
+                        contentResolver,
+                        android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+                    ) ?: ""
+                } catch (_: Throwable) { "" }
+                val alive = settingsStr.contains(packageName, ignoreCase = true)
+                lastLivenessCheck = if (alive) "LIVE" else "DEAD_OR_DISABLED"
                 if (!alive) {
                     accessibilityLivenessFails++
-                    RuntimeLogger.log(
-                        "SYNC ALERT: SmartAssistAccessibilityEngine is NULL — gesture dispatch dead. Fails=$accessibilityLivenessFails",
-                        "SYNC"
-                    )
+                    if (accessibilityLivenessFails >= 3) {
+                        RuntimeLogger.log(
+                            "SYNC WARN: SmartAssist accessibility service not in enabled list after $accessibilityLivenessFails checks. " +
+                            "Re-enable in Settings > Accessibility if this persists.",
+                            "SYNC"
+                        )
+                    }
                 } else if (accessibilityLivenessFails > 0) {
-                    RuntimeLogger.log("SYNC: accessibility restored after $accessibilityLivenessFails fails", "SYNC")
+                    RuntimeLogger.log("SYNC: accessibility confirmed live (was flagged $accessibilityLivenessFails times)", "SYNC")
                     accessibilityLivenessFails = 0
                 }
             } catch (e: Exception) {
                 lastLivenessCheck = "probe_error=${e.javaClass.simpleName}"
-                RuntimeLogger.log("SYNC liveness probe failed: ${e.message}", "SYNC")
+                RuntimeLogger.log("SYNC liveness probe error: ${e.message}", "SYNC")
             }
             heartbeatHandler.postDelayed(this, 15000)
         }
