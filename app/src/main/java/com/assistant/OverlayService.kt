@@ -131,7 +131,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
      * Returns true if restart was attempted, false if projection is gone.
      */
     fun restartCapture(): Boolean {
-        val proj = mediaProjection ?: return false
+        mediaProjection ?: return false  // guard: projection revoked → abort restart
         try {
             RuntimeLogger.log("AGENT CAPTURE RESTART: attempting ImageReader recreation", "AGENT")
             // Release old reader

@@ -388,11 +388,29 @@ object RuntimeSelfHealEngine {
             val delta = cycles - prevCollectCycles
             prevCollectCycles = cycles
 
+            // PHASE4B: COLLECT_STALL — delta==0 while engine has run = collector frozen
+            if (delta == 0L && cycles > 100L && engines >= 1 &&
+                shouldLog("COLLECT_STALL", "stall_at=$cycles")) {
+                record(HealEvent(
+                    timestamp = fmt.format(Date()),
+                    category = "COLLECT_STALL",
+                    detected = "GameplayEngineRegistry.collect() stalled — 0 new collect cycles " +
+                        "in last 5s (total cycles so far: $cycles). " +
+                        "$engines contributors registered but idle. " +
+                        "onFrame() not reaching RuntimeDecisionLoop — ImageReader likely dead.",
+                    fix = "Triggering capture restart check via checkCaptureThread().",
+                    severity = "CRITICAL"
+                ))
+                RuntimeLogger.log("AGENT CRITICAL COLLECT_STALL at cycles=$cycles — triggering capture check", "AGENT")
+                checkCaptureThread()
+            }
+
             if (engines < 29 && warmed && shouldLog("REGISTRY_GAP", "engines=$engines")) {
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
                     category = "REGISTRY_GAP",
                     detected = "Only $engines/29 contributors registered. Missing ${29 - engines}. " +
+                        "Collect cycles this check: $delta (0 = collector frozen). " +
                         "warmUpEngines() may not have completed (G4 gate may not have fired).",
                     fix = "NONE in-memory — warmUpEngines() runs only once at G4. " +
                         "Check if G2 (capture) + G1 (accessibility) gates both reached.",

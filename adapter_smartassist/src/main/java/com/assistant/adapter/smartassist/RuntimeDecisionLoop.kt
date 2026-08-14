@@ -98,7 +98,7 @@ object RuntimeDecisionLoop {
     }
 
     private fun chooseRequest(
-        frame: RuntimeFrame,
+        _frame: RuntimeFrame,  // reserved — frame context available for future coord use
         best: EngineContribution?,
         emergency: ExecutionRequest?
     ): ExecutionRequest? {

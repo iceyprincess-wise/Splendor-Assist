@@ -47,8 +47,7 @@ class SyncAdapterService : Service() {
                 // PHASE4B FIX: use AccessibilityManager instead of broken Kotlin companion reflection.
                 // Log-proven: previous reflection probe returned null while gestures were dispatching.
                 // AccessibilityManager.getEnabledAccessibilityServiceList() is the correct API.
-                val am = getSystemService(android.content.Context.ACCESSIBILITY_SERVICE)
-                    as? android.accessibilityservice.AccessibilityServiceInfo
+                // PHASE4B: check enabled accessibility services via Settings string (no reflection)
                 // Use reflection-free approach: check our package in enabled services
                 val settingsStr = try {
                     android.provider.Settings.Secure.getString(
