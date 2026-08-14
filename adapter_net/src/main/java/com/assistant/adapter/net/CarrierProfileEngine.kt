@@ -45,8 +45,18 @@ object CarrierProfileEngine {
 
     fun detect(ctx: Context): CarrierProfile {
         val op = try {
-            (ctx.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager)
-                ?.networkOperatorName ?: ""
+            // PHASE4 FIX: dual-SIM bug — networkOperatorName returns PRIMARY SIM (MTN slot 1)
+            // even when active DATA SIM is different (Airtel slot 2).
+            // Log-proven: user on Airtel, but carrier profile logged as MTN every session.
+            // Fix: read operator from the explicit DATA subscription ID.
+            val tm = ctx.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
+            val dataTm = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                try {
+                    val subId = android.telephony.SubscriptionManager.getDefaultDataSubscriptionId()
+                    if (subId > 0) tm?.createForSubscriptionId(subId) else tm
+                } catch (_: Throwable) { tm }
+            } else tm
+            dataTm?.networkOperatorName ?: ""
         } catch (_: Throwable) { "" }
         current = when {
             op.contains("MTN", true)    -> MTN

@@ -107,6 +107,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var reusableBitmap: Bitmap? = null
     private val taskExecutionLock = ReentrantLock()
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    // PHASE4: 15fps gate — ImageReader listener fires at 90Hz (Redmi 15C display refresh)
+    // VisionCore (58 engines) + 38 contributors at 90Hz overloads Helio G81-Ultra
+    // → LoadShed HEAVY → ALL gameplay engines killed → app appears completely broken
+    @Volatile private var lastFrameProcessedMs = 0L
+    private val captureFrameIntervalMs = 66L  // 15fps = 1000/15
 
     private val analyticsExecutor =
         Executors.newSingleThreadExecutor()
@@ -125,6 +130,8 @@ override fun onCreate() {
         super.onCreate()
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         com.assistant.vision.ForegroundGate.install(application)
+        // PHASE4: give the AI self-heal agent a context for file writing and carrier re-detect
+        try { com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext) } catch (_: Throwable) {}
         // Anti-Cheat defense disabled to prevent HyperOS false-positive kill
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()
@@ -137,7 +144,7 @@ override fun onCreate() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 val hintManager = getSystemService(PerformanceHintManager::class.java)
-                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 33333333L)
+                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 66666666L)  // PHASE4: 15fps target (was 30fps)
             } catch (e: Exception) {}
         }
     }
@@ -286,6 +293,13 @@ override fun onCreate() {
         imageReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
         imageReader?.setOnImageAvailableListener({ reader ->
             val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
+            // PHASE4: 15fps rate gate — listener fires at 90Hz, gate to 66ms (15fps)
+            val captureNow = System.currentTimeMillis()
+            if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
+                image.close()
+                return@setOnImageAvailableListener
+            }
+            lastFrameProcessedMs = captureNow
             // GAP1C: our own Control Room / Diagnosis screens are not game truth
             if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
                 image.close()

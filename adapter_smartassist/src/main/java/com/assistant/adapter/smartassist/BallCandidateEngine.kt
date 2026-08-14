@@ -16,7 +16,7 @@ object BallCandidateEngine {
      * are audited.
      */
 
-    private const val MIN_PIXELS = 3
+    private const val MIN_PIXELS = 5  // PHASE4: 15fps at 0.4x scale — real ball ≥5px, noise < 5px
     private const val MAX_PIXELS = 4096
 
     private const val EXPECTED_AREA = 200f

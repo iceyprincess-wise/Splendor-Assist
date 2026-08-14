@@ -3,7 +3,7 @@ package com.assistant.adapter.smartassist
 object BallDetector {
 
     private const val MIN_CANDIDATE_CONFIDENCE = 0.12f
-    private const val COAST_FRAMES = 6
+    private const val COAST_FRAMES = 4  // PHASE4: 15fps — 6 frames=400ms coast too long; 4=266ms
 
     private var lastBallX = 0f
     private var lastBallY = 0f
@@ -55,27 +55,30 @@ object BallDetector {
         successfulFrames++
         lostFrames = 0
 
+        // PHASE4: 15fps EWA — ball moves more between frames, new position must dominate
+        // Was 0.55(old)/0.45(new) → lagged badly at 15fps
+        // Now 0.40(old)/0.60(new) → tracks fast movement, still smooths noise
         val filteredX =
             if (initialized)
-                lastBallX * 0.55f + candidate.centerX * 0.45f
+                lastBallX * 0.40f + candidate.centerX * 0.60f
             else
                 candidate.centerX
 
         val filteredY =
             if (initialized)
-                lastBallY * 0.55f + candidate.centerY * 0.45f
+                lastBallY * 0.40f + candidate.centerY * 0.60f
             else
                 candidate.centerY
 
         val filteredRadius =
             if (initialized)
-                lastRadius * 0.60f + candidate.radius * 0.40f
+                lastRadius * 0.45f + candidate.radius * 0.55f
             else
                 candidate.radius
 
         val filteredConfidence =
             if (initialized)
-                lastConfidence * 0.50f + candidate.score * 0.50f
+                lastConfidence * 0.40f + candidate.score * 0.60f
             else
                 candidate.score
 

@@ -199,6 +199,8 @@ object RuntimeCoordinator {
 
         runtimeReady.set(true)
         transition("G6 RUNTIME_READY")
+        // PHASE4: start AI self-heal agent when runtime goes live
+        try { RuntimeSelfHealEngine.start() } catch (_: Throwable) {}
     }
 
     /*

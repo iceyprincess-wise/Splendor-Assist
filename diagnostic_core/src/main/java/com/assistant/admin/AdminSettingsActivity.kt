@@ -164,6 +164,19 @@ class AdminSettingsActivity : Activity() {
             text = "Values save live and apply on each engine's next tick. Mirror: Download/SplendorAssist/admin_config.json"
             textSize = 12f; setPadding(0, dp(12), 0, 0)
         })
+        // PHASE4: navigate to Agent Room — uses setClassName (cross-module: diagnostic_core→app)
+        navButton(root, "🤖  AI Self-Heal Agent Monitor  (Future Rooms)") {
+            try {
+                val i = android.content.Intent()
+                i.setClassName(packageName, "com.assistant.controlroom.ui.FutureRoomsActivity")
+                i.putExtra("room_label", "agent")
+                startActivity(i)
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(
+                    this, "Open Future Rooms from the main app screen: ${e.message}",
+                    android.widget.Toast.LENGTH_LONG).show()
+            }
+        }
         mount(root)
     }
 

@@ -21,8 +21,11 @@ import com.assistant.admin.AdminConfigStore
 object VisionTrust {
 
     // ---------------- tunables (ADMIN-TUNABLE, defaults = original values) ----------------
-    private val FRESH_MS: Long get() = AdminConfigStore.getLong("assist.trust.fresh_ms", 120L)
-    private val STALE_MS: Long get() = AdminConfigStore.getLong("assist.trust.stale_ms", 400L)
+    // PHASE4: 15fps tuning — FRESH_MS=120ms = 1.8 frames → ball always seems stale at 15fps
+    // → frameTrusted() returns false every other frame → ALL contributors blocked
+    // Fix: FRESH_MS=200ms (3 frames), STALE_MS=600ms (9 frames) for 15fps operation
+    private val FRESH_MS: Long get() = AdminConfigStore.getLong("assist.trust.fresh_ms", 200L)
+    private val STALE_MS: Long get() = AdminConfigStore.getLong("assist.trust.stale_ms", 600L)
     private val LATENCY_LIMIT_MS: Float get() = AdminConfigStore.get("assist.trust.latency_ms", 180f)
     private val TRUST_FLOOR: Float get() = AdminConfigStore.get("assist.trust.floor", 0.55f)
     private val LANE_FLOOR: Float get() = AdminConfigStore.get("assist.trust.lane_floor", 0.35f)
