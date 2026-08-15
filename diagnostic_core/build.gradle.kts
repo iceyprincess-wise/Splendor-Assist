@@ -8,7 +8,7 @@ android {
     namespace = "com.assistant.diagnostic"
     compileSdk = 34
     defaultConfig {
-        minSdk = 24
+        minSdk = 26  // NotificationChannel API 26; app already 26
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

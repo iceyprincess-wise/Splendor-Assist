@@ -162,8 +162,12 @@ override fun onCreate() {
         super.onCreate()
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         com.assistant.vision.ForegroundGate.install(application)
-        // PHASE4: give the AI self-heal agent a context for file writing and carrier re-detect
-        try { com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext) } catch (_: Throwable) {}
+        // PHASE5: init + START agent immediately (3s grace built-in)
+        try {
+            com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext)
+            com.assistant.adapter.smartassist.RuntimeSelfHealEngine.start()
+        } catch (_: Throwable) {}
+        instance = java.lang.ref.WeakReference(this)
         // Anti-Cheat defense disabled to prevent HyperOS false-positive kill
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()
@@ -294,8 +298,19 @@ override fun onCreate() {
         projectionCallback = object : MediaProjection.Callback() {
             override fun onStop() {
                 super.onStop()
+                // PHASE5: try restartCapture() before dying — fixes silent kill cycle
                 Handler(Looper.getMainLooper()).post {
-                                        stopSelf()
+                    val restarted = try { restartCapture() } catch (_: Throwable) { false }
+                    if (!restarted) {
+                        try { com.assistant.diagnostic.RuntimeLogger.log(
+                            "MediaProjection.onStop(): restart impossible — stopping service", "OVERLAY"
+                        ) } catch (_: Throwable) {}
+                        stopSelf()
+                    } else {
+                        try { com.assistant.diagnostic.RuntimeLogger.log(
+                            "MediaProjection.onStop(): capture restarted — service survives", "OVERLAY"
+                        ) } catch (_: Throwable) {}
+                    }
                 }
             }
         }
