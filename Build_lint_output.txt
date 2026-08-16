@@ -1,0 +1,81 @@
+================================================================
+SPLENDOR-ASSIST BUILD REPORT v2
+Started: 2026-08-16 20:16:06 WAT
+Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
+================================================================
+
+GIT STATUS:
+?? Build_lint_output.txt
+
+
+================================================================
+>>> CLEAN
+================================================================
+BUILD SUCCESSFUL in 1m 4s
+
+CLEAN EXIT: 0
+
+================================================================
+>>> OPTIONAL LINT
+================================================================
+NO — lint skipped by user.
+
+================================================================
+>>> LINT ISSUE EXTRACTION
+================================================================
+SKIPPED — lint was not run.
+
+================================================================
+>>> CONNECTED ANDROID TESTS
+================================================================
+SKIPPED — no ADB device connected (not a failure)
+
+================================================================
+>>> VERSION BUMP
+================================================================
+versionCode: 21 -> 22
+
+================================================================
+>>> ASSEMBLE DEBUG APK
+================================================================
+[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
+	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+Unable to strip the following libraries, packaging them as they are: libmlkit_google_ocr_pipeline.so, libtensorflowlite_jni.so.
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:3:22 Unresolved reference: storage
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:507:13 Unresolved reference: SplendorStorageRoot
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 4m 55s
+
+ASSEMBLE DEBUG APK EXIT: 1
+
+================================================================
+>>> APK EXPORT
+================================================================
+SKIPPED — build exit=1, apk_exists=NO
+
+================================================================
+>>> GRADLE DAEMON STOP
+================================================================
+Stopping Daemon(s)
+1 Daemon stopped
+
+================================================================
+>>> BUILD RESULT SUMMARY
+================================================================
+CLEAN:                           0
+LINT:                            SKIPPED — OPTIONAL
+CONNECTED TESTS:                 0
+VERSION BUMP:                    0
+ASSEMBLE DEBUG:                  1
+APK EXPORT:                      ?
+
+FINAL STATUS: FAILED — check items above
+
+GIT STATUS:
+ M app/build.gradle.kts
+?? Build_lint_output.txt
+
+Finished: 2026-08-16 20:22:49 WAT
+Report size: 3466 bytes
+================================================================
