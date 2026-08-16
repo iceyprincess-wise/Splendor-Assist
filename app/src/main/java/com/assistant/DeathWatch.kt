@@ -42,9 +42,15 @@ object DeathWatch {
     @JvmStatic
     fun install(ctx: Context) {
         if (installed) return
-        installed = true
 
         val c = ctx.applicationContext
+
+        if (!SplendorStorageRoot.isReady()) {
+            log("DeathWatch not armed: canonical storage is not ready")
+            return
+        }
+
+        installed = true
         procName = resolveProcessName(c)
         startedMs = System.currentTimeMillis()
 

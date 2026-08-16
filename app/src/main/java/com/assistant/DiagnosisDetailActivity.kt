@@ -1,5 +1,7 @@
 package com.assistant
 
+import com.assistant.storage.SplendorStorageRoot
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -182,10 +184,11 @@ class DiagnosisDetailActivity : AppCompatActivity() {
         val files = mutableListOf<File>()
         files += File(filesDir, "runtime_diagnostic.txt")
         File(filesDir, "runtime_hour_segments").takeIf { it.isDirectory }?.listFiles()?.sortedByDescending { it.lastModified() }?.take(3)?.let { files += it }
-        files += File("/storage/emulated/0/SplendorAssist/Forensics/execution_chain.log")
-        files += File("/storage/emulated/0/SplendorAssist/Forensics/telemetry.log")
-        files += File("/storage/emulated/0/SplendorAssist/Forensics/heartbeat.log")
-        files += File("/storage/emulated/0/SplendorAssist/Forensics/fieldtest.log")
+        val forensicsDir = SplendorStorageRoot.subdirectory("Forensics")
+        files += File(forensicsDir, "execution_chain.log")
+        files += File(forensicsDir, "telemetry.log")
+        files += File(forensicsDir, "heartbeat.log")
+        files += File(forensicsDir, "fieldtest.log")
         return files.flatMap { file -> runCatching { file.readLines().takeLast(300) }.getOrDefault(emptyList()) }
             .filter { line -> keys.any { key -> line.contains(key, ignoreCase = true) } }
             .takeLast(160)
