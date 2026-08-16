@@ -53,6 +53,7 @@ class InterruptionAdapterService : Service() {
                             TELEPHONY_SERVICE
                         ) as? TelephonyManager
 
+                    @Suppress("DEPRECATION")
                     val callState =
                         try {
                             telephonyManager?.callState

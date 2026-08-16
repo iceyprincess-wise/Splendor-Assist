@@ -96,6 +96,7 @@ object AdminConfigStore {
 
     fun resetAll(ctx: Context) { for (s in SPECS) set(ctx, s.key, s.def) }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun mirrorToFile(ctx: Context) {
         try {
             val json = JSONObject()
