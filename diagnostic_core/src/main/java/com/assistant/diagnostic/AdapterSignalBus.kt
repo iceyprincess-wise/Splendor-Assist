@@ -42,15 +42,15 @@ object AdapterSignalBus {
     val lagIsChoking: Boolean get() = lagVerdict == "CHOKING"
     val stutterIsSevere: Boolean get() = stutterState == "SEIZURE"
     val environmentHostile: Boolean get() = netIsHold || lagIsChoking || stutterIsSevere || thermalIsSevere
-}
 
-    // PHASE5B: memory → capture bridge signal
+    // PHASE5B: memory -> capture bridge signal
     @Volatile var captureThrottle: Int = 0; private set
     fun publishCaptureThrottle(level: Int) { captureThrottle = level.coerceIn(0, 3) }
     val captureIsThrottled: Boolean get() = captureThrottle > 0
 
-    // PHASE5B: load shed → execution brake signal
+    // PHASE5B: load shed -> execution brake signal
     @Volatile var executionBrake: Int = 0; private set
     fun publishExecutionBrake(level: Int) { executionBrake = level.coerceIn(0, 2) }
     val executionIsBraked: Boolean get() = executionBrake > 0
     val executionIsFullyBraked: Boolean get() = executionBrake >= 2
+}
