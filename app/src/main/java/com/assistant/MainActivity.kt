@@ -22,6 +22,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.assistant.controlroom.AdapterControlRoomRegistry
 import com.assistant.controlroom.ui.FutureRoomsActivity
+import com.assistant.controlroom.ui.AgentHubActivity
+import com.assistant.controlroom.ui.GameplayRoomActivity
 import com.assistant.controlroom.ui.GoalkeeperControlRoomActivity
 import com.assistant.controlroom.ui.InterceptionControlRoomActivity
 import com.assistant.controlroom.ui.SmartAssistControlRoomActivity
@@ -285,10 +287,10 @@ override fun onResume() {
             )
         }
 
-        findViewById<View>(com.assistant.overlay.R.id.cardOverlay).setOnClickListener { openFutureRoom("Overlay") }
-        findViewById<View>(com.assistant.overlay.R.id.cardAccessibility).setOnClickListener { openFutureRoom("Accessibility") }
+        findViewById<View>(com.assistant.overlay.R.id.cardOverlay).setOnClickListener { startActivity(Intent(this, GameplayRoomActivity::class.java)) }
+        findViewById<View>(com.assistant.overlay.R.id.cardAccessibility).setOnClickListener { startActivity(Intent(this, AgentHubActivity::class.java)) }
         findViewById<View>(com.assistant.overlay.R.id.cardNotifications).setOnClickListener { openFutureRoom("Notifications") }
-        findViewById<View>(com.assistant.overlay.R.id.cardMediaProjection).setOnClickListener { openFutureRoom("Gameplay") }
+        findViewById<View>(com.assistant.overlay.R.id.cardMediaProjection).setOnClickListener { startActivity(Intent(this, GameplayRoomActivity::class.java)) }
         findViewById<View>(com.assistant.overlay.R.id.cardDiagnostics).setOnClickListener { startActivity(Intent(this, DiagnosisRoomActivity::class.java)) }
         findViewById<View>(com.assistant.overlay.R.id.cardFutureRooms).setOnClickListener { openFutureRoom("Future Rooms") }
     }

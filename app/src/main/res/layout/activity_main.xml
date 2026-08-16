@@ -155,10 +155,10 @@
                         android:background="@drawable/card_inner_premium"
                         android:gravity="center" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🎯" android:textSize="24sp"/>
+                            android:text="🎮" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="OVERLAY" android:textColor="#FFFFFF"
-                            android:textStyle="bold" android:textSize="11sp"/>
+                            android:text="GAMEPLAY ROOM" android:textColor="#FFFFFF"
+                            android:textStyle="bold" android:textSize="10sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -172,10 +172,10 @@
                         android:background="@drawable/card_inner_premium"
                         android:gravity="center" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="♿" android:textSize="24sp"/>
+                            android:text="🤖" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="ACCESSIBILITY" android:textColor="#FFFFFF"
-                            android:textStyle="bold" android:textSize="10sp" android:gravity="center"/>
+                            android:text="AGENT HUB ROOM" android:textColor="#FFFFFF"
+                            android:textStyle="bold" android:textSize="9sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -210,9 +210,9 @@
                         android:background="@drawable/card_inner_premium"
                         android:gravity="center" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📺" android:textSize="24sp"/>
+                            android:text="🎮" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="MEDIA PROJ" android:textColor="#FFFFFF"
+                            android:text="GAMEPLAY" android:textColor="#FFFFFF"
                             android:textStyle="bold" android:textSize="10sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>

@@ -28,6 +28,8 @@
         <activity android:name="com.assistant.controlroom.ui.GoalkeeperControlRoomActivity" android:exported="false" />
         <activity android:name="com.assistant.controlroom.ui.InterceptionControlRoomActivity" android:exported="false" />
         <activity android:name="com.assistant.controlroom.ui.FutureRoomsActivity" android:exported="false" />
+        <activity android:name="com.assistant.controlroom.ui.AgentHubActivity" android:exported="false" />
+        <activity android:name="com.assistant.controlroom.ui.GameplayRoomActivity" android:exported="false" />
 
         <!-- Core Activities -->
         <activity android:name="com.assistant.MainActivity" android:exported="true">
