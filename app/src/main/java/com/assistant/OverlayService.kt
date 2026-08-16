@@ -843,7 +843,6 @@ override fun onDestroy() {
                     )
                 } catch (_: Throwable) {}
             }
-        stopRuntimeRecorder()
 
         virtualDisplay?.release()
         virtualDisplay = null

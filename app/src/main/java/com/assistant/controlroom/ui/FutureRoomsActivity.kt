@@ -13,7 +13,6 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.assistant.adapter.smartassist.RuntimeSelfHealEngine
-import com.assistant.admin.AdminSettingsActivity
 
 /**
  * PHASE4 UPGRADE: FutureRoomsActivity
@@ -139,10 +138,7 @@ class FutureRoomsActivity : AppCompatActivity() {
         }
         text(root, "   Detects and fixes broken engine states while you play. Logs every fix to Splendor_HealLog.txt", 11f, color = Color.parseColor("#AAAAAA"))
 
-        btn(root, "⚙️   Admin Settings  —  Engine Tuning", Color.parseColor("#1565C0")) {
-            startActivity(Intent(this, AdminSettingsActivity::class.java))
-        }
-        text(root, "   Live-tunable engine constants — no rebuild needed", 11f, color = Color.parseColor("#AAAAAA"))
+        text(root, "  ⚙️  Admin Settings — removed", 11f, color = Color.parseColor("#444444"))
 
         divider(root)
 
