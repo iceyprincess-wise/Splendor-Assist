@@ -9,7 +9,6 @@ import com.assistant.overlay.metrics.SmartAssistMetrics
 import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
 import com.assistant.overlay.notification.RuntimeNotificationCoordinator
 import com.assistant.overlay.runtime.PerformanceGovernor
-import java.util.UUID
 
 import android.app.Activity
 import android.app.Notification
@@ -564,20 +563,11 @@ override fun onCreate() {
 
 
 
-                            val recording =
-
-                            val recordingAllowed =
-                                PerformanceGovernor.allowRecording(
-                                    applicationContext,
-                                    thermalLevel = 0
-                                )
-
                             RuntimeNotificationCoordinator.update(
                                 context = applicationContext,
                                 antiban = true,
                                 matchDetected = true,
-                                recording =
-                                    recording && recordingAllowed,
+                                recording = false,
                                 saved = false
                             )
 
@@ -585,56 +575,6 @@ override fun onCreate() {
                                 "🕶️",
                                 "SMART_ASSIST"
                             )
-
-
-                                try {
-
-                                    val matchId =
-                                        UUID.randomUUID().toString()
-
-                                    val now =
-                                        System.currentTimeMillis()
-
-
-                                    val analytics =
-                                            matchId = matchId,
-                                            startTimestamp = now,
-                                            endTimestamp = now,
-                                            dvrVideoPath = "",
-                                            isPermanentlySaved = false,
-                                            possessionPercentage =
-
-                                            longPassEfficiency =
-
-                                            defensiveInterceptions =
-
-                                            transitionSpeedMs =
-                                            errorTimelineJson = "[]"
-                                        )
-
-                                        .getDatabase(applicationContext)
-                                        .theaterDao()
-                                        .insertMatchData(
-                                            analytics
-                                        )
-
-                                    RuntimeMetricsRegistry
-                                        .analyticsProduced
-                                        .incrementAndGet()
-
-                                    RuntimeLogger.log(
-                                        "Analytics produced: $matchId",
-                                        "ANALYTICS"
-                                    )
-
-                                } catch (e: Exception) {
-
-                                    RuntimeLogger.log(
-                                        "Analytics producer failed",
-                                        "ANALYTICS"
-                                    )
-                                }
-                            }
 
                             updateOverlayVisuals(
                                 "🕶️",
