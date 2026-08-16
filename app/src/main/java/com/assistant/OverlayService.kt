@@ -83,6 +83,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // we clear it in onDestroy(), preventing leaks.
         @Volatile var instance: OverlayService? = null
             private set
+        @JvmStatic
         fun restartCaptureIfAlive(): Boolean =
             instance?.restartCapture() ?: false
     }

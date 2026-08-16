@@ -89,6 +89,7 @@ object AdminConfigStore {
     fun checkPin(candidate: String): Boolean = candidate == pin
 
     @Suppress("UNUSED_PARAMETER")
+    @Suppress("UNUSED_PARAMETER")
     fun setPin(ctx: Context, newPin: String) {
         if (newPin.isBlank()) return
         pin = newPin

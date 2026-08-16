@@ -153,6 +153,12 @@ object RuntimeSelfHealEngine {
             if (f.frameId != lastKnownFrameId) {
                 lastKnownFrameId = f.frameId
                 captureStaleMs = 0L
+                // Reset attempt counter when capture recovers so a later
+                // projection kill in the same session gets fresh 3 attempts.
+                if (captureRestartAttempts > 0) {
+                    captureRestartAttempts = 0
+                    lastRestartAttemptMs = 0L
+                }
                 return  // frames advancing — OK
             }
 
