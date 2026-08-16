@@ -1,10 +1,11 @@
 package com.assistant
 
+import com.assistant.storage.SplendorStorageRoot
+
 import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.os.Build
-import android.os.Environment
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -47,7 +48,7 @@ object DeathWatch {
         procName = resolveProcessName(c)
         startedMs = System.currentTimeMillis()
 
-        val dir = File(c.filesDir, "deathwatch").apply { mkdirs() }
+        val dir = SplendorStorageRoot.subdirectory("deathwatch")
         val m = File(dir, safeName(procName) + ".marker")
 
         // previous session never removed its marker -> it was killed
@@ -173,30 +174,16 @@ object DeathWatch {
     }
 
     private fun javaCrashPresent(c: Context, since: Long): Boolean = try {
-        val names = arrayOf("splendor_crash.txt")
-        val dirs = listOfNotNull(
-            c.filesDir,
-            c.getExternalFilesDir(null),
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        )
-        var hit = false
-        for (d in dirs) for (n in names) {
-            val f = File(d, n)
-            if (f.exists() && f.lastModified() >= since) hit = true
-        }
-        hit
+        val f = SplendorStorageRoot.file("splendor_crash.txt")
+        f.exists() && f.lastModified() >= since
     } catch (_: Throwable) { false }
 
     private fun reportFile(c: Context): File? {
-        val dirs = listOfNotNull(
-            try { java.io.File("/sdcard/Splendor-Assist").apply { mkdirs() } } catch (_: Throwable) { null },
-            try { c.getExternalFilesDir(null) } catch (_: Throwable) { null },
-            c.filesDir
-        )
-        for (d in dirs) {
-            try { if (d.exists() || d.mkdirs()) return File(d, REPORT_NAME) } catch (_: Throwable) { }
+        return try {
+            SplendorStorageRoot.file(REPORT_NAME)
+        } catch (_: Throwable) {
+            null
         }
-        return null
     }
 
     // ---------------- helpers ----------------
