@@ -67,9 +67,7 @@ object FrameAssembler {
         val possession = try {
             Phase3WorldStateStore.current().possession
         } catch (_: Throwable) { null }
-        val possessionMinConf = try {
-            com.assistant.admin.0.20f
-        } catch (_: Throwable) { 0.20f }
+        val possessionMinConf = 0.20f
         val hasBall =
             if (possession != null && possession.confidence >= possessionMinConf) {
                 ballSeen && possession.hasPossession
