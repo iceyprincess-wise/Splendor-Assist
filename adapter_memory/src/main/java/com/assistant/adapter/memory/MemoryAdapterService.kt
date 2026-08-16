@@ -146,6 +146,7 @@ class MemoryAdapterService : Service() {
                 }
 
                 MemoryPressureBusEngine.publish(tier.name, availableMb)
+                MemoryCaptureGateEngine.onTierChange(tier.name, availableMb)
                 publishHealth(
                     "tier=${tier.name} avail=${availableMb}MB purges=${recoveryCount.get()}"
                 )

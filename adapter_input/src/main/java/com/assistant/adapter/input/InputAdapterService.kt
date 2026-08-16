@@ -56,7 +56,9 @@ class InputAdapterService : Service() {
         InputPriorityEngine.start()
         InputLatencyEngine.start()
         TouchQualityEngine.start()
-        RuntimeLogger.log("Input engine stack ignited: 3 engines [LATENCY+QUALITY+PRIORITY]", "INPUT")
+        OomAdaptiveThrottleEngine.start()
+        GestureTimingFeedbackEngine.reset()
+        RuntimeLogger.log("Input engine stack ignited: 5 engines [LATENCY+QUALITY+PRIORITY+OOM+GESTURE_TIMING]", "INPUT")
         RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
     }
 
@@ -65,6 +67,8 @@ class InputAdapterService : Service() {
         InputLatencyEngine.stop()
         TouchQualityEngine.stop()
         InputPriorityEngine.stop()
+        OomAdaptiveThrottleEngine.stop()
+        GestureTimingFeedbackEngine.reset()
         heartbeatHandler.removeCallbacks(heartbeatRunnable)
         NodeNotificationHub.detach(this, "adapter_input")
         RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
