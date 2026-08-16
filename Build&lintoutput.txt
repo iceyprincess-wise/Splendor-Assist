@@ -1,19 +1,17 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-16 07:21:16 WAT
+Started: 2026-08-16 10:00:09 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
-MM Build&lintoutput.txt
-M  adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/MagneticFeetEngine.kt
-M  adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/MagneticFeetContributor.kt
+ M Build&lintoutput.txt
 
 
 ================================================================
 >>> CLEAN
 ================================================================
-BUILD SUCCESSFUL in 24s
+BUILD SUCCESSFUL in 1m 30s
 
 CLEAN EXIT: 0
 
@@ -35,7 +33,7 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 11 -> 12
+versionCode: 12 -> 13
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
@@ -43,15 +41,20 @@ versionCode: 11 -> 12
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
 Unable to strip the following libraries, packaging them as they are: libmlkit_google_ocr_pipeline.so, libtensorflowlite_jni.so.
-BUILD SUCCESSFUL in 3m 11s
+w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:91:16 Parameter 'ctx' is never used
+w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/adapter_interruption/src/main/java/com/assistant/adapter/interruption/AudioProtectionLock.kt:6:16 Condition 'AudioProtectionEngine::class != null' is always 'true'
+w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:58:47 'getter for callState: Int' is deprecated. Deprecated in Java
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:180:35 Unresolved reference: OverlayService
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 7m 54s
 
-ASSEMBLE DEBUG APK EXIT: 0
+ASSEMBLE DEBUG APK EXIT: 1
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-vunknown-20260816_072508.apk
--rw-rw----. 1 u0_a262 media_rw 71M Aug 16 07:25 /storage/emulated/0/Download/Splendor-Assist-vunknown-20260816_072508.apk
+SKIPPED — build exit=1, apk_exists=NO
 
 ================================================================
 >>> GRADLE DAEMON STOP
@@ -66,17 +69,15 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  0
+ASSEMBLE DEBUG:                  1
 APK EXPORT:                      ?
 
 FINAL STATUS: FAILED — check items above
 
 GIT STATUS:
-MM Build&lintoutput.txt
-M  adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/MagneticFeetEngine.kt
-M  adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/MagneticFeetContributor.kt
+ M Build&lintoutput.txt
  M app/build.gradle.kts
 
-Finished: 2026-08-16 07:25:16 WAT
-Report size: 3574 bytes
+Finished: 2026-08-16 10:10:05 WAT
+Report size: 3917 bytes
 ================================================================
