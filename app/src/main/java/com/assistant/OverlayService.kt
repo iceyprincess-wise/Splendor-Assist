@@ -122,6 +122,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
     @Volatile private var lastFrameProcessedMs = 0L
     // Base frame interval. Actual interval is adaptive — see MemoryCaptureGateEngine.
     private val captureFrameIntervalBase = 33L  // 30fps base
+    // Adaptive interval: reads MemoryCaptureGateEngine tier each frame gate check.
+    // CRITICAL=100ms, PRESSURE=66ms, WATCH=50ms, HEALTHY=33ms.
+    private val captureFrameIntervalMs: Long
+        get() = com.assistant.adapter.memory.MemoryCaptureGateEngine.recommendedIntervalMs()
     @Volatile private var captureFrameCount = 0L  // alternating full/light processing
 
     private val analyticsExecutor =

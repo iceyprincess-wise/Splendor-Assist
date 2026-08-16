@@ -97,6 +97,7 @@ object RuntimeDecisionLoop {
         return accepted
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun chooseRequest(
         _frame: RuntimeFrame,  // reserved — frame context available for future coord use
         best: EngineContribution?,
