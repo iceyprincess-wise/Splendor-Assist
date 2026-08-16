@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-16 10:00:09 WAT
+Started: 2026-08-16 10:20:59 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -11,7 +11,7 @@ GIT STATUS:
 ================================================================
 >>> CLEAN
 ================================================================
-BUILD SUCCESSFUL in 1m 30s
+BUILD SUCCESSFUL in 1m 20s
 
 CLEAN EXIT: 0
 
@@ -33,7 +33,7 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 12 -> 13
+versionCode: 13 -> 14
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
@@ -42,12 +42,11 @@ versionCode: 12 -> 13
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
 Unable to strip the following libraries, packaging them as they are: libmlkit_google_ocr_pipeline.so, libtensorflowlite_jni.so.
 w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/diagnostic_core/src/main/java/com/assistant/diagnostic/admin/AdminConfigStore.kt:91:16 Parameter 'ctx' is never used
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/adapter_interruption/src/main/java/com/assistant/adapter/interruption/AudioProtectionLock.kt:6:16 Condition 'AudioProtectionEngine::class != null' is always 'true'
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:58:47 'getter for callState: Int' is deprecated. Deprecated in Java
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:180:35 Unresolved reference: OverlayService
+w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt:101:9 Parameter '_frame' is never used
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:360:53 Unresolved reference: captureFrameIntervalMs
 FAILURE: Build failed with an exception.
 * What went wrong:
-BUILD FAILED in 7m 54s
+BUILD FAILED in 15m 35s
 
 ASSEMBLE DEBUG APK EXIT: 1
 
@@ -78,6 +77,6 @@ GIT STATUS:
  M Build&lintoutput.txt
  M app/build.gradle.kts
 
-Finished: 2026-08-16 10:10:05 WAT
-Report size: 3917 bytes
+Finished: 2026-08-16 10:38:39 WAT
+Report size: 3613 bytes
 ================================================================
