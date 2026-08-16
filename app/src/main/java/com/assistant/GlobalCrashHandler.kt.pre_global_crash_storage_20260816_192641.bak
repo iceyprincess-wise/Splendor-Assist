@@ -1,7 +1,5 @@
 package com.assistant
 
-
-import com.assistant.storage.SplendorStorageRoot
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -64,7 +62,30 @@ class GlobalCrashHandler(
         }
 
         private fun getLogFile(ctx: Context?, baseName: String, append: Boolean): File {
-            val baseDir = SplendorStorageRoot.directory()
+            val candidates = mutableListOf<File>()
+            // FIX: user-visible Downloads FIRST, else reports hide in internal storage
+            try {
+                val dl = android.os.Environment.getExternalStoragePublicDirectory(
+                    android.os.Environment.DIRECTORY_DOWNLOADS
+                )
+                if (dl != null && (dl.exists() || dl.mkdirs())) candidates.add(dl)
+            } catch (_: Throwable) {
+            }
+            try {
+                ctx?.filesDir?.let { candidates.add(it) }
+            } catch (_: Throwable) {
+            }
+            try {
+                ctx?.getExternalFilesDir(null)?.let { candidates.add(it) }
+            } catch (_: Throwable) {
+            }
+
+            val baseDir =
+                candidates.firstOrNull {
+                    it.exists() || it.mkdirs()
+                } ?: throw IllegalStateException(
+                    "No writable application crash directory"
+                )
 
             val dot = baseName.lastIndexOf('.')
             val name = if (dot > 0) baseName.substring(0, dot) else baseName
@@ -74,12 +95,10 @@ class GlobalCrashHandler(
             if (append) return target
 
             if (!target.exists()) return target
-
             for (i in 1..99) {
                 target = File(baseDir, "$name($i)$ext")
                 if (!target.exists()) return target
             }
-
             val ts = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
             return File(baseDir, "${name}_${ts}$ext")
         }
