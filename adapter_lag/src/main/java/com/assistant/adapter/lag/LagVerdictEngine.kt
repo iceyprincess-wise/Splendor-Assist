@@ -48,7 +48,13 @@ object LagVerdictEngine {
                         else -> "UNKNOWN"
                     }
                     if (raw == candidate) streak++ else { candidate = raw; streak = 1 }
-                    val need = if (CONFIRM_POLLS < 1) 1 else CONFIRM_POLLS
+                    // Crowded zone (penalty box / corner) temporarily
+                    // inflates stall/jitter from rendering load, not
+                    // sustained device stress. Require 2 extra polls
+                    // before confirming CHOKING to protect attacking actions.
+                    val basePoll = if (CONFIRM_POLLS < 1) 1 else CONFIRM_POLLS
+                    val need = if (raw == "CHOKING" && AdapterSignalBus.crowdingZone)
+                        basePoll + 2 else basePoll
                     val now = System.currentTimeMillis()
                     if (candidate != verdict && streak >= need) {
                         RuntimeLogger.log("DEVICE " + verdict + " -> " + candidate +

@@ -79,6 +79,11 @@ object RuntimeDecisionLoop {
             return false
         }
 
+        // ── Crowding Zone detection ─────────────────────────────────
+        // Runs BEFORE amplifiers. Arms the duration cap and updates
+        // AdapterSignalBus.crowdingZone for LagVerdictEngine next poll.
+        val inCrowdedZone = CrowdingZoneDetector.evaluate(frame)
+
         // ── Fighting Spirit amplification ─────────────────────────────────
         // Evaluate AFTER arbitration so it amplifies the already-chosen
         // winner rather than competing in arbitration itself.
@@ -108,7 +113,14 @@ object RuntimeDecisionLoop {
             )
         } else finalRequest
 
-        val accepted = HybridExecutionTerminal.route(resolvedRequest)
+        // ── Crowding Zone saturation cap ──────────────────────────────
+        // Penalty box / corner: both amplifiers peak simultaneously.
+        // Cap at 45ms so inputs stay deliberate, not desperate spam.
+        val terminalRequest = if (inCrowdedZone && resolvedRequest.duration > 45L) {
+            resolvedRequest.copy(duration = resolvedRequest.duration.coerceAtMost(45L))
+        } else resolvedRequest
+
+        val accepted = HybridExecutionTerminal.route(terminalRequest)
         if (accepted) {
             routed.incrementAndGet()
             try {
@@ -161,6 +173,7 @@ object RuntimeDecisionLoop {
         decisions.set(0L); routed.set(0L)
         FightingSpiritEngine.reset()
         CaptaincySkillEngine.reset()
+        CrowdingZoneDetector.reset()
         idleNoContribution.set(0L); idleUntrusted.set(0L)
         lastAction = "none"; lastWeight = 0f; lastUpdatedMs = 0L
     }
