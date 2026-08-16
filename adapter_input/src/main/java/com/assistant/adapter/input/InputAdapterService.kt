@@ -28,6 +28,7 @@ class InputAdapterService : Service() {
                 )
             )
             RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+            try { GestureTimingFeedbackEngine.checkExpiry() } catch (_: Throwable) {}
             heartbeatHandler.postDelayed(this, 10000)
         }
     }
