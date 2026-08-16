@@ -65,7 +65,13 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
-    implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("com.google.mlkit:text-recognition:16.0.1") {
+        // tensorflow-lite:2.14.0 from adapter_smartassist is the full runtime.
+        // mlkit transitively pulls tensorflow-lite-api:2.14.0 (API-only stub)
+        // causing a duplicate namespace warning. Exclude the stub — the full
+        // runtime already provides everything the stub offers.
+        exclude(group = "org.tensorflow", module = "tensorflow-lite-api")
+    }
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
 

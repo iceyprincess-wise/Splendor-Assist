@@ -173,18 +173,13 @@ object RuntimeSelfHealEngine {
 
                 // Attempt restart via OverlayService instance
                 val restarted = try {
-                    val svcCls = Class.forName("com.assistant.OverlayService")
-                    val instField = svcCls.getDeclaredField("instance")
-                    instField.isAccessible = true
-                    @Suppress("UNCHECKED_CAST")
-                    val weakRef = instField.get(null) as? java.lang.ref.WeakReference<*>
-                    val svc = weakRef?.get()
-                    if (svc != null) {
-                        val restartMethod = svcCls.getMethod("restartCapture")
-                        restartMethod.invoke(svc) as? Boolean ?: false
-                    } else false
+                    // PHASE5B: direct companion call replaces fragile reflection.
+                    // WeakRef was GC-nulled under memory pressure — exactly the
+                    // scenario that triggers recovery. Direct nullable ref is
+                    // cleared in onDestroy() so no leak risk.
+                    com.assistant.OverlayService.restartCaptureIfAlive()
                 } catch (e: Throwable) {
-                    RuntimeLogger.log("AGENT: restartCapture reflection failed: ${e.message}", "AGENT")
+                    RuntimeLogger.log("AGENT: restartCaptureIfAlive failed: ${e.message}", "AGENT")
                     false
                 }
 

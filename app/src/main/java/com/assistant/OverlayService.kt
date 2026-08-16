@@ -77,9 +77,14 @@ class OverlayService : Service(), ComponentCallbacks2 {
     companion object {
         private const val CHANNEL_ID = "efootball_assistant_channel"
         private const val NOTIFICATION_ID = 101
-        // PHASE4B: agent capture restart — weak ref so we never prevent GC/destroy
-        @Volatile var instance: java.lang.ref.WeakReference<OverlayService>? = null
+        // PHASE5B: direct nullable reference, cleared in onDestroy.
+        // WeakRef was unreliable under memory pressure (GC nulls it exactly
+        // when recovery is most needed). Direct ref is safe here because
+        // we clear it in onDestroy(), preventing leaks.
+        @Volatile var instance: OverlayService? = null
             private set
+        fun restartCaptureIfAlive(): Boolean =
+            instance?.restartCapture() ?: false
     }
 
     private var isRunning = false
@@ -115,7 +120,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
     // Every 2nd frame: full VisionCore (58 engines) = 15fps compute cost.
     // Result: 30fps ball tracking accuracy + 15fps engine load on Helio G81-Ultra.
     @Volatile private var lastFrameProcessedMs = 0L
-    private val captureFrameIntervalMs = 33L  // 30fps gate
+    // Base frame interval. Actual interval is adaptive — see MemoryCaptureGateEngine.
+    private val captureFrameIntervalBase = 33L  // 30fps base
     @Volatile private var captureFrameCount = 0L  // alternating full/light processing
 
     private val analyticsExecutor =
@@ -134,7 +140,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
         mediaProjection ?: return false  // guard: projection revoked → abort restart
         try {
             RuntimeLogger.log("AGENT CAPTURE RESTART: attempting ImageReader recreation", "AGENT")
-            // Release old reader
+            // Drain the OCR handler queue before closing the reader.
+            // Any pending onImageAvailable callback holds an Image reference that
+            // becomes invalid the instant close() is called. The latch ensures
+            // the drain completes before we proceed.
+            try {
+                val drainLatch = java.util.concurrent.CountDownLatch(1)
+                ocrIoHandler?.post { drainLatch.countDown() } ?: drainLatch.countDown()
+                drainLatch.await(100L, java.util.concurrent.TimeUnit.MILLISECONDS)
+            } catch (_: Throwable) {}
+            // Release old reader only after handler queue is drained
             try { virtualDisplay?.release() } catch (_: Throwable) {}
             try { imageReader?.close() } catch (_: Throwable) {}
             // Re-setup with fresh ImageReader (same dimensions as before)
@@ -167,7 +182,7 @@ override fun onCreate() {
             com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext)
             com.assistant.adapter.smartassist.RuntimeSelfHealEngine.start()
         } catch (_: Throwable) {}
-        instance = java.lang.ref.WeakReference(this)
+        instance = this
         // Anti-Cheat defense disabled to prevent HyperOS false-positive kill
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()
@@ -424,6 +439,16 @@ override fun onCreate() {
     }
 
     private fun processImageForOCR(image: Image) {
+        // Guard against closed images from a previous ImageReader generation.
+        // Race: restartCapture() calls imageReader?.close() which invalidates
+        // images acquired before close() was called. Any pending callback that
+        // arrives after close() carries a dead image.
+        try {
+            image.width  // throwISEIfImageIsInvalid — safe canary touch
+        } catch (_: IllegalStateException) {
+            try { image.close() } catch (_: Throwable) {}
+            return
+        }
         if (taskExecutionLock.tryLock()) {
             try {
                 if (reusableBitmap == null || reusableBitmap!!.width != image.width || reusableBitmap!!.height != image.height) {
