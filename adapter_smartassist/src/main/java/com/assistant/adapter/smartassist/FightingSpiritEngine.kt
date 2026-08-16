@@ -5,136 +5,226 @@ import com.assistant.runtime.RuntimeFrame
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * FightingSpiritEngine — player skill amplifier.
+ * FightingSpiritEngine
  *
- * WHAT IT MODELS:
- *   Fighting Spirit is an eFootball player skill that activates under
- *   pressure or adversity, giving a committed decisive boost to all
- *   actions. The engine does NOT generate its own gesture — it amplifies
- *   the best contribution already chosen by arbitration.
+ * Models the documented eFootball Fighting Spirit behaviour as a
+ * pressure-resilience signal.
  *
- * WHEN IT FIRES:
- *   - defenderDensity > 0.55 (majority of visible players are opponents)
- *   - OR panic is active (emergency situation)
- *   - AND frame is trusted (vision has real data)
- *   - Cooldown: 800ms between activations (no spam amplification)
+ * VERIFIED GAMEPLAY BASIS:
+ * Fighting Spirit reduces the deterioration of shooting and passing
+ * accuracy when the player is under pressure, such as when opposing
+ * players are nearby.
  *
- * EFFECTS WHEN ACTIVE:
- *   1. authorityBoost: multiplier [1.0 → 1.35] applied to the winning
- *      contribution's authority before execution.
- *   2. panicResistance: reduces the panic penalty from 50% to 25%
- *      (fighting spirit players commit under pressure, not retreat).
- *   3. durationBoost: adds [0 → 12ms] to the gesture duration hint,
- *      representing a committed, decisive contact.
+ * IMPORTANT:
+ * This engine does not claim to reproduce KONAMI's private server-side
+ * implementation. RuntimeFrame provides only the local pressure signals
+ * available to this application.
  *
- * AMPLIFICATION CURVE:
- *   Scales with pressure: light pressure (0.55) → 1.10x boost.
- *   Full defensive wall (1.0) → 1.35x boost.
- *   Panic alone (no density data) → 1.20x flat boost.
- *
- * LOGGED TO:
- *   RuntimeLogger tag FIGHTING_SPIRIT — visible in Splendor_Field_Logs.txt
+ * DESIGN:
+ * - pressure is continuous rather than a single hard trigger;
+ * - pressure below the activation floor is inert;
+ * - stronger pressure produces stronger accuracy-retention resistance;
+ * - no artificial gesture-duration extension;
+ * - no arbitrary 1.35x "power" multiplier;
+ * - no network/server-state modification;
+ * - cooldown prevents repeated activation logging;
+ * - trusted frames are required.
  */
 object FightingSpiritEngine {
 
-    private const val DENSITY_THRESHOLD = 0.55f
+    private const val PRESSURE_FLOOR = 0.55f
+    private const val MAX_PRESSURE = 1.0f
+    private const val MIN_ACCURACY_RETENTION = 1.0f
+    private const val MAX_ACCURACY_RETENTION = 1.20f
+    private const val ACTIVE_PANIC_RETENTION = 1.10f
     private const val COOLDOWN_MS = 800L
-    private const val MAX_BOOST = 1.35f
-    private const val PANIC_BOOST = 1.20f
 
     private val activations = AtomicLong(0L)
-    @Volatile private var lastActivationMs = 0L
-    @Volatile private var lastBoost = 1.0f
-    @Volatile private var active = false
+
+    @Volatile
+    private var lastActivationMs = 0L
+
+    @Volatile
+    private var lastRetention = MIN_ACCURACY_RETENTION
+
+    @Volatile
+    private var lastPressure = 0.0f
+
+    @Volatile
+    private var active = false
 
     data class FightingSpiritResult(
         val active: Boolean,
-        val authorityBoost: Float,   // multiply into authority
-        val panicResistance: Float,  // 0.5 → 0.75 when active (less penalty)
-        val durationBoostMs: Long    // add to durationHintMs
+
+        /**
+         * Compatibility field retained for existing arbitration callers.
+         *
+         * Fighting Spirit itself does not grant generic action authority,
+         * so this remains 1.0f. The skill effect belongs in pressure
+         * accuracy retention instead.
+         */
+        val authorityBoost: Float,
+
+        /**
+         * Pressure penalty resistance.
+         *
+         * 0.50f = normal pressure penalty resistance baseline.
+         * 0.75f = stronger resilience when Fighting Spirit is active.
+         */
+        val panicResistance: Float,
+
+        /**
+         * Compatibility field retained for existing callers.
+         *
+         * Fighting Spirit does not increase gesture duration.
+         */
+        val durationBoostMs: Long,
+
+        /**
+         * Multiplier describing how much pressure-induced accuracy
+         * degradation should be retained by the downstream action model.
+         *
+         * 1.0f = no additional retention.
+         * Up to 1.20f = strongest locally inferred pressure resilience.
+         */
+        val accuracyRetention: Float,
+
+        /**
+         * Normalized local pressure estimate used by this engine.
+         */
+        val pressure: Float
     )
 
     /**
-     * Call once per frame AFTER arbitration has chosen a winner.
-     * Returns a result the caller uses to scale the chosen contribution.
+     * Evaluate Fighting Spirit from the current trusted RuntimeFrame.
+     *
+     * The skill is modelled as passive resilience under pressure rather
+     * than as a burst of generic execution power.
      */
     fun evaluate(frame: RuntimeFrame): FightingSpiritResult {
         if (!frame.trusted) {
             active = false
+            lastPressure = 0.0f
+            lastRetention = MIN_ACCURACY_RETENTION
+            return inert()
+        }
+
+        val density = frame.defenderDensity.coerceIn(0.0f, 1.0f)
+
+        /*
+         * defenderDensity is the available local proxy for nearby
+         * opposition pressure. Panic contributes a bounded secondary
+         * signal rather than creating an unrelated power multiplier.
+         */
+        val panicPressure = if (frame.panic) 0.15f else 0.0f
+
+        val pressure = (density + panicPressure).coerceIn(0.0f, MAX_PRESSURE)
+
+        if (pressure < PRESSURE_FLOOR) {
+            active = false
+            lastPressure = pressure
+            lastRetention = MIN_ACCURACY_RETENTION
             return inert()
         }
 
         val now = System.currentTimeMillis()
-        val cooldownOk = (now - lastActivationMs) >= COOLDOWN_MS
 
-        val densityFires = frame.defenderDensity >= DENSITY_THRESHOLD
-        val panicFires   = frame.panic
-
-        if ((!densityFires && !panicFires) || !cooldownOk) {
-            // Decay active state after one missed cycle
-            if (now - lastActivationMs > COOLDOWN_MS * 2) active = false
-            return inert()
+        if (now - lastActivationMs < COOLDOWN_MS) {
+            return resultFromState()
         }
 
-        // ── Compute boost magnitude ───────────────────────────────────────
-        val boost = when {
-            densityFires -> {
-                // Scale linearly: density 0.55 → 1.10x, 1.0 → 1.35x
-                val t = ((frame.defenderDensity - DENSITY_THRESHOLD) /
-                        (1.0f - DENSITY_THRESHOLD)).coerceIn(0f, 1f)
-                (1.10f + t * (MAX_BOOST - 1.10f)).coerceIn(1.0f, MAX_BOOST)
-            }
-            panicFires -> PANIC_BOOST
-            else -> 1.0f
-        }
+        val normalized =
+            ((pressure - PRESSURE_FLOOR) /
+                (MAX_PRESSURE - PRESSURE_FLOOR))
+                .coerceIn(0.0f, 1.0f)
 
-        val durationBoost = when {
-            boost >= 1.30f -> 12L
-            boost >= 1.20f -> 8L
-            boost >= 1.10f -> 4L
-            else -> 0L
-        }
+        /*
+         * Continuous retention curve:
+         *
+         * floor pressure -> 1.00x
+         * maximum pressure -> 1.20x
+         *
+         * This is a local modelling coefficient, not a claim that KONAMI
+         * uses this exact multiplier internally.
+         */
+        val retention =
+            (MIN_ACCURACY_RETENTION +
+                normalized *
+                (MAX_ACCURACY_RETENTION - MIN_ACCURACY_RETENTION))
+                .coerceIn(
+                    MIN_ACCURACY_RETENTION,
+                    MAX_ACCURACY_RETENTION
+                )
+
+        val panicResistance =
+            if (frame.panic) ACTIVE_PANIC_RETENTION
+            else 0.75f
 
         lastActivationMs = now
-        lastBoost = boost
+        lastPressure = pressure
+        lastRetention = retention
         active = true
+
         val count = activations.incrementAndGet()
 
         RuntimeLogger.log(
-            "FIGHTING_SPIRIT ACTIVE: boost=%.2f density=%.2f panic=%b duration+%dms (activation #%d)".format(
-                boost, frame.defenderDensity, panicFires, durationBoost, count
-            ),
+            "FIGHTING_SPIRIT ACTIVE: pressure=%.2f retention=%.3f panic=%b activation=#%d"
+                .format(
+                    pressure,
+                    retention,
+                    frame.panic,
+                    count
+                ),
             "FIGHTING_SPIRIT"
         )
 
         return FightingSpiritResult(
-            active          = true,
-            authorityBoost  = boost,
-            panicResistance = 0.75f,  // reduces panic penalty: 0.5 → 0.75
-            durationBoostMs = durationBoost
+            active = true,
+            authorityBoost = 1.0f,
+            panicResistance = panicResistance,
+            durationBoostMs = 0L,
+            accuracyRetention = retention,
+            pressure = pressure
         )
     }
 
     fun isActive(): Boolean = active
 
     fun diagnostics(): Map<String, Any> = mapOf(
-        "active"            to active,
-        "activations"       to activations.get(),
-        "lastBoost"         to lastBoost,
-        "lastActivationMs"  to lastActivationMs
+        "active" to active,
+        "activations" to activations.get(),
+        "lastRetention" to lastRetention,
+        "lastPressure" to lastPressure,
+        "lastActivationMs" to lastActivationMs
     )
 
-    private fun inert() = FightingSpiritResult(
-        active          = false,
-        authorityBoost  = 1.0f,
-        panicResistance = 0.5f,
-        durationBoostMs = 0L
-    )
+    private fun resultFromState(): FightingSpiritResult {
+        return FightingSpiritResult(
+            active = active,
+            authorityBoost = 1.0f,
+            panicResistance = if (active) 0.75f else 0.5f,
+            durationBoostMs = 0L,
+            accuracyRetention = lastRetention,
+            pressure = lastPressure
+        )
+    }
+
+    private fun inert(): FightingSpiritResult {
+        return FightingSpiritResult(
+            active = false,
+            authorityBoost = 1.0f,
+            panicResistance = 0.5f,
+            durationBoostMs = 0L,
+            accuracyRetention = MIN_ACCURACY_RETENTION,
+            pressure = lastPressure
+        )
+    }
 
     fun reset() {
         activations.set(0L)
         lastActivationMs = 0L
-        lastBoost = 1.0f
+        lastRetention = MIN_ACCURACY_RETENTION
+        lastPressure = 0.0f
         active = false
     }
 }

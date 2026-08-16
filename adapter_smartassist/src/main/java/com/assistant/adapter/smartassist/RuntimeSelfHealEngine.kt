@@ -506,11 +506,8 @@ object RuntimeSelfHealEngine {
             // cat /sdcard/Splendor-Assist/SplendorHealLog.txt
             SplendorStorageRoot.file("SplendorHealLog.txt")
         } catch (_: Throwable) {
-            // Fallback: app external files
-            try {
-                val ctx = contextRef?.get() ?: return null
-                null
-            } catch (_: Throwable) { null }
+            // Canonical storage only. No storage fallback is permitted.
+            null
         }
     }
 
