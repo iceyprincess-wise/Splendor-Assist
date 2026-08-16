@@ -25,7 +25,6 @@ import com.assistant.controlroom.ui.FutureRoomsActivity
 import com.assistant.controlroom.ui.GoalkeeperControlRoomActivity
 import com.assistant.controlroom.ui.InterceptionControlRoomActivity
 import com.assistant.controlroom.ui.SmartAssistControlRoomActivity
-import com.assistant.overlay.ui.AnalyticsTheaterActivity
 import com.assistant.adapter.smartassist.SmartAssistRepository
 import com.assistant.adapter.smartassist.RuntimePerformanceCoordinator
 import com.assistant.adapter.smartassist.RuntimeDiagnosticsRegistry
@@ -289,14 +288,7 @@ override fun onResume() {
         findViewById<View>(com.assistant.overlay.R.id.cardOverlay).setOnClickListener { openFutureRoom("Overlay") }
         findViewById<View>(com.assistant.overlay.R.id.cardAccessibility).setOnClickListener { openFutureRoom("Accessibility") }
         findViewById<View>(com.assistant.overlay.R.id.cardNotifications).setOnClickListener { openFutureRoom("Notifications") }
-        findViewById<View>(com.assistant.overlay.R.id.cardMediaProjection).setOnClickListener {
-    startActivity(
-        Intent(
-            this,
-            AnalyticsTheaterActivity::class.java
-        )
-    )
-}
+        findViewById<View>(com.assistant.overlay.R.id.cardMediaProjection).setOnClickListener { openFutureRoom("Gameplay") }
         findViewById<View>(com.assistant.overlay.R.id.cardDiagnostics).setOnClickListener { startActivity(Intent(this, DiagnosisRoomActivity::class.java)) }
         findViewById<View>(com.assistant.overlay.R.id.cardFutureRooms).setOnClickListener { openFutureRoom("Future Rooms") }
     }

@@ -44,7 +44,6 @@
         <activity android:name="com.assistant.UpdateActivity" android:exported="false" />
 
         <!-- Analytics Theater / Logs -->
-        <activity android:name="com.assistant.overlay.ui.AnalyticsTheaterActivity" android:exported="false" />
 
         <service android:name="com.assistant.OverlayService" android:exported="false" android:foregroundServiceType="mediaProjection" />
 

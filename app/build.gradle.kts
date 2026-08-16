@@ -1,5 +1,4 @@
 plugins {
-    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
@@ -55,15 +54,6 @@ dependencies {
 
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-
-    val media3Version = "1.3.0"
-    implementation("androidx.media3:media3-exoplayer:$media3Version")
-    implementation("androidx.media3:media3-ui:$media3Version")
-
-    val roomVersion = "2.6.1"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
 
     implementation("com.google.mlkit:text-recognition:16.0.1") {
         // tensorflow-lite:2.14.0 from adapter_smartassist is the full runtime.

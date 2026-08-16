@@ -4,20 +4,12 @@ import android.annotation.SuppressLint
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.RuntimeMetricsRegistry
 import com.assistant.adapter.smartassist.SmartAssistRepository
-import com.assistant.overlay.database.MatchAnalyticsEntity
 import com.assistant.survival.OverlaySurvivalEngine
-import com.assistant.overlay.database.TheaterDatabase
 import com.assistant.overlay.metrics.SmartAssistMetrics
 import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
 import com.assistant.overlay.notification.RuntimeNotificationCoordinator
-import com.assistant.overlay.dvr.DvrRuntimeCoordinator
-import com.assistant.overlay.dvr.DvrSessionCoordinator
-import com.assistant.overlay.dvr.MatchSessionEngine
 import com.assistant.overlay.runtime.PerformanceGovernor
-import com.assistant.overlay.analytics.LiveMatchAnalytics
-import com.assistant.overlay.storage.MediaStoreStorageEngine
 import java.util.UUID
-import java.util.concurrent.Executors
 
 import android.app.Activity
 import android.app.Notification
@@ -35,7 +27,6 @@ import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.Image
 import android.media.ImageReader
-import android.media.MediaRecorder
 import android.view.Surface
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
@@ -70,9 +61,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
     @Volatile
     private var runtimeInitialized = false
 
-    @Volatile
-    private var recorderInitialized = false
-
 
     companion object {
         private const val CHANNEL_ID = "efootball_assistant_channel"
@@ -99,12 +87,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var imageReader: ImageReader? = null
     private var projectionCallback: MediaProjection.Callback? = null
 
-    private var mediaRecorder: MediaRecorder? = null
-    private var recordingFile: File? = null
-
-    private var activeAnalyticsMatchId:String?=null
-    private var activeRecordingStart:Long=0L
-    private var recorderVirtualDisplay: VirtualDisplay? = null
 
 
     private var perfHintSession: PerformanceHintManager.Session? = null
@@ -128,9 +110,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private val captureFrameIntervalMs: Long
         get() = com.assistant.adapter.memory.MemoryCaptureGateEngine.recommendedIntervalMs()
     @Volatile private var captureFrameCount = 0L  // alternating full/light processing
-
-    private val analyticsExecutor =
-        Executors.newSingleThreadExecutor()
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -217,15 +196,6 @@ override fun onCreate() {
         if (resultCode == Activity.RESULT_OK && data != null) {
             startForegroundSafely()
 
-            // [CRASH FIX] DVR foreground-service start disabled:
-            // it went foreground as mediaProjection before consent was validated,
-            // causing SecurityException on Android 14+ (SDK 34+). Safe to skip.
-            // startService(
-            //     android.content.Intent(
-            //         this,
-            //         com.assistant.overlay.dvr.DvrProjectionService::class.java
-            //     )
-            // )
             try {
                 setupMediaProjection(resultCode, data)
                 if (!isRunning) {
@@ -592,12 +562,9 @@ override fun onCreate() {
                                 .matchDetections
                                 .incrementAndGet()
 
-                            MatchSessionEngine.onGameplayFrame()
 
-                            DvrSessionCoordinator.beginSession()
 
                             val recording =
-                                DvrRuntimeCoordinator.recording()
 
                             val recordingAllowed =
                                 PerformanceGovernor.allowRecording(
@@ -619,7 +586,6 @@ override fun onCreate() {
                                 "SMART_ASSIST"
                             )
 
-                            analyticsExecutor.execute {
 
                                 try {
 
@@ -629,31 +595,23 @@ override fun onCreate() {
                                     val now =
                                         System.currentTimeMillis()
 
-                                    activeAnalyticsMatchId=matchId
-                                    activeRecordingStart=now
 
                                     val analytics =
-                                        MatchAnalyticsEntity(
                                             matchId = matchId,
                                             startTimestamp = now,
                                             endTimestamp = now,
                                             dvrVideoPath = "",
                                             isPermanentlySaved = false,
                                             possessionPercentage =
-                                                LiveMatchAnalytics.possession(),
 
                                             longPassEfficiency =
-                                                LiveMatchAnalytics.passing(),
 
                                             defensiveInterceptions =
-                                                LiveMatchAnalytics.interceptions(),
 
                                             transitionSpeedMs =
-                                                LiveMatchAnalytics.transition(),
                                             errorTimelineJson = "[]"
                                         )
 
-                                    TheaterDatabase
                                         .getDatabase(applicationContext)
                                         .theaterDao()
                                         .insertMatchData(
@@ -704,7 +662,6 @@ override fun onCreate() {
 
                 try {
 
-                    MatchSessionEngine.heartbeat()
 
                     Thread.sleep(33)
 
@@ -720,17 +677,13 @@ override fun onCreate() {
     
 private fun startRuntimeRecorder() {
 
-        if (!DvrSessionCoordinator.active())
             return
 
-        if (mediaRecorder != null)
             return
 
-        if (recorderInitialized) {
             return
         }
 
-        recorderInitialized = true
 
         RuntimeLogger.log(
             "Runtime recorder armed",
@@ -742,7 +695,6 @@ private fun startRuntimeRecorder() {
 
         dir.mkdirs()
 
-        recordingFile =
             File(
                 dir,
                 "match_" +
@@ -750,7 +702,6 @@ private fun startRuntimeRecorder() {
                 ".mp4"
             )
 
-        mediaRecorder =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 MediaRecorder(this)
             } else {
@@ -782,13 +733,11 @@ private fun startRuntimeRecorder() {
                 )
 
                 setOutputFile(
-                    recordingFile!!.absolutePath
                 )
 
                 prepare()
             }
 
-        recorderVirtualDisplay =
             mediaProjection?.createVirtualDisplay(
 
                 "SplendorRecorder",
@@ -801,7 +750,6 @@ private fun startRuntimeRecorder() {
 
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
 
-                mediaRecorder!!.surface,
 
                 null,
 
@@ -809,42 +757,32 @@ private fun startRuntimeRecorder() {
 
             )
 
-        mediaRecorder!!.start()
     }
 
     
 private fun stopRuntimeRecorder() {
 
-        recorderInitialized=false
 
 
         try {
-            mediaRecorder?.stop()
         } catch (_: Exception) {
         }
 
         try {
-            mediaRecorder?.release()
         } catch (_: Exception) {
         }
 
         try {
-            recorderVirtualDisplay?.release()
         } catch (_: Exception) {
         }
 
-        recorderVirtualDisplay = null
         val completedRecording =
-            recordingFile
 
-        mediaRecorder = null
-        recordingFile = null
 
         completedRecording?.let {
 
             try {
 
-                MediaStoreStorageEngine.saveToRom(
                     context = applicationContext,
                     matchId =
                         System.currentTimeMillis()
@@ -855,19 +793,15 @@ private fun stopRuntimeRecorder() {
 
                     try{
 
-                        activeAnalyticsMatchId?.let{ id->
 
-                            TheaterDatabase
                                 .getDatabase(applicationContext)
                                 .theaterDao()
                                 .insertMatchData(
 
-                                    MatchAnalyticsEntity(
 
                                         matchId=id,
 
                                         startTimestamp=
-                                            activeRecordingStart,
 
                                         endTimestamp=
                                             System.currentTimeMillis(),
@@ -878,16 +812,12 @@ private fun stopRuntimeRecorder() {
                                         isPermanentlySaved=true,
 
                                         possessionPercentage=
-                                            LiveMatchAnalytics.possession(),
 
                                         longPassEfficiency=
-                                            LiveMatchAnalytics.passing(),
 
                                         defensiveInterceptions=
-                                            LiveMatchAnalytics.interceptions(),
 
                                         transitionSpeedMs=
-                                            LiveMatchAnalytics.transition(),
 
                                         errorTimelineJson="[]"
                                     )
@@ -904,7 +834,6 @@ private fun stopRuntimeRecorder() {
                         saved = true
                     )
 
-                    DvrSessionCoordinator.completeSave()
 
                     RuntimeLogger.log(
                         "Recording exported",
@@ -923,7 +852,6 @@ private fun stopRuntimeRecorder() {
 
         }
 
-        DvrSessionCoordinator.finishSession()
 
         RuntimeNotificationCoordinator.update(
             context = applicationContext,
