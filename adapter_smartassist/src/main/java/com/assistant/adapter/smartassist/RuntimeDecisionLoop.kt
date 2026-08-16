@@ -94,7 +94,22 @@ object RuntimeDecisionLoop {
             lastWeight = (best.weight * fs.authorityBoost).coerceIn(0f, 1f)
         }
 
-        val accepted = HybridExecutionTerminal.route(finalRequest)
+        // ── Captaincy Skill amplification ────────────────────────────────
+        // Captaincy is a passive, continuous team-wide fatigue reduction.
+        // Applied after Fighting Spirit so both effects compound correctly.
+        val captaincy = CaptaincySkillEngine.evaluate(frame)
+        val resolvedRequest = if (captaincy.active && captaincy.composureBoostMs > 0L) {
+            finalRequest.copy(
+                duration = (finalRequest.duration + captaincy.composureBoostMs)
+                    .coerceIn(15L, 85L)
+            )
+        } else finalRequest
+        // Apply team lift to lastWeight for diagnostic visibility
+        if (captaincy.active && best != null && !fs.active) {
+            lastWeight = (best.weight * captaincy.teamLiftFactor).coerceIn(0f, 1f)
+        }
+
+        val accepted = HybridExecutionTerminal.route(resolvedRequest)
         if (accepted) {
             routed.incrementAndGet()
             try {
@@ -146,6 +161,7 @@ object RuntimeDecisionLoop {
     fun reset() {
         decisions.set(0L); routed.set(0L)
         FightingSpiritEngine.reset()
+        CaptaincySkillEngine.reset()
         idleNoContribution.set(0L); idleUntrusted.set(0L)
         lastAction = "none"; lastWeight = 0f; lastUpdatedMs = 0L
     }
