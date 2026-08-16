@@ -83,7 +83,7 @@ object RuntimeDecisionLoop {
         // Evaluate AFTER arbitration so it amplifies the already-chosen
         // winner rather than competing in arbitration itself.
         val fs = FightingSpiritEngine.evaluate(frame)
-        val finalRequest = if (fs.active && request != null) {
+        val finalRequest = if (fs.active) {
             request.copy(
                 duration = (request.duration + fs.durationBoostMs)
                     .coerceIn(15L, 85L)
@@ -94,7 +94,7 @@ object RuntimeDecisionLoop {
             lastWeight = (best.weight * fs.authorityBoost).coerceIn(0f, 1f)
         }
 
-        val accepted = HybridExecutionTerminal.route(finalRequest ?: request)
+        val accepted = HybridExecutionTerminal.route(finalRequest)
         if (accepted) {
             routed.incrementAndGet()
             try {
