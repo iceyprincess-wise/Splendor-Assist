@@ -1,7 +1,5 @@
 package com.assistant.adapter.smartassist
 
-import com.assistant.storage.SplendorStorageRoot
-
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
@@ -504,12 +502,15 @@ object RuntimeSelfHealEngine {
         return try {
             // /sdcard/Splendor-Assist/SplendorHealLog.txt — read with:
             // cat /sdcard/Splendor-Assist/SplendorHealLog.txt
-            SplendorStorageRoot.file("SplendorHealLog.txt")
+            val downloads = android.os.Environment.getExternalStoragePublicDirectory(
+                android.os.Environment.DIRECTORY_DOWNLOADS)
+            downloads.mkdirs()
+            File(downloads, "SplendorHealLog.txt")
         } catch (_: Throwable) {
             // Fallback: app external files
             try {
                 val ctx = contextRef?.get() ?: return null
-                null
+                ctx.getExternalFilesDir(null)?.let { File(it, "SplendorHealLog.txt") }
             } catch (_: Throwable) { null }
         }
     }

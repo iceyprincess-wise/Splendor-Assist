@@ -1,7 +1,5 @@
 package com.assistant
 
-import com.assistant.storage.SplendorStorageRoot
-
 import com.assistant.diagnostic.RuntimeLogger
 
 import android.app.Application
@@ -9,7 +7,6 @@ import android.app.Application
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
-        SplendorStorageRoot.initialize()
         RuntimeLogger.initialize(this)
         RuntimeLogger.reconcileExpired()
 
