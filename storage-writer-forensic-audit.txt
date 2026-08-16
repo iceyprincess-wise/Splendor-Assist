@@ -1,0 +1,1417 @@
+============================================================
+ SPLENDOR-ASSIST LOCAL STORAGE WRITER FORENSIC AUDIT
+ READ ONLY — NO SOURCE FILES MODIFIED
+ Sun Aug 16 19:52:23 WAT 2026
+============================================================
+
+[1] REPOSITORY STATE
+------------------------------------------------------------
+?? splendor-storage-audit.sh
+?? storage-writer-forensic-audit.txt
+
+HEAD:
+fb3c7c27
+
+BRANCH:
+main
+
+[2] SOURCE FILE INVENTORY
+------------------------------------------------------------
+./adapter_battery/src/main/AndroidManifest.xml
+./adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt
+./adapter_boot/src/main/AndroidManifest.xml
+./adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt
+./adapter_input/src/main/AndroidManifest.xml
+./adapter_input/src/main/java/com/assistant/adapter/input/GestureTimingFeedbackEngine.kt
+./adapter_input/src/main/java/com/assistant/adapter/input/InputAdapterService.kt
+./adapter_input/src/main/java/com/assistant/adapter/input/InputLatencyEngine.kt
+./adapter_input/src/main/java/com/assistant/adapter/input/InputPriorityEngine.kt
+./adapter_input/src/main/java/com/assistant/adapter/input/OomAdaptiveThrottleEngine.kt
+./adapter_input/src/main/java/com/assistant/adapter/input/TouchQualityEngine.kt
+./adapter_input/src/main/res/drawable/ic_extension.xml
+./adapter_interruption/src/main/AndroidManifest.xml
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/AudioProtectionEngine.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/AudioProtectionLock.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/CallOverlayRepository.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/CallStateMonitor.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/CounterThrottleEngine.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionCoordinator.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionRepository.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionState.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/NotificationAttenuationEngine.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/TelephonyLock.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/TelephonyStateRepository.kt
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/ThrottleLock.kt
+./adapter_lag/src/main/AndroidManifest.xml
+./adapter_lag/src/main/java/com/assistant/adapter/lag/CpuGovernorEngine.kt
+./adapter_lag/src/main/java/com/assistant/adapter/lag/DisplayProfileEngine.kt
+./adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedCaptureBrakeEngine.kt
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt
+./adapter_lag/src/main/java/com/assistant/adapter/lag/MainThreadStallEngine.kt
+./adapter_lag/src/main/java/com/assistant/adapter/lag/ThermalPeekEngine.kt
+./adapter_lmk/src/main/AndroidManifest.xml
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/CompressedSnapshot.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/CompressedSnapshotRepository.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/LifecycleSerializationEngine.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/LifecycleSnapshotRepository.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/LmkAdapterService.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/PerformanceHintEngine.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/RehydratedStateSnapshot.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/RehydrationEngine.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/RehydrationRepository.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/SnapshotCompressionEngine.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/StateSnapshot.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/ViewInvalidationEvent.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/ViewInvalidationFilter.kt
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/ViewInvalidationRepository.kt
+./adapter_lmk/src/main/res/drawable/ic_extension.xml
+./adapter_memory/src/main/AndroidManifest.xml
+./adapter_memory/src/main/java/com/assistant/adapter/memory/AggressiveMemoryHoarding.kt
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryCaptureGateEngine.kt
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryPressureBusEngine.kt
+./adapter_net/src/main/AndroidManifest.xml
+./adapter_net/src/main/java/com/assistant/adapter/net/ActionWindowEngine.kt
+./adapter_net/src/main/java/com/assistant/adapter/net/CarrierProfileEngine.kt
+./adapter_net/src/main/java/com/assistant/adapter/net/CongestionSentinelEngine.kt
+./adapter_net/src/main/java/com/assistant/adapter/net/ConnectionHealEngine.kt
+./adapter_net/src/main/java/com/assistant/adapter/net/DnsWarmupEngine.kt
+./adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt
+./adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt
+./adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt
+./adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt
+./adapter_net/src/main/java/com/assistant/adapter/net/RadioKeepAliveEngine.kt
+./adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt
+./adapter_net/src/main/res/drawable/ic_extension.xml
+./adapter_ping/src/main/AndroidManifest.xml
+./adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt
+./adapter_scheduler/src/main/AndroidManifest.xml
+./adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt
+./adapter_smartassist/src/main/AndroidManifest.xml
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AccessibilitySurvivalEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveAttackerEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveAttackerResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveDefenderEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveDefenderResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AdaptiveLoftedThroughEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AgilityEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AntiCutbackSubEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AuthorityArbitrationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AutoEvadeEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallCandidate.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallCandidateEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetectionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallOverlay.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallOwnershipEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallOwnershipResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallPossessionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallPossessionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallRetentionShieldEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTelemetryBridge.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallTrajectoryPredictor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BlockedLanePredictionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BoundingBoxOverlay.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BuildUpPressEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BuildUpRecognitionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BuildUpRecognitionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CentralOverloadDetectionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CentralOverloadDetectionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ClosestPlayerEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ClosestPlayerResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ConfidenceHeatmap.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ConnectedComponentEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CounterPressRecognitionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CounterPressRecognitionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CounterattackDetectionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CriticalAttackingVectorEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CrossPrecisionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CrossingLaneAnalysisEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DecisionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DefenderInterceptionPredictionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DefenseAuthorityEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DefensiveCompactnessEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DefensiveCompactnessResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DefensiveLineEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/DefensiveLineResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/EntityAssociationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FPSMonitor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FalseRunSequenceEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FastBreakDetectionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FieldLineDetectionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FieldLineDetector.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FightingSpiritEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FormationAdaptationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FormationAdaptationResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FormationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FormationResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ForwardRunOpportunityEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameAssembler.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameDropCompensationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameNormalizer.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameScanner.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GameStateBuilder.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GameStateFusion.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GameStateSnapshot.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GameplayDecisionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GestureExecutionAuthority.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GoalDetectionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GoalDetector.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GoalOverlay.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GoalkeeperDetectionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GoalkeeperDetector.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GoalkeeperTrajectoryPredictor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GodTierExecutionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/HighPerformanceRuntimeLogger.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/HybridOmnipotentMatrixEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/HybridResponseCompensationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InputAccumulationDiagnosticsEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InputResponsivenessCoordinator.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InstantInterceptEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/JerseyColorSegmentation.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/JerseySegmentationResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/LiveVectorResolver.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/LowBlockContainmentEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/LowLatencyNetworkThread.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/MagneticDashAnchor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/MagneticFeetEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/MotionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/MotionTracker.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/NoiseFilter.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OffensiveLineEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OffensiveLineResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OffsideRiskEstimationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OmnipotentDashPressureMatrix.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OnlineParameterAdaptationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OnlineParameterAdaptationResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OpenSpaceDetectionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OpponentBehaviourLearningEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OpponentBehaviourLearningResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OverlapDetectionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OverloadPlaystyleEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PassingLane.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PassingLaneGraph.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PassingLaneGraphEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/Phase3WorldState.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PlayerDetection.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PlayerDetectionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PlayerDetector.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PlayerOverlay.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PlayerTendencyLearningEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PlayerTendencyLearningResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PossessionStyleRecognitionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PossessionStyleRecognitionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PreferredPassingLaneLearningEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PreferredPassingLaneLearningResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PressingRecognitionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PressingRecognitionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PressureFieldEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/PressureFieldResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ReboundCollector.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ReceiverEngagementEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ReceiverRankingEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RunPredictionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeConfidenceCalibrationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeConfidenceCalibrationResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDiagnosticsRegistry.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeHealthMonitor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeOverlayHub.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimePerformanceCoordinator.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeTuningPanel.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeVisualizationRegistry.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SceneSnapshot.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SceneTracker.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SecurityExecutionDecoupler.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ShieldAssistEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ShootingHabitLearningEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ShootingHabitLearningResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ShootingLaneAnalysisEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ShotOpportunityAnalysisEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistControlRoomBridge.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistMetrics.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistPipeline.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistRepository.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistUltimateCorrectorEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SpaceOccupancyEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SpaceOccupancyResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SpeedCompensationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalAnalyticsEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalAnalyticsResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalBehaviorRecognitionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalBehaviorRecognitionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalIntelligenceEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalIntelligenceResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalMapGenerationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TacticalMapResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TeamClassificationResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TeamClassifier.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TeamShapeEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TeamShapeResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TelemetryCoordinator.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TelemetryRepository.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TelemetrySnapshot.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TemporalMemoryEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TemporalMemoryState.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ThroughBallLaneAnalysisEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ThroughPassSanitizer.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TouchRecoveryEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TouchStabilizationEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrackedPlayer.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrackingConfiguration.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrueCrossEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrueShotEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrueTargetPassingEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionConfiguration.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionCore.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionDebugOverlay.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionLatencyMonitor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionOverlayRegistry.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionTrust.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/WingBlockEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/WingOverloadDetectionEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/WingOverloadDetectionResult.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ZeroFramePressEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/AgilityContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/AttackingVectorContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/BallRetentionShieldContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/BuildUpPressContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/CrossContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DashAnchorContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DashPressureContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DefenseAuthorityContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DefenseContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/EvadeContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ForwardRunContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/InstantInterceptContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/InterceptMatrixContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/KeeperFeedbackContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/MagneticFeetContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/OverloadPlaystyleContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/PassingContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ReceiverEngagementContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotAnticipationContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/ShotOpportunityContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/SmartAssistUltimateCorrectorContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/SpeedCompensationContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/SupportContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/TouchRecoveryContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/TrueCrossContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/TruePassContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/TrueShotContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/WingBlockContributor.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/FrameDropStabilizer.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/LatencyDefeatingInputEngine.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/MemoryStabilityOptimizer.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/NativePipelineCache.kt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/VsyncInputAnchor.kt
+./adapter_stutter/src/main/AndroidManifest.xml
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterAdapterService.kt
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt
+./adapter_sync/src/main/AndroidManifest.xml
+./adapter_sync/src/main/java/com/assistant/adapter/sync/SyncAdapterService.kt
+./adapter_sync/src/main/res/drawable/ic_extension.xml
+./adapter_thermal/src/main/AndroidManifest.xml
+./adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt
+./adapter_watchdog/src/main/AndroidManifest.xml
+./adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt
+./app/src/debug/AndroidManifest.xml
+./app/src/main/AndroidManifest.xml
+./app/src/main/java/com/assistant/App.kt
+./app/src/main/java/com/assistant/AppContributorRegistration.kt
+./app/src/main/java/com/assistant/BoosterIgnition.kt
+./app/src/main/java/com/assistant/DashboardInjector.kt
+./app/src/main/java/com/assistant/DeathWatch.kt
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt
+./app/src/main/java/com/assistant/DiagnosisRoomActivity.kt
+./app/src/main/java/com/assistant/DiagnosticsEngine.kt
+./app/src/main/java/com/assistant/EngineData.kt
+./app/src/main/java/com/assistant/ErrorActivity.kt
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt
+./app/src/main/java/com/assistant/IgnitionEngine.kt
+./app/src/main/java/com/assistant/LogActivity.kt
+./app/src/main/java/com/assistant/MainActivity.kt
+./app/src/main/java/com/assistant/OtaGatewayEngine.kt
+./app/src/main/java/com/assistant/OverlayService.kt
+./app/src/main/java/com/assistant/PingEliminatorVpnService.kt
+./app/src/main/java/com/assistant/UpdateActivity.kt
+./app/src/main/java/com/assistant/WelcomeActivity.kt
+./app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt
+./app/src/main/java/com/assistant/compliance/ComplianceState.kt
+./app/src/main/java/com/assistant/contributors/BallPressContributor.kt
+./app/src/main/java/com/assistant/contributors/CrossClaimContributor.kt
+./app/src/main/java/com/assistant/contributors/CrossDeliveryContributor.kt
+./app/src/main/java/com/assistant/contributors/KeeperBiasContributor.kt
+./app/src/main/java/com/assistant/contributors/PanicSaveContributor.kt
+./app/src/main/java/com/assistant/contributors/PassLaneContributor.kt
+./app/src/main/java/com/assistant/contributors/PressEvadeContributor.kt
+./app/src/main/java/com/assistant/contributors/ShotContributor.kt
+./app/src/main/java/com/assistant/contributors/ThreatPriorityContributor.kt
+./app/src/main/java/com/assistant/controlroom/ControlRoomBootstrap.kt
+./app/src/main/java/com/assistant/controlroom/ui/FutureRoomsActivity.kt
+./app/src/main/java/com/assistant/controlroom/ui/GoalkeeperControlRoomActivity.kt
+./app/src/main/java/com/assistant/controlroom/ui/InterceptionControlRoomActivity.kt
+./app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt
+./app/src/main/java/com/assistant/core/AdapterIpcBridge.kt
+./app/src/main/java/com/assistant/diagnostic/RuntimeMetricsRegistry.kt
+./app/src/main/java/com/assistant/overlay/bridge/InterceptionControlRoomBridge.kt
+./app/src/main/java/com/assistant/overlay/bridge/SmartAssistControlRoomBridge.kt
+./app/src/main/java/com/assistant/overlay/interceptor/BlockLeftActionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/BlockRightActionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/CollisionAvoidanceEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/CrossClaimActionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/CrossClaimEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/CrossInterceptionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/CrossPunchActionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/DiveLeftActionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/DiveRightActionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/FarPostCoverageEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperActionRouter.kt
+./app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperAdaptiveFeedbackEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperBiasRegistry.kt
+./app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperDecisionRegistry.kt
+./app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperExecutionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperMetricsRegistry.kt
+./app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperStateMachine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/GodTierExecutionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/HoldPositionActionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/InterceptionRuntimeRegistry.kt
+./app/src/main/java/com/assistant/overlay/interceptor/KeeperPositionBiasEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/LongBallCounterEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/NearPostCoverageEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/OneVsOnePanicEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/OwnGoalAvoidanceEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/PanicSaveEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/RecoveryAuthorityRegistry.kt
+./app/src/main/java/com/assistant/overlay/interceptor/RecoveryPositionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/RecoveryPredictionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/RushOutActionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/ShotAnticipationEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/ShotDirectionEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/ThreatClassifierEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/ThreatPriorityEngine.kt
+./app/src/main/java/com/assistant/overlay/interceptor/ThreatZoneEngine.kt
+./app/src/main/java/com/assistant/overlay/metrics/SmartAssistMetrics.kt
+./app/src/main/java/com/assistant/overlay/notification/RuntimeNotificationCoordinator.kt
+./app/src/main/java/com/assistant/overlay/repository/GoalkeeperRepository.kt
+./app/src/main/java/com/assistant/overlay/repository/GoalkeeperRuntimeState.kt
+./app/src/main/java/com/assistant/overlay/repository/InterceptionRepository.kt
+./app/src/main/java/com/assistant/overlay/runtime/PerformanceGovernor.kt
+./app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt
+./app/src/main/java/com/assistant/recovery/RecoveryMetricsRegistry.kt
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt
+./app/src/main/java/com/assistant/survival/AccessibilitySurvivalEngine.kt
+./app/src/main/java/com/assistant/survival/AccessibilitySurvivalRegistry.kt
+./app/src/main/java/com/assistant/survival/OverlaySurvivalEngine.kt
+./app/src/main/java/com/assistant/survival/OverlaySurvivalRegistry.kt
+./app/src/main/java/com/assistant/vision/ForegroundGate.kt
+./app/src/main/java/com/assistant/vision/OverlaySelfMask.kt
+./app/src/main/res/drawable/banner_premium.xml
+./app/src/main/res/drawable/button_premium.xml
+./app/src/main/res/drawable/card_inner_premium.xml
+./app/src/main/res/drawable/card_outer_premium.xml
+./app/src/main/res/drawable/ic_launcher_background.xml
+./app/src/main/res/drawable/ic_launcher_foreground.xml
+./app/src/main/res/layout/activity_error.xml
+./app/src/main/res/layout/activity_future_rooms.xml
+./app/src/main/res/layout/activity_goalkeeper_control_room.xml
+./app/src/main/res/layout/activity_interception_control_room.xml
+./app/src/main/res/layout/activity_main.xml
+./app/src/main/res/layout/activity_room_tuner.xml
+./app/src/main/res/layout/activity_smartassist_control_room.xml
+./app/src/main/res/layout/activity_update.xml
+./app/src/main/res/layout/activity_welcome.xml
+./app/src/main/res/layout/overlay_layout.xml
+./app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+./app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+./app/src/main/res/values/strings.xml
+./app/src/main/res/values/themes.xml
+./app/src/main/res/xml/accessibility_service_config.xml
+./app/src/main/res/xml/filepaths.xml
+./app/src/main/res/xml/provider_paths.xml
+./diagnostic_core/src/main/AndroidManifest.xml
+./diagnostic_core/src/main/java/com/assistant/audit/SelfAuditRegistry.kt
+./diagnostic_core/src/main/java/com/assistant/controlroom/AdapterControlRoom.kt
+./diagnostic_core/src/main/java/com/assistant/controlroom/AdapterControlRoomRegistry.kt
+./diagnostic_core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt
+./diagnostic_core/src/main/java/com/assistant/diagnostic/AnalyticsTheaterActivity.kt
+./diagnostic_core/src/main/java/com/assistant/diagnostic/CrashInspector.kt
+./diagnostic_core/src/main/java/com/assistant/diagnostic/CrashInspectorActivity.kt
+./diagnostic_core/src/main/java/com/assistant/diagnostic/MachineLedger.kt
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt
+./diagnostic_core/src/main/java/com/assistant/diagnostic/notification/NodeNotificationHub.kt
+./diagnostic_core/src/main/java/com/assistant/diagnostic/persistence/HealthPersistenceStore.kt
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/AdapterHealthRegistry.kt
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt
+./diagnostic_core/src/main/java/com/assistant/events/RuntimeEvents.kt
+./diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt
+./diagnostic_core/src/main/java/com/assistant/execution/ContributionRegistry.kt
+./diagnostic_core/src/main/java/com/assistant/execution/HybridExecutionTerminal.kt
+./diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt
+./diagnostic_core/src/main/java/com/assistant/runtime/RuntimeFrame.kt
+./diagnostic_core/src/main/java/com/assistant/survival/ProcessSurvivalRegistry.kt
+./diagnostic_core/src/main/java/com/assistant/survival/ResourceBudgetRegistry.kt
+./diagnostic_core/src/main/res/layout/activity_analytics_theater.xml
+./diagnostic_core/src/main/res/layout/activity_crash_inspector.xml
+
+[3] CANONICAL STORAGE OWNER REFERENCES
+------------------------------------------------------------
+./app/src/main/java/com/assistant/App.kt:3:import com.assistant.storage.SplendorStorageRoot
+./app/src/main/java/com/assistant/App.kt:12:        SplendorStorageRoot.initialize()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:4:import com.assistant.storage.SplendorStorageRoot
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:67:            val baseDir = SplendorStorageRoot.directory()
+./app/src/main/java/com/assistant/OverlayService.kt:216:            val logFile = File("/sdcard/Splendor-Assist", "crash_log.txt").also { it.parentFile?.mkdirs() }
+./app/src/main/java/com/assistant/DeathWatch.kt:192:            try { java.io.File("/sdcard/Splendor-Assist").apply { mkdirs() } } catch (_: Throwable) { null },
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:7:object SplendorStorageRoot {
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:9:    const val ROOT_PATH = "/sdcard/Splendor-Assist"
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:11:    private val root = File(ROOT_PATH)
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:58:            "Splendor storage is not ready: $ROOT_PATH"
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:70:            "Storage filename must remain directly under $ROOT_PATH"
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:82:            "Storage directory must remain directly under $ROOT_PATH"
+./diagnostic_core/src/main/java/com/assistant/diagnostic/CrashInspector.kt:5:    val LOG_DIR = File("/sdcard/Splendor-Assist")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:56:            externalLogFile = File("/sdcard/Splendor-Assist", "Splendor_Field_Logs.txt").also { it.parentFile?.mkdirs() }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:63:                    "/sdcard/Splendor-Assist/Forensics"
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:3:import com.assistant.storage.SplendorStorageRoot
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:28: *  - HealLog path: /sdcard/Splendor-Assist/SplendorHealLog.txt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:29: *    Read with: cat /sdcard/Splendor-Assist/SplendorHealLog.txt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:505:            // /sdcard/Splendor-Assist/SplendorHealLog.txt — read with:
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:506:            // cat /sdcard/Splendor-Assist/SplendorHealLog.txt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:507:            SplendorStorageRoot.file("SplendorHealLog.txt")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:525:                    w.write("Read: cat /sdcard/Splendor-Assist/SplendorHealLog.txt\n")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:557:                appendLine("HealLog: /sdcard/Splendor-Assist/SplendorHealLog.txt")
+
+[4] LEGACY PUBLIC STORAGE PATHS
+------------------------------------------------------------
+./app/src/main/java/com/assistant/UpdateActivity.kt:70:            .setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, fileName)
+./app/src/main/java/com/assistant/UpdateActivity.kt:121:        val file = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
+./app/src/main/java/com/assistant/DeathWatch.kt:180:            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+[5] HARD-CODED EXTERNAL STORAGE PATHS
+------------------------------------------------------------
+./app/src/main/java/com/assistant/OverlayService.kt:216:            val logFile = File("/sdcard/Splendor-Assist", "crash_log.txt").also { it.parentFile?.mkdirs() }
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:185:        files += File("/storage/emulated/0/SplendorAssist/Forensics/execution_chain.log")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:186:        files += File("/storage/emulated/0/SplendorAssist/Forensics/telemetry.log")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:187:        files += File("/storage/emulated/0/SplendorAssist/Forensics/heartbeat.log")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:188:        files += File("/storage/emulated/0/SplendorAssist/Forensics/fieldtest.log")
+./app/src/main/java/com/assistant/DeathWatch.kt:192:            try { java.io.File("/sdcard/Splendor-Assist").apply { mkdirs() } } catch (_: Throwable) { null },
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:9:    const val ROOT_PATH = "/sdcard/Splendor-Assist"
+./diagnostic_core/src/main/java/com/assistant/diagnostic/CrashInspector.kt:5:    val LOG_DIR = File("/sdcard/Splendor-Assist")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:56:            externalLogFile = File("/sdcard/Splendor-Assist", "Splendor_Field_Logs.txt").also { it.parentFile?.mkdirs() }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:63:                    "/sdcard/Splendor-Assist/Forensics"
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:28: *  - HealLog path: /sdcard/Splendor-Assist/SplendorHealLog.txt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:29: *    Read with: cat /sdcard/Splendor-Assist/SplendorHealLog.txt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:505:            // /sdcard/Splendor-Assist/SplendorHealLog.txt — read with:
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:506:            // cat /sdcard/Splendor-Assist/SplendorHealLog.txt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:525:                    w.write("Read: cat /sdcard/Splendor-Assist/SplendorHealLog.txt\n")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:557:                appendLine("HealLog: /sdcard/Splendor-Assist/SplendorHealLog.txt")
+
+[6] APP-SPECIFIC EXTERNAL STORAGE APIs
+------------------------------------------------------------
+./app/src/main/java/com/assistant/UpdateActivity.kt:121:        val file = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
+./app/src/main/java/com/assistant/DeathWatch.kt:179:            c.getExternalFilesDir(null),
+./app/src/main/java/com/assistant/DeathWatch.kt:193:            try { c.getExternalFilesDir(null) } catch (_: Throwable) { null },
+./diagnostic_core/src/main/java/com/assistant/diagnostic/persistence/HealthPersistenceStore.kt:13:        File(context.getExternalFilesDir(null), FILE_NAME)
+
+[7] DIRECTORY CREATION
+------------------------------------------------------------
+./app/src/main/java/com/assistant/OverlayService.kt:216:            val logFile = File("/sdcard/Splendor-Assist", "crash_log.txt").also { it.parentFile?.mkdirs() }
+./app/src/main/java/com/assistant/DeathWatch.kt:197:            try { if (d.exists() || d.mkdirs()) return File(d, REPORT_NAME) } catch (_: Throwable) { }
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:26:            if (!root.exists() && !root.mkdirs()) {
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:87:        if (!child.exists() && !child.mkdirs()) {
+./diagnostic_core/src/main/java/com/assistant/diagnostic/CrashInspector.kt:6:    init { if (!LOG_DIR.exists()) LOG_DIR.mkdirs() }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:56:            externalLogFile = File("/sdcard/Splendor-Assist", "Splendor_Field_Logs.txt").also { it.parentFile?.mkdirs() }
+
+[8] FILE CONSTRUCTION
+------------------------------------------------------------
+./app/src/main/java/com/assistant/DiagnosticsEngine.kt:21:        val file = File(context.cacheDir, CRASH_FILE_NAME)
+./app/src/main/java/com/assistant/DiagnosticsEngine.kt:44:        val file = File(context.cacheDir, CRASH_FILE_NAME)
+./app/src/main/java/com/assistant/DiagnosticsEngine.kt:49:        val file = File(context.cacheDir, CRASH_FILE_NAME)
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:73:            var target = File(baseDir, baseName)
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:79:                target = File(baseDir, "$name($i)$ext")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:84:            return File(baseDir, "${name}_${ts}$ext")
+./app/src/main/java/com/assistant/OtaGatewayEngine.kt:129:                val apkFile = File(activity.filesDir, "splendor_update.apk")
+./app/src/main/java/com/assistant/OverlayService.kt:216:            val logFile = File("/sdcard/Splendor-Assist", "crash_log.txt").also { it.parentFile?.mkdirs() }
+./app/src/main/java/com/assistant/UpdateActivity.kt:121:        val file = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
+./app/src/main/java/com/assistant/overlay/interceptor/GodTierExecutionEngine.kt:33:    private val cachedPath = Path()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:183:        files += File(filesDir, "runtime_diagnostic.txt")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:184:        File(filesDir, "runtime_hour_segments").takeIf { it.isDirectory }?.listFiles()?.sortedByDescending { it.lastModified() }?.take(3)?.let { files += it }
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:185:        files += File("/storage/emulated/0/SplendorAssist/Forensics/execution_chain.log")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:186:        files += File("/storage/emulated/0/SplendorAssist/Forensics/telemetry.log")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:187:        files += File("/storage/emulated/0/SplendorAssist/Forensics/heartbeat.log")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:188:        files += File("/storage/emulated/0/SplendorAssist/Forensics/fieldtest.log")
+./app/src/main/java/com/assistant/DeathWatch.kt:50:        val dir = File(c.filesDir, "deathwatch").apply { mkdirs() }
+./app/src/main/java/com/assistant/DeathWatch.kt:51:        val m = File(dir, safeName(procName) + ".marker")
+./app/src/main/java/com/assistant/DeathWatch.kt:184:            val f = File(d, n)
+./app/src/main/java/com/assistant/DeathWatch.kt:192:            try { java.io.File("/sdcard/Splendor-Assist").apply { mkdirs() } } catch (_: Throwable) { null },
+./app/src/main/java/com/assistant/DeathWatch.kt:197:            try { if (d.exists() || d.mkdirs()) return File(d, REPORT_NAME) } catch (_: Throwable) { }
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:11:    private val root = File(ROOT_PATH)
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:36:            val probe = File(root, ".storage_probe")
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:73:        return File(directory(), name)
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:85:        val child = File(directory(), name)
+./diagnostic_core/src/main/java/com/assistant/diagnostic/CrashInspector.kt:5:    val LOG_DIR = File("/sdcard/Splendor-Assist")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/CrashInspector.kt:8:        val file = File(LOG_DIR, "crash_log_${System.currentTimeMillis()}.txt")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:45:                File(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:51:            segmentDir = File(context.filesDir, "runtime_hour_segments").apply { mkdirs() }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:56:            externalLogFile = File("/sdcard/Splendor-Assist", "Splendor_Field_Logs.txt").also { it.parentFile?.mkdirs() }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:62:                File(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:69:                File(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:75:                File(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:81:                File(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:87:                File(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:125:            File("/proc/self/cmdline").inputStream().use { stream ->
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:173:        val file = File(segmentDir ?: return emptyList(), "hour_$hourStart.log")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:184:        val file = File(segmentDir ?: return "", "hour_$hourStart.log")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:190:        val file = File(segmentDir ?: return false, "hour_$hourStart.log")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:211:        FileWriter(File(dir, "hour_$hour.log"), true).use { it.append(text) }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:27:        if (file == null) file = File(context.filesDir, "perf_telemetry.txt")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:74:            if (wfile == null) wfile = file?.parentFile?.let { File(it, "perf_window.txt") }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:85:            if (wfile == null) wfile = file?.parentFile?.let { File(it, "perf_window.txt") }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:105:            if (dfile == null) dfile = file?.parentFile?.let { File(it, "perf_display.txt") }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:116:            if (dfile == null) dfile = file?.parentFile?.let { File(it, "perf_display.txt") }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:151:            if (sfile == null) sfile = file?.parentFile?.let { File(it, "perf_loadshed.txt") }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:162:            if (sfile == null) sfile = file?.parentFile?.let { File(it, "perf_loadshed.txt") }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/persistence/HealthPersistenceStore.kt:13:        File(context.getExternalFilesDir(null), FILE_NAME)
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:162:        val path = Path()
+./adapter_lag/src/main/java/com/assistant/adapter/lag/CpuGovernorEngine.kt:26:                        val gov = java.io.File("/sys/devices/system/cpu/cpu$core/cpufreq/scaling_governor")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/CpuGovernorEngine.kt:30:                        val gov = java.io.File("/sys/devices/system/cpu/cpu$core/cpufreq/scaling_governor")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:117:    private fun generatePrecisionPath(startX: Float, startY: Float, endX: Float, endY: Float): Path {
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:118:        val path = Path()
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:177:            val optimizedPath = generatePrecisionPath(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/fps/LatencyDefeatingInputEngine.kt:27:    private val preAllocatedPath = Path()
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TouchStabilizationEngine.kt:23:        val path = Path().apply {
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TouchStabilizationEngine.kt:47:        val path = Path().apply {
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveAttackerEngine.kt:33:        val path=Path().apply{moveTo(currentX,currentY);lineTo(endX,endY)}
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InputResponsivenessCoordinator.kt:77:            val dashPath = Path().apply {
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InputResponsivenessCoordinator.kt:85:            val shootPath = Path().apply {
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InputResponsivenessCoordinator.kt:135:            val clickPath = Path().apply { 
+
+[9] DIRECT FILE WRITERS
+------------------------------------------------------------
+./app/src/main/java/com/assistant/DiagnosticsEngine.kt:6:import java.io.PrintWriter
+./app/src/main/java/com/assistant/DiagnosticsEngine.kt:23:        throwable.printStackTrace(PrintWriter(sw))
+./app/src/main/java/com/assistant/DiagnosticsEngine.kt:40:        file.writeText(systemReport)
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:10:import java.io.PrintWriter
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:56:                f.appendText("[$ts] $feature: $message\n")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:63:            file.writeText(report)
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:123:            e.printStackTrace(PrintWriter(sw))
+./app/src/main/java/com/assistant/OtaGatewayEngine.kt:24:import java.io.FileOutputStream
+./app/src/main/java/com/assistant/OtaGatewayEngine.kt:132:                val output = FileOutputStream(apkFile)
+./app/src/main/java/com/assistant/OverlayService.kt:49:import java.io.FileWriter
+./app/src/main/java/com/assistant/OverlayService.kt:50:import java.io.PrintWriter
+./app/src/main/java/com/assistant/OverlayService.kt:217:            FileWriter(logFile, true).use { writer ->
+./app/src/main/java/com/assistant/OverlayService.kt:218:                PrintWriter(writer).use { pw ->
+./app/src/main/java/com/assistant/PingEliminatorVpnService.kt:16:import java.io.FileOutputStream
+./app/src/main/java/com/assistant/PingEliminatorVpnService.kt:162:        val fos = FileOutputStream(pfd.fileDescriptor)
+./app/src/main/java/com/assistant/DeathWatch.kt:95:            m.writeText(
+./app/src/main/java/com/assistant/DeathWatch.kt:168:        try { reportFile(c)?.appendText(text) } catch (_: Throwable) { }
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:38:            probe.writeText("splendor-storage-ready")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/CrashInspector.kt:9:        file.writeText(content)
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:5:import java.io.FileWriter
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:211:        FileWriter(File(dir, "hour_$hour.log"), true).use { it.append(text) }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:294:                FileWriter(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:311:                FileWriter(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:320:                FileWriter(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:36:            file?.writeText(t.rttMs.toString() + "|" + t.jitterMs + "|" + t.quality + "|" +
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:75:            wfile?.writeText(verdict + "|" + detail + "|" + windowMs)
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:106:            dfile?.writeText(frameGapMs.toString() + "|" + jankPerMin + "|" + stallMs + "|" + verdict + "|" + dMs)
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:152:            sfile?.writeText(level + "|" + shedMs)
+./diagnostic_core/src/main/java/com/assistant/diagnostic/persistence/HealthPersistenceStore.kt:67:            store.writeText(
+./adapter_lag/src/main/java/com/assistant/adapter/lag/CpuGovernorEngine.kt:27:                        if (gov.canWrite()) { gov.writeText("performance"); wrote = true }
+./adapter_lag/src/main/java/com/assistant/adapter/lag/CpuGovernorEngine.kt:31:                        if (gov.canWrite()) gov.writeText("schedutil")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:9:import java.io.FileWriter
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:486:            FileWriter(file, true).use { it.write(text) }
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:520:            FileWriter(file, true).use { w ->
+
+[10] GENERIC OUTPUT / STREAM WRITERS
+------------------------------------------------------------
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/SnapshotCompressionEngine.kt:4:import java.io.ByteArrayOutputStream
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/SnapshotCompressionEngine.kt:6:import java.util.zip.GZIPOutputStream
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/SnapshotCompressionEngine.kt:12:        val output = ByteArrayOutputStream()
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/SnapshotCompressionEngine.kt:14:        GZIPOutputStream(output).use {
+./adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:81:        val b = java.io.ByteArrayOutputStream()
+./app/src/main/java/com/assistant/DiagnosticsEngine.kt:22:        val sw = StringWriter()
+./app/src/main/java/com/assistant/DiagnosticsEngine.kt:23:        throwable.printStackTrace(PrintWriter(sw))
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:122:            val sw = StringWriter()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:123:            e.printStackTrace(PrintWriter(sw))
+./app/src/main/java/com/assistant/OtaGatewayEngine.kt:24:import java.io.FileOutputStream
+./app/src/main/java/com/assistant/OtaGatewayEngine.kt:132:                val output = FileOutputStream(apkFile)
+./app/src/main/java/com/assistant/OverlayService.kt:217:            FileWriter(logFile, true).use { writer ->
+./app/src/main/java/com/assistant/OverlayService.kt:218:                PrintWriter(writer).use { pw ->
+./app/src/main/java/com/assistant/PingEliminatorVpnService.kt:16:import java.io.FileOutputStream
+./app/src/main/java/com/assistant/PingEliminatorVpnService.kt:162:        val fos = FileOutputStream(pfd.fileDescriptor)
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:211:        FileWriter(File(dir, "hour_$hour.log"), true).use { it.append(text) }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:294:                FileWriter(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:311:                FileWriter(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:320:                FileWriter(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:486:            FileWriter(file, true).use { it.write(text) }
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:520:            FileWriter(file, true).use { w ->
+
+[11] LOGGER INITIALIZATION / FILE LOGGING
+------------------------------------------------------------
+./adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:2:import com.assistant.diagnostic.RuntimeLogger
+./adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:36:            RuntimeLogger.log("PingAdapter heartbeat", "HEALTH")
+./adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:83:                    RuntimeLogger.log(
+./adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:91:                    RuntimeLogger.log(
+./adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:104:        RuntimeLogger.log("PingAdapterService started", "ADAPTER")
+./adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:122:        RuntimeLogger.log("PingAdapter heartbeat scheduler started", "HEALTH")
+./adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:125:        RuntimeLogger.log("Ping telemetry started", "PING")
+./adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:134:        RuntimeLogger.log("PingAdapter heartbeat stopped", "HEALTH")
+./adapter_input/src/main/java/com/assistant/adapter/input/InputAdapterService.kt:2:import com.assistant.diagnostic.RuntimeLogger
+./adapter_input/src/main/java/com/assistant/adapter/input/InputAdapterService.kt:30:            RuntimeLogger.log("InputAdapter heartbeat", "HEALTH")
+./adapter_input/src/main/java/com/assistant/adapter/input/InputAdapterService.kt:38:        RuntimeLogger.log("InputAdapterService started", "ADAPTER")
+./adapter_input/src/main/java/com/assistant/adapter/input/InputAdapterService.kt:62:        RuntimeLogger.log("Input engine stack ignited: 5 engines [LATENCY+QUALITY+PRIORITY+OOM+GESTURE_TIMING]", "INPUT")
+./adapter_input/src/main/java/com/assistant/adapter/input/InputAdapterService.kt:63:        RuntimeLogger.log("InputAdapter heartbeat scheduler started", "HEALTH")
+./adapter_input/src/main/java/com/assistant/adapter/input/InputAdapterService.kt:75:        RuntimeLogger.log("InputAdapter heartbeat stopped", "HEALTH")
+./adapter_input/src/main/java/com/assistant/adapter/input/InputLatencyEngine.kt:6:import com.assistant.diagnostic.RuntimeLogger
+./adapter_input/src/main/java/com/assistant/adapter/input/InputLatencyEngine.kt:25:        RuntimeLogger.log("InputLatencyEngine started", "INPUT")
+./adapter_input/src/main/java/com/assistant/adapter/input/InputLatencyEngine.kt:43:            RuntimeLogger.log("INPUT LAG: ${latencyMs}ms (total lag events: $lagEvents)", "INPUT")
+./adapter_input/src/main/java/com/assistant/adapter/input/TouchQualityEngine.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_input/src/main/java/com/assistant/adapter/input/TouchQualityEngine.kt:18:                    if (oomWarning) RuntimeLogger.log("TouchQuality: OOM adj=$oom — HyperOS may throttle us", "INPUT")
+./adapter_input/src/main/java/com/assistant/adapter/input/TouchQualityEngine.kt:24:                                RuntimeLogger.log("TouchQuality: touch IRQ STALL — no kernel events for ${emptyIrqCycles*5}s", "INPUT") }
+./adapter_input/src/main/java/com/assistant/adapter/input/TouchQualityEngine.kt:33:        RuntimeLogger.log("TouchQualityEngine started", "INPUT")
+./adapter_input/src/main/java/com/assistant/adapter/input/InputPriorityEngine.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_input/src/main/java/com/assistant/adapter/input/InputPriorityEngine.kt:16:                        RuntimeLogger.log("InputPriority: reset to $cur by OS, reapplying (#$reapplyCount)", "INPUT")
+./adapter_input/src/main/java/com/assistant/adapter/input/InputPriorityEngine.kt:24:        RuntimeLogger.log("InputPriorityEngine started — URGENT_DISPLAY secured", "INPUT")
+./adapter_input/src/main/java/com/assistant/adapter/input/InputPriorityEngine.kt:29:              RuntimeLogger.log("InputPriority: URGENT_DISPLAY applied", "INPUT") }
+./adapter_input/src/main/java/com/assistant/adapter/input/InputPriorityEngine.kt:30:        catch (e: Throwable) { RuntimeLogger.log("InputPriority: failed: ${e.message}", "INPUT") }
+./adapter_input/src/main/java/com/assistant/adapter/input/OomAdaptiveThrottleEngine.kt:5:import com.assistant.diagnostic.RuntimeLogger
+./adapter_input/src/main/java/com/assistant/adapter/input/OomAdaptiveThrottleEngine.kt:57:        RuntimeLogger.log("OomAdaptiveThrottleEngine started", "INPUT")
+./adapter_input/src/main/java/com/assistant/adapter/input/OomAdaptiveThrottleEngine.kt:87:                RuntimeLogger.log(
+./adapter_input/src/main/java/com/assistant/adapter/input/OomAdaptiveThrottleEngine.kt:95:                RuntimeLogger.log("OOM_OK: adj=$adj — throttle released", "INPUT")
+./adapter_input/src/main/java/com/assistant/adapter/input/GestureTimingFeedbackEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_input/src/main/java/com/assistant/adapter/input/GestureTimingFeedbackEngine.kt:76:            RuntimeLogger.log(
+./adapter_input/src/main/java/com/assistant/adapter/input/GestureTimingFeedbackEngine.kt:94:            RuntimeLogger.log(
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/LmkAdapterService.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_lmk/src/main/java/com/assistant/adapter/lmk/LmkAdapterService.kt:83:                RuntimeLogger.log("LMK work cycle failed: $lastError", "LMK_ERROR")
+./adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt:2:import com.assistant.diagnostic.RuntimeLogger
+./adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt:30:                RuntimeLogger.log("NetAdapter heartbeat", "HEALTH")
+./adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt:39:        RuntimeLogger.log("NetAdapterService started", "ADAPTER")
+./adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt:66:        RuntimeLogger.log("Net engine stack ignited: 10 engines [V2+HEAL]", "NET")
+./adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt:69:        RuntimeLogger.log("NetAdapter heartbeat scheduler started", "HEALTH")
+./adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt:85:        RuntimeLogger.log("NetAdapter heartbeat stopped", "HEALTH")
+./adapter_net/src/main/java/com/assistant/adapter/net/CarrierProfileEngine.kt:5:import com.assistant.diagnostic.RuntimeLogger
+./adapter_net/src/main/java/com/assistant/adapter/net/CarrierProfileEngine.kt:66:        RuntimeLogger.log("Carrier: " + op + " -> profile " + current.name +
+./adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:8:import com.assistant.diagnostic.RuntimeLogger
+./adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:45:            RuntimeLogger.log("instant network-change callback registered", "NET")
+./adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:47:            RuntimeLogger.log("network callback unavailable, poll only: " + t.message, "NET")
+./adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:78:        RuntimeLogger.log("Transport -> " + now + " (stack re-learning link now)", "NET")
+./adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt:5:import com.assistant.diagnostic.RuntimeLogger
+./adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt:47:                if (++tick % 6L == 0L) RuntimeLogger.log(summary(), "NETPROBE")
+./adapter_net/src/main/java/com/assistant/adapter/net/NetProbeEngine.kt:63:        RuntimeLogger.log("link changed - history wiped, instant re-probe", "NETPROBE")
+./adapter_net/src/main/java/com/assistant/adapter/net/RadioKeepAliveEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_net/src/main/java/com/assistant/adapter/net/RadioKeepAliveEngine.kt:37:                            RuntimeLogger.log("keepalive sent=" + sent + " cadence=" + cadence + "s", "NET")
+./adapter_net/src/main/java/com/assistant/adapter/net/DnsWarmupEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_net/src/main/java/com/assistant/adapter/net/DnsWarmupEngine.kt:36:                        if (reported.add(h)) RuntimeLogger.log("dns FAIL host=" + h, "NET")
+./adapter_net/src/main/java/com/assistant/adapter/net/DnsWarmupEngine.kt:40:                if (rounds % 5L == 1L) RuntimeLogger.log("dns warm " + ok + "/" + HOSTS.size, "NET")
+./adapter_net/src/main/java/com/assistant/adapter/net/CongestionSentinelEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_net/src/main/java/com/assistant/adapter/net/CongestionSentinelEngine.kt:39:                        RuntimeLogger.log("CONGESTION ONSET jitter=" + String.format("%.0f", j) +
+./adapter_net/src/main/java/com/assistant/adapter/net/CongestionSentinelEngine.kt:43:                        RuntimeLogger.log("CONGESTION CLEARED after " + dur + "s jitter=" +
+./adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:51:                        RuntimeLogger.log("LOSS SPIKE " + String.format("%.0f", roundLoss) +
+./adapter_net/src/main/java/com/assistant/adapter/net/PacketLossProbeEngine.kt:54:                        RuntimeLogger.log("loss avg=" + String.format("%.0f", lossPct) + "% rounds=" + rounds, "NETLOSS")
+./adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:44:                            RuntimeLogger.log("SPIKE MAPPED depth=" + samples.max() +
+./adapter_net/src/main/java/com/assistant/adapter/net/SpikeBurstEngine.kt:60:                            RuntimeLogger.log("SPIKE RECOVERED in " + dur + "s", "NETSPIKE")
+./adapter_net/src/main/java/com/assistant/adapter/net/ActionWindowEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_net/src/main/java/com/assistant/adapter/net/ActionWindowEngine.kt:47:                        RuntimeLogger.log("WINDOW " + verdict + " -> " + next +
+./adapter_net/src/main/java/com/assistant/adapter/net/ConnectionHealEngine.kt:9:import com.assistant.diagnostic.RuntimeLogger
+./adapter_net/src/main/java/com/assistant/adapter/net/ConnectionHealEngine.kt:32:                    RuntimeLogger.log("ConnectionHeal: network LOST — healing", "NETHEAL")
+./adapter_net/src/main/java/com/assistant/adapter/net/ConnectionHealEngine.kt:37:                        RuntimeLogger.log("ConnectionHeal: bandwidth critical — healing", "NETHEAL")
+./adapter_net/src/main/java/com/assistant/adapter/net/ConnectionHealEngine.kt:43:            RuntimeLogger.log("ConnectionHeal: callback failed: ${t.message}", "NETHEAL")
+./adapter_net/src/main/java/com/assistant/adapter/net/ConnectionHealEngine.kt:52:        RuntimeLogger.log("ConnectionHealEngine started", "NETHEAL")
+./adapter_net/src/main/java/com/assistant/adapter/net/ConnectionHealEngine.kt:65:                RuntimeLogger.log("ConnectionHeal: WiFi rescan #$healCount", "NETHEAL")
+./adapter_net/src/main/java/com/assistant/adapter/net/ConnectionHealEngine.kt:71:            RuntimeLogger.log("ConnectionHeal: rebound to best network #$healCount", "NETHEAL")
+./adapter_sync/src/main/java/com/assistant/adapter/sync/SyncAdapterService.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_sync/src/main/java/com/assistant/adapter/sync/SyncAdapterService.kt:17: * Previous state: DEAD SHELL — only a heartbeat, zero actual logic.
+./adapter_sync/src/main/java/com/assistant/adapter/sync/SyncAdapterService.kt:63:                        RuntimeLogger.log(
+./adapter_sync/src/main/java/com/assistant/adapter/sync/SyncAdapterService.kt:70:                    RuntimeLogger.log("SYNC: accessibility confirmed live (was flagged $accessibilityLivenessFails times)", "SYNC")
+./adapter_sync/src/main/java/com/assistant/adapter/sync/SyncAdapterService.kt:75:                RuntimeLogger.log("SYNC liveness probe error: ${e.message}", "SYNC")
+./adapter_sync/src/main/java/com/assistant/adapter/sync/SyncAdapterService.kt:98:        RuntimeLogger.log("SyncAdapterService started - ACCESSIBILITY LIVENESS MONITOR", "ADAPTER")
+./app/src/main/java/com/assistant/App.kt:5:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/App.kt:13:        RuntimeLogger.initialize(this)
+./app/src/main/java/com/assistant/App.kt:14:        RuntimeLogger.reconcileExpired()
+./app/src/main/java/com/assistant/App.kt:25:        com.assistant.diagnostic.RuntimeLogger.initialize(this)
+./app/src/main/java/com/assistant/BoosterIgnition.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/BoosterIgnition.kt:28:                RuntimeLogger.log(
+./app/src/main/java/com/assistant/BoosterIgnition.kt:34:                RuntimeLogger.log(
+./app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt:7:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt:23:                    RuntimeLogger.log(
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:54:                val f = getLogFile(appCtxRef, "splendor_health.log", true)
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:90:            sb.appendLine("===== SPLENDOR ASSIST CRASH REPORT =====")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:91:            sb.appendLine("Time: $ts")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:92:            sb.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:93:            sb.appendLine("--- DEVICE ---")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:94:            sb.appendLine("Manufacturer: ${Build.MANUFACTURER}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:95:            sb.appendLine("Model: ${Build.MODEL}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:96:            sb.appendLine("Android: ${Build.VERSION.RELEASE}  SDK=${Build.VERSION.SDK_INT}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:97:            sb.appendLine("Board: ${Build.BOARD}  Fingerprint: ${Build.FINGERPRINT}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:98:            sb.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:99:            sb.appendLine("--- APP ---")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:103:                sb.appendLine("Package: ${ctx.packageName}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:105:                sb.appendLine("Version: ${pi.versionName} (${pi.versionCode})")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:107:                sb.appendLine("Package: ${ctx.packageName}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:109:            sb.appendLine("Process: ${android.os.Process.myPid()}  Thread: ${thread.name} id=${thread.id}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:110:            sb.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:111:            sb.appendLine("--- EXCEPTION ---")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:112:            sb.appendLine(stackTraceString(e))
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:113:            sb.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:114:            sb.appendLine("--- FEATURE HEALTH AUDIT ---")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:115:            sb.appendLine(probeFeatures(ctx))
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:116:            sb.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:117:            sb.appendLine("--- END ---")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:132:            out.appendLine("═══ PERMISSIONS / SYSTEM GATES ═══")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:139:            out.appendLine("  SYSTEM_ALERT_WINDOW : ${if (canOverlay) "GRANTED" else "DENIED — overlay cannot show"}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:140:            out.appendLine("  ACCESSIBILITY       : ${if (accEnabled) "ENABLED" else "DISABLED — gesture dispatch is DEAD without this"}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:142:                out.appendLine("  POST_NOTIFICATIONS  : ${permStatus("android.permission.POST_NOTIFICATIONS")}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:143:            out.appendLine("  Accessibility svc   : $accStr")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:144:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:147:            out.appendLine("═══ ADAPTER HEALTH (heartbeat-based) ═══")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:148:            out.appendLine("  Status key: ACTIVE=heartbeat<30s  DEGRADED=heartbeat<120s  OFFLINE=no heartbeat")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:149:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:170:                    out.appendLine("  [WARN] No adapter snapshots — registry empty (cold start or all offline)")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:181:                        out.appendLine("  $status ${snap.adapterName.padEnd(24)} age=${age}s errors=${snap.errorCount}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:182:                        out.appendLine("           purpose: $desc")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:183:                        out.appendLine("           details: ${snap.details}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:185:                            out.appendLine("           WHY OFFLINE: heartbeat > 120s or never started. Check if service was killed.")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:190:                out.appendLine("  [FAIL] Could not read adapter registry: ${e.message}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:192:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:195:            out.appendLine("═══ ADAPTER SIGNAL BUS (live cross-adapter signals) ═══")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:198:                out.appendLine("  netWindow         : ${bus.netWindow} ${if (bus.netIsHold) "← HOLD: SHOT/PASS/CROSS suppressed" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:199:                out.appendLine("  lagVerdict        : ${bus.lagVerdict} ${if (bus.lagIsChoking) "← CHOKING: gesture durations halved" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:200:                out.appendLine("  stutterState      : ${bus.stutterState} ${if (bus.stutterIsSevere) "← SEIZURE: engine impact active" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:201:                out.appendLine("  memoryTier        : ${bus.memoryTier} availMb=${bus.memoryAvailMb}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:202:                out.appendLine("  thermalStatus     : ${bus.thermalStatus} ${if (bus.thermalIsSevere) "← SEVERE: gesture duration cut to 40%" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:203:                out.appendLine("  batteryLevel      : ${bus.batteryLevel}% charging=${bus.batteryCharging} ${if (bus.batteryCritical) "← CRITICAL: engine duty reduced" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:204:                out.appendLine("  pingQuality       : ${bus.pingQuality}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:205:                out.appendLine("  deviceBootStable  : ${bus.deviceBootStable}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:206:                out.appendLine("  inputClassification: ${bus.inputClassification} latency=${bus.inputLatencyMs}ms")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:207:                out.appendLine("  fleetDegraded     : ${bus.fleetDegraded}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:208:                out.appendLine("  environmentHostile: ${bus.environmentHostile}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:210:                out.appendLine("  [FAIL] bus read error: ${e.message}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:212:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:215:            out.appendLine("═══ RUNTIME GATES (G0-G6) ═══")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:216:            out.appendLine("  G0=permissions G1=accessibility G2=capture G3=booster G4=engines G5=bus G6=ready")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:222:                    out.appendLine("  runtimeReady      : $ready ${if (!ready) "← ENGINES NOT RUNNING — check gates below" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:223:                    out.appendLine("  G0 permissions    : ${snap["permissionsVerified"]}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:224:                    out.appendLine("  G1 accessibility  : ${snap["accessibilityReady"]} ${if (snap["accessibilityReady"] != true) "← DEAD: no gesture dispatch possible" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:225:                    out.appendLine("  G2 capture        : ${snap["captureReady"]} ${if (snap["captureReady"] != true) "← DEAD: no vision data, all engines blind" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:226:                    out.appendLine("  G3 booster        : ${snap["boosterReady"]}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:227:                    out.appendLine("  G4 engines warm   : ${snap["enginesWarm"]}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:228:                    out.appendLine("  G5 bus enabled    : ${snap["busEnabled"]}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:229:                    out.appendLine("  lastTransition    : ${snap["lastTransition"]}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:231:                    out.appendLine("  [WARN] runtimeState() returned null")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:234:                out.appendLine("  [FAIL] RuntimeCoordinator not accessible: ${e.message}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:236:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:239:            out.appendLine("═══ FRAME / VISION TRUST ═══")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:249:                    out.appendLine("  frames assembled  : ${snap["frames"]}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:250:                    out.appendLine("  frame trusted     : $trusted ${if (!trusted) "← UNTRUSTED: all 38 contributors blocked this frame" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:251:                    out.appendLine("  hasBall           : $hasBall ${if (!hasBall) "← no possession: defense-only contributors active" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:252:                    out.appendLine("  confidence        : $conf")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:253:                    out.appendLine("  players tracked   : $players")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:254:                    out.appendLine("  viable lanes      : $lanes")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:255:                    out.appendLine("  goalDetected      : ${snap["goalDetected"]} confidence=${snap["goalConfidence"]}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:256:                    out.appendLine("  zones             : ${snap["zones"]}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:258:                        out.appendLine("  WHY UNTRUSTED: ballTrust < floor (ball not seen recently), OR")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:259:                        out.appendLine("                 foregroundIsGame=false (VisionTrust pkg issue), OR")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:260:                        out.appendLine("                 inputLatency > 180ms limit")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:263:                    out.appendLine("  [WARN] No frame data (cold start or capture not running)")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:266:                out.appendLine("  [FAIL] FrameAssembler: ${e.message}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:268:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:271:            out.appendLine("═══ RUNTIME DECISION LOOP ═══")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:281:                    out.appendLine("  decisions made    : $decisions")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:282:                    out.appendLine("  gestures routed   : $routed ($ratio% dispatch rate)")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:283:                    out.appendLine("  idle-untrusted    : $idleUntrusted${if (idleUntrusted > decisions / 2) " ← MAJORITY IDLE: vision trust problem" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:284:                    out.appendLine("  idle-no-contrib   : $idleNoContrib${if (idleNoContrib > decisions / 4) " ← contributors all returning null" else ""}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:285:                    out.appendLine("  lastAction        : ${snap["lastAction"]}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:286:                    out.appendLine("  lastWeight        : ${snap["lastWeight"]}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:288:                        out.appendLine("  *** CRITICAL: 0 gestures dispatched despite $decisions decision cycles ***")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:289:                        out.appendLine("      Possible causes: bus disabled, accessibility dead, all frames untrusted")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:293:                out.appendLine("  [FAIL] RuntimeDecisionLoop: ${e.message}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:295:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:298:            out.appendLine("═══ CONTRIBUTOR REGISTRY (38 total = 29 adapter + 9 app) ═══")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:307:                    out.appendLine("  registered engines: $engines (expected 38)")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:308:                    out.appendLine("  collect cycles    : $cycles")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:309:                    out.appendLine("  contributors list : $names")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:310:                    out.appendLine("  contributed       : $contributed")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:313:                        out.appendLine("  *** WARNING: only $eng contributors registered (expected ≥29) ***")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:314:                        out.appendLine("      RuntimeCoordinator.warmUpEngines() may not have run yet")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:317:                    out.appendLine("  [WARN] No registry data")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:320:                out.appendLine("  [FAIL] GameplayEngineRegistry: ${e.message}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:322:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:325:            out.appendLine("═══ ENGINE STATUS AUDIT ═══")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:326:            out.appendLine("  Meanings:")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:327:            out.appendLine("  ACTIVE       = engine ran, produced real output last session")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:328:            out.appendLine("  PASSIVE      = engine ran but always returns null / no output")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:329:            out.appendLine("  WEAK         = engine runs but output authority too low to win arbitration")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:330:            out.appendLine("  SILENTLY_DEAD= code exists, class loads, but never called/registered")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:331:            out.appendLine("  STATIC       = code exists but no runtime path reaches it")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:332:            out.appendLine("  DEAD         = class missing or throws on load")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:333:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:426:                out.appendLine("  $indicator [$statusPad] ${e.name}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:428:                    out.appendLine("           CLASS MISSING: ${e.cls}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:429:                    out.appendLine("           IMPACT: ${e.why}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:431:                    out.appendLine("           WHY ${e.expectedStatus}: ${e.why}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:434:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:437:            out.appendLine("═══ LOAD SHED GOVERNOR ═══")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:441:                out.appendLine("  current level     : $level")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:442:                out.appendLine("  NONE=full engines  LIGHT=minor shed  HEAVY=major shed (kills most gameplay compute)")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:444:                    out.appendLine("  *** HEAVY LOAD SHED ACTIVE — gameplay engines severely throttled ***")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:445:                    out.appendLine("      This is the primary cause of poor gameplay effectiveness when present")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:448:                out.appendLine("  [FAIL] LoadShedGovernor: ${e.message}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:450:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:453:            out.appendLine("═══ ACCESSIBILITY ENGINE (gesture dispatch) ═══")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:458:                out.appendLine("  class loaded      : YES")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:459:                out.appendLine("  globalInstance    : ${if (instance != null) "ALIVE — gestures can dispatch" else "NULL — gesture dispatch is DEAD"}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:461:                    out.appendLine("  WHY NULL: accessibility service was killed by OS or was never connected.")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:462:                    out.appendLine("           Check: accessibility settings show Splendor Assist enabled.")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:463:                    out.appendLine("           If enabled but null: HyperOS killed the service. Reconnect.")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:468:                if (dispatching != null) out.appendLine("  isDispatching     : $dispatching")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:470:                out.appendLine("  [FAIL] AccessibilityEngine: ${e.message}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:472:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:475:            out.appendLine("═══ VISION TRUST (frame gating) ═══")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:479:                out.appendLine("  $diag")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:480:                out.appendLine("  NOTE: fg=false OR ballTrust<0.55 → ALL contributors blocked that frame")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:481:                out.appendLine("  empty pkg=OK after Phase3 fix (onForegroundPackage returns early on empty)")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:483:                out.appendLine("  [FAIL] VisionTrust: ${e.message}")
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:485:            out.appendLine()
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:487:            out.appendLine("═══ END FEATURE AUDIT ═══")
+./app/src/main/java/com/assistant/IgnitionEngine.kt:12:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/IgnitionEngine.kt:29:            RuntimeLogger.log(
+./app/src/main/java/com/assistant/IgnitionEngine.kt:86:                    RuntimeLogger.log(
+./app/src/main/java/com/assistant/IgnitionEngine.kt:93:                    RuntimeLogger.log(
+./app/src/main/java/com/assistant/LogActivity.kt:18:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/LogActivity.kt:31:            RuntimeLogger.reconcileExpired()
+./app/src/main/java/com/assistant/LogActivity.kt:39:        RuntimeLogger.reconcileExpired()
+./app/src/main/java/com/assistant/LogActivity.kt:72:                    if(RuntimeLogger.deleteAllOwnedLogs()) {
+./app/src/main/java/com/assistant/LogActivity.kt:86:        val buckets=RuntimeLogger.hourBuckets()
+./app/src/main/java/com/assistant/LogActivity.kt:119:                        val value=RuntimeLogger.copyHour(bucket.hourStart)
+./app/src/main/java/com/assistant/LogActivity.kt:128:                        RuntimeLogger.deleteHour(bucket.hourStart)
+./app/src/main/java/com/assistant/LogActivity.kt:139:    private fun addPage(card:LinearLayout,bucket:RuntimeLogger.HourBucket) {
+./app/src/main/java/com/assistant/LogActivity.kt:141:        val lines=RuntimeLogger.readHourPage(bucket.hourStart,page)
+./app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt:10:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt:136:            RuntimeLogger.log(
+./app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt:143:            RuntimeLogger.log(
+./app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt:233:                                        RuntimeLogger.log(
+./app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt:273:        RuntimeLogger.log(
+./app/src/main/java/com/assistant/OverlayService.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/OverlayService.kt:124:            RuntimeLogger.log("AGENT CAPTURE RESTART: attempting ImageReader recreation", "AGENT")
+./app/src/main/java/com/assistant/OverlayService.kt:142:            RuntimeLogger.log("AGENT CAPTURE RESTART: ImageReader recreated successfully", "AGENT")
+./app/src/main/java/com/assistant/OverlayService.kt:145:            RuntimeLogger.log("AGENT CAPTURE RESTART FAILED: ${e.message}", "AGENT")
+./app/src/main/java/com/assistant/OverlayService.kt:160:        RuntimeLogger.log("OverlayService started", "OVERLAY")
+./app/src/main/java/com/assistant/OverlayService.kt:216:            val logFile = File("/sdcard/Splendor-Assist", "crash_log.txt").also { it.parentFile?.mkdirs() }
+./app/src/main/java/com/assistant/OverlayService.kt:217:            FileWriter(logFile, true).use { writer ->
+./app/src/main/java/com/assistant/OverlayService.kt:293:                        try { com.assistant.diagnostic.RuntimeLogger.log(
+./app/src/main/java/com/assistant/OverlayService.kt:298:                        try { com.assistant.diagnostic.RuntimeLogger.log(
+./app/src/main/java/com/assistant/OverlayService.kt:393:                    RuntimeLogger.log(
+./app/src/main/java/com/assistant/OverlayService.kt:463:                    RuntimeLogger.log(
+./app/src/main/java/com/assistant/OverlayService.kt:491:                            RuntimeLogger.log(
+./app/src/main/java/com/assistant/OverlayService.kt:551:                            RuntimeLogger.log(
+./app/src/main/java/com/assistant/OverlayService.kt:573:                            RuntimeLogger.log(
+./app/src/main/java/com/assistant/OverlayService.kt:628:                    RuntimeLogger.log(
+./app/src/main/java/com/assistant/OverlayService.kt:638:                    RuntimeLogger.log(
+./app/src/main/java/com/assistant/OverlayService.kt:648:                    RuntimeLogger.log(
+./app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:113:                    com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER 1v1 rush triggered dist=${attackerToGkDistance.toInt()}", "GOALKEEPER")
+./app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:149:                com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER close-range reflex pulse triggered", "GOALKEEPER")
+./app/src/main/java/com/assistant/overlay/interceptor/CrossInterceptionEngine.kt:10:        // Add dynamic telemetry noise to scramble exact boolean matching signatures in runtime logs
+./app/src/main/java/com/assistant/overlay/interceptor/ShotAnticipationEngine.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/overlay/interceptor/ShotAnticipationEngine.kt:58:                    RuntimeLogger.log("SHOT_ANTICIPATION automated defensive bus dispatch triggered action=$result", "DEFENSE")
+./app/src/main/java/com/assistant/overlay/interceptor/ShotAnticipationEngine.kt:61:                RuntimeLogger.log("Defensive hardware dispatch step skipped: ${e.message}", "DEFENSE")
+./app/src/main/java/com/assistant/AppContributorRegistration.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/AppContributorRegistration.kt:48:                RuntimeLogger.log(
+./app/src/main/java/com/assistant/AppContributorRegistration.kt:55:                RuntimeLogger.log(
+./app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:22:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/controlroom/ui/FutureRoomsActivity.kt:139:        text(root, "   Detects and fixes broken engine states while you play. Logs every fix to Splendor_HealLog.txt", 11f, color = Color.parseColor("#AAAAAA"))
+./app/src/main/java/com/assistant/DiagnosisRoomActivity.kt:12:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/DiagnosisRoomActivity.kt:21:        "RuntimeLogger"
+./app/src/main/java/com/assistant/DiagnosisRoomActivity.kt:26:        RuntimeLogger.reconcileExpired()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:20:import com.assistant.diagnostic.RuntimeLogger
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:29:        RuntimeLogger.reconcileExpired()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:32:        engine = intent.getStringExtra(EXTRA_ENGINE) ?: "RuntimeLogger"
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:74:            appendLine("=== $engine ===")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:75:            appendLine("Purpose: ${purpose(engine)}")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:76:            appendLine("Live chain: ${chain(engine)}")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:77:            appendLine()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:78:            appendLine("Current state / snapshot:")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:79:            appendLine(stateFor(engine))
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:80:            appendLine()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:81:            appendLine("Metrics:")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:82:            appendLine(metricsFor(engine))
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:83:            appendLine()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:84:            appendLine("Activation diagnostics:")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:85:            appendLine(activationFor(engine))
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:86:            appendLine()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:87:            appendLine("Gameplay heartbeat diagnostics:")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:88:            appendLine(SmartAssistMetrics.gameplayHeartbeatRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:89:            appendLine()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:90:            appendLine("Controller entry diagnostics:")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:91:            appendLine(SmartAssistMetrics.controllerEntryRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:92:            appendLine()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:93:            appendLine("Bus execution diagnostics:")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:94:            appendLine(SmartAssistMetrics.busExecutionRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:95:            appendLine()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:96:            appendLine("Goalkeeper shadow diagnostics:")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:97:            appendLine(SmartAssistMetrics.goalkeeperShadowRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:98:            appendLine()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:99:            appendLine("Runtime traces:")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:100:            appendLine(filteredLogs(engine).ifBlank { "No app-owned trace found yet for this engine." })
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:101:            appendLine()
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:102:            appendLine("Diagnosis truth boundary:")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:103:            appendLine("This page replaces normal ADB logcat checking for app-owned evidence by showing snapshots, metrics, call chains, and RuntimeLogger-owned traces.")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:113:        "RuntimeLogger" -> "Runtime, execution, telemetry, heartbeat and field-test evidence."
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:123:        "RuntimeLogger" -> "App/components -> RuntimeLogger -> app-owned log segments and forensic files."
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:132:            appendLine("runtime=" + com.assistant.adapter.smartassist.RuntimeCoordinator.runtimeState())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:133:            appendLine("health=" + com.assistant.adapter.smartassist.RuntimeHealthMonitor.runtimeHealthSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:134:            appendLine("frame=" + com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:135:            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:136:            appendLine("contributions=" + com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:137:            appendLine("execution=" + com.assistant.adapter.smartassist.GestureExecutionAuthority.executionRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:138:            appendLine("registry=" + com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:141:        "RuntimeLogger" -> "Owns runtime logs, hourly retention segments, execution, telemetry, heartbeat and field-test traces."
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:147:            appendLine("magneticFeet=" + SmartAssistMetrics.magneticFeetRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:148:            appendLine("registry=" + com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:149:            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:152:            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:153:            appendLine("legacyActivation=" + SmartAssistMetrics.gameplayActivationRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:156:            appendLine("crossing=" + SmartAssistMetrics.crossingLaneRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:157:            appendLine("frame=" + com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:160:            appendLine("runtime=" + com.assistant.adapter.smartassist.RuntimeCoordinator.runtimeState())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:161:            appendLine("health=" + com.assistant.adapter.smartassist.RuntimeHealthMonitor.runtimeHealthSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:162:            appendLine("frame=" + com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:163:            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:164:            appendLine("contributions=" + com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:165:            appendLine("execution=" + com.assistant.adapter.smartassist.GestureExecutionAuthority.executionRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:166:            appendLine("registry=" + com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot())
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:169:        "RuntimeLogger" -> "RuntimeLogger source files are tailed below from app-owned locations."
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:186:        files += File("/storage/emulated/0/SplendorAssist/Forensics/telemetry.log")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:187:        files += File("/storage/emulated/0/SplendorAssist/Forensics/heartbeat.log")
+./app/src/main/java/com/assistant/vision/OverlaySelfMask.kt:177:            com.assistant.diagnostic.RuntimeLogger.log(stats() + " | " + scaleInfo(), "SELFMASK")
+./app/src/main/java/com/assistant/vision/ForegroundGate.kt:72:        try { com.assistant.diagnostic.RuntimeLogger.log(m, "FGGATE") } catch (_: Throwable) { }
+./app/src/main/java/com/assistant/DeathWatch.kt:151:        sb.appendLine("")
+./app/src/main/java/com/assistant/DeathWatch.kt:152:        sb.appendLine("===== ABNORMAL PROCESS DEATH =====")
+./app/src/main/java/com/assistant/DeathWatch.kt:153:        sb.appendLine("Detected at   : " + ts.format(Date()))
+./app/src/main/java/com/assistant/DeathWatch.kt:154:        sb.appendLine("Dead process  : " + deadProc + "  (pid " + deadPid + ")")
+./app/src/main/java/com/assistant/DeathWatch.kt:155:        sb.appendLine("Session began : " + (if (began > 0) ts.format(Date(began)) else "?"))
+./app/src/main/java/com/assistant/DeathWatch.kt:156:        sb.appendLine("Last heartbeat: " + (if (lastBeat > 0) ts.format(Date(lastBeat)) else "?"))
+./app/src/main/java/com/assistant/DeathWatch.kt:157:        sb.appendLine("Survived      : " + lived + "s")
+./app/src/main/java/com/assistant/DeathWatch.kt:158:        sb.appendLine("Undetected for: " + gap + "s before this restart")
+./app/src/main/java/com/assistant/DeathWatch.kt:159:        sb.appendLine("Memory then   : avail=" + availMb + "MB threshold=" + threshMb + "MB lowMemory=" + lowMem)
+./app/src/main/java/com/assistant/DeathWatch.kt:160:        sb.appendLine("Java crash    : " + (if (javaCrash) "YES" else "NO"))
+./app/src/main/java/com/assistant/DeathWatch.kt:161:        sb.appendLine("VERDICT       : " + verdict)
+./app/src/main/java/com/assistant/DeathWatch.kt:162:        sb.appendLine("Marker state  : " + at(0))
+./app/src/main/java/com/assistant/DeathWatch.kt:163:        sb.appendLine("==================================")
+./app/src/main/java/com/assistant/DeathWatch.kt:218:        try { com.assistant.diagnostic.RuntimeLogger.log(m, "DEATHWATCH") } catch (_: Throwable) { }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/CrashInspector.kt:8:        val file = File(LOG_DIR, "crash_log_${System.currentTimeMillis()}.txt")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:11:object RuntimeLogger {
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:77:                    "telemetry.log"
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:83:                    "heartbeat.log"
+./diagnostic_core/src/main/java/com/assistant/diagnostic/notification/NodeNotificationHub.kt:7:import com.assistant.diagnostic.RuntimeLogger
+./diagnostic_core/src/main/java/com/assistant/diagnostic/notification/NodeNotificationHub.kt:43:        RuntimeLogger.log(
+./diagnostic_core/src/main/java/com/assistant/diagnostic/notification/NodeNotificationHub.kt:59:        RuntimeLogger.log(
+./diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:158:        RuntimeLogger.execution(
+./diagnostic_core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:184:            RuntimeLogger.execution(
+./diagnostic_core/src/main/java/com/assistant/execution/HybridExecutionTerminal.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./diagnostic_core/src/main/java/com/assistant/execution/HybridExecutionTerminal.kt:24:        RuntimeLogger.execution("HYBRID_ROUTE","source=${request.source} phase=${request.phase}")
+./diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./diagnostic_core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt:48:                        RuntimeLogger.log(
+./diagnostic_core/src/main/java/com/assistant/events/RuntimeEvents.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./diagnostic_core/src/main/java/com/assistant/events/RuntimeEvents.kt:18: * history per channel, and still mirrors to RuntimeLogger so existing field
+./diagnostic_core/src/main/java/com/assistant/events/RuntimeEvents.kt:61:            RuntimeLogger.log(
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterAdapterService.kt:10:import com.assistant.diagnostic.RuntimeLogger
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterAdapterService.kt:41:            RuntimeLogger.log("StutterAdapter heartbeat burst=" +
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterAdapterService.kt:50:        RuntimeLogger.log("StutterAdapterService started - BURST RADAR V3", "ADAPTER")
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterAdapterService.kt:64:        RuntimeLogger.log("Stutter engine stack ignited: 3 engines [V3 ADMIN-WIRED]", "STUTTER")
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterAdapterService.kt:75:        RuntimeLogger.log("StutterAdapter stopped", "HEALTH")
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt:9:import com.assistant.diagnostic.RuntimeLogger
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterPulseEngine.kt:60:        RuntimeLogger.log("panel=" + String.format("%.0f", hz) +
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt:5:import com.assistant.diagnostic.RuntimeLogger
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt:59:            RuntimeLogger.log("burst " + state + " frames=" + frames +
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt:82:                            RuntimeLogger.log("burst CALM restored", "STUTTER")
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:8:import com.assistant.diagnostic.RuntimeLogger
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:45:            RuntimeLogger.log("instant panel-change listener registered", "STUTTER")
+./adapter_stutter/src/main/java/com/assistant/adapter/stutter/PanelWatchEngine.kt:47:            RuntimeLogger.log("panel listener unavailable, sweep only: " + t.message, "STUTTER")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:15:import com.assistant.diagnostic.RuntimeLogger
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:61:            RuntimeLogger.log("LagAdapter heartbeat sync completed", "HEALTH")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:76:            RuntimeLogger.log("LAG drift=${currentPingDriftMs}ms | TickSync=${now}", "LAG")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:92:        RuntimeLogger.log("LagAdapterService optimized initialization", "ADAPTER")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:132:        RuntimeLogger.log("Lag engine stack ignited: 7 engines [V3+CPUGOV]", "LAG")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:148:            RuntimeLogger.log("Gesture timing advice published for ($targetX, $targetY)", "GESTURE")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:228:        RuntimeLogger.log("LagAdapterService optimized engine stopped", "HEALTH")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/DisplayProfileEngine.kt:6:import com.assistant.diagnostic.RuntimeLogger
+./adapter_lag/src/main/java/com/assistant/adapter/lag/DisplayProfileEngine.kt:33:            RuntimeLogger.log("Display profile: panel=" + String.format("%.0f", panelHz) +
+./adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt:7:import com.assistant.diagnostic.RuntimeLogger
+./adapter_lag/src/main/java/com/assistant/adapter/lag/FramePacingEngine.kt:83:                    RuntimeLogger.log("frames=" + frames +
+./adapter_lag/src/main/java/com/assistant/adapter/lag/MainThreadStallEngine.kt:6:import com.assistant.diagnostic.RuntimeLogger
+./adapter_lag/src/main/java/com/assistant/adapter/lag/MainThreadStallEngine.kt:63:                    RuntimeLogger.log("stalls n=" + winSpikes + " max=" + winMax +
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:54:                        RuntimeLogger.log("DEVICE " + verdict + " -> " + candidate +
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:64:                        RuntimeLogger.log("DEVICE " + verdict +
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:53:                        RuntimeLogger.log("LOAD SHED " + level + " -> " + candidate +
+./adapter_lag/src/main/java/com/assistant/adapter/lag/ThermalPeekEngine.kt:7:import com.assistant.diagnostic.RuntimeLogger
+./adapter_lag/src/main/java/com/assistant/adapter/lag/ThermalPeekEngine.kt:48:                        RuntimeLogger.log("THERMAL STATUS -> " + s, "LAGTHERM")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/CpuGovernorEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_lag/src/main/java/com/assistant/adapter/lag/CpuGovernorEngine.kt:35:                        RuntimeLogger.log("CpuGovernor mode=$mode (A75=game A55=splendor)", "CPUGOV")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/CpuGovernorEngine.kt:41:                        RuntimeLogger.log("CpuGovernor: priority-only (${e.javaClass.simpleName})", "CPUGOV")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/CpuGovernorEngine.kt:49:        RuntimeLogger.log("CpuGovernorEngine started", "CPUGOV")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedCaptureBrakeEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedCaptureBrakeEngine.kt:45:        RuntimeLogger.log("LoadShedCaptureBrakeEngine started", "LOADSHED")
+./adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedCaptureBrakeEngine.kt:64:            RuntimeLogger.log(
+./adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:2:import com.assistant.diagnostic.RuntimeLogger
+./adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:34:            RuntimeLogger.log("BootAdapter heartbeat", "HEALTH")
+./adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:58:            RuntimeLogger.log(
+./adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:70:        RuntimeLogger.log("BootAdapterService started", "ADAPTER")
+./adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:88:        RuntimeLogger.log("BootAdapter heartbeat scheduler started", "HEALTH")
+./adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:91:        RuntimeLogger.log("Boot telemetry started", "BOOT")
+./adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:99:        RuntimeLogger.log("BootAdapter heartbeat stopped", "HEALTH")
+./adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:60:            RuntimeLogger.log("Watchdog heartbeat", "HEALTH")
+./adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:76:                        RuntimeLogger.log("WATCHDOG OFFLINE: ${snapshot.adapterName}", "WATCHDOG")
+./adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:84:                        RuntimeLogger.log("WATCHDOG DEGRADED: ${snapshot.adapterName}", "WATCHDOG")
+./adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:102:            RuntimeLogger.log("WATCHDOG RESTART: $adapterName -> $className", "WATCHDOG")
+./adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:104:            RuntimeLogger.log("WATCHDOG RESTART FAILED: $adapterName — ${e.message}", "WATCHDOG")
+./adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:110:        RuntimeLogger.log("WatchdogAdapterService started - ACTIVE GUARDIAN", "ADAPTER")
+./adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:123:        RuntimeLogger.log("Watchdog heartbeat scheduler started", "HEALTH")
+./adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:125:        RuntimeLogger.log("Watchdog scanner started - ACTIVE GUARDIAN MODE", "WATCHDOG")
+./adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:132:        RuntimeLogger.log("Watchdog stopped", "HEALTH")
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:85:        RuntimeLogger.log("MemoryAdapterService started: PRESSURE-TIERED NODE", "ADAPTER")
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:103:        RuntimeLogger.log("OS trim signal level=$level", "MEMORY")
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:135:                RuntimeLogger.log(
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:157:                RuntimeLogger.log("MEMORY telemetry failed: ${e.message}", "MEMORY_ERROR")
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:173:                RuntimeLogger.log("Heartbeat engine exception: ${e.message}", "HEALTH_ERROR")
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:194:        RuntimeLogger.log("MemoryAdapterService shutting down: Canceling Executors", "ADAPTER")
+./adapter_memory/src/main/java/com/assistant/adapter/memory/AggressiveMemoryHoarding.kt:5:import com.assistant.diagnostic.RuntimeLogger
+./adapter_memory/src/main/java/com/assistant/adapter/memory/AggressiveMemoryHoarding.kt:60:        RuntimeLogger.log("Initiating memory purge...", "MEMORY_HOARDER")
+./adapter_memory/src/main/java/com/assistant/adapter/memory/AggressiveMemoryHoarding.kt:97:        RuntimeLogger.log(
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryPressureBusEngine.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryPressureBusEngine.kt:8:            RuntimeLogger.log("MemoryPressureBus: CRITICAL (avail=${availMb}MB)", "MEMBUSENGINE")
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryCaptureGateEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryCaptureGateEngine.kt:25: * Additionally publishes the current throttle state to the RuntimeLogger
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryCaptureGateEngine.kt:53:            RuntimeLogger.log(
+./adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryCaptureGateEngine.kt:59:            RuntimeLogger.log(
+./adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:2:import com.assistant.diagnostic.RuntimeLogger
+./adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:35:            RuntimeLogger.log("ThermalAdapter heartbeat", "HEALTH")
+./adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:63:                    RuntimeLogger.log(
+./adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:71:                RuntimeLogger.log(
+./adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:83:        RuntimeLogger.log("ThermalAdapterService started", "ADAPTER")
+./adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:101:        RuntimeLogger.log("ThermalAdapter heartbeat scheduler started", "HEALTH")
+./adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:104:        RuntimeLogger.log("Thermal telemetry started", "THERMAL")
+./adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:112:        RuntimeLogger.log("ThermalAdapter heartbeat stopped", "HEALTH")
+./adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:2:import com.assistant.diagnostic.RuntimeLogger
+./adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:36:            RuntimeLogger.log("BatteryAdapter heartbeat", "HEALTH")
+./adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:75:                RuntimeLogger.log(
+./adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:82:                RuntimeLogger.log(
+./adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:94:        RuntimeLogger.log("BatteryAdapterService started", "ADAPTER")
+./adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:112:        RuntimeLogger.log("BatteryAdapter heartbeat scheduler started", "HEALTH")
+./adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:115:        RuntimeLogger.log("Battery telemetry started", "BATTERY")
+./adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:123:        RuntimeLogger.log("BatteryAdapter heartbeat stopped", "HEALTH")
+./adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:2:import com.assistant.diagnostic.RuntimeLogger
+./adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:34:            RuntimeLogger.log("Scheduler heartbeat", "HEALTH")
+./adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:68:            RuntimeLogger.log(
+./adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:79:        RuntimeLogger.log("SchedulerAdapterService started", "ADAPTER")
+./adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:97:        RuntimeLogger.log("Scheduler heartbeat scheduler started", "HEALTH")
+./adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:100:        RuntimeLogger.log("Scheduler fleet monitor started", "SCHEDULER")
+./adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:108:        RuntimeLogger.log("Scheduler heartbeat stopped", "HEALTH")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:13:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:20:        RuntimeLogger.log("SmartAssist message received: ${msg.what}", "SMARTASSIST")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:41:            RuntimeLogger.log("SmartAssist heartbeat","HEALTH")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:42:            RuntimeLogger.heartbeat("adapter_smartassist ACTIVE")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:67:            RuntimeLogger.log(recommendation, "SMARTASSIST")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:74:        RuntimeLogger.log("SmartAssistAdapterService started", "ADAPTER")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:110:        RuntimeLogger.log("SmartAssist heartbeat scheduler started", "HEALTH")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:111:        RuntimeLogger.log("SmartAssist decision engine started", "SMARTASSIST")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:115:        RuntimeLogger.log("SmartAssistAdapterService onStartCommand", "ADAPTER")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:124:        RuntimeLogger.log("SmartAssist heartbeat stopped", "HEALTH")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistMetrics.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt:8:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt:101:    private val vsyncAnchor = VsyncInputAnchor { _ -> RuntimeLogger.log("VSync dispatch synchronized","SMART_ASSIST") }
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt:119:            RuntimeLogger.log("SmartAssist disabled, ignoring vector", "SMART_ASSIST")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt:796:        RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:10:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:154:            RuntimeLogger.execution(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:194:            RuntimeLogger.execution(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:232:            RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:247:                    RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:278:                    RuntimeLogger.execution(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:297:                    RuntimeLogger.execution(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:303:                RuntimeLogger.log("Bus execution constraint violation: ${e.message}", "SMART_ASSIST")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:334:        RuntimeLogger.log("SmartAssistAccessibilityEngine [OMEGA BUILD] connected BUILD_MARKER=TASKC-PREEMPTIVE-DISPATCH", "SMART_ASSIST")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:339:            RuntimeLogger.log("SmartAssist disabled, trigger dropped", "SMART_ASSIST")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAccessibilityEngine.kt:377:        RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/ShieldAssistEngine.kt:47:        // Add tiny float variance to mask the perfect geometric line signature from telemetry logs
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TelemetryCoordinator.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TelemetryCoordinator.kt:30:        RuntimeLogger.telemetry("playerVelocity=$velocity opponentDistance=$opponentDistance")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TelemetryCoordinator.kt:56:        RuntimeLogger.telemetry("ball=($x,$y) velocity=($velocityX,$velocityY)")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TelemetryCoordinator.kt:74:        RuntimeLogger.telemetry("goalkeeper=($x,$y)")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AntiCutbackSubEngine.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AntiCutbackSubEngine.kt:31:    if(submitted){lastExecutionTimestamp=now;RuntimeLogger.log("ANTI_CUTBACK lane blocked vector=(\$runX,\$runY)","DEFENSE");return true}
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AutoEvadeEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/AutoEvadeEngine.kt:123:            RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OmnipotentDashPressureMatrix.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/OmnipotentDashPressureMatrix.kt:121:                RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/HybridOmnipotentMatrixEngine.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/HybridOmnipotentMatrixEngine.kt:63:                RuntimeLogger.log("GODSPEED_INTERCEPT target=($targetX,$targetY) dur=40ms","DEFENSE")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/HighPerformanceRuntimeLogger.kt:3:object HighPerformanceRuntimeLogger {
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:295:            RuntimeLogger.log("RuntimeCoordinator: $stage", "RUNTIME")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GestureExecutionAuthority.kt:6:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GestureExecutionAuthority.kt:68:            RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionTrust.kt:186:        try { com.assistant.diagnostic.RuntimeLogger.log(diagnostics(), "VISIONTRUST") } catch (_: Throwable) { }
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:4:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:84:            RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:90:            RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:97:            RuntimeLogger.log("TFLITE model load failed: $lastError", "VISION")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:151:                RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:157:                RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:188:                    RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:212:                RuntimeLogger.log(
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:6:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:26: *  - Prints exact code fix patches to HealLog when in-memory fix is insufficient
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:28: *  - HealLog path: /sdcard/Splendor-Assist/SplendorHealLog.txt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:29: *    Read with: cat /sdcard/Splendor-Assist/SplendorHealLog.txt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:72:            RuntimeLogger.log("AI Self-Heal Agent: MONITORING ACTIVE (5s cycle, immediate start)", "AGENT")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:73:            writeToFile(null, header = true)  // write session header to HealLog
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:77:                    try { RuntimeLogger.log("AGENT FAULT: ${e.javaClass.simpleName}: ${e.message}", "AGENT") } catch (_: Throwable) {}
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:86:        RuntimeLogger.log("RuntimeSelfHealEngine started — AI agent daemon online", "AGENT")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:192:                    RuntimeLogger.log("AGENT: restartCaptureIfAlive failed: ${e.message}", "AGENT")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:207:                        "CODE FIX NEEDED — see HealLog for patch.",
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:270:                    RuntimeLogger.log("AGENT HEAL #$totalHeals BUS: safe defaults published", "AGENT")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:348:                    RuntimeLogger.log("AGENT CRITICAL LOOP_FROZEN at $decisions — triggering capture check", "AGENT")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:409:                RuntimeLogger.log("AGENT CRITICAL COLLECT_STALL at cycles=$cycles — triggering capture check", "AGENT")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:473:    // Code fix printer — outputs structured patch to HealLog
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:478:            appendLine("=" .repeat(60))
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:479:            appendLine("⚠️  CODE FIX NEEDED [$ts] — $issueId")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:480:            appendLine("=" .repeat(60))
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:481:            for (line in description.lines()) appendLine("  $line")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:482:            appendLine("=" .repeat(60))
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:488:        try { RuntimeLogger.log("CODE_FIX_NEEDED: $issueId — see HealLog", "AGENT") } catch (_: Throwable) {}
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:499:            RuntimeLogger.log("[${ev.severity}] ${ev.category}: ${ev.detected.take(120)}", "AGENT")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:505:            // /sdcard/Splendor-Assist/SplendorHealLog.txt — read with:
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:506:            // cat /sdcard/Splendor-Assist/SplendorHealLog.txt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:507:            SplendorStorageRoot.file("SplendorHealLog.txt")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:525:                    w.write("Read: cat /sdcard/Splendor-Assist/SplendorHealLog.txt\n")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:550:                appendLine("STATUS: $agentStatus  |  heals: $totalHeals  |  age: ${agentAge}s")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:551:                appendLine("fg=$fg  shed=$shed  dispatch=${dispatchPct}%  fgForces=$fgForceCount")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:552:                appendLine("net=${AdapterSignalBus.netWindow}  lag=${AdapterSignalBus.lagVerdict}")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:553:                appendLine("stutter=${AdapterSignalBus.stutterState}  mem=${AdapterSignalBus.memoryTier}")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:554:                appendLine("thermal=${AdapterSignalBus.thermalStatus}  battery=${AdapterSignalBus.batteryLevel}%chg=${AdapterSignalBus.batteryCharging}")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:555:                appendLine("decisions=$decisions  routed=$routed  captureRestarts=$captureRestartAttempts")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:556:                appendLine("lastAction=${snap["lastAction"]}")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:557:                appendLine("HealLog: /sdcard/Splendor-Assist/SplendorHealLog.txt")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FightingSpiritEngine.kt:3:import com.assistant.diagnostic.RuntimeLogger
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FightingSpiritEngine.kt:36: *   RuntimeLogger tag FIGHTING_SPIRIT — visible in Splendor_Field_Logs.txt
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FightingSpiritEngine.kt:103:        RuntimeLogger.log(
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:12:import com.assistant.diagnostic.RuntimeLogger
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:117:                    RuntimeLogger.log(
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:124:                    RuntimeLogger.log(
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:143:        RuntimeLogger.log("InterruptionAdapterService started", "ADAPTER")
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:164:        RuntimeLogger.log("Interruption heartbeat scheduler started", "HEALTH")
+./adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:176:        RuntimeLogger.log("InterruptionAdapter heartbeat stopped", "HEALTH")
+
+[12] MEDIASTORE / CONTENTRESOLVER STORAGE
+------------------------------------------------------------
+./app/src/main/java/com/assistant/PingEliminatorVpnService.kt:12:import android.os.ParcelFileDescriptor
+./app/src/main/java/com/assistant/PingEliminatorVpnService.kt:35:    private var vpnInterface: ParcelFileDescriptor? = null
+./app/src/main/java/com/assistant/PingEliminatorVpnService.kt:160:    private fun executeLowLevelIO(pfd: ParcelFileDescriptor) {
+
+[13] STORAGE PERMISSIONS / ACCESS STATE
+------------------------------------------------------------
+./app/src/main/AndroidManifest.xml:4:    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt:19:            !Environment.isExternalStorageManager()
+
+[14] STORAGE ROOT / STARTUP LIFECYCLE
+------------------------------------------------------------
+app/src/main/java/com/assistant/App.kt:9:class App : Application() {
+app/src/main/java/com/assistant/App.kt:10:    override fun onCreate() {
+app/src/main/java/com/assistant/App.kt:11:        super.onCreate()
+app/src/main/java/com/assistant/App.kt:12:        SplendorStorageRoot.initialize()
+app/src/main/java/com/assistant/App.kt:13:        RuntimeLogger.initialize(this)
+app/src/main/java/com/assistant/App.kt:19:        GlobalCrashHandler.install(this)
+app/src/main/java/com/assistant/App.kt:25:        com.assistant.diagnostic.RuntimeLogger.initialize(this)
+app/src/main/java/com/assistant/App.kt:27:        GlobalCrashHandler.logFeatureFault("BOOT", "App.onCreate - health baseline")
+app/src/main/java/com/assistant/MainActivity.kt:114:    override fun onCreate(savedInstanceState: Bundle?) {
+app/src/main/java/com/assistant/MainActivity.kt:115:        super.onCreate(savedInstanceState)
+app/src/main/java/com/assistant/MainActivity.kt:118:        GlobalCrashHandler.install(this)
+app/src/main/java/com/assistant/ErrorActivity.kt:14:    override fun onCreate(savedInstanceState: Bundle?) {
+app/src/main/java/com/assistant/ErrorActivity.kt:15:        super.onCreate(savedInstanceState)
+app/src/main/java/com/assistant/GlobalCrashHandler.kt:16:class GlobalCrashHandler(
+app/src/main/java/com/assistant/GlobalCrashHandler.kt:23:        // auto-install on construction, makes MainActivity GlobalCrashHandler(this) still work
+app/src/main/java/com/assistant/GlobalCrashHandler.kt:24:        if (Thread.getDefaultUncaughtExceptionHandler() !is GlobalCrashHandler) {
+app/src/main/java/com/assistant/GlobalCrashHandler.kt:49:            Thread.setDefaultUncaughtExceptionHandler(GlobalCrashHandler(appCtx))
+app/src/main/java/com/assistant/LogActivity.kt:37:    override fun onCreate(savedInstanceState: Bundle?) {
+app/src/main/java/com/assistant/LogActivity.kt:38:        super.onCreate(savedInstanceState)
+app/src/main/java/com/assistant/OverlayService.kt:151:override fun onCreate() {
+app/src/main/java/com/assistant/OverlayService.kt:159:        super.onCreate()
+app/src/main/java/com/assistant/PingEliminatorVpnService.kt:52:    override fun onCreate() {
+app/src/main/java/com/assistant/PingEliminatorVpnService.kt:53:        super.onCreate()
+app/src/main/java/com/assistant/UpdateActivity.kt:34:    override fun onCreate(savedInstanceState: Bundle?) {
+app/src/main/java/com/assistant/UpdateActivity.kt:35:        super.onCreate(savedInstanceState)
+app/src/main/java/com/assistant/WelcomeActivity.kt:31:    override fun onCreate(savedInstanceState: Bundle?) {
+app/src/main/java/com/assistant/WelcomeActivity.kt:32:        super.onCreate(savedInstanceState)
+app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:30:override fun onCreate(savedInstanceState: Bundle?) {
+app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:33:        super.onCreate(savedInstanceState)
+app/src/main/java/com/assistant/controlroom/ui/GoalkeeperControlRoomActivity.kt:42:    override fun onCreate(savedInstanceState: Bundle?) {
+app/src/main/java/com/assistant/controlroom/ui/GoalkeeperControlRoomActivity.kt:43:        super.onCreate(savedInstanceState)
+app/src/main/java/com/assistant/controlroom/ui/InterceptionControlRoomActivity.kt:41:    override fun onCreate(savedInstanceState: Bundle?) {
+app/src/main/java/com/assistant/controlroom/ui/InterceptionControlRoomActivity.kt:42:        super.onCreate(savedInstanceState)
+app/src/main/java/com/assistant/controlroom/ui/FutureRoomsActivity.kt:44:    override fun onCreate(savedInstanceState: Bundle?) {
+app/src/main/java/com/assistant/controlroom/ui/FutureRoomsActivity.kt:45:        super.onCreate(savedInstanceState)
+app/src/main/java/com/assistant/DiagnosisRoomActivity.kt:24:    override fun onCreate(savedInstanceState: Bundle?) {
+app/src/main/java/com/assistant/DiagnosisRoomActivity.kt:25:        super.onCreate(savedInstanceState)
+app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:27:    override fun onCreate(savedInstanceState: Bundle?) {
+app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:28:        super.onCreate(savedInstanceState)
+app/src/main/java/com/assistant/vision/ForegroundGate.kt:24:    fun install(app: Application?) {
+app/src/main/java/com/assistant/vision/ForegroundGate.kt:27:        app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
+adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:92:    override fun onCreate() {
+adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:93:        super.onCreate()
+adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:68:    override fun onCreate() {
+adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:69:        super.onCreate()
+adapter_input/src/main/java/com/assistant/adapter/input/InputAdapterService.kt:36:    override fun onCreate() {
+adapter_input/src/main/java/com/assistant/adapter/input/InputAdapterService.kt:37:        super.onCreate()
+adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:140:    override fun onCreate() {
+adapter_interruption/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:141:        super.onCreate()
+adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:89:    override fun onCreate() {
+adapter_lag/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt:90:        super.onCreate()
+adapter_lmk/src/main/java/com/assistant/adapter/lmk/LmkAdapterService.kt:104:    override fun onCreate() {
+adapter_lmk/src/main/java/com/assistant/adapter/lmk/LmkAdapterService.kt:105:        super.onCreate()
+adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:82:    override fun onCreate() {
+adapter_memory/src/main/java/com/assistant/adapter/memory/MemoryAdapterService.kt:83:        super.onCreate()
+adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt:37:    override fun onCreate() {
+adapter_net/src/main/java/com/assistant/adapter/net/NetAdapterService.kt:38:        super.onCreate()
+adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:102:    override fun onCreate() {
+adapter_ping/src/main/java/com/assistant/adapter/ping/PingAdapterService.kt:103:        super.onCreate()
+adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:77:    override fun onCreate() {
+adapter_scheduler/src/main/java/com/assistant/adapter/scheduler/SchedulerAdapterService.kt:78:        super.onCreate()
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:72:    override fun onCreate() {
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/SmartAssistAdapterService.kt:73:        super.onCreate()
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt:202:        // PHASE4B: agent already started in OverlayService.onCreate() — no duplicate start here
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:21: *  - Starts immediately in OverlayService.onCreate() (3s grace, not 10s at G6)
+adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterAdapterService.kt:47:    override fun onCreate() {
+adapter_stutter/src/main/java/com/assistant/adapter/stutter/StutterAdapterService.kt:48:        super.onCreate()
+adapter_sync/src/main/java/com/assistant/adapter/sync/SyncAdapterService.kt:83:    override fun onCreate() {
+adapter_sync/src/main/java/com/assistant/adapter/sync/SyncAdapterService.kt:84:        super.onCreate()
+adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:81:    override fun onCreate() {
+adapter_thermal/src/main/java/com/assistant/adapter/thermal/ThermalAdapterService.kt:82:        super.onCreate()
+adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:108:    override fun onCreate() {
+adapter_watchdog/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt:109:        super.onCreate()
+
+[15] LOG-LIKE FILENAMES
+------------------------------------------------------------
+./app/src/main/java/com/assistant/DiagnosticsEngine.kt:12:    private const val CRASH_FILE_NAME = "crash_report.txt"
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:54:                val f = getLogFile(appCtxRef, "splendor_health.log", true)
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt:62:            val file = getLogFile(ctx, "splendor_crash.txt", false)
+./app/src/main/java/com/assistant/OverlayService.kt:216:            val logFile = File("/sdcard/Splendor-Assist", "crash_log.txt").also { it.parentFile?.mkdirs() }
+./app/src/main/java/com/assistant/controlroom/ui/FutureRoomsActivity.kt:139:        text(root, "   Detects and fixes broken engine states while you play. Logs every fix to Splendor_HealLog.txt", 11f, color = Color.parseColor("#AAAAAA"))
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:183:        files += File(filesDir, "runtime_diagnostic.txt")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:185:        files += File("/storage/emulated/0/SplendorAssist/Forensics/execution_chain.log")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:186:        files += File("/storage/emulated/0/SplendorAssist/Forensics/telemetry.log")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:187:        files += File("/storage/emulated/0/SplendorAssist/Forensics/heartbeat.log")
+./app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:188:        files += File("/storage/emulated/0/SplendorAssist/Forensics/fieldtest.log")
+./app/src/main/java/com/assistant/DeathWatch.kt:33:    private const val REPORT_NAME = "Splendor_Crash_Reports.txt"
+./app/src/main/java/com/assistant/DeathWatch.kt:176:        val names = arrayOf("splendor_crash.txt")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/CrashInspector.kt:8:        val file = File(LOG_DIR, "crash_log_${System.currentTimeMillis()}.txt")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:14:        "runtime_diagnostic.txt"
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:56:            externalLogFile = File("/sdcard/Splendor-Assist", "Splendor_Field_Logs.txt").also { it.parentFile?.mkdirs() }
+./diagnostic_core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:77:                    "telemetry.log"
+./diagnostic_core/src/main/java/com/assistant/diagnostic/registry/PerformanceTelemetryRegistry.kt:27:        if (file == null) file = File(context.filesDir, "perf_telemetry.txt")
+./diagnostic_core/src/main/java/com/assistant/diagnostic/persistence/HealthPersistenceStore.kt:10:    private const val FILE_NAME = "adapter_health.json"
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:507:            SplendorStorageRoot.file("SplendorHealLog.txt")
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:557:                appendLine("HealLog: /sdcard/Splendor-Assist/SplendorHealLog.txt")
+
+[16] SPLENDOR STORAGE ROOT USERS
+------------------------------------------------------------
+./adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt
+./app/src/main/java/com/assistant/App.kt
+./app/src/main/java/com/assistant/GlobalCrashHandler.kt
+./app/src/main/java/com/assistant/storage/SplendorStorageRoot.kt
+
+[17] FALLBACK / CANDIDATE DIRECTORY LOGIC
+------------------------------------------------------------
+app/src/main/java/com/assistant/MainActivity.kt:463:        val fallback = listOf(
+app/src/main/java/com/assistant/MainActivity.kt:480:        fallback.forEach {
+app/src/main/java/com/assistant/GlobalCrashHandler.kt:367:                EngineEntry("DashAnchorContributor","com.assistant.adapter.smartassist.contributors.DashAnchorContributor","ACTIVE","dash anchor with pressure fallback"),
+app/src/main/java/com/assistant/overlay/interceptor/ShotAnticipationEngine.kt:20:        anchorX: Float = 825f,  // Default standard horizontal center fallback
+app/src/main/java/com/assistant/overlay/interceptor/ShotAnticipationEngine.kt:21:        anchorY: Float = 360f   // Default standard vertical center fallback
+app/src/main/java/com/assistant/overlay/interceptor/ShotAnticipationEngine.kt:68:    // Legacy fallback version to guarantee compilation compatibility with your older analysis registries
+adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:28:    @Volatile private var candidate = "UNKNOWN"
+adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:50:                    if (raw == candidate) streak++ else { candidate = raw; streak = 1 }
+adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:53:                    if (candidate != verdict && streak >= need) {
+adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:54:                        RuntimeLogger.log("DEVICE " + verdict + " -> " + candidate +
+adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt:60:                        verdict = candidate
+adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:24:    @Volatile private var candidate = "NONE"
+adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:46:                    if (want == candidate) streak++ else { candidate = want; streak = 1 }
+adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:49:                    val need = if (candidate == "NONE") rel else arm
+adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:51:                    if (candidate != level && streak >= need &&
+adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:53:                        RuntimeLogger.log("LOAD SHED " + level + " -> " + candidate +
+adapter_lag/src/main/java/com/assistant/adapter/lag/LoadShedGovernor.kt:55:                        level = candidate
+adapter_memory/src/main/java/com/assistant/adapter/memory/AggressiveMemoryHoarding.kt:70:        val candidates = LinkedHashSet<String>()
+adapter_memory/src/main/java/com/assistant/adapter/memory/AggressiveMemoryHoarding.kt:76:                    if (!pkg.startsWith(ownPrefix)) candidates.add(pkg)
+adapter_memory/src/main/java/com/assistant/adapter/memory/AggressiveMemoryHoarding.kt:83:        for (pkg in candidates) {
+adapter_net/src/main/java/com/assistant/adapter/net/NetworkStateEngine.kt:16: * fallback and its cadence is admin-tunable.
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionCore.kt:29: * heuristic candidate above is still computed every frame as the always-on
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/VisionCore.kt:30: * fallback and cross-check reference. With no model asset present the
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/LiveVectorResolver.kt:41:        // Preserve fallback vectors, but expose whether telemetry is actually live.
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:19:        candidate: BallCandidate?
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:24:        if (candidate == null || candidate.score < MIN_CANDIDATE_CONFIDENCE) {
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:63:                lastBallX * 0.40f + candidate.centerX * 0.60f
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:65:                candidate.centerX
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:69:                lastBallY * 0.40f + candidate.centerY * 0.60f
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:71:                candidate.centerY
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:75:                lastRadius * 0.45f + candidate.radius * 0.55f
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:77:                candidate.radius
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:81:                lastConfidence * 0.40f + candidate.score * 0.60f
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:83:                candidate.score
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallDetector.kt:92:        val pixelArea = (candidate.pixelCount).coerceAtLeast(1)
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/GameplayDecisionEngine.kt:170:        recordAdaptiveModeActivation(hasBall, 0, if (hasBall) "adaptive mode evaluation" else "no ball: fallback mode")
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameScanner.kt:46:        // Fallback for null or invalid frames
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallCandidateEngine.kt:9:     * Ball candidate ranking upgrade.
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallCandidateEngine.kt:139:             * extremely sparse. These are poor ball candidates regardless of
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallCandidateEngine.kt:153:            val candidate =
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallCandidateEngine.kt:165:                candidate.score > best.score ||
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallCandidateEngine.kt:167:                    candidate.score == best.score &&
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallCandidateEngine.kt:168:                    candidate.pixelCount < best.pixelCount
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BallCandidateEngine.kt:171:                best = candidate
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameAssembler.kt:32: * usable confidence; the fresh-sighting rule remains as fallback only when
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/FrameAssembler.kt:75:                ballSeen // cold-start fallback: old fresh-sighting semantics
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/contributors/DashAnchorContributor.kt:16:        // project forward 200px from ball. Without this fallback the
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:37: * candidate is accepted. Trained wins only when ACTIVE and confident;
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:38: * heuristic is computed every frame regardless, both as fallback and as a
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:104:     * candidate in FRAME coordinates, or null when: no model, not confident,
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:106:     * means "heuristic owns this frame" - never a fabricated fallback.
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InstantInterceptEngine.kt:21:                        catch(_:Throwable) { return ballFallback(frame) }
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InstantInterceptEngine.kt:23:        if (!ownership.hasOwner || ownership.owner==null) return ballFallback(frame)
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InstantInterceptEngine.kt:25:        if (c.isUserTeam) return ballFallback(frame)
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/InstantInterceptEngine.kt:33:    private fun ballFallback(f: RuntimeFrame): InterceptResult {
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BuildUpPressEngine.kt:19:                        catch(_:Throwable) { return ballFallback(frame) }
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BuildUpPressEngine.kt:21:        if (!ownership.hasOwner || ownership.owner==null) return ballFallback(frame)
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BuildUpPressEngine.kt:23:        if (c.isUserTeam) return ballFallback(frame)
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/BuildUpPressEngine.kt:28:    private fun ballFallback(f: RuntimeFrame): PressResult {
+adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt:509:            // Fallback: app external files
+
+[18] FINAL INTEGRITY CHECK
+------------------------------------------------------------
+git diff --check:
+
+Working tree:
+?? splendor-storage-audit.sh
+?? storage-writer-forensic-audit.txt
+
+============================================================
+ END LOCAL STORAGE WRITER FORENSIC AUDIT
+ REPORT: /data/data/com.termux/files/home/projects/Splendor-Assist/storage-writer-forensic-audit.txt
+============================================================
