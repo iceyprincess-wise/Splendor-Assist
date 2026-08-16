@@ -81,7 +81,22 @@ object RuntimeDecisionLoop {
             return false
         }
 
-        val accepted = HybridExecutionTerminal.route(request)
+        // ── Fighting Spirit amplification ─────────────────────────────────
+        // Evaluate AFTER arbitration so it amplifies the already-chosen
+        // winner rather than competing in arbitration itself.
+        val fs = FightingSpiritEngine.evaluate(frame)
+        val finalRequest = if (fs.active && request != null) {
+            request.copy(
+                duration = (request.duration + fs.durationBoostMs)
+                    .coerceIn(15L, 85L)
+            )
+        } else request
+        // Apply authority boost to the winning contribution's weight
+        if (fs.active && best != null) {
+            lastWeight = (best.weight * fs.authorityBoost).coerceIn(0f, 1f)
+        }
+
+        val accepted = HybridExecutionTerminal.route(finalRequest ?: request)
         if (accepted) {
             routed.incrementAndGet()
             try {
@@ -132,6 +147,7 @@ object RuntimeDecisionLoop {
 
     fun reset() {
         decisions.set(0L); routed.set(0L)
+        FightingSpiritEngine.reset()
         idleNoContribution.set(0L); idleUntrusted.set(0L)
         lastAction = "none"; lastWeight = 0f; lastUpdatedMs = 0L
     }
