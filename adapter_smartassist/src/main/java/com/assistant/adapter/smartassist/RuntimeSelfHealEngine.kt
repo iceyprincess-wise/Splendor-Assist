@@ -173,11 +173,13 @@ object RuntimeSelfHealEngine {
 
                 // Attempt restart via OverlayService instance
                 val restarted = try {
-                    // PHASE5B: direct companion call replaces fragile reflection.
-                    // WeakRef was GC-nulled under memory pressure — exactly the
-                    // scenario that triggers recovery. Direct nullable ref is
-                    // cleared in onDestroy() so no leak risk.
-                    com.assistant.OverlayService.restartCaptureIfAlive()
+                    // PHASE5B-FIX: reflection avoids circular module dependency.
+                    // adapter_smartassist cannot reference :app directly.
+                    // OverlayService.companion.restartCaptureIfAlive() is a static
+                    // method — invoke(null) is correct for companion object methods.
+                    val cls = Class.forName("com.assistant.OverlayService")
+                    val method = cls.getDeclaredMethod("restartCaptureIfAlive")
+                    (method.invoke(null) as? Boolean) ?: false
                 } catch (e: Throwable) {
                     RuntimeLogger.log("AGENT: restartCaptureIfAlive failed: ${e.message}", "AGENT")
                     false
