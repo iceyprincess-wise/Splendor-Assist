@@ -189,7 +189,7 @@ object DeathWatch {
 
     private fun reportFile(c: Context): File? {
         val dirs = listOfNotNull(
-            try { Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) } catch (_: Throwable) { null },
+            try { java.io.File("/sdcard/Splendor-Assist").apply { mkdirs() } } catch (_: Throwable) { null },
             try { c.getExternalFilesDir(null) } catch (_: Throwable) { null },
             c.filesDir
         )

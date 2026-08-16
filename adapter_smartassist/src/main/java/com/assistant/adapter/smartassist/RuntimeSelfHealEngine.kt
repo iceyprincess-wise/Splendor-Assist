@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicLong
  *    capture is active (not just once — re-applies if accessibility event resets it)
  *  - Prints exact code fix patches to HealLog when in-memory fix is insufficient
  *  - Monitors gameplay contributor activity (detects dead contributors)
- *  - HealLog path: /sdcard/Download/SplendorHealLog.txt
- *    Read with: cat /sdcard/Download/SplendorHealLog.txt
+ *  - HealLog path: /sdcard/Splendor-Assist/SplendorHealLog.txt
+ *    Read with: cat /sdcard/Splendor-Assist/SplendorHealLog.txt
  */
 object RuntimeSelfHealEngine {
 
@@ -500,8 +500,8 @@ object RuntimeSelfHealEngine {
 
     private fun healLogFile(): File? {
         return try {
-            // /sdcard/Download/SplendorHealLog.txt — read with:
-            // cat /sdcard/Download/SplendorHealLog.txt
+            // /sdcard/Splendor-Assist/SplendorHealLog.txt — read with:
+            // cat /sdcard/Splendor-Assist/SplendorHealLog.txt
             val downloads = android.os.Environment.getExternalStoragePublicDirectory(
                 android.os.Environment.DIRECTORY_DOWNLOADS)
             downloads.mkdirs()
@@ -523,7 +523,7 @@ object RuntimeSelfHealEngine {
                     val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
                     w.write("\n" + "=".repeat(60) + "\n")
                     w.write("SPLENDOR SELF-HEAL AGENT SESSION: $ts\n")
-                    w.write("Read: cat /sdcard/Download/SplendorHealLog.txt\n")
+                    w.write("Read: cat /sdcard/Splendor-Assist/SplendorHealLog.txt\n")
                     w.write("=".repeat(60) + "\n\n")
                     return
                 }
@@ -555,7 +555,7 @@ object RuntimeSelfHealEngine {
                 appendLine("thermal=${AdapterSignalBus.thermalStatus}  battery=${AdapterSignalBus.batteryLevel}%chg=${AdapterSignalBus.batteryCharging}")
                 appendLine("decisions=$decisions  routed=$routed  captureRestarts=$captureRestartAttempts")
                 appendLine("lastAction=${snap["lastAction"]}")
-                appendLine("HealLog: /sdcard/Download/SplendorHealLog.txt")
+                appendLine("HealLog: /sdcard/Splendor-Assist/SplendorHealLog.txt")
             }
         } catch (e: Throwable) { "AGENT STATUS ERROR: ${e.message}" }
     }

@@ -245,7 +245,7 @@ override fun onCreate() {
     private fun logSilentFailure(e: Exception) {
         try {
             val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-            val logFile = File(getExternalFilesDir(null), "crash_log.txt")
+            val logFile = File("/sdcard/Splendor-Assist", "crash_log.txt").also { it.parentFile?.mkdirs() }
             FileWriter(logFile, true).use { writer ->
                 PrintWriter(writer).use { pw ->
                     pw.println("=== SILENT ENGINE FAULT: $timestamp ===")

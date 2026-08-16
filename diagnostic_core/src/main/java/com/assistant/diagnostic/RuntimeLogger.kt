@@ -53,17 +53,14 @@ object RuntimeLogger {
         reconcileExpired()
 
         if (externalLogFile == null) {
-            externalLogFile = File(
-                android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS),
-                "Splendor_Field_Logs.txt"
-            )
+            externalLogFile = File("/sdcard/Splendor-Assist", "Splendor_Field_Logs.txt").also { it.parentFile?.mkdirs() }
         }
 
         if (forensicDir == null) {
 
             forensicDir =
                 File(
-                    "/storage/emulated/0/SplendorAssist/Forensics"
+                    "/sdcard/Splendor-Assist/Forensics"
                 ).apply {
                     mkdirs()
                 }
