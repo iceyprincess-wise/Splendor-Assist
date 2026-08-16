@@ -98,16 +98,15 @@ object RuntimeDecisionLoop {
         // Captaincy is a passive, continuous team-wide fatigue reduction.
         // Applied after Fighting Spirit so both effects compound correctly.
         val captaincy = CaptaincySkillEngine.evaluate(frame)
-        val resolvedRequest = if (captaincy.active && captaincy.composureBoostMs > 0L) {
+        // teamLiftFactor: multiplicative duration scale — real terminal effect.
+        // composureBoostMs: additive on top — both reach HybridExecutionTerminal.
+        val resolvedRequest = if (captaincy.active) {
+            val liftedDuration = (finalRequest.duration * captaincy.teamLiftFactor).toLong()
             finalRequest.copy(
-                duration = (finalRequest.duration + captaincy.composureBoostMs)
+                duration = (liftedDuration + captaincy.composureBoostMs)
                     .coerceIn(15L, 85L)
             )
         } else finalRequest
-        // Apply team lift to lastWeight for diagnostic visibility
-        if (captaincy.active && best != null && !fs.active) {
-            lastWeight = (best.weight * captaincy.teamLiftFactor).coerceIn(0f, 1f)
-        }
 
         val accepted = HybridExecutionTerminal.route(resolvedRequest)
         if (accepted) {

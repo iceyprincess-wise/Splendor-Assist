@@ -56,6 +56,7 @@ object CaptaincySkillEngine {
     @Volatile private var lastFatigueProxy  = 0f
     @Volatile private var lastTeamLift      = MIN_TEAM_LIFT
     @Volatile private var lastComposureMs   = MIN_COMPOSURE_MS
+    @Volatile private var captainDesignated = false
     @Volatile private var active            = false
     @Volatile private var lastUpdatedMs     = 0L
 
@@ -88,6 +89,7 @@ object CaptaincySkillEngine {
     )
 
     fun evaluate(frame: RuntimeFrame): CaptaincyResult {
+        if (!captainDesignated) return inert()
         if (!frame.trusted) {
             active         = false
             lastFatigueProxy = 0f
@@ -162,9 +164,14 @@ object CaptaincySkillEngine {
         )
     }
 
+    fun setCaptainDesignated(enabled: Boolean) {
+        captainDesignated = enabled
+    }
+
     fun isActive(): Boolean = active
 
     fun diagnostics(): Map<String, Any> = mapOf(
+        "captainDesignated" to captainDesignated,
         "active"           to active,
         "activations"      to activations.get(),
         "lastFatigueProxy" to lastFatigueProxy,
