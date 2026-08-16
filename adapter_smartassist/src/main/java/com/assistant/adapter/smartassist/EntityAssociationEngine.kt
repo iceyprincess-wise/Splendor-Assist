@@ -1,6 +1,5 @@
 package com.assistant.adapter.smartassist
 
-import com.assistant.admin.AdminConfigStore
 
 /*
  * Matches this frame's player detections to the tracks we already know.
@@ -24,9 +23,9 @@ object EntityAssociationEngine {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
     private val MAX_ASSOCIATION_DISTANCE: Float
-        get() = AdminConfigStore.get("assist.track.assoc_dist", 120f)
+        get() = 120f
     private val DUPLICATE_TRACK_DISTANCE: Float
-        get() = AdminConfigStore.get("assist.track.dup_dist", 12f)
+        get() = 12f
 
     private const val VELOCITY_SMOOTHING = 0.35f
     private const val CONFIDENCE_SMOOTHING = 0.25f

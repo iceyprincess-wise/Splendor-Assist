@@ -1,6 +1,5 @@
 package com.assistant.adapter.smartassist.contributors
 
-import com.assistant.admin.AdminConfigStore
 import com.assistant.adapter.smartassist.MagneticFeetEngine
 import com.assistant.runtime.ActionClass
 import com.assistant.runtime.EngineCapability
@@ -57,7 +56,7 @@ object MagneticFeetContributor : GameplayContributor {
         // During panic, halve authority to defer to urgent DEFEND/EVADE actions.
         // Capped by admin key; default 0.65f.
         val cap = try {
-            AdminConfigStore.get("assist.contrib.magneticfeet.cap", 0.65f)
+            0.65f
         } catch (_: Throwable) { 0.65f }
 
         val panicFactor = if (frame.panic) 0.5f else 1.0f

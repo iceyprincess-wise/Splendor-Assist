@@ -1,8 +1,6 @@
 package com.assistant.adapter.net
 
 // V3 INSTANT-REFLEX
-import com.assistant.admin.AdminConfigStore
-import com.assistant.admin.AdminLiveStats
 import com.assistant.diagnostic.RuntimeLogger
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -21,11 +19,11 @@ object PacketLossProbeEngine {
     private val RESOLVERS = listOf("8.8.8.8", "1.1.1.1")
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val ROUND_MS: Long get() = AdminConfigStore.getLong("net.loss.round_ms", 4000L)
-    private val PER_ROUND: Int get() = AdminConfigStore.getInt("net.loss.per_round", 4)
-    private val REPLY_TIMEOUT_MS: Int get() = AdminConfigStore.getInt("net.loss.reply_timeout_ms", 700)
-    private val ALPHA: Float get() = AdminConfigStore.get("net.loss.alpha", 0.3f)
-    private val GAP_MS: Long get() = AdminConfigStore.getLong("net.loss.gap_ms", 80L)
+    private val ROUND_MS: Long get() = 4000L
+    private val PER_ROUND: Int get() = 4
+    private val REPLY_TIMEOUT_MS: Int get() = 700
+    private val ALPHA: Float get() = 0.3f
+    private val GAP_MS: Long get() = 80L
 
     @Volatile private var running = false
     @Volatile var lossPct = 0f; private set
@@ -48,7 +46,6 @@ object PacketLossProbeEngine {
                     val roundLoss = (perRound - ok) * 100f / perRound
                     val a = ALPHA
                     lossPct = lossPct * (1 - a) + roundLoss * a
-                    AdminLiveStats.publishLoss(lossPct)
                     rounds++
                     if (roundLoss >= 50f)
                         RuntimeLogger.log("LOSS SPIKE " + String.format("%.0f", roundLoss) +

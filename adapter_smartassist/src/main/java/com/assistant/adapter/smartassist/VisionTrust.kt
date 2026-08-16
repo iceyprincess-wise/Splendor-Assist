@@ -1,6 +1,5 @@
 package com.assistant.adapter.smartassist
 
-import com.assistant.admin.AdminConfigStore
 
 /**
  * GAP 2 + GAP 3 — VISION TRUST
@@ -24,14 +23,14 @@ object VisionTrust {
     // PHASE4: 15fps tuning — FRESH_MS=120ms = 1.8 frames → ball always seems stale at 15fps
     // → frameTrusted() returns false every other frame → ALL contributors blocked
     // Fix: FRESH_MS=200ms (3 frames), STALE_MS=600ms (9 frames) for 15fps operation
-    private val FRESH_MS: Long get() = AdminConfigStore.getLong("assist.trust.fresh_ms", 200L)
-    private val STALE_MS: Long get() = AdminConfigStore.getLong("assist.trust.stale_ms", 600L)
-    private val LATENCY_LIMIT_MS: Float get() = AdminConfigStore.get("assist.trust.latency_ms", 300f)  // PHASE4B: 15fps main-thread spikes up to 250ms are normal
-    private val TRUST_FLOOR: Float get() = AdminConfigStore.get("assist.trust.floor", 0.55f)
-    private val LANE_FLOOR: Float get() = AdminConfigStore.get("assist.trust.lane_floor", 0.35f)
+    private val FRESH_MS: Long get() = 200L
+    private val STALE_MS: Long get() = 600L
+    private val LATENCY_LIMIT_MS: Float get() = 300f  // PHASE4B: 15fps main-thread spikes up to 250ms are normal
+    private val TRUST_FLOOR: Float get() = 0.55f
+    private val LANE_FLOOR: Float get() = 0.35f
 
     /** a real match cannot contain more than this many tracked entities */
-    private val SANE_ENTITY_MAX: Int get() = AdminConfigStore.getInt("assist.trust.entity_max", 30)
+    private val SANE_ENTITY_MAX: Int get() = 30
 
     // ---------------- gap 1c: is the game actually on screen ----------------
     @Volatile private var foregroundIsGame = false

@@ -5,7 +5,6 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.os.Handler
 import android.os.Looper
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
@@ -23,7 +22,7 @@ import com.assistant.diagnostic.RuntimeLogger
 object PanelWatchEngine {
 
     // ADMIN-TUNABLE
-    private val POLL_MS: Long get() = AdminConfigStore.getLong("stutter.panel.poll_ms", 5000L)
+    private val POLL_MS: Long get() = 5000L
 
     @Volatile private var running = false
     private var dm: DisplayManager? = null

@@ -2,8 +2,6 @@ package com.assistant.adapter.net
 
 // V3 INSTANT-REFLEX
 import android.content.Context
-import com.assistant.admin.AdminConfigStore
-import com.assistant.admin.AdminLiveStats
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 import java.net.InetSocketAddress
@@ -21,13 +19,13 @@ object NetProbeEngine {
 
     private val TARGETS = listOf("8.8.8.8" to 53, "1.1.1.1" to 53)
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val FAST_MS: Long get() = AdminConfigStore.getLong("net.probe.fast_ms", 2000L)
-    private val CALM_MS: Long get() = AdminConfigStore.getLong("net.probe.calm_ms", 5000L)
-    private val TIMEOUT_MS: Int get() = AdminConfigStore.getInt("net.probe.timeout_ms", 1200)
-    private val ALPHA: Float get() = AdminConfigStore.get("net.probe.alpha", 0.35f)
-    private val SAMPLES: Int get() = AdminConfigStore.getInt("net.probe.samples", 3)
-    private val GAP_MS: Long get() = AdminConfigStore.getLong("net.probe.gap_ms", 60L)
-    private val DEGRADED_MULT: Float get() = AdminConfigStore.get("net.probe.degraded_mult", 2f)
+    private val FAST_MS: Long get() = 2000L
+    private val CALM_MS: Long get() = 5000L
+    private val TIMEOUT_MS: Int get() = 1200
+    private val ALPHA: Float get() = 0.35f
+    private val SAMPLES: Int get() = 3
+    private val GAP_MS: Long get() = 60L
+    private val DEGRADED_MULT: Float get() = 2f
 
     private val lock = Object()
     @Volatile private var running = false
@@ -42,7 +40,6 @@ object NetProbeEngine {
         if (running) return
         running = true
         PerformanceTelemetryRegistry.initialize(ctx.applicationContext)
-        AdminConfigStore.initialize(ctx.applicationContext)
         val t = Thread {
             var tick = 0L
             while (running) {
@@ -109,10 +106,6 @@ object NetProbeEngine {
         }
         PerformanceTelemetryRegistry.publishNet(
             rtt, jitter, quality, CarrierProfileEngine.current.name, NetworkStateEngine.transport)
-        AdminLiveStats.publishProbe(
-            rtt, jitter, quality, CarrierProfileEngine.current.name,
-            CarrierProfileEngine.baselineRttMs, CarrierProfileEngine.jitterTolMs,
-            NetworkStateEngine.transport)
     }
 
     private fun tcpRtt(host: String, port: Int): Long = try {

@@ -3,7 +3,6 @@ package com.assistant.adapter.lag
 // V3 ADMIN-WIRED - zero main-thread I/O, every knob answers the admin store live
 import android.os.Handler
 import android.os.Looper
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
@@ -17,10 +16,10 @@ import com.assistant.diagnostic.RuntimeLogger
 object MainThreadStallEngine {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val CADENCE_MS: Long get() = AdminConfigStore.getLong("lag.stall.cadence_ms", 250L)
-    private val SPIKE_MS: Long get() = AdminConfigStore.getLong("lag.stall.spike_ms", 80L)
-    private val ALPHA: Float get() = AdminConfigStore.get("lag.stall.alpha", 0.25f)
-    private val REPORT_MS: Long get() = AdminConfigStore.getLong("lag.stall.report_ms", 10_000L)
+    private val CADENCE_MS: Long get() = 250L
+    private val SPIKE_MS: Long get() = 80L
+    private val ALPHA: Float get() = 0.25f
+    private val REPORT_MS: Long get() = 10_000L
 
     @Volatile private var running = false
     @Volatile var avgLatenessMs = 0f; private set

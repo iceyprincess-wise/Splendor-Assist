@@ -1,8 +1,6 @@
 package com.assistant.adapter.stutter
 
 // V3 ADMIN-WIRED - every classification line answers the admin store live
-import com.assistant.admin.AdminConfigStore
-import com.assistant.admin.AdminLiveStats
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
@@ -22,11 +20,11 @@ import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 object BurstForensicsEngine {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val SEIZURE_MS: Float get() = AdminConfigStore.get("stutter.forensics.seizure_ms", 150f)
-    private val OSC_BURSTS: Int get() = AdminConfigStore.getInt("stutter.forensics.osc_bursts", 3)
-    private val OSC_WINDOW_MS: Long get() = AdminConfigStore.getLong("stutter.forensics.osc_window_ms", 15000L)
-    private val CALM_AFTER_MS: Long get() = AdminConfigStore.getLong("stutter.forensics.calm_after_ms", 10000L)
-    private val DECAY_POLL_MS: Long get() = AdminConfigStore.getLong("stutter.forensics.decay_poll_ms", 5000L)
+    private val SEIZURE_MS: Float get() = 150f
+    private val OSC_BURSTS: Int get() = 3
+    private val OSC_WINDOW_MS: Long get() = 15000L
+    private val CALM_AFTER_MS: Long get() = 10000L
+    private val DECAY_POLL_MS: Long get() = 5000L
 
     @Volatile var state = "CALM"; private set
     @Volatile private var decayRunning = false
@@ -55,11 +53,6 @@ object BurstForensicsEngine {
         // SpeedCompensationContributor, LoadShedGovernor all read this — all were blind to stutter.
         AdapterSignalBus.publishStutter(state)
         if (changed) {
-            try {
-                AdminLiveStats.publishStutter(
-                    StutterPulseEngine.burstsPerMin, worstMs, frames,
-                    state, StutterPulseEngine.panelHz)
-            } catch (_: Throwable) { }
         }
         if (changed || now - lastLogMs >= 30_000L) {
             lastLogMs = now
@@ -86,11 +79,6 @@ object BurstForensicsEngine {
                             state = "CALM"
                             AdapterSignalBus.publishStutter("CALM")  // PHASE3 fix
                             PerformanceTelemetryRegistry.publishStutter("CALM", 0f, 0f)
-                            try {
-                                AdminLiveStats.publishStutter(
-                                    StutterPulseEngine.burstsPerMin, 0f, 0,
-                                    "CALM", StutterPulseEngine.panelHz)
-                            } catch (_: Throwable) { }
                             RuntimeLogger.log("burst CALM restored", "STUTTER")
                         }
                     }

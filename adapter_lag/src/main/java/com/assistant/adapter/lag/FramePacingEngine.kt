@@ -4,7 +4,6 @@ package com.assistant.adapter.lag
 import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
@@ -18,9 +17,9 @@ import com.assistant.diagnostic.RuntimeLogger
 object FramePacingEngine {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val ALPHA: Float get() = AdminConfigStore.get("lag.frame.alpha", 0.2f)
-    private val REPORT_EVERY_MS: Long get() = AdminConfigStore.getLong("lag.frame.report_ms", 20_000L)
-    private val STALL_MS: Float get() = AdminConfigStore.get("lag.frame.stall_ms", 100f)
+    private val ALPHA: Float get() = 0.2f
+    private val REPORT_EVERY_MS: Long get() = 20_000L
+    private val STALL_MS: Float get() = 100f
 
     @Volatile private var running = false
     @Volatile var avgGapMs = 0f; private set

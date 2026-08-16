@@ -1,7 +1,6 @@
 package com.assistant.adapter.net
 
 // V3 INSTANT-REFLEX
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 import java.net.InetAddress
 
@@ -16,7 +15,7 @@ object DnsWarmupEngine {
         "www.konami.com", "www.google.com", "www.cloudflare.com", "one.one.one.one"
     )
     // ADMIN-TUNABLE (default = original hard-coded value)
-    private val REWARM_MS: Long get() = AdminConfigStore.getLong("net.dns.rewarm_ms", 90_000L)
+    private val REWARM_MS: Long get() = 90_000L
 
     private val lock = Object()
     @Volatile private var running = false

@@ -1,7 +1,6 @@
 package com.assistant.adapter.net
 
 // V3 INSTANT-REFLEX
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
@@ -13,9 +12,9 @@ import com.assistant.diagnostic.RuntimeLogger
 object CongestionSentinelEngine {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val POLL_MS: Long get() = AdminConfigStore.getLong("net.sentinel.poll_ms", 2000L)
-    private val RISE_FACTOR: Float get() = AdminConfigStore.get("net.sentinel.rise_factor", 1.5f)
-    private val RISE_FRACTION: Float get() = AdminConfigStore.get("net.sentinel.rise_fraction", 0.6f)
+    private val POLL_MS: Long get() = 2000L
+    private val RISE_FACTOR: Float get() = 1.5f
+    private val RISE_FRACTION: Float get() = 0.6f
 
     @Volatile private var running = false
     @Volatile var congested = false; private set

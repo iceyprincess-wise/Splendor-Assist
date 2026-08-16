@@ -3,7 +3,6 @@ package com.assistant.adapter.lag
 // V3 ADMIN-WIRED
 import android.content.Context
 import android.hardware.display.DisplayManager
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
@@ -17,7 +16,7 @@ object DisplayProfileEngine {
 
     // ADMIN-TUNABLE (default = original hard-coded value)
     val gameFps: Float get() {
-        val v = AdminConfigStore.get("lag.display.game_fps", 30f)
+        val v = 30f
         return if (v > 0f) v else 30f
     }
     val gameBudgetMs: Float get() = 1000f / gameFps

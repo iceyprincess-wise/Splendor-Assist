@@ -1,7 +1,6 @@
 package com.assistant.adapter.net
 
 // V3 INSTANT-REFLEX
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 import com.assistant.diagnostic.AdapterSignalBus
@@ -18,10 +17,10 @@ import com.assistant.diagnostic.AdapterSignalBus
 object ActionWindowEngine {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val POLL_MS: Long get() = AdminConfigStore.getLong("net.window.poll_ms", 2000L)
-    private val HOLD_LOSS_PCT: Float get() = AdminConfigStore.get("net.window.hold_loss_pct", 10f)
-    private val GO_LOSS_PCT: Float get() = AdminConfigStore.get("net.window.go_loss_pct", 2f)
-    private val HOLD_JITTER_MULT: Float get() = AdminConfigStore.get("net.window.hold_jitter_mult", 2f)
+    private val POLL_MS: Long get() = 2000L
+    private val HOLD_LOSS_PCT: Float get() = 10f
+    private val GO_LOSS_PCT: Float get() = 2f
+    private val HOLD_JITTER_MULT: Float get() = 2f
 
     @Volatile private var running = false
     @Volatile var verdict = "UNKNOWN"; private set

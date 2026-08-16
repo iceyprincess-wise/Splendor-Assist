@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
@@ -19,7 +18,7 @@ import com.assistant.diagnostic.RuntimeLogger
 object NetworkStateEngine {
 
     // ADMIN-TUNABLE (default = original hard-coded value)
-    private val POLL_MS: Long get() = AdminConfigStore.getLong("net.state.poll_ms", 10000L)
+    private val POLL_MS: Long get() = 10000L
 
     @Volatile var transport: String = "NONE"
         private set

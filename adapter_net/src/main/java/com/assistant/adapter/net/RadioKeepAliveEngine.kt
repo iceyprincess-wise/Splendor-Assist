@@ -1,7 +1,6 @@
 package com.assistant.adapter.net
 
 // V3 INSTANT-REFLEX
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -17,7 +16,7 @@ import java.net.InetAddress
 object RadioKeepAliveEngine {
 
     // ADMIN-TUNABLE (default = original hard-coded value)
-    private val FLOOR_S: Int get() = AdminConfigStore.getInt("net.keepalive.floor_s", 4)
+    private val FLOOR_S: Int get() = 4
 
     @Volatile private var running = false
     @Volatile private var sent = 0L

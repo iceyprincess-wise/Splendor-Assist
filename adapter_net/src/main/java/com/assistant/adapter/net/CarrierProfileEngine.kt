@@ -2,7 +2,6 @@ package com.assistant.adapter.net
 
 import android.content.Context
 import android.telephony.TelephonyManager
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 data class CarrierProfile(
@@ -31,15 +30,15 @@ object CarrierProfileEngine {
 
     // ---- override-aware baselines (0 = auto: use the detected profile) ----
     val baselineRttMs: Int get() {
-        val o = AdminConfigStore.getInt("net.profile.rtt_ms", 0)
+        val o = 0
         return if (o > 0) o else current.expectedRttMs
     }
     val jitterTolMs: Int get() {
-        val o = AdminConfigStore.getInt("net.profile.jitter_tol_ms", 0)
+        val o = 0
         return if (o > 0) o else current.jitterToleranceMs
     }
     val keepAliveS: Int get() {
-        val o = AdminConfigStore.getInt("net.profile.keepalive_s", 0)
+        val o = 0
         return if (o > 0) o else current.keepAliveSeconds
     }
 

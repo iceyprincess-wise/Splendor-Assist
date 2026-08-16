@@ -1,7 +1,6 @@
 package com.assistant.adapter.net
 
 // V3 INSTANT-REFLEX
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
@@ -14,11 +13,11 @@ import com.assistant.diagnostic.RuntimeLogger
 object SpikeBurstEngine {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val RECOVERY_WINDOW_MS: Long get() = AdminConfigStore.getLong("net.spike.recovery_window_ms", 60_000L)
-    private val CLEAN_SAMPLES: Int get() = AdminConfigStore.getInt("net.spike.clean_samples", 2)
-    private val BURST_SAMPLES: Int get() = AdminConfigStore.getInt("net.spike.burst_samples", 5)
-    private val BURST_GAP_MS: Long get() = AdminConfigStore.getLong("net.spike.burst_gap_ms", 200L)
-    private val CLEAN_MULT: Float get() = AdminConfigStore.get("net.spike.clean_mult", 1.5f)
+    private val RECOVERY_WINDOW_MS: Long get() = 60_000L
+    private val CLEAN_SAMPLES: Int get() = 2
+    private val BURST_SAMPLES: Int get() = 5
+    private val BURST_GAP_MS: Long get() = 200L
+    private val CLEAN_MULT: Float get() = 1.5f
 
     @Volatile private var running = false
     @Volatile private var mapping = false

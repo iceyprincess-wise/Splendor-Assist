@@ -1,8 +1,6 @@
 package com.assistant.adapter.lag
 
 // V3 ADMIN-WIRED - every threshold live, publishes the Detector snapshot
-import com.assistant.admin.AdminConfigStore
-import com.assistant.admin.AdminLiveStats
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 import com.assistant.diagnostic.AdapterSignalBus
@@ -17,13 +15,13 @@ import com.assistant.diagnostic.AdapterSignalBus
 object LagVerdictEngine {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val POLL_MS: Long get() = AdminConfigStore.getLong("lag.verdict.poll_ms", 2000L)
-    private val JITTER_MS: Float get() = AdminConfigStore.get("lag.verdict.jitter_ms", 10f)
-    private val STABILITY_PCT: Float get() = AdminConfigStore.get("lag.verdict.stability_pct", 65f)
-    private val CHOKE_STALLS: Float get() = AdminConfigStore.get("lag.verdict.choke_stalls", 18f)
-    private val CHOKE_MTSTALL_MS: Float get() = AdminConfigStore.get("lag.verdict.choke_mtstall_ms", 120f)
-    private val CHOKE_SPIKES: Float get() = AdminConfigStore.get("lag.verdict.choke_spikes", 20f)
-    private val CONFIRM_POLLS: Int get() = AdminConfigStore.getInt("lag.verdict.confirm_polls", 2)
+    private val POLL_MS: Long get() = 2000L
+    private val JITTER_MS: Float get() = 10f
+    private val STABILITY_PCT: Float get() = 65f
+    private val CHOKE_STALLS: Float get() = 18f
+    private val CHOKE_MTSTALL_MS: Float get() = 120f
+    private val CHOKE_SPIKES: Float get() = 20f
+    private val CONFIRM_POLLS: Int get() = 2
 
     @Volatile private var running = false
     @Volatile var verdict = "UNKNOWN"; private set
@@ -71,10 +69,6 @@ object LagVerdictEngine {
                     AdapterSignalBus.publishLag(verdict)
                     PerformanceTelemetryRegistry.publishDisplay(
                         FramePacingEngine.avgGapMs, stallRate, mtStall, verdict)
-                    AdminLiveStats.publishLag(
-                        FramePacingEngine.avgGapMs, jit, stab, stallRate,
-                        mtStall, spm, verdict, ThermalPeekEngine.status,
-                        DisplayProfileEngine.panelHz, LoadShedGovernor.level)
                 } catch (_: Throwable) { }
                 val nap = POLL_MS
                 try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }

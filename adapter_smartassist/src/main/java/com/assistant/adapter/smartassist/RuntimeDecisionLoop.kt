@@ -1,6 +1,5 @@
 package com.assistant.adapter.smartassist
 
-import com.assistant.admin.AdminConfigStore
 import com.assistant.execution.ContributionRegistry
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
@@ -48,8 +47,7 @@ object RuntimeDecisionLoop {
     private fun classScale(actionClass: ActionClass): Float =
         when (actionClass) {
             ActionClass.MOVE ->
-                try { AdminConfigStore.get("assist.decision.move_scale", 0.35f) }  // PHASE4B: actions win easier
-                catch (_: Throwable) { 0.45f }
+                0.35f
             ActionClass.NONE -> 0f
             else -> 1f
         }

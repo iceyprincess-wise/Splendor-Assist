@@ -1,7 +1,6 @@
 package com.assistant.adapter.lag
 
 // V3 ADMIN-WIRED - quick to arm, slow to thrash, every knob live
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
@@ -15,10 +14,10 @@ import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 object LoadShedGovernor {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val MIN_HOLD_MS: Long get() = AdminConfigStore.getLong("lag.shed.min_hold_ms", 8000L)
-    private val POLL_MS: Long get() = AdminConfigStore.getLong("lag.shed.poll_ms", 2000L)
-    private val ARM_POLLS: Int get() = AdminConfigStore.getInt("lag.shed.arm_polls", 4)
-    private val RELEASE_POLLS: Int get() = AdminConfigStore.getInt("lag.shed.release_polls", 5)
+    private val MIN_HOLD_MS: Long get() = 8000L
+    private val POLL_MS: Long get() = 2000L
+    private val ARM_POLLS: Int get() = 4
+    private val RELEASE_POLLS: Int get() = 5
 
     @Volatile private var running = false
     @Volatile var level = "NONE"; private set

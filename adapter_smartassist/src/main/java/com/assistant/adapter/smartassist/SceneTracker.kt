@@ -1,6 +1,5 @@
 package com.assistant.adapter.smartassist
 
-import com.assistant.admin.AdminConfigStore
 
 /*
  * Keeps the tracked picture of the pitch between frames.
@@ -31,9 +30,9 @@ object SceneTracker {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
     private val PLAYER_MEMORY_FRAMES: Long
-        get() = AdminConfigStore.getLong("assist.track.memory_frames", 15L)
+        get() = 15L
     private val MAX_TRACKS: Int
-        get() = AdminConfigStore.getInt("assist.track.max_tracks", 30)
+        get() = 30
 
     private const val CONFIDENCE_DECAY = 0.05f
 

@@ -7,7 +7,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.Messenger
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
@@ -57,7 +56,6 @@ class StutterAdapterService : Service() {
         // ---- STUTTER ENGINE STACK IGNITION [V3 ADMIN-WIRED] ----
         // CRITICAL: load the admin store in THIS process so every saved
         // admin value is actually obeyed by the stutter engines.
-        AdminConfigStore.initialize(this)
         PerformanceTelemetryRegistry.initialize(this)
         StutterPulseEngine.detectPanel(this)
         StutterPulseEngine.start()

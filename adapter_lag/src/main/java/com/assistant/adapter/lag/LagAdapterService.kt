@@ -12,7 +12,6 @@ import android.os.Message
 import android.os.Messenger
 import android.os.Process
 import android.view.Choreographer
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
@@ -121,7 +120,6 @@ class LagAdapterService : Service() {
         // CRITICAL: load the admin store in THIS process so every saved
         // admin value is actually obeyed by the lag engines (without this
         // they silently fall back to compiled defaults).
-        AdminConfigStore.initialize(this)
         com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.initialize(this)
         DisplayProfileEngine.detect(this)
         FramePacingEngine.start()

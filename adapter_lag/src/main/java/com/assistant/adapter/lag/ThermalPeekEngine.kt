@@ -4,7 +4,6 @@ package com.assistant.adapter.lag
 import android.content.Context
 import android.os.Build
 import android.os.PowerManager
-import com.assistant.admin.AdminConfigStore
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
@@ -17,7 +16,7 @@ import com.assistant.diagnostic.RuntimeLogger
 object ThermalPeekEngine {
 
     // ADMIN-TUNABLE (default = original hard-coded value)
-    private val POLL_MS: Long get() = AdminConfigStore.getLong("lag.thermal.poll_ms", 10_000L)
+    private val POLL_MS: Long get() = 10_000L
 
     @Volatile private var pm: PowerManager? = null
     @Volatile private var running = false

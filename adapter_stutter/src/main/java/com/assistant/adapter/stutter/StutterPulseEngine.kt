@@ -6,8 +6,6 @@ import android.hardware.display.DisplayManager
 import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
-import com.assistant.admin.AdminConfigStore
-import com.assistant.admin.AdminLiveStats
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
@@ -24,10 +22,10 @@ import com.assistant.diagnostic.RuntimeLogger
 object StutterPulseEngine {
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val BURST_MULT: Float get() = AdminConfigStore.get("stutter.pulse.burst_mult", 4f)
-    private val MIN_FRAMES: Int get() = AdminConfigStore.getInt("stutter.pulse.min_frames", 3)
-    private val SLICE_MS: Long get() = AdminConfigStore.getLong("stutter.pulse.slice_ms", 1000L)
-    private val PUBLISH_MS: Long get() = AdminConfigStore.getLong("stutter.pulse.publish_ms", 5000L)
+    private val BURST_MULT: Float get() = 4f
+    private val MIN_FRAMES: Int get() = 3
+    private val SLICE_MS: Long get() = 1000L
+    private val PUBLISH_MS: Long get() = 5000L
 
     @Volatile private var running = false
     @Volatile var vsyncMs = 16.67f; private set
@@ -105,11 +103,6 @@ object StutterPulseEngine {
         // live readout for the admin Detector
         val t = Thread {
             while (running) {
-                try {
-                    AdminLiveStats.publishStutter(
-                        burstsPerMin, lastBurstWorstMs, lastBurstFrames,
-                        BurstForensicsEngine.state, panelHz)
-                } catch (_: Throwable) { }
                 val nap = PUBLISH_MS
                 try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }
             }
