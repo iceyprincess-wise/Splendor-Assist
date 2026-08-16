@@ -27,6 +27,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":storage_core"))
     implementation(project(":diagnostic_core"))
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")

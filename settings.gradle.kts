@@ -15,6 +15,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "SplendorAssistEngine"
 include(":app")
+include(":storage_core")
 // INJECTED KERNEL EXTENSIONS
 include(":adapter_lmk")
 include(":adapter_sync")
