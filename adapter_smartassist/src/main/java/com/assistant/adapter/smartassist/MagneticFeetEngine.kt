@@ -28,8 +28,6 @@ object MagneticFeetEngine {
         val result: MagneticFeetResult
     )
 
-    private const val MAGNETIC_FEET_AMPLIFICATION: Float = 1.0f
-
     private const val INPUT_MIN = 0
     private const val INPUT_MAX = 100
 
@@ -135,44 +133,59 @@ object MagneticFeetEngine {
         pressure: Int,
         strength: Int
     ): MagneticFeetResult {
-        val normalizedPressure =
-            pressure.coerceIn(INPUT_MIN, INPUT_MAX) / 100.0f
+        // Inputs: integer [0,100] → normalised [0,1]. Integer coercion
+        // before division guarantees no NaN or Infinity from the arithmetic.
+        val p = pressure.coerceIn(INPUT_MIN, INPUT_MAX) / 100.0f   // defender density
+        val s = strength.coerceIn(INPUT_MIN, INPUT_MAX) / 100.0f   // lane confidence
 
-        val normalizedStrength =
-            strength.coerceIn(INPUT_MIN, INPUT_MAX) / 100.0f
+        // Derived signals — all bounded by arithmetic on [0,1] inputs.
+        val synergy  = p * s          // both high: pressure + viable lane co-occur
+        val openness = 1.0f - p       // inverse pressure: room to manoeuvre
 
-        val agreement =
-            (normalizedPressure * normalizedStrength)
-                .coerceIn(0.0f, 1.0f)
+        // ── touchRetention ──────────────────────────────────────────────
+        // Semantic: ball-control stickiness and support stability.
+        // Driven primarily by lane confidence (s): a clear lane means the
+        // player can settle the ball with intent. Openness amplifies s
+        // (room to exploit the lane). Raw pressure contributes a small
+        // floor (urgency in close contact still demands some retention).
+        val touchRetention = (
+            1.0f +
+                (s       * 5.5f) +
+                (openness * s * 2.5f) +
+                (p       * 0.5f)
+        ).coerceIn(RESULT_MIN, RESULT_MAX)
 
-        val touchRetention =
-            (
-                1.0f +
-                    (normalizedStrength * 6.0f) +
-                    (normalizedPressure * 1.5f) +
-                    (agreement * 1.5f)
-            ).coerceIn(RESULT_MIN, RESULT_MAX)
+        // ── interceptionResistance ───────────────────────────────────────
+        // Semantic: ability to hold the ball as defenders close in.
+        // Peaks when BOTH a viable escape lane exists AND real defensive
+        // pressure is applied. A great lane with no pressure scores
+        // moderately (5.0); trapped with no lane scores near baseline (1.5).
+        val interceptionResistance = (
+            1.0f +
+                (s       * 4.0f) +
+                (synergy * 4.0f) +
+                (p       * 0.5f)
+        ).coerceIn(RESULT_MIN, RESULT_MAX)
 
-        val interceptionResistance =
-            (
-                1.0f +
-                    (normalizedPressure * 5.5f) +
-                    (normalizedStrength * 2.0f) +
-                    (agreement * 1.5f)
-            ).coerceIn(RESULT_MIN, RESULT_MAX)
-
-        val possessionControl =
-            (
-                1.0f +
-                    (normalizedStrength * 3.5f) +
-                    (normalizedPressure * 2.5f) +
-                    (agreement * 3.0f)
-            ).coerceIn(RESULT_MIN, RESULT_MAX)
+        // ── possessionControl ────────────────────────────────────────────
+        // Semantic: contextual confidence that maintaining ball-control is
+        // appropriate. Penalised when trapped: high pressure with no escape
+        // lane produces a pressureRisk signal that subtracts from the score.
+        // Ensures MagneticFeet self-depresses its confidence when the
+        // tactical situation does not support holding.
+        val pressureRisk = p * (1.0f - s)
+        val possessionControl = (
+            1.0f +
+                (s       * 4.5f) +
+                (openness * 2.5f) +
+                (synergy * 1.5f) -
+                (pressureRisk * 2.0f)
+        ).coerceIn(RESULT_MIN, RESULT_MAX)
 
         return MagneticFeetResult(
-            touchRetention = touchRetention,
+            touchRetention        = touchRetention,
             interceptionResistance = interceptionResistance,
-            possessionControl = possessionControl
+            possessionControl     = possessionControl
         )
     }
 
@@ -192,11 +205,21 @@ object MagneticFeetEngine {
         lastMagneticFeetUpdatedMs = System.currentTimeMillis()
 
         magneticFeetSequence += 1L
+
+        // Amplification: live diagnostic of average engine output strength,
+        // normalised to [0,1]. Replaces the former static 1.0f constant
+        // which was stored in the snapshot but never consumed by any calculation.
+        val amplification = (
+            result.touchRetention +
+                result.interceptionResistance +
+                result.possessionControl
+        ) / (3.0f * RESULT_MAX)
+
         lastMagneticFeetState =
             MagneticFeetDownstreamState(
-                sequence = magneticFeetSequence,
-                amplification = MAGNETIC_FEET_AMPLIFICATION,
-                result = result
+                sequence      = magneticFeetSequence,
+                amplification = amplification,
+                result        = result
             )
     }
 
