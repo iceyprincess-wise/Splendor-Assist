@@ -53,4 +53,15 @@ object AdapterSignalBus {
     fun publishExecutionBrake(level: Int) { executionBrake = level.coerceIn(0, 2) }
     val executionIsBraked: Boolean get() = executionBrake > 0
     val executionIsFullyBraked: Boolean get() = executionBrake >= 2
+
+    // CROWDING_ZONE: penalty box / corner scene detector.
+    // Published by CrowdingZoneDetector (adapter_smartassist) each frame.
+    // Read by LagVerdictEngine to require extra CHOKING confirmation
+    // when the lag spike is from rendering load, not sustained device stress.
+    @Volatile var crowdingZone: Boolean = false; private set
+    @Volatile var crowdingLevel: Float = 0f; private set
+    fun publishCrowdingZone(zone: Boolean, level: Float) {
+        crowdingZone = zone
+        crowdingLevel = level.coerceIn(0f, 1f)
+    }
 }
