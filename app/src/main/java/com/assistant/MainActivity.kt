@@ -29,6 +29,7 @@ import com.assistant.controlroom.ui.InterceptionControlRoomActivity
 import com.assistant.controlroom.ui.SmartAssistControlRoomActivity
 import com.assistant.adapter.smartassist.SmartAssistRepository
 import com.assistant.adapter.smartassist.RuntimePerformanceCoordinator
+import com.assistant.adapter.smartassist.InAppAgentCore
 import com.assistant.adapter.smartassist.RuntimeDiagnosticsRegistry
 import com.assistant.adapter.smartassist.RuntimeVisualizationRegistry
 import com.assistant.adapter.smartassist.RuntimeOverlayHub
@@ -119,6 +120,12 @@ class MainActivity : AppCompatActivity() {
 
         // single install lives in App.onCreate; this is idempotent
         GlobalCrashHandler.install(this)
+
+        // Single application-wide in-app agent.
+        // Idempotent: repeated Activity creation cannot create another agent.
+        runCatching {
+            InAppAgentCore.start()
+        }
 
         setContentView(
             com.assistant.overlay.R.layout.activity_main

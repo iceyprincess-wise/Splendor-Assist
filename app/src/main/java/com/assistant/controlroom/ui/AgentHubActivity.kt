@@ -12,6 +12,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.assistant.adapter.smartassist.RuntimeSelfHealEngine
+import com.assistant.adapter.smartassist.InAppAgentCore
 
 /**
  * Agent Hub Room (Item 4/6)
@@ -31,6 +32,7 @@ class AgentHubActivity : AppCompatActivity() {
     private val refreshHandler = Handler(Looper.getMainLooper())
     private var refreshRunnable: Runnable? = null
     private var agentStatusView: TextView? = null
+    private var agentCoreView: TextView? = null
     private var agentEventsView: TextView? = null
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
@@ -81,7 +83,9 @@ class AgentHubActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         refreshRunnable?.let { refreshHandler.removeCallbacks(it) }
-        agentStatusView = null; agentEventsView = null
+        agentStatusView = null
+        agentCoreView = null
+        agentEventsView = null
         super.onDestroy()
     }
 
@@ -104,6 +108,16 @@ class AgentHubActivity : AppCompatActivity() {
         root.addView(statusTv)
         agentStatusView = statusTv
 
+        val coreTv = TextView(this).apply {
+            textSize = 10f
+            setTextColor(Color.parseColor("#9FE7FF"))
+            setPadding(0, dp(4), 0, dp(8))
+            typeface = Typeface.MONOSPACE
+            text = "InAppAgentCore: starting..."
+        }
+        root.addView(coreTv)
+        agentCoreView = coreTv
+
         divider(root)
 
         text(root, "HEAL EVENT LOG  (latest 20)", 13f, bold = true,
@@ -121,8 +135,8 @@ class AgentHubActivity : AppCompatActivity() {
 
         btn(root, "↺  Force Heal Cycle Now", Color.parseColor("#6A1B9A")) {
             try {
-                RuntimeSelfHealEngine.start()
-                android.widget.Toast.makeText(this, "Heal cycle triggered",
+                InAppAgentCore.runNow()
+                android.widget.Toast.makeText(this, "Agent cycle triggered",
                     android.widget.Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 android.widget.Toast.makeText(this, "Error: ${e.message}",
@@ -146,6 +160,17 @@ class AgentHubActivity : AppCompatActivity() {
             override fun run() {
                 try {
                     agentStatusView?.text = RuntimeSelfHealEngine.getStatusSummary()
+
+                    val core = InAppAgentCore.snapshot()
+                    agentCoreView?.text =
+                        "IN-APP AGENT CORE\n" +
+                        "Running    : ${core.running}\n" +
+                        "Cycles     : ${core.cycles}\n" +
+                        "Last action: ${core.lastAction}\n" +
+                        "Reason     : ${core.lastReason}\n" +
+                        "Verified   : ${core.lastVerified}\n" +
+                        "Verifier   : ${core.lastVerification}"
+
                     val events = RuntimeSelfHealEngine.healEvents
                     agentEventsView?.text = if (events.isEmpty()) {
                         "No heal events yet.\nAgent is monitoring...\n\nIf the game is running and no events\nappear after 30s, the agent found no problems."

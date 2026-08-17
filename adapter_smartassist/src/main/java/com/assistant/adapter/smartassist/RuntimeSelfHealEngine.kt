@@ -88,6 +88,26 @@ object RuntimeSelfHealEngine {
 
     fun stop() { running = false; agentStatus = "IDLE" }
 
+    fun isRunning(): Boolean = running
+
+    /**
+     * Controlled synchronous check requested by InAppAgentCore.
+     * The existing periodic self-heal daemon remains authoritative.
+     */
+    fun runImmediateCheck() {
+        if (!running) return
+        try {
+            runChecks()
+        } catch (e: Throwable) {
+            try {
+                RuntimeLogger.log(
+                    "AGENT immediate check fault: ${e.javaClass.simpleName}: ${e.message}",
+                    "AGENT"
+                )
+            } catch (_: Throwable) {}
+        }
+    }
+
     private fun agentAgeMs() = System.currentTimeMillis() - agentStartedMs
 
     private fun runChecks() {
