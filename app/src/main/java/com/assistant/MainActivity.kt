@@ -565,7 +565,8 @@ private fun checkAccessibilityAndProceed() {
             return
         }
 
-        checkOverlayAndProceed()
+        permissionStage = PermissionStage.MEDIA_PROJECTION
+        screenCaptureLauncher.launch(projectionManager.createScreenCaptureIntent())
     }
 
     private fun checkOverlayAndProceed() {
