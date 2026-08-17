@@ -39,6 +39,16 @@ object CrowdingZoneDetector {
      * Returns true when in a penalty-box / corner crowded zone.
      */
     fun evaluate(frame: RuntimeFrame): Boolean {
+        /*
+         * Canonical 🕶️ PERFORMANCE escalation consumer.
+         *
+         * This does not fabricate a crowding verdict. It only increases
+         * diagnostic sampling while the operator has explicitly confirmed
+         * a severe performance defect.
+         */
+        val performanceEscalation =
+            AdapterSignalBus.manualPerformanceEscalation
+
         if (!frame.trusted) {
             inCrowdedZone = false
             crowdingLevel = 0f
@@ -51,7 +61,23 @@ object CrowdingZoneDetector {
         val level = (density * DENSITY_WEIGHT + invConf * INV_CONF_WEIGHT)
             .coerceIn(0f, 1f)
 
-        val zone = density > DENSITY_THRESHOLD && frame.confidence < CONFIDENCE_THRESHOLD
+        val effectiveDensityThreshold =
+            if (performanceEscalation) {
+                (DENSITY_THRESHOLD - 0.10f).coerceAtLeast(0f)
+            } else {
+                DENSITY_THRESHOLD
+            }
+
+        val effectiveConfidenceThreshold =
+            if (performanceEscalation) {
+                (CONFIDENCE_THRESHOLD + 0.10f).coerceAtMost(1f)
+            } else {
+                CONFIDENCE_THRESHOLD
+            }
+
+        val zone =
+            density > effectiveDensityThreshold &&
+                frame.confidence < effectiveConfidenceThreshold
 
         inCrowdedZone = zone
         crowdingLevel = level
@@ -59,7 +85,10 @@ object CrowdingZoneDetector {
 
         if (zone) {
             val count = detections.incrementAndGet()
-            if (count % 60L == 0L) {
+            val diagnosticInterval =
+                if (performanceEscalation) 15L else 60L
+
+            if (count % diagnosticInterval == 0L) {
                 RuntimeLogger.log(
                     "CROWDING_ZONE: density=%.2f confidence=%.2f level=%.2f #%d"
                         .format(density, frame.confidence, level, count),

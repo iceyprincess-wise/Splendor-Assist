@@ -57,6 +57,23 @@ object RuntimeDecisionLoop {
         decisions.incrementAndGet()
         lastUpdatedMs = System.currentTimeMillis()
 
+        /*
+         * Canonical 🕶️ PERFORMANCE escalation consumer.
+         *
+         * Single tap is deliberately NOT a gameplay command. It tells the
+         * performance side that the operator is observing a severe defect.
+         *
+         * The decision loop therefore forces the performance observation
+         * surface to reassess the current frame even when normal gameplay
+         * arbitration has no request.
+         */
+        val performanceEscalation =
+            AdapterSignalBus.manualPerformanceEscalation
+
+        if (performanceEscalation) {
+            CrowdingZoneDetector.evaluate(frame)
+        }
+
         if (!frame.trusted) {
             idleUntrusted.incrementAndGet()
             lastAction = "idle-untrusted"
@@ -75,7 +92,17 @@ object RuntimeDecisionLoop {
         val request = chooseRequest(frame, best, emergency)
         if (request == null) {
             idleNoContribution.incrementAndGet()
-            lastAction = "idle-no-contribution"
+
+            if (performanceEscalation) {
+                /*
+                 * Evidence that the canonical signal reached the decision
+                 * loop even though no gameplay request was manufactured.
+                 */
+                lastAction = "performance-escalation-no-gameplay-contribution"
+            } else {
+                lastAction = "idle-no-contribution"
+            }
+
             return false
         }
 
