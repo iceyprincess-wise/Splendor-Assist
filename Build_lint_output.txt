@@ -1,84 +1,14 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-17 03:11:46 WAT
+Started: 2026-08-17 04:52:14 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
+M  gradle.properties
 
 
 ================================================================
->>> CLEAN
-================================================================
-w: Detected multiple Kotlin daemon sessions at kotlin/sessions
-BUILD SUCCESSFUL in 1m 28s
-
-CLEAN EXIT: 0
-
-================================================================
->>> OPTIONAL LINT
-================================================================
-NO — lint skipped by user.
-
-================================================================
->>> LINT ISSUE EXTRACTION
-================================================================
-SKIPPED — lint was not run.
-
-================================================================
->>> CONNECTED ANDROID TESTS
-================================================================
-SKIPPED — no ADB device connected (not a failure)
-
-================================================================
->>> VERSION BUMP
-================================================================
-versionCode: 22 -> 23
-
-================================================================
->>> ASSEMBLE DEBUG APK
-================================================================
-[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
-	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-Unable to strip the following libraries, packaging them as they are: libmlkit_google_ocr_pipeline.so, libtensorflowlite_jni.so.
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DeathWatch.kt:182:34 Parameter 'c' is never used
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DeathWatch.kt:187:28 Parameter 'c' is never used
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/GlobalCrashHandler.kt:66:32 Parameter 'ctx' is never used
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OtaGatewayEngine.kt:102:21 Variable 'checkUrl' is never used
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt:241:79 No cast needed
-BUILD SUCCESSFUL in 23m 13s
-
-ASSEMBLE DEBUG APK EXIT: 0
-
-================================================================
->>> APK EXPORT
-================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v23-20260817_033647.apk
--rw-rw----. 1 u0_a262 media_rw 67M Aug 17 03:36 /storage/emulated/0/Download/Splendor-Assist-v23-20260817_033647.apk
-
-================================================================
->>> GRADLE DAEMON STOP
-================================================================
-Stopping Daemon(s)
-1 Daemon stopped
-
-================================================================
->>> BUILD RESULT SUMMARY
-================================================================
-CLEAN:                           0
-LINT:                            SKIPPED — OPTIONAL
-CONNECTED TESTS:                 0
-VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  0
-APK EXPORT:                      ?
-
-FINAL STATUS: FAILED — check items above
-
-GIT STATUS:
- M Build_lint_output.txt
- M app/build.gradle.kts
-
-Finished: 2026-08-17 03:37:36 WAT
-Report size: 4003 bytes
+>>> OPTIONAL CLEAN
 ================================================================
