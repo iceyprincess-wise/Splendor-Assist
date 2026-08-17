@@ -28,7 +28,7 @@ object ComplianceState {
     fun overlay(context: Context): Boolean =
         Settings.canDrawOverlays(context)
 
-    fun allFiles(context: Context): Boolean {
+    fun allFiles(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
             return true
 
@@ -66,7 +66,7 @@ object ComplianceState {
         return battery(context)
             && accessibility(context)
             && overlay(context)
-            && allFiles(context)
+            && allFiles()
             && notifications(context)
     }
 
@@ -84,7 +84,7 @@ object ComplianceState {
         if (!overlay(context))
             failed += "OVERLAY"
 
-        if (!allFiles(context))
+        if (!allFiles())
             failed += "ALL_FILES"
 
         if (!notifications(context))
