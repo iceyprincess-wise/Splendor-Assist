@@ -5,6 +5,21 @@ package com.assistant.diagnostic
  * Bodyguard adapters publish here. SmartAssist reads non-blocking every frame.
  */
 object AdapterSignalBus {
+
+    /**
+     * Canonical operator-observed defect state.
+     * Performance adapters should use this as an escalation input,
+     * never as fabricated telemetry.
+     */
+    val manualPerformanceEscalation: Boolean
+        get() = DefectEscalationBus.performanceActive
+
+    val manualGameplayEscalation: Boolean
+        get() = DefectEscalationBus.gameplayActive
+
+    fun manualDefectSnapshot(): DefectEscalationBus.Event =
+        DefectEscalationBus.snapshot()
+
     @Volatile var netWindow: String = "UNKNOWN"; private set
     @Volatile var lagVerdict: String = "UNKNOWN"; private set
     @Volatile var stutterState: String = "UNKNOWN"; private set

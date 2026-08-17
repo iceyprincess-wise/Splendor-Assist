@@ -60,7 +60,7 @@ object LagVerdictEngine {
                     val stallRate = FramePacingEngine.stallsPerMin
                     val mtStall = MainThreadStallEngine.avgLatenessMs
                     val spm = MainThreadStallEngine.spikesPerMin
-                    val raw = if (AdapterSignalBus.manualLagEscalationActive) {
+                    val raw = if (AdapterSignalBus.manualPerformanceEscalation) {
                         "CHOKING"
                     } else when {
                         stallRate > CHOKE_STALLS || mtStall > CHOKE_MTSTALL_MS ||

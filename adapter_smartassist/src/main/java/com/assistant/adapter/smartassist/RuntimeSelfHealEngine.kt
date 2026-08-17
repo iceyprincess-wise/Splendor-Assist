@@ -1,5 +1,7 @@
 package com.assistant.adapter.smartassist
 
+import com.assistant.diagnostic.DefectEscalationBus
+
 import com.assistant.storage.SplendorStorageRoot
 
 import com.assistant.diagnostic.AdapterSignalBus
@@ -94,6 +96,23 @@ object RuntimeSelfHealEngine {
      * Controlled synchronous check requested by InAppAgentCore.
      * The existing periodic self-heal daemon remains authoritative.
      */
+    /**
+     * Called by the 🕶️ double-tap gameplay escalation.
+     *
+     * This is an operator-observed severe gameplay defect, not fabricated
+     * telemetry. The normal self-heal diagnostics then decide which actual
+     * recovery actions are warranted.
+     */
+    fun runManualGameplayEscalation() {
+        DefectEscalationBus.publishGameplay("GLASS_DOUBLE")
+        RuntimeLogger.log(
+            "GAMEPLAY DEFECT ESCALATION: 🕶️ double tap; " +
+                "adapter_smartassist/self-heal instructed to reassess immediately",
+            "DEFECT_ESCALATION"
+        )
+        runImmediateCheck()
+    }
+
     fun runImmediateCheck() {
         if (!running) return
         try {
