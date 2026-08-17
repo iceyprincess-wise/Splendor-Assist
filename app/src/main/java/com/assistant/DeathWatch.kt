@@ -59,7 +59,7 @@ object DeathWatch {
 
         // previous session never removed its marker -> it was killed
         if (m.exists()) {
-            try { reportDeath(c, m.readText()) } catch (_: Throwable) { }
+            try { reportDeath(m.readText()) } catch (_: Throwable) { }
         }
 
         marker = m
@@ -121,7 +121,7 @@ object DeathWatch {
 
     // ---------------- reporting ----------------
 
-    private fun reportDeath(c: Context, raw: String) {
+    private fun reportDeath(raw: String) {
         val p = raw.split("|")
         fun at(i: Int): String = if (i < p.size) p[i] else "?"
 
