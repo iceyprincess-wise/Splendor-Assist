@@ -51,7 +51,7 @@ class GlobalCrashHandler(
 
         fun logFeatureFault(feature: String, message: String) {
             try {
-                val f = getLogFile(appCtxRef, "splendor_health.log", true)
+                val f = getLogFile("splendor_health.log", true)
                 val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
                 f.appendText("[$ts] $feature: $message\n")
             } catch (_: Throwable) {}
@@ -59,11 +59,11 @@ class GlobalCrashHandler(
 
         private fun writeCrashReport(ctx: Context, thread: Thread, e: Throwable) {
             val report = buildReport(ctx, thread, e)
-            val file = getLogFile(ctx, "splendor_crash.txt", false)
+            val file = getLogFile("splendor_crash.txt", false)
             file.writeText(report)
         }
 
-        private fun getLogFile(ctx: Context?, baseName: String, append: Boolean): File {
+        private fun getLogFile(baseName: String, append: Boolean): File {
             val baseDir = SplendorStorageRoot.directory()
 
             val dot = baseName.lastIndexOf('.')

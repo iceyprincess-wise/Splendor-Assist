@@ -223,8 +223,8 @@ class GameplayRoomActivity : AppCompatActivity() {
 
             // ── Decision Loop snapshot ────────────────────────────────────
             val snap = RuntimeDecisionLoop.decisionRuntimeSnapshot()
-            val decisions = snap["decisions"] ?: 0
-            val routed    = snap["routed"] ?: 0
+            val decisions = (snap["decisions"] as? Number)?.toLong() ?: 0L
+            val routed    = (snap["routed"] as? Number)?.toLong() ?: 0L
             val idle_unt  = snap["idleUntrusted"] ?: 0
             val idle_none = snap["idleNoContribution"] ?: 0
             val lastAct   = snap["lastAction"] ?: "none"
@@ -237,8 +237,8 @@ class GameplayRoomActivity : AppCompatActivity() {
                 ageMs < 10_000L  -> "RECENT (${ageMs}ms ago)"
                 else             -> "STALE (${ageMs}ms ago) — engine may be idle"
             }
-            val routePct = if ((decisions as Long) > 0L)
-                String.format("%.1f%%", (routed as Long) * 100.0 / (decisions as Long)) else "—"
+            val routePct = if (decisions > 0L)
+                String.format("%.1f%%", routed * 100.0 / decisions) else "—"
 
             val decTxt =
                 "Decisions  : $decisions\n" +

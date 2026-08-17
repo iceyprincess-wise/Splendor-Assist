@@ -99,7 +99,7 @@ object OtaGatewayEngine {
             
             try {
                 // SIMULATED ENDPOINT VERIFICATION (Replace with production URL)
-                val checkUrl = URL("https://splendor-assist.com/api/v1/ota/latest")
+
                 // TODO: Implement actual JSON check. Simulating an update found for architecture validation.
                 val updateExists = true 
 

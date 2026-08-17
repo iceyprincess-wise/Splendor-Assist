@@ -136,7 +136,7 @@ object DeathWatch {
         val lived = if (began > 0 && lastBeat > began) (lastBeat - began) / 1000L else -1L
         val gap   = if (lastBeat > 0) (System.currentTimeMillis() - lastBeat) / 1000L else -1L
 
-        val javaCrash = javaCrashPresent(c, began)
+        val javaCrash = javaCrashPresent(began)
         val avail = availMb.toIntOrNull() ?: -1
         val thresh = threshMb.toIntOrNull() ?: 0
 
@@ -172,19 +172,19 @@ object DeathWatch {
         val text = sb.toString()
 
         // 1) standalone report file, user-readable
-        try { reportFile(c)?.appendText(text) } catch (_: Throwable) { }
+        try { reportFile()?.appendText(text) } catch (_: Throwable) { }
 
         // 2) the writer already proven to reach Downloads
         log("ABNORMAL DEATH proc=" + deadProc + " lived=" + lived + "s avail=" +
             availMb + "MB lowMemory=" + lowMem + " verdict=" + verdict)
     }
 
-    private fun javaCrashPresent(c: Context, since: Long): Boolean = try {
+    private fun javaCrashPresent(since: Long): Boolean = try {
         val f = SplendorStorageRoot.file("splendor_crash.txt")
         f.exists() && f.lastModified() >= since
     } catch (_: Throwable) { false }
 
-    private fun reportFile(c: Context): File? {
+    private fun reportFile(): File? {
         return try {
             SplendorStorageRoot.file(REPORT_NAME)
         } catch (_: Throwable) {
