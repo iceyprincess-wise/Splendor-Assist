@@ -13,14 +13,6 @@ class App : Application() {
         RuntimeLogger.initialize(this)
         RuntimeLogger.reconcileExpired()
 
-        // Arm silent-death observation before secondary startup work.
-        // DeathWatch is intentionally after canonical storage initialization
-        // and before ControlRoom/InAppAgent startup.
-        DeathWatch.install(this)
-
-        // Install Java/Kotlin uncaught-exception capture.
-        GlobalCrashHandler.install(this)
-
         com.assistant.controlroom.ControlRoomBootstrap.initialize()
 
         // Single application-wide in-app agent.
@@ -29,6 +21,12 @@ class App : Application() {
         runCatching {
             com.assistant.adapter.smartassist.InAppAgentCore.start()
         }
+
+        // Install crash catcher FIRST - before anything else
+        GlobalCrashHandler.install(this)
+
+        // catches SIGKILL deaths no exception handler can see
+        DeathWatch.install(this)
 
         // Initialize forensic runtime logger
         com.assistant.diagnostic.RuntimeLogger.initialize(this)

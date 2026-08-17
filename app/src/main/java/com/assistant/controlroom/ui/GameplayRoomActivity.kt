@@ -18,6 +18,7 @@ import com.assistant.adapter.smartassist.FightingSpiritEngine
 import com.assistant.adapter.smartassist.RuntimeDecisionLoop
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.storage.SplendorStorageRoot
 import java.io.File
 import java.io.FileWriter
 import java.io.PrintWriter
@@ -49,7 +50,8 @@ class GameplayRoomActivity : AppCompatActivity() {
     private var captaincyToggle: Switch? = null
 
     private val logFmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
-    private val LOG_PATH = "/sdcard/Splendor-Assist/gameplaylogs.txt"
+    private val LOG_FILE: File
+        get() = SplendorStorageRoot.file("gameplaylogs.txt")
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
@@ -333,16 +335,36 @@ class GameplayRoomActivity : AppCompatActivity() {
         capDesig: Boolean, capActive: Boolean, capLift: Any, capComp: Any,
         inZone: Boolean, crowdLvl: Any
     ): String {
+        val frameSnap = try {
+            RuntimeDecisionLoop.let {
+                com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot()
+            }
+        } catch (_: Throwable) {
+            emptyMap<String, Any>()
+        }
+
+        val decisionSnap = try {
+            RuntimeDecisionLoop.decisionRuntimeSnapshot()
+        } catch (_: Throwable) {
+            emptyMap<String, Any>()
+        }
+
+        val frameId = frameSnap["frameId"] ?: -1L
+        val frames = frameSnap["frames"] ?: 0L
+        val decisionCount = decisionSnap["decisions"] ?: 0L
+        val decisionRouted = decisionSnap["routed"] ?: 0L
+
         return "[$ts] dec=$decisions routed=$routed($routePct) act=$lastAct | " +
                "fs=${if (fsActive) "ON" else "off"}(ret=$fsRet pres=$fsPres) | " +
                "cap=${if (!capDesig) "noDesig" else if (capActive) "ON(lift=$capLift +${capComp}ms)" else "designatedOff"} | " +
                "crowd=${if (inZone) "ZONE(lv=$crowdLvl)" else "clear"} | " +
-               "lag=${AdapterSignalBus.lagVerdict} stutter=${AdapterSignalBus.stutterState}"
+               "lag=${AdapterSignalBus.lagVerdict} stutter=${AdapterSignalBus.stutterState} | " +
+               "capture(frameId=$frameId frames=$frames) decisionLoop(decisions=$decisionCount routed=$decisionRouted)"
     }
 
     private fun logLine(line: String) {
         try {
-            val f = File(LOG_PATH)
+            val f = LOG_FILE
             f.parentFile?.mkdirs()
             PrintWriter(FileWriter(f, true)).use { it.println(line) }
         } catch (_: Throwable) {}

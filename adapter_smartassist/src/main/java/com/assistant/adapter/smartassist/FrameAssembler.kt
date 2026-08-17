@@ -157,6 +157,7 @@ object FrameAssembler {
         val f = lastFrame ?: return mapOf("frames" to frameCounter.get(), "state" to "cold")
         return mapOf(
             "frames" to frameCounter.get(),
+            "frameId" to f.frameId,
             "hasBall" to f.hasBall,
             "players" to f.playerCount,
             "opponents" to f.opponentCount,

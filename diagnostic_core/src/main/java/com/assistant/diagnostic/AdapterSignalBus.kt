@@ -9,6 +9,24 @@ object AdapterSignalBus {
     @Volatile var lagVerdict: String = "UNKNOWN"; private set
     @Volatile var stutterState: String = "UNKNOWN"; private set
 
+    // Manual player truth signal from the 🕶️ overlay control.
+    // This does not fabricate capture data; it tells the lag arbitration
+    // layer that the player is explicitly observing severe degradation.
+    @Volatile var manualLagEscalationUntilMs: Long = 0L; private set
+    @Volatile var manualLagEscalationSource: String = ""; private set
+
+    fun publishManualLagEscalation(durationMs: Long, source: String) {
+        val now = System.currentTimeMillis()
+        manualLagEscalationUntilMs = maxOf(
+            manualLagEscalationUntilMs,
+            now + durationMs.coerceAtLeast(1000L)
+        )
+        manualLagEscalationSource = source
+    }
+
+    val manualLagEscalationActive: Boolean
+        get() = System.currentTimeMillis() < manualLagEscalationUntilMs
+
     @Volatile var memoryTier: String = "UNKNOWN"; private set
     @Volatile var memoryAvailMb: Long = -1L; private set
     fun publishNet(verdict: String) { netWindow = verdict }

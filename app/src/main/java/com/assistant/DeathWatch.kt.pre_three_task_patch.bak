@@ -180,7 +180,7 @@ object DeathWatch {
     }
 
     private fun javaCrashPresent(since: Long): Boolean = try {
-        val f = SplendorStorageRoot.file(REPORT_NAME)
+        val f = SplendorStorageRoot.file("splendor_crash.txt")
         f.exists() && f.lastModified() >= since
     } catch (_: Throwable) { false }
 

@@ -59,13 +59,8 @@ class GlobalCrashHandler(
 
         private fun writeCrashReport(ctx: Context, thread: Thread, e: Throwable) {
             val report = buildReport(ctx, thread, e)
-            val file = getLogFile("Splendor_Crash_Reports.txt", true)
-            file.appendText(
-                if (file.exists() && file.length() > 0L)
-                    "\n\n" + report
-                else
-                    report
-            )
+            val file = getLogFile("splendor_crash.txt", false)
+            file.writeText(report)
         }
 
         private fun getLogFile(baseName: String, append: Boolean): File {
