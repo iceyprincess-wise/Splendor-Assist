@@ -189,7 +189,7 @@ class GameplayRoomActivity : AppCompatActivity() {
         btn(root, "↺  Refresh Now") { refreshNow() }
         btn(root, "🗑  Clear Gameplay Log", Color.parseColor("#8B0000")) {
             try {
-                File(LOG_PATH).writeText("")
+                LOG_FILE.writeText("")
                 android.widget.Toast.makeText(this, "Gameplay log cleared",
                     android.widget.Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
