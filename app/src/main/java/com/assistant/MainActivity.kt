@@ -206,28 +206,45 @@ class MainActivity : AppCompatActivity() {
     
 override fun onResume() {
 
-        if (permissionPipelineActive) {
+    if (intent?.getBooleanExtra("REQUEST_MEDIA_PROJECTION_RECOVERY", false) == true) {
+        intent.removeExtra("REQUEST_MEDIA_PROJECTION_RECOVERY")
 
-            when (permissionStage) {
+        permissionPipelineActive = false
+        permissionStage = PermissionStage.MEDIA_PROJECTION
 
-                PermissionStage.AUTOSTART_WAIT -> {
-                    if (ComplianceState.battery(this)) {
-                        showAutoStartConfirmation()
-                    } else {
-                        checkBatteryAndProceed()
-                    }
-                }
+        projectionManager =
+            getSystemService(Context.MEDIA_PROJECTION_SERVICE)
+                as MediaProjectionManager
 
-                else ->
-                    checkBatteryAndProceed()
-            }
-        }
+        screenCaptureLauncher.launch(
+            projectionManager.createScreenCaptureIntent()
+        )
 
-        synchronizeApplicationRuntime()
-        hubRefreshHandler.post(hubRefreshTick)
-        super.onResume()
-        refreshRoomBulbs()
+        return
     }
+
+    if (permissionPipelineActive) {
+        when (permissionStage) {
+
+            PermissionStage.AUTOSTART_WAIT -> {
+                if (ComplianceState.battery(this)) {
+                    showAutoStartConfirmation()
+                } else {
+                    checkBatteryAndProceed()
+                }
+            }
+
+            else ->
+                checkBatteryAndProceed()
+        }
+    }
+
+    synchronizeApplicationRuntime()
+    hubRefreshHandler.post(hubRefreshTick)
+    super.onResume()
+     refreshRoomBulbs()
+   
+   }
 
     private fun bindHomeButtons() {
         findViewById<Button>(com.assistant.overlay.R.id.btnStartEngine).setOnClickListener {
