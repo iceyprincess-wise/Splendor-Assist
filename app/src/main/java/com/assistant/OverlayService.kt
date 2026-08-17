@@ -85,6 +85,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var imageReader: ImageReader? = null
     private var projectionCallback: MediaProjection.Callback? = null
 
+    // A MediaProjection session becomes invalid after Callback.onStop().
+    // This flag prevents the self-heal path from trying to reuse a revoked
+    // projection token.
+    @Volatile
+    private var projectionRevoked = false
+
 
 
     private var perfHintSession: PerformanceHintManager.Session? = null
@@ -119,7 +125,25 @@ class OverlayService : Service(), ComponentCallbacks2 {
      * Returns true if restart was attempted, false if projection is gone.
      */
     fun restartCapture(): Boolean {
-        mediaProjection ?: return false  // guard: projection revoked → abort restart
+        // A revoked MediaProjection cannot be reused. A fresh user-authorized
+        // projection session is required.
+        if (projectionRevoked) {
+            RuntimeLogger.log(
+                "AGENT CAPTURE RESTART: projection already revoked; " +
+                    "fresh MediaProjection authorization required",
+                "AGENT"
+            )
+            return false
+        }
+
+        if (mediaProjection == null) {
+            RuntimeLogger.log(
+                "AGENT CAPTURE RESTART: no active MediaProjection",
+                "AGENT"
+            )
+            return false
+        }
+
         try {
             RuntimeLogger.log("AGENT CAPTURE RESTART: attempting ImageReader recreation", "AGENT")
             // Drain the OCR handler queue before closing the reader.
@@ -280,25 +304,89 @@ override fun onCreate() {
         }
     }
 
+    /**
+     * Requests a completely new MediaProjection authorization session.
+     *
+     * The old projection token cannot be reused after Callback.onStop().
+     * MainActivity owns the Android user-consent launcher and is therefore
+     * responsible for obtaining the new resultCode + Intent.
+     */
+    private fun requestFreshProjectionAuthorization() {
+        try {
+            val recoveryIntent = Intent(this, MainActivity::class.java).apply {
+                addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP
+                )
+                putExtra("REQUEST_MEDIA_PROJECTION_RECOVERY", true)
+            }
+
+            startActivity(recoveryIntent)
+
+            RuntimeLogger.log(
+                "MediaProjection recovery: MainActivity launched for fresh authorization",
+                "AGENT"
+            )
+        } catch (t: Throwable) {
+            RuntimeLogger.log(
+                "MediaProjection recovery launch failed: " +
+                    "${t.javaClass.simpleName}: ${t.message}",
+                "AGENT"
+            )
+        }
+    }
+
     private fun setupMediaProjection(code: Int, intent: Intent) {
-        val projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        val projectionManager =
+            getSystemService(Context.MEDIA_PROJECTION_SERVICE)
+                as MediaProjectionManager
+
+        projectionRevoked = false
+
         mediaProjection = projectionManager.getMediaProjection(code, intent)
+
+        if (mediaProjection == null) {
+            RuntimeLogger.log(
+                "MediaProjection setup failed: getMediaProjection returned null",
+                "OVERLAY"
+            )
+            throw IllegalStateException("MediaProjection unavailable")
+        }
         projectionCallback = object : MediaProjection.Callback() {
             override fun onStop() {
                 super.onStop()
-                // PHASE5: try restartCapture() before dying — fixes silent kill cycle
+
+                // MediaProjection.Callback.onStop() means this projection
+                // session is no longer valid. Do NOT call restartCapture()
+                // here because restartCapture() intentionally reuses the
+                // existing projection and that token has already been revoked.
+                projectionRevoked = true
+
                 Handler(Looper.getMainLooper()).post {
-                    val restarted = try { restartCapture() } catch (_: Throwable) { false }
-                    if (!restarted) {
-                        try { com.assistant.diagnostic.RuntimeLogger.log(
-                            "MediaProjection.onStop(): restart impossible — stopping service", "OVERLAY"
-                        ) } catch (_: Throwable) {}
-                        stopSelf()
-                    } else {
-                        try { com.assistant.diagnostic.RuntimeLogger.log(
-                            "MediaProjection.onStop(): capture restarted — service survives", "OVERLAY"
-                        ) } catch (_: Throwable) {}
+                    try {
+                        virtualDisplay?.release()
+                    } catch (_: Throwable) {
                     }
+
+                    try {
+                        imageReader?.close()
+                    } catch (_: Throwable) {
+                    }
+
+                    virtualDisplay = null
+                    imageReader = null
+                    mediaProjection = null
+                    lastFrameProcessedMs = 0L
+                    captureFrameCount = 0L
+
+                    RuntimeLogger.log(
+                        "MediaProjection.onStop(): projection revoked; " +
+                            "capture resources invalidated; fresh authorization required",
+                        "OVERLAY"
+                    )
+
+                    requestFreshProjectionAuthorization()
                 }
             }
         }

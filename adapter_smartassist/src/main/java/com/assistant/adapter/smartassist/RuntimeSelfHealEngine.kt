@@ -201,15 +201,17 @@ object RuntimeSelfHealEngine {
 
                 // Attempt restart via OverlayService instance
                 val restarted = try {
-                    // PHASE5B-FIX: reflection avoids circular module dependency.
-                    // adapter_smartassist cannot reference :app directly.
-                    // OverlayService.companion.restartCaptureIfAlive() is a static
-                    // method — invoke(null) is correct for companion object methods.
+                    // This path is valid only while the existing MediaProjection
+                    // session is still alive. Callback.onStop() now marks the
+                    // projection revoked and starts fresh authorization instead.
                     val cls = Class.forName("com.assistant.OverlayService")
                     val method = cls.getDeclaredMethod("restartCaptureIfAlive")
                     (method.invoke(null) as? Boolean) ?: false
                 } catch (e: Throwable) {
-                    RuntimeLogger.log("AGENT: restartCaptureIfAlive failed: ${e.message}", "AGENT")
+                    RuntimeLogger.log(
+                        "AGENT: restartCaptureIfAlive failed: ${e.message}",
+                        "AGENT"
+                    )
                     false
                 }
 
@@ -222,9 +224,10 @@ object RuntimeSelfHealEngine {
                         "Attempt #$captureRestartAttempts of 3.",
                     fix = if (restarted) "RESTART SENT to OverlayService.restartCapture(). " +
                         "Watch for new GAMEPLAY_EVENT entries to confirm success." else
-                        "RESTART FAILED — OverlayService instance not reachable. " +
-                        "FORCE-STOP Splendor Assist and reopen it. " +
-                        "CODE FIX NEEDED — see HealLog for patch.",
+                        "CAPTURE RESTART FAILED because the current projection may be " +
+                        "invalid or revoked. OverlayService remains the recovery owner. " +
+                        "If MediaProjection.onStop() fired, fresh user authorization " +
+                        "is required; the old projection token cannot be reused.",
                     severity = if (restarted) "FIXED" else "CRITICAL"
                 ))
 
