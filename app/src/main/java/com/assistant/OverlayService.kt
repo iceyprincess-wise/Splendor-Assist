@@ -318,7 +318,7 @@ override fun onCreate() {
             setTextColor(Color.WHITE)
             setBackgroundColor(Color.argb(165, 15, 15, 15))
             contentDescription =
-                "Splendor Assist defect escalation: single performance, double gameplay"
+                "Splendor Assist defect escalation: GLASS_SINGLE=PERFORMANCE, GLASS_DOUBLE=GAMEPLAY"
             isClickable = true
             isFocusable = false
 

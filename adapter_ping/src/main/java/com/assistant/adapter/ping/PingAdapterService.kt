@@ -95,7 +95,10 @@ class PingAdapterService : Service() {
                 }
             }
 
-            pingHandler.postDelayed(this, 30000)
+            pingHandler.postDelayed(
+                this,
+                if (AdapterSignalBus.manualPerformanceEscalation) 5000L else 30000L
+            )
         }
     }
 

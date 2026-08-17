@@ -110,7 +110,25 @@ object RuntimeSelfHealEngine {
                 "adapter_smartassist/self-heal instructed to reassess immediately",
             "DEFECT_ESCALATION"
         )
-        runImmediateCheck()
+
+        if (running) {
+            runImmediateCheck()
+        } else {
+            try {
+                runChecks()
+                RuntimeLogger.log(
+                    "GAMEPLAY DEFECT ESCALATION: immediate SmartAssist check completed " +
+                        "while daemon was not running",
+                    "DEFECT_ESCALATION"
+                )
+            } catch (e: Throwable) {
+                RuntimeLogger.log(
+                    "GAMEPLAY DEFECT ESCALATION: immediate check failed: " +
+                        "${e.javaClass.simpleName}: ${e.message}",
+                    "DEFECT_ESCALATION"
+                )
+            }
+        }
     }
 
     fun runImmediateCheck() {

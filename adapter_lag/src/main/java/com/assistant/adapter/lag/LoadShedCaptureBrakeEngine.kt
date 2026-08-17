@@ -49,10 +49,14 @@ object LoadShedCaptureBrakeEngine {
 
     private fun poll() {
         val level = LoadShedGovernor.level
-        val brake = when (level) {
-            "HEAVY" -> 2
-            "LIGHT" -> 1
-            else    -> 0
+        val brake = if (AdapterSignalBus.manualPerformanceEscalation) {
+            2
+        } else {
+            when (level) {
+                "HEAVY" -> 2
+                "LIGHT" -> 1
+                else    -> 0
+            }
         }
         val changed = brake != executionBrake || level != lastLevel
         executionBrake = brake

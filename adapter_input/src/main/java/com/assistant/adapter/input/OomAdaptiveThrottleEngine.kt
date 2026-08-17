@@ -47,7 +47,12 @@ object OomAdaptiveThrottleEngine {
         val t = Thread {
             while (running) {
                 try { poll() } catch (_: Throwable) {}
-                try { Thread.sleep(POLL_MS) } catch (_: Throwable) { return@Thread }
+                val intervalMs = if (AdapterSignalBus.manualPerformanceEscalation) {
+                    minOf(POLL_MS, 500L)
+                } else {
+                    POLL_MS
+                }
+                try { Thread.sleep(intervalMs) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true

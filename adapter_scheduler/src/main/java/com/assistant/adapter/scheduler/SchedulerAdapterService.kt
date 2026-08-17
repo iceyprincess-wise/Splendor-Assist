@@ -70,7 +70,10 @@ class SchedulerAdapterService : Service() {
                 "SCHEDULER"
             )
 
-            schedulerHandler.postDelayed(this, 15000)
+            schedulerHandler.postDelayed(
+                this,
+                if (AdapterSignalBus.manualPerformanceEscalation) 3000L else 15000L
+            )
         }
     }
 

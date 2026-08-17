@@ -42,6 +42,12 @@ object GestureTimingFeedbackEngine {
 
     /** Called at CentralExecutionBus.submit() time for SMART_ASSIST gestures. */
     fun recordSubmission(): Long {
+        if (AdapterSignalBus.manualPerformanceEscalation) {
+            RuntimeLogger.log(
+                "GestureTiming: manual performance escalation active",
+                "INPUT"
+            )
+        }
         val seq = globalSeq.incrementAndGet()
         pendingSeq.set(seq)
         pendingSubmitMs.set(System.currentTimeMillis())

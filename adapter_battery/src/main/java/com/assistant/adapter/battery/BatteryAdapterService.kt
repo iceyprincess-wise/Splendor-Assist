@@ -85,7 +85,10 @@ class BatteryAdapterService : Service() {
                 )
             }
 
-            batteryHandler.postDelayed(this, 30000)
+            batteryHandler.postDelayed(
+                this,
+                if (AdapterSignalBus.manualPerformanceEscalation) 5000L else 30000L
+            )
         }
     }
 

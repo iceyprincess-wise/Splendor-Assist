@@ -18,7 +18,12 @@ object InputLatencyEngine {
         val t = Thread {
             while (running) {
                 try { measure() } catch (_: Throwable) {}
-                try { Thread.sleep(200L) } catch (_: Throwable) { return@Thread }
+                val intervalMs = if (AdapterSignalBus.manualPerformanceEscalation) {
+                    100L
+                } else {
+                    200L
+                }
+                try { Thread.sleep(intervalMs) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true; t.name = "input-latency"; t.priority = Thread.MAX_PRIORITY; t.start()

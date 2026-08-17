@@ -61,7 +61,10 @@ class BootAdapterService : Service() {
                 "BOOT"
             )
 
-            bootHandler.postDelayed(this, 30000)
+            bootHandler.postDelayed(
+                this,
+                if (AdapterSignalBus.manualPerformanceEscalation) 5000L else 30000L
+            )
         }
     }
 

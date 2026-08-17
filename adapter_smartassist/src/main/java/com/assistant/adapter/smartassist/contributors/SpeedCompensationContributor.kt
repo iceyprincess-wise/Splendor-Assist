@@ -45,6 +45,7 @@ object SpeedCompensationContributor : GameplayContributor {
             durationHintMs = run {
                 // PHASE3: thermal + battery now properly wired into duration scaling
                 val p = when {
+                    AdapterSignalBus.manualPerformanceEscalation -> 0.5f
                     AdapterSignalBus.thermalIsSevere -> 0.4f          // severe heat: very short gestures
                     AdapterSignalBus.batteryCritical -> 0.5f          // critical battery: reduce load
                     AdapterSignalBus.lagIsChoking || AdapterSignalBus.memoryIsCritical -> 0.5f

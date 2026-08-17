@@ -74,7 +74,10 @@ class ThermalAdapterService : Service() {
                 )
             }
 
-            thermalHandler.postDelayed(this, 30000)
+            thermalHandler.postDelayed(
+                this,
+                if (AdapterSignalBus.manualPerformanceEscalation) 5000L else 30000L
+            )
         }
     }
 
