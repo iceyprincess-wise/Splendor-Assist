@@ -29,6 +29,9 @@ class GlobalCrashHandler(
 
     override fun uncaughtException(t: Thread, e: Throwable) {
         try {
+            writeJavaCrashMarker(appContext, t)
+        } catch (_: Throwable) {}
+        try {
             writeCrashReport(appContext, t, e)
         } catch (_: Throwable) {}
         defaultHandler?.uncaughtException(t, e) ?: run {
@@ -54,6 +57,34 @@ class GlobalCrashHandler(
                 val f = getLogFile("splendor_health.log", true)
                 val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
                 f.appendText("[$ts] $feature: $message\n")
+            } catch (_: Throwable) {}
+        }
+
+        private fun writeJavaCrashMarker(ctx: Context, thread: Thread) {
+            try {
+                val processName =
+                    if (Build.VERSION.SDK_INT >= 28) {
+                        Application.getProcessName()
+                    } else {
+                        "pid" + android.os.Process.myPid()
+                    }
+
+                val safeProcess = processName
+                    .replace(':', '_')
+                    .replace('.', '_')
+                    .replace('/', '_')
+
+                val markerDir =
+                    SplendorStorageRoot.subdirectory("deathwatch")
+
+                File(
+                    markerDir,
+                    "$safeProcess.java-crash.marker"
+                ).writeText(
+                    "timestamp=${System.currentTimeMillis()}|" +
+                        "pid=${android.os.Process.myPid()}|" +
+                        "thread=${thread.name}"
+                )
             } catch (_: Throwable) {}
         }
 

@@ -68,6 +68,9 @@ class MainActivity : AppCompatActivity() {
     private var permissionPipelineStarted = false
     private var permissionPipelineActive = false
 
+    // True only while the MediaProjection consent dialog was launched
+    // specifically as recovery from a revoked/dead capture session.
+    private var projectionRecoveryFlow = false
 
     private lateinit var projectionManager: MediaProjectionManager
 
@@ -86,10 +89,14 @@ class MainActivity : AppCompatActivity() {
                 EngineData.code = result.resultCode
                 EngineData.intent = result.data
 
+                val recoveryAccepted = projectionRecoveryFlow
+                projectionRecoveryFlow = false
+
                 val serviceIntent =
                     Intent(this, OverlayService::class.java).apply {
                         putExtra("CROSS_PROCESS_CODE", result.resultCode)
                         putExtra("CROSS_PROCESS_DATA", result.data)
+                        putExtra("CROSS_PROCESS_RECOVERY", recoveryAccepted)
                     }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -209,6 +216,7 @@ override fun onResume() {
     if (intent?.getBooleanExtra("REQUEST_MEDIA_PROJECTION_RECOVERY", false) == true) {
         intent.removeExtra("REQUEST_MEDIA_PROJECTION_RECOVERY")
 
+        projectionRecoveryFlow = true
         permissionPipelineActive = false
         permissionStage = PermissionStage.MEDIA_PROJECTION
 

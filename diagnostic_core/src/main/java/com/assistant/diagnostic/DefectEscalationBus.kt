@@ -98,7 +98,10 @@ object DefectEscalationBus {
         listeners.remove(listener)
     }
 
-    fun snapshot(): Event = current
+    fun snapshot(): Event {
+        clearExpired()
+        return current
+    }
 
     val performanceActive: Boolean
         get() {

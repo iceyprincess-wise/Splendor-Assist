@@ -136,7 +136,7 @@ object DeathWatch {
         val lived = if (began > 0 && lastBeat > began) (lastBeat - began) / 1000L else -1L
         val gap   = if (lastBeat > 0) (System.currentTimeMillis() - lastBeat) / 1000L else -1L
 
-        val javaCrash = javaCrashPresent(began)
+        val javaCrash = javaCrashMarkerPresent(began)
         val avail = availMb.toIntOrNull() ?: -1
         val thresh = threshMb.toIntOrNull() ?: 0
 
@@ -171,18 +171,48 @@ object DeathWatch {
 
         val text = sb.toString()
 
-        // 1) standalone report file, user-readable
+        // 1) canonical user-readable report.
+        //    GlobalCrashHandler and DeathWatch intentionally converge here.
         try { reportFile()?.appendText(text) } catch (_: Throwable) { }
 
-        // 2) the writer already proven to reach Downloads
+        // Consume the per-process Java-crash marker only after the death
+        // record has been written. This prevents an old Java crash from
+        // falsely classifying a later silent process death.
+        if (javaCrash) {
+            try { javaCrashMarkerFile()?.delete() } catch (_: Throwable) { }
+        }
+
+        // 2) the writer already proven to reach the canonical log root.
         log("ABNORMAL DEATH proc=" + deadProc + " lived=" + lived + "s avail=" +
             availMb + "MB lowMemory=" + lowMem + " verdict=" + verdict)
     }
 
-    private fun javaCrashPresent(since: Long): Boolean = try {
-        val f = SplendorStorageRoot.file(REPORT_NAME)
-        f.exists() && f.lastModified() >= since
-    } catch (_: Throwable) { false }
+    private fun javaCrashMarkerFile(): File? {
+        return try {
+            val processName = resolveProcessName(null)
+            val safeProcess = safeName(processName)
+            File(
+                SplendorStorageRoot.subdirectory("deathwatch"),
+                "$safeProcess.java-crash.marker"
+            )
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    private fun javaCrashMarkerPresent(since: Long): Boolean = try {
+        val f = javaCrashMarkerFile() ?: return false
+        if (!f.exists()) return false
+
+        val timestamp = f.readText()
+            .substringAfter("timestamp=", "")
+            .substringBefore("|")
+            .toLongOrNull() ?: return false
+
+        timestamp >= since
+    } catch (_: Throwable) {
+        false
+    }
 
     private fun reportFile(): File? {
         return try {
@@ -194,15 +224,24 @@ object DeathWatch {
 
     // ---------------- helpers ----------------
 
-    private fun resolveProcessName(c: Context): String = try {
+    private fun resolveProcessName(c: Context?): String = try {
         if (Build.VERSION.SDK_INT >= 28) {
             Application.getProcessName()
         } else {
             val pid = android.os.Process.myPid()
-            val am = c.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            am.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName ?: ("pid" + pid)
+            if (c == null) {
+                "pid$pid"
+            } else {
+                val am = c.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                am.runningAppProcesses
+                    ?.firstOrNull { it.pid == pid }
+                    ?.processName
+                    ?: "pid$pid"
+            }
         }
-    } catch (_: Throwable) { "pid" + android.os.Process.myPid() }
+    } catch (_: Throwable) {
+        "pid" + android.os.Process.myPid()
+    }
 
     private fun safeName(s: String): String =
         s.replace(':', '_').replace('.', '_').replace('/', '_')
