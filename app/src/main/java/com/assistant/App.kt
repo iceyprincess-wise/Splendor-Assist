@@ -15,6 +15,13 @@ class App : Application() {
 
         com.assistant.controlroom.ControlRoomBootstrap.initialize()
 
+        // Single application-wide in-app agent.
+        // Application-owned so Activity recreation, room navigation,
+        // and configuration changes cannot own or duplicate the agent.
+        runCatching {
+            com.assistant.adapter.smartassist.InAppAgentCore.start()
+        }
+
         // Install crash catcher FIRST - before anything else
         GlobalCrashHandler.install(this)
 

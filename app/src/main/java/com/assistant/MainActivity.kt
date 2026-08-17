@@ -121,12 +121,6 @@ class MainActivity : AppCompatActivity() {
         // single install lives in App.onCreate; this is idempotent
         GlobalCrashHandler.install(this)
 
-        // Single application-wide in-app agent.
-        // Idempotent: repeated Activity creation cannot create another agent.
-        runCatching {
-            InAppAgentCore.start()
-        }
-
         setContentView(
             com.assistant.overlay.R.layout.activity_main
         )
