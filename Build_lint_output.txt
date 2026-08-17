@@ -1,13 +1,11 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-17 07:28:11 WAT
+Started: 2026-08-17 07:33:34 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
- M app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt
-?? app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt.pre_log_path_fix.bak
 
 
 ================================================================
@@ -33,22 +31,22 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 24 -> 25
+versionCode: 25 -> 26
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 3m 50s
+BUILD SUCCESSFUL in 1m 8s
 
 ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v25-20260817_073209.apk
--rw-rw----. 1 u0_a262 media_rw 67M Aug 17 07:32 /storage/emulated/0/Download/Splendor-Assist-v25-20260817_073209.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v26-20260817_073449.apk
+-rw-rw----. 1 u0_a262 media_rw 67M Aug 17 07:34 /storage/emulated/0/Download/Splendor-Assist-v26-20260817_073449.apk
 
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
@@ -77,9 +75,7 @@ FINAL STATUS: FAILED — check items above
 GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
- M app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt
-?? app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt.pre_log_path_fix.bak
 
-Finished: 2026-08-17 07:32:27 WAT
-Report size: 3721 bytes
+Finished: 2026-08-17 07:35:01 WAT
+Report size: 3382 bytes
 ================================================================
