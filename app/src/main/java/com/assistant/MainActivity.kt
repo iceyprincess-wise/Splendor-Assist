@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         AUTOSTART_WAIT,
         ACCESSIBILITY,
         OVERLAY,
+        ALL_FILES,
         NOTIFICATION,
         MEDIA_PROJECTION,
         COMPLETE
@@ -531,6 +532,8 @@ private fun checkAccessibilityAndProceed() {
     }
 
     private fun checkNotificationAndProceed() {
+        permissionStage = PermissionStage.NOTIFICATION
+
         if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(
@@ -549,6 +552,8 @@ private fun checkAccessibilityAndProceed() {
     }
 
     private fun checkOverlayAndProceed() {
+        permissionStage = PermissionStage.OVERLAY
+
         if (!Settings.canDrawOverlays(this)) {
             startActivity(
                 Intent(
@@ -557,10 +562,39 @@ private fun checkAccessibilityAndProceed() {
                 )
             )
         } else {
-            screenCaptureLauncher.launch(
-                projectionManager.createScreenCaptureIntent()
-            )
+            checkAllFilesAndProceed()
         }
+    }
+
+    private fun checkAllFilesAndProceed() {
+        permissionStage = PermissionStage.ALL_FILES
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+            !android.os.Environment.isExternalStorageManager()
+        ) {
+            val appIntent = Intent(
+                Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                Uri.parse("package:$packageName")
+            )
+
+            try {
+                startActivity(appIntent)
+            } catch (_: Exception) {
+                try {
+                    startActivity(
+                        Intent(
+                            Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION
+                        )
+                    )
+                } catch (_: Exception) {
+                    checkNotificationAndProceed()
+                }
+            }
+
+            return
+        }
+
+        checkNotificationAndProceed()
     }
 
 

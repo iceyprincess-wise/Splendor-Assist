@@ -28,6 +28,13 @@ object ComplianceState {
     fun overlay(context: Context): Boolean =
         Settings.canDrawOverlays(context)
 
+    fun allFiles(context: Context): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+            return true
+
+        return android.os.Environment.isExternalStorageManager()
+    }
+
     fun notifications(context: Context): Boolean {
 
         if (Build.VERSION.SDK_INT <
@@ -57,9 +64,10 @@ object ComplianceState {
     fun ready(context: Context): Boolean {
 
         return battery(context)
-            && overlay(context)
-            && notifications(context)
             && accessibility(context)
+            && overlay(context)
+            && allFiles(context)
+            && notifications(context)
     }
 
     fun summary(context: Context): String {
@@ -75,6 +83,9 @@ object ComplianceState {
 
         if (!overlay(context))
             failed += "OVERLAY"
+
+        if (!allFiles(context))
+            failed += "ALL_FILES"
 
         if (!notifications(context))
             failed += "NOTIFICATIONS"
