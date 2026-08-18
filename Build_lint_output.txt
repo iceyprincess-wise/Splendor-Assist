@@ -1,85 +1,15 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-18 20:23:41 WAT
+Started: 2026-08-18 21:05:41 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
+ M app/src/main/java/com/assistant/OverlayService.kt
+?? app/src/main/java/com/assistant/OverlayService.kt.pre_removeDefectGlass_fix.bak
 
 
 ================================================================
 >>> OPTIONAL CLEAN
-================================================================
-NO — clean skipped; preserving incremental build state.
-
-================================================================
->>> OPTIONAL LINT
-================================================================
-NO — lint skipped by user.
-
-================================================================
->>> LINT ISSUE EXTRACTION
-================================================================
-SKIPPED — lint was not run.
-
-================================================================
->>> CONNECTED ANDROID TESTS
-================================================================
-SKIPPED — no ADB device connected (not a failure)
-
-================================================================
->>> VERSION BUMP
-================================================================
-versionCode: 31 -> 32
-
-================================================================
->>> ASSEMBLE DEBUG APK
-================================================================
-[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
-	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:713:9 Unresolved reference: removeDefectGlass
-FAILURE: Build failed with an exception.
-* What went wrong:
-BUILD FAILED in 10m 24s
-
-ASSEMBLE DEBUG APK EXIT: 1
-
-================================================================
->>> APK EXPORT
-================================================================
-SKIPPED — build exit=1, apk_exists=YES
-
-================================================================
->>> OPTIONAL GRADLE DAEMON STOP
-================================================================
-NO — Gradle daemon remains running for warm builds.
-
-Current Gradle daemon status:
-   PID STATUS   INFO
- 30299 IDLE     8.5
- 32165 STOPPED  (by user or operating system)
-
-Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
-
-================================================================
->>> BUILD RESULT SUMMARY
-================================================================
-CLEAN:                           0
-LINT:                            SKIPPED — OPTIONAL
-CONNECTED TESTS:                 0
-VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  1
-APK EXPORT:                      ?
-GRADLE DAEMON STOP:              0
-
-FINAL STATUS: FAILED — check items above
-
-GIT STATUS:
- M Build_lint_output.txt
- M app/build.gradle.kts
-D  captaincy-engine-audit.txt
-
-Finished: 2026-08-18 20:34:32 WAT
-Report size: 3525 bytes
 ================================================================

@@ -710,7 +710,6 @@ override fun onCreate() {
     
 
 override fun onDestroy() {
-        removeDefectGlass()
         com.assistant.vision.OverlaySelfMask.clearPrefix("hud")
         com.assistant.adapter.smartassist.RuntimeCoordinator.shutdown()
         OverlaySurvivalEngine.destroyed()
