@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-18 05:45:53 WAT
+Started: 2026-08-18 06:07:42 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -31,27 +31,23 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 28 -> 29
+versionCode: 29 -> 30
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DeathWatch.kt:204:42 Returns are not allowed for functions with expression body. Use block body in '{...}'
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DeathWatch.kt:205:26 Returns are not allowed for functions with expression body. Use block body in '{...}'
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DeathWatch.kt:210:32 Returns are not allowed for functions with expression body. Use block body in '{...}'
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/GlobalCrashHandler.kt:67:25 Unresolved reference: Application
-FAILURE: Build failed with an exception.
-* What went wrong:
-BUILD FAILED in 9m 53s
+w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/GlobalCrashHandler.kt:64:42 Parameter 'ctx' is never used
+BUILD SUCCESSFUL in 5m 11s
 
-ASSEMBLE DEBUG APK EXIT: 1
+ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-SKIPPED — build exit=1, apk_exists=YES
+Exported: /storage/emulated/0/Download/Splendor-Assist-v30-20260818_061301.apk
+-rw-rw----. 1 u0_a262 media_rw 67M Aug 18 06:13 /storage/emulated/0/Download/Splendor-Assist-v30-20260818_061301.apk
 
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
@@ -72,7 +68,7 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  1
+ASSEMBLE DEBUG:                  0
 APK EXPORT:                      ?
 GRADLE DAEMON STOP:              0
 
@@ -82,6 +78,6 @@ GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
 
-Finished: 2026-08-18 05:56:36 WAT
-Report size: 4113 bytes
+Finished: 2026-08-18 06:13:37 WAT
+Report size: 3587 bytes
 ================================================================
