@@ -36,7 +36,6 @@ object ActionWindowEngine {
                     val tol = CarrierProfileEngine.jitterTolMs.toFloat()
                     val loss = PacketLossProbeEngine.lossPct
                     val next = when {
-                        AdapterSignalBus.manualPerformanceEscalation -> "HOLD"
                         CongestionSentinelEngine.congested || loss > HOLD_LOSS_PCT ||
                             NetProbeEngine.jitter > tol * HOLD_JITTER_MULT -> "HOLD"
                         NetProbeEngine.quality == "GOOD" && loss < GO_LOSS_PCT -> "GO"
@@ -56,11 +55,7 @@ object ActionWindowEngine {
                         "rtt=" + NetProbeEngine.rtt.toInt() + " jit=" + NetProbeEngine.jitter.toInt() +
                         " loss=" + loss.toInt())
                 } catch (_: Throwable) { }
-                val nap = if (AdapterSignalBus.manualPerformanceEscalation) {
-                    minOf(POLL_MS, 250L)
-                } else {
-                    POLL_MS
-                }
+                val nap = POLL_MS
                 try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }
             }
         }

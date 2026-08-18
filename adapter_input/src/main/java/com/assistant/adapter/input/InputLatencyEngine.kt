@@ -18,11 +18,7 @@ object InputLatencyEngine {
         val t = Thread {
             while (running) {
                 try { measure() } catch (_: Throwable) {}
-                val intervalMs = if (AdapterSignalBus.manualPerformanceEscalation) {
-                    100L
-                } else {
-                    200L
-                }
+                val intervalMs = 200L
                 try { Thread.sleep(intervalMs) } catch (_: Throwable) { return@Thread }
             }
         }

@@ -35,12 +35,6 @@ object BurstForensicsEngine {
 
     @Synchronized
     fun record(frames: Int, worstMs: Float) {
-        if (AdapterSignalBus.manualPerformanceEscalation) {
-            RuntimeLogger.log(
-                "STUTTER MANUAL ESCALATION active: measured burst processing remains authoritative",
-                "STUTTER"
-            )
-        }
         val now = System.currentTimeMillis()
         recent.addLast(now)
         while (recent.isNotEmpty() && now - recent.first() > 60_000L) recent.removeFirst()

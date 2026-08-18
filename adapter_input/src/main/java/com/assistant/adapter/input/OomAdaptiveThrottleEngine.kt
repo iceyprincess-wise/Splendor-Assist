@@ -47,11 +47,7 @@ object OomAdaptiveThrottleEngine {
         val t = Thread {
             while (running) {
                 try { poll() } catch (_: Throwable) {}
-                val intervalMs = if (AdapterSignalBus.manualPerformanceEscalation) {
-                    minOf(POLL_MS, 500L)
-                } else {
-                    POLL_MS
-                }
+                val intervalMs = POLL_MS
                 try { Thread.sleep(intervalMs) } catch (_: Throwable) { return@Thread }
             }
         }

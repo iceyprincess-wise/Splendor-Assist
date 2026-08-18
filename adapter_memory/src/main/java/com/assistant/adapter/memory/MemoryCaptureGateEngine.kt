@@ -68,27 +68,11 @@ object MemoryCaptureGateEngine {
      * Returns the recommended capture frame interval in ms for the
      * current throttle level. OverlayService calls this in its frame gate.
      */
-    fun recommendedIntervalMs(): Long {
-        if (AdapterSignalBus.manualPerformanceEscalation) {
-            // Manual player truth requests faster capture-health reassessment,
-            // while the existing memory throttle remains authoritative.
-            return minOf(
-                when (captureThrottle) {
-                    3    -> 100L
-                    2    -> 66L
-                    1    -> 50L
-                    else -> 33L
-                },
-                33L
-            )
-        }
-
-        return when (captureThrottle) {
-            3    -> 100L
-            2    -> 66L
-            1    -> 50L
-            else -> 33L
-        }
+    fun recommendedIntervalMs(): Long = when (captureThrottle) {
+        3    -> 100L
+        2    -> 66L
+        1    -> 50L
+        else -> 33L
     }
 
     /**
