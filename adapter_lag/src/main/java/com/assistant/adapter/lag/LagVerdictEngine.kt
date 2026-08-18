@@ -29,26 +29,6 @@ object LagVerdictEngine {
     @Volatile private var streak = 0
     @Volatile private var lastHeartbeat = 0L
 
-    /**
-     * Explicit player-observed severe-lag assertion.
-     *
-     * The assertion is bounded and feeds the same AdapterSignalBus used by
-     * the normal lag verdict path. Once it expires, measured lag takes over.
-     */
-    fun forceManualChoking(durationMs: Long = 10_000L, source: String = "MANUAL") {
-        val now = System.currentTimeMillis()
-        AdapterSignalBus.publishManualLagEscalation(durationMs, source)
-        candidate = "CHOKING"
-        streak = CONFIRM_POLLS.coerceAtLeast(1)
-        verdict = "CHOKING"
-        lastHeartbeat = now
-        AdapterSignalBus.publishLag("CHOKING")
-        RuntimeLogger.log(
-            "MANUAL LAG ESCALATION source=$source durationMs=${durationMs.coerceAtLeast(1000L)}",
-            "LAGVERDICT"
-        )
-    }
-
     fun start() {
         if (running) return
         running = true
@@ -60,9 +40,7 @@ object LagVerdictEngine {
                     val stallRate = FramePacingEngine.stallsPerMin
                     val mtStall = MainThreadStallEngine.avgLatenessMs
                     val spm = MainThreadStallEngine.spikesPerMin
-                    val raw = if (AdapterSignalBus.manualPerformanceEscalation) {
-                        "CHOKING"
-                    } else when {
+                    val raw = when {
                         stallRate > CHOKE_STALLS || mtStall > CHOKE_MTSTALL_MS ||
                             spm > CHOKE_SPIKES -> "CHOKING"
                         jit > JITTER_MS || stab < STABILITY_PCT -> "JITTERY"

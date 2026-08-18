@@ -1,7 +1,5 @@
 package com.assistant
 
-import com.assistant.diagnostic.DefectEscalationBus
-
 import android.annotation.SuppressLint
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.RuntimeMetricsRegistry
@@ -82,12 +80,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private lateinit var overlayView: View
     private lateinit var txtEngineStatus: TextView
     private lateinit var notificationManager: NotificationManager
-
-    // 🕶️ is a separate touchable window. The main HUD remains
-    // FLAG_NOT_TOUCHABLE so game touches are not intercepted.
-    private var lagGlassView: TextView? = null
-    private val glassTapHandler = Handler(Looper.getMainLooper())
-    private var glassTapPending = false
 
     private var mediaProjection: MediaProjection? = null
     private var virtualDisplay: VirtualDisplay? = null
@@ -289,7 +281,6 @@ override fun onCreate() {
         )
         windowManager.addView(overlayView, layoutParams)
 
-        installDefectGlass()
 
         // GAP1B-A: report the leaves we paint so capture/OCR ignores them.
         // Re-published on every layout pass, so status-text resizes stay masked.
@@ -307,154 +298,6 @@ override fun onCreate() {
         )
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private fun installDefectGlass() {
-        if (lagGlassView != null) return
-
-        val glass = TextView(this).apply {
-            text = "🕶️"
-            textSize = 24f
-            gravity = Gravity.CENTER
-            setTextColor(Color.WHITE)
-            setBackgroundColor(Color.argb(165, 15, 15, 15))
-            contentDescription =
-                "Splendor Assist defect escalation: GLASS_SINGLE=PERFORMANCE, GLASS_DOUBLE=GAMEPLAY"
-            isClickable = true
-            isFocusable = false
-
-            setOnClickListener {
-                if (glassTapPending) {
-                    glassTapPending = false
-                    glassTapHandler.removeCallbacksAndMessages(null)
-
-                    // DOUBLE TAP = GAMEPLAY / adapter_smartassist
-                    animate()
-                        .rotationBy(720f)
-                        .setDuration(700L)
-                        .withEndAction {
-                            rotation = 0f
-                        }
-                        .start()
-
-                    try {
-                        com.assistant.adapter.smartassist.RuntimeSelfHealEngine
-                            .runManualGameplayEscalation()
-
-                        RuntimeLogger.log(
-                            "🕶️ DOUBLE TAP ACCEPTED: GAMEPLAY escalation -> " +
-                                "adapter_smartassist + RuntimeSelfHealEngine",
-                            "DEFECT_ESCALATION"
-                        )
-
-                        updateOverlayVisuals(
-                            "GAMEPLAY DEFECT ESCALATION",
-                            Color.YELLOW
-                        )
-                    } catch (t: Throwable) {
-                        RuntimeLogger.log(
-                            "🕶️ DOUBLE TAP FAILED: " +
-                                "${t.javaClass.simpleName}: ${t.message}",
-                            "DEFECT_ESCALATION"
-                        )
-                    }
-                } else {
-                    glassTapPending = true
-
-                    glassTapHandler.postDelayed({
-                        if (!glassTapPending) return@postDelayed
-
-                        glassTapPending = false
-
-                        // ONE TAP = PERFORMANCE ADAPTER FAMILY
-                        animate()
-                            .rotationBy(360f)
-                            .setDuration(550L)
-                            .withEndAction {
-                                rotation = 0f
-                            }
-                            .start()
-
-                        try {
-                            DefectEscalationBus.publishPerformance(
-                                "GLASS_SINGLE"
-                            )
-
-                            RuntimeLogger.log(
-                                "🕶️ SINGLE TAP ACCEPTED: PERFORMANCE " +
-                                    "defect broadcast to adapter performance family",
-                                "DEFECT_ESCALATION"
-                            )
-
-                            updateOverlayVisuals(
-                                "PERFORMANCE DEFECT ESCALATION",
-                                Color.YELLOW
-                            )
-                        } catch (t: Throwable) {
-                            RuntimeLogger.log(
-                                "🕶️ SINGLE TAP FAILED: " +
-                                    "${t.javaClass.simpleName}: ${t.message}",
-                                "DEFECT_ESCALATION"
-                            )
-                        }
-                    }, 350L)
-                }
-            }
-        }
-
-        lagGlassView = glass
-
-        val density = resources.displayMetrics.density
-        val size = (56f * density).toInt().coerceAtLeast(48)
-
-        val lp = WindowManager.LayoutParams(
-            size,
-            size,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            else
-                @Suppress("DEPRECATION")
-                WindowManager.LayoutParams.TYPE_PHONE,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.END
-            x = (8f * density).toInt()
-            y = (96f * density).toInt()
-        }
-
-        try {
-            windowManager.addView(glass, lp)
-
-            RuntimeLogger.log(
-                "🕶️ defect escalation control attached; " +
-                    "single=PERFORMANCE double=GAMEPLAY",
-                "OVERLAY"
-            )
-        } catch (t: Throwable) {
-            lagGlassView = null
-            RuntimeLogger.log(
-                "🕶️ defect control attach failed: " +
-                    "${t.javaClass.simpleName}: ${t.message}",
-                "OVERLAY"
-            )
-        }
-    }
-
-    private fun removeDefectGlass() {
-        try {
-            lagGlassView?.let { view ->
-                if (view.isAttachedToWindow) {
-                    windowManager.removeView(view)
-                }
-            }
-        } catch (_: Throwable) {
-        } finally {
-            lagGlassView = null
-            glassTapPending = false
-            glassTapHandler.removeCallbacksAndMessages(null)
-        }
-    }
 
     private fun updateOverlayVisuals(text: String, color: Int) {
         Handler(Looper.getMainLooper()).post {

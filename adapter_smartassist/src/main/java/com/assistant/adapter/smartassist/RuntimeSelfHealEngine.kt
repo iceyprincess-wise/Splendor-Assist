@@ -1,7 +1,5 @@
 package com.assistant.adapter.smartassist
 
-import com.assistant.diagnostic.DefectEscalationBus
-
 import com.assistant.storage.SplendorStorageRoot
 
 import com.assistant.diagnostic.AdapterSignalBus
@@ -78,26 +76,8 @@ object RuntimeSelfHealEngine {
                 catch (e: Throwable) {
                     try { RuntimeLogger.log("AGENT FAULT: ${e.javaClass.simpleName}: ${e.message}", "AGENT") } catch (_: Throwable) {}
                 }
-                /*
-                 * Canonical 🕶️ PERFORMANCE escalation consumer.
-                 *
-                 * Normal self-heal cadence remains 5 seconds.
-                 * Operator-confirmed severe performance defect reduces the
-                 * observation interval to 1 second so the existing recovery
-                 * checks run harder without inventing a new recovery path.
-                 *
-                 * GAMEPLAY double-tap remains isolated in
-                 * runManualGameplayEscalation().
-                 */
-                val observationIntervalMs =
-                    if (AdapterSignalBus.manualPerformanceEscalation) {
-                        1_000L
-                    } else {
-                        5_000L
-                    }
-
                 try {
-                    Thread.sleep(observationIntervalMs)
+                    Thread.sleep(5_000L)
                 } catch (_: Throwable) {
                     return@Thread
                 }
@@ -118,41 +98,6 @@ object RuntimeSelfHealEngine {
      * Controlled synchronous check requested by InAppAgentCore.
      * The existing periodic self-heal daemon remains authoritative.
      */
-    /**
-     * Called by the 🕶️ double-tap gameplay escalation.
-     *
-     * This is an operator-observed severe gameplay defect, not fabricated
-     * telemetry. The normal self-heal diagnostics then decide which actual
-     * recovery actions are warranted.
-     */
-    fun runManualGameplayEscalation() {
-        DefectEscalationBus.publishGameplay("GLASS_DOUBLE")
-        RuntimeLogger.log(
-            "GAMEPLAY DEFECT ESCALATION: 🕶️ double tap; " +
-                "adapter_smartassist/self-heal instructed to reassess immediately",
-            "DEFECT_ESCALATION"
-        )
-
-        if (running) {
-            runImmediateCheck()
-        } else {
-            try {
-                runChecks()
-                RuntimeLogger.log(
-                    "GAMEPLAY DEFECT ESCALATION: immediate SmartAssist check completed " +
-                        "while daemon was not running",
-                    "DEFECT_ESCALATION"
-                )
-            } catch (e: Throwable) {
-                RuntimeLogger.log(
-                    "GAMEPLAY DEFECT ESCALATION: immediate check failed: " +
-                        "${e.javaClass.simpleName}: ${e.message}",
-                    "DEFECT_ESCALATION"
-                )
-            }
-        }
-    }
-
     fun runImmediateCheck() {
         if (!running) return
         try {
@@ -170,15 +115,6 @@ object RuntimeSelfHealEngine {
     private fun agentAgeMs() = System.currentTimeMillis() - agentStartedMs
 
     private fun runChecks() {
-        if (AdapterSignalBus.manualPerformanceEscalation) {
-            RuntimeLogger.log(
-                "PERFORMANCE DEFECT ESCALATION ACTIVE: " +
-                    "self-heal observation accelerated; existing performance " +
-                    "checks instructed to reassess the confirmed defect",
-                "DEFECT_ESCALATION"
-            )
-        }
-
         val warmed = agentAgeMs() > 5_000L  // only 5s grace for flagging
         enforceForegroundGate()      // EVERY cycle — not just when false
         checkCaptureThread()         // critical — can restart
