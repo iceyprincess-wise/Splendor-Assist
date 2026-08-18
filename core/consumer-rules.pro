@@ -1,0 +1,7 @@
+-keep interface com.assistant.runtime.** { *; }
+-keep class com.assistant.runtime.** { *; }
+-keep class com.assistant.execution.** { *; }
+-keep class com.assistant.diagnostic.RuntimeLogger { *; }
+-keep class com.assistant.diagnostic.AdapterSignalBus { *; }
+-keep class com.assistant.diagnostic.registry.** { *; }
+-keep class com.assistant.storage.SplendorStorageRoot { *; }
