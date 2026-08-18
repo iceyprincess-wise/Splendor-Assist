@@ -200,18 +200,23 @@ object DeathWatch {
         }
     }
 
-    private fun javaCrashMarkerPresent(since: Long): Boolean = try {
-        val f = javaCrashMarkerFile() ?: return false
-        if (!f.exists()) return false
+    private fun javaCrashMarkerPresent(since: Long): Boolean {
+        return try {
+            val f = javaCrashMarkerFile()
 
-        val timestamp = f.readText()
-            .substringAfter("timestamp=", "")
-            .substringBefore("|")
-            .toLongOrNull() ?: return false
+            if (f == null || !f.exists()) {
+                false
+            } else {
+                val timestamp = f.readText()
+                    .substringAfter("timestamp=", "")
+                    .substringBefore("|")
+                    .toLongOrNull()
 
-        timestamp >= since
-    } catch (_: Throwable) {
-        false
+                timestamp != null && timestamp >= since
+            }
+        } catch (_: Throwable) {
+            false
+        }
     }
 
     private fun reportFile(): File? {
