@@ -1,25 +1,11 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-18 19:00:33 WAT
+Started: 2026-08-18 20:23:41 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
- M adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt
- M adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CrowdingZoneDetector.kt
- M adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt
- M adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt
- M app/src/main/java/com/assistant/OverlayService.kt
- M diagnostic_core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt
- D diagnostic_core/src/main/java/com/assistant/diagnostic/DefectEscalationBus.kt
-?? adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt.pre_defect_escalation_removal.bak
-?? adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CrowdingZoneDetector.kt.pre_defect_escalation_removal.bak
-?? adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt.pre_defect_escalation_removal.bak
-?? adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt.pre_defect_escalation_removal.bak
-?? app/src/main/java/com/assistant/OverlayService.kt.pre_defect_escalation_removal.bak
-?? diagnostic_core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt.pre_defect_escalation_removal.bak
-?? diagnostic_core/src/main/java/com/assistant/diagnostic/DefectEscalationBus.kt.pre_defect_escalation_removal.bak
 
 
 ================================================================
@@ -45,19 +31,17 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 30 -> 31
+versionCode: 31 -> 32
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/adapter_battery/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:90:38 Unresolved reference: manualPerformanceEscalation
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/adapter_boot/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:66:38 Unresolved reference: manualPerformanceEscalation
-FAILURE: Build completed with 2 failures.
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:713:9 Unresolved reference: removeDefectGlass
+FAILURE: Build failed with an exception.
 * What went wrong:
-* What went wrong:
-BUILD FAILED in 5m 30s
+BUILD FAILED in 10m 24s
 
 ASSEMBLE DEBUG APK EXIT: 1
 
@@ -73,8 +57,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 32165 IDLE     8.5
- 11601 STOPPED  (by user or operating system)
+ 30299 IDLE     8.5
+ 32165 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -93,22 +77,9 @@ FINAL STATUS: FAILED — check items above
 
 GIT STATUS:
  M Build_lint_output.txt
- M adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt
- M adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CrowdingZoneDetector.kt
- M adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt
- M adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt
  M app/build.gradle.kts
- M app/src/main/java/com/assistant/OverlayService.kt
- M diagnostic_core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt
- D diagnostic_core/src/main/java/com/assistant/diagnostic/DefectEscalationBus.kt
-?? adapter_lag/src/main/java/com/assistant/adapter/lag/LagVerdictEngine.kt.pre_defect_escalation_removal.bak
-?? adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/CrowdingZoneDetector.kt.pre_defect_escalation_removal.bak
-?? adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt.pre_defect_escalation_removal.bak
-?? adapter_smartassist/src/main/java/com/assistant/adapter/smartassist/RuntimeSelfHealEngine.kt.pre_defect_escalation_removal.bak
-?? app/src/main/java/com/assistant/OverlayService.kt.pre_defect_escalation_removal.bak
-?? diagnostic_core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt.pre_defect_escalation_removal.bak
-?? diagnostic_core/src/main/java/com/assistant/diagnostic/DefectEscalationBus.kt.pre_defect_escalation_removal.bak
+D  captaincy-engine-audit.txt
 
-Finished: 2026-08-18 19:09:02 WAT
-Report size: 6523 bytes
+Finished: 2026-08-18 20:34:32 WAT
+Report size: 3525 bytes
 ================================================================
