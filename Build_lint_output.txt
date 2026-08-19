@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-19 04:28:07 WAT
+Started: 2026-08-19 04:36:07 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -31,29 +31,22 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 35 -> 36
+versionCode: 36 -> 37
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-e: Supertypes of the following classes cannot be resolved. Please make sure you have the required dependencies in the classpath:
-    class org.tensorflow.lite.Interpreter, unresolved supertypes: org.tensorflow.lite.InterpreterApi
-    class org.tensorflow.lite.InterpreterImpl, unresolved supertypes: org.tensorflow.lite.InterpreterApi
-    class org.tensorflow.lite.InterpreterImpl.Options, unresolved supertypes: org.tensorflow.lite.InterpreterApi.Options
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:83:68 Cannot access 'org.tensorflow.lite.InterpreterApi.Options' which is a supertype of 'org.tensorflow.lite.Interpreter.Options'. Check your module classpath for missing or conflicting dependencies
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:83:76 Cannot access 'org.tensorflow.lite.InterpreterApi.Options' which is a supertype of 'org.tensorflow.lite.Interpreter.Options'. Check your module classpath for missing or conflicting dependencies
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:143:20 Cannot access 'org.tensorflow.lite.InterpreterApi' which is a supertype of 'org.tensorflow.lite.InterpreterImpl'. Check your module classpath for missing or conflicting dependencies
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt:210:36 Cannot access 'org.tensorflow.lite.InterpreterApi' which is a supertype of 'org.tensorflow.lite.InterpreterImpl'. Check your module classpath for missing or conflicting dependencies
-FAILURE: Build failed with an exception.
-* What went wrong:
-BUILD FAILED in 4m
+[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
+	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+BUILD SUCCESSFUL in 3m
 
-ASSEMBLE DEBUG APK EXIT: 1
+ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-SKIPPED — build exit=1, apk_exists=YES
+Exported: /storage/emulated/0/Download/Splendor-Assist-v37-20260819_043917.apk
+-rw-rw----. 1 u0_a262 media_rw 67M Aug 19 04:39 /storage/emulated/0/Download/Splendor-Assist-v37-20260819_043917.apk
 
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
@@ -75,7 +68,7 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  1
+ASSEMBLE DEBUG:                  0
 APK EXPORT:                      ?
 GRADLE DAEMON STOP:              0
 
@@ -85,6 +78,6 @@ GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
 
-Finished: 2026-08-19 04:35:27 WAT
-Report size: 4657 bytes
+Finished: 2026-08-19 04:39:45 WAT
+Report size: 3471 bytes
 ================================================================
