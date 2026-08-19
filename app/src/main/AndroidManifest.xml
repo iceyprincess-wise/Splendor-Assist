@@ -64,7 +64,7 @@
         <service
             android:name="com.assistant.adapter.smartassist.SmartAssistAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -74,7 +74,7 @@
         <service
             android:name="com.assistant.adapter.lmk.LmkAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -84,7 +84,7 @@
         <service
             android:name="com.assistant.adapter.net.NetAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -94,7 +94,7 @@
         <service
             android:name="com.assistant.adapter.input.InputAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -104,7 +104,7 @@
         <service
             android:name="com.assistant.adapter.sync.SyncAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -114,7 +114,7 @@
         <service
             android:name="com.assistant.adapter.ping.PingAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -124,7 +124,7 @@
         <service
             android:name="com.assistant.adapter.stutter.StutterAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -134,7 +134,7 @@
         <service
             android:name="com.assistant.adapter.lag.LagAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -144,7 +144,7 @@
         <service
             android:name="com.assistant.adapter.boot.BootAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -154,7 +154,7 @@
         <service
             android:name="com.assistant.adapter.watchdog.WatchdogAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -164,7 +164,7 @@
         <service
             android:name="com.assistant.adapter.memory.MemoryAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -174,7 +174,7 @@
         <service
             android:name="com.assistant.adapter.thermal.ThermalAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -184,7 +184,7 @@
         <service
             android:name="com.assistant.adapter.battery.BatteryAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -194,7 +194,7 @@
         <service
             android:name="com.assistant.adapter.scheduler.SchedulerAdapterService"
             android:exported="true"
-            android:process=":kernel"
+            android:process=":survival"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
