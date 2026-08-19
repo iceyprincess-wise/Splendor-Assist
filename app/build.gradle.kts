@@ -15,7 +15,7 @@ android {
         applicationId = "com.assistant.overlay"
         minSdk = 26
         targetSdk = 34
-        versionCode = 35
+        versionCode = 36
         versionName = "1.0-SECURE-LOCKED"
     }
 
@@ -58,9 +58,7 @@ dependencies {
     implementation("com.google.mlkit:text-recognition:16.0.1") {
         exclude(group = "org.tensorflow", module = "tensorflow-lite-api")
     }
-    implementation("org.tensorflow:tensorflow-lite:2.14.0") {
-        exclude(group = "org.tensorflow", module = "tensorflow-lite-api")
-    }
+    implementation("org.tensorflow:tensorflow-lite:2.14.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }
