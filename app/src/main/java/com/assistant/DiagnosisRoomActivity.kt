@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -23,7 +24,16 @@ class DiagnosisRoomActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        RuntimeLogger.reconcileExpired()
+        
+        // UPGRADE: Dispatched file I/O to a background thread. 
+        // Running file system operations (reconciling/deleting expired logs) 
+        // on the Main Thread causes UI jank and frame drops on the Helio G81-Ultra.
+        Thread({
+            try {
+                RuntimeLogger.reconcileExpired()
+            } catch (_: Throwable) { }
+        }, "diag-room-io").start()
+
         setContentView(buildRoom())
     }
 
@@ -58,7 +68,10 @@ class DiagnosisRoomActivity : AppCompatActivity() {
             })
         }
 
-        root.addView(ScrollView(this).apply { addView(list) }, LinearLayout.LayoutParams(-1, 0, 1f))
+        // UPGRADE: Replaced magic number (-1) with ViewGroup.LayoutParams.MATCH_PARENT 
+        // for strict type safety and layout clarity.
+        root.addView(ScrollView(this).apply { addView(list) }, 
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
 
         root.addView(Button(this).apply {
             text = "Back"

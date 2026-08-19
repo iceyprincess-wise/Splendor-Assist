@@ -7,6 +7,7 @@ import android.app.Application
 import android.content.Context
 import android.os.Build
 import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -32,12 +33,20 @@ import java.util.Locale
 object DeathWatch {
 
     private const val REPORT_NAME = "Splendor_Crash_Reports.txt"
-    private const val HEARTBEAT_MS = 5000L
+    
+    // UPGRADE: 5000L -> 15000L. On the Helio G81-Ultra (4GB RAM), 5s heartbeats 
+    // cause excessive Binder IPC to ActivityManager and Disk I/O. 15s is plenty 
+    // accurate to detect LMK/ANR/SIGSEGV while drastically reducing CPU wakeups 
+    // and GC pressure during eFootball 2027 15fps/30fps gameplay.
+    private const val HEARTBEAT_MS = 15000L
 
     @Volatile private var installed = false
     @Volatile private var marker: File? = null
     @Volatile private var procName = "?"
     @Volatile private var startedMs = 0L
+    
+    // UPGRADE: Cache the static parts of the heartbeat string to prevent garbage collection.
+    @Volatile private var beatPrefix = ""
 
     @JvmStatic
     fun install(ctx: Context) {
@@ -53,6 +62,9 @@ object DeathWatch {
         installed = true
         procName = resolveProcessName(c)
         startedMs = System.currentTimeMillis()
+        
+        val pidStr = android.os.Process.myPid().toString()
+        beatPrefix = "$procName|$pidStr|$startedMs|"
 
         val dir = SplendorStorageRoot.subdirectory("deathwatch")
         val m = File(dir, safeName(procName) + ".marker")
@@ -84,7 +96,7 @@ object DeathWatch {
         t.name = "deathwatch"
         try { t.start() } catch (_: Throwable) { }
 
-        log("DeathWatch armed proc=" + procName + " pid=" + android.os.Process.myPid())
+        log("DeathWatch armed proc=" + procName + " pid=" + pidStr)
     }
 
     /** call on an intentional shutdown so it is not reported as a kill */
@@ -98,26 +110,25 @@ object DeathWatch {
     private fun beat(c: Context, state: String) {
         val m = marker ?: return
         try {
-            val mi = memory(c)
-            m.writeText(
-                state + "|" + procName + "|" + android.os.Process.myPid() + "|" +
-                startedMs + "|" + System.currentTimeMillis() + "|" +
-                mi[0] + "|" + mi[1] + "|" + mi[2]
-            )
+            val memStr = memory(c)
+            // UPGRADE: Use cached prefix and US_ASCII to skip UTF-8 encoding overhead.
+            val text = "$state|$beatPrefix${System.currentTimeMillis()}|$memStr"
+            
+            FileOutputStream(m, false).use { fos ->
+                fos.write(text.toByteArray(Charsets.US_ASCII))
+            }
         } catch (_: Throwable) { }
     }
 
-    /** availMB, lowMemory, thresholdMB */
-    private fun memory(c: Context): Array<String> = try {
+    /** returns "availMB|lowMemory|thresholdMB" */
+    private fun memory(c: Context): String = try {
         val am = c.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val info = ActivityManager.MemoryInfo()
         am.getMemoryInfo(info)
-        arrayOf(
-            (info.availMem / 1048576L).toString(),
-            info.lowMemory.toString(),
-            (info.threshold / 1048576L).toString()
-        )
-    } catch (_: Throwable) { arrayOf("?", "?", "?") }
+        val avail = (info.availMem / 1048576L).toString()
+        val thresh = (info.threshold / 1048576L).toString()
+        "$avail|${info.lowMemory}|$thresh"
+    } catch (_: Throwable) { "?|?|?" }
 
     // ---------------- reporting ----------------
 
@@ -171,18 +182,12 @@ object DeathWatch {
 
         val text = sb.toString()
 
-        // 1) canonical user-readable report.
-        //    GlobalCrashHandler and DeathWatch intentionally converge here.
         try { reportFile()?.appendText(text) } catch (_: Throwable) { }
 
-        // Consume the per-process Java-crash marker only after the death
-        // record has been written. This prevents an old Java crash from
-        // falsely classifying a later silent process death.
         if (javaCrash) {
             try { javaCrashMarkerFile()?.delete() } catch (_: Throwable) { }
         }
 
-        // 2) the writer already proven to reach the canonical log root.
         log("ABNORMAL DEATH proc=" + deadProc + " lived=" + lived + "s avail=" +
             availMb + "MB lowMemory=" + lowMem + " verdict=" + verdict)
     }

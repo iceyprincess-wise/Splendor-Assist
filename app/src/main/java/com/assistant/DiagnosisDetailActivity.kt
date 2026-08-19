@@ -8,6 +8,7 @@ import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -54,18 +55,21 @@ class DiagnosisDetailActivity : AppCompatActivity() {
             setTextIsSelectable(true)
         }
 
-        root.addView(ScrollView(this).apply { addView(detail) }, LinearLayout.LayoutParams(-1, 0, 1f))
+        // UPGRADE: Replaced magic numbers (-1, -2) with ViewGroup.LayoutParams constants
+        // for better readability and strict type safety.
+        root.addView(ScrollView(this).apply { addView(detail) }, 
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
 
         root.addView(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             addView(Button(this@DiagnosisDetailActivity).apply {
                 text = "Copy Engine Log"
                 setOnClickListener { copy(detail.text.toString()) }
-            }, LinearLayout.LayoutParams(0, -2, 1f))
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
             addView(Button(this@DiagnosisDetailActivity).apply {
                 text = "Back"
                 setOnClickListener { finish() }
-            }, LinearLayout.LayoutParams(0, -2, 1f))
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         })
 
         return root
@@ -189,10 +193,30 @@ class DiagnosisDetailActivity : AppCompatActivity() {
         files += File(forensicsDir, "telemetry.log")
         files += File(forensicsDir, "heartbeat.log")
         files += File(forensicsDir, "fieldtest.log")
-        return files.flatMap { file -> runCatching { file.readLines().takeLast(300) }.getOrDefault(emptyList()) }
-            .filter { line -> keys.any { key -> line.contains(key, ignoreCase = true) } }
-            .takeLast(160)
-            .joinToString("\n")
+        
+        // UPGRADE: Replaced `readLines()` (which loads ENTIRE files into RAM as a List<String>, 
+        // causing massive GC spikes, memory pressure on 4GB devices, and potential ANRs on the main thread) 
+        // with a streaming `useLines` approach and an ArrayDeque rolling buffer.
+        val buffer = ArrayDeque<String>(300)
+        val maxCapacity = 300
+        
+        for (file in files) {
+            if (!file.exists()) continue
+            runCatching {
+                file.bufferedReader().useLines { sequence ->
+                    for (line in sequence) {
+                        if (keys.any { key -> line.contains(key, ignoreCase = true) }) {
+                            if (buffer.size >= maxCapacity) {
+                                buffer.removeFirst()
+                            }
+                            buffer.addLast(line)
+                        }
+                    }
+                }
+            }
+        }
+        
+        return buffer.takeLast(160).joinToString("\n")
     }
 
     private fun copy(text: String) {
