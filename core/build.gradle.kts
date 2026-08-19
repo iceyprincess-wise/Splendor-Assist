@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.assistant.core"
+    namespace = "com.assistant.diagnostic"
     compileSdk = 34
 
     defaultConfig {
