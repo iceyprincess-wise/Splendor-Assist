@@ -1,6 +1,4 @@
-import os
-
-content = """package com.assistant.adapter.boot
+package com.assistant.adapter.boot
 
 import android.app.ActivityManager
 import android.app.Service
