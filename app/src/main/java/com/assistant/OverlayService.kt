@@ -436,50 +436,6 @@ override fun onCreate() {
                 image.close()
                 return@setOnImageAvailableListener
             }
-            try {
-
-                val scanBuffer = image.planes[0].buffer.duplicate()
-
-                val normalized =
-                    com.assistant.adapter.smartassist.FrameNormalizer.normalize(
-                        scanBuffer.duplicate(),
-                        image.width,
-                        image.height
-                    )
-
-                if (doFullProcessing) {
-                    // ─── FULL FRAME (15fps): all 58 engines + 38 contributors ───
-                    val state =
-                        com.assistant.adapter.smartassist.VisionCore.process(normalized)
-                    com.assistant.BoosterIgnition.ensureIgnited(this)
-                    com.assistant.AppContributorRegistration.ensureRegistered()
-                    com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
-                    val frame =
-                        com.assistant.adapter.smartassist.FrameAssembler.assemble()
-                    com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
-                    com.assistant.adapter.smartassist.GameStateBuilder.update(state)
-                    com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine
-                        .scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
-                } else {
-                    // ─── LIGHT FRAME (30fps alt): ball-only scan → stamps VisionTrust ───
-                    // Keeps ballTrust fresh between full frames so trust never expires.
-                    // At 15fps without this, trust decays between full frames (FRESH_MS=200ms
-                    // at 66ms intervals = only 3 full frames before decay starts).
-                    try {
-                        val lightSamples =
-                            com.assistant.adapter.smartassist.FrameScanner.scan(normalized)
-                        val lightBlobs =
-                            com.assistant.adapter.smartassist.ConnectedComponentEngine.extract(lightSamples)
-                        val filteredBlobs =
-                            com.assistant.adapter.smartassist.NoiseFilter.filter(lightBlobs)
-                        val ballCandidate =
-                            com.assistant.adapter.smartassist.BallCandidateEngine.select(filteredBlobs)
-                        val ball =
-                            com.assistant.adapter.smartassist.BallDetector.detect(ballCandidate)
-                        // Stamp trust so it stays fresh until next full frame
-                        com.assistant.adapter.smartassist.BallTelemetryBridge.publish(ball)
-                    } catch (_: Throwable) {}
-                }
             } catch (t: Throwable) {
                 // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
                 // escape here, killing the capture thread and the whole process.
