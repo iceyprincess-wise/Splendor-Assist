@@ -1,11 +1,14 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-19 04:36:07 WAT
+Started: 2026-08-19 12:07:24 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
+ M app/src/main/java/com/assistant/IgnitionEngine.kt
+ M app/src/main/java/com/assistant/MainActivity.kt
+ M app/src/main/java/com/assistant/PingEliminatorVpnService.kt
 
 
 ================================================================
@@ -31,22 +34,25 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 36 -> 37
+versionCode: 37 -> 38
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 3m
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/PingEliminatorVpnService.kt:82:49 Unresolved reference: SmartAssistControlRoomActivity
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/PingEliminatorVpnService.kt:93:46 Unresolved reference: ic_menu_secure
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 2m 28s
 
-ASSEMBLE DEBUG APK EXIT: 0
+ASSEMBLE DEBUG APK EXIT: 1
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v37-20260819_043917.apk
--rw-rw----. 1 u0_a262 media_rw 67M Aug 19 04:39 /storage/emulated/0/Download/Splendor-Assist-v37-20260819_043917.apk
+SKIPPED — build exit=1, apk_exists=YES
 
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
@@ -55,9 +61,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 15356 IDLE     8.5
- 32216 STOPPED  (by user or operating system)
-  1341 STOPPED  (by user or operating system)
+ 17985 IDLE     8.5
+ 15656 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -68,7 +73,7 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  0
+ASSEMBLE DEBUG:                  1
 APK EXPORT:                      ?
 GRADLE DAEMON STOP:              0
 
@@ -77,7 +82,10 @@ FINAL STATUS: FAILED — check items above
 GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
+ M app/src/main/java/com/assistant/IgnitionEngine.kt
+ M app/src/main/java/com/assistant/MainActivity.kt
+ M app/src/main/java/com/assistant/PingEliminatorVpnService.kt
 
-Finished: 2026-08-19 04:39:45 WAT
-Report size: 3471 bytes
+Finished: 2026-08-19 12:10:58 WAT
+Report size: 4022 bytes
 ================================================================
