@@ -2,10 +2,8 @@ package com.assistant
 
 import com.assistant.storage.SplendorStorageRoot
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.GlobalCrashHandler
 import android.app.Application
 import android.os.Build
-import java.io.File
 
 class App : Application() {
 
@@ -14,7 +12,7 @@ class App : Application() {
             Application.getProcessName() ?: ""
         } else {
             try {
-                File("/proc/self/cmdline").readText().trim()
+                java.io.File("/proc/self/cmdline").readText().trim()
             } catch (e: Exception) {
                 ""
             }
@@ -32,6 +30,8 @@ class App : Application() {
         SplendorStorageRoot.initialize()
         RuntimeLogger.initialize(this)
         RuntimeLogger.reconcileExpired()
+        
+        // FIX: GlobalCrashHandler is in package com.assistant, no import needed
         GlobalCrashHandler.install(this)
 
         if (isMainProcess) {
