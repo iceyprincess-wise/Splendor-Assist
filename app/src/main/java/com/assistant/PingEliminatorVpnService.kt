@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.ParcelFileDescriptor
+import com.assistant.controlroom.ui.SmartAssistControlRoomActivity // UPGRADE FIX: Correct package path
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
@@ -27,9 +28,6 @@ class PingEliminatorVpnService : VpnService() {
         private const val BUFFER_SIZE = 16384
         private const val CHANNEL_ID = "SplendorVpnChannel"
         
-        // Human latency is typically 20-100ms, but for masking bot perfection, 
-        // a micro-jitter of 2-8ms is sufficient to break perfect-timing heuristics 
-        // without degrading actual gameplay responsiveness.
         private const val MIN_JITTER_MS = 2L
         private const val MAX_JITTER_MS = 8L
     }
@@ -40,7 +38,6 @@ class PingEliminatorVpnService : VpnService() {
     private var tunnelThread: HandlerThread? = null
     private var tunnelHandler: Handler? = null
 
-    // High-frequency thread-safe memory buffers
     private val bufferPool = ConcurrentLinkedQueue<ByteBuffer>()
 
     override fun onCreate() {
@@ -51,7 +48,6 @@ class PingEliminatorVpnService : VpnService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (!isRunning.get()) {
-            // UPGRADE: Mandatory for Android 16 (API 36) to prevent immediate LMK kill.
             startForeground(1001, buildNotification())
             startVpnEngine()
         }
@@ -68,7 +64,7 @@ class PingEliminatorVpnService : VpnService() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Splendor Assist Network",
-                NotificationManager.IMPORTANCE_MIN // Lowest priority to avoid UI intrusion
+                NotificationManager.IMPORTANCE_MIN
             ).apply {
                 description = "Maintains secure connection"
                 setShowBadge(false)
@@ -79,7 +75,8 @@ class PingEliminatorVpnService : VpnService() {
     }
 
     private fun buildNotification(): Notification {
-        val intent = Intent(this, com.assistant.SmartAssistControlRoomActivity::class.java)
+        // UPGRADE FIX: Corrected fully qualified class name for SmartAssistControlRoomActivity
+        val intent = Intent(this, SmartAssistControlRoomActivity::class.java)
         val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         } else {
@@ -90,15 +87,14 @@ class PingEliminatorVpnService : VpnService() {
         return Notification.Builder(this, CHANNEL_ID)
             .setContentTitle("Splendor Assist Active")
             .setContentText("Network latency masking enabled")
-            .setSmallIcon(android.R.drawable.ic_menu_secure) // Fallback icon
+            // UPGRADE FIX: Replaced non-existent ic_menu_secure with standard ic_dialog_info
+            .setSmallIcon(android.R.drawable.ic_dialog_info) 
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build()
     }
 
     private fun preallocateBufferPool() {
-        // Preallocate 64 direct buffers to avoid GC pressure during gameplay.
-        // 64 * 16KB = ~1MB, perfectly safe for 4GB RAM devices.
         for (i in 0 until 64) {
             bufferPool.offer(ByteBuffer.allocateDirect(BUFFER_SIZE))
         }
@@ -134,7 +130,6 @@ class PingEliminatorVpnService : VpnService() {
             .addRoute("0.0.0.0", 0)
             .setSession("SplendorPossessionEngine")
             .setConfigureIntent(configureIntent)
-            // UPGRADE: Block non-essential traffic to reduce CPU load on 4GB device
             .addDnsServer("8.8.8.8") 
 
         try {
@@ -146,9 +141,6 @@ class PingEliminatorVpnService : VpnService() {
 
         val pfd = vpnInterface ?: return
 
-        // UPGRADE: Downgraded from URGENT_AUDIO to BACKGROUND. 
-        // This ensures the VPN tunnel does NOT steal CPU cycles from eFootball 2027's 
-        // critical audio and physics threads, preserving the 15fps target.
         tunnelThread = HandlerThread(THREAD_NAME_TUNNEL, android.os.Process.THREAD_PRIORITY_BACKGROUND)
         tunnelThread?.start()
         tunnelHandler = Handler(tunnelThread?.looper ?: android.os.Looper.getMainLooper())
@@ -179,9 +171,6 @@ class PingEliminatorVpnService : VpnService() {
                         payload.put(readBuffer)
                         payload.flip()
                         
-                        // UPGRADE: Replaced heavy sin() + Random math with ultra-fast 
-                        // ThreadLocalRandom jitter. Eliminates floating-point CPU overhead 
-                        // while maintaining the exact same anti-detection "human" variance.
                         val jitterMs = random.nextLong(MIN_JITTER_MS, MAX_JITTER_MS + 1)
                         if (jitterMs > 0) {
                             Thread.sleep(jitterMs)
@@ -192,7 +181,6 @@ class PingEliminatorVpnService : VpnService() {
                     }
                 }
             } catch (e: Exception) {
-                // Break on pipe closure or service stop
                 break
             }
         }
@@ -219,8 +207,6 @@ class PingEliminatorVpnService : VpnService() {
         tunnelThread = null
         tunnelHandler = null
 
-        // Safe cleanup: Allow Direct ByteBuffers to be garbage collected 
-        // by clearing our strong references to them.
         bufferPool.clear()
     }
 }
