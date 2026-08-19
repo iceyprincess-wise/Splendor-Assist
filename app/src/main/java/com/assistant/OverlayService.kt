@@ -55,18 +55,12 @@ import java.util.concurrent.locks.ReentrantLock
 
 class OverlayService : Service(), ComponentCallbacks2 {
 
-    // PHASE17_RUNTIME_GUARDS
     @Volatile
     private var runtimeInitialized = false
-
 
     companion object {
         private const val CHANNEL_ID = "efootball_assistant_channel"
         private const val NOTIFICATION_ID = 101
-        // PHASE5B: direct nullable reference, cleared in onDestroy.
-        // WeakRef was unreliable under memory pressure (GC nulls it exactly
-        // when recovery is most needed). Direct ref is safe here because
-        // we clear it in onDestroy(), preventing leaks.
         @Volatile var instance: OverlayService? = null
             private set
         @JvmStatic
@@ -86,13 +80,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var imageReader: ImageReader? = null
     private var projectionCallback: MediaProjection.Callback? = null
 
-    // A MediaProjection session becomes invalid after Callback.onStop().
-    // This flag prevents the self-heal path from trying to reuse a revoked
-    // projection token.
     @Volatile
     private var projectionRevoked = false
-
-
 
     private var perfHintSession: PerformanceHintManager.Session? = null
     private var ocrIoThread: android.os.HandlerThread? = null
@@ -103,65 +92,34 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var reusableBitmap: Bitmap? = null
     private val taskExecutionLock = ReentrantLock()
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-    // PHASE4B: 30fps HYBRID gate
-    // 33ms = 30fps capture rate. Every frame: cheap ball-only scan stamps VisionTrust.
-    // Every 2nd frame: full VisionCore (58 engines) = 15fps compute cost.
-    // Result: 30fps ball tracking accuracy + 15fps engine load on Helio G81-Ultra.
+    
     @Volatile private var lastFrameProcessedMs = 0L
-    // Base frame interval. Actual interval is adaptive — see MemoryCaptureGateEngine.
-    private val captureFrameIntervalBase = 33L  // 30fps base
-    // Adaptive interval: reads MemoryCaptureGateEngine tier each frame gate check.
-    // CRITICAL=100ms, PRESSURE=66ms, WATCH=50ms, HEALTHY=33ms.
+    private val captureFrameIntervalBase = 33L
     private val captureFrameIntervalMs: Long
         get() = com.assistant.adapter.memory.MemoryCaptureGateEngine.recommendedIntervalMs()
-    @Volatile private var captureFrameCount = 0L  // alternating full/light processing
+    @Volatile private var captureFrameCount = 0L
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    /**
-     * PHASE4B: Agent capture restart.
-     * Called when RuntimeSelfHealEngine detects capture thread death.
-     * Recreates the ImageReader + VirtualDisplay using the existing
-     * mediaProjection (valid until revoked by the OS).
-     * Returns true if restart was attempted, false if projection is gone.
-     */
     fun restartCapture(): Boolean {
-        // A revoked MediaProjection cannot be reused. A fresh user-authorized
-        // projection session is required.
         if (projectionRevoked) {
-            RuntimeLogger.log(
-                "AGENT CAPTURE RESTART: projection already revoked; " +
-                    "fresh MediaProjection authorization required",
-                "AGENT"
-            )
+            RuntimeLogger.log("AGENT CAPTURE RESTART: projection already revoked; fresh MediaProjection authorization required", "AGENT")
             return false
         }
-
         if (mediaProjection == null) {
-            RuntimeLogger.log(
-                "AGENT CAPTURE RESTART: no active MediaProjection",
-                "AGENT"
-            )
+            RuntimeLogger.log("AGENT CAPTURE RESTART: no active MediaProjection", "AGENT")
             return false
         }
-
         try {
             RuntimeLogger.log("AGENT CAPTURE RESTART: attempting ImageReader recreation", "AGENT")
-            // Drain the OCR handler queue before closing the reader.
-            // Any pending onImageAvailable callback holds an Image reference that
-            // becomes invalid the instant close() is called. The latch ensures
-            // the drain completes before we proceed.
             try {
                 val drainLatch = java.util.concurrent.CountDownLatch(1)
                 ocrIoHandler?.post { drainLatch.countDown() } ?: drainLatch.countDown()
                 drainLatch.await(100L, java.util.concurrent.TimeUnit.MILLISECONDS)
             } catch (_: Throwable) {}
-            // Release old reader only after handler queue is drained
             try { virtualDisplay?.release() } catch (_: Throwable) {}
             try { imageReader?.close() } catch (_: Throwable) {}
-            // Re-setup with fresh ImageReader (same dimensions as before)
-            setupMediaProjection(android.app.Activity.RESULT_OK,
-                com.assistant.EngineData.intent ?: return false)
+            setupMediaProjection(android.app.Activity.RESULT_OK, com.assistant.EngineData.intent ?: return false)
             lastFrameProcessedMs = 0L
             captureFrameCount = 0L
             RuntimeLogger.log("AGENT CAPTURE RESTART: ImageReader recreated successfully", "AGENT")
@@ -172,25 +130,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
     }
 
-    
-override fun onCreate() {
-
-        if(runtimeInitialized){
-            return
-        }
-
+    override fun onCreate() {
+        if(runtimeInitialized) return
         runtimeInitialized=true
-
         super.onCreate()
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         com.assistant.vision.ForegroundGate.install(application)
-        // PHASE5: init + START agent immediately (3s grace built-in)
         try {
             com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext)
             com.assistant.adapter.smartassist.RuntimeSelfHealEngine.start()
         } catch (_: Throwable) {}
         instance = this
-        // Anti-Cheat defense disabled to prevent HyperOS false-positive kill
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()
         ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_BACKGROUND).apply { start() }
@@ -202,7 +152,7 @@ override fun onCreate() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 val hintManager = getSystemService(PerformanceHintManager::class.java)
-                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 33333333L)  // PHASE4B: 30fps hybrid target
+                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 33333333L)
             } catch (e: Exception) {}
         }
     }
@@ -218,7 +168,6 @@ override fun onCreate() {
         
         if (resultCode == Activity.RESULT_OK && data != null) {
             startForegroundSafely()
-
             try {
                 setupMediaProjection(resultCode, data)
                 if (!isRunning) {
@@ -238,10 +187,7 @@ override fun onCreate() {
     private fun logSilentFailure(e: Exception) {
         try {
             val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-            val logFile =
-                com.assistant.storage.SplendorStorageRoot.file(
-                    "Splendor_Crash_Reports.txt"
-                )
+            val logFile = com.assistant.storage.SplendorStorageRoot.file("Splendor_Crash_Reports.txt")
             FileWriter(logFile, true).use { writer ->
                 PrintWriter(writer).use { pw ->
                     pw.println("=== SILENT ENGINE FAULT: $timestamp ===")
@@ -281,9 +227,6 @@ override fun onCreate() {
         )
         windowManager.addView(overlayView, layoutParams)
 
-
-        // GAP1B-A: report the leaves we paint so capture/OCR ignores them.
-        // Re-published on every layout pass, so status-text resizes stay masked.
         overlayView.post {
             com.assistant.vision.OverlaySelfMask.publishHierarchy("hud", overlayView)
         }
@@ -292,106 +235,51 @@ override fun onCreate() {
         }
         OverlaySurvivalEngine.attached()
         updateOverlayVisuals("GUARD LOCK: SECURE [ANTI-BAN ON]", Color.GREEN)
-        startTrajectoryWatchdog(
-            overlayView,
-            Handler(Looper.getMainLooper())
-        )
+        startTrajectoryWatchdog(overlayView, Handler(Looper.getMainLooper()))
     }
-
 
     private fun updateOverlayVisuals(text: String, color: Int) {
         Handler(Looper.getMainLooper()).post {
-            txtEngineStatus.text =
-                if (CallOverlayRepository.incomingCallVisible)
-                    "[CALL PROTECTED] " + text
-                else
-                    text
+            txtEngineStatus.text = if (CallOverlayRepository.incomingCallVisible) "[CALL PROTECTED] " + text else text
             txtEngineStatus.setTextColor(color)
         }
     }
 
-    /**
-     * Requests a completely new MediaProjection authorization session.
-     *
-     * The old projection token cannot be reused after Callback.onStop().
-     * MainActivity owns the Android user-consent launcher and is therefore
-     * responsible for obtaining the new resultCode + Intent.
-     */
     private fun requestFreshProjectionAuthorization() {
         try {
             val recoveryIntent = Intent(this, MainActivity::class.java).apply {
-                addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                        Intent.FLAG_ACTIVITY_CLEAR_TOP
-                )
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 putExtra("REQUEST_MEDIA_PROJECTION_RECOVERY", true)
             }
-
             startActivity(recoveryIntent)
-
-            RuntimeLogger.log(
-                "MediaProjection recovery: MainActivity launched for fresh authorization",
-                "AGENT"
-            )
+            RuntimeLogger.log("MediaProjection recovery: MainActivity launched for fresh authorization", "AGENT")
         } catch (t: Throwable) {
-            RuntimeLogger.log(
-                "MediaProjection recovery launch failed: " +
-                    "${t.javaClass.simpleName}: ${t.message}",
-                "AGENT"
-            )
+            RuntimeLogger.log("MediaProjection recovery launch failed: ${t.javaClass.simpleName}: ${t.message}", "AGENT")
         }
     }
 
     private fun setupMediaProjection(code: Int, intent: Intent) {
-        val projectionManager =
-            getSystemService(Context.MEDIA_PROJECTION_SERVICE)
-                as MediaProjectionManager
-
+        val projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         projectionRevoked = false
-
         mediaProjection = projectionManager.getMediaProjection(code, intent)
 
         if (mediaProjection == null) {
-            RuntimeLogger.log(
-                "MediaProjection setup failed: getMediaProjection returned null",
-                "OVERLAY"
-            )
+            RuntimeLogger.log("MediaProjection setup failed: getMediaProjection returned null", "OVERLAY")
             throw IllegalStateException("MediaProjection unavailable")
         }
         projectionCallback = object : MediaProjection.Callback() {
             override fun onStop() {
                 super.onStop()
-
-                // MediaProjection.Callback.onStop() means this projection
-                // session is no longer valid. Do NOT call restartCapture()
-                // here because restartCapture() intentionally reuses the
-                // existing projection and that token has already been revoked.
                 projectionRevoked = true
-
                 Handler(Looper.getMainLooper()).post {
-                    try {
-                        virtualDisplay?.release()
-                    } catch (_: Throwable) {
-                    }
-
-                    try {
-                        imageReader?.close()
-                    } catch (_: Throwable) {
-                    }
-
+                    try { virtualDisplay?.release() } catch (_: Throwable) {}
+                    try { imageReader?.close() } catch (_: Throwable) {}
                     virtualDisplay = null
                     imageReader = null
                     mediaProjection = null
                     lastFrameProcessedMs = 0L
                     captureFrameCount = 0L
-
-                    RuntimeLogger.log(
-                        "MediaProjection.onStop(): projection revoked; " +
-                            "capture resources invalidated; fresh authorization required",
-                        "OVERLAY"
-                    )
-
+                    RuntimeLogger.log("MediaProjection.onStop(): projection revoked; capture resources invalidated; fresh authorization required", "OVERLAY")
                     requestFreshProjectionAuthorization()
                 }
             }
@@ -412,17 +300,10 @@ override fun onCreate() {
             finalWidth = (metrics.widthPixels * scale).toInt() and 0xFFFFFFFE.toInt()
             finalHeight = (metrics.heightPixels * scale).toInt() and 0xFFFFFFFE.toInt()
         }
-        // GAP1B-B: map screen coords -> captured-image coords
-        com.assistant.vision.OverlaySelfMask.setCaptureScale(
-            finalWidth,
-            finalHeight,
-            if (scale > 0f) (finalWidth / scale).toInt() else finalWidth,
-            if (scale > 0f) (finalHeight / scale).toInt() else finalHeight
-        )
+        com.assistant.vision.OverlaySelfMask.setCaptureScale(finalWidth, finalHeight, if (scale > 0f) (finalWidth / scale).toInt() else finalWidth, if (scale > 0f) (finalHeight / scale).toInt() else finalHeight)
         imageReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
         imageReader?.setOnImageAvailableListener({ reader ->
             val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
-            // PHASE4B: 30fps hybrid gate — 33ms = 30fps; alternating full/light frames
             val captureNow = System.currentTimeMillis()
             if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
                 image.close()
@@ -430,21 +311,36 @@ override fun onCreate() {
             }
             lastFrameProcessedMs = captureNow
             val thisFrameCount = ++captureFrameCount
-            val doFullProcessing = (thisFrameCount % 2L == 0L)  // full every 2nd frame
-            // GAP1C: our own Control Room / Diagnosis screens are not game truth
+            val doFullProcessing = (thisFrameCount % 2L == 0L)
             if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
                 image.close()
                 return@setOnImageAvailableListener
             }
+            try {
+                val scanBuffer = image.planes[0].buffer.duplicate()
+                val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
+
+                if (doFullProcessing) {
+                    val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
+                    com.assistant.BoosterIgnition.ensureIgnited(this)
+                    com.assistant.AppContributorRegistration.ensureRegistered()
+                    com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
+                    val frame = com.assistant.adapter.smartassist.FrameAssembler.assemble()
+                    com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
+                    com.assistant.adapter.smartassist.GameStateBuilder.update(state)
+                    com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
+                } else {
+                    try {
+                        val lightSamples = com.assistant.adapter.smartassist.FrameScanner.scan(normalized)
+                        val lightBlobs = com.assistant.adapter.smartassist.ConnectedComponentEngine.extract(lightSamples)
+                        val filteredBlobs = com.assistant.adapter.smartassist.NoiseFilter.filter(lightBlobs)
+                        val ballCandidate = com.assistant.adapter.smartassist.BallCandidateEngine.select(filteredBlobs)
+                        val ball = com.assistant.adapter.smartassist.BallDetector.detect(ballCandidate)
+                        com.assistant.adapter.smartassist.BallTelemetryBridge.publish(ball)
+                    } catch (_: Throwable) {}
+                }
             } catch (t: Throwable) {
-                // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
-                // escape here, killing the capture thread and the whole process.
-                try {
-                    RuntimeLogger.log(
-                        "CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message,
-                        "FAULT"
-                    )
-                } catch (_: Throwable) {}
+                try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
             }
             val shedFactor = when (com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentLoadShed()) {
                 "HEAVY" -> 4L
@@ -462,12 +358,8 @@ override fun onCreate() {
     }
 
     private fun processImageForOCR(image: Image) {
-        // Guard against closed images from a previous ImageReader generation.
-        // Race: restartCapture() calls imageReader?.close() which invalidates
-        // images acquired before close() was called. Any pending callback that
-        // arrives after close() carries a dead image.
         try {
-            image.width  // throwISEIfImageIsInvalid — safe canary touch
+            image.width
         } catch (_: IllegalStateException) {
             try { image.close() } catch (_: Throwable) {}
             return
@@ -480,68 +372,24 @@ override fun onCreate() {
                 }
                 reusableBitmap!!.copyPixelsFromBuffer(image.planes[0].buffer)
 
-                try {
-                    
-                val scanBuffer = image.planes[0].buffer.duplicate()
-
-                val normalized =
-                    com.assistant.adapter.smartassist.FrameNormalizer.normalize(
-                        scanBuffer.duplicate(),
-                        image.width,
-                        image.height
-                    )
-
-                val state =
-                    com.assistant.adapter.smartassist.VisionCore.process(
-                        normalized
-                    )
-
-                com.assistant.adapter.smartassist.GameStateBuilder.update(
-                    state
-                )
-
-                    com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine
-                        .scanFrameForOpponentAnimation(
-                            scanBuffer,
-                            image.width,
-                            image.height
-                        )
-                } catch (t: Throwable) {
-                // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
-                // escape here, killing the capture thread and the whole process.
-                try {
-                    RuntimeLogger.log(
-                        "CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message,
-                        "FAULT"
-                    )
-                } catch (_: Throwable) {}
-            }
+                // REDUNDANT VISION CORE BLOCK REMOVED HERE.
+                // VisionCore is already executed in the main capture loop (setupMediaProjection).
+                // Running it again here causes CPU thrashing and thermal throttling on Helio G81-Ultra.
 
                 recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))
                     .addOnSuccessListener { visionText ->
 
-                        val detectedText =
-                            visionText.textBlocks
-                                .asSequence()
-                                .filterNot {
-                                    com.assistant.vision.OverlaySelfMask
-                                        .isSelfDrawnCapture(it.boundingBox)
-                                }
-                                .joinToString(" ") { it.text }
-                                .replace("\n", " ")
-                                .take(120)
+                        val detectedText = visionText.textBlocks.asSequence()
+                            .filterNot { com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(it.boundingBox) }
+                            .joinToString(" ") { it.text }
+                            .replace("\n", " ")
+                            .take(120)
 
                         com.assistant.vision.OverlaySelfMask.tickAndLog()
 
                         if (detectedText.isNotBlank()) {
-                            RuntimeMetricsRegistry
-                                .ocrDetections
-                                .incrementAndGet()
-
-                            RuntimeLogger.log(
-                                "OCR: $detectedText",
-                                "OCR"
-                            )
+                            RuntimeMetricsRegistry.ocrDetections.incrementAndGet()
+                            RuntimeLogger.log("OCR: $detectedText", "OCR")
                         }
 
                         if (
@@ -552,7 +400,6 @@ override fun onCreate() {
                             !detectedText.contains("Start Engine", true) &&
                             !detectedText.contains("View Logs", true) &&
                             !detectedText.contains("Activate All Adapters", true) &&
-                            !detectedText.contains("🕶️", true) &&
                             !detectedText.contains("🕶️", true) &&
                             !detectedText.contains("ENGINE READY", true) &&
                             !detectedText.contains("BLOCKED:", true) &&
@@ -566,12 +413,7 @@ override fun onCreate() {
                             ) &&
                             System.currentTimeMillis() - lastMatchDetectionTime >= 5000L
                         ) {
-
                             SmartAssistRepository.activatePanic()
-
-                            
-
-                            
 
                             val lv = com.assistant.adapter.smartassist.LiveVectorResolver.resolve(
                                 reusableBitmap?.width?.toFloat() ?: 1080f,
@@ -582,35 +424,18 @@ override fun onCreate() {
                             val vectorDy = lv.endY - lv.startY
                             val vectorDistance = kotlin.math.hypot(vectorDx, vectorDy)
                             val dec = if (lv.hasRealData) {
-                                pipe.computeOptimalVector(
-                                    lv.startX,
-                                    lv.startY,
-                                    lv.endX,
-                                    lv.endY,
-                                    lv.duration
-                                )
+                                pipe.computeOptimalVector(lv.startX, lv.startY, lv.endX, lv.endY, lv.duration)
                             } else {
                                 null
                             }
-                            // Task 4: OverlayService no longer offers directly.
-                            // The six registered contributors are the sole gameplay
-                            // producers, driven once per frame by RuntimeDecisionLoop
-                            // (invoked in this same capture block). This ends the
-                            // duplicate-producer flood (the frozen 406/83 SHOT spam).
+                            
                             val submitted = dec?.shouldAct == true
                             RuntimeLogger.log(
-                                "SMART_ASSIST_GATE real=${lv.hasRealData} " +
-                                    "distance=${vectorDistance.toInt()} duration=${lv.duration} " +
-                                    "action=${dec?.actionType ?: "NO_REAL_DATA"} " +
-                                    "shouldAct=${dec?.shouldAct ?: false} submitted=$submitted",
+                                "SMART_ASSIST_GATE real=${lv.hasRealData} distance=${vectorDistance.toInt()} duration=${lv.duration} action=${dec?.actionType ?: "NO_REAL_DATA"} shouldAct=${dec?.shouldAct ?: false} submitted=$submitted",
                                 "SMART_ASSIST"
                             )
 
-                            RuntimeMetricsRegistry
-                                .matchDetections
-                                .incrementAndGet()
-
-
+                            RuntimeMetricsRegistry.matchDetections.incrementAndGet()
 
                             RuntimeNotificationCoordinator.update(
                                 context = applicationContext,
@@ -620,23 +445,17 @@ override fun onCreate() {
                                 saved = false
                             )
 
-                            RuntimeLogger.log(
-                                "🕶️",
-                                "SMART_ASSIST"
-                            )
+                            RuntimeLogger.log("🕶️", "SMART_ASSIST")
 
-                            updateOverlayVisuals(
-                                "🕶️",
-                                Color.GREEN
-                            )
+                            updateOverlayVisuals("🕶️", Color.GREEN)
 
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                                            }, 3000)
+                            Handler(Looper.getMainLooper()).postDelayed({}, 3000)
                         }
                     }
 
             } finally {
-                taskExecutionLock.unlock(); try { image.close() } catch(e:Exception){}
+                taskExecutionLock.unlock()
+                try { image.close() } catch(e:Exception){}
             }
         } else {
             image.close()
@@ -648,59 +467,25 @@ override fun onCreate() {
         processingThread = Thread {
             Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST)
             while (isRunning) {
-
-                try {
-
-
-                    Thread.sleep(33)
-
-                } catch (e: InterruptedException) {
-
-                    break
-                }
+                try { Thread.sleep(33) } catch (e: InterruptedException) { break }
             }
         }.apply { start() }
     }
 
-    
-    
-
-override fun onDestroy() {
+    override fun onDestroy() {
         com.assistant.vision.OverlaySelfMask.clearPrefix("hud")
         com.assistant.adapter.smartassist.RuntimeCoordinator.shutdown()
         OverlaySurvivalEngine.destroyed()
         isRunning = false
-        // PHASE10_PANIC_PERSISTENCE_KEEP_STATE
         try { windowManager.removeViewImmediate(overlayView) } catch (t: Throwable) {
-                // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
-                // escape here, killing the capture thread and the whole process.
-                try {
-                    RuntimeLogger.log(
-                        "CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message,
-                        "FAULT"
-                    )
-                } catch (_: Throwable) {}
-            }
+            try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+        }
         try { imageReader?.setOnImageAvailableListener(null, null) } catch (t: Throwable) {
-                // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
-                // escape here, killing the capture thread and the whole process.
-                try {
-                    RuntimeLogger.log(
-                        "CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message,
-                        "FAULT"
-                    )
-                } catch (_: Throwable) {}
-            }
+            try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+        }
         try { projectionCallback?.let { mediaProjection?.unregisterCallback(it) } } catch (t: Throwable) {
-                // Errors (StackOverflowError, OOM) are NOT Exceptions and used to
-                // escape here, killing the capture thread and the whole process.
-                try {
-                    RuntimeLogger.log(
-                        "CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message,
-                        "FAULT"
-                    )
-                } catch (_: Throwable) {}
-            }
+            try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+        }
 
         virtualDisplay?.release()
         virtualDisplay = null
@@ -712,17 +497,10 @@ override fun onDestroy() {
     }
 }
 
-
-
-// [SECURITY GUARD LOCK ACTIVE]
-// TASK 1, 5, 6: AI BLUE TRACE ENGINE & TRAJECTORY RENDERER
 fun startTrajectoryWatchdog(overlayView: android.view.View, handler: android.os.Handler) {
     val renderRunnable = object : java.lang.Runnable {
         override fun run() {
-            val panicActive =
-            SmartAssistRepository.panicActive() &&
-            System.currentTimeMillis() -
-            0L <= 3000L
+            val panicActive = SmartAssistRepository.panicActive() && System.currentTimeMillis() - 0L <= 3000L
 
             if (!panicActive && SmartAssistRepository.panicActive()) {
                 // PHASE10_PANIC_PERSISTENCE_KEEP_STATE
