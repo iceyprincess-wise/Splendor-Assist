@@ -1,14 +1,11 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-20 03:16:34 WAT
+Started: 2026-08-20 04:33:26 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
- M app/src/main/java/com/assistant/adapter/input/InputAdapterService.kt
-?? app/src/main/java/com/assistant/adapter/input/InputThermalEliminatorEngine.kt
-?? app/src/main/java/com/assistant/adapter/input/InputVsyncEliminatorEngine.kt
 
 
 ================================================================
@@ -34,22 +31,24 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 44 -> 45
+versionCode: 45 -> 46
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 10m 18s
+w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:52:90 'ACQUIRE_CAUSES_WAKEUP: Int' is deprecated. Deprecated in Java
+w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/adapter/interruption/InterruptionAdapterService.kt:170:26 'setStreamMute(Int, Boolean): Unit' is deprecated. Deprecated in Java
+BUILD SUCCESSFUL in 2m 46s
 
 ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v45-20260820_032727.apk
--rw-rw----. 1 u0_a262 media_rw 67M Aug 20 03:27 /storage/emulated/0/Download/Splendor-Assist-v45-20260820_032727.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v46-20260820_043622.apk
+-rw-rw----. 1 u0_a262 media_rw 67M Aug 20 04:36 /storage/emulated/0/Download/Splendor-Assist-v46-20260820_043622.apk
 
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
@@ -58,8 +57,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 18368 IDLE     8.5
- 27705 STOPPED  (by user or operating system)
+ 16786 IDLE     8.5
+ 18368 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -80,6 +79,6 @@ GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
 
-Finished: 2026-08-20 03:27:42 WAT
-Report size: 3662 bytes
+Finished: 2026-08-20 04:36:44 WAT
+Report size: 3877 bytes
 ================================================================
