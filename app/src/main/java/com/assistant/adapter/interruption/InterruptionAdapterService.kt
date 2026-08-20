@@ -49,7 +49,7 @@ class InterruptionAdapterService : Service() {
         fun ignite(context: Context) {
             if (wakeLock == null) {
                 val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP, WAKELOCK_TAG)
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_TAG)
                 wakeLock?.setReferenceCounted(false)
                 wakeLock?.acquire(4 * 60 * 60 * 1000L) // 4 hours safety cap
                 RuntimeLogger.log("DozeBypassEliminator: PARTIAL_WAKE_LOCK acquired. Doze disabled.", "INTERRUPTION")
@@ -167,7 +167,7 @@ class InterruptionAdapterService : Service() {
             try { 
                 am.ringerMode = AudioManager.RINGER_MODE_SILENT 
             } catch (_: SecurityException) { 
-                try { am.setStreamMute(AudioManager.STREAM_RING, true) } catch (_: Throwable) {}
+                try { am.adjustStreamVolume(AudioManager.STREAM_RING, AudioManager.ADJUST_MUTE, 0) } catch (_: Throwable) {}
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
