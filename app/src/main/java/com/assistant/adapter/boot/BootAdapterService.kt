@@ -117,6 +117,7 @@ class BootAdapterService : Service() {
                 val runningApps = am.runningAppProcesses ?: emptyList()
                 var killedCount = 0
                 for (processInfo in runningApps) {
+                    @Suppress("DEPRECATION")
                     if (processInfo.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_BACKGROUND) {
                         if (!processInfo.processName.contains("com.assistant") && 
                             !processInfo.processName.startsWith("com.android.systemui") &&
@@ -168,6 +169,7 @@ class BootAdapterService : Service() {
 
                 val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
                 am.runningAppProcesses?.let { list ->
+                    @Suppress("DEPRECATION")
                     list.filter { it.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_BACKGROUND }
                         .filter { !it.processName.contains("com.assistant") && !it.processName.startsWith("system") }
                         .forEach { am.killBackgroundProcesses(it.processName) }

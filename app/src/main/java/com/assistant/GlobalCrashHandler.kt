@@ -59,6 +59,7 @@ class GlobalCrashHandler(
             } catch (_: Throwable) {}
         }
 
+        @Suppress("UNUSED_PARAMETER")
         private fun writeJavaCrashMarker(ctx: Context, thread: Thread) {
             try {
                 val processName =

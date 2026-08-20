@@ -145,6 +145,7 @@ class BatteryAdapterService : Service() {
      * and signals CPU/LoadShed engines to maintain strict 15fps smoothness and fast input.
      */
     object GameplayPowerEngine {
+        @Suppress("UNUSED_PARAMETER")
         fun evaluate(level: Int, isCharging: Boolean, drainRate: Float) {
             // If battery is critically sagging under load, signal the LoadShed governor 
             // to kill background tasks, preserving CPU cycles for eFootball 15fps.
