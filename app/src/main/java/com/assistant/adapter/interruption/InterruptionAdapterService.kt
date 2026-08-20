@@ -10,6 +10,10 @@ import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Handler
@@ -29,48 +33,75 @@ class InterruptionAdapterService : Service() {
     private lateinit var workerThread: HandlerThread
     private lateinit var interruptionHandler: Handler
     private val errorCount = AtomicInteger(0)
-    private var wakeLock: PowerManager.WakeLock? = null
-    private var focusRequest: AudioFocusRequest? = null
-
-    // =========================================================================
-    // HARDWORKING ELIMINATORS (Merged from deleted stubs)
-    // =========================================================================
 
     companion object {
         private const val CHANNEL_ID = "splendor_engine_logs"
-        private const val WAKELOCK_TAG = "Splendor:InterruptionEliminatorLock"
+        private const val WAKELOCK_TAG = "Splendor:DozeBypassLock"
     }
 
-    object CallAndNotificationEliminator {
-        fun updateCallState(state: Int) {
-            TelephonyStateRepository.activeCall = state != TelephonyManager.CALL_STATE_IDLE
-            CallOverlayRepository.incomingCallVisible = TelephonyStateRepository.activeCall
-        }
+    // =========================================================================
+    // 4 HARDWORKING ELIMINATORS (Companion Objects per CI-T&C Rule #7)
+    // =========================================================================
 
-        fun suppressRingerAndHoldFocus(context: Context) {
-            val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            
-            // 1. Suppress Ringer: Prevents HyperOS from forcing full-screen InCallUI
-            // forcing it to use Dynamic Island/banner instead, keeping the game visible.
-            try { 
-                am.ringerMode = AudioManager.RINGER_MODE_SILENT 
-            } catch (_: SecurityException) { 
-                // Fallback if DND access is denied
-                try { am.setStreamMute(AudioManager.STREAM_RING, true) } catch (_: Throwable) {}
-            }
-
-            // 2. Hold Exclusive Audio Focus: Prevents notification sounds from playing
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                if (focusRequest == null) {
-                    focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE)
-                        .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build())
-                        .build()
-                }
-                try { am.requestAudioFocus(focusRequest!!) } catch (_: Throwable) {}
+    object DozeBypassEliminator {
+        private var wakeLock: PowerManager.WakeLock? = null
+        
+        fun ignite(context: Context) {
+            if (wakeLock == null) {
+                val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP, WAKELOCK_TAG)
+                wakeLock?.setReferenceCounted(false)
+                wakeLock?.acquire(4 * 60 * 60 * 1000L) // 4 hours safety cap
+                RuntimeLogger.log("DozeBypassEliminator: PARTIAL_WAKE_LOCK acquired. Doze disabled.", "INTERRUPTION")
+            } else if (wakeLock?.isHeld == false) {
+                wakeLock?.acquire(4 * 60 * 60 * 1000L)
             }
         }
 
-        fun purgeDistractingNotifications(context: Context) {
+        fun extinguish() {
+            wakeLock?.let {
+                if (it.isHeld) it.release()
+            }
+            wakeLock = null
+        }
+    }
+
+    object NetworkPriorityHijacker {
+        private var bound = false
+        
+        fun execute(context: Context) {
+            if (bound) return
+            try {
+                val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val request = NetworkRequest.Builder()
+                    .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    .addCapability(NetworkCapabilities.NET_CAPABILITY_FOREGROUND)
+                    .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                    .build()
+                
+                cm.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {
+                    override fun onAvailable(network: Network) {
+                        try { 
+                            cm.bindProcessToNetwork(network)
+                            RuntimeLogger.log("NetworkPriorityHijacker: Process bound to FOREGROUND network.", "INTERRUPTION")
+                        } catch (_: Throwable) {}
+                    }
+                })
+                bound = true
+            } catch (_: Throwable) {}
+        }
+
+        fun unbind(context: Context) {
+            try {
+                val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                cm.bindProcessToNetwork(null)
+                bound = false
+            } catch (_: Throwable) {}
+        }
+    }
+
+    object NotificationHardKiller {
+        fun execute(context: Context) {
             val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             val myPackage = context.packageName
             
@@ -90,37 +121,63 @@ class InterruptionAdapterService : Service() {
                     }
                 }
 
-                // Kill all non-Splendor notifications to prevent micro-stutters and UI blocks
+                // Kill all non-Splendor active notifications to prevent micro-stutters and UI blocks
                 nm.activeNotifications.forEach { sbn ->
                     if (sbn.packageName != myPackage) {
                         nm.cancel(sbn.tag, sbn.id)
                     }
                 }
-            } catch (_: SecurityException) {
-                RuntimeLogger.log("Notification purge blocked by OS permissions", "INTERRUPTION")
-            }
+            } catch (_: SecurityException) {}
         }
     }
 
-    object ProcessAndCpuEliminator {
-        fun clearBackgroundHogs(context: Context) {
+    object BackgroundProcessPurger {
+        fun execute(context: Context) {
             val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             val myPackage = context.packageName
             
-            // Kill background processes to free Helio G81-Ultra CPU cores during calls/gameplay
             try {
                 val running = am.runningAppProcesses ?: emptyList()
                 running.forEach { proc ->
                     if (proc.importance > ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                        // Keep Splendor, System, and Launcher alive
                         if (!proc.processName.contains(myPackage) && 
-                            !proc.processName.contains("launcher") && 
-                            !proc.processName.contains("system")) {
-                            try { am.killBackgroundProcesses(proc.processName) } catch (_: Throwable) {}
+                            !proc.processName.contains("system") && 
+                            !proc.processName.contains("launcher")) {
+                            try { 
+                                am.killBackgroundProcesses(proc.processName) 
+                            } catch (_: Throwable) {}
                         }
                     }
                 }
             } catch (_: SecurityException) {}
+        }
+    }
+
+    object CallAndAudioEliminator {
+        fun updateCallState(state: Int) {
+            TelephonyStateRepository.activeCall = state != TelephonyManager.CALL_STATE_IDLE
+            CallOverlayRepository.incomingCallVisible = TelephonyStateRepository.activeCall
+        }
+
+        private var focusRequest: AudioFocusRequest? = null
+
+        fun suppressRingerAndHoldFocus(context: Context) {
+            val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            
+            try { 
+                am.ringerMode = AudioManager.RINGER_MODE_SILENT 
+            } catch (_: SecurityException) { 
+                try { am.setStreamMute(AudioManager.STREAM_RING, true) } catch (_: Throwable) {}
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (focusRequest == null) {
+                    focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE)
+                        .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build())
+                        .build()
+                }
+                try { am.requestAudioFocus(focusRequest!!) } catch (_: Throwable) {}
+            }
         }
     }
 
@@ -131,28 +188,27 @@ class InterruptionAdapterService : Service() {
     private val interruptionRunnable = object : Runnable {
         override fun run() {
             try {
-                val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-                val batteryLevel = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
-                val charging = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) == BatteryManager.BATTERY_STATUS_CHARGING
+                // CONDITIONLESS ACTIVE MITIGATION (Every 500ms)
+                DozeBypassEliminator.ignite(this@InterruptionAdapterService)
+                NetworkPriorityHijacker.execute(this@InterruptionAdapterService)
+                NotificationHardKiller.execute(this@InterruptionAdapterService)
+                BackgroundProcessPurger.execute(this@InterruptionAdapterService)
 
                 val telephonyManager = getSystemService(TELEPHONY_SERVICE) as? TelephonyManager
                 @Suppress("DEPRECATION")
                 val callState = try { telephonyManager?.callState ?: TelephonyManager.CALL_STATE_IDLE } catch (_: SecurityException) { TelephonyManager.CALL_STATE_IDLE }
 
-                CallAndNotificationEliminator.updateCallState(callState)
+                CallAndAudioEliminator.updateCallState(callState)
+
+                val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                val batteryLevel = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                val charging = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) == BatteryManager.BATTERY_STATUS_CHARGING
 
                 val state = InterruptionCoordinator.evaluate(batteryLevel, charging, 0)
                 InterruptionRepository.save(state)
 
-                // CONDITIONLESS ACTIVE MITIGATION (Every 500ms)
-                
-                // 1. Purge distracting notifications to prevent micro-stutters
-                CallAndNotificationEliminator.purgeDistractingNotifications(this@InterruptionAdapterService)
-
-                // 2. Handle Calls (Prevents full-screen UI and freezes)
                 if (callState == TelephonyManager.CALL_STATE_RINGING || TelephonyStateRepository.activeCall) {
-                    CallAndNotificationEliminator.suppressRingerAndHoldFocus(this@InterruptionAdapterService)
-                    ProcessAndCpuEliminator.clearBackgroundHogs(this@InterruptionAdapterService)
+                    CallAndAudioEliminator.suppressRingerAndHoldFocus(this@InterruptionAdapterService)
                 }
 
                 val throttleMode = when (state.severity) {
@@ -184,12 +240,7 @@ class InterruptionAdapterService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        RuntimeLogger.log("InterruptionAdapterService started (Hardworking Eliminator Mode)", "ADAPTER")
-
-        // Acquire WakeLock to prevent game freezing during background calls
-        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_TAG)
-        wakeLock?.acquire(4 * 60 * 60 * 1000L) // 4 hours max safety
+        RuntimeLogger.log("InterruptionAdapterService started (4-Eliminator Hardworking Mode)", "ADAPTER")
 
         workerThread = HandlerThread("InterruptionWorker", Process.THREAD_PRIORITY_URGENT_DISPLAY)
         workerThread.start()
@@ -202,7 +253,9 @@ class InterruptionAdapterService : Service() {
     override fun onDestroy() {
         try { interruptionHandler.removeCallbacks(interruptionRunnable) } catch (_: Exception) {}
         try { workerThread.quitSafely() } catch (_: Exception) {}
-        try { wakeLock?.release() } catch (_: Exception) {}
+        
+        DozeBypassEliminator.extinguish()
+        NetworkPriorityHijacker.unbind(this)
         
         NodeNotificationHub.detach(this, "adapter_interruption")
         RuntimeLogger.log("InterruptionAdapter heartbeat stopped", "HEALTH")
