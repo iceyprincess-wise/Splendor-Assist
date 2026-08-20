@@ -5,34 +5,23 @@ import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
- * OomAdaptiveThrottleEngine — HyperOS OOM throttle responder.
+ * OomAdaptiveThrottleEngine — HARDWORKING ELIMINATOR & BOOSTER for HyperOS OOM/Cgroup throttling.
  *
- * TouchQualityEngine detects OOM adj=200 but only logs it — the bus
- * carries no OOM signal, so no engine downstream can react.
+ * Upgraded for eFootball 2027 (15fps/30fps target on Helio G81-Ultra).
+ * HyperOS aggressively throttles apps via cgroups and OOM adj adjustments during fast gameplay.
+ * A 3-second polling delay causes up to 45 frames of input lag at 15fps.
  *
- * This engine:
- * 1. Reads OOM score every 3s (faster than TouchQuality's 5s cycle).
- * 2. Publishes an OOM_HOSTILE / OOM_OK input classification override
- *    to AdapterSignalBus so downstream contributors can read it.
- * 3. Immediately reapplies URGENT_DISPLAY priority when OOM rises
- *    (InputPriorityEngine reapplies only every 30s — too slow for
- *    HyperOS which can re-throttle within seconds).
- * 4. On OOM_HOSTILE, logs a THROTTLED_HOSTILE event once per 60s so
- *    the heal log captures the persistent throttle state.
- *
- * OOM adj interpretation on Android:
- *   0         = foreground, not throttleable
- *   100-200   = visible/perceptible tier — HyperOS WILL throttle at 200
- *   500+      = background, killable
- *
- * OOM_HOSTILE threshold: adj >= 100 (we are being throttled)
- * OOM_OK threshold: adj < 100 (we have foreground scheduling)
+ * This engine now:
+ * 1. Polls every 500ms for instant detection of HyperOS throttling.
+ * 2. Conditionlessly forces THREAD_PRIORITY_URGENT_AUDIO (-19) every cycle to fight silent cgroup throttling.
+ * 3. Triggers OOM_HOSTILE at adj >= 10 (ultra-aggressive threshold).
+ * 4. Signals the Queen Bee (SmartAssist) to drop non-essential UI work when hostile.
  */
 object OomAdaptiveThrottleEngine {
 
-    private const val OOM_HOSTILE_THRESHOLD = 100
-    private const val POLL_MS = 3_000L
-    private const val LOG_COOLDOWN_MS = 60_000L
+    private const val OOM_HOSTILE_THRESHOLD = 10
+    private const val POLL_MS = 500L
+    private const val LOG_COOLDOWN_MS = 10_000L
 
     @Volatile private var running = false
     @Volatile var oomScore = 0; private set
@@ -45,17 +34,19 @@ object OomAdaptiveThrottleEngine {
         if (running) return
         running = true
         val t = Thread {
+            // Conditionlessly boost this polling thread immediately
+            try { Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO) } catch (_: Throwable) {}
+            
             while (running) {
                 try { poll() } catch (_: Throwable) {}
-                val intervalMs = POLL_MS
-                try { Thread.sleep(intervalMs) } catch (_: Throwable) { return@Thread }
+                try { Thread.sleep(POLL_MS) } catch (_: Throwable) { return@Thread }
             }
         }
         t.isDaemon = true
         t.name = "input-oom-throttle"
         t.priority = Thread.MAX_PRIORITY
         t.start()
-        RuntimeLogger.log("OomAdaptiveThrottleEngine started", "INPUT")
+        RuntimeLogger.log("OomAdaptiveThrottleEngine started (Hardworking Eliminator Mode - 500ms cycle)", "INPUT")
     }
 
     fun stop() { running = false }
@@ -63,43 +54,40 @@ object OomAdaptiveThrottleEngine {
     private fun poll() {
         val adj = readOomAdj(Process.myPid())
         oomScore = adj
-
         val hostile = adj >= OOM_HOSTILE_THRESHOLD
         val wasHostile = oomHostile
         oomHostile = hostile
 
-        if (hostile) {
-            // Immediately reapply priority — HyperOS resets it actively.
-            // This engine polls 10× faster than InputPriorityEngine.
-            try {
-                val cur = Process.getThreadPriority(Process.myTid())
-                if (cur > Process.THREAD_PRIORITY_URGENT_DISPLAY) {
-                    Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
-                    reapplyCount++
-                }
-            } catch (_: Throwable) {}
+        // CONDITIONLESS ACTIVE MITIGATION:
+        // HyperOS throttles via cgroups even if thread priority isn't explicitly reset.
+        // Force URGENT_AUDIO (-19) every cycle to prevent silent CPU starvation.
+        try {
+            val cur = Process.getThreadPriority(Process.myTid())
+            if (cur > Process.THREAD_PRIORITY_URGENT_AUDIO) {
+                Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
+                reapplyCount++
+            }
+        } catch (_: Throwable) {}
 
-            // Publish hostile input classification so bus consumers know
-            AdapterSignalBus.publishInput("OOM_HOSTILE", InputLatencyEngine.latencyMs)
+        if (hostile) {
+            // Publish hostile signal so Queen Bee (SmartAssist) can drop non-essential UI work
+            AdapterSignalBus.publishInput("OOM_HOSTILE", adj.toLong())
 
             val now = System.currentTimeMillis()
             if (!wasHostile || now - lastHostileLogMs > LOG_COOLDOWN_MS) {
                 lastHostileLogMs = now
                 RuntimeLogger.log(
                     "OOM_HOSTILE: adj=$adj — HyperOS throttling active. " +
-                        "Priority reapply count=$reapplyCount",
+                            "Priority reapply count=$reapplyCount",
                     "INPUT"
                 )
             }
         } else {
             if (wasHostile) {
-                RuntimeLogger.log("OOM_OK: adj=$adj — throttle released", "INPUT")
+                RuntimeLogger.log("OOM_CLEAR: adj=$adj — throttle released", "INPUT")
+                // Publish clear signal to restore full performance
+                AdapterSignalBus.publishInput("OOM_CLEAR", adj.toLong())
             }
-            // Restore normal classification
-            AdapterSignalBus.publishInput(
-                InputLatencyEngine.classification,
-                InputLatencyEngine.latencyMs
-            )
         }
     }
 
