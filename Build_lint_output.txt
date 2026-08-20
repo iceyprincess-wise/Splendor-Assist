@@ -1,13 +1,11 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-19 23:50:10 WAT
+Started: 2026-08-20 02:06:23 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
- M app/build.gradle.kts
- M app/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt
 
 
 ================================================================
@@ -33,26 +31,22 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 42 -> 43
+versionCode: 43 -> 44
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/GlobalCrashHandler.kt:62:42 Parameter 'ctx' is never used
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/adapter/battery/BatteryAdapterService.kt:148:22 Parameter 'level' is never used
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:120:89 'IMPORTANCE_BACKGROUND: Int' is deprecated. Deprecated in Java
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt:171:90 'IMPORTANCE_BACKGROUND: Int' is deprecated. Deprecated in Java
-BUILD SUCCESSFUL in 3m 35s
+BUILD SUCCESSFUL in 4m 8s
 
 ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v43-20260819_235355.apk
--rw-rw----. 1 u0_a262 media_rw 67M Aug 19 23:53 /storage/emulated/0/Download/Splendor-Assist-v43-20260819_235355.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v44-20260820_021041.apk
+-rw-rw----. 1 u0_a262 media_rw 67M Aug 20 02:10 /storage/emulated/0/Download/Splendor-Assist-v44-20260820_021041.apk
 
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
@@ -61,8 +55,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
-  2734 IDLE     8.5
-  4064 STOPPED  (by user or operating system)
+ 27705 IDLE     8.5
+  2734 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -82,8 +76,7 @@ FINAL STATUS: FAILED — check items above
 GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
- M app/src/main/java/com/assistant/adapter/boot/BootAdapterService.kt
 
-Finished: 2026-08-19 23:54:43 WAT
-Report size: 4341 bytes
+Finished: 2026-08-20 02:10:56 WAT
+Report size: 3428 bytes
 ================================================================
