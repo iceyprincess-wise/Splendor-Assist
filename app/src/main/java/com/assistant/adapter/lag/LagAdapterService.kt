@@ -26,6 +26,9 @@ import kotlin.random.Random
 import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.PowerManager
+import android.content.Context
+import com.assistant.diagnostic.AdapterSignalBus
+import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 class LagAdapterService : Service() {
 
@@ -874,7 +877,7 @@ object NetJitterEngine {
     @Volatile private var running = false
     @Volatile var netJitterMs = 0f; private set
     @Volatile private var lastRtt = 0f
-    @Volatile private val ALPHA = 0.2f
+    private val ALPHA = 0.2f
     fun start() {
         if (running) return; running = true
         val t = Thread {
