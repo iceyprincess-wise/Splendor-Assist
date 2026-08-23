@@ -1,322 +1,262 @@
 import os
 
-print("=== INITIATING GODMODE COMPLETENESS & RECOVERY HARDENING ===")
+def repair_pipeline():
+    main_path = "app/src/main/java/com/assistant/MainActivity.kt"
+    comp_path = "app/src/main/java/com/assistant/compliance/ComplianceState.kt"
 
-# 1. OVERWRITE: GameplayEngineRegistry.kt (Lock Scope Fix + Name API)
-registry_content = """package com.assistant.runtime
+    with open(main_path, "r", encoding="utf-8") as f:
+        main_code = f.read()
 
-import com.assistant.diagnostic.RuntimeLogger
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.atomic.AtomicLong
+    with open(comp_path, "r", encoding="utf-8") as f:
+        comp_code = f.read()
 
-object GameplayEngineRegistry {
-    private val contributors = CopyOnWriteArrayList<GameplayContributor>()
-    private val registeredNames = ConcurrentHashMap<String, Boolean>()
-    private val lastContribution = ConcurrentHashMap<String, EngineContribution>()
-    private val contributed = ConcurrentHashMap<String, Long>()
-    private val failures = ConcurrentHashMap<String, Long>()
-    private val collectCycles = AtomicLong(0L)
-    
-    private val registrationGeneration = AtomicLong(0L)
-    private val collisions = AtomicLong(0L)
-    private val sessionEpoch = AtomicLong(0L)
-    @Volatile private var warmUpCompletionTimestamp: Long = 0L
-    private val registrationLock = Any()
-
-    fun getRegisteredNames(): Set<String> = registeredNames.keys.toSet()
-
-    fun register(contributor: GameplayContributor): Boolean {
-        synchronized(registrationLock) {
-            if (registeredNames.putIfAbsent(contributor.engineName, true) != null) {
-                collisions.incrementAndGet()
-                RuntimeLogger.log("REGISTRY COLLISION: ${contributor.engineName} rejected", "RUNTIME")
-                return false
+    # 1. FIX: checkBatteryAndProceed must explicitly set stage
+    old_check_battery = """    private fun checkBatteryAndProceed() {
+        try {
+            if (ComplianceState.battery(this)) {
+                com.assistant.adapter.smartassist.RuntimeCoordinator.reportPermissionsVerified()
+                checkAccessibilityAndProceed()
+                return
             }
-            contributors.add(contributor)
-            registrationGeneration.incrementAndGet()
-            var initSuccess = true
-            try { 
-                contributor.initialize() 
-            } catch (t: Throwable) {
-                initSuccess = false
-                RuntimeLogger.log("Engine init failed ${contributor.engineName}: ${t.message}", "RUNTIME")
+
+            if (!openBatteryOptimizationManager()) {
+                checkAccessibilityAndProceed()
             }
-            return initSuccess
+        } catch (_: Exception) {
+            checkAccessibilityAndProceed()
         }
+    }"""
+    new_check_battery = """    private fun checkBatteryAndProceed() {
+        permissionStage = PermissionStage.BATTERY
+        try {
+            if (ComplianceState.battery(this)) {
+                com.assistant.adapter.smartassist.RuntimeCoordinator.reportPermissionsVerified()
+                checkAccessibilityAndProceed()
+                return
+            }
+
+            if (!openBatteryOptimizationManager()) {
+                checkAccessibilityAndProceed()
+            }
+        } catch (_: Exception) {
+            checkAccessibilityAndProceed()
+        }
+    }"""
+
+    # 2. FIX: checkAccessibilityAndProceed must route to OVERLAY, not NOTIFICATION
+    old_check_access = """    private fun checkAccessibilityAndProceed() {
+        val enabled = android.provider.Settings.Secure.getString(
+            contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: ""
+
+        val expectedService = "com.assistant.adapter.smartassist.SmartAssistAccessibilityEngine"
+
+        if (!enabled.contains(expectedService, true) && !enabled.contains(packageName, true)) {
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            return
+        }
+
+        checkNotificationAndProceed()
+    }"""
+    new_check_access = """    private fun checkAccessibilityAndProceed() {
+        permissionStage = PermissionStage.ACCESSIBILITY
+        val enabled = android.provider.Settings.Secure.getString(
+            contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: ""
+
+        val expectedService = "com.assistant.adapter.smartassist.SmartAssistAccessibilityEngine"
+
+        if (!enabled.contains(expectedService, true) && !enabled.contains(packageName, true)) {
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            return
+        }
+
+        checkOverlayAndProceed()
+    }"""
+
+    # 3. FIX: checkNotificationAndProceed must route to MEDIA_PROJECTION
+    old_check_notif = """    private fun checkNotificationAndProceed() {
+        permissionStage = PermissionStage.NOTIFICATION
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 9001)
+            return
+        }
+
+        permissionStage = PermissionStage.MEDIA_PROJECTION
+        screenCaptureLauncher.launch(projectionManager.createScreenCaptureIntent())
+    }"""
+    new_check_notif = """    private fun checkNotificationAndProceed() {
+        permissionStage = PermissionStage.NOTIFICATION
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 9001)
+            return
+        }
+
+        checkMediaProjectionAndProceed()
     }
 
-    fun warmAll(): List<String> {
-        // MEDIUM FIX: Removed full-lock around warmUp(). CopyOnWriteArrayList allows safe iteration.
-        // This prevents serializing the lifecycle activity for the entire warm-up duration on Helio G81.
-        val failed = mutableListOf<String>()
-        val snapshot = contributors.toList()
-        for (c in snapshot) {
-            try { 
-                c.warmUp() 
-            } catch (t: Throwable) {
-                failed.add(c.engineName)
-                RuntimeLogger.log("Engine warmUp failed ${c.engineName}: ${t.message}", "RUNTIME")
-            } 
-        }
-        warmUpCompletionTimestamp = System.currentTimeMillis()
-        RuntimeLogger.log("REGISTRY WARM COMPLETE: ${snapshot.size} engines. Failures: ${failed.size}", "RUNTIME")
-        return failed
-    }
+    private fun checkMediaProjectionAndProceed() {
+        permissionStage = PermissionStage.MEDIA_PROJECTION
+        screenCaptureLauncher.launch(projectionManager.createScreenCaptureIntent())
+    }"""
 
-    fun collect(frame: RuntimeFrame): List<EngineContribution> {
-        collectCycles.incrementAndGet()
-        val out = ArrayList<EngineContribution>(contributors.size)
-        for (c in contributors) {
-            try {
-                c.update(frame)
-                val contribution = c.contribute(frame) ?: continue
-                lastContribution[c.engineName] = contribution
-                contributed[c.engineName] = (contributed[c.engineName] ?: 0L) + 1L
-                out.add(contribution)
-            } catch (t: Throwable) {
-                val n = (failures[c.engineName] ?: 0L) + 1L
-                failures[c.engineName] = n
-                if (n == 1L || n % 50L == 0L) {
-                    RuntimeLogger.log("ENGINE FAILURE ${c.engineName} x$n: ${t.message ?: t.javaClass.simpleName}", "RUNTIME")
-                }
+    # 4. FIX: checkOverlayAndProceed must return after launching intent
+    old_check_overlay = """    private fun checkOverlayAndProceed() {
+        permissionStage = PermissionStage.OVERLAY
+
+        if (!Settings.canDrawOverlays(this)) {
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+        } else {
+            checkAllFilesAndProceed()
+        }
+    }"""
+    new_check_overlay = """    private fun checkOverlayAndProceed() {
+        permissionStage = PermissionStage.OVERLAY
+
+        if (!Settings.canDrawOverlays(this)) {
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+            return
+        }
+        checkAllFilesAndProceed()
+    }"""
+
+    # 5. FIX: onRequestPermissionsResult must route to MEDIA_PROJECTION (not OVERLAY)
+    old_on_req = """    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == 9001) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                checkOverlayAndProceed()
             }
         }
-        return out
-    }
+    }"""
+    new_on_req = """    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-    fun resetAll() {
-        synchronized(registrationLock) {
-            sessionEpoch.incrementAndGet()
-            contributors.forEach { c -> try { c.reset() } catch (_: Throwable) {} }
-            contributors.clear()
-            registeredNames.clear()
-            lastContribution.clear(); contributed.clear(); failures.clear()
-            collectCycles.set(0L)
-            registrationGeneration.set(0L)
-            collisions.set(0L)
-            warmUpCompletionTimestamp = 0L
+        if (requestCode == 9001) {
+            checkMediaProjectionAndProceed()
         }
-    }
+    }"""
 
-    fun registryRuntimeSnapshot(): Map<String, Any> = mapOf(
-        "engines" to contributors.size,
-        "collectCycles" to collectCycles.get(),
-        "names" to contributors.joinToString(",") { it.engineName },
-        "generation" to registrationGeneration.get(),
-        "collisions" to collisions.get(),
-        "warmUpTimestamp" to warmUpCompletionTimestamp,
-        "sessionEpoch" to sessionEpoch.get()
-    )
-
-    fun engineStates(): List<Map<String, Any>> = contributors.map { c ->
-        val last = lastContribution[c.engineName]
-        mapOf(
-            "engine" to c.engineName,
-            "capabilities" to c.capabilities.joinToString(",") ,
-            "contributions" to (contributed[c.engineName] ?: 0L),
-            "failures" to (failures[c.engineName] ?: 0L),
-            "lastAction" to (last?.actionClass?.name ?: "none"),
-            "lastWeight" to (last?.weight ?: 0f)
-        )
-    }
-}
-"""
-path1 = "core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt"
-os.makedirs(os.path.dirname(path1), exist_ok=True)
-with open(path1, "w") as f: f.write(registry_content)
-print("[+] Upgraded GameplayEngineRegistry.kt (Lock Scope Fix + Name API)")
-
-# 2. OVERWRITE: AppContributorRegistration.kt (Completeness, Recovery, Hard Cancellation)
-app_reg_content = """package com.assistant
-
-import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.runtime.GameplayContributor
-import com.assistant.runtime.GameplayEngineRegistry
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicReference
-
-enum class RegistrationState { IDLE, REGISTERING, READY, PARTIAL, FAILED }
-
-object AppContributorRegistration {
-
-    const val ALLOWS_REDUCED_FIRST_FRAMES = true
-    const val EXPECTED_CONTRIBUTOR_COUNT = 37
-
-    // HIGH: Completeness invariant - explicit set of expected names
-    private val EXPECTED_CONTRIBUTOR_NAMES = setOf(
-        "ThreatPriority", "CrossClaim", "KeeperBias", "PanicSave", "PassLane", "BallPress", "PressEvade", "Shot", "CrossDelivery",
-        "MagneticFeet", "Passing", "Support", "Defense", "Evade", "AttackingVector", "Cross", "Agility", "WingBlock",
-        "DashPressure", "InterceptMatrix", "TouchRecovery", "OverloadPlaystyle", "TruePass", "ReceiverEngagement", "ForwardRun",
-        "ShotOpportunity", "DefenseAuthority", "ShotAnticipation", "KeeperFeedback", "DashAnchor", "SpeedCompensation",
-        "InstantIntercept", "BuildUpPress", "BallRetentionShield", "TrueShot", "TrueCross", "SmartAssistUltimateCorrector"
-    )
-
-    private val state = AtomicReference(RegistrationState.IDLE)
-    private val generation = AtomicLong(0L)
-    
-    // Thread-safe lists for runtime proof telemetry
-    private val initFailures = CopyOnWriteArrayList<String>()
-    private val warmFailures = CopyOnWriteArrayList<String>()
-    private val omittedContributors = CopyOnWriteArrayList<String>()
-    
-    // MEDIUM: Store actual Future for hard cancellation
-    @Volatile private var currentFuture: Future<*>? = null
-
-    private val warmupExecutor = Executors.newSingleThreadExecutor { r ->
-        Thread(r, "Splendor-ContributorWarmup").apply {
-            isDaemon = true
-            priority = Thread.NORM_PRIORITY - 1
-        }
-    }
-
-    fun ensureRegistered() {
-        val currentState = state.get()
-        // HIGH: Recovery semantics - allow retry from PARTIAL or FAILED
-        if (currentState == RegistrationState.READY) return
-        if (currentState == RegistrationState.REGISTERING) return
-
-        synchronized(this) {
-            val current = state.get()
-            if (current == RegistrationState.READY || current == RegistrationState.REGISTERING) return
-            
-            state.set(RegistrationState.REGISTERING)
-            val myGeneration = generation.incrementAndGet()
-            initFailures.clear()
-            warmFailures.clear()
-            omittedContributors.clear()
-            
-            // MEDIUM: Restart behavior - if retrying from PARTIAL/FAILED, clear registry for clean slate
-            if (current == RegistrationState.PARTIAL || current == RegistrationState.FAILED) {
-                GameplayEngineRegistry.resetAll()
-            }
-            
-            currentFuture = warmupExecutor.submit {
-                if (generation.get() != myGeneration) return@submit
-                
-                try {
-                    val allContributors = listOf<GameplayContributor>(
-                        com.assistant.contributors.ThreatPriorityContributor,
-                        com.assistant.contributors.CrossClaimContributor,
-                        com.assistant.contributors.KeeperBiasContributor,
-                        com.assistant.contributors.PanicSaveContributor,
-                        com.assistant.contributors.PassLaneContributor,
-                        com.assistant.contributors.BallPressContributor,
-                        com.assistant.contributors.PressEvadeContributor,
-                        com.assistant.contributors.ShotContributor,
-                        com.assistant.contributors.CrossDeliveryContributor,
-                        
-                        com.assistant.adapter.smartassist.contributors.MagneticFeetContributor,
-                        com.assistant.adapter.smartassist.contributors.PassingContributor,
-                        com.assistant.adapter.smartassist.contributors.SupportContributor,
-                        com.assistant.adapter.smartassist.contributors.DefenseContributor,
-                        com.assistant.adapter.smartassist.contributors.EvadeContributor,
-                        com.assistant.adapter.smartassist.contributors.AttackingVectorContributor,
-                        com.assistant.adapter.smartassist.contributors.CrossContributor,
-                        com.assistant.adapter.smartassist.contributors.AgilityContributor,
-                        com.assistant.adapter.smartassist.contributors.WingBlockContributor,
-                        com.assistant.adapter.smartassist.contributors.DashPressureContributor,
-                        com.assistant.adapter.smartassist.contributors.InterceptMatrixContributor,
-                        com.assistant.adapter.smartassist.contributors.TouchRecoveryContributor,
-                        com.assistant.adapter.smartassist.contributors.OverloadPlaystyleContributor,
-                        com.assistant.adapter.smartassist.contributors.TruePassContributor,
-                        com.assistant.adapter.smartassist.contributors.ReceiverEngagementContributor,
-                        com.assistant.adapter.smartassist.contributors.ForwardRunContributor,
-                        com.assistant.adapter.smartassist.contributors.ShotOpportunityContributor,
-                        com.assistant.adapter.smartassist.contributors.DefenseAuthorityContributor,
-                        com.assistant.adapter.smartassist.contributors.ShotAnticipationContributor,
-                        com.assistant.adapter.smartassist.contributors.KeeperFeedbackContributor,
-                        com.assistant.adapter.smartassist.contributors.DashAnchorContributor,
-                        com.assistant.adapter.smartassist.contributors.SpeedCompensationContributor,
-                        com.assistant.adapter.smartassist.contributors.InstantInterceptContributor,
-                        com.assistant.adapter.smartassist.contributors.BuildUpPressContributor,
-                        com.assistant.adapter.smartassist.contributors.BallRetentionShieldContributor,
-                        com.assistant.adapter.smartassist.contributors.TrueShotContributor,
-                        com.assistant.adapter.smartassist.contributors.TrueCrossContributor,
-                        com.assistant.adapter.smartassist.contributors.SmartAssistUltimateCorrectorContributor
-                    )
-                    
-                    // MEDIUM: Runtime assertion for 37-contributor contract
-                    check(allContributors.size == EXPECTED_CONTRIBUTOR_COUNT) {
-                        "CRITICAL: Hardcoded contributor list size (${allContributors.size}) != expected ($EXPECTED_CONTRIBUTOR_COUNT)"
-                    }
-                    
-                    for (c in allContributors) {
-                        if (generation.get() != myGeneration) return@submit
-                        val success = GameplayEngineRegistry.register(c)
-                        if (!success) initFailures.add(c.engineName)
-                    }
-                    
-                    if (generation.get() != myGeneration) return@submit
-                    
-                    val warmFails = GameplayEngineRegistry.warmAll()
-                    warmFailures.addAll(warmFails)
-                    
-                    if (generation.get() != myGeneration) return@submit
-                    
-                    // HIGH: Distinguish omission from failure
-                    val actualNames = GameplayEngineRegistry.getRegisteredNames()
-                    val missing = EXPECTED_CONTRIBUTOR_NAMES - actualNames
-                    omittedContributors.addAll(missing)
-                    
-                    val finalState = when {
-                        missing.isNotEmpty() || initFailures.isNotEmpty() || warmFailures.isNotEmpty() -> RegistrationState.PARTIAL
-                        else -> RegistrationState.READY
-                    }
-                    
-                    state.set(finalState)
-                    RuntimeLogger.log(dumpRuntimeProof(myGeneration), "RUNTIME")
-                    
-                } catch (e: Throwable) {
-                    if (generation.get() == myGeneration) {
-                        state.set(RegistrationState.FAILED)
-                        RuntimeLogger.log("AppContributorRegistration [Gen $myGeneration] FAILED: ${e.message}", "RUNTIME")
+    # 6. FIX: onResume must resume the exact stage
+    old_on_resume = """        if (permissionPipelineActive) {
+            when (permissionStage) {
+                PermissionStage.AUTOSTART_WAIT -> {
+                    if (ComplianceState.battery(this)) {
+                        showAutoStartConfirmation()
+                    } else {
+                        checkBatteryAndProceed()
                     }
                 }
+                else -> checkBatteryAndProceed()
             }
-        }
-    }
+        }"""
+    new_on_resume = """        if (permissionPipelineActive) {
+            when (permissionStage) {
+                PermissionStage.AUTOSTART_WAIT -> {
+                    if (ComplianceState.battery(this)) {
+                        showAutoStartConfirmation()
+                    } else {
+                        checkBatteryAndProceed()
+                    }
+                }
+                PermissionStage.BATTERY -> checkBatteryAndProceed()
+                PermissionStage.ACCESSIBILITY -> checkAccessibilityAndProceed()
+                PermissionStage.OVERLAY -> checkOverlayAndProceed()
+                PermissionStage.ALL_FILES -> checkAllFilesAndProceed()
+                PermissionStage.NOTIFICATION -> checkNotificationAndProceed()
+                PermissionStage.MEDIA_PROJECTION -> checkMediaProjectionAndProceed()
+                else -> checkBatteryAndProceed()
+            }
+        }"""
 
-    fun reset() {
-        generation.incrementAndGet()
-        currentFuture?.cancel(true) // MEDIUM: Hard cancellation via Future interrupt
-        currentFuture = null
-        state.set(RegistrationState.IDLE)
-        GameplayEngineRegistry.resetAll()
-    }
-    
-    // MEDIUM: Explicit restart behavior for PARTIAL/FAILED
-    fun retry() {
-        if (state.get() == RegistrationState.PARTIAL || state.get() == RegistrationState.FAILED) {
-            state.set(RegistrationState.IDLE)
-            ensureRegistered()
-        }
-    }
-    
-    // LOW: Live runtime proof
-    fun dumpRuntimeProof(gen: Long = generation.get()): String {
-        val actualCount = GameplayEngineRegistry.getRegisteredNames().size
-        return \"\"\"
-            |=== REGISTRATION RUNTIME PROOF [Gen $gen] ===
-            |State: ${state.get()}
-            |Expected Count: $EXPECTED_CONTRIBUTOR_COUNT | Actual Count: $actualCount
-            |Init Failures: ${initFailures.size} ${if(initFailures.isNotEmpty()) "[${initFailures.joinToString()}]" else ""}
-            |Warm Failures: ${warmFailures.size} ${if(warmFailures.isNotEmpty()) "[${warmFailures.joinToString()}]" else ""}
-            |Omitted/Missing: ${omittedContributors.size} ${if(omittedContributors.isNotEmpty()) "[${omittedContributors.joinToString()}]" else ""}
-            |Registry Snapshot: ${GameplayEngineRegistry.registryRuntimeSnapshot()}
-            |=============================================
-        \"\"\".trimMargin()
-    }
-    
-    fun registrationState(): RegistrationState = state.get()
-}
-"""
-path2 = "app/src/main/java/com/assistant/AppContributorRegistration.kt"
-os.makedirs(os.path.dirname(path2), exist_ok=True)
-with open(path2, "w") as f: f.write(app_reg_content)
-print("[+] Upgraded AppContributorRegistration.kt (Completeness, Recovery, Hard Cancellation)")
+    # 7. FIX: Cancelled MediaProjection must halt pipeline
+    old_screen_cancel = """            } else {
+                Toast.makeText(this, "MediaProjection permission cancelled", Toast.LENGTH_SHORT).show()
+            }"""
+    new_screen_cancel = """            } else {
+                permissionPipelineActive = false
+                permissionStage = PermissionStage.COMPLETE
+                Toast.makeText(this, "MediaProjection permission cancelled", Toast.LENGTH_SHORT).show()
+            }"""
 
-print("=== ALL 8 COMPULSORY TASKS COMPLETED. ARCHITECTURE HARDENED. ===")
+    # 8. FIX: ComplianceState summary must match ready() sequence
+    old_summary = """    fun summary(context: Context): String {
+
+        if (ready(context))
+            return "ENGINE READY"
+
+        val failed =
+            mutableListOf<String>()
+
+        if (!battery(context))
+            failed += "BATTERY"
+
+        if (!overlay(context))
+            failed += "OVERLAY"
+
+        if (!allFiles())
+            failed += "ALL_FILES"
+
+        if (!notifications(context))
+            failed += "NOTIFICATIONS"
+
+        if (!accessibility(context))
+            failed += "ACCESSIBILITY"
+
+        return "BLOCKED: " +
+            failed.joinToString(", ")
+    }"""
+    new_summary = """    fun summary(context: Context): String {
+
+        if (ready(context))
+            return "ENGINE READY"
+
+        val failed =
+            mutableListOf<String>()
+
+        if (!battery(context))
+            failed += "BATTERY"
+
+        if (!accessibility(context))
+            failed += "ACCESSIBILITY"
+
+        if (!overlay(context))
+            failed += "OVERLAY"
+
+        if (!allFiles())
+            failed += "ALL_FILES"
+
+        if (!notifications(context))
+            failed += "NOTIFICATIONS"
+
+        return "BLOCKED: " +
+            failed.joinToString(", ")
+    }"""
+
+    # Apply surgical replacements
+    main_code = main_code.replace(old_check_battery, new_check_battery)
+    main_code = main_code.replace(old_check_access, new_check_access)
+    main_code = main_code.replace(old_check_notif, new_check_notif)
+    main_code = main_code.replace(old_check_overlay, new_check_overlay)
+    main_code = main_code.replace(old_on_req, new_on_req)
+    main_code = main_code.replace(old_on_resume, new_on_resume)
+    main_code = main_code.replace(old_screen_cancel, new_screen_cancel)
+
+    comp_code = comp_code.replace(old_summary, new_summary)
+
+    # Write patched code back to disk
+    with open(main_path, "w", encoding="utf-8") as f:
+        f.write(main_code)
+        
+    with open(comp_path, "w", encoding="utf-8") as f:
+        f.write(comp_code)
+        
+    print("✅ Pipeline successfully repaired. Sequence strictly enforced.")
+
+if __name__ == "__main__":
+    repair_pipeline()

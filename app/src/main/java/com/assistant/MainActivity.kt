@@ -99,6 +99,8 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Engine Linked", Toast.LENGTH_LONG).show()
 
             } else {
+                permissionPipelineActive = false
+                permissionStage = PermissionStage.COMPLETE
                 Toast.makeText(this, "MediaProjection permission cancelled", Toast.LENGTH_SHORT).show()
             }
         }
@@ -167,6 +169,12 @@ class MainActivity : AppCompatActivity() {
                         checkBatteryAndProceed()
                     }
                 }
+                PermissionStage.BATTERY -> checkBatteryAndProceed()
+                PermissionStage.ACCESSIBILITY -> checkAccessibilityAndProceed()
+                PermissionStage.OVERLAY -> checkOverlayAndProceed()
+                PermissionStage.ALL_FILES -> checkAllFilesAndProceed()
+                PermissionStage.NOTIFICATION -> checkNotificationAndProceed()
+                PermissionStage.MEDIA_PROJECTION -> checkMediaProjectionAndProceed()
                 else -> checkBatteryAndProceed()
             }
         }
@@ -319,6 +327,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkBatteryAndProceed() {
+        permissionStage = PermissionStage.BATTERY
         try {
             if (ComplianceState.battery(this)) {
                 com.assistant.adapter.smartassist.RuntimeCoordinator.reportPermissionsVerified()
@@ -335,6 +344,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkAccessibilityAndProceed() {
+        permissionStage = PermissionStage.ACCESSIBILITY
         val enabled = android.provider.Settings.Secure.getString(
             contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ) ?: ""
@@ -346,7 +356,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        checkNotificationAndProceed()
+        checkOverlayAndProceed()
     }
 
     private fun checkNotificationAndProceed() {
@@ -358,6 +368,10 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        checkMediaProjectionAndProceed()
+    }
+
+    private fun checkMediaProjectionAndProceed() {
         permissionStage = PermissionStage.MEDIA_PROJECTION
         screenCaptureLauncher.launch(projectionManager.createScreenCaptureIntent())
     }
@@ -367,9 +381,9 @@ class MainActivity : AppCompatActivity() {
 
         if (!Settings.canDrawOverlays(this)) {
             startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
-        } else {
-            checkAllFilesAndProceed()
+            return
         }
+        checkAllFilesAndProceed()
     }
 
     private fun checkAllFilesAndProceed() {
@@ -396,9 +410,7 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (requestCode == 9001) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                checkOverlayAndProceed()
-            }
+            checkMediaProjectionAndProceed()
         }
     }
 

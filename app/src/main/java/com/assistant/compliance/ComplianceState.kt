@@ -81,6 +81,9 @@ object ComplianceState {
         if (!battery(context))
             failed += "BATTERY"
 
+        if (!accessibility(context))
+            failed += "ACCESSIBILITY"
+
         if (!overlay(context))
             failed += "OVERLAY"
 
@@ -89,9 +92,6 @@ object ComplianceState {
 
         if (!notifications(context))
             failed += "NOTIFICATIONS"
-
-        if (!accessibility(context))
-            failed += "ACCESSIBILITY"
 
         return "BLOCKED: " +
             failed.joinToString(", ")
