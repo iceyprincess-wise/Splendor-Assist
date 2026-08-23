@@ -19,9 +19,23 @@ class App : Application() {
         }
     }
 
+    private fun logSafe(message: String, tag: String) {
+        try {
+            RuntimeLogger.log(message, tag)
+        } catch (_: Throwable) {
+        }
+    }
+
+    private fun faultSafe(feature: String, message: String) {
+        try {
+            GlobalCrashHandler.logFeatureFault(feature, message)
+        } catch (_: Throwable) {
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
-        
+
         val currentProcess = getCurrentProcessName()
         val isMainProcess = currentProcess == packageName
         val isBackgroundProcess = currentProcess.endsWith(":survival") || currentProcess.endsWith(":telemetry")
@@ -30,7 +44,7 @@ class App : Application() {
         SplendorStorageRoot.initialize()
         RuntimeLogger.initialize(this)
         RuntimeLogger.reconcileExpired()
-        
+
         // FIX: GlobalCrashHandler is in package com.assistant, no import needed
         GlobalCrashHandler.install(this)
 
@@ -39,12 +53,31 @@ class App : Application() {
             DeathWatch.install(this)
             com.assistant.controlroom.ControlRoomBootstrap.initialize()
 
-            runCatching {
-                com.assistant.adapter.smartassist.InAppAgentCore.start()
+            // FIX #4: silent InAppAgentCore.start() failure boundary removed.
+            val agentStarted = try {
+                com.assistant.adapter.smartassist.InAppAgentCore.tryStart()
+            } catch (t: Throwable) {
+                val reason = "${t.javaClass.simpleName}: ${t.message ?: "unknown"}"
+                logSafe("IN-APP AGENT FAILED TO START: $reason", "BOOT")
+                faultSafe("InAppAgentCore.start", reason)
+                false
+            }
+
+            if (agentStarted && com.assistant.adapter.smartassist.InAppAgentCore.isRunning()) {
+                logSafe("App.onCreate: InAppAgentCore bootstrap verified running", "BOOT")
+            } else {
+                val snapshotRunning = try {
+                    com.assistant.adapter.smartassist.InAppAgentCore.snapshot().running
+                } catch (_: Throwable) {
+                    false
+                }
+                val reason = "started=$agentStarted snapshotRunning=$snapshotRunning"
+                logSafe("App.onCreate: IN-APP AGENT NOT RUNNING after bootstrap ($reason)", "BOOT")
+                faultSafe("InAppAgentCore.start", "agent not running after bootstrap ($reason)")
             }
         } else if (isBackgroundProcess) {
             // 3. HEADLESS ADAPTER SURVIVAL (Background Processes ONLY)
-            RuntimeLogger.log("App.onCreate: Headless process initialized [$currentProcess]", "BOOT")
+            logSafe("App.onCreate: Headless process initialized [$currentProcess]", "BOOT")
         }
     }
 }

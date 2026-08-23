@@ -55,35 +55,23 @@ object InAppAgentCore {
     @Volatile
     private var lastVerification: ActionVerification? = null
 
+    /**
+     * Existing public API preserved.
+     * It no longer throws bootstrap failures outward.
+     */
     fun start() {
-        if (!running.compareAndSet(false, true)) return
-
-        val executor =
-            Executors.newSingleThreadScheduledExecutor { task ->
-                Thread(
-                    task,
-                    "splendor-in-app-agent"
-                ).apply {
-                    isDaemon = true
-                    priority = Thread.NORM_PRIORITY
-                }
-            }
-
-        scheduler = executor
-
-        executor.scheduleWithFixedDelay(
-            { tickSafely() },
-            INITIAL_DELAY_MS,
-            CYCLE_DELAY_MS,
-            TimeUnit.MILLISECONDS
-        )
-
-        RuntimeLogger.log(
-            "InAppAgentCore started — " +
-                "observation/decision/action/verifier pipeline online",
-            "AGENT"
-        )
+        startInternal()
     }
+
+    /**
+     * Explicit boolean bootstrap for App.onCreate() and future diagnostics.
+     */
+    fun tryStart(): Boolean = startInternal()
+
+    /**
+     * True only when the agent flag is set AND a live scheduler exists.
+     */
+    fun isRunning(): Boolean = running.get() && scheduler != null
 
     fun stop() {
         if (!running.compareAndSet(true, false)) return
@@ -91,15 +79,18 @@ object InAppAgentCore {
         scheduler?.shutdownNow()
         scheduler = null
 
-        RuntimeLogger.log(
-            "InAppAgentCore stopped",
-            "AGENT"
-        )
+        try {
+            RuntimeLogger.log(
+                "InAppAgentCore stopped",
+                "AGENT"
+            )
+        } catch (_: Throwable) {
+        }
     }
 
     fun runNow() {
-        if (!running.get()) {
-            start()
+        if (!isRunning()) {
+            startInternal()
         }
 
         scheduler?.execute {
@@ -112,7 +103,7 @@ object InAppAgentCore {
         val verification = lastVerification
 
         return InAppAgentSnapshot(
-            running = running.get(),
+            running = isRunning(),
             cycles = cycles.get(),
             lastObservationMs =
                 lastObservation?.timestampMs ?: 0L,
@@ -125,6 +116,68 @@ object InAppAgentCore {
             lastVerified =
                 verification?.verified ?: false
         )
+    }
+
+    private fun startInternal(): Boolean {
+        if (!running.compareAndSet(false, true)) {
+            return scheduler != null
+        }
+
+        var created: ScheduledExecutorService? = null
+
+        return try {
+            val executor =
+                Executors.newSingleThreadScheduledExecutor { task ->
+                    Thread(
+                        task,
+                        "splendor-in-app-agent"
+                    ).apply {
+                        isDaemon = true
+                        priority = Thread.NORM_PRIORITY
+                    }
+                }
+
+            created = executor
+            scheduler = executor
+
+            executor.scheduleWithFixedDelay(
+                { tickSafely() },
+                INITIAL_DELAY_MS,
+                CYCLE_DELAY_MS,
+                TimeUnit.MILLISECONDS
+            )
+
+            try {
+                RuntimeLogger.log(
+                    "InAppAgentCore started — " +
+                        "observation/decision/action/verifier pipeline online",
+                    "AGENT"
+                )
+            } catch (_: Throwable) {
+            }
+
+            true
+        } catch (t: Throwable) {
+            running.set(false)
+
+            try {
+                created?.shutdownNow()
+            } catch (_: Throwable) {
+            }
+
+            scheduler = null
+
+            try {
+                RuntimeLogger.log(
+                    "InAppAgentCore failed to start: " +
+                        "${t.javaClass.simpleName}: ${t.message ?: "unknown"}",
+                    "AGENT"
+                )
+            } catch (_: Throwable) {
+            }
+
+            false
+        }
     }
 
     private fun tickSafely() {
