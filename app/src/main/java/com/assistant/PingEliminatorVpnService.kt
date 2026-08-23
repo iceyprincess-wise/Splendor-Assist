@@ -208,7 +208,7 @@ class PingEliminatorVpnService : VpnService() {
 
         if (bestRtt == Long.MAX_VALUE) {
             lastRttMs.set(-1)
-            AdapterSignalBus.publishPingQuality("POOR")
+            AdapterSignalBus.publishPing("POOR")
             updateRegistry("ACTIVE", "ALL probes failed -- POOR", probeCount)
             RuntimeLogger.log("PING: all probes failed -- POOR", "PING")
         } else {
@@ -218,7 +218,7 @@ class PingEliminatorVpnService : VpnService() {
                 bestRtt < THRESHOLD_FAIR -> "FAIR"
                 else                     -> "POOR"
             }
-            AdapterSignalBus.publishPingQuality(quality)
+            AdapterSignalBus.publishPing(quality)
             updateRegistry("ACTIVE", "rtt=${bestRtt}ms quality=$quality", probeCount)
             RuntimeLogger.log("PING: rtt=${bestRtt}ms -> $quality (probe #$probeCount)", "PING")
         }
