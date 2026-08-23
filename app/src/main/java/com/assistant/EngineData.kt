@@ -1,7 +1,6 @@
 package com.assistant
 
 import android.content.Intent
-import java.lang.ref.WeakReference
 
 /**
  * ENGINE DATA
@@ -9,45 +8,49 @@ import java.lang.ref.WeakReference
  * A minimal, thread-safe global state holder for transient engine launch codes 
  * and intents. 
  * 
- * CRITICAL FOR 4GB RAM: Holds Intent via WeakReference to prevent Activity/Context 
- * memory leaks that trigger Low Memory Kills (LMK) during eFootball 2027 gameplay.
+ * CRITICAL FOR RECOVERY: The MediaProjection authorization Intent holds the 
+ * Binder token required to resume screen capture without user interaction. 
+ * Holding this Intent via WeakReference causes it to be garbage collected 
+ * under memory pressure (common on 4GB RAM devices during eFootball 2027). 
+ * If collected, the MediaProjection token is permanently lost, forcing the 
+ * user to manually re-authorize screen capture. Intents are lightweight 
+ * Parcelable data containers and do not leak Activity/Context objects, so 
+ * a strong reference is both safe and mandatory for background survival.
  */
 object EngineData {
     @Volatile
     private var _code: Int = 0
     
     @Volatile
-    private var _intentRef: WeakReference<Intent>? = null
+    private var _intent: Intent? = null
 
     var code: Int
         get() = _code
         set(value) { _code = value }
 
-    // UPGRADE: Intercept setter to wrap Intent in WeakReference, preventing 
-    // strong reference memory leaks while preserving original get/set syntax.
     var intent: Intent?
-        get() = _intentRef?.get()
+        get() = _intent
         set(value) { 
-            _intentRef = if (value != null) WeakReference(value) else null 
+            _intent = value
         }
 
     /**
      * Consumes and returns the intent, then immediately nullifies the reference 
-     * to free memory for the Garbage Collector. Use this instead of direct 
-     * property access when the intent is meant for one-time execution.
+     * to free memory. Use this instead of direct property access when the intent 
+     * is meant for one-time execution.
      */
     fun consumeIntent(): Intent? {
-        val target = _intentRef?.get()
-        _intentRef = null
+        val target = _intent
+        _intent = null
         return target
     }
 
     /**
-     * Explicitly clears all held references to prevent memory leaks 
+     * Explicitly clears all held references to free memory 
      * when the engine is stopped or the app goes to the background.
      */
     fun clear() {
         _code = 0
-        _intentRef = null
+        _intent = null
     }
 }
