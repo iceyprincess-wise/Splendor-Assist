@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.content.ComponentName
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
+import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -105,6 +106,36 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    // P0 FIX: VPN consent launcher.
+    // PingEliminatorVpnService detects VpnService.prepare() returns non-null (user not authorized)
+    // and routes here via REQUEST_VPN_CONSENT extra. This launcher handles the system
+    // VPN authorization dialog. On RESULT_OK the VPN service is started directly.
+    // On denial: ping probe engine stays offline; fleet heartbeats normally via specialUse adapter.
+    private val vpnConsentLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                com.assistant.diagnostic.RuntimeLogger.log(
+                    "VPN consent GRANTED -- starting PingEliminatorVpnService",
+                    "VPN"
+                )
+                try {
+                    startService(Intent(this@MainActivity, PingEliminatorVpnService::class.java))
+                } catch (e: Exception) {
+                    com.assistant.diagnostic.RuntimeLogger.log(
+                        "VPN service start post-consent failed: ${e.message}",
+                        "VPN"
+                    )
+                }
+            } else {
+                com.assistant.diagnostic.RuntimeLogger.log(
+                    "VPN consent DENIED by user -- ping probe engine will remain offline",
+                    "VPN"
+                )
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         GlobalCrashHandler.install(this)
@@ -146,6 +177,34 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        // P0 FIX: VPN consent flow.
+        // PingEliminatorVpnService sends REQUEST_VPN_CONSENT when VpnService.prepare()
+        // returns non-null (user not yet authorized for VPN). We launch the system
+        // authorization dialog here; result handled in vpnConsentLauncher above.
+        if (intent?.getBooleanExtra("REQUEST_VPN_CONSENT", false) == true) {
+            intent.removeExtra("REQUEST_VPN_CONSENT")
+            val vpnPrepareIntent = VpnService.prepare(this)
+            if (vpnPrepareIntent != null) {
+                // System dialog needed.
+                vpnConsentLauncher.launch(vpnPrepareIntent)
+            } else {
+                // Already authorized (granted between service request and this resume).
+                com.assistant.diagnostic.RuntimeLogger.log(
+                    "VPN already authorized on resume -- starting PingEliminatorVpnService directly",
+                    "VPN"
+                )
+                try {
+                    startService(Intent(this, PingEliminatorVpnService::class.java))
+                } catch (e: Exception) {
+                    com.assistant.diagnostic.RuntimeLogger.log(
+                        "VPN direct start on resume failed: ${e.message}",
+                        "VPN"
+                    )
+                }
+            }
+            return
+        }
 
         if (intent?.getBooleanExtra("REQUEST_MEDIA_PROJECTION_RECOVERY", false) == true) {
             intent.removeExtra("REQUEST_MEDIA_PROJECTION_RECOVERY")

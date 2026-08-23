@@ -4,7 +4,6 @@ import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.execution.CentralExecutionBus
 import java.util.concurrent.atomic.AtomicBoolean
 import com.assistant.runtime.GameplayEngineRegistry
-import com.assistant.diagnostic.registry.AdapterHealthRegistry
 
 /*
  * Owns ignition order, gate state, and shutdown for the gameplay runtime.
@@ -79,24 +78,29 @@ object RuntimeCoordinator {
 
     @Synchronized
     fun refreshBoosterReadyFromRegistry() {
-        // Adapters heartbeat from their OWN processes; getAllLive() merges the
-        // persisted cross-process snapshots. Only a FRESH heartbeat proves a
-        // booster adapter is actually alive right now - an old file entry
-        // from a previous session must not open the gate.
-        val now = System.currentTimeMillis()
-        val healthy =
-            try {
-                AdapterHealthRegistry.getAllLive().any {
-                    now - it.lastHeartbeat <= 120_000L
-                }
-            } catch (_: Throwable) {
-                false
-            }
+        // P0 FIX: BoosterIgnition.isFleetReady() is the SINGLE authority for G3.
+        // PREVIOUS BUG: AdapterHealthRegistry.getAllLive().any { heartbeat <= 120s }
+        //   -- one stale adapter heartbeat opened the gate, bypassing fleet quorum.
+        // FIXED: fleet quorum (>=9/16 ACTIVE) AND ignited latch confirmed by
+        //   IgnitionEngine.verifyFleetHealth() via BoosterIgnition.isFleetReady().
+        // DEGRADED re-opening: isFleetReady() resets ignited=false on DEGRADED,
+        //   so boosterReady is forced false here too, keeping the display accurate.
+        // NOTE: once busEnabled=true, evaluateInner() returns early on the
+        //   busEnabled check -- so re-opening boosterReady does NOT stop running
+        //   engines (intentional: WatchdogAdapter handles mid-match recovery).
+        val healthy = try {
+            com.assistant.BoosterIgnition.isFleetReady()
+        } catch (_: Throwable) { false }
 
-        // Set the gate DIRECTLY. Calling reportBoosterReady() from here created
-        // the cycle: evaluate -> refresh -> report -> evaluate -> ...
-        if (healthy && boosterReady.compareAndSet(false, true)) {
-            transition("G3 BOOSTER_READY")
+        if (healthy) {
+            if (boosterReady.compareAndSet(false, true)) {
+                transition("G3 BOOSTER_READY [fleet-quorum confirmed by BoosterIgnition]")
+            }
+        } else {
+            // Fleet not ready (COLD/WARMING/DEGRADED) -- re-open gate to reflect reality.
+            if (boosterReady.getAndSet(false)) {
+                transition("G3 BOOSTER_GATE_OPENED [fleet not ready / degraded]")
+            }
         }
     }
 
@@ -116,6 +120,12 @@ object RuntimeCoordinator {
         runtimeReady.set(false)
         captureReady.set(false)
         enginesWarm.set(false)
+        // P0 FIX: Reset G3 gate AND BoosterIgnition ignited latch on shutdown.
+        // PREVIOUS BUG: BoosterIgnition.reset() was never called here, so ignited=true
+        //   survived a shutdown. Next cold-start: isFleetReady() returned true immediately
+        //   (ignited still latched), bypassing fleet quorum re-verification entirely.
+        boosterReady.set(false)
+        try { com.assistant.BoosterIgnition.reset() } catch (_: Throwable) {}
         resetRuntimeState()
         transition("RUNTIME_OFF")
     }
@@ -184,6 +194,11 @@ object RuntimeCoordinator {
     private fun evaluateInner() {
         refreshBoosterReadyFromRegistry()
         if (!accessibilityReady.get() || !captureReady.get()) return
+        // P0 FIX: G3 gate is now an ACTUAL execution gate, not a display-only flag.
+        // Engines must NOT start until BoosterIgnition confirms fleet quorum.
+        // Once busEnabled=true this check is already bypassed by the busEnabled gate below,
+        // so this ONLY affects cold-start -- engines will not fire with a dead fleet.
+        if (!boosterReady.get()) return
         if (busEnabled.get()) return
 
         if (!enginesWarm.get()) {

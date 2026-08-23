@@ -100,6 +100,39 @@ class PingEliminatorVpnService : VpnService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground(NOTIFICATION_ID, buildNotification("Initialising..."))
         if (isRunning.compareAndSet(false, true)) {
+            // P0 FIX: VpnService.prepare() user consent gate.
+            // Android REQUIRES explicit user authorization before Builder().establish().
+            // prepare() returns:
+            //   null    -> already authorized, safe to proceed
+            //   Intent  -> must launch system dialog; cannot do from a Service
+            // Without this check, Builder().establish() returns null (API 29+) or
+            // throws SecurityException (API < 29). vpnInterface is null. protect() fails.
+            // The adapter heartbeats but the probe socket is unprotected -- RTT data
+            // is unreliable and may route through any parent VPN unintentionally.
+            val prepareIntent = prepare(this)
+            if (prepareIntent != null) {
+                // User has not granted VPN consent -- must route through MainActivity.
+                isRunning.set(false)
+                RuntimeLogger.log(
+                    "PingEliminatorVpnService: VPN consent required -- routing to MainActivity",
+                    "PING"
+                )
+                try {
+                    val uiIntent = Intent(this, com.assistant.MainActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        putExtra("REQUEST_VPN_CONSENT", true)
+                    }
+                    startActivity(uiIntent)
+                } catch (e: Exception) {
+                    RuntimeLogger.log(
+                        "PingEliminatorVpnService: consent UI launch failed: ${e.message}",
+                        "PING"
+                    )
+                }
+                stopSelf()
+                return START_NOT_STICKY
+            }
+            // VPN already authorized -- proceed with interface + probe engine.
             establishProtectInterface()
             startProbeEngine()
             prewarmDns()
@@ -190,12 +223,56 @@ class PingEliminatorVpnService : VpnService() {
                     protect(socket)
                     socket.soTimeout = PROBE_TIMEOUT_MS
                     val address = InetAddress.getByName(host)
-                    val payload = byteArrayOf(0x01)
-                    val packet  = DatagramPacket(payload, payload.size, address, port)
+                    // P0 FIX: Real RTT = SEND + RECEIVE.
+                    // PREVIOUS BUG: socket.send() only measures kernel buffer enqueue (~0-2ms
+                    //   on any device regardless of network state). Result was always "GOOD".
+                    //   AdapterSignalBus.publishPing() was fed noise, not network telemetry.
+                    //   Gameplay engine network-gates (SHOT/PASS suppression on POOR) were blind.
+                    //
+                    // FIXED: Send a minimal valid DNS query (17 bytes) then block on receive().
+                    //   DNS servers 8.8.8.8 and 1.1.1.1 respond to any standard query
+                    //   (NOERROR for root "." or NXDOMAIN/SERVFAIL at worst).
+                    //   socket.receive() blocks until the server responds or soTimeout fires.
+                    //   RTT = t_send to t_receive = true network round-trip time.
+                    //
+                    // DNS query wire format (17 bytes):
+                    //   [0-1]  Transaction ID: 0x0001
+                    //   [2-3]  Flags: 0x0100 (standard query, recursion desired)
+                    //   [4-5]  Questions: 1
+                    //   [6-7]  Answer RRs: 0
+                    //   [8-9]  Authority RRs: 0
+                    //   [10-11] Additional RRs: 0
+                    //   [12]   Root label length: 0 (empty = root domain ".")
+                    //   [13-14] Type: 0x0001 (A record)
+                    //   [15-16] Class: 0x0001 (IN)
+                    val dnsQuery = byteArrayOf(
+                        0x00.toByte(), 0x01.toByte(), // Transaction ID
+                        0x01.toByte(), 0x00.toByte(), // Flags: standard query + RD
+                        0x00.toByte(), 0x01.toByte(), // QDCOUNT: 1 question
+                        0x00.toByte(), 0x00.toByte(), // ANCOUNT: 0
+                        0x00.toByte(), 0x00.toByte(), // NSCOUNT: 0
+                        0x00.toByte(), 0x00.toByte(), // ARCOUNT: 0
+                        0x00.toByte(),               // Root domain (empty label)
+                        0x00.toByte(), 0x01.toByte(), // QTYPE: A
+                        0x00.toByte(), 0x01.toByte()  // QCLASS: IN
+                    )
+                    val sendPacket = DatagramPacket(dnsQuery, dnsQuery.size, address, port)
                     val t0 = System.currentTimeMillis()
-                    socket.send(packet)
-                    val rtt = System.currentTimeMillis() - t0
-                    if (rtt < bestRtt) bestRtt = rtt
+                    socket.send(sendPacket)
+                    try {
+                        val recvBuf = ByteArray(128)
+                        val recvPacket = DatagramPacket(recvBuf, recvBuf.size)
+                        socket.receive(recvPacket) // blocks until DNS response or soTimeout
+                        val rtt = System.currentTimeMillis() - t0
+                        if (rtt < bestRtt) bestRtt = rtt
+                    } catch (_: java.net.SocketTimeoutException) {
+                        // No response within PROBE_TIMEOUT_MS (3000ms).
+                        // This is a legitimate network signal -- treat as probe failure for this target.
+                        RuntimeLogger.log(
+                            "RTT probe timeout: $host:$port -- no response in ${PROBE_TIMEOUT_MS}ms",
+                            "PING"
+                        )
+                    }
                 } finally {
                     safeClose(socket)
                 }

@@ -152,7 +152,14 @@ class OverlayService : Service(), ComponentCallbacks2 {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 val hintManager = getSystemService(PerformanceHintManager::class.java)
-                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 33333333L)
+                // P5 FIX: Target duration corrected for 15-30fps reality on Redmi 15C.
+                // 33333333L (30fps = 33ms) forces CPU governor to sustain a frame budget
+                // the G81-Ultra cannot hold under thermal/memory pressure during eFootball 2027.
+                // 50_000_000L (50ms = 20fps) = center of the 15-30fps target range:
+                //   - Allows 30fps burst headroom when conditions are favorable
+                //   - Does not over-hint for an unachievable sustained 30fps target
+                //   - Reduces unnecessary thermal pressure during 15fps gameplay
+                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 50_000_000L)
             } catch (e: Exception) {}
         }
     }
