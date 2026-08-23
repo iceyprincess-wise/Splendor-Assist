@@ -210,6 +210,10 @@ object RuntimeCoordinator {
      * which is a precondition of reaching this point (G2).
      */
     private fun warmUpEngines() {
+        // Unified registry ownership: all contributor registrations and warm-ups 
+        // are now handled atomically by AppContributorRegistration to prevent 
+        // dual-initialization races and warm-up idempotency issues.
+        // This function now strictly handles read-only ignition for stores and engines only.
         try { TelemetryRepository.current() } catch (_: Throwable) {}
         try { SceneTracker.current() } catch (_: Throwable) {}
         try { Phase3WorldStateStore.current() } catch (_: Throwable) {}
@@ -220,69 +224,6 @@ object RuntimeCoordinator {
         try { GameplayDecisionEngine.gameplayActivationDiagnostics() } catch (_: Throwable) {}
         try { TrueTargetPassingEngine.currentReceiverRankingResult() } catch (_: Throwable) {}
         try { SmartAssistMetrics.snapshot() } catch (_: Throwable) {}
-        try {
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.MagneticFeetContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.PassingContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.ShotContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.SupportContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.DefenseContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.EvadeContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.AttackingVectorContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.CrossContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.AgilityContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.WingBlockContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.DashPressureContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.InterceptMatrixContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.TouchRecoveryContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.OverloadPlaystyleContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.TruePassContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.ReceiverEngagementContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.ForwardRunContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.ShotOpportunityContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.DefenseAuthorityContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.ShotAnticipationContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.KeeperFeedbackContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.DashAnchorContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.SpeedCompensationContributor)
-            // BATCH 4: instant intercept + build-up press + ball retention shield
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.InstantInterceptContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.BuildUpPressContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.BallRetentionShieldContributor)
-            // BATCH S: TrueShot + TrueCross + SA Ultimate Corrector (#27-29)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.TrueShotContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.TrueCrossContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.SmartAssistUltimateCorrectorContributor)
-        } catch (_: Throwable) {}
-        try { GameplayEngineRegistry.warmAll() } catch (_: Throwable) {}
     }
 
     private fun transition(stage: String) {
