@@ -143,7 +143,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         instance = this
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()
-        ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_BACKGROUND).apply { start() }
+        ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_FOREGROUND).apply { start() }  // P1 FIX: FOREGROUND -- BACKGROUND was starved by G81-Ultra scheduler
         ocrIoHandler = android.os.Handler(ocrIoThread!!.looper)
         initializeOverlayUI()
     }
@@ -178,7 +178,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 stopSelf()
             }
         } else {
-            logSilentFailure(Exception("Intent Data Null or Result Code Invalid: $resultCode"))
+            // P2 FIX: explicit reason logging before stop.
+            val _stopReason = when {
+                resultCode != Activity.RESULT_OK -> "resultCode=$resultCode (not RESULT_OK)"
+                data == null                     -> "data=null (MediaProjection intent missing)"
+                else                             -> "unknown denial"
+            }
+            RuntimeLogger.log(
+                "OverlayService: stopping -- permission workflow denied: $_stopReason", "OVERLAY"
+            )
+            logSilentFailure(Exception("Intent Data Null or Result Code Invalid: $resultCode -- $_stopReason"))
             stopSelf()
         }
         return START_NOT_STICKY
@@ -205,10 +214,22 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Splendor Assist Locked")
-            .setContentText("Engine Active")
+            .setContentText(BoosterIgnition.fleetSnapshot())
             .setSmallIcon(android.R.drawable.stat_notify_more)
             .build()
-        startForeground(NOTIFICATION_ID, notification)
+        // P0 FIX: pass FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION to match manifest.
+        // On API 34+ (this device is API 36) omitting the type violates the
+        // foreground-service contract and allows the OS to kill without ANR grace.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID,
+                notification,
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
+        RuntimeLogger.log("OverlayService: startForeground(MEDIA_PROJECTION) called", "OVERLAY")
     }
 
     @SuppressLint("InflateParams")
