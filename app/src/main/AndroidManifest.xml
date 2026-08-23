@@ -13,8 +13,6 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-
-    <!-- P0 FIX: Required for PingEliminatorVpnService -->
     <uses-permission android:name="android.permission.BIND_VPN_SERVICE" />
 
     <application
@@ -213,7 +211,6 @@
                 android:value="Interruption management and anti-stutter coordination" />
         </service>
 
-        <!-- P0 FIX: PingEliminatorVpnService -- confirmed absent from manifest -->
         <service
             android:name="com.assistant.PingEliminatorVpnService"
             android:exported="true"
