@@ -43,6 +43,9 @@ object InAppAgentCore {
     private val running = AtomicBoolean(false)
     private val cycles = AtomicLong(0L)
 
+    // FIX #8: Lock to prevent race window during start transition
+    private val startLock = Any()
+
     @Volatile
     private var scheduler: ScheduledExecutorService? = null
 
@@ -69,22 +72,29 @@ object InAppAgentCore {
     fun tryStart(): Boolean = startInternal()
 
     /**
-     * True only when the agent flag is set AND a live scheduler exists.
+     * FIX #7: Stronger runtime truth test.
+     * Proves the executor is actually alive, not just referenced.
      */
-    fun isRunning(): Boolean = running.get() && scheduler != null
+    fun isRunning(): Boolean {
+        val exec = scheduler ?: return false
+        return running.get() && !exec.isShutdown && !exec.isTerminated
+    }
 
     fun stop() {
-        if (!running.compareAndSet(true, false)) return
+        // FIX #8: Synchronize stop to prevent concurrent modification
+        synchronized(startLock) {
+            if (!running.compareAndSet(true, false)) return
 
-        scheduler?.shutdownNow()
-        scheduler = null
+            scheduler?.shutdownNow()
+            scheduler = null
 
-        try {
-            RuntimeLogger.log(
-                "InAppAgentCore stopped",
-                "AGENT"
-            )
-        } catch (_: Throwable) {
+            try {
+                RuntimeLogger.log(
+                    "InAppAgentCore stopped",
+                    "AGENT"
+                )
+            } catch (_: Throwable) {
+            }
         }
     }
 
@@ -118,65 +128,75 @@ object InAppAgentCore {
         )
     }
 
+    /**
+     * FIX #8: Synchronize the entire start transition to completely eliminate
+     * the race window where running == true but scheduler == null.
+     */
     private fun startInternal(): Boolean {
-        if (!running.compareAndSet(false, true)) {
-            return scheduler != null
-        }
+        synchronized(startLock) {
+            if (running.get()) {
+                val exec = scheduler
+                return exec != null && !exec.isShutdown && !exec.isTerminated
+            }
 
-        var created: ScheduledExecutorService? = null
+            var created: ScheduledExecutorService? = null
 
-        return try {
-            val executor =
-                Executors.newSingleThreadScheduledExecutor { task ->
-                    Thread(
-                        task,
-                        "splendor-in-app-agent"
-                    ).apply {
-                        isDaemon = true
-                        priority = Thread.NORM_PRIORITY
+            return try {
+                val executor =
+                    Executors.newSingleThreadScheduledExecutor { task ->
+                        Thread(
+                            task,
+                            "splendor-in-app-agent"
+                        ).apply {
+                            isDaemon = true
+                            priority = Thread.NORM_PRIORITY
+                        }
                     }
+
+                created = executor
+                scheduler = executor
+
+                executor.scheduleWithFixedDelay(
+                    { tickSafely() },
+                    INITIAL_DELAY_MS,
+                    CYCLE_DELAY_MS,
+                    TimeUnit.MILLISECONDS
+                )
+
+                // Set running to true ONLY after scheduler is fully assigned and scheduled
+                running.set(true)
+
+                try {
+                    RuntimeLogger.log(
+                        "InAppAgentCore started — " +
+                            "observation/decision/action/verifier pipeline online",
+                        "AGENT"
+                    )
+                } catch (_: Throwable) {
                 }
 
-            created = executor
-            scheduler = executor
+                true
+            } catch (t: Throwable) {
+                running.set(false)
 
-            executor.scheduleWithFixedDelay(
-                { tickSafely() },
-                INITIAL_DELAY_MS,
-                CYCLE_DELAY_MS,
-                TimeUnit.MILLISECONDS
-            )
+                try {
+                    created?.shutdownNow()
+                } catch (_: Throwable) {
+                }
 
-            try {
-                RuntimeLogger.log(
-                    "InAppAgentCore started — " +
-                        "observation/decision/action/verifier pipeline online",
-                    "AGENT"
-                )
-            } catch (_: Throwable) {
+                scheduler = null
+
+                try {
+                    RuntimeLogger.log(
+                        "InAppAgentCore failed to start: " +
+                            "${t.javaClass.simpleName}: ${t.message ?: "unknown"}",
+                        "AGENT"
+                    )
+                } catch (_: Throwable) {
+                }
+
+                false
             }
-
-            true
-        } catch (t: Throwable) {
-            running.set(false)
-
-            try {
-                created?.shutdownNow()
-            } catch (_: Throwable) {
-            }
-
-            scheduler = null
-
-            try {
-                RuntimeLogger.log(
-                    "InAppAgentCore failed to start: " +
-                        "${t.javaClass.simpleName}: ${t.message ?: "unknown"}",
-                    "AGENT"
-                )
-            } catch (_: Throwable) {
-            }
-
-            false
         }
     }
 
