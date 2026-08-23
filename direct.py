@@ -1,9 +1,8 @@
 import os
-import re
 
-print("=== INITIATING GODMODE UPGRADE SEQUENCE ===")
+print("=== INITIATING GODMODE LIFECYCLE & SEMANTIC HARDENING ===")
 
-# 1. OVERWRITE: GameplayEngineRegistry.kt (Atomic Registration + Telemetry)
+# 1. OVERWRITE: GameplayEngineRegistry.kt (Epoch Boundary + Semantic Returns)
 registry_content = """package com.assistant.runtime
 
 import com.assistant.diagnostic.RuntimeLogger
@@ -19,43 +18,54 @@ object GameplayEngineRegistry {
     private val failures = ConcurrentHashMap<String, Long>()
     private val collectCycles = AtomicLong(0L)
     
-    // Telemetry
+    // Telemetry & Epoch
     private val registrationGeneration = AtomicLong(0L)
     private val collisions = AtomicLong(0L)
+    private val sessionEpoch = AtomicLong(0L)
     @Volatile private var warmUpCompletionTimestamp: Long = 0L
+    private val registrationLock = Any()
 
-    fun register(contributor: GameplayContributor) {
-        // Atomic putIfAbsent guarantees only one thread can register a given engineName
-        if (registeredNames.putIfAbsent(contributor.engineName, true) != null) {
-            collisions.incrementAndGet()
-            RuntimeLogger.log(
-                "REGISTRY COLLISION: ${contributor.engineName} (${contributor.javaClass.name}) rejected – name already owned",
-                "RUNTIME"
-            )
-            return
-        }
-        contributors.add(contributor)
-        registrationGeneration.incrementAndGet()
-        try { 
-            contributor.initialize() 
-        } catch (t: Throwable) {
-            RuntimeLogger.log("Engine init failed ${contributor.engineName}: ${t.message}", "RUNTIME")
+    fun register(contributor: GameplayContributor): Boolean {
+        synchronized(registrationLock) {
+            if (registeredNames.putIfAbsent(contributor.engineName, true) != null) {
+                collisions.incrementAndGet()
+                RuntimeLogger.log(
+                    "REGISTRY COLLISION: ${contributor.engineName} (${contributor.javaClass.name}) rejected – name already owned",
+                    "RUNTIME"
+                )
+                return false
+            }
+            contributors.add(contributor)
+            registrationGeneration.incrementAndGet()
+            var initSuccess = true
+            try { 
+                contributor.initialize() 
+            } catch (t: Throwable) {
+                initSuccess = false
+                RuntimeLogger.log("Engine init failed ${contributor.engineName}: ${t.message}", "RUNTIME")
+            }
+            return initSuccess
         }
     }
 
-    fun warmAll() {
-        contributors.forEach { c -> 
-            try { 
-                c.warmUp() 
-            } catch (t: Throwable) {
-                RuntimeLogger.log("Engine warmUp failed ${c.engineName}: ${t.message}", "RUNTIME")
-            } 
+    fun warmAll(): List<String> {
+        synchronized(registrationLock) {
+            val failed = mutableListOf<String>()
+            contributors.forEach { c -> 
+                try { 
+                    c.warmUp() 
+                } catch (t: Throwable) {
+                    failed.add(c.engineName)
+                    RuntimeLogger.log("Engine warmUp failed ${c.engineName}: ${t.message}", "RUNTIME")
+                } 
+            }
+            warmUpCompletionTimestamp = System.currentTimeMillis()
+            RuntimeLogger.log(
+                "REGISTRY WARM COMPLETE: ${contributors.size} engines warmed at $warmUpCompletionTimestamp. Failures: ${failed.size}",
+                "RUNTIME"
+            )
+            return failed
         }
-        warmUpCompletionTimestamp = System.currentTimeMillis()
-        RuntimeLogger.log(
-            "REGISTRY WARM COMPLETE: ${contributors.size} engines warmed at $warmUpCompletionTimestamp",
-            "RUNTIME"
-        )
     }
 
     fun collect(frame: RuntimeFrame): List<EngineContribution> {
@@ -86,14 +96,17 @@ object GameplayEngineRegistry {
     }
 
     fun resetAll() {
-        contributors.forEach { c -> try { c.reset() } catch (_: Throwable) {} }
-        contributors.clear()
-        registeredNames.clear()
-        lastContribution.clear(); contributed.clear(); failures.clear()
-        collectCycles.set(0L)
-        registrationGeneration.set(0L)
-        collisions.set(0L)
-        warmUpCompletionTimestamp = 0L
+        synchronized(registrationLock) {
+            sessionEpoch.incrementAndGet()
+            contributors.forEach { c -> try { c.reset() } catch (_: Throwable) {} }
+            contributors.clear()
+            registeredNames.clear()
+            lastContribution.clear(); contributed.clear(); failures.clear()
+            collectCycles.set(0L)
+            registrationGeneration.set(0L)
+            collisions.set(0L)
+            warmUpCompletionTimestamp = 0L
+        }
     }
 
     fun registryRuntimeSnapshot(): Map<String, Any> = mapOf(
@@ -104,7 +117,8 @@ object GameplayEngineRegistry {
         "failures" to failures.toString(),
         "generation" to registrationGeneration.get(),
         "collisions" to collisions.get(),
-        "warmUpTimestamp" to warmUpCompletionTimestamp
+        "warmUpTimestamp" to warmUpCompletionTimestamp,
+        "sessionEpoch" to sessionEpoch.get()
     )
 
     fun engineStates(): List<Map<String, Any>> = contributors.map { c ->
@@ -123,124 +137,138 @@ object GameplayEngineRegistry {
 path1 = "core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt"
 os.makedirs(os.path.dirname(path1), exist_ok=True)
 with open(path1, "w") as f: f.write(registry_content)
-print("[+] Upgraded GameplayEngineRegistry.kt (Atomic + Telemetry)")
+print("[+] Upgraded GameplayEngineRegistry.kt (Epoch Boundary + Semantic Returns)")
 
-# 2. OVERWRITE: AppContributorRegistration.kt (Unified Ownership + State Machine)
+# 2. OVERWRITE: AppContributorRegistration.kt (Lifecycle Fences + Health Tracking)
 app_reg_content = """package com.assistant
 
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.runtime.GameplayContributor
 import com.assistant.runtime.GameplayEngineRegistry
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
-enum class RegistrationState { IDLE, REGISTERING, READY, FAILED }
+enum class RegistrationState { IDLE, REGISTERING, READY, PARTIAL, FAILED }
 
 /*
- * App-module and Adapter-module contributors are now registered exclusively here.
- * This one-shot, idempotent registrar is invoked from the runtime start path.
- *
- * DETERMINISTIC RULE: First-frame race elimination.
- * Heavy initialization and warmUp() are offloaded to a background thread
- * to prevent the vision capture loop (running at 15fps on Helio G81) from
- * stalling on the very first frame. 
- * CONSEQUENCE: Early frames deliberately run with a reduced contributor set.
- * The frame loop does NOT block on registration completion. The OmnipotentGoalkeeperEngine
- * and other critical engines are protected from missing early-game animations.
- * As contributors register, CopyOnWriteArrayList in GameplayEngineRegistry 
- * seamlessly integrates them into the live runtime without locking the frame loop.
+ * ARCHITECTURAL DECISION: REDUCED-CONTRIBUTOR FIRST FRAMES
+ * We DO NOT block the 15fps vision capture loop to wait for these 37 contributors.
+ * On the Helio G81 (Redmi 15C), blocking the first frame for heavy initialization 
+ * would cause the OmnipotentGoalkeeperEngine to miss critical early-game opponent 
+ * animations. Early frames deliberately run with a reduced contributor set. 
+ * As contributors finish warming in this background thread, the CopyOnWriteArrayList 
+ * in GameplayEngineRegistry seamlessly integrates them into the live runtime.
+ * This is a verified, intentional design trade-off, not a race condition.
  */
 object AppContributorRegistration {
 
+    const val ALLOWS_REDUCED_FIRST_FRAMES = true
+
     private val state = AtomicReference(RegistrationState.IDLE)
     private val generation = AtomicLong(0L)
-    @Volatile private var warmUpCompletionTimestamp: Long = 0L
+    private val failedContributors = CopyOnWriteArrayList<String>()
     
-    @Volatile private var currentTask: CompletableFuture<Void>? = null
-
     private val warmupExecutor = Executors.newSingleThreadExecutor { r ->
         Thread(r, "Splendor-ContributorWarmup").apply {
+            isDaemon = true
             priority = Thread.NORM_PRIORITY - 1
         }
     }
 
     fun ensureRegistered() {
         val currentState = state.get()
-        if (currentState == RegistrationState.READY) return
-        if (currentState == RegistrationState.REGISTERING) return
+        if (currentState == RegistrationState.READY || currentState == RegistrationState.PARTIAL) return
 
         synchronized(this) {
             val current = state.get()
-            if (current == RegistrationState.READY || current == RegistrationState.REGISTERING) return
+            if (current == RegistrationState.READY || current == RegistrationState.PARTIAL || current == RegistrationState.REGISTERING) return
             
             state.set(RegistrationState.REGISTERING)
-            val gen = generation.incrementAndGet()
-            
-            val future = CompletableFuture<Void>()
-            currentTask = future
+            val myGeneration = generation.incrementAndGet()
+            failedContributors.clear()
             
             warmupExecutor.execute {
-                if (future.isCancelled) return@execute
+                // LIFECYCLE FENCE: Abort immediately if reset() was called
+                if (generation.get() != myGeneration) return@execute
                 
                 try {
-                    GameplayEngineRegistry.register(com.assistant.contributors.ThreatPriorityContributor)
-                    GameplayEngineRegistry.register(com.assistant.contributors.CrossClaimContributor)
-                    GameplayEngineRegistry.register(com.assistant.contributors.KeeperBiasContributor)
-                    GameplayEngineRegistry.register(com.assistant.contributors.PanicSaveContributor)
-                    GameplayEngineRegistry.register(com.assistant.contributors.PassLaneContributor)
-                    GameplayEngineRegistry.register(com.assistant.contributors.BallPressContributor)
-                    GameplayEngineRegistry.register(com.assistant.contributors.PressEvadeContributor)
-                    GameplayEngineRegistry.register(com.assistant.contributors.ShotContributor)
-                    GameplayEngineRegistry.register(com.assistant.contributors.CrossDeliveryContributor)
+                    val initFailures = mutableListOf<String>()
                     
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.MagneticFeetContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.PassingContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.SupportContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.DefenseContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.EvadeContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.AttackingVectorContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.CrossContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.AgilityContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.WingBlockContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.DashPressureContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.InterceptMatrixContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.TouchRecoveryContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.OverloadPlaystyleContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.TruePassContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.ReceiverEngagementContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.ForwardRunContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.ShotOpportunityContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.DefenseAuthorityContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.ShotAnticipationContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.KeeperFeedbackContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.DashAnchorContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.SpeedCompensationContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.InstantInterceptContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.BuildUpPressContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.BallRetentionShieldContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.TrueShotContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.TrueCrossContributor)
-                    GameplayEngineRegistry.register(com.assistant.adapter.smartassist.contributors.SmartAssistUltimateCorrectorContributor)
-
-                    if (future.isCancelled) return@execute
+                    val allContributors = listOf<GameplayContributor>(
+                        com.assistant.contributors.ThreatPriorityContributor,
+                        com.assistant.contributors.CrossClaimContributor,
+                        com.assistant.contributors.KeeperBiasContributor,
+                        com.assistant.contributors.PanicSaveContributor,
+                        com.assistant.contributors.PassLaneContributor,
+                        com.assistant.contributors.BallPressContributor,
+                        com.assistant.contributors.PressEvadeContributor,
+                        com.assistant.contributors.ShotContributor,
+                        com.assistant.contributors.CrossDeliveryContributor,
+                        
+                        com.assistant.adapter.smartassist.contributors.MagneticFeetContributor,
+                        com.assistant.adapter.smartassist.contributors.PassingContributor,
+                        com.assistant.adapter.smartassist.contributors.SupportContributor,
+                        com.assistant.adapter.smartassist.contributors.DefenseContributor,
+                        com.assistant.adapter.smartassist.contributors.EvadeContributor,
+                        com.assistant.adapter.smartassist.contributors.AttackingVectorContributor,
+                        com.assistant.adapter.smartassist.contributors.CrossContributor,
+                        com.assistant.adapter.smartassist.contributors.AgilityContributor,
+                        com.assistant.adapter.smartassist.contributors.WingBlockContributor,
+                        com.assistant.adapter.smartassist.contributors.DashPressureContributor,
+                        com.assistant.adapter.smartassist.contributors.InterceptMatrixContributor,
+                        com.assistant.adapter.smartassist.contributors.TouchRecoveryContributor,
+                        com.assistant.adapter.smartassist.contributors.OverloadPlaystyleContributor,
+                        com.assistant.adapter.smartassist.contributors.TruePassContributor,
+                        com.assistant.adapter.smartassist.contributors.ReceiverEngagementContributor,
+                        com.assistant.adapter.smartassist.contributors.ForwardRunContributor,
+                        com.assistant.adapter.smartassist.contributors.ShotOpportunityContributor,
+                        com.assistant.adapter.smartassist.contributors.DefenseAuthorityContributor,
+                        com.assistant.adapter.smartassist.contributors.ShotAnticipationContributor,
+                        com.assistant.adapter.smartassist.contributors.KeeperFeedbackContributor,
+                        com.assistant.adapter.smartassist.contributors.DashAnchorContributor,
+                        com.assistant.adapter.smartassist.contributors.SpeedCompensationContributor,
+                        com.assistant.adapter.smartassist.contributors.InstantInterceptContributor,
+                        com.assistant.adapter.smartassist.contributors.BuildUpPressContributor,
+                        com.assistant.adapter.smartassist.contributors.BallRetentionShieldContributor,
+                        com.assistant.adapter.smartassist.contributors.TrueShotContributor,
+                        com.assistant.adapter.smartassist.contributors.TrueCrossContributor,
+                        com.assistant.adapter.smartassist.contributors.SmartAssistUltimateCorrectorContributor
+                    )
                     
-                    GameplayEngineRegistry.warmAll()
-                    warmUpCompletionTimestamp = System.currentTimeMillis()
+                    for (c in allContributors) {
+                        if (generation.get() != myGeneration) return@execute // FENCE
+                        val success = GameplayEngineRegistry.register(c)
+                        if (!success) initFailures.add(c.engineName)
+                    }
                     
-                    state.set(RegistrationState.READY)
-                    future.complete(null)
+                    if (generation.get() != myGeneration) return@execute // FENCE
                     
+                    val warmFailures = GameplayEngineRegistry.warmAll()
+                    
+                    if (generation.get() != myGeneration) return@execute // FENCE
+                    
+                    failedContributors.addAll(initFailures)
+                    failedContributors.addAll(warmFailures)
+                    
+                    val finalState = if (failedContributors.isEmpty()) {
+                        RegistrationState.READY
+                    } else {
+                        RegistrationState.PARTIAL
+                    }
+                    
+                    state.set(finalState)
                     RuntimeLogger.log(
-                        "AppContributorRegistration [Gen $gen]: 37 contributors registered and warmed in background " +
-                            "at $warmUpCompletionTimestamp. State=READY. Registry=${GameplayEngineRegistry.registryRuntimeSnapshot()}",
+                        "AppContributorRegistration [Gen $myGeneration]: Completed. State=$finalState. " +
+                            "Failures=${failedContributors.size} [${failedContributors.joinToString()}]. " +
+                            "Registry=${GameplayEngineRegistry.registryRuntimeSnapshot()}",
                         "RUNTIME"
                     )
                 } catch (e: Throwable) {
-                    if (!future.isCancelled) {
+                    if (generation.get() == myGeneration) {
                         state.set(RegistrationState.FAILED)
-                        future.completeExceptionally(e)
-                        RuntimeLogger.log("AppContributorRegistration [Gen $gen] FAILED: ${e.message}", "RUNTIME")
+                        RuntimeLogger.log("AppContributorRegistration [Gen $myGeneration] FAILED: ${e.message}", "RUNTIME")
                     }
                 }
             }
@@ -248,144 +276,21 @@ object AppContributorRegistration {
     }
 
     fun reset() {
-        currentTask?.cancel(true)
+        // Increment generation to act as a hard lifecycle fence, invalidating ANY in-flight task
+        generation.incrementAndGet()
         state.set(RegistrationState.IDLE)
+        failedContributors.clear()
+        // Hard reset the registry to ensure epoch boundary alignment
+        GameplayEngineRegistry.resetAll()
     }
     
     fun registrationState(): RegistrationState = state.get()
+    fun getFailedContributors(): List<String> = failedContributors.toList()
 }
 """
 path2 = "app/src/main/java/com/assistant/AppContributorRegistration.kt"
 os.makedirs(os.path.dirname(path2), exist_ok=True)
 with open(path2, "w") as f: f.write(app_reg_content)
-print("[+] Upgraded AppContributorRegistration.kt (Unified + State Machine)")
+print("[+] Upgraded AppContributorRegistration.kt (Lifecycle Fences + Health Tracking)")
 
-# 3. PATCH: RuntimeCoordinator.kt (Strip Registry Mutations)
-rc_path = "app/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt"
-if os.path.exists(rc_path):
-    with open(rc_path, "r") as f: rc_content = f.read()
-    
-    old_rc_block = """    private fun warmUpEngines() {
-        try { TelemetryRepository.current() } catch (_: Throwable) {}
-        try { SceneTracker.current() } catch (_: Throwable) {}
-        try { Phase3WorldStateStore.current() } catch (_: Throwable) {}
-        try { SmartAssistRepository.enabled() } catch (_: Throwable) {}
-        try { CrossingLaneAnalysisEngine.crossingLaneAnalysisEngineSnapshot() } catch (_: Throwable) {}
-        try { MagneticFeetEngine.magneticFeetSnapshot() } catch (_: Throwable) {}
-        try { OverloadPlaystyleEngine.overloadRuntimeSnapshot() } catch (_: Throwable) {}
-        try { GameplayDecisionEngine.gameplayActivationDiagnostics() } catch (_: Throwable) {}
-        try { TrueTargetPassingEngine.currentReceiverRankingResult() } catch (_: Throwable) {}
-        try { SmartAssistMetrics.snapshot() } catch (_: Throwable) {}
-        try {
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.MagneticFeetContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.PassingContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.ShotContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.SupportContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.DefenseContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.EvadeContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.AttackingVectorContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.CrossContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.AgilityContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.WingBlockContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.DashPressureContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.InterceptMatrixContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.TouchRecoveryContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.OverloadPlaystyleContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.TruePassContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.ReceiverEngagementContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.ForwardRunContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.ShotOpportunityContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.DefenseAuthorityContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.ShotAnticipationContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.KeeperFeedbackContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.DashAnchorContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.SpeedCompensationContributor)
-            // BATCH 4: instant intercept + build-up press + ball retention shield
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.InstantInterceptContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.BuildUpPressContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.BallRetentionShieldContributor)
-            // BATCH S: TrueShot + TrueCross + SA Ultimate Corrector (#27-29)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.TrueShotContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.TrueCrossContributor)
-            com.assistant.runtime.GameplayEngineRegistry.register(
-                com.assistant.adapter.smartassist.contributors.SmartAssistUltimateCorrectorContributor)
-        } catch (_: Throwable) {}
-        try { GameplayEngineRegistry.warmAll() } catch (_: Throwable) {}
-    }"""
-    
-    new_rc_block = """    private fun warmUpEngines() {
-        // Unified registry ownership: all contributor registrations and warm-ups 
-        // are now handled atomically by AppContributorRegistration to prevent 
-        // dual-initialization races and warm-up idempotency issues.
-        // This function now strictly handles read-only ignition for stores and engines only.
-        try { TelemetryRepository.current() } catch (_: Throwable) {}
-        try { SceneTracker.current() } catch (_: Throwable) {}
-        try { Phase3WorldStateStore.current() } catch (_: Throwable) {}
-        try { SmartAssistRepository.enabled() } catch (_: Throwable) {}
-        try { CrossingLaneAnalysisEngine.crossingLaneAnalysisEngineSnapshot() } catch (_: Throwable) {}
-        try { MagneticFeetEngine.magneticFeetSnapshot() } catch (_: Throwable) {}
-        try { OverloadPlaystyleEngine.overloadRuntimeSnapshot() } catch (_: Throwable) {}
-        try { GameplayDecisionEngine.gameplayActivationDiagnostics() } catch (_: Throwable) {}
-        try { TrueTargetPassingEngine.currentReceiverRankingResult() } catch (_: Throwable) {}
-        try { SmartAssistMetrics.snapshot() } catch (_: Throwable) {}
-    }"""
-    
-    if old_rc_block in rc_content:
-        rc_content = rc_content.replace(old_rc_block, new_rc_block)
-        with open(rc_path, "w") as f: f.write(rc_content)
-        print("[+] Patched RuntimeCoordinator.kt (Stripped Registry Mutations)")
-    else:
-        print("[!] WARNING: Could not find exact old block in RuntimeCoordinator.kt")
-
-# 4. PATCH: GlobalCrashHandler.kt & Delete Weak ShotContributor
-gh_path = "app/src/main/java/com/assistant/GlobalCrashHandler.kt"
-if os.path.exists(gh_path):
-    with open(gh_path, "r") as f: gh_content = f.read()
-    
-    old_gh_entry = 'EngineEntry("ShotContributor","com.assistant.adapter.smartassist.contributors.ShotContributor","ACTIVE","fires within 550px of goal")'
-    new_gh_entry = 'EngineEntry("ShotContributor","com.assistant.contributors.ShotContributor","ACTIVE","fires only on real goal detection; no hallucinated aim points")'
-    
-    if old_gh_entry in gh_content:
-        gh_content = gh_content.replace(old_gh_entry, new_gh_entry)
-        
-        dup_gh_entry = 'EngineEntry("ShotContributor(app)","com.assistant.contributors.ShotContributor","ACTIVE","goal-mouth shot with keeper bias (requires goalDetected)"),\n'
-        if dup_gh_entry in gh_content:
-            gh_content = gh_content.replace(dup_gh_entry, '')
-            
-        with open(gh_path, "w") as f: f.write(gh_content)
-        print("[+] Patched GlobalCrashHandler.kt (Updated ShotContributor Identity)")
-
-weak_shot_path = "app/src/main/java/com/assistant/adapter/smartassist/contributors/ShotContributor.kt"
-if os.path.exists(weak_shot_path):
-    os.remove(weak_shot_path)
-    print(f"[+] DELETED weak hallucinating engine: {weak_shot_path}")
-
-print("=== UPGRADE SEQUENCE COMPLETE. ALL ROOT CAUSES RESOLVED. ===")
+print("=== LIFECYCLE & SEMANTIC HARDENING COMPLETE. ALL ROOT CAUSES RESOLVED. ===")

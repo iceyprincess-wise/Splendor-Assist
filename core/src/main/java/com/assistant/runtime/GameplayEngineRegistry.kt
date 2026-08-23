@@ -13,43 +13,54 @@ object GameplayEngineRegistry {
     private val failures = ConcurrentHashMap<String, Long>()
     private val collectCycles = AtomicLong(0L)
     
-    // Telemetry
+    // Telemetry & Epoch
     private val registrationGeneration = AtomicLong(0L)
     private val collisions = AtomicLong(0L)
+    private val sessionEpoch = AtomicLong(0L)
     @Volatile private var warmUpCompletionTimestamp: Long = 0L
+    private val registrationLock = Any()
 
-    fun register(contributor: GameplayContributor) {
-        // Atomic putIfAbsent guarantees only one thread can register a given engineName
-        if (registeredNames.putIfAbsent(contributor.engineName, true) != null) {
-            collisions.incrementAndGet()
-            RuntimeLogger.log(
-                "REGISTRY COLLISION: ${contributor.engineName} (${contributor.javaClass.name}) rejected – name already owned",
-                "RUNTIME"
-            )
-            return
-        }
-        contributors.add(contributor)
-        registrationGeneration.incrementAndGet()
-        try { 
-            contributor.initialize() 
-        } catch (t: Throwable) {
-            RuntimeLogger.log("Engine init failed ${contributor.engineName}: ${t.message}", "RUNTIME")
+    fun register(contributor: GameplayContributor): Boolean {
+        synchronized(registrationLock) {
+            if (registeredNames.putIfAbsent(contributor.engineName, true) != null) {
+                collisions.incrementAndGet()
+                RuntimeLogger.log(
+                    "REGISTRY COLLISION: ${contributor.engineName} (${contributor.javaClass.name}) rejected – name already owned",
+                    "RUNTIME"
+                )
+                return false
+            }
+            contributors.add(contributor)
+            registrationGeneration.incrementAndGet()
+            var initSuccess = true
+            try { 
+                contributor.initialize() 
+            } catch (t: Throwable) {
+                initSuccess = false
+                RuntimeLogger.log("Engine init failed ${contributor.engineName}: ${t.message}", "RUNTIME")
+            }
+            return initSuccess
         }
     }
 
-    fun warmAll() {
-        contributors.forEach { c -> 
-            try { 
-                c.warmUp() 
-            } catch (t: Throwable) {
-                RuntimeLogger.log("Engine warmUp failed ${c.engineName}: ${t.message}", "RUNTIME")
-            } 
+    fun warmAll(): List<String> {
+        synchronized(registrationLock) {
+            val failed = mutableListOf<String>()
+            contributors.forEach { c -> 
+                try { 
+                    c.warmUp() 
+                } catch (t: Throwable) {
+                    failed.add(c.engineName)
+                    RuntimeLogger.log("Engine warmUp failed ${c.engineName}: ${t.message}", "RUNTIME")
+                } 
+            }
+            warmUpCompletionTimestamp = System.currentTimeMillis()
+            RuntimeLogger.log(
+                "REGISTRY WARM COMPLETE: ${contributors.size} engines warmed at $warmUpCompletionTimestamp. Failures: ${failed.size}",
+                "RUNTIME"
+            )
+            return failed
         }
-        warmUpCompletionTimestamp = System.currentTimeMillis()
-        RuntimeLogger.log(
-            "REGISTRY WARM COMPLETE: ${contributors.size} engines warmed at $warmUpCompletionTimestamp",
-            "RUNTIME"
-        )
     }
 
     fun collect(frame: RuntimeFrame): List<EngineContribution> {
@@ -80,14 +91,17 @@ object GameplayEngineRegistry {
     }
 
     fun resetAll() {
-        contributors.forEach { c -> try { c.reset() } catch (_: Throwable) {} }
-        contributors.clear()
-        registeredNames.clear()
-        lastContribution.clear(); contributed.clear(); failures.clear()
-        collectCycles.set(0L)
-        registrationGeneration.set(0L)
-        collisions.set(0L)
-        warmUpCompletionTimestamp = 0L
+        synchronized(registrationLock) {
+            sessionEpoch.incrementAndGet()
+            contributors.forEach { c -> try { c.reset() } catch (_: Throwable) {} }
+            contributors.clear()
+            registeredNames.clear()
+            lastContribution.clear(); contributed.clear(); failures.clear()
+            collectCycles.set(0L)
+            registrationGeneration.set(0L)
+            collisions.set(0L)
+            warmUpCompletionTimestamp = 0L
+        }
     }
 
     fun registryRuntimeSnapshot(): Map<String, Any> = mapOf(
@@ -98,7 +112,8 @@ object GameplayEngineRegistry {
         "failures" to failures.toString(),
         "generation" to registrationGeneration.get(),
         "collisions" to collisions.get(),
-        "warmUpTimestamp" to warmUpCompletionTimestamp
+        "warmUpTimestamp" to warmUpCompletionTimestamp,
+        "sessionEpoch" to sessionEpoch.get()
     )
 
     fun engineStates(): List<Map<String, Any>> = contributors.map { c ->
