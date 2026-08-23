@@ -13,21 +13,19 @@ object GameplayEngineRegistry {
     private val failures = ConcurrentHashMap<String, Long>()
     private val collectCycles = AtomicLong(0L)
     
-    // Telemetry & Epoch
     private val registrationGeneration = AtomicLong(0L)
     private val collisions = AtomicLong(0L)
     private val sessionEpoch = AtomicLong(0L)
     @Volatile private var warmUpCompletionTimestamp: Long = 0L
     private val registrationLock = Any()
 
+    fun getRegisteredNames(): Set<String> = registeredNames.keys.toSet()
+
     fun register(contributor: GameplayContributor): Boolean {
         synchronized(registrationLock) {
             if (registeredNames.putIfAbsent(contributor.engineName, true) != null) {
                 collisions.incrementAndGet()
-                RuntimeLogger.log(
-                    "REGISTRY COLLISION: ${contributor.engineName} (${contributor.javaClass.name}) rejected – name already owned",
-                    "RUNTIME"
-                )
+                RuntimeLogger.log("REGISTRY COLLISION: ${contributor.engineName} rejected", "RUNTIME")
                 return false
             }
             contributors.add(contributor)
@@ -44,23 +42,21 @@ object GameplayEngineRegistry {
     }
 
     fun warmAll(): List<String> {
-        synchronized(registrationLock) {
-            val failed = mutableListOf<String>()
-            contributors.forEach { c -> 
-                try { 
-                    c.warmUp() 
-                } catch (t: Throwable) {
-                    failed.add(c.engineName)
-                    RuntimeLogger.log("Engine warmUp failed ${c.engineName}: ${t.message}", "RUNTIME")
-                } 
-            }
-            warmUpCompletionTimestamp = System.currentTimeMillis()
-            RuntimeLogger.log(
-                "REGISTRY WARM COMPLETE: ${contributors.size} engines warmed at $warmUpCompletionTimestamp. Failures: ${failed.size}",
-                "RUNTIME"
-            )
-            return failed
+        // MEDIUM FIX: Removed full-lock around warmUp(). CopyOnWriteArrayList allows safe iteration.
+        // This prevents serializing the lifecycle activity for the entire warm-up duration on Helio G81.
+        val failed = mutableListOf<String>()
+        val snapshot = contributors.toList()
+        for (c in snapshot) {
+            try { 
+                c.warmUp() 
+            } catch (t: Throwable) {
+                failed.add(c.engineName)
+                RuntimeLogger.log("Engine warmUp failed ${c.engineName}: ${t.message}", "RUNTIME")
+            } 
         }
+        warmUpCompletionTimestamp = System.currentTimeMillis()
+        RuntimeLogger.log("REGISTRY WARM COMPLETE: ${snapshot.size} engines. Failures: ${failed.size}", "RUNTIME")
+        return failed
     }
 
     fun collect(frame: RuntimeFrame): List<EngineContribution> {
@@ -77,13 +73,7 @@ object GameplayEngineRegistry {
                 val n = (failures[c.engineName] ?: 0L) + 1L
                 failures[c.engineName] = n
                 if (n == 1L || n % 50L == 0L) {
-                    try {
-                        RuntimeLogger.log(
-                            "ENGINE FAILURE ${c.engineName} x$n: " +
-                                (t.message ?: t.javaClass.simpleName),
-                            "RUNTIME"
-                        )
-                    } catch (_: Throwable) {}
+                    RuntimeLogger.log("ENGINE FAILURE ${c.engineName} x$n: ${t.message ?: t.javaClass.simpleName}", "RUNTIME")
                 }
             }
         }
@@ -108,8 +98,6 @@ object GameplayEngineRegistry {
         "engines" to contributors.size,
         "collectCycles" to collectCycles.get(),
         "names" to contributors.joinToString(",") { it.engineName },
-        "contributed" to contributed.toString(),
-        "failures" to failures.toString(),
         "generation" to registrationGeneration.get(),
         "collisions" to collisions.get(),
         "warmUpTimestamp" to warmUpCompletionTimestamp,

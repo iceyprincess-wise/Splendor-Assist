@@ -3,31 +3,39 @@ package com.assistant
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.runtime.GameplayContributor
 import com.assistant.runtime.GameplayEngineRegistry
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
 enum class RegistrationState { IDLE, REGISTERING, READY, PARTIAL, FAILED }
 
-/*
- * ARCHITECTURAL DECISION: REDUCED-CONTRIBUTOR FIRST FRAMES
- * We DO NOT block the 15fps vision capture loop to wait for these 37 contributors.
- * On the Helio G81 (Redmi 15C), blocking the first frame for heavy initialization 
- * would cause the OmnipotentGoalkeeperEngine to miss critical early-game opponent 
- * animations. Early frames deliberately run with a reduced contributor set. 
- * As contributors finish warming in this background thread, the CopyOnWriteArrayList 
- * in GameplayEngineRegistry seamlessly integrates them into the live runtime.
- * This is a verified, intentional design trade-off, not a race condition.
- */
 object AppContributorRegistration {
 
     const val ALLOWS_REDUCED_FIRST_FRAMES = true
+    const val EXPECTED_CONTRIBUTOR_COUNT = 37
+
+    // HIGH: Completeness invariant - explicit set of expected names
+    private val EXPECTED_CONTRIBUTOR_NAMES = setOf(
+        "ThreatPriority", "CrossClaim", "KeeperBias", "PanicSave", "PassLane", "BallPress", "PressEvade", "Shot", "CrossDelivery",
+        "MagneticFeet", "Passing", "Support", "Defense", "Evade", "AttackingVector", "Cross", "Agility", "WingBlock",
+        "DashPressure", "InterceptMatrix", "TouchRecovery", "OverloadPlaystyle", "TruePass", "ReceiverEngagement", "ForwardRun",
+        "ShotOpportunity", "DefenseAuthority", "ShotAnticipation", "KeeperFeedback", "DashAnchor", "SpeedCompensation",
+        "InstantIntercept", "BuildUpPress", "BallRetentionShield", "TrueShot", "TrueCross", "SmartAssistUltimateCorrector"
+    )
 
     private val state = AtomicReference(RegistrationState.IDLE)
     private val generation = AtomicLong(0L)
-    private val failedContributors = CopyOnWriteArrayList<String>()
     
+    // Thread-safe lists for runtime proof telemetry
+    private val initFailures = CopyOnWriteArrayList<String>()
+    private val warmFailures = CopyOnWriteArrayList<String>()
+    private val omittedContributors = CopyOnWriteArrayList<String>()
+    
+    // MEDIUM: Store actual Future for hard cancellation
+    @Volatile private var currentFuture: Future<*>? = null
+
     private val warmupExecutor = Executors.newSingleThreadExecutor { r ->
         Thread(r, "Splendor-ContributorWarmup").apply {
             isDaemon = true
@@ -37,23 +45,29 @@ object AppContributorRegistration {
 
     fun ensureRegistered() {
         val currentState = state.get()
-        if (currentState == RegistrationState.READY || currentState == RegistrationState.PARTIAL) return
+        // HIGH: Recovery semantics - allow retry from PARTIAL or FAILED
+        if (currentState == RegistrationState.READY) return
+        if (currentState == RegistrationState.REGISTERING) return
 
         synchronized(this) {
             val current = state.get()
-            if (current == RegistrationState.READY || current == RegistrationState.PARTIAL || current == RegistrationState.REGISTERING) return
+            if (current == RegistrationState.READY || current == RegistrationState.REGISTERING) return
             
             state.set(RegistrationState.REGISTERING)
             val myGeneration = generation.incrementAndGet()
-            failedContributors.clear()
+            initFailures.clear()
+            warmFailures.clear()
+            omittedContributors.clear()
             
-            warmupExecutor.execute {
-                // LIFECYCLE FENCE: Abort immediately if reset() was called
-                if (generation.get() != myGeneration) return@execute
+            // MEDIUM: Restart behavior - if retrying from PARTIAL/FAILED, clear registry for clean slate
+            if (current == RegistrationState.PARTIAL || current == RegistrationState.FAILED) {
+                GameplayEngineRegistry.resetAll()
+            }
+            
+            currentFuture = warmupExecutor.submit {
+                if (generation.get() != myGeneration) return@submit
                 
                 try {
-                    val initFailures = mutableListOf<String>()
-                    
                     val allContributors = listOf<GameplayContributor>(
                         com.assistant.contributors.ThreatPriorityContributor,
                         com.assistant.contributors.CrossClaimContributor,
@@ -95,34 +109,37 @@ object AppContributorRegistration {
                         com.assistant.adapter.smartassist.contributors.SmartAssistUltimateCorrectorContributor
                     )
                     
+                    // MEDIUM: Runtime assertion for 37-contributor contract
+                    check(allContributors.size == EXPECTED_CONTRIBUTOR_COUNT) {
+                        "CRITICAL: Hardcoded contributor list size (${allContributors.size}) != expected ($EXPECTED_CONTRIBUTOR_COUNT)"
+                    }
+                    
                     for (c in allContributors) {
-                        if (generation.get() != myGeneration) return@execute // FENCE
+                        if (generation.get() != myGeneration) return@submit
                         val success = GameplayEngineRegistry.register(c)
                         if (!success) initFailures.add(c.engineName)
                     }
                     
-                    if (generation.get() != myGeneration) return@execute // FENCE
+                    if (generation.get() != myGeneration) return@submit
                     
-                    val warmFailures = GameplayEngineRegistry.warmAll()
+                    val warmFails = GameplayEngineRegistry.warmAll()
+                    warmFailures.addAll(warmFails)
                     
-                    if (generation.get() != myGeneration) return@execute // FENCE
+                    if (generation.get() != myGeneration) return@submit
                     
-                    failedContributors.addAll(initFailures)
-                    failedContributors.addAll(warmFailures)
+                    // HIGH: Distinguish omission from failure
+                    val actualNames = GameplayEngineRegistry.getRegisteredNames()
+                    val missing = EXPECTED_CONTRIBUTOR_NAMES - actualNames
+                    omittedContributors.addAll(missing)
                     
-                    val finalState = if (failedContributors.isEmpty()) {
-                        RegistrationState.READY
-                    } else {
-                        RegistrationState.PARTIAL
+                    val finalState = when {
+                        missing.isNotEmpty() || initFailures.isNotEmpty() || warmFailures.isNotEmpty() -> RegistrationState.PARTIAL
+                        else -> RegistrationState.READY
                     }
                     
                     state.set(finalState)
-                    RuntimeLogger.log(
-                        "AppContributorRegistration [Gen $myGeneration]: Completed. State=$finalState. " +
-                            "Failures=${failedContributors.size} [${failedContributors.joinToString()}]. " +
-                            "Registry=${GameplayEngineRegistry.registryRuntimeSnapshot()}",
-                        "RUNTIME"
-                    )
+                    RuntimeLogger.log(dumpRuntimeProof(myGeneration), "RUNTIME")
+                    
                 } catch (e: Throwable) {
                     if (generation.get() == myGeneration) {
                         state.set(RegistrationState.FAILED)
@@ -134,14 +151,35 @@ object AppContributorRegistration {
     }
 
     fun reset() {
-        // Increment generation to act as a hard lifecycle fence, invalidating ANY in-flight task
         generation.incrementAndGet()
+        currentFuture?.cancel(true) // MEDIUM: Hard cancellation via Future interrupt
+        currentFuture = null
         state.set(RegistrationState.IDLE)
-        failedContributors.clear()
-        // Hard reset the registry to ensure epoch boundary alignment
         GameplayEngineRegistry.resetAll()
     }
     
+    // MEDIUM: Explicit restart behavior for PARTIAL/FAILED
+    fun retry() {
+        if (state.get() == RegistrationState.PARTIAL || state.get() == RegistrationState.FAILED) {
+            state.set(RegistrationState.IDLE)
+            ensureRegistered()
+        }
+    }
+    
+    // LOW: Live runtime proof
+    fun dumpRuntimeProof(gen: Long = generation.get()): String {
+        val actualCount = GameplayEngineRegistry.getRegisteredNames().size
+        return """
+            |=== REGISTRATION RUNTIME PROOF [Gen $gen] ===
+            |State: ${state.get()}
+            |Expected Count: $EXPECTED_CONTRIBUTOR_COUNT | Actual Count: $actualCount
+            |Init Failures: ${initFailures.size} ${if(initFailures.isNotEmpty()) "[${initFailures.joinToString()}]" else ""}
+            |Warm Failures: ${warmFailures.size} ${if(warmFailures.isNotEmpty()) "[${warmFailures.joinToString()}]" else ""}
+            |Omitted/Missing: ${omittedContributors.size} ${if(omittedContributors.isNotEmpty()) "[${omittedContributors.joinToString()}]" else ""}
+            |Registry Snapshot: ${GameplayEngineRegistry.registryRuntimeSnapshot()}
+            |=============================================
+        """.trimMargin()
+    }
+    
     fun registrationState(): RegistrationState = state.get()
-    fun getFailedContributors(): List<String> = failedContributors.toList()
 }
