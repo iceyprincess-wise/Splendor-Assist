@@ -12,6 +12,11 @@ import com.assistant.diagnostic.RuntimeLogger
  *
  * This wrapper is idempotent: the capture loop can call it every frame and
  * services are started exactly once per process.
+ * 
+ * FIX: Ignition now returns a real success/failure result. ignited=true is
+ * ONLY set after the gate (ComplianceState) is actually satisfied and 
+ * IgnitionEngine returns true, preventing a false-success latch where
+ * services fail to start permanently.
  */
 object BoosterIgnition {
 
@@ -22,17 +27,19 @@ object BoosterIgnition {
         if (ignited) return
         synchronized(this) {
             if (ignited) return
-            ignited = true
-            try {
-                IgnitionEngine.ignite(context.applicationContext)
+            
+            // FIX: Capture the real success/failure result from the engine.
+            val success = IgnitionEngine.ignite(context.applicationContext)
+            
+            if (success) {
+                ignited = true
                 RuntimeLogger.log(
                     "BoosterIgnition: adapter services ignited from runtime start path",
                     "RUNTIME"
                 )
-            } catch (e: Throwable) {
-                ignited = false
+            } else {
                 RuntimeLogger.log(
-                    "BoosterIgnition failed: ${e.message}",
+                    "BoosterIgnition: gate not satisfied, retrying later",
                     "RUNTIME"
                 )
             }

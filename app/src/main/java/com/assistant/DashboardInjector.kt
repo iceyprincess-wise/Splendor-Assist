@@ -73,8 +73,12 @@ object DashboardInjector {
             text = "ACTIVATE ALL ADAPTERS"
             setOnClickListener {
                 // Use applicationContext to prevent leaking the Activity in the engine
-                IgnitionEngine.ignite(activity.applicationContext)
-                runtime.text = "Runtime Nodes : ${AdapterHealthRegistry.getAll().size}"
+                val success = IgnitionEngine.ignite(activity.applicationContext)
+                if (success) {
+                    runtime.text = "Runtime Nodes : ${AdapterHealthRegistry.getAll().size}"
+                } else {
+                    runtime.text = "Ignition Blocked"
+                }
                 status.text = ComplianceState.summary(activity)
             }
         }

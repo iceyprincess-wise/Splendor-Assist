@@ -25,13 +25,13 @@ object IgnitionEngine {
     // and "Context.startForegroundService() did not then call Service.startForeground()" ANRs.
     private const val STAGGER_DELAY_MS = 250L
 
-    fun ignite(context: Context) {
+    fun ignite(context: Context): Boolean {
         if (!ComplianceState.ready(context)) {
             RuntimeLogger.log(
                 "Ignition blocked :: " + ComplianceState.summary(context),
                 "IGNITION"
             )
-            return
+            return false
         }
 
         val adapters = listOf(
@@ -56,6 +56,7 @@ object IgnitionEngine {
         // This prevents holding the IPC thread hostage for ~4 seconds and eliminates 
         // thread-starvation risks during app startup.
         igniteSequence(context, adapters.iterator())
+        return true
     }
 
     private fun igniteSequence(context: Context, iterator: Iterator<String>) {
