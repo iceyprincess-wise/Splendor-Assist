@@ -86,7 +86,7 @@ object MagneticFeetContributor : GameplayContributor {
             speedProp.isAccessible = true
             val speed = speedProp.getFloat(frame)
             if (speed > 8f) {
-                val extra = ((min(speed, 15f) - 8f) / 7f * 10f).toLong()
+                val extra = ((minOf(speed, 15f) - 8f) / 7f * 10f).toLong()
                 durationHintMs = (durationHintMs + extra).coerceAtMost(95L)
             }
         } catch (_: Throwable) {
