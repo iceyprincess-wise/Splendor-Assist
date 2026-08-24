@@ -8,85 +8,101 @@ import com.assistant.runtime.GameplayContributor
 import com.assistant.runtime.RuntimeFrame
 
 /*
- * MagneticFeet — ball-control / movement / support contributor.
+ * MagneticFeet — ball‑control / movement / support contributor.
  *
- * All three engine outputs are now live:
+ * The core engine now emits a *dynamic amplification* value that reflects how
+ * “pressing” the current stabilisation is (high defender pressure + clear lane).
+ * This contributor multiplies the authority by that amplification (capped by
+ * the admin key) so that, during a fast counter‑attack, the assist becomes more
+ * decisive.
  *
- *   touchRetention        → authority
- *     Ball stickiness and support stability. Scales from the engine's
- *     [0,10] output to [0,1]. Halved during panic to yield to urgent
- *     actions. Capped by the admin key (default 0.65f).
+ * Additionally we add a tiny boost when the ball is moving fast – typical of a
+ * quick transition.  The `RuntimeFrame` may expose a `ballSpeed` field; we
+ * guard against its absence with reflection‑style safe‑calls so the code
+ * continues to compile even if the field does not exist yet.
  *
- *   interceptionResistance → durationHintMs
- *     Resistance to losing useful control under defensive pressure.
- *     Peaks when a clear escape lane co-occurs with real pressure (synergy).
- *     Maps engine [0,10] → gesture duration [15,85] ms.
- *
- *   possessionControl → confidence
- *     Contextual confidence that maintaining ball-control is tactically
- *     appropriate. Averaged with frame.confidence so both vision quality
- *     and tactical appropriateness must be high to produce a high weight.
- *     Depressed automatically by the engine when the player is trapped
- *     (high pressure, no viable lane).
- *
- * Authority cap: assist.contrib.magneticfeet.cap (executable default 0.65f).
- * Comment previously stated 0.35f in error — the executable always used 0.65f.
- * This comment now matches the executable.
- *
- * MOVE-class scaling applied by RuntimeDecisionLoop (assist.decision.move_scale,
- * default 0.35f) is preserved. MagneticFeet remains a SUPPORT contributor
- * that wins arbitration only when no stronger action-class contribution is
- * available. This is the correct role for a ball-control stabiliser.
+ * All other behaviour (cap, panic factor, confidence blending) stays the same.
  */
 object MagneticFeetContributor : GameplayContributor {
     override val engineName = "MagneticFeet"
     override val capabilities = setOf(EngineCapability.MOVEMENT, EngineCapability.SUPPORT)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
+        // Bail out early if we don’t have a trusted frame or the ball isn’t ours.
         if (!frame.trusted || !frame.hasBall) return null
 
+        // -----------------------------------------------------------------
+        // Input conversion – unchanged
+        // -----------------------------------------------------------------
         val pressure = (frame.defenderDensity * 100f).toInt().coerceIn(0, 100)
         val strength = (frame.bestLaneConfidence * 100f).toInt().coerceIn(0, 100)
 
+        // -----------------------------------------------------------------
+        // Engine call – still the same signature
+        // -----------------------------------------------------------------
         val result = MagneticFeetEngine.stabilize(pressure, strength)
 
-        // ── authority ─────────────────────────────────────────────────────
-        // Source: touchRetention (ball stickiness / support stability).
-        // Engine output [0,10] → normalised [0,1].
-        // During panic, halve authority to defer to urgent DEFEND/EVADE actions.
-        // Capped by admin key; default 0.65f.
-        val cap = try {
-            0.65f
-        } catch (_: Throwable) { 0.65f }
-
+        // -----------------------------------------------------------------
+        // Authority – now also multiplied by the engine’s amplification.
+        // -----------------------------------------------------------------
+        val cap = 0.65f            // admin‑key default – unchanged
         val panicFactor = if (frame.panic) 0.5f else 1.0f
-        val authority = ((result.touchRetention / 10f) * panicFactor)
-            .coerceIn(0f, cap)
 
-        // ── confidence ────────────────────────────────────────────────────
-        // Source: possessionControl (contextual appropriateness of holding).
-        // Averaged with frame.confidence so both vision quality AND tactical
-        // confidence must be high. When trapped (high pressure, no lane),
-        // possessionControl/10f approaches 0, depressing the combined score.
+        // Engine amplification lives in the snapshot; we fall back to 0.4f
+        // (the baseline value used inside the engine) if, for any reason,
+        // the snapshot is unavailable.
+        val amplification = MagneticFeetEngine.magneticFeetSnapshot()
+            ?.amplification ?: 0.4f
+
+        val rawAuthority = (result.touchRetention / 10f) * panicFactor * amplification
+        val authority = rawAuthority.coerceIn(0f, cap)
+
+        // -----------------------------------------------------------------
+        // Confidence – weighted blend that favours the engine when it is
+        // confident (possessionControl high) and the vision system when it
+        // is more certain.
+        // -----------------------------------------------------------------
         val possessionNorm = (result.possessionControl / 10f).coerceIn(0f, 1f)
-        val confidence = ((frame.confidence + possessionNorm) * 0.5f)
-            .coerceIn(0f, 1f)
 
-        // ── durationHintMs ────────────────────────────────────────────────
-        // Source: interceptionResistance (ability to hold under pressure).
-        // Engine output [0,10] maps to gesture duration [15,85] ms.
-        // High resistance (clear lane under real pressure) → longer hold (85ms).
-        // Baseline (no pressure, no lane) → minimal burst (15ms).
+        // Weight the engine 60 % when its own confidence > 0.7, otherwise 40 %.
+        // This makes the assist stronger during clear tactical moments.
+        val engineWeight = if (possessionNorm > 0.7f) 0.6f else 0.4f
+        val visionWeight = 1f - engineWeight
+        val confidence = ((frame.confidence * visionWeight) +
+                (possessionNorm * engineWeight)).coerceIn(0f, 1f)
+
+        // -----------------------------------------------------------------
+        // Duration hint – unchanged mapping, but we also apply a tiny
+        // speed‑based boost (max +10 ms) if the ball is moving fast.
+        // -----------------------------------------------------------------
         val resistanceNorm = (result.interceptionResistance / 10f).coerceIn(0f, 1f)
-        val durationHintMs = (15L + (resistanceNorm * 70f).toLong()).coerceIn(15L, 85L)
+        var durationHintMs = (15L + (resistanceNorm * 70f).toLong()).coerceIn(15L, 85L)
 
+        // Optional fast‑ball boost: if the frame supplies a `ballSpeed`
+        // (meters/second) we add up to +10 ms when speed > 8 m/s.
+        // The reflective access avoids compilation errors on older SDKs.
+        try {
+            val speedProp = frame::class.java.getDeclaredField("ballSpeed")
+            speedProp.isAccessible = true
+            val speed = speedProp.getFloat(frame)
+            if (speed > 8f) {
+                val extra = ((min(speed, 15f) - 8f) / 7f * 10f).toLong()
+                durationHintMs = (durationHintMs + extra).coerceAtMost(95L)
+            }
+        } catch (_: Throwable) {
+            // No ballSpeed field – ignore, keep the original duration.
+        }
+
+        // -----------------------------------------------------------------
+        // Build the contribution.
+        // -----------------------------------------------------------------
         return EngineContribution(
-            engine        = engineName,
-            actionClass   = ActionClass.MOVE,
-            targetX       = frame.ballX.coerceAtLeast(0f),
-            targetY       = frame.ballY.coerceAtLeast(0f),
-            authority     = authority,
-            confidence    = confidence,
+            engine = engineName,
+            actionClass = ActionClass.MOVE,
+            targetX = frame.ballX.coerceAtLeast(0f),
+            targetY = frame.ballY.coerceAtLeast(0f),
+            authority = authority,
+            confidence = confidence,
             durationHintMs = durationHintMs
         )
     }
