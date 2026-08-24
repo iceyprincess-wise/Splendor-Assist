@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-23 23:57:11 WAT
+Started: 2026-08-24 01:37:30 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -31,22 +31,39 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 55 -> 56
+versionCode: 56 -> 57
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 2m 12s
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:161:37 Unresolved reference: currentState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:162:37 Unresolved reference: fleetSnapshot
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:163:29 'when' expression must be exhaustive, add necessary 'else' branch
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:164:13 Comparison of incompatible enums '[Error type: Not found recorded type for BoosterIgnition.currentState()]' and 'FleetLifecycleState' is always unsuccessful
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:165:13 Comparison of incompatible enums '[Error type: Not found recorded type for BoosterIgnition.currentState()]' and 'FleetLifecycleState' is always unsuccessful
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:166:13 Comparison of incompatible enums '[Error type: Not found recorded type for BoosterIgnition.currentState()]' and 'FleetLifecycleState' is always unsuccessful
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:167:13 Comparison of incompatible enums '[Error type: Not found recorded type for BoosterIgnition.currentState()]' and 'FleetLifecycleState' is always unsuccessful
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:168:13 Comparison of incompatible enums '[Error type: Not found recorded type for BoosterIgnition.currentState()]' and 'FleetLifecycleState' is always unsuccessful
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:201:50 Unresolved reference: currentState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:202:50 Unresolved reference: fleetSnapshot
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:209:45 'when' expression must be exhaustive, add necessary 'else' branch
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:210:29 Comparison of incompatible enums '[Error type: Not found recorded type for BoosterIgnition.currentState()]' and 'FleetLifecycleState' is always unsuccessful
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:211:29 Comparison of incompatible enums '[Error type: Not found recorded type for BoosterIgnition.currentState()]' and 'FleetLifecycleState' is always unsuccessful
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:212:29 Comparison of incompatible enums '[Error type: Not found recorded type for BoosterIgnition.currentState()]' and 'FleetLifecycleState' is always unsuccessful
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:213:29 Comparison of incompatible enums '[Error type: Not found recorded type for BoosterIgnition.currentState()]' and 'FleetLifecycleState' is always unsuccessful
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:214:29 Comparison of incompatible enums '[Error type: Not found recorded type for BoosterIgnition.currentState()]' and 'FleetLifecycleState' is always unsuccessful
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 2m 53s
 
-ASSEMBLE DEBUG APK EXIT: 0
+ASSEMBLE DEBUG APK EXIT: 1
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v56-20260823_235931.apk
--rw-rw----. 1 u0_a262 media_rw 67M Aug 23 23:59 /storage/emulated/0/Download/Splendor-Assist-v56-20260823_235931.apk
+SKIPPED — build exit=1, apk_exists=YES
 
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
@@ -55,8 +72,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 15591 IDLE     8.5
-  3909 STOPPED  (by user or operating system)
+ 22931 IDLE     8.5
+ 15591 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -67,7 +84,7 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  0
+ASSEMBLE DEBUG:                  1
 APK EXPORT:                      ?
 GRADLE DAEMON STOP:              0
 
@@ -77,6 +94,6 @@ GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
 
-Finished: 2026-08-23 23:59:41 WAT
-Report size: 3429 bytes
+Finished: 2026-08-24 01:41:02 WAT
+Report size: 7222 bytes
 ================================================================
