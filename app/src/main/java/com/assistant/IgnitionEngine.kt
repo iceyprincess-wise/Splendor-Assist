@@ -68,6 +68,33 @@ object IgnitionEngine {
     private const val QUORUM_MINIMUM = 9
     private const val ADAPTER_TOTAL  = 16
 
+    // P0 FIX: Critical adapters that MUST ALL be ACTIVE for fleet READY state.
+    // PREVIOUS BUG: 9/16 count alone could declare READY while every one of
+    // these was dead -- gameplay engines fire blind and ungated.
+    //
+    // ENFORCEMENT: criticalRequired ⊆ active AND activeCount >= QUORUM_MINIMUM.
+    //
+    // net         -> network window (GO/CAUTION/HOLD) gating SHOT/PASS/CROSS
+    // lag         -> frame pacing verdict (SMOOTH/JITTERY/CHOKING)
+    // stutter     -> sub-second burst radar (HICCUP/OSCILLATION/SEIZURE)
+    // memory      -> RAM tier (HEALTHY/PRESSURE/CRITICAL) SpeedCompensation
+    // thermal     -> device heat 0-6 scaling gesture durations
+    // smartassist -> decision health monitor -- core gameplay engine
+    // scheduler   -> fleet health counter + fleet-degraded signal
+    // watchdog    -> dead adapter guardian and restart engine
+    // ping        -> real network RTT -> AdapterSignalBus.pingQuality
+    private val CRITICAL_ADAPTERS = setOf(
+        "adapter_net",
+        "adapter_lag",
+        "adapter_stutter",
+        "adapter_memory",
+        "adapter_thermal",
+        "adapter_smartassist",
+        "adapter_scheduler",
+        "adapter_watchdog",
+        "adapter_ping"
+    )
+
     // -- Fleet state --
     @Volatile
     var fleetState: FleetLifecycleState = FleetLifecycleState.COLD
@@ -178,26 +205,48 @@ object IgnitionEngine {
     private fun verifyFleetHealth(context: Context) {
         try {
             val snapshots = com.assistant.diagnostic.registry.AdapterHealthRegistry.getAll()
-            val activeCount = snapshots.count { snap ->
-                com.assistant.diagnostic.registry.AdapterHealthRegistry
-                    .effectiveStatus(snap.adapterName) == "ACTIVE"
-            }
+
+            // P0 FIX: Single-pass active-name set computation.
+            // PREVIOUS BUG: snapshots.count { effectiveStatus == ACTIVE } -- count only,
+            //   no critical adapter verification. 9 non-critical adapters alive = READY
+            //   while every critical adapter is dead. Gameplay runs blind and ungated.
+            // FIXED: build activeNames Set<String> in one filter pass.
+            //   criticalAllActive = all 9 critical adapters in activeNames.
+            //   READY requires BOTH: activeCount >= quorum AND criticalAllActive.
+            val activeNames = snapshots
+                .filter { snap ->
+                    com.assistant.diagnostic.registry.AdapterHealthRegistry
+                        .effectiveStatus(snap.adapterName) == "ACTIVE"
+                }
+                .map { it.adapterName }
+                .toSet()
+
+            val activeCount = activeNames.size
+
+            // P0 FIX: criticalRequired ⊆ active AND activeCount >= quorum.
+            val criticalAllActive = CRITICAL_ADAPTERS.all { it in activeNames }
 
             lastVerifiedActiveCount = activeCount
             val previousState = fleetState
 
             fleetState = when {
-                activeCount >= QUORUM_MINIMUM -> FleetLifecycleState.READY
-                activeCount > 0              -> FleetLifecycleState.WARMING
-                else                         -> FleetLifecycleState.DEGRADED
+                activeCount >= QUORUM_MINIMUM && criticalAllActive -> FleetLifecycleState.READY
+                activeCount > 0 -> FleetLifecycleState.WARMING
+                else            -> FleetLifecycleState.DEGRADED
             }
 
             val transitionNote = if (previousState != fleetState)
                 " [TRANSITION: $previousState -> $fleetState]" else ""
 
+            // VISIBLE EVIDENCE: logged to DiagnosisRoom when critical adapters missing.
+            val criticalNote = if (!criticalAllActive) {
+                val missing = CRITICAL_ADAPTERS - activeNames
+                " [CRITICAL_MISSING: $missing]"
+            } else ""
+
             RuntimeLogger.log(
                 "Fleet verification: active=$activeCount/$ADAPTER_TOTAL " +
-                    "state=$fleetState$transitionNote",
+                    "state=$fleetState$transitionNote$criticalNote",
                 "IGNITION"
             )
 
