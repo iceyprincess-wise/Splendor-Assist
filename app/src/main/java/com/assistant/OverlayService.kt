@@ -143,7 +143,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         instance = this
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()
-        ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_FOREGROUND).apply { start() }  // P1 FIX: FOREGROUND -- BACKGROUND was starved by G81-Ultra scheduler
+        ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_DEFAULT).apply { start() }
         ocrIoHandler = android.os.Handler(ocrIoThread!!.looper)
         initializeOverlayUI()
     }
@@ -152,14 +152,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 val hintManager = getSystemService(PerformanceHintManager::class.java)
-                // P5 FIX: Target duration corrected for 15-30fps reality on Redmi 15C.
-                // 33333333L (30fps = 33ms) forces CPU governor to sustain a frame budget
-                // the G81-Ultra cannot hold under thermal/memory pressure during eFootball 2027.
-                // 50_000_000L (50ms = 20fps) = center of the 15-30fps target range:
-                //   - Allows 30fps burst headroom when conditions are favorable
-                //   - Does not over-hint for an unachievable sustained 30fps target
-                //   - Reduces unnecessary thermal pressure during 15fps gameplay
-                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 50_000_000L)
+                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 33333333L)
             } catch (e: Exception) {}
         }
     }
@@ -185,16 +178,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 stopSelf()
             }
         } else {
-            // P2 FIX: explicit reason logging before stop.
-            val _stopReason = when {
-                resultCode != Activity.RESULT_OK -> "resultCode=$resultCode (not RESULT_OK)"
-                data == null                     -> "data=null (MediaProjection intent missing)"
-                else                             -> "unknown denial"
-            }
-            RuntimeLogger.log(
-                "OverlayService: stopping -- permission workflow denied: $_stopReason", "OVERLAY"
-            )
-            logSilentFailure(Exception("Intent Data Null or Result Code Invalid: $resultCode -- $_stopReason"))
+            logSilentFailure(Exception("Intent Data Null or Result Code Invalid: $resultCode"))
             stopSelf()
         }
         return START_NOT_STICKY
@@ -221,22 +205,14 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Splendor Assist Locked")
-            .setContentText(BoosterIgnition.fleetSnapshot())
+            .setContentText("Engine Active")
             .setSmallIcon(android.R.drawable.stat_notify_more)
             .build()
-        // P0 FIX: pass FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION to match manifest.
-        // On API 34+ (this device is API 36) omitting the type violates the
-        // foreground-service contract and allows the OS to kill without ANR grace.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                NOTIFICATION_ID,
-                notification,
-                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
-            )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION)
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
-        RuntimeLogger.log("OverlayService: startForeground(MEDIA_PROJECTION) called", "OVERLAY")
     }
 
     @SuppressLint("InflateParams")
@@ -399,10 +375,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     reusableBitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
                 }
                 reusableBitmap!!.copyPixelsFromBuffer(image.planes[0].buffer)
-
-                // REDUNDANT VISION CORE BLOCK REMOVED HERE.
-                // VisionCore is already executed in the main capture loop (setupMediaProjection).
-                // Running it again here causes CPU thrashing and thermal throttling on Helio G81-Ultra.
 
                 recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))
                     .addOnSuccessListener { visionText ->

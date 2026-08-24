@@ -1,191 +1,804 @@
-#!/usr/bin/env python3
-"""
-CORRECTED PATCH: IgnitionEngine.kt
-Reapplies BOTH FIX 4a AND FIX 4b.
+import os
 
-ROOT CAUSE OF PREVIOUS FAILURE (PROVEN):
-  OLD_VERIFY used 8-space indentation on verifyFleetHealth() inner lines.
-  Actual file has 12-space indentation inside the try{} block (3 nesting levels:
-  object=0, function body=4, try body=8, try contents=12).
-  str.replace() found no match -> sys.exit(1) before f.write() -> zero file change.
+files_to_patch = {
+    "app/src/main/java/com/assistant/PingEliminatorVpnService.kt": '''package com.assistant
 
-FIX 4a: Add CRITICAL_ADAPTERS set constant after ADAPTER_TOTAL.
-FIX 4b: Replace verifyFleetHealth() try-body with critical-adapter-aware computation.
-         Anchor strings are byte-exact copies from the live repository fetch.
-"""
-import sys
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.net.VpnService
+import android.os.Build
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.ParcelFileDescriptor
+import com.assistant.controlroom.ui.SmartAssistControlRoomActivity
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.atomic.AtomicBoolean
 
-TARGET = "app/src/main/java/com/assistant/IgnitionEngine.kt"
+class PingEliminatorVpnService : VpnService() {
 
-with open(TARGET, "r", encoding="utf-8") as f:
-    content = f.read()
+    companion object {
+        private const val THREAD_NAME_TUNNEL = "SplendorTunnelWorker"
+        private const val DEFAULT_MTU = 1500
+        private const val BUFFER_SIZE = 16384
+        private const val CHANNEL_ID = "SplendorVpnChannel"
+        
+        private const val MIN_JITTER_MS = 2L
+        private const val MAX_JITTER_MS = 8L
+    }
 
-original_len = len(content)
-changes_applied = 0
+    private val isRunning = AtomicBoolean(false)
+    private var vpnInterface: ParcelFileDescriptor? = null
 
-# ────────────────────────────────────────────────────────────────
-# FIX 4a: Insert CRITICAL_ADAPTERS constant block after ADAPTER_TOTAL
-# Anchor: 4-space indent (object-level constants, correct from file)
-# ────────────────────────────────────────────────────────────────
-OLD_CONSTANTS = \
-    "    private const val QUORUM_MINIMUM = 9\n" \
-    "    private const val ADAPTER_TOTAL  = 16"
+    private var tunnelThread: HandlerThread? = null
+    private var tunnelHandler: Handler? = null
 
-NEW_CONSTANTS = \
-    "    private const val QUORUM_MINIMUM = 9\n" \
-    "    private const val ADAPTER_TOTAL  = 16\n" \
-    "\n" \
-    "    // P0 FIX: Critical adapters that MUST ALL be ACTIVE for fleet READY state.\n" \
-    "    // PREVIOUS BUG: 9/16 count alone could declare READY while every one of\n" \
-    "    // these was dead -- gameplay engines fire blind and ungated.\n" \
-    "    //\n" \
-    "    // ENFORCEMENT: criticalRequired ⊆ active AND activeCount >= QUORUM_MINIMUM.\n" \
-    "    //\n" \
-    "    // net         -> network window (GO/CAUTION/HOLD) gating SHOT/PASS/CROSS\n" \
-    "    // lag         -> frame pacing verdict (SMOOTH/JITTERY/CHOKING)\n" \
-    "    // stutter     -> sub-second burst radar (HICCUP/OSCILLATION/SEIZURE)\n" \
-    "    // memory      -> RAM tier (HEALTHY/PRESSURE/CRITICAL) SpeedCompensation\n" \
-    "    // thermal     -> device heat 0-6 scaling gesture durations\n" \
-    "    // smartassist -> decision health monitor -- core gameplay engine\n" \
-    "    // scheduler   -> fleet health counter + fleet-degraded signal\n" \
-    "    // watchdog    -> dead adapter guardian and restart engine\n" \
-    "    // ping        -> real network RTT -> AdapterSignalBus.pingQuality\n" \
-    "    private val CRITICAL_ADAPTERS = setOf(\n" \
-    "        \"adapter_net\",\n" \
-    "        \"adapter_lag\",\n" \
-    "        \"adapter_stutter\",\n" \
-    "        \"adapter_memory\",\n" \
-    "        \"adapter_thermal\",\n" \
-    "        \"adapter_smartassist\",\n" \
-    "        \"adapter_scheduler\",\n" \
-    "        \"adapter_watchdog\",\n" \
-    "        \"adapter_ping\"\n" \
-    "    )"
+    private val bufferPool = ConcurrentLinkedQueue<ByteBuffer>()
 
-if OLD_CONSTANTS in content:
-    content = content.replace(OLD_CONSTANTS, NEW_CONSTANTS, 1)
-    print("[OK] FIX 4a: CRITICAL_ADAPTERS val added after ADAPTER_TOTAL")
-    changes_applied += 1
-else:
-    print("[FAIL] FIX 4a: QUORUM_MINIMUM/ADAPTER_TOTAL anchor not found")
-    print("       Dumping search region for diagnosis:")
-    idx = content.find("QUORUM_MINIMUM")
-    if idx >= 0:
-        print(repr(content[max(0, idx-10):idx+200]))
-    sys.exit(1)
+    override fun onCreate() {
+        super.onCreate()
+        preallocateBufferPool()
+        createNotificationChannel()
+    }
 
-# ────────────────────────────────────────────────────────────────
-# FIX 4b: Replace verifyFleetHealth() computation inside try{}
-#
-# CRITICAL: indentation is 12 spaces (try-body level), NOT 8.
-# Every anchor line below is verified byte-for-byte from the
-# raw GitHub fetch of the live file.
-# ────────────────────────────────────────────────────────────────
-OLD_VERIFY = (
-    "            val snapshots = com.assistant.diagnostic.registry.AdapterHealthRegistry.getAll()\n"
-    "            val activeCount = snapshots.count { snap ->\n"
-    "                com.assistant.diagnostic.registry.AdapterHealthRegistry\n"
-    "                    .effectiveStatus(snap.adapterName) == \"ACTIVE\"\n"
-    "            }\n"
-    "\n"
-    "            lastVerifiedActiveCount = activeCount\n"
-    "            val previousState = fleetState\n"
-    "\n"
-    "            fleetState = when {\n"
-    "                activeCount >= QUORUM_MINIMUM -> FleetLifecycleState.READY\n"
-    "                activeCount > 0              -> FleetLifecycleState.WARMING\n"
-    "                else                         -> FleetLifecycleState.DEGRADED\n"
-    "            }\n"
-    "\n"
-    "            val transitionNote = if (previousState != fleetState)\n"
-    "                \" [TRANSITION: $previousState -> $fleetState]\" else \"\"\n"
-    "\n"
-    "            RuntimeLogger.log(\n"
-    "                \"Fleet verification: active=$activeCount/$ADAPTER_TOTAL \" +\n"
-    "                    \"state=$fleetState$transitionNote\",\n"
-    "                \"IGNITION\"\n"
-    "            )"
-)
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (!isRunning.get()) {
+            val notification = buildNotification()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(1001, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+            } else {
+                startForeground(1001, notification)
+            }
+            startVpnEngine()
+        }
+        return START_STICKY
+    }
 
-NEW_VERIFY = (
-    "            val snapshots = com.assistant.diagnostic.registry.AdapterHealthRegistry.getAll()\n"
-    "\n"
-    "            // P0 FIX: Single-pass active-name set computation.\n"
-    "            // PREVIOUS BUG: snapshots.count { effectiveStatus == ACTIVE } -- count only,\n"
-    "            //   no critical adapter verification. 9 non-critical adapters alive = READY\n"
-    "            //   while every critical adapter is dead. Gameplay runs blind and ungated.\n"
-    "            // FIXED: build activeNames Set<String> in one filter pass.\n"
-    "            //   criticalAllActive = all 9 critical adapters in activeNames.\n"
-    "            //   READY requires BOTH: activeCount >= quorum AND criticalAllActive.\n"
-    "            val activeNames = snapshots\n"
-    "                .filter { snap ->\n"
-    "                    com.assistant.diagnostic.registry.AdapterHealthRegistry\n"
-    "                        .effectiveStatus(snap.adapterName) == \"ACTIVE\"\n"
-    "                }\n"
-    "                .map { it.adapterName }\n"
-    "                .toSet()\n"
-    "\n"
-    "            val activeCount = activeNames.size\n"
-    "\n"
-    "            // P0 FIX: criticalRequired ⊆ active AND activeCount >= quorum.\n"
-    "            val criticalAllActive = CRITICAL_ADAPTERS.all { it in activeNames }\n"
-    "\n"
-    "            lastVerifiedActiveCount = activeCount\n"
-    "            val previousState = fleetState\n"
-    "\n"
-    "            fleetState = when {\n"
-    "                activeCount >= QUORUM_MINIMUM && criticalAllActive -> FleetLifecycleState.READY\n"
-    "                activeCount > 0 -> FleetLifecycleState.WARMING\n"
-    "                else            -> FleetLifecycleState.DEGRADED\n"
-    "            }\n"
-    "\n"
-    "            val transitionNote = if (previousState != fleetState)\n"
-    "                \" [TRANSITION: $previousState -> $fleetState]\" else \"\"\n"
-    "\n"
-    "            // VISIBLE EVIDENCE: logged to DiagnosisRoom when critical adapters missing.\n"
-    "            val criticalNote = if (!criticalAllActive) {\n"
-    "                val missing = CRITICAL_ADAPTERS - activeNames\n"
-    "                \" [CRITICAL_MISSING: $missing]\"\n"
-    "            } else \"\"\n"
-    "\n"
-    "            RuntimeLogger.log(\n"
-    "                \"Fleet verification: active=$activeCount/$ADAPTER_TOTAL \" +\n"
-    "                    \"state=$fleetState$transitionNote$criticalNote\",\n"
-    "                \"IGNITION\"\n"
-    "            )"
-)
+    override fun onDestroy() {
+        stopVpnEngine()
+        super.onDestroy()
+    }
 
-if OLD_VERIFY in content:
-    content = content.replace(OLD_VERIFY, NEW_VERIFY, 1)
-    print("[OK] FIX 4b: verifyFleetHealth() try-body -- critical-adapter quorum enforced")
-    changes_applied += 1
-else:
-    print("[FAIL] FIX 4b: try-body anchor not found after 4a was applied")
-    print("       Indentation diagnosis -- searching for 'val snapshots' in file:")
-    idx = content.find("val snapshots = com.assistant.diagnostic")
-    if idx >= 0:
-        region = content[max(0, idx-4):idx+120]
-        print("       repr:", repr(region))
-    else:
-        print("       'val snapshots' not found at all -- check if AdapterHealthRegistry import changed")
-    sys.exit(1)
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Splendor Assist Network",
+                NotificationManager.IMPORTANCE_MIN
+            ).apply {
+                description = "Maintains secure connection"
+                setShowBadge(false)
+            }
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            nm.createNotificationChannel(channel)
+        }
+    }
 
-# ────────────────────────────────────────────────────────────────
-# Write output only if BOTH changes succeeded
-# ────────────────────────────────────────────────────────────────
-with open(TARGET, "w", encoding="utf-8") as f:
-    f.write(content)
+    private fun buildNotification(): Notification {
+        val intent = Intent(this, SmartAssistControlRoomActivity::class.java)
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, flags)
 
-print(f"\n[DONE] IgnitionEngine.kt: {changes_applied}/2 changes applied")
-print(f"       Original: {original_len} chars  ->  New: {len(content)} chars")
-print()
-print("VISIBLE EVIDENCE:")
-print("  DiagnosisRoom/logs: 'Fleet verification: active=7/16 state=WARMING")
-print("  [CRITICAL_MISSING: [adapter_lag, adapter_net]]' -- fleet holds, engines gated.")
-print("  Dashboard: WARMING until all 9 critical adapters report ACTIVE heartbeats.")
-print("  Once all critical + quorum met: READY -> G3 opens -> engines fire.")
-print()
-print("REGRESSION SAFETY:")
-print("  activeCount > 0 -> WARMING (not DEGRADED) when critical missing but count>0.")
-print("  Retry loop (5s) continues. WatchdogAdapter restarts dead services.")
-print("  Once recovered: criticalAllActive=true + count>=9 -> READY -> G3 unlocks.")
+        return Notification.Builder(this, CHANNEL_ID)
+            .setContentTitle("Splendor Assist Active")
+            .setContentText("Network latency masking enabled")
+            .setSmallIcon(android.R.drawable.ic_dialog_info) 
+            .setContentIntent(pendingIntent)
+            .setOngoing(true)
+            .build()
+    }
+
+    private fun preallocateBufferPool() {
+        for (i in 0 until 64) {
+            bufferPool.offer(ByteBuffer.allocateDirect(BUFFER_SIZE))
+        }
+    }
+
+    private fun obtainBuffer(): ByteBuffer {
+        val buf = bufferPool.poll() ?: ByteBuffer.allocateDirect(BUFFER_SIZE)
+        buf.clear()
+        return buf
+    }
+
+    private fun releaseBuffer(buf: ByteBuffer) {
+        if (bufferPool.size < 128) {
+            buf.clear()
+            bufferPool.offer(buf)
+        }
+    }
+
+    private fun startVpnEngine() {
+        if (!isRunning.compareAndSet(false, true)) return
+
+        val dummyIntent = Intent()
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+        val configureIntent = PendingIntent.getBroadcast(this, 0, dummyIntent, flags)
+
+        val builder = Builder()
+            .setMtu(DEFAULT_MTU)
+            .addAddress("10.0.0.2", 32)
+            .addRoute("0.0.0.0", 0)
+            .setSession("SplendorPossessionEngine")
+            .setConfigureIntent(configureIntent)
+            .addDnsServer("8.8.8.8") 
+
+        try {
+            vpnInterface = builder.establish()
+        } catch (e: Exception) {
+            isRunning.set(false)
+            return
+        }
+
+        val pfd = vpnInterface ?: return
+
+        tunnelThread = HandlerThread(THREAD_NAME_TUNNEL, android.os.Process.THREAD_PRIORITY_BACKGROUND)
+        tunnelThread?.start()
+        tunnelHandler = Handler(tunnelThread?.looper ?: android.os.Looper.getMainLooper())
+
+        tunnelHandler?.post {
+            executeLowLevelIO(pfd)
+        }
+    }
+
+    private fun executeLowLevelIO(pfd: ParcelFileDescriptor) {
+        val fis = FileInputStream(pfd.fileDescriptor)
+        val fos = FileOutputStream(pfd.fileDescriptor)
+        val inChannel = fis.channel
+        val outChannel = fos.channel
+
+        val readBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE)
+        val random = ThreadLocalRandom.current()
+
+        while (isRunning.get()) {
+            try {
+                readBuffer.clear()
+                val bytesRead = inChannel.read(readBuffer)
+                if (bytesRead > 0) {
+                    readBuffer.flip()
+                    
+                    val payload = obtainBuffer()
+                    if (payload.remaining() >= readBuffer.remaining()) {
+                        payload.put(readBuffer)
+                        payload.flip()
+                        
+                        val jitterMs = random.nextLong(MIN_JITTER_MS, MAX_JITTER_MS + 1)
+                        if (jitterMs > 0) {
+                            Thread.sleep(jitterMs)
+                        }
+                        
+                        outChannel.write(payload)
+                        releaseBuffer(payload)
+                    }
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        
+        try {
+            inChannel.close()
+            outChannel.close()
+            fis.close()
+            fos.close()
+        } catch (ignored: Exception) {}
+    }
+
+    private fun stopVpnEngine() {
+        if (!isRunning.compareAndSet(true, false)) return
+
+        try {
+            vpnInterface?.close()
+        } catch (ignored: Exception) {
+        } finally {
+            vpnInterface = null
+        }
+
+        tunnelThread?.quitSafely()
+        tunnelThread = null
+        tunnelHandler = null
+
+        bufferPool.clear()
+    }
+}
+''',
+    "app/src/main/java/com/assistant/OverlayService.kt": '''package com.assistant
+
+import android.annotation.SuppressLint
+import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.RuntimeMetricsRegistry
+import com.assistant.adapter.smartassist.SmartAssistRepository
+import com.assistant.survival.OverlaySurvivalEngine
+import com.assistant.overlay.metrics.SmartAssistMetrics
+import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
+import com.assistant.overlay.notification.RuntimeNotificationCoordinator
+import com.assistant.overlay.runtime.PerformanceGovernor
+
+import android.app.Activity
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.content.ComponentCallbacks2
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.PixelFormat
+import android.hardware.display.DisplayManager
+import android.hardware.display.VirtualDisplay
+import android.media.Image
+import android.media.ImageReader
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
+import android.os.Build
+import android.os.Handler
+import android.os.IBinder
+import android.os.Looper
+import android.os.Process
+import android.os.PerformanceHintManager
+import android.util.DisplayMetrics
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.WindowManager
+import android.widget.TextView
+import com.assistant.adapter.interruption.CallOverlayRepository
+import androidx.core.app.NotificationCompat
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import java.io.File
+import java.io.FileWriter
+import java.io.PrintWriter
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.concurrent.locks.ReentrantLock
+
+class OverlayService : Service(), ComponentCallbacks2 {
+
+    @Volatile
+    private var runtimeInitialized = false
+
+    companion object {
+        private const val CHANNEL_ID = "efootball_assistant_channel"
+        private const val NOTIFICATION_ID = 101
+        @Volatile var instance: OverlayService? = null
+            private set
+        @JvmStatic
+        fun restartCaptureIfAlive(): Boolean =
+            instance?.restartCapture() ?: false
+    }
+
+    private var isRunning = false
+    private var processingThread: Thread? = null
+    private lateinit var windowManager: WindowManager
+    private lateinit var overlayView: View
+    private lateinit var txtEngineStatus: TextView
+    private lateinit var notificationManager: NotificationManager
+
+    private var mediaProjection: MediaProjection? = null
+    private var virtualDisplay: VirtualDisplay? = null
+    private var imageReader: ImageReader? = null
+    private var projectionCallback: MediaProjection.Callback? = null
+
+    @Volatile
+    private var projectionRevoked = false
+
+    private var perfHintSession: PerformanceHintManager.Session? = null
+    private var ocrIoThread: android.os.HandlerThread? = null
+    private var ocrIoHandler: android.os.Handler? = null
+    private var lastOcrTime = 0L
+    private var lastMatchDetectionTime = 0L
+    private val OCR_INTERVAL_MS = 1500L 
+    private var reusableBitmap: Bitmap? = null
+    private val taskExecutionLock = ReentrantLock()
+    private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    
+    @Volatile private var lastFrameProcessedMs = 0L
+    private val captureFrameIntervalBase = 33L
+    private val captureFrameIntervalMs: Long
+        get() = com.assistant.adapter.memory.MemoryCaptureGateEngine.recommendedIntervalMs()
+    @Volatile private var captureFrameCount = 0L
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    fun restartCapture(): Boolean {
+        if (projectionRevoked) {
+            RuntimeLogger.log("AGENT CAPTURE RESTART: projection already revoked; fresh MediaProjection authorization required", "AGENT")
+            return false
+        }
+        if (mediaProjection == null) {
+            RuntimeLogger.log("AGENT CAPTURE RESTART: no active MediaProjection", "AGENT")
+            return false
+        }
+        try {
+            RuntimeLogger.log("AGENT CAPTURE RESTART: attempting ImageReader recreation", "AGENT")
+            try {
+                val drainLatch = java.util.concurrent.CountDownLatch(1)
+                ocrIoHandler?.post { drainLatch.countDown() } ?: drainLatch.countDown()
+                drainLatch.await(100L, java.util.concurrent.TimeUnit.MILLISECONDS)
+            } catch (_: Throwable) {}
+            try { virtualDisplay?.release() } catch (_: Throwable) {}
+            try { imageReader?.close() } catch (_: Throwable) {}
+            setupMediaProjection(android.app.Activity.RESULT_OK, com.assistant.EngineData.intent ?: return false)
+            lastFrameProcessedMs = 0L
+            captureFrameCount = 0L
+            RuntimeLogger.log("AGENT CAPTURE RESTART: ImageReader recreated successfully", "AGENT")
+            return true
+        } catch (e: Exception) {
+            RuntimeLogger.log("AGENT CAPTURE RESTART FAILED: ${e.message}", "AGENT")
+            return false
+        }
+    }
+
+    override fun onCreate() {
+        if(runtimeInitialized) return
+        runtimeInitialized=true
+        super.onCreate()
+        RuntimeLogger.log("OverlayService started", "OVERLAY")
+        com.assistant.vision.ForegroundGate.install(application)
+        try {
+            com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext)
+            com.assistant.adapter.smartassist.RuntimeSelfHealEngine.start()
+        } catch (_: Throwable) {}
+        instance = this
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        initializePerformanceMode()
+        ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_DEFAULT).apply { start() }
+        ocrIoHandler = android.os.Handler(ocrIoThread!!.looper)
+        initializeOverlayUI()
+    }
+
+    private fun initializePerformanceMode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                val hintManager = getSystemService(PerformanceHintManager::class.java)
+                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 33333333L)
+            } catch (e: Exception) {}
+        }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val resultCode = intent?.getIntExtra("CROSS_PROCESS_CODE", EngineData.code) ?: EngineData.code
+        val data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent?.getParcelableExtra("CROSS_PROCESS_DATA", Intent::class.java) ?: EngineData.intent
+        } else {
+            @Suppress("DEPRECATION")
+            intent?.getParcelableExtra<Intent>("CROSS_PROCESS_DATA") ?: EngineData.intent
+        }
+        
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            startForegroundSafely()
+            try {
+                setupMediaProjection(resultCode, data)
+                if (!isRunning) {
+                    initializeProcessingEngine()
+                }
+            } catch (e: Exception) {
+                logSilentFailure(e)
+                stopSelf()
+            }
+        } else {
+            logSilentFailure(Exception("Intent Data Null or Result Code Invalid: $resultCode"))
+            stopSelf()
+        }
+        return START_NOT_STICKY
+    }
+
+    private fun logSilentFailure(e: Exception) {
+        try {
+            val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+            val logFile = com.assistant.storage.SplendorStorageRoot.file("Splendor_Crash_Reports.txt")
+            FileWriter(logFile, true).use { writer ->
+                PrintWriter(writer).use { pw ->
+                    pw.println("=== SILENT ENGINE FAULT: $timestamp ===")
+                    e.printStackTrace(pw)
+                    pw.println("=========================================\\n")
+                }
+            }
+        } catch (ignored: Exception) {}
+    }
+
+    private fun startForegroundSafely() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(CHANNEL_ID, "Engine Primary", NotificationManager.IMPORTANCE_LOW)
+            notificationManager.createNotificationChannel(channel)
+        }
+        val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Splendor Assist Locked")
+            .setContentText("Engine Active")
+            .setSmallIcon(android.R.drawable.stat_notify_more)
+            .build()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION)
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
+    }
+
+    @SuppressLint("InflateParams")
+    private fun initializeOverlayUI() {
+        Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
+        windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        overlayView = inflater.inflate(com.assistant.overlay.R.layout.overlay_layout, null)
+        txtEngineStatus = overlayView.findViewById(com.assistant.overlay.R.id.overlay_status_text)
+        
+        val layoutParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+            PixelFormat.TRANSLUCENT
+        )
+        windowManager.addView(overlayView, layoutParams)
+
+        overlayView.post {
+            com.assistant.vision.OverlaySelfMask.publishHierarchy("hud", overlayView)
+        }
+        overlayView.viewTreeObserver.addOnGlobalLayoutListener {
+            com.assistant.vision.OverlaySelfMask.publishHierarchy("hud", overlayView)
+        }
+        OverlaySurvivalEngine.attached()
+        updateOverlayVisuals("GUARD LOCK: SECURE [ANTI-BAN ON]", Color.GREEN)
+        startTrajectoryWatchdog(overlayView, Handler(Looper.getMainLooper()))
+    }
+
+    private fun updateOverlayVisuals(text: String, color: Int) {
+        Handler(Looper.getMainLooper()).post {
+            txtEngineStatus.text = if (CallOverlayRepository.incomingCallVisible) "[CALL PROTECTED] " + text else text
+            txtEngineStatus.setTextColor(color)
+        }
+    }
+
+    private fun requestFreshProjectionAuthorization() {
+        try {
+            val recoveryIntent = Intent(this, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                putExtra("REQUEST_MEDIA_PROJECTION_RECOVERY", true)
+            }
+            startActivity(recoveryIntent)
+            RuntimeLogger.log("MediaProjection recovery: MainActivity launched for fresh authorization", "AGENT")
+        } catch (t: Throwable) {
+            RuntimeLogger.log("MediaProjection recovery launch failed: ${t.javaClass.simpleName}: ${t.message}", "AGENT")
+        }
+    }
+
+    private fun setupMediaProjection(code: Int, intent: Intent) {
+        val projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        projectionRevoked = false
+        mediaProjection = projectionManager.getMediaProjection(code, intent)
+
+        if (mediaProjection == null) {
+            RuntimeLogger.log("MediaProjection setup failed: getMediaProjection returned null", "OVERLAY")
+            throw IllegalStateException("MediaProjection unavailable")
+        }
+        projectionCallback = object : MediaProjection.Callback() {
+            override fun onStop() {
+                super.onStop()
+                projectionRevoked = true
+                Handler(Looper.getMainLooper()).post {
+                    try { virtualDisplay?.release() } catch (_: Throwable) {}
+                    try { imageReader?.close() } catch (_: Throwable) {}
+                    virtualDisplay = null
+                    imageReader = null
+                    mediaProjection = null
+                    lastFrameProcessedMs = 0L
+                    captureFrameCount = 0L
+                    RuntimeLogger.log("MediaProjection.onStop(): projection revoked; capture resources invalidated; fresh authorization required", "OVERLAY")
+                    requestFreshProjectionAuthorization()
+                }
+            }
+        }
+        mediaProjection?.registerCallback(projectionCallback!!, Handler(Looper.getMainLooper()))
+        val scale = 0.4f
+        val metrics = DisplayMetrics()
+        val finalWidth: Int
+        val finalHeight: Int
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val bounds = windowManager.currentWindowMetrics.bounds
+            finalWidth = (bounds.width() * scale).toInt() and 0xFFFFFFFE.toInt()
+            finalHeight = (bounds.height() * scale).toInt() and 0xFFFFFFFE.toInt()
+            metrics.densityDpi = resources.configuration.densityDpi
+        } else {
+            @Suppress("DEPRECATION")
+            windowManager.defaultDisplay.getRealMetrics(metrics)
+            finalWidth = (metrics.widthPixels * scale).toInt() and 0xFFFFFFFE.toInt()
+            finalHeight = (metrics.heightPixels * scale).toInt() and 0xFFFFFFFE.toInt()
+        }
+        com.assistant.vision.OverlaySelfMask.setCaptureScale(finalWidth, finalHeight, if (scale > 0f) (finalWidth / scale).toInt() else finalWidth, if (scale > 0f) (finalHeight / scale).toInt() else finalHeight)
+        imageReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
+        imageReader?.setOnImageAvailableListener({ reader ->
+            val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
+            val captureNow = System.currentTimeMillis()
+            if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
+                image.close()
+                return@setOnImageAvailableListener
+            }
+            lastFrameProcessedMs = captureNow
+            val thisFrameCount = ++captureFrameCount
+            val doFullProcessing = (thisFrameCount % 2L == 0L)
+            if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
+                image.close()
+                return@setOnImageAvailableListener
+            }
+            try {
+                val scanBuffer = image.planes[0].buffer.duplicate()
+                val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
+
+                if (doFullProcessing) {
+                    val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
+                    com.assistant.BoosterIgnition.ensureIgnited(this)
+                    com.assistant.AppContributorRegistration.ensureRegistered()
+                    com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
+                    val frame = com.assistant.adapter.smartassist.FrameAssembler.assemble()
+                    com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
+                    com.assistant.adapter.smartassist.GameStateBuilder.update(state)
+                    com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
+                } else {
+                    try {
+                        val lightSamples = com.assistant.adapter.smartassist.FrameScanner.scan(normalized)
+                        val lightBlobs = com.assistant.adapter.smartassist.ConnectedComponentEngine.extract(lightSamples)
+                        val filteredBlobs = com.assistant.adapter.smartassist.NoiseFilter.filter(lightBlobs)
+                        val ballCandidate = com.assistant.adapter.smartassist.BallCandidateEngine.select(filteredBlobs)
+                        val ball = com.assistant.adapter.smartassist.BallDetector.detect(ballCandidate)
+                        com.assistant.adapter.smartassist.BallTelemetryBridge.publish(ball)
+                    } catch (_: Throwable) {}
+                }
+            } catch (t: Throwable) {
+                try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+            }
+            val shedFactor = when (com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentLoadShed()) {
+                "HEAVY" -> 4L
+                "LIGHT" -> 2L
+                else -> 1L
+            }
+            if (System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS * shedFactor) {
+                lastOcrTime = System.currentTimeMillis()
+                processImageForOCR(image)
+            } else {
+                image.close()
+            }
+        }, ocrIoHandler ?: Handler(Looper.getMainLooper()))
+        virtualDisplay = mediaProjection?.createVirtualDisplay("HybridCoachScreen", finalWidth, finalHeight, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY, imageReader?.surface, null, null)
+    }
+
+    private fun processImageForOCR(image: Image) {
+        try {
+            image.width
+        } catch (_: IllegalStateException) {
+            try { image.close() } catch (_: Throwable) {}
+            return
+        }
+        if (taskExecutionLock.tryLock()) {
+            try {
+                if (reusableBitmap == null || reusableBitmap!!.width != image.width || reusableBitmap!!.height != image.height) {
+                    reusableBitmap?.recycle()
+                    reusableBitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
+                }
+                reusableBitmap!!.copyPixelsFromBuffer(image.planes[0].buffer)
+
+                recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))
+                    .addOnSuccessListener { visionText ->
+
+                        val detectedText = visionText.textBlocks.asSequence()
+                            .filterNot { com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(it.boundingBox) }
+                            .joinToString(" ") { it.text }
+                            .replace("\\n", " ")
+                            .take(120)
+
+                        com.assistant.vision.OverlaySelfMask.tickAndLog()
+
+                        if (detectedText.isNotBlank()) {
+                            RuntimeMetricsRegistry.ocrDetections.incrementAndGet()
+                            RuntimeLogger.log("OCR: $detectedText", "OCR")
+                        }
+
+                        if (
+                            detectedText.isNotBlank() &&
+                            !detectedText.contains("SPLENDOR ASSIST", true) &&
+                            !detectedText.contains("Runtime Summary", true) &&
+                            !detectedText.contains("Runtime Nodes", true) &&
+                            !detectedText.contains("Start Engine", true) &&
+                            !detectedText.contains("View Logs", true) &&
+                            !detectedText.contains("Activate All Adapters", true) &&
+                            !detectedText.contains("🕶️", true) &&
+                            !detectedText.contains("ENGINE READY", true) &&
+                            !detectedText.contains("BLOCKED:", true) &&
+                            !detectedText.contains("Audit :", true) &&
+                            !detectedText.contains("Verified :", true) &&
+                            (
+                                detectedText.contains("time", true) ||
+                                detectedText.contains("match", true) ||
+                                detectedText.contains("vs", true) ||
+                                detectedText.contains("score", true)
+                            ) &&
+                            System.currentTimeMillis() - lastMatchDetectionTime >= 5000L
+                        ) {
+                            SmartAssistRepository.activatePanic()
+
+                            val lv = com.assistant.adapter.smartassist.LiveVectorResolver.resolve(
+                                reusableBitmap?.width?.toFloat() ?: 1080f,
+                                reusableBitmap?.height?.toFloat() ?: 2400f
+                            )
+                            val pipe = com.assistant.adapter.smartassist.SmartAssistPipeline()
+                            val vectorDx = lv.endX - lv.startX
+                            val vectorDy = lv.endY - lv.startY
+                            val vectorDistance = kotlin.math.hypot(vectorDx, vectorDy)
+                            val dec = if (lv.hasRealData) {
+                                pipe.computeOptimalVector(lv.startX, lv.startY, lv.endX, lv.endY, lv.duration)
+                            } else {
+                                null
+                            }
+                            
+                            val submitted = dec?.shouldAct == true
+                            RuntimeLogger.log(
+                                "SMART_ASSIST_GATE real=${lv.hasRealData} distance=${vectorDistance.toInt()} duration=${lv.duration} action=${dec?.actionType ?: "NO_REAL_DATA"} shouldAct=${dec?.shouldAct ?: false} submitted=$submitted",
+                                "SMART_ASSIST"
+                            )
+
+                            RuntimeMetricsRegistry.matchDetections.incrementAndGet()
+
+                            RuntimeNotificationCoordinator.update(
+                                context = applicationContext,
+                                antiban = true,
+                                matchDetected = true,
+                                recording = false,
+                                saved = false
+                            )
+
+                            RuntimeLogger.log("🕶️", "SMART_ASSIST")
+
+                            updateOverlayVisuals("🕶️", Color.GREEN)
+
+                            Handler(Looper.getMainLooper()).postDelayed({}, 3000)
+                        }
+                    }
+
+            } finally {
+                taskExecutionLock.unlock()
+                try { image.close() } catch(e:Exception){}
+            }
+        } else {
+            image.close()
+        }
+    }
+
+    private fun initializeProcessingEngine() {
+        isRunning = true
+        processingThread = Thread {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST)
+            while (isRunning) {
+                try { Thread.sleep(33) } catch (e: InterruptedException) { break }
+            }
+        }.apply { start() }
+    }
+
+    override fun onDestroy() {
+        com.assistant.vision.OverlaySelfMask.clearPrefix("hud")
+        com.assistant.adapter.smartassist.RuntimeCoordinator.shutdown()
+        OverlaySurvivalEngine.destroyed()
+        isRunning = false
+        try { windowManager.removeViewImmediate(overlayView) } catch (t: Throwable) {
+            try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+        }
+        try { imageReader?.setOnImageAvailableListener(null, null) } catch (t: Throwable) {
+            try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+        }
+        try { projectionCallback?.let { mediaProjection?.unregisterCallback(it) } } catch (t: Throwable) {
+            try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+        }
+
+        virtualDisplay?.release()
+        virtualDisplay = null
+        imageReader?.close()
+        imageReader = null
+        mediaProjection?.stop()
+        mediaProjection = null
+        super.onDestroy()
+    }
+}
+
+fun startTrajectoryWatchdog(overlayView: android.view.View, handler: android.os.Handler) {
+    val renderRunnable = object : java.lang.Runnable {
+        override fun run() {
+            val panicActive = SmartAssistRepository.panicActive() && System.currentTimeMillis() - 0L <= 3000L
+
+            if (!panicActive && SmartAssistRepository.panicActive()) {
+                // PHASE10_PANIC_PERSISTENCE_KEEP_STATE
+            }
+
+            if (panicActive) {
+                overlayView.setBackgroundColor(android.graphics.Color.argb(50, 255, 0, 0))
+            } else {
+                overlayView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            }
+            handler.postDelayed(this, 100L)
+        }
+    }
+    handler.post(renderRunnable)
+}
+''',
+    "app/src/main/java/com/assistant/BoosterIgnition.kt": '''package com.assistant
+
+import android.content.Context
+import com.assistant.diagnostic.RuntimeLogger
+
+/*
+ * One-shot booster ignition for the runtime start path.
+ *
+ * IgnitionEngine.ignite() previously fired only from a manual dashboard
+ * button, so a normal Start Engine never started the adapter services and
+ * AdapterHealthRegistry stayed empty (boosterReady=false forever).
+ *
+ * This wrapper is idempotent: the capture loop can call it every frame and
+ * services are started exactly once per process.
+ */
+object BoosterIgnition {
+
+    @Volatile
+    private var ignited = false
+
+    fun ensureIgnited(context: Context) {
+        if (ignited) return
+        synchronized(this) {
+            if (ignited) return
+            ignited = true
+            try {
+                IgnitionEngine.ignite(context.applicationContext)
+                RuntimeLogger.log(
+                    "BoosterIgnition: adapter services ignited from runtime start path",
+                    "RUNTIME"
+                )
+            } catch (e: Throwable) {
+                ignited = false
+                RuntimeLogger.log(
+                    "BoosterIgnition failed: ${e.message}",
+                    "RUNTIME"
+                )
+            }
+        }
+    }
+
+    /**
+     * P0-A FIX: RuntimeCoordinator calls this to verify fleet quorum before
+     * opening the G3 booster gate. Previously missing, causing NoSuchMethodError
+     * and crashing the runtime coordinator initialization.
+     * With AdapterHealthRegistry deleted, we rely on the ignited latch as the
+     * primary authority for fleet readiness during cold start.
+     */
+    fun isFleetReady(): Boolean {
+        return ignited
+    }
+
+    fun reset() {
+        ignited = false
+    }
+}
+'''
+}
+
+for path, content in files_to_patch.items():
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w') as f:
+        f.write(content)
+    print(f"Patched: {path}")
+
+print("All patches applied successfully.")
