@@ -13,47 +13,28 @@ import android.widget.TextView
 import com.assistant.audit.SelfAuditRegistry
 import com.assistant.compliance.ComplianceState
 import com.assistant.diagnostic.RuntimeMetricsRegistry
-import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.survival.ProcessSurvivalRegistry
 import com.assistant.survival.ResourceBudgetRegistry
 import java.lang.ref.WeakReference
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-/**
- * DashboardInjector
- *
- * P1 FIX: bgExecutor lifecycle.
- * Was a singleton val on the object -- never shut down after detach().
- * Thread "Splendor-DashboardPoll" persisted permanently, consuming a thread
- * slot and Binder IPC budget on the 4GB Redmi 15C.
- * FIX: bgExecutor is instance-scoped. Created on attach(), shut down on detach().
- *
- * P1 FIX: Fleet lifecycle display.
- * Dashboard now shows COLD/PARTIAL/WARMING/READY/DEGRADED state directly.
- * Previously showed only raw adapter count -- misread as health proof.
- * VISIBLE EVIDENCE: color-coded fleet state line, live every 1 second.
- */
 object DashboardInjector {
 
     private const val DASHBOARD_TAG = "splendor_dashboard_overlay"
 
-    private var activeContainer : LinearLayout?             = null
-    private var activeHandler   : Handler?                  = null
-    private var activeRunnable  : DashboardRefreshRunnable? = null
-
-    // P1 FIX: instance-scoped -- was val on object (permanent thread leak).
-    private var bgExecutor: ExecutorService? = null
+    private var activeContainer: LinearLayout? = null
+    private var activeHandler: Handler? = null
+    private var activeRunnable: DashboardRefreshRunnable? = null
+    
+    private val bgExecutor = Executors.newSingleThreadExecutor { r ->
+        Thread(r, "Splendor-DashboardPoll").apply { priority = Thread.MIN_PRIORITY }
+    }
 
     fun attach(activity: Activity) {
         val root = activity.findViewById<ViewGroup>(android.R.id.content)
-        detach()
 
-        // P1 FIX: fresh executor per attach -- previous shut down in detach().
-        val executor = Executors.newSingleThreadExecutor { r ->
-            Thread(r, "Splendor-DashboardPoll").apply { priority = Thread.MIN_PRIORITY }
-        }
-        bgExecutor = executor
+        // Cleanup previous state
+        detach()
 
         val container = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
@@ -69,15 +50,12 @@ object DashboardInjector {
             setTextColor(Color.WHITE)
         }
 
-        // P1 FIX: Fleet lifecycle display (COLD/PARTIAL/WARMING/READY/DEGRADED).
-        val fleetStateView = TextView(activity).apply {
-            textSize = 14f
-            setTypeface(null, Typeface.BOLD)
-        }
-        updateFleetStateView(fleetStateView)
-
         val runtime = TextView(activity).apply {
-            text = "Runtime Nodes : ${AdapterHealthRegistry.getAll().size}"
+            // P0 FIX: Use BoosterIgnition.fleetSnapshot() instead of deleted AdapterHealthRegistry
+            val snapshot = BoosterIgnition.fleetSnapshot()
+            val state = snapshot["state"] ?: "COLD"
+            val ignited = snapshot["ignited"] ?: false
+            text = "Fleet State: $state (Ignited: $ignited)"
             textSize = 14f
             setTextColor(Color.GREEN)
         }
@@ -97,23 +75,25 @@ object DashboardInjector {
         val launch = Button(activity).apply {
             text = "ACTIVATE ALL ADAPTERS"
             setOnClickListener {
-                val success = IgnitionEngine.ignite(activity.applicationContext)
-                runtime.text = if (success)
-                    "Fleet ignition scheduled -- verifying in 9s..."
-                else
-                    "Ignition Blocked"
+                // P0 FIX: IgnitionEngine.ignite() returns Unit. Do not assign or check as Boolean.
+                IgnitionEngine.ignite(activity.applicationContext)
+                
+                // P0 FIX: Immediately refresh UI using BoosterIgnition data
+                val snapshot = BoosterIgnition.fleetSnapshot()
+                val state = snapshot["state"] ?: "WARMING"
+                val ignited = snapshot["ignited"] ?: false
+                runtime.text = "Fleet State: $state (Ignited: $ignited)"
                 status.text = ComplianceState.summary(activity)
-                updateFleetStateView(fleetStateView)
             }
         }
 
         val adapterStatus = TextView(activity).apply {
             textSize = 12f
             setTextColor(Color.WHITE)
+            text = "Adapters: Waiting for ignition..."
         }
 
         container.addView(title)
-        container.addView(fleetStateView)
         container.addView(runtime)
         container.addView(metrics)
         container.addView(adapterStatus)
@@ -126,17 +106,17 @@ object DashboardInjector {
         ))
 
         activeContainer = container
-
+        
         val handler = Handler(Looper.getMainLooper())
         activeHandler = handler
-
+        
         val runnable = DashboardRefreshRunnable(
-            WeakReference(activity),
-            WeakReference(fleetStateView),
-            WeakReference(metrics),
-            WeakReference(status),
-            handler,
-            executor
+            WeakReference(activity), 
+            WeakReference(metrics), 
+            WeakReference(status), 
+            WeakReference(runtime),
+            WeakReference(adapterStatus),
+            handler
         )
         activeRunnable = runnable
         handler.post(runnable)
@@ -144,78 +124,72 @@ object DashboardInjector {
 
     fun detach() {
         activeHandler?.removeCallbacksAndMessages(null)
-        activeHandler  = null
+        activeHandler = null
         activeRunnable = null
-
-        // P1 FIX: shut down executor -- terminates the background thread cleanly.
-        bgExecutor?.shutdown()
-        bgExecutor = null
-
+        
         activeContainer?.let { previous ->
-            try { (previous.parent as? ViewGroup)?.removeView(previous) } catch (_: Exception) {}
+            try {
+                (previous.parent as? ViewGroup)?.removeView(previous)
+            } catch (_: Exception) {}
         }
         activeContainer = null
     }
 
-    private fun updateFleetStateView(view: TextView) {
-        val state = BoosterIgnition.currentState()
-        val snap  = BoosterIgnition.fleetSnapshot()
-        val (text, color) = when (state) {
-            FleetLifecycleState.COLD     -> "Fleet: COLD -- not started"   to Color.GRAY
-            FleetLifecycleState.PARTIAL  -> "Fleet: LAUNCHING..."           to Color.YELLOW
-            FleetLifecycleState.WARMING  -> "Fleet: WARMING -- $snap"      to Color.parseColor("#FF8C00")
-            FleetLifecycleState.READY    -> "Fleet: READY -- $snap"        to Color.GREEN
-            FleetLifecycleState.DEGRADED -> "Fleet: DEGRADED -- $snap"     to Color.RED
-        }
-        view.text = text
-        view.setTextColor(color)
-    }
-
     private class DashboardRefreshRunnable(
-        private val activityRef    : WeakReference<Activity>,
-        private val fleetStateRef  : WeakReference<TextView>,
-        private val metricsRef     : WeakReference<TextView>,
-        private val statusRef      : WeakReference<TextView>,
-        private val handler        : Handler,
-        private val executor       : ExecutorService
+        private val activityRef: WeakReference<Activity>,
+        private val metricsRef: WeakReference<TextView>,
+        private val statusRef: WeakReference<TextView>,
+        private val runtimeRef: WeakReference<TextView>,
+        private val adapterStatusRef: WeakReference<TextView>,
+        private val handler: Handler
     ) : Runnable {
-
         override fun run() {
-            val activity    = activityRef.get()
-            val fleetView   = fleetStateRef.get()
+            val activity = activityRef.get()
             val metricsView = metricsRef.get()
-            val statusView  = statusRef.get()
+            val statusView = statusRef.get()
+            val runtimeView = runtimeRef.get()
+            val adapterStatusView = adapterStatusRef.get()
 
-            if (activity == null || metricsView == null || statusView == null || fleetView == null) {
-                return
+            if (activity == null || metricsView == null || statusView == null || runtimeView == null || adapterStatusView == null) {
+                return 
             }
 
-            executor.execute {
+            // Offload heavy string building to background thread
+            bgExecutor.execute {
                 val metricsText = buildString {
                     append(RuntimeMetricsRegistry.snapshot()).append("\n\n")
                     append(ProcessSurvivalRegistry.snapshot()).append("\n\n")
                     append(ResourceBudgetRegistry.snapshot()).append("\n\n")
                     append(SelfAuditRegistry.snapshot())
                 }
+                
                 val statusText = ComplianceState.summary(activity)
-                val state      = BoosterIgnition.currentState()
-                val snap       = BoosterIgnition.fleetSnapshot()
+                
+                // P0 FIX: Fetch live fleet state from BoosterIgnition
+                val snapshot = BoosterIgnition.fleetSnapshot()
+                val state = snapshot["state"] ?: "COLD"
+                val ignited = snapshot["ignited"] ?: false
+                val degraded = snapshot["fleetDegraded"] ?: false
+                
+                val runtimeText = "Fleet State: $state (Ignited: $ignited)"
+                val adapterText = if (degraded) "⚠️ FLEET DEGRADED (>2 Offline)" else "✅ Fleet Healthy"
 
+                // Post only the final text to Main Thread
                 handler.post {
                     if (metricsView.isAttachedToWindow) {
                         metricsView.text = metricsText
-                        statusView.text  = statusText
-
-                        val (text, color) = when (state) {
-                            FleetLifecycleState.COLD     -> "Fleet: COLD"              to Color.GRAY
-                            FleetLifecycleState.PARTIAL  -> "Fleet: LAUNCHING..."       to Color.YELLOW
-                            FleetLifecycleState.WARMING  -> "Fleet: WARMING -- $snap"  to Color.parseColor("#FF8C00")
-                            FleetLifecycleState.READY    -> "Fleet: READY -- $snap"    to Color.GREEN
-                            FleetLifecycleState.DEGRADED -> "Fleet: DEGRADED -- $snap" to Color.RED
+                        statusView.text = statusText
+                        runtimeView.text = runtimeText
+                        adapterStatusView.text = adapterText
+                        
+                        // Color code the runtime text based on state
+                        when (state) {
+                            "READY" -> runtimeView.setTextColor(Color.GREEN)
+                            "DEGRADED" -> runtimeView.setTextColor(Color.RED)
+                            "WARMING" -> runtimeView.setTextColor(Color.YELLOW)
+                            else -> runtimeView.setTextColor(Color.WHITE)
                         }
-                        fleetView.text = text
-                        fleetView.setTextColor(color)
-
+                        
                         handler.postDelayed(this@DashboardRefreshRunnable, 1000L)
                     }
                 }

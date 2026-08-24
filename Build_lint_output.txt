@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-08-24 01:49:42 WAT
+Started: 2026-08-24 01:57:18 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -31,18 +31,17 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 57 -> 58
+versionCode: 58 -> 59
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/BoosterIgnition.kt:11:12 Redeclaration: FleetLifecycleState
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/IgnitionEngine.kt:39:12 Redeclaration: FleetLifecycleState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:101:36 Type mismatch: inferred type is Unit but Boolean was expected
 FAILURE: Build failed with an exception.
 * What went wrong:
-BUILD FAILED in 51s
+BUILD FAILED in 58s
 
 ASSEMBLE DEBUG APK EXIT: 1
 
@@ -80,6 +79,6 @@ GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
 
-Finished: 2026-08-24 01:51:30 WAT
-Report size: 3646 bytes
+Finished: 2026-08-24 02:02:08 WAT
+Report size: 3517 bytes
 ================================================================
