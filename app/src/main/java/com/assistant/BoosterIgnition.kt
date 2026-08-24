@@ -5,8 +5,9 @@ import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
- * P0-A FIX: FleetLifecycleState enum restored.
+ * P0-A FIX: FleetLifecycleState enum.
  * DashboardInjector.kt expects this enum to display the live color-coded label.
+ * Owned exclusively by BoosterIgnition to prevent redeclaration conflicts.
  */
 enum class FleetLifecycleState {
     COLD, PARTIAL, WARMING, READY, DEGRADED
