@@ -11,21 +11,36 @@ def apply_patch(path, old_str, new_str, file_desc):
         return False
     
     try:
-        with open(path, 'r', encoding='utf-8') as f:
-            content = f.read()
+        with open(path, 'rb') as f:
+            raw_content = f.read()
+        content = raw_content.decode('utf-8')
     except Exception as e:
         print(f"BLOCKED - Failed to read {file_desc}: {e}")
         return False
         
-    if old_str not in content:
+    # Normalize line endings for matching to avoid CRLF vs LF issues
+    normalized_content = content.replace('\r\n', '\n').replace('\r', '\n')
+    normalized_old = old_str.replace('\r\n', '\n').replace('\r', '\n')
+    normalized_new = new_str.replace('\r\n', '\n').replace('\r', '\n')
+        
+    if normalized_old not in normalized_content:
+        if normalized_new in normalized_content:
+            print(f"PROVEN - {file_desc} already patched.")
+            return True
         print(f"UNVERIFIED - Exact anchor match failed for {file_desc}. No changes applied.")
         return False
         
-    patched_content = content.replace(old_str, new_str)
+    patched_normalized = normalized_content.replace(normalized_old, normalized_new, 1)
     
+    # Restore original line endings if the file was CRLF
+    if b'\r\n' in raw_content:
+        patched_final = patched_normalized.replace('\n', '\r\n')
+    else:
+        patched_final = patched_normalized
+        
     try:
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(patched_content)
+        with open(path, 'wb') as f:
+            f.write(patched_final.encode('utf-8'))
         print(f"PROVEN - {file_desc} patched successfully.")
         return True
     except Exception as e:
@@ -33,22 +48,24 @@ def apply_patch(path, old_str, new_str, file_desc):
         return False
 
 def main():
-    print("=== SPLDOR-ASSIST PATCH EXECUTION INITIATED ===")
+    print("=== SPLDOR-ASSIST PATCH EXECUTION INITIATED (V2 - CRLF SAFE) ===")
     
     # 1. DashboardInjector.kt Fix (Type Mismatch: Any vs Boolean)
-    d_old = """            val snapshot = BoosterIgnition.fleetSnapshot()
-            val state = snapshot["state"] ?: "COLD"
-            val ignited = snapshot["ignited"] ?: false
-            val degraded = snapshot["fleetDegraded"] ?: false"""
+    # Exact 16-space indentation verified from GitHub raw main branch
+    d_old = """                val snapshot = BoosterIgnition.fleetSnapshot()
+                val state = snapshot["state"] ?: "COLD"
+                val ignited = snapshot["ignited"] ?: false
+                val degraded = snapshot["fleetDegraded"] ?: false"""
             
-    d_new = """            val snapshot = BoosterIgnition.fleetSnapshot()
-            val state = snapshot["state"] as? String ?: "COLD"
-            val ignited = snapshot["ignited"] as? Boolean ?: false
-            val degraded = snapshot["fleetDegraded"] as? Boolean ?: false"""
+    d_new = """                val snapshot = BoosterIgnition.fleetSnapshot()
+                val state = snapshot["state"] as? String ?: "COLD"
+                val ignited = snapshot["ignited"] as? Boolean ?: false
+                val degraded = snapshot["fleetDegraded"] as? Boolean ?: false"""
             
     d_ok = apply_patch(DASHBOARD_PATH, d_old, d_new, "DashboardInjector.kt")
     
     # 2. MagneticFeetContributor.kt Fix (Unresolved min() + Plus Overload Ambiguity)
+    # Already applied by user, but included for completeness and idempotency
     m_old = """            if (speed > 8f) {
                 val extra = ((min(speed, 15f) - 8f) / 7f * 10f).toLong()
                 durationHintMs = (durationHintMs + extra).coerceAtMost(95L)

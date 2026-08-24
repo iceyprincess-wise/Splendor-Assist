@@ -167,9 +167,9 @@ object DashboardInjector {
                 
                 // P0 FIX: Fetch live fleet state from BoosterIgnition
                 val snapshot = BoosterIgnition.fleetSnapshot()
-                val state = snapshot["state"] ?: "COLD"
-                val ignited = snapshot["ignited"] ?: false
-                val degraded = snapshot["fleetDegraded"] ?: false
+                val state = snapshot["state"] as? String ?: "COLD"
+                val ignited = snapshot["ignited"] as? Boolean ?: false
+                val degraded = snapshot["fleetDegraded"] as? Boolean ?: false
                 
                 val runtimeText = "Fleet State: $state (Ignited: $ignited)"
                 val adapterText = if (degraded) "⚠️ FLEET DEGRADED (>2 Offline)" else "✅ Fleet Healthy"
