@@ -1,90 +1,42 @@
 #!/usr/bin/env python3
-import os
-import sys
+import os, sys
 
-DASHBOARD_PATH = "/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt"
-MAGNETIC_PATH = "/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/adapter/smartassist/contributors/MagneticFeetContributor.kt"
+PATH = "/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/adapter/smartassist/RuntimeCoordinator.kt"
 
-def apply_patch(path, old_str, new_str, file_desc):
-    if not os.path.exists(path):
-        print(f"BLOCKED - {file_desc} not found at {path}")
-        return False
-    
-    try:
-        with open(path, 'rb') as f:
-            raw_content = f.read()
-        content = raw_content.decode('utf-8')
-    except Exception as e:
-        print(f"BLOCKED - Failed to read {file_desc}: {e}")
-        return False
-        
-    # Normalize line endings for matching to avoid CRLF vs LF issues
-    normalized_content = content.replace('\r\n', '\n').replace('\r', '\n')
-    normalized_old = old_str.replace('\r\n', '\n').replace('\r', '\n')
-    normalized_new = new_str.replace('\r\n', '\n').replace('\r', '\n')
-        
-    if normalized_old not in normalized_content:
-        if normalized_new in normalized_content:
-            print(f"PROVEN - {file_desc} already patched.")
-            return True
-        print(f"UNVERIFIED - Exact anchor match failed for {file_desc}. No changes applied.")
-        return False
-        
-    patched_normalized = normalized_content.replace(normalized_old, normalized_new, 1)
-    
-    # Restore original line endings if the file was CRLF
-    if b'\r\n' in raw_content:
-        patched_final = patched_normalized.replace('\n', '\r\n')
-    else:
-        patched_final = patched_normalized
-        
-    try:
-        with open(path, 'wb') as f:
-            f.write(patched_final.encode('utf-8'))
-        print(f"PROVEN - {file_desc} patched successfully.")
-        return True
-    except Exception as e:
-        print(f"BLOCKED - Failed to write {file_desc}: {e}")
-        return False
+OLD = """        val healthy = try {
+            com.assistant.BoosterIgnition.isFleetReady()
+        } catch (_: Throwable) { false }"""
+
+NEW = """        // P0-A WIRING FIX (FIELD-STALL ROOT CAUSE, TASK-CLOSURE TRACED):
+        // verifyFleetHealth() is the ONLY transition that can promote
+        // fleetState WARMING -> READY. Its documented owner is this G3 refresh
+        // path ("RuntimeCoordinator calls this to verify fleet quorum before
+        // opening the G3 booster gate") but the call was missing, so
+        // isFleetReady() stayed false forever and the runtime stalled at
+        // G2_CAPTURE_READY (booster-not-ready, bus-idle, execution starved).
+        try {
+            com.assistant.BoosterIgnition.verifyFleetHealth()
+        } catch (_: Throwable) { }
+
+        val healthy = try {
+            com.assistant.BoosterIgnition.isFleetReady()
+        } catch (_: Throwable) { false }"""
 
 def main():
-    print("=== SPLDOR-ASSIST PATCH EXECUTION INITIATED (V2 - CRLF SAFE) ===")
-    
-    # 1. DashboardInjector.kt Fix (Type Mismatch: Any vs Boolean)
-    # Exact 16-space indentation verified from GitHub raw main branch
-    d_old = """                val snapshot = BoosterIgnition.fleetSnapshot()
-                val state = snapshot["state"] ?: "COLD"
-                val ignited = snapshot["ignited"] ?: false
-                val degraded = snapshot["fleetDegraded"] ?: false"""
-            
-    d_new = """                val snapshot = BoosterIgnition.fleetSnapshot()
-                val state = snapshot["state"] as? String ?: "COLD"
-                val ignited = snapshot["ignited"] as? Boolean ?: false
-                val degraded = snapshot["fleetDegraded"] as? Boolean ?: false"""
-            
-    d_ok = apply_patch(DASHBOARD_PATH, d_old, d_new, "DashboardInjector.kt")
-    
-    # 2. MagneticFeetContributor.kt Fix (Unresolved min() + Plus Overload Ambiguity)
-    # Already applied by user, but included for completeness and idempotency
-    m_old = """            if (speed > 8f) {
-                val extra = ((min(speed, 15f) - 8f) / 7f * 10f).toLong()
-                durationHintMs = (durationHintMs + extra).coerceAtMost(95L)
-            }"""
-            
-    m_new = """            if (speed > 8f) {
-                val extra = ((minOf(speed, 15f) - 8f) / 7f * 10f).toLong()
-                durationHintMs = (durationHintMs + extra).coerceAtMost(95L)
-            }"""
-            
-    m_ok = apply_patch(MAGNETIC_PATH, m_old, m_new, "MagneticFeetContributor.kt")
-    
-    if d_ok and m_ok:
-        print("\n=== PATCH SCRIPT COMPLETED SUCCESSFULLY ===")
-        print("Run './gradlew assembleDebug' to verify compilation.")
-        sys.exit(0)
-    else:
-        print("\n=== PATCH SCRIPT ENCOUNTERED ISSUES ===")
-        sys.exit(1)
+    print("=== SPLDOR-ASSIST G3 WIRING PATCH (V3) ===")
+    if not os.path.exists(PATH):
+        print(f"BLOCKED - file not found: {PATH}"); sys.exit(1)
+    with open(PATH, 'rb') as f: raw = f.read()
+    text = raw.decode('utf-8')
+    n = text.replace('\r\n', '\n')
+    if "BoosterIgnition.verifyFleetHealth()" in n:
+        print("PROVEN - RuntimeCoordinator.kt already patched (idempotent skip)."); sys.exit(0)
+    if OLD not in n:
+        print("UNVERIFIED - anchor mismatch; no changes applied."); sys.exit(1)
+    n = n.replace(OLD, NEW, 1)
+    out = n.replace('\n', '\r\n') if b'\r\n' in raw else n
+    with open(PATH, 'wb') as f: f.write(out.encode('utf-8'))
+    print("PROVEN - RuntimeCoordinator.kt patched: verifyFleetHealth() wired into G3 refresh.")
 
 if __name__ == "__main__":
     main()

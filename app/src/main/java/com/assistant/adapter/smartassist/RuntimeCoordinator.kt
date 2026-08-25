@@ -88,6 +88,17 @@ object RuntimeCoordinator {
         // NOTE: once busEnabled=true, evaluateInner() returns early on the
         //   busEnabled check -- so re-opening boosterReady does NOT stop running
         //   engines (intentional: WatchdogAdapter handles mid-match recovery).
+        // P0-A WIRING FIX (FIELD-STALL ROOT CAUSE, TASK-CLOSURE TRACED):
+        // verifyFleetHealth() is the ONLY transition that can promote
+        // fleetState WARMING -> READY. Its documented owner is this G3 refresh
+        // path ("RuntimeCoordinator calls this to verify fleet quorum before
+        // opening the G3 booster gate") but the call was missing, so
+        // isFleetReady() stayed false forever and the runtime stalled at
+        // G2_CAPTURE_READY (booster-not-ready, bus-idle, execution starved).
+        try {
+            com.assistant.BoosterIgnition.verifyFleetHealth()
+        } catch (_: Throwable) { }
+
         val healthy = try {
             com.assistant.BoosterIgnition.isFleetReady()
         } catch (_: Throwable) { false }
