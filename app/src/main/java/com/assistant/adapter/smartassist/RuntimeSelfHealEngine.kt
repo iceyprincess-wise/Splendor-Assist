@@ -194,6 +194,27 @@ object RuntimeSelfHealEngine {
             // Capture IS stale
             captureStaleMs = staleMs
 
+            // ROOT-CAUSE FIX (HealLog 2026-08-25): when the projection is revoked,
+            // restartCaptureIfAlive() can NEVER succeed (first branch returns false).
+            // Do not burn the 3-attempt budget on a no-op; escalate to the
+            // user-visible recovery prompt (tap = BAL exemption = fresh token).
+            if (com.assistant.OverlayService.projectionRevoked()) {
+                if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
+                    lastRestartAttemptMs = now
+                    try { com.assistant.OverlayService.requestRecoveryPrompt() } catch (_: Throwable) {}
+                    if (shouldLog("CAPTURE_REVOKED", "revoked")) {
+                        record(HealEvent(
+                            timestamp = fmt.format(Date()),
+                            category = "CAPTURE_REVOKED",
+                            detected = "MediaProjection revoked; restartCapture is a no-op by design. Escalated to recovery prompt + notification.",
+                            fix = "User tap relaunches authorization; capture resumes on fresh token.",
+                            severity = "CRITICAL"
+                        ))
+                    }
+                }
+                return
+            }
+
             // Attempt restart every 30s max, max 3 attempts per session
             val canRetry = captureRestartAttempts < 3 &&
                 (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L)
@@ -247,7 +268,7 @@ object RuntimeSelfHealEngine {
                         "APPLY: Check app/src/main/AndroidManifest.xml for foregroundServiceType."
                     )
                 }
-            } else if (shouldLog("CAPTURE_STALE", "stale=${staleMs / 1000}s")) {
+            } else if (shouldLog("CAPTURE_STALE", "stale-fixed")) {
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
                     category = "CAPTURE_STALE",

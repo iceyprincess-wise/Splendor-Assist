@@ -66,6 +66,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
         @JvmStatic
         fun restartCaptureIfAlive(): Boolean =
             instance?.restartCapture() ?: false
+
+        @JvmStatic
+        fun projectionRevoked(): Boolean =
+            instance?.projectionRevoked ?: true
+
+        @JvmStatic
+        fun requestRecoveryPrompt() {
+            instance?.showCaptureRecoveryPrompt()
+        }
     }
 
     private var isRunning = false
@@ -82,6 +91,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     @Volatile
     private var projectionRevoked = false
+    @Volatile
+    private var recoveryPromptShown = false
+    private var recoveryPromptView: TextView? = null
 
     private var perfHintSession: PerformanceHintManager.Session? = null
     private var ocrIoThread: android.os.HandlerThread? = null
@@ -262,9 +274,88 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
     }
 
+    /*
+     * ROOT-CAUSE FIX (HealLog 2026-08-25): background startActivity is blocked by
+     * Android 10+/HyperOS BAL rules, so a revoked projection never recovered.
+     * The service already owns an overlay window: show a TOUCHABLE banner plus a
+     * high-priority notification. The user tap is the BAL exemption that legally
+     * relaunches authorization; fresh token resumes capture via onStartCommand.
+     */
+    fun showCaptureRecoveryPrompt() {
+        Handler(Looper.getMainLooper()).post {
+            try {
+                if (recoveryPromptShown) return@post
+                recoveryPromptShown = true
+                val prompt = TextView(this).apply {
+                    text = "⚠️ CAPTURE STOPPED - TAP TO RESTORE"
+                    setTextColor(Color.WHITE)
+                    setBackgroundColor(Color.argb(230, 180, 30, 30))
+                    textSize = 14f
+                    setPadding(24, 18, 24, 18)
+                    gravity = Gravity.CENTER
+                    setOnClickListener {
+                        dismissCaptureRecoveryPrompt()
+                        requestFreshProjectionAuthorization()
+                    }
+                }
+                recoveryPromptView = prompt
+                val params = WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                    PixelFormat.TRANSLUCENT
+                )
+                params.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+                params.y = 120
+                windowManager.addView(prompt, params)
+                postRecoveryNotification()
+                RuntimeLogger.log("CAPTURE RECOVERY PROMPT shown (user tap restores authorization)", "AGENT")
+            } catch (t: Throwable) {
+                recoveryPromptShown = false
+                RuntimeLogger.log("CAPTURE RECOVERY PROMPT failed: ${t.javaClass.simpleName}: ${t.message}", "AGENT")
+            }
+        }
+    }
+
+    private fun dismissCaptureRecoveryPrompt() {
+        Handler(Looper.getMainLooper()).post {
+            recoveryPromptView?.let { v ->
+                try { windowManager.removeViewImmediate(v) } catch (_: Throwable) {}
+            }
+            recoveryPromptView = null
+            recoveryPromptShown = false
+        }
+    }
+
+    private fun postRecoveryNotification() {
+        try {
+            val tapIntent = Intent(this, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                putExtra("REQUEST_MEDIA_PROJECTION_RECOVERY", true)
+            }
+            val pending = android.app.PendingIntent.getActivity(
+                this, 1101, tapIntent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            )
+            val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Splendor Assist: capture stopped")
+                .setContentText("Tap to restore screen capture")
+                .setSmallIcon(android.R.drawable.stat_notify_more)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(pending)
+                .setAutoCancel(true)
+                .build()
+            notificationManager.notify(1102, notification)
+        } catch (t: Throwable) {
+            RuntimeLogger.log("CAPTURE RECOVERY NOTIFICATION failed: ${t.javaClass.simpleName}", "AGENT")
+        }
+    }
+
     private fun setupMediaProjection(code: Int, intent: Intent) {
         val projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         projectionRevoked = false
+        dismissCaptureRecoveryPrompt()
         mediaProjection = projectionManager.getMediaProjection(code, intent)
 
         if (mediaProjection == null) {
@@ -285,6 +376,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     captureFrameCount = 0L
                     RuntimeLogger.log("MediaProjection.onStop(): projection revoked; capture resources invalidated; fresh authorization required", "OVERLAY")
                     requestFreshProjectionAuthorization()
+                    showCaptureRecoveryPrompt()
                 }
             }
         }
