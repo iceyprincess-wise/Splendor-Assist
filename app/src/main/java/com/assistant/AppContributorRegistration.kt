@@ -22,10 +22,11 @@ object AppContributorRegistration {
         "MagneticFeet", "Passing", "Support", "Defense", "Evade", "AttackingVector", "Cross", "Agility", "WingBlock",
         "DashPressure", "InterceptMatrix", "TouchRecovery", "OverloadPlaystyle", "TruePass", "ReceiverEngagement", "ForwardRun",
         "ShotOpportunity", "DefenseAuthority", "ShotAnticipation", "KeeperFeedback", "DashAnchor", "SpeedCompensation",
-        "InstantIntercept", "BuildUpPress", "BallRetentionShield", "TrueShot", "TrueCross", "SmartAssistUltimateCorrector"
+        "InstantIntercept", "BuildUpPress", "BallRetentionShield", "TrueShot", "TrueCross", "SAUltimateCorrector"
     )
 
     private val state = AtomicReference(RegistrationState.IDLE)
+    @Volatile private var lastRetryMs = 0L
     private val generation = AtomicLong(0L)
     
     // Thread-safe lists for runtime proof telemetry
@@ -52,6 +53,13 @@ object AppContributorRegistration {
         synchronized(this) {
             val current = state.get()
             if (current == RegistrationState.READY || current == RegistrationState.REGISTERING) return
+            // ROOT-CAUSE FIX (field logs 2026-08-25): PARTIAL state re-triggered
+            // resetAll()+warmAll() on EVERY capture frame (sessionEpoch storm,
+            // engines wiped ~1/s, contributions starved). Bound retries to 30s.
+            val retryNowMs = System.currentTimeMillis()
+            if ((current == RegistrationState.PARTIAL || current == RegistrationState.FAILED) &&
+                retryNowMs - lastRetryMs < 30_000L) return
+            lastRetryMs = retryNowMs
             
             state.set(RegistrationState.REGISTERING)
             val myGeneration = generation.incrementAndGet()
