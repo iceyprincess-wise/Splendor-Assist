@@ -15,7 +15,7 @@ android {
         applicationId = "com.assistant.overlay"
         minSdk = 26
         targetSdk = 34
-        versionCode = 62
+        versionCode = 63
         versionName = "1.0-SECURE-LOCKED"
     }
 
