@@ -170,7 +170,7 @@ class GameplayRoomActivity : AppCompatActivity() {
         }
         @Suppress("UseSwitchCompatOrMaterialCode")
         val sw = Switch(this).apply {
-            isChecked = CaptaincySkillEngine.isActive().let { false } // start unchecked; read real state
+            isChecked = CaptaincySkillEngine.isDesignated() // V6 FIX: bind to REAL persisted state
             setOnCheckedChangeListener { _, checked ->
                 CaptaincySkillEngine.setCaptainDesignated(checked)
                 val msg = if (checked) "Captaincy designation ENABLED" else "Captaincy designation CLEARED"

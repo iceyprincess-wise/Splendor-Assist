@@ -45,6 +45,18 @@ object AgentDecisionPolicy {
             )
         }
 
+        // V6 PROMOTION: booster-not-ready now has a SAFE automated recovery
+        // (re-ignite fleet) instead of permanent ObserveOnly.
+        if (!health.boosterAlive) {
+            return AgentDecision(
+                action = AgentAction.ReigniteFleet,
+                priority = 60,
+                reason =
+                    "Booster fleet not ready (no fresh adapter heartbeats); " +
+                    "re-ignite adapter services."
+            )
+        }
+
         if (observation.loadShed == "HEAVY") {
             return AgentDecision(
                 action = AgentAction.RefreshPerformance,

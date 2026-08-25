@@ -24,7 +24,8 @@ def rep(t,old,new,tag):
     if c!=1: print(f"BLOCKED - anchor x{c}: {tag}; NO change."); sys.exit(1)
     print(f"PROVEN - {tag}"); return t.replace(old,new,1)
 
-print("=== SPLDOR-ASSIST V6 ===")
+print("=== SPLDOR-ASSIST V6.1 (WHITESPACE-SAFE) ===")
+
 # 1) Interruption: heartbeat FIRST, eliminators individually guarded
 r,t=load(FILES["INT"])
 OLD="""            try {
@@ -146,7 +147,7 @@ t=rep(t,"""    fun setCaptainDesignated(enabled: Boolean) {
     }""","CAP-persist")
 save(FILES["CAP"],r,t)
 
-# 3) Crowding: enable/disable API + persistence
+# 3) Crowding: enable/disable API + persistence (FULL BLOCK ANCHOR FOR WHITESPACE SAFETY)
 r,t=load(FILES["CRD"])
 t=rep(t,"""    @Volatile var inCrowdedZone: Boolean = false; private set
     @Volatile var crowdingLevel: Float = 0f; private set""",
@@ -180,10 +181,8 @@ t=rep(t,"""    fun evaluate(frame: RuntimeFrame): Boolean {
             return false
         }
         if (!frame.trusted) {""","CRD-guard")
-t=rep(t,"""        "detections" to detections.get()
-    )""","""        "detections" to detections.get(),
-        "enabled" to enabled
-    )""","CRD-diag")
+t=rep(t,'    fun diagnostics(): Map<String, Any> = mapOf(\n        "inCrowdedZone" to inCrowdedZone,\n        "crowdingLevel"  to crowdingLevel,\n        "detections"     to detections.get()\n    )',
+      '    fun diagnostics(): Map<String, Any> = mapOf(\n        "inCrowdedZone" to inCrowdedZone,\n        "crowdingLevel"  to crowdingLevel,\n        "detections"     to detections.get(),\n        "enabled" to enabled\n    )',"CRD-diag")
 save(FILES["CRD"],r,t)
 
 # 4) Vision guard: cap 11v11 before zones/density/trust
@@ -324,4 +323,5 @@ t=rep(t,"""        try {
         try { com.assistant.adapter.smartassist.CaptaincySkillEngine.init(applicationContext) } catch (_: Throwable) {}
         try { com.assistant.adapter.smartassist.CrowdingZoneDetector.init(applicationContext) } catch (_: Throwable) {}""","OV-init")
 save(FILES["OV "],r,t)
-print("=== V6 COMPLETE - run: ./gradlew :app:compileDebugKotlin ===")
+
+print("=== V6.1 COMPLETE - run: ./gradlew :app:compileDebugKotlin ===")
