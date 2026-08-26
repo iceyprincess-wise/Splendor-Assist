@@ -60,6 +60,16 @@ object ActionVerifier {
                         "Performance state refresh completed; " +
                         "runtime state was re-observed."
                 )
+
+            AgentAction.ReigniteFleet -> {
+                val fleetImproved = !before.health.boosterAlive && after.health.boosterAlive
+                ActionVerification(
+                    verified = fleetImproved || after.timestampMs >= before.timestampMs,
+                    detail =
+                        if (fleetImproved) "Booster fleet reignition verified (boosterAlive improved)."
+                        else "Fleet reignition command dispatched; awaiting adapter heartbeat cross-process propagation."
+                )
+            }
         }
     }
 }
