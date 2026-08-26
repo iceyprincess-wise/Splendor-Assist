@@ -420,25 +420,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val scanBuffer = image.planes[0].buffer.duplicate()
                 val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
 
-                {
-                    val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
-                    com.assistant.BoosterIgnition.ensureIgnited(this)
-                    com.assistant.AppContributorRegistration.ensureRegistered()
-                    com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
-                    val frame = com.assistant.adapter.smartassist.FrameAssembler.assemble()
-                    com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
-                    com.assistant.adapter.smartassist.GameStateBuilder.update(state)
-                    com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
-                } else {
-                    try {
-                        val lightSamples = com.assistant.adapter.smartassist.FrameScanner.scan(normalized)
-                        val lightBlobs = com.assistant.adapter.smartassist.ConnectedComponentEngine.extract(lightSamples)
-                        val filteredBlobs = com.assistant.adapter.smartassist.NoiseFilter.filter(lightBlobs)
-                        val ballCandidate = com.assistant.adapter.smartassist.BallCandidateEngine.select(filteredBlobs)
-                        val ball = com.assistant.adapter.smartassist.BallDetector.detect(ballCandidate)
-                        com.assistant.adapter.smartassist.BallTelemetryBridge.publish(ball)
-                    } catch (_: Throwable) {}
-                }
+                // V10 LATENCY FIX: Full processing runs every frame. Light path removed.
+                val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
+                com.assistant.BoosterIgnition.ensureIgnited(this)
+                com.assistant.AppContributorRegistration.ensureRegistered()
+                com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
+                val frame = com.assistant.adapter.smartassist.FrameAssembler.assemble()
+                com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
+                com.assistant.adapter.smartassist.GameStateBuilder.update(state)
+                com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
             } catch (t: Throwable) {
                 try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
             }

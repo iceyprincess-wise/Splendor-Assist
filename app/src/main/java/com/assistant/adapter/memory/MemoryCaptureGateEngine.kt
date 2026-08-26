@@ -68,12 +68,9 @@ object MemoryCaptureGateEngine {
      * Returns the recommended capture frame interval in ms for the
      * current throttle level. OverlayService calls this in its frame gate.
      */
-    fun recommendedIntervalMs(): Long = when (captureThrottle) {
-        3    -> 100L
-        2    -> 66L
-        1    -> 50L
-        else -> 33L
-    }
+    // V10 LATENCY FIX: Cap interval at 33ms for gameplay freshness.
+    // Memory pressure must not starve the decision loop of fresh frames.
+    fun recommendedIntervalMs(): Long = 33L
 
     /**
      * Returns true if full VisionCore processing should be skipped

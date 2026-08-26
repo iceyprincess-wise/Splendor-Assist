@@ -4,7 +4,6 @@ import os, sys
 B = "/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant"
 FILES = {
     "OV": B + "/OverlayService.kt",
-    "ACC": B + "/adapter/smartassist/SmartAssistAccessibilityEngine.kt",
     "MEM": B + "/adapter/memory/MemoryCaptureGateEngine.kt",
 }
 
@@ -26,37 +25,20 @@ def rep(t, old, new, tag):
     print(f"PROVEN - {tag}")
     return t.replace(old, new, 1)
 
-print("=== SPLDOR-ASSIST V10 (LATENCY ELIMINATION) ===")
+print("=== SPLDOR-ASSIST V11 (SYNTAX & GATE FIX) ===")
 
-# 1) OverlayService: Remove frame-skipping, force every-frame full processing
+# 1) OverlayService: Fix broken syntax from V10 partial application
 r, t = load(FILES["OV"])
-OLD_OV = """            val thisFrameCount = ++captureFrameCount
-            val doFullProcessing = (thisFrameCount % 2L == 0L)
-            if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
-                image.close()
-                return@setOnImageAvailableListener
-            }
-            try {
-                val scanBuffer = image.planes[0].buffer.duplicate()
-                val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
-
-                if (doFullProcessing) {"""
-NEW_OV = """            val thisFrameCount = ++captureFrameCount
-            // V10 LATENCY FIX: Remove frame-skipping. Full processing MUST run every frame
-            // to eliminate 33-66ms decision staleness. Memory pressure is handled by
-            // MemoryCaptureGateEngine capping interval, not by skipping frames.
-            if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
-                image.close()
-                return@setOnImageAvailableListener
-            }
-            try {
-                val scanBuffer = image.planes[0].buffer.duplicate()
-                val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
-
-                {"""
-t = rep(t, OLD_OV, NEW_OV, "OV-frame-skip")
-
-OLD_OV_CLOSE = """                } else {
+OLD_OV_BROKEN = """                {
+                    val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
+                    com.assistant.BoosterIgnition.ensureIgnited(this)
+                    com.assistant.AppContributorRegistration.ensureRegistered()
+                    com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
+                    val frame = com.assistant.adapter.smartassist.FrameAssembler.assemble()
+                    com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
+                    com.assistant.adapter.smartassist.GameStateBuilder.update(state)
+                    com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
+                } else {
                     try {
                         val lightSamples = com.assistant.adapter.smartassist.FrameScanner.scan(normalized)
                         val lightBlobs = com.assistant.adapter.smartassist.ConnectedComponentEngine.extract(lightSamples)
@@ -66,35 +48,30 @@ OLD_OV_CLOSE = """                } else {
                         com.assistant.adapter.smartassist.BallTelemetryBridge.publish(ball)
                     } catch (_: Throwable) {}
                 }"""
-NEW_OV_CLOSE = """                }"""
-t = rep(t, OLD_OV_CLOSE, NEW_OV_CLOSE, "OV-light-path")
+NEW_OV_FIXED = """                // V10 LATENCY FIX: Full processing runs every frame. Light path removed.
+                val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
+                com.assistant.BoosterIgnition.ensureIgnited(this)
+                com.assistant.AppContributorRegistration.ensureRegistered()
+                com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
+                val frame = com.assistant.adapter.smartassist.FrameAssembler.assemble()
+                com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
+                com.assistant.adapter.smartassist.GameStateBuilder.update(state)
+                com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)"""
+t = rep(t, OLD_OV_BROKEN, NEW_OV_FIXED, "OV-syntax-fix")
 save(FILES["OV"], r, t)
 
-# 2) SmartAssistAccessibilityEngine: Reduce poll rate, eliminate latch margin
-r, t = load(FILES["ACC"])
-OLD_ACC_POLL = "private const val BUS_POLL_RATE_MS = 8L"
-NEW_ACC_POLL = "private const val BUS_POLL_RATE_MS = 4L  // V10: Tighter polling to reduce queue-to-dispatch window"
-t = rep(t, OLD_ACC_POLL, NEW_ACC_POLL, "ACC-poll")
-
-OLD_ACC_MARGIN = "private const val LATCH_RELEASE_MARGIN_MS = 8L"
-NEW_ACC_MARGIN = "private const val LATCH_RELEASE_MARGIN_MS = 0L  // V10: Eliminate dead air; gesture duration is sufficient"
-t = rep(t, OLD_ACC_MARGIN, NEW_ACC_MARGIN, "ACC-margin")
-save(FILES["ACC"], r, t)
-
-# 3) MemoryCaptureGateEngine: Cap interval at 33ms for gameplay freshness
+# 2) MemoryCaptureGateEngine: Cap interval at 33ms for gameplay freshness
 r, t = load(FILES["MEM"])
-# This file may not exist or may have different structure. We'll add a safety check.
-if os.path.exists(FILES["MEM"]):
-    # Assume it has a function like recommendedIntervalMs() that returns a Long
-    # We'll add a hard cap at the end of that function
-    OLD_MEM = "return intervalMs"
-    NEW_MEM = "return intervalMs.coerceAtMost(33L)  // V10: Cap at 30fps for gameplay freshness"
-    if OLD_MEM in t:
-        t = rep(t, OLD_MEM, NEW_MEM, "MEM-cap")
-        save(FILES["MEM"], r, t)
-    else:
-        print("UNVERIFIED - MemoryCaptureGateEngine.kt anchor not found; skipping cap.")
-else:
-    print("UNVERIFIED - MemoryCaptureGateEngine.kt not found; skipping cap.")
+OLD_MEM = """    fun recommendedIntervalMs(): Long = when (captureThrottle) {
+        3    -> 100L
+        2    -> 66L
+        1    -> 50L
+        else -> 33L
+    }"""
+NEW_MEM = """    // V10 LATENCY FIX: Cap interval at 33ms for gameplay freshness.
+    // Memory pressure must not starve the decision loop of fresh frames.
+    fun recommendedIntervalMs(): Long = 33L"""
+t = rep(t, OLD_MEM, NEW_MEM, "MEM-cap")
+save(FILES["MEM"], r, t)
 
-print("=== V10 COMPLETE - run: ./gradlew :app:compileDebugKotlin ===")
+print("=== V11 COMPLETE - run: ./gradlew :app:compileDebugKotlin ===")
