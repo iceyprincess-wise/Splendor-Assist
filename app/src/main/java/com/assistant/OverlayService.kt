@@ -110,6 +110,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private val captureFrameIntervalMs: Long
         get() = com.assistant.adapter.memory.MemoryCaptureGateEngine.recommendedIntervalMs()
     @Volatile private var captureFrameCount = 0L
+    @Volatile private var lastAppliedPanicState: Boolean = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -586,17 +587,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
 fun startTrajectoryWatchdog(overlayView: android.view.View, handler: android.os.Handler) {
     val renderRunnable = object : java.lang.Runnable {
         override fun run() {
-            val panicActive = SmartAssistRepository.panicActive() && System.currentTimeMillis() - 0L <= 3000L
-
-            if (!panicActive && SmartAssistRepository.panicActive()) {
-                // PHASE10_PANIC_PERSISTENCE_KEEP_STATE
-            }
-
-            if (panicActive) {
+            val isPanic = SmartAssistRepository.panicActive()
+        if (isPanic != lastAppliedPanicState) {
+            lastAppliedPanicState = isPanic
+            if (isPanic) {
                 overlayView.setBackgroundColor(android.graphics.Color.argb(50, 255, 0, 0))
             } else {
                 overlayView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
             }
+        }
             handler.postDelayed(this, 100L)
         }
     }
