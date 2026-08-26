@@ -140,6 +140,34 @@ class GameplayRoomActivity : AppCompatActivity() {
         section(root, "CROWDING ZONE DETECTOR")
         crowdView = mono(root, "Loading...")
 
+        val crowdToggleRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            val lp = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            lp.setMargins(0, dp(4), 0, dp(8)); layoutParams = lp
+        }
+        val crowdToggleLabel = TextView(this).apply {
+            text = "Crowding Zone Detector enabled"; textSize = 13f
+            setTextColor(Color.parseColor("#DDDDDD"))
+            val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = lp
+        }
+        @Suppress("UseSwitchCompatOrMaterialCode")
+        val crowdSw = Switch(this).apply {
+            isChecked = CrowdingZoneDetector.isEnabled()
+            setOnCheckedChangeListener { _, checked ->
+                CrowdingZoneDetector.setEnabled(checked)
+                val msg = if (checked) "Crowding detector ENABLED" else "Crowding detector DISABLED"
+                android.widget.Toast.makeText(this@GameplayRoomActivity, msg,
+                    android.widget.Toast.LENGTH_SHORT).show()
+                logLine("CROWDING_TOGGLE: $msg")
+            }
+        }
+        crowdToggleRow.addView(crowdToggleLabel)
+        crowdToggleRow.addView(crowdSw)
+        root.addView(crowdToggleRow)
+
         // ── ADAPTER SIGNAL BUS ────────────────────────────────────────────
         section(root, "ADAPTER SIGNAL BUS  (cross-module state)")
         busView = mono(root, "Loading...")

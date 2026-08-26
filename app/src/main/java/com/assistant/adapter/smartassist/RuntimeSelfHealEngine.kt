@@ -60,6 +60,9 @@ object RuntimeSelfHealEngine {
         contextRef = WeakReference(ctx.applicationContext)
     }
 
+    // V6: expose stored context so the agent can execute safe recoveries.
+    fun appContext(): android.content.Context? = contextRef?.get()
+
     fun start() {
         if (running) return
         running = true

@@ -152,6 +152,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
             com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext)
             com.assistant.adapter.smartassist.RuntimeSelfHealEngine.start()
         } catch (_: Throwable) {}
+        try { com.assistant.adapter.smartassist.CaptaincySkillEngine.init(applicationContext) } catch (_: Throwable) {}
+        try { com.assistant.adapter.smartassist.CrowdingZoneDetector.init(applicationContext) } catch (_: Throwable) {}
         instance = this
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()

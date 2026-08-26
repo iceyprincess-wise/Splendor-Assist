@@ -58,6 +58,9 @@ object InAppAgentCore {
     @Volatile
     private var lastVerification: ActionVerification? = null
 
+    @Volatile
+    private var lastReigniteMs: Long = 0L
+
     /**
      * Existing public API preserved.
      * It no longer throws bootstrap failures outward.
@@ -260,6 +263,25 @@ object InAppAgentCore {
 
             AgentAction.RefreshPerformance ->
                 RuntimePerformanceCoordinator.refresh()
+
+            // V6 PROMOTION: agent now FIXES booster-not-ready (60s cooldown)
+            // instead of sitting in ObserveOnly while adapters stay silent.
+            AgentAction.ReigniteFleet -> {
+                val nowMs = System.currentTimeMillis()
+                if (nowMs - lastReigniteMs >= 60_000L) {
+                    lastReigniteMs = nowMs
+                    val ctx = RuntimeSelfHealEngine.appContext()
+                    if (ctx != null) {
+                        try { com.assistant.BoosterIgnition.reset() } catch (_: Throwable) {}
+                        try { com.assistant.BoosterIgnition.ensureIgnited(ctx) } catch (_: Throwable) {}
+                        try { RuntimeCoordinator.refreshBoosterReadyFromRegistry() } catch (_: Throwable) {}
+                        RuntimeLogger.log(
+                            "AGENT ACTION ReigniteFleet: booster reset + re-ignited + G3 re-verified",
+                            "AGENT"
+                        )
+                    }
+                }
+            }
         }
     }
 }

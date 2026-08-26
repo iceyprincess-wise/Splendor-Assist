@@ -19,12 +19,14 @@ def load(p):
 def save(p,r,t):
     with open(p,'wb') as f: f.write((t.replace('\n','\r\n') if b'\r\n' in r else t).encode('utf-8'))
 def rep(t,old,new,tag):
-    if new.split('\n')[0] in t: return t
+    # V7 CORRECT IDEMPOTENCY: whole NEW block present => already applied.
+    if new in t:
+        print(f"PROVEN - {tag} (already applied, skip)"); return t
     c=t.count(old)
     if c!=1: print(f"BLOCKED - anchor x{c}: {tag}; NO change."); sys.exit(1)
     print(f"PROVEN - {tag}"); return t.replace(old,new,1)
 
-print("=== SPLDOR-ASSIST V6.1 (WHITESPACE-SAFE) ===")
+print("=== SPLDOR-ASSIST V7 (WHOLE-BLOCK IDEMPOTENT) ===")
 
 # 1) Interruption: heartbeat FIRST, eliminators individually guarded
 r,t=load(FILES["INT"])
@@ -147,7 +149,7 @@ t=rep(t,"""    fun setCaptainDesignated(enabled: Boolean) {
     }""","CAP-persist")
 save(FILES["CAP"],r,t)
 
-# 3) Crowding: enable/disable API + persistence (FULL BLOCK ANCHOR FOR WHITESPACE SAFETY)
+# 3) Crowding: enable/disable API + persistence + guard + diagnostics key
 r,t=load(FILES["CRD"])
 t=rep(t,"""    @Volatile var inCrowdedZone: Boolean = false; private set
     @Volatile var crowdingLevel: Float = 0f; private set""",
@@ -181,11 +183,20 @@ t=rep(t,"""    fun evaluate(frame: RuntimeFrame): Boolean {
             return false
         }
         if (!frame.trusted) {""","CRD-guard")
-t=rep(t,'    fun diagnostics(): Map<String, Any> = mapOf(\n        "inCrowdedZone" to inCrowdedZone,\n        "crowdingLevel"  to crowdingLevel,\n        "detections"     to detections.get()\n    )',
-      '    fun diagnostics(): Map<String, Any> = mapOf(\n        "inCrowdedZone" to inCrowdedZone,\n        "crowdingLevel"  to crowdingLevel,\n        "detections"     to detections.get(),\n        "enabled" to enabled\n    )',"CRD-diag")
+t=rep(t,'''    fun diagnostics(): Map<String, Any> = mapOf(
+        "inCrowdedZone" to inCrowdedZone,
+        "crowdingLevel"  to crowdingLevel,
+        "detections"     to detections.get()
+    )''',
+'''    fun diagnostics(): Map<String, Any> = mapOf(
+        "inCrowdedZone" to inCrowdedZone,
+        "crowdingLevel"  to crowdingLevel,
+        "detections"     to detections.get(),
+        "enabled" to enabled
+    )''',"CRD-diag")
 save(FILES["CRD"],r,t)
 
-# 4) Vision guard: cap 11v11 before zones/density/trust
+# 4) Vision guard: cap 11v11
 r,t=load(FILES["FRA"])
 t=rep(t,"""        val scene = try { SceneTracker.current() } catch (_: Throwable) { null }
         val players = scene?.trackedPlayers.orEmpty()
@@ -195,8 +206,7 @@ t=rep(t,"""        val scene = try { SceneTracker.current() } catch (_: Throwabl
 
         // V6 VISION GUARD (field-proven over-count: players=30/opponents=30):
         // cap each side to 11 before zones/density/trust so downstream engines
-        // never consume impossible head-counts. Mitigation; detector tuning
-        // (jersey-color attribution) is the next vision round.
+        // never consume impossible head-counts.
         val ours = rawPlayers.filter { it.isUserTeam }
         val theirs = rawPlayers.filter { !it.isUserTeam }
         val players =
@@ -205,7 +215,7 @@ t=rep(t,"""        val scene = try { SceneTracker.current() } catch (_: Throwabl
         val opponents = players.count { !it.isUserTeam }""","FRA-cap")
 save(FILES["FRA"],r,t)
 
-# 5) Agent promotion: new action + policy branch + executor + context accessor
+# 5) Agent promotion
 r,t=load(FILES["ACT"])
 t=rep(t,"""    object RefreshPerformance : AgentAction()
 }""","""    object RefreshPerformance : AgentAction()
@@ -272,7 +282,7 @@ t=rep(t,"""            AgentAction.RefreshPerformance ->
             }""","AGC-exec")
 save(FILES["AGC"],r,t)
 
-# 6) Room UI: captaincy switch binds REAL state + crowding toggle added
+# 6) Room UI: captaincy real-state bind + crowding toggle
 r,t=load(FILES["ROOM"])
 t=rep(t,"            isChecked = CaptaincySkillEngine.isActive().let { false } // start unchecked; read real state",
 "            isChecked = CaptaincySkillEngine.isDesignated() // V6 FIX: bind to REAL persisted state","ROOM-cap")
@@ -310,7 +320,7 @@ t=rep(t,"""        section(root, "CROWDING ZONE DETECTOR")
         root.addView(crowdToggleRow)""","ROOM-crowd")
 save(FILES["ROOM"],r,t)
 
-# 7) Wire engine toggle persistence init into OverlayService.onCreate
+# 7) Persistence init wiring
 r,t=load(FILES["OV "])
 t=rep(t,"""        try {
             com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext)
@@ -324,4 +334,19 @@ t=rep(t,"""        try {
         try { com.assistant.adapter.smartassist.CrowdingZoneDetector.init(applicationContext) } catch (_: Throwable) {}""","OV-init")
 save(FILES["OV "],r,t)
 
-print("=== V6.1 COMPLETE - run: ./gradlew :app:compileDebugKotlin ===")
+# 8) FINAL CROSS-FILE CONNECTIVITY VERIFICATION (caller->callee symbol proof)
+print("=== CONNECTIVITY VERIFICATION ===")
+checks=[("ACT","object ReigniteFleet"),("POL","AgentAction.ReigniteFleet"),
+ ("CAP","fun isDesignated()"),("CAP","fun init(context: android.content.Context)"),
+ ("CRD","fun isEnabled()"),("CRD","fun setEnabled(value: Boolean)"),
+ ("ROOM","CaptaincySkillEngine.isDesignated()"),("ROOM","CrowdingZoneDetector.isEnabled()"),
+ ("FRA","rawPlayers"),("INT","V6 ROOT-CAUSE FIX"),("SH ","fun appContext()"),
+ ("AGC","AgentAction.ReigniteFleet ->"),("AGC","lastReigniteMs"),
+ ("OV ","CaptaincySkillEngine.init(applicationContext)"),("OV ","CrowdingZoneDetector.init(applicationContext)")]
+ok=True
+for k,sym in checks:
+    with open(FILES[k],'r',encoding='utf-8') as f: txt=f.read()
+    if sym in txt: print(f"PROVEN - {k}: {sym}")
+    else: print(f"BLOCKED - {k}: {sym} MISSING"); ok=False
+if ok: print("=== V7 COMPLETE - run: ./gradlew :app:compileDebugKotlin ===")
+else: sys.exit(1)

@@ -188,11 +188,43 @@ class InterruptionAdapterService : Service() {
     private val interruptionRunnable = object : Runnable {
         override fun run() {
             try {
-                // CONDITIONLESS ACTIVE MITIGATION (Every 500ms)
-                DozeBypassEliminator.ignite(this@InterruptionAdapterService)
-                NetworkPriorityHijacker.execute(this@InterruptionAdapterService)
-                NotificationHardKiller.execute(this@InterruptionAdapterService)
-                BackgroundProcessPurger.execute(this@InterruptionAdapterService)
+                // V6 ROOT-CAUSE FIX (field logs: "heartbeat failed :: SecurityException"
+                // every 500ms -> no persisted heartbeat -> booster-not-ready forever).
+                // Heartbeat FIRST, independently guarded: the cross-process truth the
+                // booster gate/health reads must survive any eliminator fault.
+                try {
+                    val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                    val batteryLevel = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                    val charging = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) == BatteryManager.BATTERY_STATUS_CHARGING
+                    val state = InterruptionCoordinator.evaluate(batteryLevel, charging, 0)
+                    InterruptionRepository.save(state)
+                    val throttleMode = when (state.severity) {
+                        "CRITICAL" -> "AGGRESSIVE_THROTTLE"
+                        "THROTTLE" -> "MODERATE_THROTTLE"
+                        "WARNING" -> "LIGHT_THROTTLE"
+                        else -> "NORMAL"
+                    }
+                    AdapterHealthRegistry.update(
+                        AdapterHealthSnapshot(
+                            adapterName = "adapter_interruption",
+                            status = state.severity,
+                            lastHeartbeat = System.currentTimeMillis(),
+                            errorCount = errorCount.get(),
+                            recoveryCount = 0,
+                            details = "battery=${state.batteryLevel},call=${TelephonyStateRepository.activeCall},mode=$throttleMode"
+                        )
+                    )
+                } catch (e: Exception) {
+                    errorCount.incrementAndGet()
+                    RuntimeLogger.log("InterruptionAdapter heartbeat failed :: ${e.javaClass.simpleName}", "HEALTH")
+                }
+
+                // Eliminators: each individually guarded so one SecurityException
+                // can never kill the loop or the heartbeat again.
+                try { DozeBypassEliminator.ignite(this@InterruptionAdapterService) } catch (_: Throwable) {}
+                try { NetworkPriorityHijacker.execute(this@InterruptionAdapterService) } catch (_: Throwable) {}
+                try { NotificationHardKiller.execute(this@InterruptionAdapterService) } catch (_: Throwable) {}
+                try { BackgroundProcessPurger.execute(this@InterruptionAdapterService) } catch (_: Throwable) {}
 
                 val telephonyManager = getSystemService(TELEPHONY_SERVICE) as? TelephonyManager
                 @Suppress("DEPRECATION")
@@ -200,34 +232,9 @@ class InterruptionAdapterService : Service() {
 
                 CallAndAudioEliminator.updateCallState(callState)
 
-                val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-                val batteryLevel = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
-                val charging = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) == BatteryManager.BATTERY_STATUS_CHARGING
-
-                val state = InterruptionCoordinator.evaluate(batteryLevel, charging, 0)
-                InterruptionRepository.save(state)
-
                 if (callState == TelephonyManager.CALL_STATE_RINGING || TelephonyStateRepository.activeCall) {
                     CallAndAudioEliminator.suppressRingerAndHoldFocus(this@InterruptionAdapterService)
                 }
-
-                val throttleMode = when (state.severity) {
-                    "CRITICAL" -> "AGGRESSIVE_THROTTLE"
-                    "THROTTLE" -> "MODERATE_THROTTLE"
-                    "WARNING" -> "LIGHT_THROTTLE"
-                    else -> "NORMAL"
-                }
-
-                AdapterHealthRegistry.update(
-                    AdapterHealthSnapshot(
-                        adapterName = "adapter_interruption",
-                        status = state.severity,
-                        lastHeartbeat = System.currentTimeMillis(),
-                        errorCount = errorCount.get(),
-                        recoveryCount = 0,
-                        details = "battery=${state.batteryLevel},call=${TelephonyStateRepository.activeCall},mode=$throttleMode"
-                    )
-                )
 
             } catch (e: Exception) {
                 errorCount.incrementAndGet()

@@ -10,4 +10,5 @@ sealed class AgentAction {
     object ObserveOnly : AgentAction()
     object RunSelfHealCheck : AgentAction()
     object RefreshPerformance : AgentAction()
+    object ReigniteFleet : AgentAction()
 }

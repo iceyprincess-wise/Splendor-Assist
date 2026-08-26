@@ -57,6 +57,7 @@ object CaptaincySkillEngine {
     @Volatile private var lastTeamLift      = MIN_TEAM_LIFT
     @Volatile private var lastComposureMs   = MIN_COMPOSURE_MS
     @Volatile private var captainDesignated = false
+    @Volatile private var prefs: android.content.SharedPreferences? = null
     @Volatile private var active            = false
     @Volatile private var lastUpdatedMs     = 0L
 
@@ -166,6 +167,18 @@ object CaptaincySkillEngine {
 
     fun setCaptainDesignated(enabled: Boolean) {
         captainDesignated = enabled
+        try { prefs?.edit()?.putBoolean("captaincy_designated", enabled)?.apply() } catch (_: Throwable) {}
+    }
+
+    // V6 FIX (field bug: switch showed OFF while engine stayed ON).
+    fun isDesignated(): Boolean = captainDesignated
+
+    fun init(context: android.content.Context) {
+        try {
+            val p = context.applicationContext.getSharedPreferences("splendor_engine_toggles", 0)
+            prefs = p
+            captainDesignated = p.getBoolean("captaincy_designated", captainDesignated)
+        } catch (_: Throwable) {}
     }
 
     fun isActive(): Boolean = active

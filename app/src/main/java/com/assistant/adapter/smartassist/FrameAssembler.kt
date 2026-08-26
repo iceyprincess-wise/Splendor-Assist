@@ -76,7 +76,16 @@ object FrameAssembler {
             }
 
         val scene = try { SceneTracker.current() } catch (_: Throwable) { null }
-        val players = scene?.trackedPlayers.orEmpty()
+        val rawPlayers = scene?.trackedPlayers.orEmpty()
+
+        // V6 VISION GUARD (field-proven over-count: players=30/opponents=30):
+        // cap each side to 11 before zones/density/trust so downstream engines
+        // never consume impossible head-counts.
+        val ours = rawPlayers.filter { it.isUserTeam }
+        val theirs = rawPlayers.filter { !it.isUserTeam }
+        val players =
+            if (ours.size > 11 || theirs.size > 11) ours.take(11) + theirs.take(11)
+            else rawPlayers
         val opponents = players.count { !it.isUserTeam }
 
         // Real per-zone counts from tracked player positions (landscape thirds).

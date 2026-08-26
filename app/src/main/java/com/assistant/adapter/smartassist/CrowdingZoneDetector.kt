@@ -33,12 +33,36 @@ object CrowdingZoneDetector {
 
     @Volatile var inCrowdedZone: Boolean = false; private set
     @Volatile var crowdingLevel: Float = 0f; private set
+    @Volatile private var enabled = true
+    @Volatile private var prefs: android.content.SharedPreferences? = null
+
+    fun setEnabled(value: Boolean) {
+        enabled = value
+        try { prefs?.edit()?.putBoolean("crowding_enabled", value)?.apply() } catch (_: Throwable) {}
+        if (!value) reset()
+    }
+
+    fun isEnabled(): Boolean = enabled
+
+    fun init(context: android.content.Context) {
+        try {
+            val p = context.applicationContext.getSharedPreferences("splendor_engine_toggles", 0)
+            prefs = p
+            enabled = p.getBoolean("crowding_enabled", true)
+        } catch (_: Throwable) {}
+    }
 
     /**
      * Evaluate crowding from the current frame.
      * Returns true when in a penalty-box / corner crowded zone.
      */
     fun evaluate(frame: RuntimeFrame): Boolean {
+        if (!enabled) {
+            inCrowdedZone = false
+            crowdingLevel = 0f
+            AdapterSignalBus.publishCrowdingZone(false, 0f)
+            return false
+        }
         if (!frame.trusted) {
             inCrowdedZone = false
             crowdingLevel = 0f
@@ -83,6 +107,7 @@ object CrowdingZoneDetector {
     fun diagnostics(): Map<String, Any> = mapOf(
         "inCrowdedZone" to inCrowdedZone,
         "crowdingLevel"  to crowdingLevel,
-        "detections"     to detections.get()
+        "detections"     to detections.get(),
+        "enabled" to enabled
     )
 }
