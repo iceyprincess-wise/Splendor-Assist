@@ -27,7 +27,10 @@ object ShotContributor : GameplayContributor {
     private const val MOUTH_INSET = 0.18f // keep the aim inside the posts
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        if (!frame.trusted || !frame.hasBall) return null
+        if (frame.confidence < 0.05f) return null
+        val possessionWeight = if (frame.hasBall) 1.0f else 0.0f // Shots require possession
+        val trustWeight = if (frame.trusted) 1.0f else 0.5f
+        val fluidMultiplier = possessionWeight * trustWeight
         if (!frame.goalDetected) return null
         if (frame.goalConfidence < MIN_GOAL_CONFIDENCE) return null
         if (frame.goalWidth <= 1f) return null
@@ -53,7 +56,7 @@ object ShotContributor : GameplayContributor {
         // can actually see (and aim around) is worth more than a blind shot.
         val proximity = (1f - range / MAX_SHOT_RANGE_PX).coerceIn(0f, 1f)
         val keeperBonus = if (frame.goalkeeperVisible) 0.15f else 0f
-        val authority =
+        val authority = fluidMultiplier *
             (0.35f + 0.35f * proximity + 0.15f * frame.goalConfidence + keeperBonus)
                 .coerceIn(0f, 1f)
 

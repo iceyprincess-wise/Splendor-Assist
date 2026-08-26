@@ -28,8 +28,14 @@ object MagneticFeetContributor : GameplayContributor {
     override val capabilities = setOf(EngineCapability.MOVEMENT, EngineCapability.SUPPORT)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        // Bail out early if we don’t have a trusted frame or the ball isn’t ours.
-        if (!frame.trusted || !frame.hasBall) return null
+        // V9 ARCHITECTURAL FIX: Replace hard boolean kill-switch with probabilistic scaling.
+        // Football is fluid; possession is probabilistic. We no longer "die" when the ball
+        // is obscured or possession flickers. We scale authority instead.
+        if (frame.confidence < 0.05f) return null // Hard floor for completely blind frames
+        
+        val possessionWeight = if (frame.hasBall) 1.0f else 0.4f // Allow transition play
+        val trustWeight = if (frame.trusted) 1.0f else 0.6f
+        val fluidMultiplier = possessionWeight * trustWeight
 
         // -----------------------------------------------------------------
         // Input conversion – unchanged
@@ -55,7 +61,7 @@ object MagneticFeetContributor : GameplayContributor {
             ?.amplification ?: 0.4f
 
         val rawAuthority = (result.touchRetention / 10f) * panicFactor * amplification
-        val authority = rawAuthority.coerceIn(0f, cap)
+        val authority = (rawAuthority * fluidMultiplier).coerceIn(0f, cap)
 
         // -----------------------------------------------------------------
         // Confidence – weighted blend that favours the engine when it is
@@ -68,8 +74,8 @@ object MagneticFeetContributor : GameplayContributor {
         // This makes the assist stronger during clear tactical moments.
         val engineWeight = if (possessionNorm > 0.7f) 0.6f else 0.4f
         val visionWeight = 1f - engineWeight
-        val confidence = ((frame.confidence * visionWeight) +
-                (possessionNorm * engineWeight)).coerceIn(0f, 1f)
+        val confidence = (((frame.confidence * visionWeight) +
+                (possessionNorm * engineWeight)) * fluidMultiplier).coerceIn(0f, 1f)
 
         // -----------------------------------------------------------------
         // Duration hint – unchanged mapping, but we also apply a tiny

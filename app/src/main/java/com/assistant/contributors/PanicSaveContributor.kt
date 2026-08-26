@@ -9,7 +9,10 @@ object PanicSaveContributor : GameplayContributor {
     override val capabilities = setOf(EngineCapability.KEEPER, EngineCapability.DEFENSE)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        if (!frame.trusted || frame.hasBall) return null
+        if (frame.confidence < 0.05f) return null
+        val possessionWeight = if (!frame.hasBall) 1.0f else 0.2f // Keeper focus when opponent attacks
+        val trustWeight = if (frame.trusted) 1.0f else 0.7f
+        val fluidMultiplier = possessionWeight * trustWeight
         val decision = ThreatPriorityContributor.decisionOf(frame) ?: return null
 
         val action = try { OneVsOnePanicEngine.evaluate(decision) } catch (_: Throwable) { null }
@@ -28,7 +31,7 @@ object PanicSaveContributor : GameplayContributor {
             actionClass = ActionClass.KEEPER,
             targetX = frame.ballX.coerceAtLeast(0f),
             targetY = frame.ballY.coerceAtLeast(0f),
-            authority = ((decision.priority / 130f) * 0.95f).coerceIn(0f, 1f),
+            authority = (((decision.priority / 130f) * 0.95f) * fluidMultiplier).coerceIn(0f, 1f),
             confidence = frame.confidence,
             durationHintMs = 26L
         )

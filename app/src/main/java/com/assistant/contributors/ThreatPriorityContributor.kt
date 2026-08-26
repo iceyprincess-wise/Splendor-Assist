@@ -46,7 +46,10 @@ object ThreatPriorityContributor : GameplayContributor {
     }
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        if (!frame.trusted || frame.hasBall) return null
+        if (frame.confidence < 0.05f) return null
+        val possessionWeight = if (!frame.hasBall) 1.0f else 0.3f // Defensive focus when opponent has ball
+        val trustWeight = if (frame.trusted) 1.0f else 0.6f
+        val fluidMultiplier = possessionWeight * trustWeight
         val decision = decisionOf(frame) ?: return null
 
         // GATE 1: collision risk may veto a rush.
@@ -70,7 +73,7 @@ object ThreatPriorityContributor : GameplayContributor {
             actionClass = ActionClass.DEFEND,
             targetX = frame.ballX.coerceAtLeast(0f),
             targetY = frame.ballY.coerceAtLeast(0f),
-            authority = (decision.priority / 135f).coerceIn(0f, 1f),
+            authority = ((decision.priority / 135f) * fluidMultiplier).coerceIn(0f, 1f),
             confidence = frame.confidence,
             durationHintMs = 30L
         )
