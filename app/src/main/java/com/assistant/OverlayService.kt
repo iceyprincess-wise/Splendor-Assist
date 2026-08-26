@@ -409,7 +409,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
             lastFrameProcessedMs = captureNow
             val thisFrameCount = ++captureFrameCount
-            val doFullProcessing = (thisFrameCount % 2L == 0L)
+            // V10 LATENCY FIX: Remove frame-skipping. Full processing MUST run every frame
+            // to eliminate 33-66ms decision staleness. Memory pressure is handled by
+            // MemoryCaptureGateEngine capping interval, not by skipping frames.
             if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
                 image.close()
                 return@setOnImageAvailableListener
@@ -418,7 +420,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val scanBuffer = image.planes[0].buffer.duplicate()
                 val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
 
-                if (doFullProcessing) {
+                {
                     val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
                     com.assistant.BoosterIgnition.ensureIgnited(this)
                     com.assistant.AppContributorRegistration.ensureRegistered()

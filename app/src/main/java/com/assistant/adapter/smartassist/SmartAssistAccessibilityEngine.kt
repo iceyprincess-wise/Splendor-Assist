@@ -65,7 +65,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         @Volatile
         private var dispatchingPriority = Int.MIN_VALUE
         private const val DISPATCH_LATCH_TIMEOUT_MS = 250L
-        private const val LATCH_RELEASE_MARGIN_MS = 8L
+        private const val LATCH_RELEASE_MARGIN_MS = 0L  // V10: Eliminate dead air; gesture duration is sufficient
 
         private fun latchStuck(): Boolean =
             isDispatching &&
@@ -77,7 +77,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         private const val SERVER_TICK_RATE_MS = 16.6667f // 60Hz Server-Tick bounds for packet sync
         private const val MAX_SAFE_DURATION_MS = 85L     // Absolute input cap to avoid system ANR flags
         private const val NOISE_AMPLITUDE_PX = 3.85f     // Micro-variance vector bounds for humanization
-        private const val BUS_POLL_RATE_MS = 8L          // Nyquist-compliant sub-frame polling
+        private const val BUS_POLL_RATE_MS = 4L  // V10: Tighter polling to reduce queue-to-dispatch window          // Nyquist-compliant sub-frame polling
         private const val DISPATCH_RATE_WINDOW_MS = 10_000L
     }
 

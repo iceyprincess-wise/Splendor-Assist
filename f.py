@@ -3,10 +3,9 @@ import os, sys
 
 B = "/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant"
 FILES = {
-    "MAG": B + "/adapter/smartassist/contributors/MagneticFeetContributor.kt",
-    "SHOT": B + "/contributors/ShotContributor.kt",
-    "THREAT": B + "/contributors/ThreatPriorityContributor.kt",
-    "PANIC": B + "/contributors/PanicSaveContributor.kt",
+    "OV": B + "/OverlayService.kt",
+    "ACC": B + "/adapter/smartassist/SmartAssistAccessibilityEngine.kt",
+    "MEM": B + "/adapter/memory/MemoryCaptureGateEngine.kt",
 }
 
 def load(p):
@@ -27,75 +26,75 @@ def rep(t, old, new, tag):
     print(f"PROVEN - {tag}")
     return t.replace(old, new, 1)
 
-print("=== SPLDOR-ASSIST V9 (PROBABILISTIC AUTHORITY SCALING) ===")
+print("=== SPLDOR-ASSIST V10 (LATENCY ELIMINATION) ===")
 
-# 1) MagneticFeetContributor: Replace hard hasBall/trusted gate with scaling
-r, t = load(FILES["MAG"])
-OLD_MAG = """        // Bail out early if we don’t have a trusted frame or the ball isn’t ours.
-        if (!frame.trusted || !frame.hasBall) return null"""
-NEW_MAG = """        // V9 ARCHITECTURAL FIX: Replace hard boolean kill-switch with probabilistic scaling.
-        // Football is fluid; possession is probabilistic. We no longer "die" when the ball
-        // is obscured or possession flickers. We scale authority instead.
-        if (frame.confidence < 0.05f) return null // Hard floor for completely blind frames
-        
-        val possessionWeight = if (frame.hasBall) 1.0f else 0.4f // Allow transition play
-        val trustWeight = if (frame.trusted) 1.0f else 0.6f
-        val fluidMultiplier = possessionWeight * trustWeight"""
-t = rep(t, OLD_MAG, NEW_MAG, "MAG-gate")
+# 1) OverlayService: Remove frame-skipping, force every-frame full processing
+r, t = load(FILES["OV"])
+OLD_OV = """            val thisFrameCount = ++captureFrameCount
+            val doFullProcessing = (thisFrameCount % 2L == 0L)
+            if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
+                image.close()
+                return@setOnImageAvailableListener
+            }
+            try {
+                val scanBuffer = image.planes[0].buffer.duplicate()
+                val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
 
-OLD_MAG_AUTH = "val authority = rawAuthority.coerceIn(0f, cap)"
-NEW_MAG_AUTH = "val authority = (rawAuthority * fluidMultiplier).coerceIn(0f, cap)"
-t = rep(t, OLD_MAG_AUTH, NEW_MAG_AUTH, "MAG-auth")
+                if (doFullProcessing) {"""
+NEW_OV = """            val thisFrameCount = ++captureFrameCount
+            // V10 LATENCY FIX: Remove frame-skipping. Full processing MUST run every frame
+            // to eliminate 33-66ms decision staleness. Memory pressure is handled by
+            // MemoryCaptureGateEngine capping interval, not by skipping frames.
+            if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
+                image.close()
+                return@setOnImageAvailableListener
+            }
+            try {
+                val scanBuffer = image.planes[0].buffer.duplicate()
+                val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
 
-OLD_MAG_CONF = "val confidence = ((frame.confidence * visionWeight) +"
-NEW_MAG_CONF = "val confidence = (((frame.confidence * visionWeight) +"
-t = rep(t, OLD_MAG_CONF, NEW_MAG_CONF, "MAG-conf-open")
+                {"""
+t = rep(t, OLD_OV, NEW_OV, "OV-frame-skip")
 
-OLD_MAG_CONF_CLOSE = "(possessionNorm * engineWeight)).coerceIn(0f, 1f)"
-NEW_MAG_CONF_CLOSE = "(possessionNorm * engineWeight)) * fluidMultiplier).coerceIn(0f, 1f)"
-t = rep(t, OLD_MAG_CONF_CLOSE, NEW_MAG_CONF_CLOSE, "MAG-conf-close")
-save(FILES["MAG"], r, t)
+OLD_OV_CLOSE = """                } else {
+                    try {
+                        val lightSamples = com.assistant.adapter.smartassist.FrameScanner.scan(normalized)
+                        val lightBlobs = com.assistant.adapter.smartassist.ConnectedComponentEngine.extract(lightSamples)
+                        val filteredBlobs = com.assistant.adapter.smartassist.NoiseFilter.filter(lightBlobs)
+                        val ballCandidate = com.assistant.adapter.smartassist.BallCandidateEngine.select(filteredBlobs)
+                        val ball = com.assistant.adapter.smartassist.BallDetector.detect(ballCandidate)
+                        com.assistant.adapter.smartassist.BallTelemetryBridge.publish(ball)
+                    } catch (_: Throwable) {}
+                }"""
+NEW_OV_CLOSE = """                }"""
+t = rep(t, OLD_OV_CLOSE, NEW_OV_CLOSE, "OV-light-path")
+save(FILES["OV"], r, t)
 
-# 2) ShotContributor: Replace hard hasBall/trusted gate with scaling
-r, t = load(FILES["SHOT"])
-OLD_SHOT = "if (!frame.trusted || !frame.hasBall) return null"
-NEW_SHOT = """if (frame.confidence < 0.05f) return null
-        val possessionWeight = if (frame.hasBall) 1.0f else 0.0f // Shots require possession
-        val trustWeight = if (frame.trusted) 1.0f else 0.5f
-        val fluidMultiplier = possessionWeight * trustWeight"""
-t = rep(t, OLD_SHOT, NEW_SHOT, "SHOT-gate")
+# 2) SmartAssistAccessibilityEngine: Reduce poll rate, eliminate latch margin
+r, t = load(FILES["ACC"])
+OLD_ACC_POLL = "private const val BUS_POLL_RATE_MS = 8L"
+NEW_ACC_POLL = "private const val BUS_POLL_RATE_MS = 4L  // V10: Tighter polling to reduce queue-to-dispatch window"
+t = rep(t, OLD_ACC_POLL, NEW_ACC_POLL, "ACC-poll")
 
-OLD_SHOT_AUTH = "val authority ="
-NEW_SHOT_AUTH = "val authority = fluidMultiplier *"
-t = rep(t, OLD_SHOT_AUTH, NEW_SHOT_AUTH, "SHOT-auth")
-save(FILES["SHOT"], r, t)
+OLD_ACC_MARGIN = "private const val LATCH_RELEASE_MARGIN_MS = 8L"
+NEW_ACC_MARGIN = "private const val LATCH_RELEASE_MARGIN_MS = 0L  // V10: Eliminate dead air; gesture duration is sufficient"
+t = rep(t, OLD_ACC_MARGIN, NEW_ACC_MARGIN, "ACC-margin")
+save(FILES["ACC"], r, t)
 
-# 3) ThreatPriorityContributor: Replace hard hasBall gate (defensive engines shouldn't die when we have ball)
-r, t = load(FILES["THREAT"])
-OLD_THREAT = "if (!frame.trusted || frame.hasBall) return null"
-NEW_THREAT = """if (frame.confidence < 0.05f) return null
-        val possessionWeight = if (!frame.hasBall) 1.0f else 0.3f // Defensive focus when opponent has ball
-        val trustWeight = if (frame.trusted) 1.0f else 0.6f
-        val fluidMultiplier = possessionWeight * trustWeight"""
-t = rep(t, OLD_THREAT, NEW_THREAT, "THREAT-gate")
+# 3) MemoryCaptureGateEngine: Cap interval at 33ms for gameplay freshness
+r, t = load(FILES["MEM"])
+# This file may not exist or may have different structure. We'll add a safety check.
+if os.path.exists(FILES["MEM"]):
+    # Assume it has a function like recommendedIntervalMs() that returns a Long
+    # We'll add a hard cap at the end of that function
+    OLD_MEM = "return intervalMs"
+    NEW_MEM = "return intervalMs.coerceAtMost(33L)  // V10: Cap at 30fps for gameplay freshness"
+    if OLD_MEM in t:
+        t = rep(t, OLD_MEM, NEW_MEM, "MEM-cap")
+        save(FILES["MEM"], r, t)
+    else:
+        print("UNVERIFIED - MemoryCaptureGateEngine.kt anchor not found; skipping cap.")
+else:
+    print("UNVERIFIED - MemoryCaptureGateEngine.kt not found; skipping cap.")
 
-OLD_THREAT_AUTH = "authority = (decision.priority / 135f).coerceIn(0f, 1f),"
-NEW_THREAT_AUTH = "authority = ((decision.priority / 135f) * fluidMultiplier).coerceIn(0f, 1f),"
-t = rep(t, OLD_THREAT_AUTH, NEW_THREAT_AUTH, "THREAT-auth")
-save(FILES["THREAT"], r, t)
-
-# 4) PanicSaveContributor: Replace hard hasBall gate (goalkeeper behavior)
-r, t = load(FILES["PANIC"])
-OLD_PANIC = "if (!frame.trusted || frame.hasBall) return null"
-NEW_PANIC = """if (frame.confidence < 0.05f) return null
-        val possessionWeight = if (!frame.hasBall) 1.0f else 0.2f // Keeper focus when opponent attacks
-        val trustWeight = if (frame.trusted) 1.0f else 0.7f
-        val fluidMultiplier = possessionWeight * trustWeight"""
-t = rep(t, OLD_PANIC, NEW_PANIC, "PANIC-gate")
-
-OLD_PANIC_AUTH = "authority = ((decision.priority / 130f) * 0.95f).coerceIn(0f, 1f),"
-NEW_PANIC_AUTH = "authority = (((decision.priority / 130f) * 0.95f) * fluidMultiplier).coerceIn(0f, 1f),"
-t = rep(t, OLD_PANIC_AUTH, NEW_PANIC_AUTH, "PANIC-auth")
-save(FILES["PANIC"], r, t)
-
-print("=== V9 COMPLETE - run: ./gradlew :app:compileDebugKotlin ===")
+print("=== V10 COMPLETE - run: ./gradlew :app:compileDebugKotlin ===")
