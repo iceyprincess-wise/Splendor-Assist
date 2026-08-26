@@ -1,8 +1,6 @@
 package com.assistant.adapter.smartassist.fps
 
 import android.accessibilityservice.AccessibilityService
-import android.view.Display
-import android.view.WindowManager
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
@@ -22,7 +20,6 @@ class LatencyDefeatingInputEngine(
     private val service: AccessibilityService
 ) {
     private companion object {
-        const val DEFAULT_FRAME_TIME_MS = 8.33f
         const val SERVER_TICK_WINDOW_MS = 33L   // Standard 30Hz server tick boundary
         const val MIN_STROKE_DURATION_MS = 1L
     }
@@ -35,11 +32,7 @@ class LatencyDefeatingInputEngine(
         restrictedDuration: Long,
         currentPingMs: Int = 40
     ) {
-        val windowManager = service.getSystemService(AccessibilityService.WINDOW_SERVICE) as WindowManager
-        @Suppress("DEPRECATION")
-        val display: Display? = windowManager.defaultDisplay
-        val refreshRate = display?.refreshRate ?: 60.0f
-        val frameTimeMs = if (refreshRate > 0f) 1000.0f / refreshRate else DEFAULT_FRAME_TIME_MS
+
 
         val random = ThreadLocalRandom.current()
         val displacementAngle = random.nextDouble(0.0, 2.0 * Math.PI)
