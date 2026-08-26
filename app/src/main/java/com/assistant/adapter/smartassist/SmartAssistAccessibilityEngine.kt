@@ -74,7 +74,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // =========================================================================
         // ADVANCED ENGINEERING CONSTANTS
         // =========================================================================
-        private const val SERVER_TICK_RATE_MS = 16.6667f // 60Hz Server-Tick bounds for packet sync
+        @Volatile
+        private var serverTickRateMs = 16.6667f // Dynamic 15fps/20fps/30fps Server-Tick bounds for packet sync
         private const val MAX_SAFE_DURATION_MS = 85L     // Absolute input cap to avoid system ANR flags
         private const val NOISE_AMPLITUDE_PX = 3.85f     // Micro-variance vector bounds for humanization
         private const val BUS_POLL_RATE_MS = 4L  // V10: Tighter polling to reduce queue-to-dispatch window          // Nyquist-compliant sub-frame polling
