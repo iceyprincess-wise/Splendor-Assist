@@ -192,10 +192,23 @@ class InterruptionAdapterService : Service() {
                 // every 500ms -> no persisted heartbeat -> booster-not-ready forever).
                 // Heartbeat FIRST, independently guarded: the cross-process truth the
                 // booster gate/health reads must survive any eliminator fault.
+                // V12 ROOT-CAUSE FIX: registerReceiver can throw SecurityException on
+                // Android 14+/HyperOS when called from background service. If it throws,
+                // the entire try block aborted and the heartbeat was NEVER published,
+                // causing boosterAlive=false and permanent booster-not-ready degradation.
+                // FIX: Wrap registerReceiver individually. Use defaults if it fails.
+                // The heartbeat MUST publish regardless of battery read success.
+                var batteryLevel = -1
+                var charging = false
                 try {
                     val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-                    val batteryLevel = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
-                    val charging = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) == BatteryManager.BATTERY_STATUS_CHARGING
+                    batteryLevel = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                    charging = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) == BatteryManager.BATTERY_STATUS_CHARGING
+                } catch (_: SecurityException) {
+                    // Battery read blocked by OS; proceed with defaults to keep heartbeat alive
+                } catch (_: Throwable) {}
+
+                try {
                     val state = InterruptionCoordinator.evaluate(batteryLevel, charging, 0)
                     InterruptionRepository.save(state)
                     val throttleMode = when (state.severity) {

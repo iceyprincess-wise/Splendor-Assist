@@ -408,7 +408,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 return@setOnImageAvailableListener
             }
             lastFrameProcessedMs = captureNow
-            val thisFrameCount = ++captureFrameCount
+            captureFrameCount++
             // V10 LATENCY FIX: Remove frame-skipping. Full processing MUST run every frame
             // to eliminate 33-66ms decision staleness. Memory pressure is handled by
             // MemoryCaptureGateEngine capping interval, not by skipping frames.
