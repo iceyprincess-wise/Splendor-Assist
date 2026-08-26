@@ -106,9 +106,10 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
      * Guarantees maximum network possession effectiveness under high-ping logic.
      */
     private fun synchronizeToTickRate(targetDuration: Long): Long {
-        val ticks = (targetDuration / SERVER_TICK_RATE_MS).roundToLong()
-        val synchronizedMs = (ticks * SERVER_TICK_RATE_MS).roundToLong()
-        return max(16L, min(synchronizedMs, MAX_SAFE_DURATION_MS))
+        if (targetDuration <= 0L) return serverTickRateMs.roundToLong()
+        val ticks = (targetDuration / serverTickRateMs).roundToLong()
+        val synchronizedMs = (ticks * serverTickRateMs).roundToLong()
+        return max(8L, min(synchronizedMs, MAX_SAFE_DURATION_MS))
     }
 
     /**
@@ -309,6 +310,17 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     override fun onServiceConnected() {
+        // Detect dynamic hardware refresh rate to calibrate 15fps/20fps/30fps server tick alignment
+        try {
+            val windowManager = getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager
+            @Suppress("DEPRECATION")
+            val display: android.view.Display? = windowManager.defaultDisplay
+            val refreshRate = display?.refreshRate ?: 60.0f
+            serverTickRateMs = if (refreshRate > 0f) 1000.0f / refreshRate else 16.6667f
+        } catch (_: Throwable) {
+            serverTickRateMs = 16.6667f
+        }
+
         TelemetryCoordinator.initializeTransport("127.0.0.1", 8080)
 
         // Boot the Survival Engine with Max Impact Protection
@@ -317,7 +329,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // Elevate IO prioritization to the absolute maximum allowable Android scheduler tier
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
 
-        busThread = HandlerThread("SmartAssistBus").apply { start() }
+        busThread = HandlerThread("SmartAssistBus", Process.THREAD_PRIORITY_URGENT_DISPLAY).apply { start() }
         busHandler = Handler(busThread.looper)
 
         dispatcher = ActiveGestureController(this)
