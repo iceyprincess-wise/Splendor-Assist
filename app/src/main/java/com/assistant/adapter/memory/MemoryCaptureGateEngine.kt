@@ -70,7 +70,12 @@ object MemoryCaptureGateEngine {
      */
     // V10 LATENCY FIX: Cap interval at 33ms for gameplay freshness.
     // Memory pressure must not starve the decision loop of fresh frames.
-    fun recommendedIntervalMs(): Long = 33L
+    fun recommendedIntervalMs(): Long = when (captureThrottle) {
+        3 -> 100L // CRITICAL: 10fps (Survival mode)
+        2 -> 66L  // PRESSURE: 15fps
+        1 -> 50L  // WATCH: 20fps
+        else -> 33L // HEALTHY: 30fps
+    }
 
     /**
      * Returns true if full VisionCore processing should be skipped

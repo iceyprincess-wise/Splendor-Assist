@@ -500,6 +500,14 @@ object LagVerdictEngine {
                             "ms therm=" + ThermalPeekEngine.status + ")", "LAGVERDICT")
                         verdict = candidate
                         lastHeartbeat = now
+                        
+                        // MASSIVE POWER: Performance Bee Intervention
+                        if (candidate == "CHOKING") {
+                            try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(2) } catch (_: Throwable) {}
+                            RuntimeLogger.log("LAG CHOKING: Execution brake applied to protect SmartAssist", "LAG_BEE")
+                        } else if (candidate == "SMOOTH") {
+                            try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(0) } catch (_: Throwable) {}
+                        }
                     } else if (now - lastHeartbeat >= 60_000L) {
                         lastHeartbeat = now
                         RuntimeLogger.log("DEVICE " + verdict +

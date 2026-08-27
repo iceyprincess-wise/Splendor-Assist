@@ -92,9 +92,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     @Volatile
     private var projectionRevoked = false
-    @Volatile
-    private var recoveryPromptShown = false
-    private var recoveryPromptView: TextView? = null
+
 
     private var perfHintSession: PerformanceHintManager.Session? = null
     private var ocrIoThread: android.os.HandlerThread? = null
@@ -271,18 +269,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
     }
 
-    private fun requestFreshProjectionAuthorization() {
-        try {
-            val recoveryIntent = Intent(this, MainActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                putExtra("REQUEST_MEDIA_PROJECTION_RECOVERY", true)
-            }
-            startActivity(recoveryIntent)
-            RuntimeLogger.log("MediaProjection recovery: MainActivity launched for fresh authorization", "AGENT")
-        } catch (t: Throwable) {
-            RuntimeLogger.log("MediaProjection recovery launch failed: ${t.javaClass.simpleName}: ${t.message}", "AGENT")
-        }
-    }
+
 
     fun showCaptureRecoveryPrompt() {
         Handler(Looper.getMainLooper()).post {
@@ -321,44 +308,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
     }
 
-    private fun dismissCaptureRecoveryPrompt() {
-        Handler(Looper.getMainLooper()).post {
-            recoveryPromptView?.let { v ->
-                try { windowManager.removeViewImmediate(v) } catch (_: Throwable) {}
-            }
-            recoveryPromptView = null
-            recoveryPromptShown = false
-        }
-    }
 
-    private fun postRecoveryNotification() {
-        try {
-            val tapIntent = Intent(this, MainActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                putExtra("REQUEST_MEDIA_PROJECTION_RECOVERY", true)
-            }
-            val pending = android.app.PendingIntent.getActivity(
-                this, 1101, tapIntent,
-                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-            )
-            val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Splendor Assist: capture stopped")
-                .setContentText("Tap to restore screen capture")
-                .setSmallIcon(android.R.drawable.stat_notify_more)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pending)
-                .setAutoCancel(true)
-                .build()
-            notificationManager.notify(1102, notification)
-        } catch (t: Throwable) {
-            RuntimeLogger.log("CAPTURE RECOVERY NOTIFICATION failed: ${t.javaClass.simpleName}", "AGENT")
-        }
-    }
+
+
 
     private fun setupMediaProjection(code: Int, intent: Intent) {
         val projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         projectionRevoked = false
-        dismissCaptureRecoveryPrompt()
         mediaProjection = projectionManager.getMediaProjection(code, intent)
 
         if (mediaProjection == null) {
@@ -377,9 +333,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     mediaProjection = null
                     lastFrameProcessedMs = 0L
                     captureFrameCount = 0L
-                    RuntimeLogger.log("MediaProjection.onStop(): projection revoked; capture resources invalidated; fresh authorization required", "OVERLAY")
-                    requestFreshProjectionAuthorization()
-                    showCaptureRecoveryPrompt()
+                    RuntimeLogger.log("MediaProjection.onStop(): projection revoked; capture resources invalidated. AI Agent handling silently.", "OVERLAY")
                 }
             }
         }
@@ -596,7 +550,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
         OverlaySurvivalEngine.destroyed()
         isRunning = false
         
-        dismissCaptureRecoveryPrompt()
         try { notificationManager.cancel(1102) } catch (_: Throwable) {}
         
         trajectoryRunnable?.let { trajectoryHandler.removeCallbacks(it) }
