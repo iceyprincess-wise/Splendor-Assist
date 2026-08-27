@@ -39,6 +39,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
+import android.view.ViewTreeObserver
 import android.widget.TextView
 import com.assistant.adapter.interruption.CallOverlayRepository
 import androidx.core.app.NotificationCompat
@@ -110,6 +111,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private val captureFrameIntervalMs: Long
         get() = com.assistant.adapter.memory.MemoryCaptureGateEngine.recommendedIntervalMs()
     @Volatile private var captureFrameCount = 0L
+    
+    private val trajectoryHandler = Handler(Looper.getMainLooper())
+    private var trajectoryRunnable: Runnable? = null
+    private var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -248,12 +253,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
         overlayView.post {
             com.assistant.vision.OverlaySelfMask.publishHierarchy("hud", overlayView)
         }
-        overlayView.viewTreeObserver.addOnGlobalLayoutListener {
+        
+        globalLayoutListener = ViewTreeObserver.OnGlobalLayoutListener {
             com.assistant.vision.OverlaySelfMask.publishHierarchy("hud", overlayView)
         }
+        overlayView.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
+        
         OverlaySurvivalEngine.attached()
         updateOverlayVisuals("GUARD LOCK: SECURE [ANTI-BAN ON]", Color.GREEN)
-        startTrajectoryWatchdog(overlayView, Handler(Looper.getMainLooper()))
+        startTrajectoryWatchdog()
     }
 
     private fun updateOverlayVisuals(text: String, color: Int) {
@@ -276,13 +284,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
     }
 
-    /*
-     * ROOT-CAUSE FIX (HealLog 2026-08-25): background startActivity is blocked by
-     * Android 10+/HyperOS BAL rules, so a revoked projection never recovered.
-     * The service already owns an overlay window: show a TOUCHABLE banner plus a
-     * high-priority notification. The user tap is the BAL exemption that legally
-     * relaunches authorization; fresh token resumes capture via onStartCommand.
-     */
     fun showCaptureRecoveryPrompt() {
         Handler(Looper.getMainLooper()).post {
             try {
@@ -409,9 +410,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
             lastFrameProcessedMs = captureNow
             captureFrameCount++
-            // V10 LATENCY FIX: Remove frame-skipping. Full processing MUST run every frame
-            // to eliminate 33-66ms decision staleness. Memory pressure is handled by
-            // MemoryCaptureGateEngine capping interval, not by skipping frames.
             if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
                 image.close()
                 return@setOnImageAvailableListener
@@ -420,7 +418,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val scanBuffer = image.planes[0].buffer.duplicate()
                 val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
 
-                // V10 LATENCY FIX: Full processing runs every frame. Light path removed.
                 val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
                 com.assistant.BoosterIgnition.ensureIgnited(this)
                 com.assistant.AppContributorRegistration.ensureRegistered()
@@ -558,14 +555,66 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }.apply { start() }
     }
 
+    private fun startTrajectoryWatchdog() {
+        trajectoryRunnable = object : Runnable {
+            override fun run() {
+                if (!::overlayView.isInitialized) return
+                val panicActive = SmartAssistRepository.panicActive() && System.currentTimeMillis() - 0L <= 3000L
+
+                if (!panicActive && SmartAssistRepository.panicActive()) {
+                    // PHASE10_PANIC_PERSISTENCE_KEEP_STATE
+                }
+
+                if (panicActive) {
+                    overlayView.setBackgroundColor(android.graphics.Color.argb(50, 255, 0, 0))
+                } else {
+                    overlayView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                }
+                trajectoryHandler.postDelayed(this, 100L)
+            }
+        }
+        trajectoryHandler.post(trajectoryRunnable!!)
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW || level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
+            if (taskExecutionLock.tryLock()) {
+                try {
+                    reusableBitmap?.recycle()
+                    reusableBitmap = null
+                } finally {
+                    taskExecutionLock.unlock()
+                }
+            }
+        }
+    }
+
     override fun onDestroy() {
         com.assistant.vision.OverlaySelfMask.clearPrefix("hud")
         com.assistant.adapter.smartassist.RuntimeCoordinator.shutdown()
         OverlaySurvivalEngine.destroyed()
         isRunning = false
-        try { windowManager.removeViewImmediate(overlayView) } catch (t: Throwable) {
-            try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+        
+        dismissCaptureRecoveryPrompt()
+        try { notificationManager.cancel(1102) } catch (_: Throwable) {}
+        
+        trajectoryRunnable?.let { trajectoryHandler.removeCallbacks(it) }
+        trajectoryRunnable = null
+        
+        if (::overlayView.isInitialized) {
+            globalLayoutListener?.let {
+                try { overlayView.viewTreeObserver.removeOnGlobalLayoutListener(it) } catch (_: Throwable) {}
+            }
+            try { windowManager.removeViewImmediate(overlayView) } catch (t: Throwable) {
+                try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+            }
         }
+        globalLayoutListener = null
+        
+        processingThread?.interrupt()
+        processingThread = null
+        
         try { imageReader?.setOnImageAvailableListener(null, null) } catch (t: Throwable) {
             try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
         }
@@ -579,25 +628,20 @@ class OverlayService : Service(), ComponentCallbacks2 {
         imageReader = null
         mediaProjection?.stop()
         mediaProjection = null
+        
+        try { recognizer.close() } catch (_: Throwable) {}
+        
+        reusableBitmap?.recycle()
+        reusableBitmap = null
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try { perfHintSession?.close() } catch (_: Throwable) {}
+        }
+        perfHintSession = null
+        
+        ocrIoThread?.quitSafely()
+        ocrIoThread = null
+        
         super.onDestroy()
     }
-}
-
-fun startTrajectoryWatchdog(overlayView: android.view.View, handler: android.os.Handler) {
-    val renderRunnable = object : java.lang.Runnable {
-        override fun run() {
-            val isPanic = SmartAssistRepository.panicActive()
-        val lastState = overlayView.tag as? Boolean ?: false
-        if (isPanic != lastState) {
-            overlayView.tag = isPanic
-            if (isPanic) {
-                overlayView.setBackgroundColor(android.graphics.Color.argb(50, 255, 0, 0))
-            } else {
-                overlayView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-            }
-        }
-            handler.postDelayed(this, 100L)
-        }
-    }
-    handler.post(renderRunnable)
 }
