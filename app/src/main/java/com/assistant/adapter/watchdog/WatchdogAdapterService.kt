@@ -7,6 +7,8 @@ import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 import com.assistant.survival.ProcessSurvivalRegistry
 
 import android.app.Service
+import android.content.Context
+import android.os.PowerManager
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
@@ -26,6 +28,7 @@ class WatchdogAdapterService : Service() {
     private val heartbeatHandler = Handler(Looper.getMainLooper())
     @Volatile private var lastScan = "no scan yet"
     @Volatile private var totalRestarts = 0
+    @Volatile private var wakeLock: PowerManager.WakeLock? = null
 
     // Map from adapter registry name to its service class name
     private val adapterMap = mapOf(
@@ -88,6 +91,8 @@ class WatchdogAdapterService : Service() {
 
             lastScan = "offline=$offline degraded=$degraded restarted=$restarted"
             watchdogHandler.postDelayed(this, 15000)
+            // HYPEROS LMK SURVIVAL: Renew WakeLock timeout on every successful scan cycle
+            wakeLock?.acquire(10 * 60 * 1000L)
         }
     }
 
@@ -109,6 +114,11 @@ class WatchdogAdapterService : Service() {
         super.onCreate()
         RuntimeLogger.log("WatchdogAdapterService started - ACTIVE GUARDIAN", "ADAPTER")
         NodeNotificationHub.attach(this, "adapter_watchdog")
+        // HYPEROS LMK SURVIVAL: Acquire PARTIAL_WAKE_LOCK to prevent CPU dozing during 15s watchdog scans
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Splendor:WatchdogWakeLock").apply {
+            acquire(10 * 60 * 1000L) // 10 minutes, renewable on each scan cycle
+        }
         AdapterHealthRegistry.update(
             AdapterHealthSnapshot(
                 adapterName = "adapter_watchdog",
@@ -129,6 +139,8 @@ class WatchdogAdapterService : Service() {
         heartbeatHandler.removeCallbacksAndMessages(null)
         watchdogHandler.removeCallbacksAndMessages(null)
         NodeNotificationHub.detach(this, "adapter_watchdog")
+        // HYPEROS LMK SURVIVAL: Release WakeLock to prevent battery drain on service shutdown
+        wakeLock?.let { if (it.isHeld) it.release() }
         RuntimeLogger.log("Watchdog stopped", "HEALTH")
         super.onDestroy()
     }

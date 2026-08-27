@@ -66,7 +66,7 @@ object NodeNotificationHub {
         val channel = NotificationChannel(
             CHANNEL_ID,
             "Splendor Foundation Nodes",
-            NotificationManager.IMPORTANCE_MIN
+            NotificationManager.IMPORTANCE_LOW
         ).apply { setShowBadge(false) }
         service.getSystemService(NotificationManager::class.java)
             ?.createNotificationChannel(channel)
