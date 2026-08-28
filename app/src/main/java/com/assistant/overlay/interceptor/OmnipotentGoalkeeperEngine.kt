@@ -111,7 +111,6 @@ object OmnipotentGoalkeeperEngine {
                     com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER 1v1 rush triggered dist=${attackerToGkDistance.toInt()}", "GOALKEEPER")
                     return true
                 }
-            }
         }
 
         // 2. MITIGATING SCENARIO 2: Close-Range Six-Yard Combination Play
