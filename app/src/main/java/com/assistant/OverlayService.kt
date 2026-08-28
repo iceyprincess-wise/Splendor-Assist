@@ -113,7 +113,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var trajectoryRunnable: Runnable? = null
     private var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
 
-    // FIX: KeepAlive properties to prevent HyperOS silent kill
     private var keepAliveHandler = Handler(Looper.getMainLooper())
     private var keepAliveRunnable: Runnable? = null
 
@@ -143,7 +142,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
             virtualDisplay = null
             imageReader = null
 
-            // FIX: Reuse the existing valid mediaProjection token instead of calling setupMediaProjection again
             recreateCaptureSurfaces()
 
             lastFrameProcessedMs = 0L
@@ -380,7 +378,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
         startCaptureKeepAlive()
     }
 
-    // FIX: Extracted surface creation to allow safe recreation without reusing the intent token
     private fun recreateCaptureSurfaces() {
         if (mediaProjection == null) {
             RuntimeLogger.log("recreateCaptureSurfaces: mediaProjection is null", "OVERLAY")
@@ -447,7 +444,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
         virtualDisplay = mediaProjection?.createVirtualDisplay("HybridCoachScreen", finalWidth, finalHeight, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY, imageReader?.surface, null, null)
     }
 
-    // FIX: KeepAlive mechanism to prevent HyperOS silent kill
     private fun startCaptureKeepAlive() {
         keepAliveRunnable = object : Runnable {
             override fun run() {
