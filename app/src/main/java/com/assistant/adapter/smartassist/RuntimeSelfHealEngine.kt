@@ -205,7 +205,6 @@ object RuntimeSelfHealEngine {
                 if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
                     lastRestartAttemptMs = now
                     // MASSIVE POWER: AI Agent handles projection revoke autonomously and silently.
-                    // Manual prompt eradicated to preserve gameplay immersion and competitive edge.
                     if (shouldLog("CAPTURE_REVOKED", "revoked")) {
                         record(HealEvent(
                             timestamp = fmt.format(Date()),

@@ -59,6 +59,8 @@ object AggressiveMemoryHoarding {
         purgesExecuted.incrementAndGet()
         RuntimeLogger.log("Initiating memory purge...", "MEMORY_HOARDER")
         // MASSIVE POWER: Force capture loop into survival mode (10fps) immediately
+        try { com.assistant.diagnostic.AdapterSignalBus.publishCaptureThrottle(3) } catch (_: Throwable) {}
+        // MASSIVE POWER: Force capture loop into survival mode (10fps) immediately
         // to prevent LMK kills while the purge runs and OS reclaims RAM.
         try { com.assistant.diagnostic.AdapterSignalBus.publishCaptureThrottle(3) } catch (_: Throwable) {}
 
