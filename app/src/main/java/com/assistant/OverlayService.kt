@@ -72,10 +72,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         fun projectionRevoked(): Boolean =
             instance?.projectionRevoked ?: true
 
-        @JvmStatic
-        fun requestRecoveryPrompt() {
-            instance?.showCaptureRecoveryPrompt()
-        }
+
     }
 
     private var isRunning = false
@@ -271,42 +268,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
 
 
-    fun showCaptureRecoveryPrompt() {
-        Handler(Looper.getMainLooper()).post {
-            try {
-                if (recoveryPromptShown) return@post
-                recoveryPromptShown = true
-                val prompt = TextView(this).apply {
-                    text = "⚠️ CAPTURE STOPPED - TAP TO RESTORE"
-                    setTextColor(Color.WHITE)
-                    setBackgroundColor(Color.argb(230, 180, 30, 30))
-                    textSize = 14f
-                    setPadding(24, 18, 24, 18)
-                    gravity = Gravity.CENTER
-                    setOnClickListener {
-                        dismissCaptureRecoveryPrompt()
-                        requestFreshProjectionAuthorization()
-                    }
-                }
-                recoveryPromptView = prompt
-                val params = WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-                    PixelFormat.TRANSLUCENT
-                )
-                params.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-                params.y = 120
-                windowManager.addView(prompt, params)
-                postRecoveryNotification()
-                RuntimeLogger.log("CAPTURE RECOVERY PROMPT shown (user tap restores authorization)", "AGENT")
-            } catch (t: Throwable) {
-                recoveryPromptShown = false
-                RuntimeLogger.log("CAPTURE RECOVERY PROMPT failed: ${t.javaClass.simpleName}: ${t.message}", "AGENT")
-            }
-        }
-    }
+
 
 
 
