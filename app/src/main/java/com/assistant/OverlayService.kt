@@ -111,6 +111,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var trajectoryRunnable: Runnable? = null
     private var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
 
+    private var keepAliveHandler = Handler(Looper.getMainLooper())
+    private var keepAliveRunnable: Runnable? = null
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     fun restartCapture(): Boolean {
@@ -516,6 +519,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
         
         trajectoryRunnable?.let { trajectoryHandler.removeCallbacks(it) }
         trajectoryRunnable = null
+        
+        keepAliveRunnable?.let { keepAliveHandler.removeCallbacks(it) }
+        keepAliveRunnable = null
         
         if (::overlayView.isInitialized) {
             globalLayoutListener?.let {
