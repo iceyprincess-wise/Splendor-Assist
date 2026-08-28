@@ -134,7 +134,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
             } catch (_: Throwable) {}
             try { virtualDisplay?.release() } catch (_: Throwable) {}
             try { imageReader?.close() } catch (_: Throwable) {}
-            setupMediaProjection(android.app.Activity.RESULT_OK, com.assistant.EngineData.intent ?: return false)
+            virtualDisplay = null
+            imageReader = null
+
+            recreateCaptureSurfaces()
+
             lastFrameProcessedMs = 0L
             captureFrameCount = 0L
             RuntimeLogger.log("AGENT CAPTURE RESTART: ImageReader recreated successfully", "AGENT")
@@ -361,6 +365,31 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
         }, ocrIoHandler ?: Handler(Looper.getMainLooper()))
         virtualDisplay = mediaProjection?.createVirtualDisplay("HybridCoachScreen", finalWidth, finalHeight, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY, imageReader?.surface, null, null)
+    }
+
+    private fun startCaptureKeepAlive() {
+        keepAliveRunnable = object : Runnable {
+            override fun run() {
+                if (!projectionRevoked && mediaProjection != null) {
+                    val now = System.currentTimeMillis()
+                    if (now - lastFrameProcessedMs > 10000L && lastFrameProcessedMs > 0L) {
+                        RuntimeLogger.log("KEEPALIVE: Capture stale for >10s. Proactively recreating surfaces to prevent HyperOS silent kill.", "OVERLAY")
+                        try {
+                            virtualDisplay?.release()
+                            imageReader?.close()
+                            virtualDisplay = null
+                            imageReader = null
+                            recreateCaptureSurfaces()
+                            lastFrameProcessedMs = System.currentTimeMillis()
+                        } catch (e: Exception) {
+                            RuntimeLogger.log("KEEPALIVE recreate failed: ${e.message}", "OVERLAY")
+                        }
+                    }
+                }
+                keepAliveHandler.postDelayed(this, 45000L)
+            }
+        }
+        keepAliveHandler.postDelayed(keepAliveRunnable!!, 45000L)
     }
 
     private fun processImageForOCR(image: Image) {
