@@ -52,6 +52,14 @@ object BurstForensicsEngine {
         // CRITICAL FIX PHASE3: publishStutter was NEVER called — stutterIsSevere was always false.
         // SpeedCompensationContributor, LoadShedGovernor all read this — all were blind to stutter.
         AdapterSignalBus.publishStutter(state)
+        
+        // MASSIVE POWER: Performance Bee Intervention
+        if (next == "SEIZURE") {
+            try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(2) } catch (_: Throwable) {}
+            RuntimeLogger.log("STUTTER SEIZURE: Execution brake applied to protect SmartAssist", "STUTTER_BEE")
+        } else if (next == "CALM") {
+            try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(0) } catch (_: Throwable) {}
+        }
         if (changed) {
         }
         if (changed || now - lastLogMs >= 30_000L) {
