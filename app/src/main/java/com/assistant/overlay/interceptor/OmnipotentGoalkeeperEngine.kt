@@ -76,21 +76,19 @@ object OmnipotentGoalkeeperEngine {
         screenHeight: Float = 720f
     ): Boolean {
         val now = System.currentTimeMillis()
-        if (now - lastGkLayerTimestamp < 130L) return false
+        if (now - lastGkLayerTimestamp < 33L) return false // Tight 30Hz throttle for 15/20/30fps targets
+        lastGkLayerTimestamp = now
 
         ballTrajectory[BALL_CX] = ballX
         ballTrajectory[BALL_CY] = ballY
         ballTrajectory[BALL_VX] = ballVx
         ballTrajectory[BALL_VY] = ballVy
 
-        // Normalized Fleet Trigger: High-velocity shot active inside defensive third
-        val isShotActive = ballVy > 1.1f && ballY > (screenHeight * 0.48f)
+        // 1. MITIGATING SCENARIOS 1 & 5: Through-Balls and Composed 1v1 Breakaways
+        // UNCONDITIONAL: Distance-based activation bypasses velocity/position gates
+        val attackerToGkDistance = hypot((nearestAttackerX - gkX).toDouble(), (nearestAttackerY - gkY).toDouble())
 
-        if (isShotActive) {
-            // 1. MITIGATING SCENARIOS 1 & 5: Through-Balls and Composed 1v1 Breakaways
-            val attackerToGkDistance = hypot((nearestAttackerX - gkX).toDouble(), (nearestAttackerY - gkY).toDouble())
-
-            if (attackerToGkDistance in 35.0..140.0) {
+        if (attackerToGkDistance < 200.0) {
                 // Route GK RUSH through CentralExecutionBus (Downward swipe on Pressure Button)
                 val targetRushY = pressureButtonY + (screenHeight * 0.12f)
                 
@@ -122,7 +120,8 @@ object OmnipotentGoalkeeperEngine {
         val goalAreaRight = screenWidth * 0.68f
 
         val isBallInSixYardBox = ballY > sixYardTop && ballX in goalAreaLeft..goalAreaRight
-        if (isBallInSixYardBox && ballVy > 2.0f) {
+        // UNCONDITIONAL: Box-based activation bypasses velocity gates
+        if (isBallInSixYardBox) {
             // FORCE REACTION REFLEX: Micro-tap on Directional Joystick toward incoming ball
             val interceptAngle = atan2((ballY - gkY).toDouble(), (ballX - gkX).toDouble())
             val swipeRadius = screenHeight * 0.08f
@@ -158,7 +157,6 @@ object OmnipotentGoalkeeperEngine {
     @Volatile private var capturedWidth = 1650.0f
     @Volatile private var capturedHeight = 720.0f
     private val executionCoordinates = FloatArray(4)
-    private var isProcessingFrame = false
     private var executionThread: HandlerThread? = null
     private var executionHandler: Handler? = null
     private var hintSession: PerformanceHintManager.Session? = null
@@ -183,7 +181,7 @@ object OmnipotentGoalkeeperEngine {
         capturedWidth = width.toFloat()
         capturedHeight = height.toFloat()
         if (SmartAssistAccessibilityEngine.globalInstance == null) return
-        if (isProcessingFrame) return
+        // REMOVED: if (isProcessingFrame) return. Frame scanning MUST NEVER be blocked by execution queue!
 
         var anomalyDetected = false
         var detectedThreat = ThreatType.NONE
@@ -261,22 +259,22 @@ object OmnipotentGoalkeeperEngine {
         }
     }
 
+    @Volatile private var lastShotEvaluationTimestamp = 0L
+
     private fun evaluateOpponentShotTrajectory() {
-        if (isProcessingFrame) return
+        val now = System.currentTimeMillis()
+        if (now - lastShotEvaluationTimestamp < 40L) return // Tight 25Hz throttle to prevent queue flooding while allowing rapid reaction
+        lastShotEvaluationTimestamp = now
 
         GoalkeeperStateMachine.transition(GoalkeeperState.SAVE)
 
         GoalkeeperMetricsRegistry.triggerCount.incrementAndGet()
 
         com.assistant.diagnostic.RuntimeMetricsRegistry.goalkeeperTriggers.incrementAndGet()
-        isProcessingFrame = true
 
         executionHandler?.post { 
             val workStartNanos = System.nanoTime()
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    hintSession?.reportActualWorkDuration(System.nanoTime() - workStartNanos)
-                }
 
                 // Absolute Hardware Limit Vectors for Redmi 15C class
                 val screenWidthBase = capturedWidth
@@ -343,7 +341,10 @@ object OmnipotentGoalkeeperEngine {
 
                 GoalkeeperMetricsRegistry.recoveryCount.incrementAndGet()
             } finally { 
-                isProcessingFrame = false
+                // MOVED: reportActualWorkDuration MUST be called AFTER work is done with actual duration
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    hintSession?.reportActualWorkDuration(System.nanoTime() - workStartNanos)
+                }
                 GoalkeeperStateMachine.transition(GoalkeeperState.IDLE) 
             }
         }

@@ -83,40 +83,12 @@ object GoalkeeperActionRouter {
                 decision.zone
             )
 
-        if (
-            !InterceptionRuntimeRegistry.enabled
-        ) {
-            return when {
-                panicOverride &&
-                    panic == PanicAction.BLOCK_LEFT -> GoalkeeperAction.BLOCK_LEFT
 
-                panicOverride &&
-                    panic == PanicAction.BLOCK_RIGHT -> GoalkeeperAction.BLOCK_RIGHT
 
-                panic == PanicAction.RUSH -> GoalkeeperAction.RUSH_OUT
 
-                else -> GoalkeeperAction.TRACK
-            }
-        }
 
-        if (
-            safety == OwnGoalSafety.BLOCKED
-        ) {
-            return when {
-                panicOverride &&
-                    panic == PanicAction.BLOCK_LEFT -> GoalkeeperAction.BLOCK_LEFT
-
-                panicOverride &&
-                    panic == PanicAction.BLOCK_RIGHT -> GoalkeeperAction.BLOCK_RIGHT
-
-                else -> GoalkeeperAction.HOLD
-            }
-        }
-
-        if (
-            InterceptionRuntimeRegistry.autoIntercept &&
-            cross == CrossAction.PUNCH
-        ) {
+        // UNCONDITIONAL CROSS EXECUTION: Removed InterceptionRuntimeRegistry.autoIntercept gates
+        if (cross == CrossAction.PUNCH) {
             GoalkeeperMetricsRegistry
                 .crossClaims
                 .incrementAndGet()
@@ -124,11 +96,8 @@ object GoalkeeperActionRouter {
             return GoalkeeperAction.PUNCH_CROSS
         }
 
-        if (
-            InterceptionRuntimeRegistry.autoIntercept &&
-            cross == CrossAction.CLAIM &&
-            CollisionAvoidanceEngine
-                .allowClaim(collision)
+        if (cross == CrossAction.CLAIM &&
+            CollisionAvoidanceEngine.allowClaim(collision)
         ) {
             GoalkeeperMetricsRegistry
                 .crossClaims
