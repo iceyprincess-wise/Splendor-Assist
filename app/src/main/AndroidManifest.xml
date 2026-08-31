@@ -1,116 +1,243 @@
-<?xml version='1.0' encoding='utf-8'?>
-<manifest xmlns:ns0="http://schemas.android.com/apk/res/android">
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission ns0:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <uses-permission ns0:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission ns0:name="android.permission.KILL_BACKGROUND_PROCESSES" />
-    <uses-permission ns0:name="android.permission.INTERNET" />
-    <uses-permission ns0:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission ns0:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission ns0:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission ns0:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
-    <uses-permission ns0:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    <uses-permission ns0:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission ns0:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <uses-permission ns0:name="android.permission.WAKE_LOCK" />
-    <uses-permission ns0:name="android.permission.BIND_VPN_SERVICE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.BIND_VPN_SERVICE" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
-    <application ns0:name="com.assistant.App" ns0:allowBackup="true" ns0:icon="@mipmap/ic_launcher" ns0:label="Splendor Assist" ns0:roundIcon="@mipmap/ic_launcher_round" ns0:supportsRtl="true" ns0:hardwareAccelerated="true" ns0:theme="@style/Theme.SplendorAssist">
 
-        <activity ns0:name="com.assistant.controlroom.ui.SmartAssistControlRoomActivity" ns0:exported="false" />
-        <activity ns0:name="com.assistant.controlroom.ui.GoalkeeperControlRoomActivity" ns0:exported="false" />
-        <activity ns0:name="com.assistant.controlroom.ui.InterceptionControlRoomActivity" ns0:exported="false" />
-        <activity ns0:name="com.assistant.controlroom.ui.FutureRoomsActivity" ns0:exported="false" />
-        <activity ns0:name="com.assistant.controlroom.ui.AgentHubActivity" ns0:exported="false" />
-        <activity ns0:name="com.assistant.controlroom.ui.GameplayRoomActivity" ns0:exported="false" />
+    <application
+        android:name="com.assistant.App"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Splendor Assist"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:hardwareAccelerated="true"
+        android:theme="@style/Theme.SplendorAssist">
 
-        <activity ns0:name="com.assistant.MainActivity" ns0:exported="true">
+        <activity android:name="com.assistant.controlroom.ui.SmartAssistControlRoomActivity" android:exported="false" />
+        <activity android:name="com.assistant.controlroom.ui.GoalkeeperControlRoomActivity" android:exported="false" />
+        <activity android:name="com.assistant.controlroom.ui.InterceptionControlRoomActivity" android:exported="false" />
+        <activity android:name="com.assistant.controlroom.ui.FutureRoomsActivity" android:exported="false" />
+        <activity android:name="com.assistant.controlroom.ui.AgentHubActivity" android:exported="false" />
+        <activity android:name="com.assistant.controlroom.ui.GameplayRoomActivity" android:exported="false" />
+
+        <activity android:name="com.assistant.MainActivity" android:exported="true">
             <intent-filter>
-                <action ns0:name="android.intent.action.MAIN" />
-                <category ns0:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity ns0:name="com.assistant.ErrorActivity" ns0:exported="false" />
-        <activity ns0:name="com.assistant.DiagnosisDetailActivity" ns0:exported="false" />
-        <activity ns0:name="com.assistant.DiagnosisRoomActivity" ns0:exported="false" />
-        <activity ns0:name="com.assistant.LogActivity" ns0:exported="false" />
-        <activity ns0:name="com.assistant.WelcomeActivity" ns0:exported="false" />
-        <activity ns0:name="com.assistant.UpdateActivity" ns0:exported="false" />
+        <activity android:name="com.assistant.ErrorActivity" android:exported="false" />
+        <activity android:name="com.assistant.DiagnosisDetailActivity" android:exported="false" />
+        <activity android:name="com.assistant.DiagnosisRoomActivity" android:exported="false" />
+        <activity android:name="com.assistant.LogActivity" android:exported="false" />
+        <activity android:name="com.assistant.WelcomeActivity" android:exported="false" />
+        <activity android:name="com.assistant.UpdateActivity" android:exported="false" />
 
-        <service ns0:name="com.assistant.OverlayService" ns0:exported="false" ns0:foregroundServiceType="mediaProjection" />
+        <service
+            android:name="com.assistant.OverlayService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
 
-        <service ns0:name="com.assistant.adapter.smartassist.SmartAssistAccessibilityEngine" ns0:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" ns0:exported="true">
+        <service
+            android:name="com.assistant.adapter.smartassist.SmartAssistAccessibilityEngine"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
             <intent-filter>
-                <action ns0:name="android.accessibilityservice.AccessibilityService" />
+                <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
-            <meta-data ns0:name="android.accessibilityservice" ns0:resource="@xml/accessibility_service_config" />
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <service ns0:name="com.assistant.adapter.smartassist.SmartAssistAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Coordinates SmartAssist orchestration and decision telemetry." />
+        <service
+            android:name="com.assistant.adapter.smartassist.SmartAssistAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Coordinates SmartAssist orchestration and decision telemetry." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.lmk.LmkAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="System performance optimization and thread priority alignment for active workloads." />
+        <service
+            android:name="com.assistant.adapter.lmk.LmkAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="System performance optimization and thread priority alignment for active workloads." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.net.NetAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Asynchronous data transmission balancing and routing telemetry processing." />
+        <service
+            android:name="com.assistant.adapter.net.NetAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Asynchronous data transmission balancing and routing telemetry processing." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.input.InputAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Coordinates input hardware event data collection pipelines." />
+        <service
+            android:name="com.assistant.adapter.input.InputAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Coordinates input hardware event data collection pipelines." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.sync.SyncAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Synchronizes frame updates and graphics commands during system rendering events." />
+        <service
+            android:name="com.assistant.adapter.sync.SyncAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Synchronizes frame updates and graphics commands during system rendering events." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.ping.PingAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Monitors network latency and connectivity telemetry." />
+        <service
+            android:name="com.assistant.adapter.ping.PingAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Monitors network latency and connectivity telemetry." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.stutter.StutterAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Monitors frame pacing and stutter conditions." />
+        <service
+            android:name="com.assistant.adapter.stutter.StutterAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Monitors frame pacing and stutter conditions." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.lag.LagAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Monitors application responsiveness and lag conditions." />
+        <service
+            android:name="com.assistant.adapter.lag.LagAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Monitors application responsiveness and lag conditions." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.boot.BootAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Monitors boot lifecycle and startup stabilization telemetry." />
+        <service
+            android:name="com.assistant.adapter.boot.BootAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Monitors boot lifecycle and startup stabilization telemetry." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.watchdog.WatchdogAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Supervises adapter health, failures and recovery telemetry." />
+        <service
+            android:name="com.assistant.adapter.watchdog.WatchdogAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Supervises adapter health, failures and recovery telemetry." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.memory.MemoryAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Monitors memory pressure and RAM telemetry." />
+        <service
+            android:name="com.assistant.adapter.memory.MemoryAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Monitors memory pressure and RAM telemetry." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.thermal.ThermalAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Monitors device thermal state and throttling conditions." />
+        <service
+            android:name="com.assistant.adapter.thermal.ThermalAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Monitors device thermal state and throttling conditions." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.battery.BatteryAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Monitors battery state and power conditions." />
+        <service
+            android:name="com.assistant.adapter.battery.BatteryAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Monitors battery state and power conditions." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.scheduler.SchedulerAdapterService" ns0:exported="true" ns0:process=":survival" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Coordinates adapter scheduling and fleet orchestration telemetry." />
+        <service
+            android:name="com.assistant.adapter.scheduler.SchedulerAdapterService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Coordinates adapter scheduling and fleet orchestration telemetry." />
         </service>
 
-        <service ns0:name="com.assistant.adapter.interruption.InterruptionAdapterService" ns0:exported="false" ns0:foregroundServiceType="specialUse">
-            <property ns0:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" ns0:value="Interruption management and anti-stutter coordination" />
+        <service
+            android:name="com.assistant.adapter.interruption.InterruptionAdapterService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Interruption management and anti-stutter coordination" />
         </service>
 
-        <service ns0:name="com.assistant.PingEliminatorVpnService" ns0:exported="true" ns0:permission="android.permission.BIND_VPN_SERVICE">
+        <service
+            android:name="com.assistant.PingEliminatorVpnService"
+            android:exported="true"
+            android:permission="android.permission.BIND_VPN_SERVICE">
             <intent-filter>
-                <action ns0:name="android.net.VpnService" />
+                <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
+        <service
+            android:name=".SplendorWatchdogService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:process=":watch">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="session_watchdog" />
+        </service>
 
-    <service android:name=".SplendorWatchdogService" android:process=":watch" android:exported="false" android:foregroundServiceType="specialUse"><property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="session_watchdog" /></service><activity android:name=".SplendorReauthActivity" android:exported="false" android:excludeFromRecents="true" android:theme="@android:style/Theme.Translucent.NoTitleBar" /></application>
-<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" /></manifest>
+        <activity
+            android:name=".SplendorReauthActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+
+    </application>
+</manifest>
