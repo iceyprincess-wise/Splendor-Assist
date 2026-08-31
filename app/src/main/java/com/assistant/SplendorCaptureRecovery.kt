@@ -74,14 +74,16 @@ object SplendorCaptureRecovery {
     }
     fun deliver(rc: Int, data: Intent) {
         dead = false; armed = false; lastFrame = 0L
-        val svc = svcRef?.get() ?: return
-        val ms = svc.javaClass.methods
-        // SPLD-PATCH-v4:TOKEN-APPLY
-        val m = ms.firstOrNull { it.name == "applyFreshProjection" && it.parameterTypes.size == 2 && it.parameterTypes[0] == Int::class.javaPrimitiveType && Intent::class.java.isAssignableFrom(it.parameterTypes[1]) }
-        if (m != null) {
-            try { m.invoke(svc, rc, data); Log.i(TAG, "capture restored via applyFreshProjection") } catch (e: Exception) { Log.e(TAG, "restore failed", e) }
+        val svc = OverlayService.instance
+        if (svc != null) {
+            try {
+                svc.applyFreshProjection(rc, data)
+                Log.i(TAG, "capture restored via applyFreshProjection")
+            } catch (e: Exception) {
+                Log.e(TAG, "restore failed", e)
+            }
         } else {
-            Log.w(TAG, "applyFreshProjection method not resolvable at runtime")
+            Log.w(TAG, "OverlayService instance not available for token restore")
         }
     }
     private fun ensureChannel(ctx: Context) {
