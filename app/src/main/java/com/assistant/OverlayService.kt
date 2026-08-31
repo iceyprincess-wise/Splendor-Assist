@@ -155,9 +155,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     override fun onCreate() {
-        // SPLD-PATCH-v1:INTEGRATION
-        SplendorCaptureRecovery.attach(this)
-        SplendorWatchdogStart.start(this)
+        // SPLD-PATCH-v2:INTEGRATION
+        com.assistant.SplendorCaptureRecovery.attach(this)
+        com.assistant.SplendorWatchdogStart.start(this)
 
         if(runtimeInitialized) return
         runtimeInitialized=true
@@ -235,7 +235,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Splendor Assist Locked")
-            .setContentText("Engine Active")
+            .setContentText(com.assistant.SplendorCaptureRecovery.statusText("Engine Active") /* SPLD-PATCH-v2:STATUS */)
             .setSmallIcon(android.R.drawable.stat_notify_more)
             .build()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -414,6 +414,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
             lastFrameProcessedMs = captureNow
             captureFrameCount++
+            // SPLD-PATCH-v2:FRAME
+            com.assistant.SplendorCaptureRecovery.markFrame()
             if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
                 image.close()
                 return@setOnImageAvailableListener

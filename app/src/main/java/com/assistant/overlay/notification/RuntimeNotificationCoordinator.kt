@@ -47,7 +47,7 @@ object RuntimeNotificationCoordinator{
             NotificationCompat.Builder(context,CHANNEL)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Splendor Assist")
-                .setContentText(text.ifBlank{"Engine Active"})
+                .setContentText(text.ifBlank{com.assistant.SplendorCaptureRecovery.statusText("Engine Active") /* SPLD-PATCH-v2:STATUS */})
                 .setOngoing(true)
                 .build()
 
