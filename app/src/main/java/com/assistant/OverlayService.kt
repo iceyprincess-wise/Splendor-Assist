@@ -118,6 +118,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     @Volatile private var recoveryPromptShown = false
     private var recoveryPromptView: TextView? = null
+    // SPLD-PATCH-v4:TOKEN-RESTORE
+    fun applyFreshProjection(code: Int, data: Intent) {
+        projectionRevoked = false
+        try { virtualDisplay?.release() } catch (_: Throwable) {}
+        try { imageReader?.close() } catch (_: Throwable) {}
+        virtualDisplay = null
+        imageReader = null
+        setupMediaProjection(code, data)
+        RuntimeLogger.log("AGENT CAPTURE RESTORED: Fresh MediaProjection token applied successfully", "AGENT")
+    }
+
 
     override fun onBind(intent: Intent?): IBinder? = null
 

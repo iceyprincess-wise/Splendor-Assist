@@ -70,11 +70,12 @@ object SplendorCaptureRecovery {
         dead = false; armed = false; lastFrame = 0L
         val svc = svcRef?.get() ?: return
         val ms = svc.javaClass.methods
-        val m = ms.firstOrNull { it.name == "restartCapture" && it.parameterTypes.size == 0 }
+        // SPLD-PATCH-v4:TOKEN-APPLY
+        val m = ms.firstOrNull { it.name == "applyFreshProjection" && it.parameterTypes.size == 2 && it.parameterTypes[0] == Int::class.javaPrimitiveType && Intent::class.java.isAssignableFrom(it.parameterTypes[1]) }
         if (m != null) {
-            try { m.invoke(svc); Log.i(TAG, "capture restarted via restartCapture") } catch (e: Exception) { Log.e(TAG, "restart failed", e) }
+            try { m.invoke(svc, rc, data); Log.i(TAG, "capture restored via applyFreshProjection") } catch (e: Exception) { Log.e(TAG, "restore failed", e) }
         } else {
-            Log.w(TAG, "restartCapture method not resolvable at runtime")
+            Log.w(TAG, "applyFreshProjection method not resolvable at runtime")
         }
     }
     private fun ensureChannel(ctx: Context) {
