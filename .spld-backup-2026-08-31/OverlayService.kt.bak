@@ -155,10 +155,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     override fun onCreate() {
-        // SPLD-PATCH-v1:INTEGRATION
-        SplendorCaptureRecovery.attach(this)
-        SplendorWatchdogStart.start(this)
-
         if(runtimeInitialized) return
         runtimeInitialized=true
         super.onCreate()
