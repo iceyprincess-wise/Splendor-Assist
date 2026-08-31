@@ -155,6 +155,58 @@ class OverlayService : Service(), ComponentCallbacks2 {
         captureState = finalState
     }
 
+    private val recoveryLock = ReentrantLock()
+    private var currentWidth = 0
+    private var currentHeight = 0
+    private var currentDpi = 0
+
+    private val imageAvailableListener = ImageReader.OnImageAvailableListener { reader ->
+            val image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
+            val captureNow = System.currentTimeMillis()
+            if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
+                image.close()
+                return@OnImageAvailableListener
+            }
+            lastFrameProcessedMs = captureNow
+            captureFrameCount++
+
+            // SPLD-PATCH-v2:FRAME
+            com.assistant.SplendorCaptureRecovery.markFrame()
+
+            if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
+                image.close()
+                return@OnImageAvailableListener
+            }
+
+            try {
+                val scanBuffer = image.planes[0].buffer.duplicate()
+                val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
+                val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
+                com.assistant.BoosterIgnition.ensureIgnited(this)
+                com.assistant.AppContributorRegistration.ensureRegistered()
+                com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
+                val frame = com.assistant.adapter.smartassist.FrameAssembler.assemble()
+                com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
+                com.assistant.adapter.smartassist.GameStateBuilder.update(state)
+                com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
+            } catch (t: Throwable) {
+                try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+            }
+
+            val shedFactor = when (com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentLoadShed()) {
+                "HEAVY" -> 4L
+                "LIGHT" -> 2L
+                else -> 1L
+            }
+
+            if (System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS * shedFactor) {
+                lastOcrTime = System.currentTimeMillis()
+                processImageForOCR(image)
+            } else {
+                image.close()
+            }
+            }
+
     // SPLD-PATCH-v4:TOKEN-RESTORE
     fun applyFreshProjection(code: Int, data: Intent) {
         teardownCaptureResources()
@@ -174,7 +226,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
             return false
         }
         try {
-            RuntimeLogger.log("AGENT CAPTURE RESTART: attempting ImageReader recreation", "AGENT")
+            RuntimeLogger.log("AGENT CAPTURE RESTART: attempting ImageReader replacement", "AGENT")
             try {
                 val drainLatch = java.util.concurrent.CountDownLatch(1)
                 ocrIoHandler?.post { drainLatch.countDown() } ?: drainLatch.countDown()
@@ -184,7 +236,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
             recreateCaptureSurfaces()
             lastFrameProcessedMs = 0L
             captureFrameCount = 0L
-            RuntimeLogger.log("AGENT CAPTURE RESTART: ImageReader recreated successfully", "AGENT")
+            RuntimeLogger.log("AGENT CAPTURE RESTART: ImageReader replaced successfully", "AGENT")
             return true
         } catch (e: Exception) {
             RuntimeLogger.log("AGENT CAPTURE RESTART FAILED: ${e.message}", "AGENT")
@@ -427,82 +479,64 @@ class OverlayService : Service(), ComponentCallbacks2 {
             return
         }
 
-        // Guarantee exactly one VirtualDisplay/ImageReader per projection
-        try { virtualDisplay?.release() } catch (_: Throwable) {}
-        try { imageReader?.close() } catch (_: Throwable) {}
-        virtualDisplay = null
-        imageReader = null
-
-        val scale = 0.4f
-        val metrics = DisplayMetrics()
-        val finalWidth: Int
-        val finalHeight: Int
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val bounds = windowManager.currentWindowMetrics.bounds
-            finalWidth = (bounds.width() * scale).toInt() and 0xFFFFFFFE.toInt()
-            finalHeight = (bounds.height() * scale).toInt() and 0xFFFFFFFE.toInt()
-            metrics.densityDpi = resources.configuration.densityDpi
-        } else {
-            @Suppress("DEPRECATION")
-            windowManager.defaultDisplay.getRealMetrics(metrics)
-            finalWidth = (metrics.widthPixels * scale).toInt() and 0xFFFFFFFE.toInt()
-            finalHeight = (metrics.heightPixels * scale).toInt() and 0xFFFFFFFE.toInt()
+        if (!recoveryLock.tryLock()) {
+            RuntimeLogger.log("recreateCaptureSurfaces: recovery already in progress", "OVERLAY")
+            return
         }
 
-        com.assistant.vision.OverlaySelfMask.setCaptureScale(finalWidth, finalHeight, if (scale > 0f) (finalWidth / scale).toInt() else finalWidth, if (scale > 0f) (finalHeight / scale).toInt() else finalHeight)
+        try {
+            val scale = 0.4f
+            val metrics = DisplayMetrics()
+            val finalWidth: Int
+            val finalHeight: Int
 
-        imageReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
-        imageReader?.setOnImageAvailableListener({ reader ->
-            val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
-            val captureNow = System.currentTimeMillis()
-            if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
-                image.close()
-                return@setOnImageAvailableListener
-            }
-            lastFrameProcessedMs = captureNow
-            captureFrameCount++
-
-            // SPLD-PATCH-v2:FRAME
-            com.assistant.SplendorCaptureRecovery.markFrame()
-
-            if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
-                image.close()
-                return@setOnImageAvailableListener
-            }
-
-            try {
-                val scanBuffer = image.planes[0].buffer.duplicate()
-                val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
-                val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
-                com.assistant.BoosterIgnition.ensureIgnited(this)
-                com.assistant.AppContributorRegistration.ensureRegistered()
-                com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
-                val frame = com.assistant.adapter.smartassist.FrameAssembler.assemble()
-                com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
-                com.assistant.adapter.smartassist.GameStateBuilder.update(state)
-                com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
-            } catch (t: Throwable) {
-                try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
-            }
-
-            val shedFactor = when (com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentLoadShed()) {
-                "HEAVY" -> 4L
-                "LIGHT" -> 2L
-                else -> 1L
-            }
-
-            if (System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS * shedFactor) {
-                lastOcrTime = System.currentTimeMillis()
-                processImageForOCR(image)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val bounds = windowManager.currentWindowMetrics.bounds
+                finalWidth = (bounds.width() * scale).toInt() and 0xFFFFFFFE.toInt()
+                finalHeight = (bounds.height() * scale).toInt() and 0xFFFFFFFE.toInt()
+                metrics.densityDpi = resources.configuration.densityDpi
             } else {
-                image.close()
+                @Suppress("DEPRECATION")
+                windowManager.defaultDisplay.getRealMetrics(metrics)
+                finalWidth = (metrics.widthPixels * scale).toInt() and 0xFFFFFFFE.toInt()
+                finalHeight = (metrics.heightPixels * scale).toInt() and 0xFFFFFFFE.toInt()
             }
-        }, ocrIoHandler ?: Handler(Looper.getMainLooper()))
 
-        virtualDisplay = mediaProjection?.createVirtualDisplay("HybridCoachScreen", finalWidth, finalHeight, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY, imageReader?.surface, null, null)
+            com.assistant.vision.OverlaySelfMask.setCaptureScale(finalWidth, finalHeight, if (scale > 0f) (finalWidth / scale).toInt() else finalWidth, if (scale > 0f) (finalHeight / scale).toInt() else finalHeight)
 
-        captureState = CaptureState.ACTIVE
+            val isInitial = virtualDisplay == null
+            val dimensionsChanged = finalWidth != currentWidth || finalHeight != currentHeight || metrics.densityDpi != currentDpi
+
+            if (isInitial) {
+                imageReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
+                imageReader?.setOnImageAvailableListener(imageAvailableListener, ocrIoHandler ?: Handler(Looper.getMainLooper()))
+                virtualDisplay = mediaProjection?.createVirtualDisplay("HybridCoachScreen", finalWidth, finalHeight, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY, imageReader?.surface, null, null)
+            } else {
+                val oldReader = imageReader
+                val newReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
+                newReader.setOnImageAvailableListener(imageAvailableListener, ocrIoHandler ?: Handler(Looper.getMainLooper()))
+                
+                imageReader = newReader
+                
+                if (dimensionsChanged) {
+                    virtualDisplay?.resize(finalWidth, finalHeight, metrics.densityDpi)
+                }
+                virtualDisplay?.setSurface(newReader.surface)
+                
+                try { oldReader?.close() } catch (_: Throwable) {}
+                RuntimeLogger.log("recreateCaptureSurfaces: ImageReader replaced via setSurface (resize=$dimensionsChanged)", "OVERLAY")
+            }
+            
+            currentWidth = finalWidth
+            currentHeight = finalHeight
+            currentDpi = metrics.densityDpi
+
+            captureState = CaptureState.ACTIVE
+        } catch (e: Exception) {
+            RuntimeLogger.log("recreateCaptureSurfaces failed: ${e.message}", "OVERLAY")
+        } finally {
+            recoveryLock.unlock()
+        }
     }
 
     private fun startCaptureKeepAlive() {
@@ -512,12 +546,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 if (!isProjectionRevoked && mediaProjection != null) {
                     val now = System.currentTimeMillis()
                     if (now - lastFrameProcessedMs > 10000L && lastFrameProcessedMs > 0L) {
-                        RuntimeLogger.log("KEEPALIVE: Capture stale for >10s. Proactively recreating surfaces to prevent HyperOS silent kill.", "OVERLAY")
+                        RuntimeLogger.log("KEEPALIVE: Capture stale for >10s. Proactively replacing ImageReader to prevent HyperOS silent kill.", "OVERLAY")
                         try {
                             recreateCaptureSurfaces()
                             lastFrameProcessedMs = System.currentTimeMillis()
                         } catch (e: Exception) {
-                            RuntimeLogger.log("KEEPALIVE recreate failed: ${e.message}", "OVERLAY")
+                            RuntimeLogger.log("KEEPALIVE replace failed: ${e.message}", "OVERLAY")
                         }
                     }
                 }
