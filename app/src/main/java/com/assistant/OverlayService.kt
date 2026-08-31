@@ -135,10 +135,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
     fun restartCapture(): Boolean {
         if (projectionRevoked) {
             RuntimeLogger.log("AGENT CAPTURE RESTART: projection already revoked; fresh MediaProjection authorization required", "AGENT")
+            showCaptureRecoveryPrompt() // EMPOWERED: Force recovery prompt immediately
             return false
         }
         if (mediaProjection == null) {
             RuntimeLogger.log("AGENT CAPTURE RESTART: no active MediaProjection", "AGENT")
+            showCaptureRecoveryPrompt() // EMPOWERED: Force recovery prompt immediately
             return false
         }
         try {
@@ -383,7 +385,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     mediaProjection = null
                     lastFrameProcessedMs = 0L
                     captureFrameCount = 0L
-                    RuntimeLogger.log("MediaProjection.onStop(): projection revoked; capture resources invalidated. AI Agent handling silently.", "OVERLAY")
+                    RuntimeLogger.log("MediaProjection.onStop(): projection revoked; aggressively triggering recovery prompt to stop capture death.", "OVERLAY")
+                    showCaptureRecoveryPrompt() // EMPOWERED: Immediately prompt user!
                 }
             }
         }
@@ -466,8 +469,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
             override fun run() {
                 if (!projectionRevoked && mediaProjection != null) {
                     val now = System.currentTimeMillis()
-                    if (now - lastFrameProcessedMs > 10000L && lastFrameProcessedMs > 0L) {
-                        RuntimeLogger.log("KEEPALIVE: Capture stale for >10s. Proactively recreating surfaces to prevent HyperOS silent kill.", "OVERLAY")
+                    if (now - lastFrameProcessedMs > 5000L && lastFrameProcessedMs > 0L) {
+                        RuntimeLogger.log("KEEPALIVE: Capture stale for >5s. Proactively recreating surfaces to prevent HyperOS silent kill.", "OVERLAY")
                         try {
                             virtualDisplay?.release()
                             imageReader?.close()
@@ -480,10 +483,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
                         }
                     }
                 }
-                keepAliveHandler.postDelayed(this, 45000L)
+                keepAliveHandler.postDelayed(this, 5000L)
             }
         }
-        keepAliveHandler.postDelayed(keepAliveRunnable!!, 45000L)
+        keepAliveHandler.postDelayed(keepAliveRunnable!!, 5000L)
     }
 
     private fun processImageForOCR(image: Image) {

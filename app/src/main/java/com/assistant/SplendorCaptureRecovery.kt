@@ -56,7 +56,13 @@ object SplendorCaptureRecovery {
     }
     private fun onRevoked() {
         val svc = svcRef?.get() ?: return
-        Log.w(TAG, "capture stale -> requesting fresh user authorization")
+        Log.w(TAG, "capture stale -> requesting fresh user authorization and forcing overlay prompt")
+        
+        // EMPOWERED: Force the overlay prompt immediately so user cannot miss it
+        try {
+            com.assistant.OverlayService.requestRecoveryPrompt()
+        } catch (_: Throwable) {}
+
         val i = Intent(svc, SplendorReauthActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         val pi = PendingIntent.getActivity(svc, 4242, i, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val nb = Notification.Builder(svc, CH)
