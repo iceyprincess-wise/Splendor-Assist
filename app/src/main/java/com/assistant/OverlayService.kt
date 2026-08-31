@@ -9,7 +9,6 @@ import com.assistant.overlay.metrics.SmartAssistMetrics
 import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
 import com.assistant.overlay.notification.RuntimeNotificationCoordinator
 import com.assistant.overlay.runtime.PerformanceGovernor
-
 import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
@@ -56,21 +55,31 @@ import java.util.concurrent.locks.ReentrantLock
 
 class OverlayService : Service(), ComponentCallbacks2 {
 
+    enum class CaptureState {
+        IDLE,
+        AUTHORIZED,
+        ACTIVE,
+        REVOKED,
+        FAILED
+    }
+
     @Volatile
     private var runtimeInitialized = false
 
     companion object {
         private const val CHANNEL_ID = "efootball_assistant_channel"
         private const val NOTIFICATION_ID = 101
+
         @Volatile var instance: OverlayService? = null
             private set
+
         @JvmStatic
         fun restartCaptureIfAlive(): Boolean =
             instance?.restartCapture() ?: false
 
         @JvmStatic
         fun projectionRevoked(): Boolean =
-            instance?.projectionRevoked ?: true
+            instance?.isProjectionRevoked ?: true
 
         @JvmStatic
         fun requestRecoveryPrompt() {
@@ -91,56 +100,77 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var projectionCallback: MediaProjection.Callback? = null
 
     @Volatile
-    private var projectionRevoked = false
+    private var captureState: CaptureState = CaptureState.IDLE
+
+    val isProjectionRevoked: Boolean
+        get() = captureState == CaptureState.REVOKED || captureState == CaptureState.IDLE || captureState == CaptureState.FAILED
 
     private var perfHintSession: PerformanceHintManager.Session? = null
     private var ocrIoThread: android.os.HandlerThread? = null
     private var ocrIoHandler: android.os.Handler? = null
     private var lastOcrTime = 0L
     private var lastMatchDetectionTime = 0L
-    private val OCR_INTERVAL_MS = 1500L 
+    private val OCR_INTERVAL_MS = 1500L
     private var reusableBitmap: Bitmap? = null
     private val taskExecutionLock = ReentrantLock()
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-    
+
     @Volatile private var lastFrameProcessedMs = 0L
     private val captureFrameIntervalBase = 33L
     private val captureFrameIntervalMs: Long
         get() = com.assistant.adapter.memory.MemoryCaptureGateEngine.recommendedIntervalMs()
+
     @Volatile private var captureFrameCount = 0L
-    
     private val trajectoryHandler = Handler(Looper.getMainLooper())
     private var trajectoryRunnable: Runnable? = null
     private var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
-
     private var keepAliveHandler = Handler(Looper.getMainLooper())
     private var keepAliveRunnable: Runnable? = null
-
     @Volatile private var recoveryPromptShown = false
     private var recoveryPromptView: TextView? = null
-    // SPLD-PATCH-v4:TOKEN-RESTORE
-    fun applyFreshProjection(code: Int, data: Intent) {
-        projectionRevoked = false
+
+    private fun teardownCaptureResources(finalState: CaptureState = CaptureState.IDLE) {
+        try { imageReader?.setOnImageAvailableListener(null, null) } catch (_: Throwable) {}
         try { virtualDisplay?.release() } catch (_: Throwable) {}
         try { imageReader?.close() } catch (_: Throwable) {}
+        
         virtualDisplay = null
         imageReader = null
+        
+        try {
+            val cb = projectionCallback
+            val mp = mediaProjection
+            if (cb != null && mp != null) {
+                mp.unregisterCallback(cb)
+            }
+        } catch (_: Throwable) {}
+        projectionCallback = null
+        
+        try { mediaProjection?.stop() } catch (_: Throwable) {}
+        mediaProjection = null
+        
+        lastFrameProcessedMs = 0L
+        captureFrameCount = 0L
+        
+        captureState = finalState
+    }
+
+    // SPLD-PATCH-v4:TOKEN-RESTORE
+    fun applyFreshProjection(code: Int, data: Intent) {
+        teardownCaptureResources()
         setupMediaProjection(code, data)
         RuntimeLogger.log("AGENT CAPTURE RESTORED: Fresh MediaProjection token applied successfully", "AGENT")
     }
 
-
     override fun onBind(intent: Intent?): IBinder? = null
 
     fun restartCapture(): Boolean {
-        if (projectionRevoked) {
+        if (isProjectionRevoked) {
             RuntimeLogger.log("AGENT CAPTURE RESTART: projection already revoked; fresh MediaProjection authorization required", "AGENT")
-            showCaptureRecoveryPrompt() // EMPOWERED: Force recovery prompt immediately
             return false
         }
         if (mediaProjection == null) {
             RuntimeLogger.log("AGENT CAPTURE RESTART: no active MediaProjection", "AGENT")
-            showCaptureRecoveryPrompt() // EMPOWERED: Force recovery prompt immediately
             return false
         }
         try {
@@ -150,13 +180,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 ocrIoHandler?.post { drainLatch.countDown() } ?: drainLatch.countDown()
                 drainLatch.await(100L, java.util.concurrent.TimeUnit.MILLISECONDS)
             } catch (_: Throwable) {}
-            try { virtualDisplay?.release() } catch (_: Throwable) {}
-            try { imageReader?.close() } catch (_: Throwable) {}
-            virtualDisplay = null
-            imageReader = null
 
             recreateCaptureSurfaces()
-
             lastFrameProcessedMs = 0L
             captureFrameCount = 0L
             RuntimeLogger.log("AGENT CAPTURE RESTART: ImageReader recreated successfully", "AGENT")
@@ -171,18 +196,18 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // SPLD-PATCH-v2:INTEGRATION
         com.assistant.SplendorCaptureRecovery.attach(this)
         com.assistant.SplendorWatchdogStart.start(this)
-
         if(runtimeInitialized) return
-        runtimeInitialized=true
+        runtimeInitialized = true
+
         super.onCreate()
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         com.assistant.vision.ForegroundGate.install(application)
-        try {
-            com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext)
-            com.assistant.adapter.smartassist.RuntimeSelfHealEngine.start()
-        } catch (_: Throwable) {}
+
+        try { com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext)
+              com.assistant.adapter.smartassist.RuntimeSelfHealEngine.start() } catch (_: Throwable) {}
         try { com.assistant.adapter.smartassist.CaptaincySkillEngine.init(applicationContext) } catch (_: Throwable) {}
         try { com.assistant.adapter.smartassist.CrowdingZoneDetector.init(applicationContext) } catch (_: Throwable) {}
+
         instance = this
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()
@@ -208,7 +233,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
             @Suppress("DEPRECATION")
             intent?.getParcelableExtra<Intent>("CROSS_PROCESS_DATA") ?: EngineData.intent
         }
-        
+
         if (resultCode == Activity.RESULT_OK && data != null) {
             startForegroundSafely()
             try {
@@ -251,6 +276,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
             .setContentText(com.assistant.SplendorCaptureRecovery.statusText("Engine Active") /* SPLD-PATCH-v2:STATUS */)
             .setSmallIcon(android.R.drawable.stat_notify_more)
             .build()
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(NOTIFICATION_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION)
         } else {
@@ -265,7 +291,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         overlayView = inflater.inflate(com.assistant.overlay.R.layout.overlay_layout, null)
         txtEngineStatus = overlayView.findViewById(com.assistant.overlay.R.id.overlay_status_text)
-        
+
         val layoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
@@ -273,16 +299,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
             PixelFormat.TRANSLUCENT
         )
         windowManager.addView(overlayView, layoutParams)
-
         overlayView.post {
             com.assistant.vision.OverlaySelfMask.publishHierarchy("hud", overlayView)
         }
-        
         globalLayoutListener = ViewTreeObserver.OnGlobalLayoutListener {
             com.assistant.vision.OverlaySelfMask.publishHierarchy("hud", overlayView)
         }
         overlayView.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
-        
         OverlaySurvivalEngine.attached()
         updateOverlayVisuals("GUARD LOCK: SECURE [ANTI-BAN ON]", Color.GREEN)
         startTrajectoryWatchdog()
@@ -365,33 +388,31 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     private fun setupMediaProjection(code: Int, intent: Intent) {
+        if (captureState == CaptureState.ACTIVE || captureState == CaptureState.AUTHORIZED) {
+            teardownCaptureResources()
+        }
+
         val projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        projectionRevoked = false
         mediaProjection = projectionManager.getMediaProjection(code, intent)
 
         if (mediaProjection == null) {
+            captureState = CaptureState.FAILED
             RuntimeLogger.log("MediaProjection setup failed: getMediaProjection returned null", "OVERLAY")
             throw IllegalStateException("MediaProjection unavailable")
         }
+
         projectionCallback = object : MediaProjection.Callback() {
             override fun onStop() {
                 super.onStop()
-                projectionRevoked = true
                 Handler(Looper.getMainLooper()).post {
-                    try { virtualDisplay?.release() } catch (_: Throwable) {}
-                    try { imageReader?.close() } catch (_: Throwable) {}
-                    virtualDisplay = null
-                    imageReader = null
-                    mediaProjection = null
-                    lastFrameProcessedMs = 0L
-                    captureFrameCount = 0L
-                    RuntimeLogger.log("MediaProjection.onStop(): projection revoked; aggressively triggering recovery prompt to stop capture death.", "OVERLAY")
-                    showCaptureRecoveryPrompt() // EMPOWERED: Immediately prompt user!
+                    teardownCaptureResources(CaptureState.REVOKED)
+                    RuntimeLogger.log("MediaProjection.onStop(): projection revoked; capture resources invalidated. AI Agent handling silently.", "OVERLAY")
                 }
             }
         }
         mediaProjection?.registerCallback(projectionCallback!!, Handler(Looper.getMainLooper()))
-        
+
+        captureState = CaptureState.AUTHORIZED
         recreateCaptureSurfaces()
         startCaptureKeepAlive()
     }
@@ -401,11 +422,22 @@ class OverlayService : Service(), ComponentCallbacks2 {
             RuntimeLogger.log("recreateCaptureSurfaces: mediaProjection is null", "OVERLAY")
             return
         }
+        if (captureState != CaptureState.AUTHORIZED && captureState != CaptureState.ACTIVE) {
+            RuntimeLogger.log("recreateCaptureSurfaces: invalid state $captureState", "OVERLAY")
+            return
+        }
+
+        // Guarantee exactly one VirtualDisplay/ImageReader per projection
+        try { virtualDisplay?.release() } catch (_: Throwable) {}
+        try { imageReader?.close() } catch (_: Throwable) {}
+        virtualDisplay = null
+        imageReader = null
 
         val scale = 0.4f
         val metrics = DisplayMetrics()
         val finalWidth: Int
         val finalHeight: Int
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val bounds = windowManager.currentWindowMetrics.bounds
             finalWidth = (bounds.width() * scale).toInt() and 0xFFFFFFFE.toInt()
@@ -417,7 +449,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
             finalWidth = (metrics.widthPixels * scale).toInt() and 0xFFFFFFFE.toInt()
             finalHeight = (metrics.heightPixels * scale).toInt() and 0xFFFFFFFE.toInt()
         }
+
         com.assistant.vision.OverlaySelfMask.setCaptureScale(finalWidth, finalHeight, if (scale > 0f) (finalWidth / scale).toInt() else finalWidth, if (scale > 0f) (finalHeight / scale).toInt() else finalHeight)
+
         imageReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
         imageReader?.setOnImageAvailableListener({ reader ->
             val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
@@ -428,16 +462,18 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
             lastFrameProcessedMs = captureNow
             captureFrameCount++
+
             // SPLD-PATCH-v2:FRAME
             com.assistant.SplendorCaptureRecovery.markFrame()
+
             if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
                 image.close()
                 return@setOnImageAvailableListener
             }
+
             try {
                 val scanBuffer = image.planes[0].buffer.duplicate()
                 val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
-
                 val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
                 com.assistant.BoosterIgnition.ensureIgnited(this)
                 com.assistant.AppContributorRegistration.ensureRegistered()
@@ -449,11 +485,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
             } catch (t: Throwable) {
                 try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
             }
+
             val shedFactor = when (com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentLoadShed()) {
                 "HEAVY" -> 4L
                 "LIGHT" -> 2L
                 else -> 1L
             }
+
             if (System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS * shedFactor) {
                 lastOcrTime = System.currentTimeMillis()
                 processImageForOCR(image)
@@ -461,21 +499,21 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 image.close()
             }
         }, ocrIoHandler ?: Handler(Looper.getMainLooper()))
+
         virtualDisplay = mediaProjection?.createVirtualDisplay("HybridCoachScreen", finalWidth, finalHeight, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY, imageReader?.surface, null, null)
+
+        captureState = CaptureState.ACTIVE
     }
 
     private fun startCaptureKeepAlive() {
+        keepAliveRunnable?.let { keepAliveHandler.removeCallbacks(it) }
         keepAliveRunnable = object : Runnable {
             override fun run() {
-                if (!projectionRevoked && mediaProjection != null) {
+                if (!isProjectionRevoked && mediaProjection != null) {
                     val now = System.currentTimeMillis()
-                    if (now - lastFrameProcessedMs > 5000L && lastFrameProcessedMs > 0L) {
-                        RuntimeLogger.log("KEEPALIVE: Capture stale for >5s. Proactively recreating surfaces to prevent HyperOS silent kill.", "OVERLAY")
+                    if (now - lastFrameProcessedMs > 10000L && lastFrameProcessedMs > 0L) {
+                        RuntimeLogger.log("KEEPALIVE: Capture stale for >10s. Proactively recreating surfaces to prevent HyperOS silent kill.", "OVERLAY")
                         try {
-                            virtualDisplay?.release()
-                            imageReader?.close()
-                            virtualDisplay = null
-                            imageReader = null
                             recreateCaptureSurfaces()
                             lastFrameProcessedMs = System.currentTimeMillis()
                         } catch (e: Exception) {
@@ -483,10 +521,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
                         }
                     }
                 }
-                keepAliveHandler.postDelayed(this, 5000L)
+                keepAliveHandler.postDelayed(this, 45000L)
             }
         }
-        keepAliveHandler.postDelayed(keepAliveRunnable!!, 5000L)
+        keepAliveHandler.postDelayed(keepAliveRunnable!!, 45000L)
     }
 
     private fun processImageForOCR(image: Image) {
@@ -503,14 +541,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     reusableBitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
                 }
                 reusableBitmap!!.copyPixelsFromBuffer(image.planes[0].buffer)
-
                 recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))
                     .addOnSuccessListener { visionText ->
-
                         val detectedText = visionText.textBlocks.asSequence()
                             .filterNot { com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(it.boundingBox) }
-                            .joinToString(" ") { it.text }
-                            .replace("\n", " ")
+                            .joinToString("") { it.text }
+                            .replace("\n", "")
                             .take(120)
 
                         com.assistant.vision.OverlaySelfMask.tickAndLog()
@@ -542,7 +578,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             System.currentTimeMillis() - lastMatchDetectionTime >= 5000L
                         ) {
                             SmartAssistRepository.activatePanic()
-
                             val lv = com.assistant.adapter.smartassist.LiveVectorResolver.resolve(
                                 reusableBitmap?.width?.toFloat() ?: 1080f,
                                 reusableBitmap?.height?.toFloat() ?: 2400f
@@ -556,15 +591,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             } else {
                                 null
                             }
-                            
                             val submitted = dec?.shouldAct == true
                             RuntimeLogger.log(
                                 "SMART_ASSIST_GATE real=${lv.hasRealData} distance=${vectorDistance.toInt()} duration=${lv.duration} action=${dec?.actionType ?: "NO_REAL_DATA"} shouldAct=${dec?.shouldAct ?: false} submitted=$submitted",
                                 "SMART_ASSIST"
                             )
-
                             RuntimeMetricsRegistry.matchDetections.incrementAndGet()
-
                             RuntimeNotificationCoordinator.update(
                                 context = applicationContext,
                                 antiban = true,
@@ -572,15 +604,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                 recording = false,
                                 saved = false
                             )
-
                             RuntimeLogger.log("🕶️", "SMART_ASSIST")
-
                             updateOverlayVisuals("🕶️", Color.GREEN)
-
                             Handler(Looper.getMainLooper()).postDelayed({}, 3000)
                         }
                     }
-
             } finally {
                 taskExecutionLock.unlock()
                 try { image.close() } catch(e:Exception){}
@@ -605,11 +633,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
             override fun run() {
                 if (!::overlayView.isInitialized) return
                 val panicActive = SmartAssistRepository.panicActive() && System.currentTimeMillis() - 0L <= 3000L
-
                 if (!panicActive && SmartAssistRepository.panicActive()) {
                     // PHASE10_PANIC_PERSISTENCE_KEEP_STATE
                 }
-
                 if (panicActive) {
                     overlayView.setBackgroundColor(android.graphics.Color.argb(50, 255, 0, 0))
                 } else {
@@ -639,17 +665,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
         com.assistant.vision.OverlaySelfMask.clearPrefix("hud")
         com.assistant.adapter.smartassist.RuntimeCoordinator.shutdown()
         OverlaySurvivalEngine.destroyed()
+
         isRunning = false
-        
         try { notificationManager.cancel(1102) } catch (_: Throwable) {}
         try { notificationManager.cancel(1103) } catch (_: Throwable) {}
-        
+
         trajectoryRunnable?.let { trajectoryHandler.removeCallbacks(it) }
         trajectoryRunnable = null
-        
         keepAliveRunnable?.let { keepAliveHandler.removeCallbacks(it) }
         keepAliveRunnable = null
-        
+
         if (::overlayView.isInitialized) {
             globalLayoutListener?.let {
                 try { overlayView.viewTreeObserver.removeOnGlobalLayoutListener(it) } catch (_: Throwable) {}
@@ -659,37 +684,23 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
         }
         globalLayoutListener = null
-        
+
         processingThread?.interrupt()
         processingThread = null
-        
-        try { imageReader?.setOnImageAvailableListener(null, null) } catch (t: Throwable) {
-            try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
-        }
-        try { projectionCallback?.let { mediaProjection?.unregisterCallback(it) } } catch (t: Throwable) {
-            try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
-        }
 
-        virtualDisplay?.release()
-        virtualDisplay = null
-        imageReader?.close()
-        imageReader = null
-        mediaProjection?.stop()
-        mediaProjection = null
-        
+        teardownCaptureResources(CaptureState.IDLE)
+
         try { recognizer.close() } catch (_: Throwable) {}
-        
         reusableBitmap?.recycle()
         reusableBitmap = null
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try { perfHintSession?.close() } catch (_: Throwable) {}
         }
         perfHintSession = null
-        
         ocrIoThread?.quitSafely()
         ocrIoThread = null
-        
+
         super.onDestroy()
     }
 }
