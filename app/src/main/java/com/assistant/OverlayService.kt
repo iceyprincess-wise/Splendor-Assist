@@ -584,10 +584,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
         keepAliveRunnable?.let { keepAliveHandler.removeCallbacks(it) }
         keepAliveRunnable = object : Runnable {
             override fun run() {
-                var mpActive = false
-                captureLock.lock()
-                try {
-                    mpActive = mediaProjection != null && captureState != CaptureState.REVOKED
+                val mpActive = try {
+                    captureLock.lock()
+                    mediaProjection != null && captureState != CaptureState.REVOKED
                 } finally {
                     captureLock.unlock()
                 }
