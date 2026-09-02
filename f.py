@@ -1,4 +1,8 @@
-package com.assistant
+import os
+
+file_path = "app/src/main/java/com/assistant/OverlayService.kt"
+
+new_content = """package com.assistant
 
 import android.annotation.SuppressLint
 import com.assistant.diagnostic.RuntimeLogger
@@ -342,7 +346,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 PrintWriter(writer).use { pw ->
                     pw.println("=== SILENT ENGINE FAULT: $timestamp ===")
                     e.printStackTrace(pw)
-                    pw.println("=========================================\n")
+                    pw.println("=========================================\\n")
                 }
             }
         } catch (ignored: Exception) {}
@@ -629,7 +633,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                         val detectedText = visionText.textBlocks.asSequence()
                             .filterNot { com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(it.boundingBox) }
                             .joinToString("") { it.text }
-                            .replace("\n", "")
+                            .replace("\\n", "")
                             .take(120)
 
                         com.assistant.vision.OverlaySelfMask.tickAndLog()
@@ -787,3 +791,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
         super.onDestroy()
     }
 }
+"""
+
+os.makedirs(os.path.dirname(file_path), exist_ok=True)
+with open(file_path, "w", encoding="utf-8") as f:
+    f.write(new_content)
+
+print("OverlayService.kt successfully updated with ATOMIC CAPTURE PROTOCOL.")
