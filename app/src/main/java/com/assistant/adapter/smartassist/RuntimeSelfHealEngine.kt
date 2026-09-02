@@ -201,7 +201,8 @@ object RuntimeSelfHealEngine {
             // restartCaptureIfAlive() can NEVER succeed (first branch returns false).
             // Do not burn the 3-attempt budget on a no-op; escalate to the
             // user-visible recovery prompt (tap = BAL exemption = fresh token).
-            if (com.assistant.OverlayService.projectionRevoked()) {
+            val state = com.assistant.OverlayService.captureState()
+            if (state == com.assistant.OverlayService.CaptureState.REVOKED) {
                 if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
                     lastRestartAttemptMs = now
                     // MASSIVE POWER: AI Agent handles projection revoke autonomously and silently.
@@ -212,6 +213,34 @@ object RuntimeSelfHealEngine {
                             detected = "MediaProjection revoked; AI Agent handling autonomously without interrupting gameplay.",
                             fix = "Capture resources invalidated. AI Agent operates silently in background.",
                             severity = "CRITICAL"
+                        ))
+                    }
+                }
+                return
+            } else if (state == com.assistant.OverlayService.CaptureState.FAILED) {
+                if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
+                    lastRestartAttemptMs = now
+                    if (shouldLog("CAPTURE_FAILED", "failed")) {
+                        record(HealEvent(
+                            timestamp = fmt.format(Date()),
+                            category = "CAPTURE_FAILED",
+                            detected = "MediaProjection setup failed; AI Agent handling autonomously without interrupting gameplay.",
+                            fix = "Capture resources invalidated. AI Agent operates silently in background.",
+                            severity = "CRITICAL"
+                        ))
+                    }
+                }
+                return
+            } else if (state == com.assistant.OverlayService.CaptureState.IDLE) {
+                if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
+                    lastRestartAttemptMs = now
+                    if (shouldLog("CAPTURE_IDLE", "idle")) {
+                        record(HealEvent(
+                            timestamp = fmt.format(Date()),
+                            category = "CAPTURE_IDLE",
+                            detected = "MediaProjection idle; AI Agent handling autonomously without interrupting gameplay.",
+                            fix = "Capture resources uninitialized. AI Agent operates silently in background.",
+                            severity = "WARNING"
                         ))
                     }
                 }

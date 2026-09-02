@@ -79,7 +79,19 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         @JvmStatic
         fun projectionRevoked(): Boolean =
-            instance?.isProjectionRevoked ?: true
+            instance?.isProjectionRevoked ?: false
+
+        @JvmStatic
+        fun projectionIdle(): Boolean =
+            instance?.isProjectionIdle ?: true
+
+        @JvmStatic
+        fun projectionFailed(): Boolean =
+            instance?.isProjectionFailed ?: false
+
+        @JvmStatic
+        fun captureState(): CaptureState =
+            instance?.captureState ?: CaptureState.IDLE
 
         @JvmStatic
         fun requestRecoveryPrompt() {
@@ -103,7 +115,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var captureState: CaptureState = CaptureState.IDLE
 
     val isProjectionRevoked: Boolean
-        get() = captureState == CaptureState.REVOKED || captureState == CaptureState.IDLE || captureState == CaptureState.FAILED
+        get() = captureState == CaptureState.REVOKED
+
+    val isProjectionIdle: Boolean
+        get() = captureState == CaptureState.IDLE
+
+    val isProjectionFailed: Boolean
+        get() = captureState == CaptureState.FAILED
 
     private var perfHintSession: PerformanceHintManager.Session? = null
     private var ocrIoThread: android.os.HandlerThread? = null
