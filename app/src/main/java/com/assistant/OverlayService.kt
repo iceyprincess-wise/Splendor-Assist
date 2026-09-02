@@ -63,6 +63,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
         FAILED
     }
 
+    enum class CaptureResult { SUCCESS, BUSY, INVALID_SESSION, FAILED }
+
     @Volatile
     private var runtimeInitialized = false
 
@@ -261,7 +263,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
             try {
                 RuntimeLogger.log("AGENT CAPTURE RESTART: attempting ImageReader replacement", "AGENT")
-                recreateCaptureSurfacesInternal()
+                val result = recreateCaptureSurfacesInternal()
+                if (result != CaptureResult.SUCCESS) {
+                    RuntimeLogger.log("AGENT CAPTURE RESTART FAILED: $result", "AGENT")
+                    return false
+                }
                 lastFrameProcessedMs = 0L
                 captureFrameCount = 0L
                 RuntimeLogger.log("AGENT CAPTURE RESTART: ImageReader replaced successfully", "AGENT")
@@ -520,14 +526,14 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
     }
 
-    private fun recreateCaptureSurfacesInternal() {
+    private fun recreateCaptureSurfacesInternal(): CaptureResult {
         if (mediaProjection == null) {
             RuntimeLogger.log("recreateCaptureSurfaces: mediaProjection is null", "OVERLAY")
-            return
+            return CaptureResult.INVALID_SESSION
         }
         if (captureState != CaptureState.AUTHORIZED && captureState != CaptureState.ACTIVE) {
             RuntimeLogger.log("recreateCaptureSurfaces: invalid state $captureState", "OVERLAY")
-            return
+            return CaptureResult.INVALID_SESSION
         }
 
         val scale = 0.4f
@@ -578,6 +584,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
         currentDpi = metrics.densityDpi
 
         captureState = CaptureState.ACTIVE
+        
+        val reader = imageReader
+        val vd = virtualDisplay
+        
+        return if (reader != null && vd != null && vd.surface == reader.surface && captureState == CaptureState.ACTIVE) {
+            CaptureResult.SUCCESS
+        } else {
+            CaptureResult.FAILED
+        }
     }
 
     private fun startCaptureKeepAlive() {
