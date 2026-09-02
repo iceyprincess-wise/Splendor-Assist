@@ -486,6 +486,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     private fun setupMediaProjectionInternal(code: Int, intent: Intent) {
+        // C4 — PRESERVE SINGLE-PROJECTION INVARIANT
+        // ONE authorization -> ONE MediaProjection -> ONE VirtualDisplay.
+        // If we already have an active session, DO NOT destroy it.
+        // Reusing the same Intent to call getMediaProjection() throws SecurityException on Android 14+
+        // and violates the API contract. Fresh authorization creates a new session.
+        if (mediaProjection != null && (captureState == CaptureState.ACTIVE || captureState == CaptureState.AUTHORIZED)) {
+            com.assistant.diagnostic.RuntimeLogger.log("setupMediaProjectionInternal: MediaProjection already active. Preserving single-projection invariant.", "OVERLAY")
+            recreateCaptureSurfacesInternal()
+            return
+        }
+
         if (captureState == CaptureState.ACTIVE || captureState == CaptureState.AUTHORIZED) {
             teardownCaptureResourcesInternal()
         }
@@ -575,8 +586,14 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
             virtualDisplay?.setSurface(newReader.surface)
             
-            try { oldReader?.close() } catch (_: Throwable) {}
-            RuntimeLogger.log("recreateCaptureSurfaces: ImageReader replaced via setSurface (resize=$dimensionsChanged)", "OVERLAY")
+            // SAFE CLOSURE: Delay closing oldReader to allow VirtualDisplay to detach buffers.
+            // Closing immediately while VirtualDisplay might still hold references causes silent crashes on HyperOS/MIUI.
+            // This preserves the single VirtualDisplay invariant without buffer leaks.
+            Handler(Looper.getMainLooper()).postDelayed({
+                try { oldReader?.close() } catch (_: Throwable) {}
+            }, 1000)
+            
+            RuntimeLogger.log("recreateCaptureSurfaces: ImageReader replaced via setSurface (resize=$dimensionsChanged). Single VirtualDisplay preserved.", "OVERLAY")
         }
         
         currentWidth = finalWidth
