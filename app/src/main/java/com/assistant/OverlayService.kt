@@ -558,44 +558,20 @@ class OverlayService : Service(), ComponentCallbacks2 {
             finalHeight = (bounds.height() * scale).toInt() and 0xFFFFFFFE.toInt()
             metrics.densityDpi = resources.configuration.densityDpi
         } else {
-            @Suppress("DEPRECATION")
-            windowManager.defaultDisplay.getRealMetrics(metrics)
-            finalWidth = (metrics.widthPixels * scale).toInt() and 0xFFFFFFFE.toInt()
-            finalHeight = (metrics.heightPixels * scale).toInt() and 0xFFFFFFFE.toInt()
-        }
-
-        com.assistant.vision.OverlaySelfMask.setCaptureScale(finalWidth, finalHeight, if (scale > 0f) (finalWidth / scale).toInt() else finalWidth, if (scale > 0f) (finalHeight / scale).toInt() else finalHeight)
-
-        val isInitial = virtualDisplay == null
-        val dimensionsChanged = finalWidth != currentWidth || finalHeight != currentHeight || metrics.densityDpi != currentDpi
-
-        if (isInitial) {
-            val reader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
-            reader.setOnImageAvailableListener(imageAvailableListener, ocrIoHandler ?: Handler(Looper.getMainLooper()))
-            imageReader = reader
-            virtualDisplay = mediaProjection?.createVirtualDisplay("HybridCoachScreen", finalWidth, finalHeight, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY, reader.surface, null, null)
-        } else {
             val oldReader = imageReader
-            val newReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
+            val oldDisplay = virtualDisplay
+            val newReader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 4)
             newReader.setOnImageAvailableListener(imageAvailableListener, ocrIoHandler ?: Handler(Looper.getMainLooper()))
             
             imageReader = newReader
             
-            if (dimensionsChanged) {
-                virtualDisplay?.resize(finalWidth, finalHeight, metrics.densityDpi)
-            }
-            virtualDisplay?.setSurface(newReader.surface)
+            // C5 FIX: ALWAYS recreate VirtualDisplay to defeat HyperOS silent kill and dead surfaces.
+            // Do NOT just call setSurface() on a potentially dead virtualDisplay.
+            try { oldDisplay?.release() } catch (_: Throwable) {}
+            virtualDisplay = mediaProjection?.createVirtualDisplay("HybridCoachScreen", finalWidth, finalHeight, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY, newReader.surface, null, null)
             
-            // SAFE CLOSURE: Delay closing oldReader to allow VirtualDisplay to detach buffers.
-            // Closing immediately while VirtualDisplay might still hold references causes silent crashes on HyperOS/MIUI.
-            // This preserves the single VirtualDisplay invariant without buffer leaks.
-            Handler(Looper.getMainLooper()).postDelayed({
-                try { oldReader?.close() } catch (_: Throwable) {}
-            }, 1000)
-            
-            RuntimeLogger.log("recreateCaptureSurfaces: ImageReader replaced via setSurface (resize=$dimensionsChanged). Single VirtualDisplay preserved.", "OVERLAY")
-        }
-        
+            try { oldReader?.close() } catch (_: Throwable) {}
+            RuntimeLogger.log("recreateCaptureSurfaces: VirtualDisplay & ImageReader recreated (maxImages=4)", "OVERLAY")
         currentWidth = finalWidth
         currentHeight = finalHeight
         currentDpi = metrics.densityDpi
