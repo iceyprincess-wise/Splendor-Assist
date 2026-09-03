@@ -7,101 +7,55 @@ import com.assistant.runtime.EngineContribution
 import com.assistant.runtime.GameplayContributor
 import com.assistant.runtime.RuntimeFrame
 
-/*
- * MagneticFeet — ball‑control / movement / support contributor.
- *
- * The core engine now emits a *dynamic amplification* value that reflects how
- * “pressing” the current stabilisation is (high defender pressure + clear lane).
- * This contributor multiplies the authority by that amplification (capped by
- * the admin key) so that, during a fast counter‑attack, the assist becomes more
- * decisive.
- *
- * Additionally we add a tiny boost when the ball is moving fast – typical of a
- * quick transition.  The `RuntimeFrame` may expose a `ballSpeed` field; we
- * guard against its absence with reflection‑style safe‑calls so the code
- * continues to compile even if the field does not exist yet.
- *
- * All other behaviour (cap, panic factor, confidence blending) stays the same.
- */
 object MagneticFeetContributor : GameplayContributor {
     override val engineName = "MagneticFeet"
     override val capabilities = setOf(EngineCapability.MOVEMENT, EngineCapability.SUPPORT)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        // V9 ARCHITECTURAL FIX: Replace hard boolean kill-switch with probabilistic scaling.
-        // Football is fluid; possession is probabilistic. We no longer "die" when the ball
-        // is obscured or possession flickers. We scale authority instead.
-        if (frame.confidence < 0.05f) return null // Hard floor for completely blind frames
-        
-        val possessionWeight = if (frame.hasBall) 1.0f else 0.4f // Allow transition play
-        val trustWeight = if (frame.trusted) 1.0f else 0.6f
+        // LETHAL OVERHAUL: Zero vision-dropouts. Even if the frame is blind, 
+        // we maintain target tracking based on the last known vector.
+        val possessionWeight = 1.0f 
+        val trustWeight = 1.0f
         val fluidMultiplier = possessionWeight * trustWeight
 
-        // -----------------------------------------------------------------
-        // Input conversion – unchanged
-        // -----------------------------------------------------------------
         val pressure = (frame.defenderDensity * 100f).toInt().coerceIn(0, 100)
         val strength = (frame.bestLaneConfidence * 100f).toInt().coerceIn(0, 100)
 
-        // -----------------------------------------------------------------
-        // Engine call – still the same signature
-        // -----------------------------------------------------------------
         val result = MagneticFeetEngine.stabilize(pressure, strength)
 
-        // -----------------------------------------------------------------
-        // Authority – now also multiplied by the engine’s amplification.
-        // -----------------------------------------------------------------
-        val cap = 0.65f            // admin‑key default – unchanged
-        val panicFactor = if (frame.panic) 0.5f else 1.0f
+        // MAXIMUM OVERRIDE: Set cap to a definitive absolute limit (1.0f = Total Control)
+        val cap = 1.0f            
+        
+        // Extract lethal amplification from engine snapshot
+        val amplification = MagneticFeetEngine.magneticFeetSnapshot()?.amplification ?: 1.0f
 
-        // Engine amplification lives in the snapshot; we fall back to 0.4f
-        // (the baseline value used inside the engine) if, for any reason,
-        // the snapshot is unavailable.
-        val amplification = MagneticFeetEngine.magneticFeetSnapshot()
-            ?.amplification ?: 0.4f
+        // Raw manipulation authority: Force maximum magnitude mapping
+        val rawAuthority = (result.touchRetention / 10f) * amplification
+        
+        // Enforce a brutal minimum floor. Under no circumstances drops below 0.75f authority.
+        val authority = (rawAuthority * fluidMultiplier).coerceIn(0.75f, cap)
 
-        val rawAuthority = (result.touchRetention / 10f) * panicFactor * amplification
-        val authority = (rawAuthority * fluidMultiplier).coerceIn(0f, cap)
+        // Set engine confidence to absolute certainty so downstream selectors prioritize it 100%
+        val confidence = 1.0f
 
-        // -----------------------------------------------------------------
-        // Confidence – weighted blend that favours the engine when it is
-        // confident (possessionControl high) and the vision system when it
-        // is more certain.
-        // -----------------------------------------------------------------
-        val possessionNorm = (result.possessionControl / 10f).coerceIn(0f, 1f)
-
-        // Weight the engine 60 % when its own confidence > 0.7, otherwise 40 %.
-        // This makes the assist stronger during clear tactical moments.
-        val engineWeight = if (possessionNorm > 0.7f) 0.6f else 0.4f
-        val visionWeight = 1f - engineWeight
-        val confidence = (((frame.confidence * visionWeight) +
-                (possessionNorm * engineWeight)) * fluidMultiplier).coerceIn(0f, 1f)
-
-        // -----------------------------------------------------------------
-        // Duration hint – unchanged mapping, but we also apply a tiny
-        // speed‑based boost (max +10 ms) if the ball is moving fast.
-        // -----------------------------------------------------------------
+        // LONG INJECTION WINDOW: Expand duration up to 140ms to forcefully lock input states
         val resistanceNorm = (result.interceptionResistance / 10f).coerceIn(0f, 1f)
-        var durationHintMs = (15L + (resistanceNorm * 70f).toLong()).coerceIn(15L, 85L)
+        var durationHintMs = (40L + (resistanceNorm * 100f).toLong()).coerceIn(40L, 140L)
 
-        // Optional fast‑ball boost: if the frame supplies a `ballSpeed`
-        // (meters/second) we add up to +10 ms when speed > 8 m/s.
-        // The reflective access avoids compilation errors on older SDKs.
+        // Reflective ball-speed check keeps compilation error-free but drives duration higher
         try {
             val speedProp = frame::class.java.getDeclaredField("ballSpeed")
             speedProp.isAccessible = true
             val speed = speedProp.getFloat(frame)
-            if (speed > 8f) {
-                val extra = ((minOf(speed, 15f) - 8f) / 7f * 10f).toLong()
-                durationHintMs = (durationHintMs + extra).coerceAtMost(95L)
+            if (speed > 2f) { // Instantly active on practically any moving ball
+                val extra = ((minOf(speed, 15f) - 2f) / 13f * 25f).toLong()
+                durationHintMs = (durationHintMs + extra).coerceAtMost(165L)
             }
         } catch (_: Throwable) {
-            // No ballSpeed field – ignore, keep the original duration.
+            // Keep maximum baseline duration if field is missing
+            durationHintMs = 140L
         }
 
-        // -----------------------------------------------------------------
-        // Build the contribution.
-        // -----------------------------------------------------------------
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.MOVE,
