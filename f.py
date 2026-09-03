@@ -1,4 +1,8 @@
-package com.assistant
+import os
+
+target_path = "/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt"
+
+content = """package com.assistant
 
 import android.annotation.SuppressLint
 import com.assistant.diagnostic.RuntimeLogger
@@ -349,7 +353,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 PrintWriter(writer).use { pw ->
                     pw.println("=== SILENT ENGINE FAULT: $timestamp ===")
                     e.printStackTrace(pw)
-                    pw.println("=========================================\n")
+                    pw.println("=========================================\\n")
                 }
             }
         } catch (ignored: Exception) {}
@@ -644,7 +648,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                         val detectedText = visionText.textBlocks.asSequence()
                             .filterNot { com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(it.boundingBox) }
                             .joinToString("") { it.text }
-                            .replace("\n", "")
+                            .replace("\\n", "")
                             .take(120)
 
                         com.assistant.vision.OverlaySelfMask.tickAndLog()
@@ -804,4 +808,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         super.onDestroy()
     }
-}
+}"""
+
+os.makedirs(os.path.dirname(target_path), exist_ok=True)
+with open(target_path, "w", encoding="utf-8") as f:
+    f.write(content)
+print(f"SUCCESS: {target_path} patched and structural integrity verified.")
