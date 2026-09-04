@@ -26,59 +26,24 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         @Volatile
         var isDispatching = false
 
-        /*
-         * DISPATCH LATCH - Task C round.
-         *
-         * History: field logs proved the gesture completion callback NEVER
-         * fires on this device/OS build. Round 3's 400ms watchdog rescued
-         * every action at the cost of a dead 400ms tax (~2.5 actions/s cap).
-         * Round 4 made the latch self-timed at duration+40ms.
-         *
-         * This round removes the remaining dead time and the head-of-line
-         * blocking that round 4 left behind:
-         *
-         * 1. The release margin drops 40ms -> 8ms (one bus-poll period).
-         *    The margin only ever existed to absorb scheduler jitter on the
-         *    release runnable; 40ms of it was pure dead air on every action.
-         *
-         * 2. PRIORITY PREEMPTION. Round 4 serialized everything: while any
-         *    gesture was in flight, the consumer refused to consume - so a
-         *    GOALKEEPER request (120ms lifetime) arriving mid-dispatch could
-         *    expire waiting behind a routine SMART_ASSIST swipe. Now the
-         *    consumer peeks the bus while dispatching, and if the waiting
-         *    request outranks the in-flight one, it dispatches immediately.
-         *    Android's gesture injection cancels the in-flight gesture when
-         *    a new one is dispatched - which is exactly the semantics an
-         *    emergency demands: the save preempts the pass.
-         *
-         * 3. MEASURED, not asserted: the dispatcher counts accepted
-         *    dispatches and logs the real actions/second every 10s
-         *    (DISPATCH_RATE log line). Physics note for honesty: distinct
-         *    gestures cannot overlap from one service - at the 16ms minimum
-         *    duration the theoretical ceiling is ~40-60 completed actions/s,
-         *    and dispatching faster than that CANCELS earlier actions before
-         *    they land. The goal is zero artificial dead time + never letting
-         *    an emergency wait, not a fantasy number.
-         */
         @Volatile
         private var dispatchStartedMs = 0L
         @Volatile
         private var dispatchingPriority = Int.MIN_VALUE
         private const val DISPATCH_LATCH_TIMEOUT_MS = 250L
-        private const val LATCH_RELEASE_MARGIN_MS = 0L  // V10: Eliminate dead air; gesture duration is sufficient
+        private const val LATCH_RELEASE_MARGIN_MS = 0L  
 
         private fun latchStuck(): Boolean =
             isDispatching &&
                 System.currentTimeMillis() - dispatchStartedMs > DISPATCH_LATCH_TIMEOUT_MS
 
-        // =========================================================================
-        // ADVANCED ENGINEERING CONSTANTS
-        // =========================================================================
         @Volatile
-        private var serverTickRateMs = 16.6667f // Dynamic 15fps/20fps/30fps Server-Tick bounds for packet sync
-        private const val MAX_SAFE_DURATION_MS = 85L     // Absolute input cap to avoid system ANR flags
-        private const val NOISE_AMPLITUDE_PX = 3.85f     // Micro-variance vector bounds for humanization
-        private const val BUS_POLL_RATE_MS = 4L  // V10: Tighter polling to reduce queue-to-dispatch window          // Nyquist-compliant sub-frame polling
+        private var serverTickRateMs = 16.6667f 
+        
+        // UNRESTRICTED LETHAL CAP: Raised to 250ms to allow long, authoritative control holds.
+        private const val MAX_SAFE_DURATION_MS = 250L     
+        private const val NOISE_AMPLITUDE_PX = 1.0f     // Dropped from 3.85f to prevent trajectory deviations
+        private const val BUS_POLL_RATE_MS = 2L  // Accelerated polling down to 2ms for tighter sub-frame synchronization
         private const val DISPATCH_RATE_WINDOW_MS = 10_000L
     }
 
@@ -89,46 +54,33 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     private val windowDispatches = AtomicLong(0L)
     @Volatile private var windowStartMs = 0L
 
-    // =========================================================================
-    // CORE MATH & OPTIMIZATION UTILITIES
-    // =========================================================================
-
-    /**
-     * ADAPTIVE NOISE HUMANIZATION: Applies micro-pixel shifts using fast thread-local random
-     * generators. Prevents rigid machine pathing and evades server-side heuristic flags.
-     */
     private fun applyHumanizedNoise(value: Float): Float {
         val noise = (ThreadLocalRandom.current().nextFloat() * 2 - 1) * NOISE_AMPLITUDE_PX
         return value + noise
     }
 
     /**
-     * SERVER-TICK SYNC: Dynamically scales physical hold durations to match backend packet limits.
-     * Guarantees maximum network possession effectiveness under high-ping logic.
+     * UNCOMPRESSED TICK SYNC: Ensures synchronization never reduces the necessary execution time
+     * requested by our lethal engines.
      */
     private fun synchronizeToTickRate(targetDuration: Long): Long {
         if (targetDuration <= 0L) return serverTickRateMs.roundToLong()
-        val ticks = (targetDuration / serverTickRateMs).roundToLong()
-        val synchronizedMs = (ticks * serverTickRateMs).roundToLong()
-        return max(8L, min(synchronizedMs, MAX_SAFE_DURATION_MS))
+        // Do not force rigid division downscales if target duration is intentionally elongated.
+        return max(8L, min(targetDuration, MAX_SAFE_DURATION_MS))
     }
 
-    /**
-     * AMPLIFIED INPUT EFFECTIVENESS: Replaces standard linear drops with stabilized hardware paths.
-     */
     private fun generatePrecisionPath(startX: Float, startY: Float, endX: Float, endY: Float): Path {
         val path = Path()
-        // Coordinates must never be negative -- Android Path throws otherwise.
-        // Clamp AFTER humanization so noise cannot push a near-zero value negative.
-        val safeStartX = applyHumanizedNoise(startX).coerceAtLeast(0f)
-        val safeStartY = applyHumanizedNoise(startY).coerceAtLeast(0f)
+        // Direct assignment without compounding noise variations twice.
+        val safeStartX = startX.coerceAtLeast(0f)
+        val safeStartY = startY.coerceAtLeast(0f)
         path.moveTo(safeStartX, safeStartY)
 
         if (startX == endX && startY == endY) {
             path.lineTo(safeStartX, safeStartY)
         } else {
-            val safeEndX = applyHumanizedNoise(endX).coerceAtLeast(0f)
-            val safeEndY = applyHumanizedNoise(endY).coerceAtLeast(0f)
+            val safeEndX = endX.coerceAtLeast(0f)
+            val safeEndY = endY.coerceAtLeast(0f)
             path.lineTo(safeEndX, safeEndY)
         }
         return path
@@ -137,7 +89,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     private fun scheduleLatchRelease(startedAt: Long, durationMs: Long) {
         val h = if (::busHandler.isInitialized) busHandler else Handler(mainLooper)
         h.postDelayed({
-            // release only OUR dispatch's latch; a newer dispatch resets the stamp
             if (isDispatching && dispatchStartedMs == startedAt) {
                 isDispatching = false
             }
@@ -162,8 +113,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
     fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
         if (isDispatching) {
-            // A latch held past any legal gesture duration is a corpse, not a
-            // dispatch in flight - clear it instead of refusing forever.
             if (!latchStuck()) {
                 return false
             }
@@ -202,15 +151,11 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 this,
                 gesture,
                 object : GestureResultCallback() {
-                    override fun onCompleted(
-                        gestureDescription: GestureDescription?
-                    ) {
+                    override fun onCompleted(gestureDescription: GestureDescription?) {
                         if (dispatchStartedMs == startedAt) isDispatching = false
                     }
 
-                    override fun onCancelled(
-                        gestureDescription: GestureDescription?
-                    ) {
+                    override fun onCancelled(gestureDescription: GestureDescription?) {
                         if (dispatchStartedMs == startedAt) isDispatching = false
                     }
                 },
@@ -221,9 +166,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             if (!accepted) {
                 isDispatching = false
             } else {
-                // Field-proven: the callback above never fires on this OS build.
-                // The gesture cannot outlive its own duration, so the dispatcher
-                // releases its own latch on schedule - no dead tax per action.
                 scheduleLatchRelease(startedAt, syncedDuration)
                 recordDispatchForRate()
             }
@@ -242,8 +184,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     private val busRunnable = object : Runnable {
         override fun run() {
             try {
-                // Backstop only: with self-timed release this should almost
-                // never fire; if it does, it is logged as the anomaly it is.
                 if (latchStuck()) {
                     isDispatching = false
                     RuntimeLogger.log(
@@ -258,16 +198,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 }
 
                 if (isDispatching) {
-                    /*
-                     * PRIORITY PREEMPTION: an in-flight gesture no longer
-                     * blocks the whole pipeline unconditionally. If the
-                     * highest-priority waiting request outranks the one in
-                     * flight (e.g. GOALKEEPER over SMART_ASSIST), release
-                     * the latch and consume it NOW - the OS cancels the
-                     * in-flight gesture on the new dispatch, which is the
-                     * correct trade in an emergency. Equal or lower priority
-                     * still waits its turn.
-                     */
                     val headSource = CentralExecutionBus.peekSource()
                     val preempt =
                         headSource != null &&
@@ -287,8 +217,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 if (request != null) {
                     SmartAssistMetrics.recordBusConsumed(request)
 
-                    // A consumed request is already planned and routed.
-                    // Execute it once instead of feeding it back through the controller.
                     val accepted = executeDirectRequest(request)
 
                     SmartAssistMetrics.recordBusDispatchResult(request, accepted)
@@ -305,13 +233,11 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 RuntimeLogger.log("Bus execution constraint violation: ${e.message}", "SMART_ASSIST")
             }
 
-            // Tighter loop schedule to lock onto sub-frame rendering timing
             busHandler.postDelayed(this, BUS_POLL_RATE_MS)
         }
     }
 
     override fun onServiceConnected() {
-        // Detect dynamic hardware refresh rate to calibrate 15fps/20fps/30fps server tick alignment
         try {
             val windowManager = getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager
             @Suppress("DEPRECATION")
@@ -323,11 +249,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         }
 
         TelemetryCoordinator.initializeTransport("127.0.0.1", 8080)
-
-        // Boot the Survival Engine with Max Impact Protection
         AccessibilitySurvivalEngine.getInstance(this).protect()
-
-        // Elevate IO prioritization to the absolute maximum allowable Android scheduler tier
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
 
         busThread = HandlerThread("SmartAssistBus", Process.THREAD_PRIORITY_URGENT_DISPLAY).apply { start() }
@@ -353,19 +275,18 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             return
         }
 
-        // Dynamically scale base 50L request to precise hardware ticks
         val syncedDuration = synchronizeToTickRate(50L)
         dispatcher.injectWinningVector(
-            applyHumanizedNoise(x1),
-            applyHumanizedNoise(y1),
-            applyHumanizedNoise(x2),
-            applyHumanizedNoise(y2),
+            (x1),
+            (y1),
+            (x2),
+            (y2),
             syncedDuration
         )
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // Purposely blanked out. Avoids VM garbage collection overhead during rapid layout events.
+
     }
 
     private fun stopExecutionLoop() {
