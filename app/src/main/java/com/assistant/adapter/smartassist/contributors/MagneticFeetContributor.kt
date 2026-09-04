@@ -1,69 +1,71 @@
 package com.assistant.adapter.smartassist.contributors
 
-import com.assistant.adapter.smartassist.MagneticFeetEngine
-import com.assistant.runtime.ActionClass
-import com.assistant.runtime.EngineCapability
-import com.assistant.runtime.EngineContribution
-import com.assistant.runtime.GameplayContributor
-import com.assistant.runtime.RuntimeFrame
+/**
+ * Contributor for Magnetic Feet Data Resolution.
+ * Handles memory offsets, state extraction, and execution dispatch for UE5.
+ */
+class MagneticFeetContributor {
+    
+    data class EntityState(
+        val isValid: Boolean,
+        val x: Float, val y: Float, val z: Float
+    )
 
-object MagneticFeetContributor : GameplayContributor {
-    override val engineName = "MagneticFeet"
-    override val capabilities = setOf(EngineCapability.MOVEMENT, EngineCapability.SUPPORT)
+    // eFootball 2027 (UE5) Tuning Parameters
+    private val magneticRadius = 180.0f // Unreal Units (approx 1.8 meters)
+    
+    // Cached Pointers
+    private var cachedBallLocationAddr: Long = 0L
+    private var cachedBallVelocityAddr: Long = 0L
+    private var cachedPlayerFootAddr: Long = 0L
 
-    override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        // LETHAL OVERHAUL: Zero vision-dropouts. Even if the frame is blind, 
-        // we maintain target tracking based on the last known vector.
-        val possessionWeight = 1.0f 
-        val trustWeight = 1.0f
-        val fluidMultiplier = possessionWeight * trustWeight
+    fun getMagneticRadius(): Float = magneticRadius
 
-        val pressure = (frame.defenderDensity * 100f).toInt().coerceIn(0, 100)
-        val strength = (frame.bestLaneConfidence * 100f).toInt().coerceIn(0, 100)
-
-        val result = MagneticFeetEngine.stabilize(pressure, strength)
-
-        // MAXIMUM OVERRIDE: Set cap to a definitive absolute limit (1.0f = Total Control)
-        val cap = 1.0f            
+    fun cachePointers() {
+        // Traverse and cache deep pointer chains here.
+        // GWorld -> PersistentLevel -> AActors -> BallActor -> RootComponent
+        // GWorld -> OwningGameInstance -> LocalPlayers -> PlayerController -> AcknowledgedPawn -> Mesh -> BoneMatrix
         
-        // Extract lethal amplification from engine snapshot
-        val amplification = MagneticFeetEngine.magneticFeetSnapshot()?.amplification ?: 1.0f
+        // Example assignment (Replace with actual memory reader logic):
+        // cachedBallLocationAddr = Memory.readPointer(base + offset)
+        // cachedBallVelocityAddr = cachedBallLocationAddr + 0x18 // Example velocity offset
+    }
 
-        // Raw manipulation authority: Force maximum magnitude mapping
-        val rawAuthority = (result.touchRetention / 10f) * amplification
+    fun getBallState(): EntityState {
+        if (cachedBallLocationAddr == 0L) return EntityState(false, 0f, 0f, 0f)
         
-        // Enforce a brutal minimum floor. Under no circumstances drops below 0.75f authority.
-        val authority = (rawAuthority * fluidMultiplier).coerceIn(0.75f, cap)
+        // Read XYZ from cachedBallLocationAddr
+        // val x = Memory.readFloat(cachedBallLocationAddr)
+        // val y = Memory.readFloat(cachedBallLocationAddr + 4)
+        // val z = Memory.readFloat(cachedBallLocationAddr + 8)
+        
+        return EntityState(true, 0f, 0f, 0f) // Replace with actual read values
+    }
 
-        // Set engine confidence to absolute certainty so downstream selectors prioritize it 100%
-        val confidence = 1.0f
+    fun getActivePlayerState(): EntityState {
+        if (cachedPlayerFootAddr == 0L) return EntityState(false, 0f, 0f, 0f)
+        
+        // Read XYZ from cachedPlayerFootAddr (Bone Matrix translation vector)
+        return EntityState(true, 0f, 0f, 0f) // Replace with actual read values
+    }
 
-        // LONG INJECTION WINDOW: Expand duration up to 140ms to forcefully lock input states
-        val resistanceNorm = (result.interceptionResistance / 10f).coerceIn(0f, 1f)
-        var durationHintMs = (40L + (resistanceNorm * 100f).toLong()).coerceIn(40L, 140L)
-
-        // Reflective ball-speed check keeps compilation error-free but drives duration higher
-        try {
-            val speedProp = frame::class.java.getDeclaredField("ballSpeed")
-            speedProp.isAccessible = true
-            val speed = speedProp.getFloat(frame)
-            if (speed > 2f) { // Instantly active on practically any moving ball
-                val extra = ((minOf(speed, 15f) - 2f) / 13f * 25f).toLong()
-                durationHintMs = (durationHintMs + extra).coerceAtMost(165L)
-            }
-        } catch (_: Throwable) {
-            // Keep maximum baseline duration if field is missing
-            durationHintMs = 140L
-        }
-
-        return EngineContribution(
-            engine = engineName,
-            actionClass = ActionClass.MOVE,
-            targetX = frame.ballX.coerceAtLeast(0f),
-            targetY = frame.ballY.coerceAtLeast(0f),
-            authority = authority,
-            confidence = confidence,
-            durationHintMs = durationHintMs
-        )
+    fun executeMagneticSnap(targetX: Float, targetY: Float, targetZ: Float) {
+        if (cachedBallLocationAddr == 0L || cachedBallVelocityAddr == 0L) return
+        
+        // CRITICAL BOTTLENECK FIX: 
+        // You must write the coordinates AND zero the velocity in the same execution block
+        // to prevent the UE5 physics engine from rubberbanding the ball.
+        
+        /*
+        // 1. Snap Coordinates
+        Memory.writeFloat(cachedBallLocationAddr, targetX)
+        Memory.writeFloat(cachedBallLocationAddr + 4, targetY)
+        Memory.writeFloat(cachedBallLocationAddr + 8, targetZ) // Optional: adjust Z for ground offset
+        
+        // 2. Zero Velocity (Linear and Angular)
+        val zeroVector = ByteArray(12) { 0 }
+        Memory.writeBytes(cachedBallVelocityAddr, zeroVector)
+        Memory.writeBytes(cachedBallVelocityAddr + 12, zeroVector) // Assuming Angular velocity follows Linear
+        */
     }
 }
