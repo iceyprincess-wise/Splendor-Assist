@@ -10,52 +10,19 @@ import kotlin.math.sqrt
  * Core Engine for Magnetic Feet Execution.
  * Architecture: High-frequency spin-yield loop synchronized to UE5 physics tick.
  */
-class MagneticFeetEngine {
+object MagneticFeetEngine {
     private val isRunning = AtomicBoolean(false)
     
     // UE5 Physics Constants (eFootball 2027 targets 60Hz physics step)
     private val physicsTickNanos = 16_666_666L 
     
-    fun startEngine(contributor: MagneticFeetContributor) {
-        if (isRunning.getAndSet(true)) return
-        
-        thread(priority = Thread.MAX_PRIORITY) {
-            var lastTickTime = SystemClock.elapsedRealtimeNanos()
-            
-            // Pre-cache pointers to eliminate per-tick resolution latency
-            contributor.cachePointers()
-            
-            while (isRunning.get()) {
-                val currentTime = SystemClock.elapsedRealtimeNanos()
-                val deltaNanos = currentTime - lastTickTime
-                
-                if (deltaNanos >= physicsTickNanos) {
-                    lastTickTime = currentTime
-                    
-                    val ballState = contributor.getBallState()
-                    val playerState = contributor.getActivePlayerState()
-                    
-                    if (ballState.isValid && playerState.isValid) {
-                        val deltaX = ballState.x - playerState.x
-                        val deltaY = ballState.y - playerState.y
-                        val distance = sqrt((deltaX * deltaX) + (deltaY * deltaY).toDouble()).toFloat()
-                        
-                        if (distance <= contributor.getMagneticRadius()) {
-                            // Execute simultaneous coordinate snap and velocity zeroing
-                            contributor.executeMagneticSnap(playerState.x, playerState.y, playerState.z)
-                        }
-                    }
-                }
-                // Micro-yield prevents CPU throttling while maintaining sub-millisecond precision
-                Thread.yield()
-            }
-        }
-    }
-
-    fun stopEngine() {
-        isRunning.set(false)
-    }
-
+    // Diagnostics and Arbitration State
+    private var sequence: Long = 0L
+    private var calls: Long = 0L
+    private var lastPressure: Int = 0
+    private var lastStrength: Int = 0
+    private var lastReason: String = "none"
+    private var lastUpdatedMs: Long = 0L
 
     data class MagneticFeetResult(
         val touchRetention: Float = 0.0f,
@@ -77,53 +44,85 @@ class MagneticFeetEngine {
         val lastUpdatedMs: Long = 0L
     )
 
-    companion object {
-        private var sequence: Long = 0L
-        private var calls: Long = 0L
-        private var lastPressure: Int = 0
-        private var lastStrength: Int = 0
-        private var lastReason: String = "none"
-        private var lastUpdatedMs: Long = 0L
-
-        fun stabilize(pressure: Int, strength: Int): MagneticFeetResult {
-            calls++
-            lastPressure = pressure
-            lastStrength = strength
-            lastReason = "stabilized"
-            lastUpdatedMs = System.currentTimeMillis()
+    fun startEngine() {
+        if (isRunning.getAndSet(true)) return
+        
+        thread(priority = Thread.MAX_PRIORITY, name = "MagneticFeet-Loop") {
+            var lastTickTime = SystemClock.elapsedRealtimeNanos()
             
-            val touch = (strength * 0.5f).coerceIn(0f, 10f)
-            val intercept = (pressure * 0.5f).coerceIn(0f, 10f)
-            val possession = ((strength + pressure) * 0.25f).coerceIn(0f, 10f)
+            // Pre-cache pointers to eliminate per-tick resolution latency
+            MagneticFeetContributor.cachePointers()
             
-            return MagneticFeetResult(touch, intercept, possession)
+            while (isRunning.get()) {
+                val currentTime = SystemClock.elapsedRealtimeNanos()
+                val deltaNanos = currentTime - lastTickTime
+                
+                if (deltaNanos >= physicsTickNanos) {
+                    lastTickTime = currentTime
+                    
+                    val ballState = MagneticFeetContributor.getBallState()
+                    val playerState = MagneticFeetContributor.getActivePlayerState()
+                    
+                    if (ballState.isValid && playerState.isValid) {
+                        val deltaX = ballState.x - playerState.x
+                        val deltaY = ballState.y - playerState.y
+                        val distance = sqrt((deltaX * deltaX) + (deltaY * deltaY).toDouble()).toFloat()
+                        
+                        if (distance <= MagneticFeetContributor.getMagneticRadius()) {
+                            // Execute simultaneous coordinate snap and velocity zeroing
+                            MagneticFeetContributor.executeMagneticSnap(playerState.x, playerState.y, playerState.z)
+                        }
+                    }
+                }
+                // Micro-yield prevents CPU throttling while maintaining sub-millisecond precision
+                Thread.yield()
+            }
         }
+    }
 
-        fun reset() {
-            sequence = 0L
-            calls = 0L
-            lastPressure = 0
-            lastStrength = 0
-            lastReason = "none"
-            lastUpdatedMs = 0L
-        }
+    fun stopEngine() {
+        isRunning.set(false)
+    }
 
-        fun magneticFeetSnapshot(): MagneticFeetState? {
-            return MagneticFeetState(
-                sequence = sequence,
-                amplification = 1000000.0f,
-                result = stabilize(lastPressure, lastStrength)
-            )
-        }
+    fun stabilize(pressure: Int, strength: Int): MagneticFeetResult {
+        calls++
+        lastPressure = pressure
+        lastStrength = strength
+        lastReason = "stabilized"
+        lastUpdatedMs = System.currentTimeMillis()
+        
+        val touch = (strength * 0.5f).coerceIn(0f, 10f)
+        val intercept = (pressure * 0.5f).coerceIn(0f, 10f)
+        val possession = ((strength + pressure) * 0.25f).coerceIn(0f, 10f)
+        
+        return MagneticFeetResult(touch, intercept, possession)
+    }
 
-        fun magneticFeetActivationDiagnostics(): MagneticFeetDiagnostics {
-            return MagneticFeetDiagnostics(
-                calls = calls,
-                lastPressure = lastPressure,
-                lastStrength = lastStrength,
-                lastReason = lastReason,
-                lastUpdatedMs = lastUpdatedMs
-            )
-        }
+    fun reset() {
+        stopEngine()
+        sequence = 0L
+        calls = 0L
+        lastPressure = 0
+        lastStrength = 0
+        lastReason = "none"
+        lastUpdatedMs = 0L
+    }
+
+    fun magneticFeetSnapshot(): MagneticFeetState? {
+        return MagneticFeetState(
+            sequence = sequence,
+            amplification = 1000000.0f,
+            result = stabilize(lastPressure, lastStrength)
+        )
+    }
+
+    fun magneticFeetActivationDiagnostics(): MagneticFeetDiagnostics {
+        return MagneticFeetDiagnostics(
+            calls = calls,
+            lastPressure = lastPressure,
+            lastStrength = lastStrength,
+            lastReason = lastReason,
+            lastUpdatedMs = lastUpdatedMs
+        )
     }
 }
