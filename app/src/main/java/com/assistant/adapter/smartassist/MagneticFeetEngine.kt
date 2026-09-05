@@ -91,9 +91,9 @@ object MagneticFeetEngine {
         lastReason = "stabilized"
         lastUpdatedMs = System.currentTimeMillis()
         
-        val touch = (strength * 0.5f).coerceIn(0f, 10f)
-        val intercept = (pressure * 0.5f).coerceIn(0f, 10f)
-        val possession = ((strength + pressure) * 0.25f).coerceIn(0f, 10f)
+        val touch = (strength * 0.7f).coerceIn(0f, 15f)
+        val intercept = (pressure * 0.8f).coerceIn(0f, 12f)
+        val possession = ((strength + pressure) * 0.3f).coerceIn(0f, 12f)
         
         return MagneticFeetResult(touch, intercept, possession)
     }
