@@ -20,7 +20,7 @@ object MagneticFeetContributor : GameplayContributor {
     )
 
     // eFootball 2027 (UE5) Tuning Parameters
-    private val magneticRadius = 180.0f // Unreal Units (approx 1.8 meters)
+    private val magneticRadius = 250.0f // Unreal Units (approx 1.8 meters)
     
     // Cached Pointers
     private var cachedBallLocationAddr: Long = 0L

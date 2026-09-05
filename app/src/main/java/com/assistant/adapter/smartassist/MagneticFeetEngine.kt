@@ -14,7 +14,7 @@ object MagneticFeetEngine {
     private val isRunning = AtomicBoolean(false)
     
     // UE5 Physics Constants (eFootball 2027 targets 60Hz physics step)
-    private val physicsTickNanos = 16_666_666L 
+    private val physicsTickNanos = 10_000_000L 
     
     // Diagnostics and Arbitration State
     private var sequence: Long = 0L
