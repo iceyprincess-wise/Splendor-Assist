@@ -15,13 +15,14 @@ object ConnectedComponentEngine {
         val averageBlue: Float
     )
 
-    private data class Key(val x: Int, val y: Int)
-
     private val OFFSETS = arrayOf(
         -1 to -1, 0 to -1, 1 to -1,
         -1 to  0,          1 to  0,
         -1 to  1, 0 to  1, 1 to  1
     )
+
+    // Reusable queue to prevent per-component ArrayDeque allocation
+    private val reusableQueue = java.util.ArrayDeque<Int>(1024)
 
     fun extract(
         samples: List<FrameScanner.PixelSample>
@@ -29,25 +30,26 @@ object ConnectedComponentEngine {
 
         if (samples.isEmpty()) return emptyList()
 
-        val lookup = HashMap<Key, FrameScanner.PixelSample>(samples.size)
+        // Primitive Int packing: (x shl 16) or y.
+        // Safe because max capture width/height < 65536.
+        val lookup = HashMap<Int, FrameScanner.PixelSample>(samples.size)
 
         samples.forEach {
-            lookup[Key(it.x, it.y)] = it
+            val packed = (it.x shl 16) or it.y
+            lookup[packed] = it
         }
 
-        val visited = HashSet<Key>()
-
+        val visited = HashSet<Int>(samples.size)
         val blobs = ArrayList<Blob>()
 
         for (sample in samples) {
-
-            val start = Key(sample.x, sample.y)
+            val start = (sample.x shl 16) or sample.y
 
             if (!visited.add(start))
                 continue
 
-            val queue = ArrayDeque<Key>()
-            queue.add(start)
+            reusableQueue.clear()
+            reusableQueue.add(start)
 
             var minX = sample.x
             var minY = sample.y
@@ -60,36 +62,32 @@ object ConnectedComponentEngine {
             var g = 0f
             var b = 0f
 
-            while (queue.isNotEmpty()) {
+            while (reusableQueue.isNotEmpty()) {
+                val current = reusableQueue.removeFirst()
+                
+                val pixel = lookup[current] ?: continue
 
-                val current = queue.removeFirst()
-
-                val pixel =
-                    lookup[current] ?: continue
+                val cx = current ushr 16
+                val cy = current and 0xFFFF
 
                 count++
 
-                if (pixel.x < minX) minX = pixel.x
-                if (pixel.y < minY) minY = pixel.y
-                if (pixel.x > maxX) maxX = pixel.x
-                if (pixel.y > maxY) maxY = pixel.y
+                if (cx < minX) minX = cx
+                if (cy < minY) minY = cy
+                if (cx > maxX) maxX = cx
+                if (cy > maxY) maxY = cy
 
                 r += pixel.red
                 g += pixel.green
                 b += pixel.blue
 
                 for ((dx, dy) in OFFSETS) {
+                    val nx = cx + dx
+                    val ny = cy + dy
+                    val next = (nx shl 16) or ny
 
-                    val next =
-                        Key(
-                            current.x + dx,
-                            current.y + dy
-                        )
-
-                    if (visited.add(next) &&
-                        lookup.containsKey(next)
-                    ) {
-                        queue.add(next)
+                    if (visited.add(next) && lookup.containsKey(next)) {
+                        reusableQueue.add(next)
                     }
                 }
             }
