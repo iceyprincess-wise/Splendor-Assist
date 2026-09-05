@@ -75,21 +75,23 @@ object PlayerDetector {
         // NMS: suppress lower-confidence detection if it overlaps a better one
         val kept = ArrayList<PlayerDetection>(raw.size)
         val suppressed = BooleanArray(raw.size)
+        var sumConf = 0f
         for (i in raw.indices) {
             if (suppressed[i]) continue
-            kept.add(raw[i])
+            val pi = raw[i]
+            kept.add(pi)
+            sumConf += pi.confidence
             for (j in i + 1 until raw.size) {
                 if (suppressed[j]) continue
-                val dx = abs(raw[i].x - raw[j].x)
-                val dy = abs(raw[i].y - raw[j].y)
-                val dist = kotlin.math.sqrt(dx * dx + dy * dy)
-                // suppress j if within ~40px of a better detection
-                if (dist < 40f) suppressed[j] = true
+                val dx = abs(pi.x - raw[j].x)
+                val dy = abs(pi.y - raw[j].y)
+                val distSq = dx * dx + dy * dy
+                // suppress j if within ~40px of a better detection (40^2 = 1600)
+                if (distSq < 1600f) suppressed[j] = true
             }
         }
 
-        val aggregateConfidence = if (kept.isEmpty()) 0f else
-            kept.map { it.confidence }.average().toFloat().coerceIn(0f, 1f)
+        val aggregateConfidence = if (kept.isEmpty()) 0f else (sumConf / kept.size).coerceIn(0f, 1f)
 
         return PlayerDetectionResult(
             detected = kept.isNotEmpty(),

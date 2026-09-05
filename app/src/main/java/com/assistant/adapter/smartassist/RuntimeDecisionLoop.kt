@@ -65,10 +65,18 @@ object RuntimeDecisionLoop {
 
         val contributions = GameplayEngineRegistry.collect(frame)
         val netHold = AdapterSignalBus.netIsHold
-        val best: EngineContribution? =
-            contributions
-                .filter { c -> if (netHold) c.actionClass == ActionClass.MOVE || c.actionClass == ActionClass.DEFEND else true }
-                .maxByOrNull { it.weight * classScale(it.actionClass) }
+        
+        // Zero-alloc manual loop for filtering and max arbitration
+        var best: EngineContribution? = null
+        var bestScore = -1f
+        for (c in contributions) {
+            if (netHold && c.actionClass != ActionClass.MOVE && c.actionClass != ActionClass.DEFEND) continue
+            val score = c.weight * classScale(c.actionClass)
+            if (score > bestScore) {
+                bestScore = score
+                best = c
+            }
+        }
 
         val emergency = ContributionRegistry.drainBest()
 
