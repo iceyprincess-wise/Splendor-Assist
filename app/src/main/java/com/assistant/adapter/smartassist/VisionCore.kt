@@ -6,18 +6,8 @@ object VisionCore {
         frame: FrameNormalizer.NormalizedFrame
     ): GameStateSnapshot {
 
-        val t0 = System.nanoTime()
-        val samples =
-            FrameScanner.scan(frame)
-        val t1 = System.nanoTime()
-        com.assistant.diagnostic.Phase7FrameContext.scanTimeNs = t1 - t0
-        com.assistant.diagnostic.Phase7FrameContext.sampleCount = samples.count
-
         val blobs =
-            ConnectedComponentEngine.extract(samples)
-        val t2 = System.nanoTime()
-        com.assistant.diagnostic.Phase7FrameContext.cceTimeNs = t2 - t1
-        com.assistant.diagnostic.Phase7FrameContext.blobCount = blobs.size
+            VisionPreprocessor.process(frame)
 
         val filteredBlobs =
             NoiseFilter.filter(blobs)
