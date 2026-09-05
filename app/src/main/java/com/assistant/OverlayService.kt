@@ -211,15 +211,42 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
 
             try {
-                val scanBuffer = image.planes[0].buffer.duplicate()
+                val t_start = System.nanoTime()
+                val plane = image.planes[0]
+                val buf = plane.buffer
+                com.assistant.diagnostic.Phase7FrameContext.rowStride = plane.rowStride
+                com.assistant.diagnostic.Phase7FrameContext.pixelStride = plane.pixelStride
+                com.assistant.diagnostic.Phase7FrameContext.isDirect = buf.isDirect
+                com.assistant.diagnostic.Phase7FrameContext.hasArray = buf.hasArray()
+                com.assistant.diagnostic.Phase7FrameContext.capacity = buf.capacity()
+                com.assistant.diagnostic.Phase7FrameContext.limit = buf.limit()
+                com.assistant.diagnostic.Phase7FrameContext.reset()
+
+                val scanBuffer = buf.duplicate()
                 val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
                 val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
                 com.assistant.BoosterIgnition.ensureIgnited(this)
                 com.assistant.AppContributorRegistration.ensureRegistered()
                 com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
+                
+                val t_asm_start = System.nanoTime()
                 val frame = com.assistant.adapter.smartassist.FrameAssembler.assemble()
+                com.assistant.diagnostic.Phase7FrameContext.asmTimeNs = System.nanoTime() - t_asm_start
+                
+                val t_dec_start = System.nanoTime()
                 com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
+                com.assistant.diagnostic.Phase7FrameContext.decTimeNs = System.nanoTime() - t_dec_start
+                
                 com.assistant.adapter.smartassist.GameStateBuilder.update(state)
+                
+                val t_end = System.nanoTime()
+                val ctx = com.assistant.diagnostic.Phase7FrameContext
+                com.assistant.diagnostic.Phase7Diagnostics.record(
+                    ctx.scanTimeNs / 1000, ctx.cceTimeNs / 1000, ctx.visRemTimeNs / 1000,
+                    ctx.asmTimeNs / 1000, ctx.decTimeNs / 1000, (t_end - t_start) / 1000,
+                    ctx.rowStride, ctx.pixelStride, ctx.isDirect, ctx.hasArray,
+                    ctx.capacity, ctx.limit, ctx.sampleCount, ctx.blobCount
+                )
                 com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
             } catch (t: Throwable) {
                 try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
@@ -291,6 +318,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         super.onCreate()
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         com.assistant.vision.ForegroundGate.install(application)
+        com.assistant.diagnostic.Phase7Diagnostics.init(applicationContext)
 
         try { com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext)
               com.assistant.adapter.smartassist.RuntimeSelfHealEngine.start() } catch (_: Throwable) {}
@@ -802,6 +830,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         ocrIoThread?.quitSafely()
         ocrIoThread = null
 
+        com.assistant.diagnostic.Phase7Diagnostics.close()
         super.onDestroy()
     }
 }
