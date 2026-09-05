@@ -6,6 +6,9 @@ import kotlin.random.Random
 
 object FrameScanner {
 
+    // Reusable buffer to prevent per-frame ~1.6MB ByteArray allocations
+    private var reusableByteArray: ByteArray? = null
+
     data class PixelSample(
         val x: Int,
         val y: Int,
@@ -53,12 +56,17 @@ object FrameScanner {
         if (limit == 0) return emptyList()
 
         // ---------------------------------------------------------------------
-        // PHASE 1: BULK MEMORY TRANSFER
+        // PHASE 1: BULK MEMORY TRANSFER (ZERO-ALLOC REUSE)
         // ---------------------------------------------------------------------
         // Extracts the full ByteBuffer payload into contiguous JVM heap memory 
         // to prevent extreme native-call latency inside the loop.
-        val frameBytes = ByteArray(limit)
-        buffer.get(frameBytes)
+        // Reuses the backing array to eliminate per-frame GC pressure.
+        var frameBytes = reusableByteArray
+        if (frameBytes == null || frameBytes.size < limit) {
+            frameBytes = ByteArray(limit)
+            reusableByteArray = frameBytes
+        }
+        buffer.get(frameBytes, 0, limit)
 
         val thresholdInt = (threshold * 255.0f).roundToInt().coerceIn(0, 255)
         
