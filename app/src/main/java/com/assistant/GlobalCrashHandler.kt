@@ -372,7 +372,7 @@ class GlobalCrashHandler(
                 EngineEntry("TrainedDetectionEngine","com.assistant.adapter.smartassist.TrainedDetectionEngine","PASSIVE","dormant: no .tflite model asset present; returns null always, falls back to heuristic"),
                 EngineEntry("ConnectedComponentEngine","com.assistant.adapter.smartassist.ConnectedComponentEngine","ACTIVE","BFS blob extraction runs every frame"),
                 EngineEntry("FrameScanner","com.assistant.adapter.smartassist.FrameScanner","ACTIVE","pixel scan hot-loop runs every frame"),
-                EngineEntry("MagneticFeetContributor","com.assistant.adapter.smartassist.contributors.MagneticFeetContributor","ACTIVE","fires on possession; cap raised to 0.65; hardcoded override removed"),
+                EngineEntry("MagneticFeetContributor","com.assistant.adapter.smartassist.contributors.MagneticFeetContributor","ACTIVE","vision-backed possession movement assist; bounded MOVE contribution"),
                 EngineEntry("ShotContributor","com.assistant.contributors.ShotContributor","ACTIVE","fires only on real goal detection; no hallucinated aim points"),
                 EngineEntry("PassingContributor","com.assistant.adapter.smartassist.contributors.PassingContributor","ACTIVE","fires when viable pass lanes exist"),
                 EngineEntry("CrossContributor","com.assistant.adapter.smartassist.contributors.CrossContributor","ACTIVE","fires on crossing lane detection"),

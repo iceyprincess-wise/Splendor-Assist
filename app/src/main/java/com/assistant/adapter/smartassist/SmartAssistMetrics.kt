@@ -190,7 +190,7 @@ object SmartAssistMetrics {
         val state = MagneticFeetEngine.magneticFeetSnapshot()
         return mapOf(
             "sequence" to (state?.sequence ?: 0L),
-            "amplification" to (state?.amplification ?: 1000000.0f),
+            "amplification" to (state?.amplification ?: 1.0f),
             "touchRetention" to (state?.result?.touchRetention ?: 0.0f),
             "interceptionResistance" to (state?.result?.interceptionResistance ?: 0.0f),
             "possessionControl" to (state?.result?.possessionControl ?: 0.0f)
@@ -202,7 +202,7 @@ object SmartAssistMetrics {
         val lanes = state?.result?.lanes.orEmpty()
         return mapOf(
             "sequence" to (state?.sequence ?: 0L),
-            "amplification" to (state?.amplification ?: 1000000.0f),
+            "amplification" to (state?.amplification ?: 1.0f),
             "laneCount" to lanes.size,
             "viableLaneCount" to lanes.count { it.viable },
             "bestConfidence" to (lanes.maxOfOrNull { it.confidence } ?: 0.0f)

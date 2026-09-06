@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong
  * Fix: ACTION-CLASS ARBITRATION SCALING. Real match actions (SHOT, PASS,
  * CROSS, DEFEND, KEEPER, EVADE) keep full weight; MOVE support is scaled
  * down so it wins only when nothing real is on offer. Admin-tunable live:
- *   assist.decision.move_scale (default 0.45)
+ *   MOVE support uses the live class scale of 0.35 in this implementation.
  * Raise it if movement support feels too weak, lower it if MOVE spam
  * returns - no rebuild needed.
  */
