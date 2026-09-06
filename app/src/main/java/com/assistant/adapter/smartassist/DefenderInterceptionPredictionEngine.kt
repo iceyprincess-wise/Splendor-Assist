@@ -16,13 +16,11 @@ data class DefenderInterceptionPredictionAnalysis(
 
 object DefenderInterceptionPredictionEngine {
 
-    companion object {
-        // Physical constants tuned for professional, low-latency companion execution
-        const val BASE_ESTIMATED_BALL_SPEED = 1450.0f    // Average pass velocity in pixels/units per second
-        const val BASE_DEFENDER_MAX_SPEED = 420.0f      // Average defender sprint velocity
-        const val BASE_DEFENDER_REACTION_LATENCY = 0.12f // Reaction delay/inertia before sprinting
-        const val SAFE_PASS_BUFFER_SEC = 0.08f           // Safe buffer time required to guarantee completion
-    }
+    // Physical constants tuned for professional, low-latency companion execution
+    private const val BASE_ESTIMATED_BALL_SPEED = 1450.0f    // Average pass velocity in pixels/units per second
+    private const val BASE_DEFENDER_MAX_SPEED = 420.0f      // Average defender sprint velocity
+    private const val BASE_DEFENDER_REACTION_LATENCY = 0.12f // Reaction delay/inertia before sprinting
+    private const val SAFE_PASS_BUFFER_SEC = 0.08f           // Safe buffer time required to guarantee completion
 
     fun analyze(
         scene: SceneSnapshot,
@@ -33,11 +31,10 @@ object DefenderInterceptionPredictionEngine {
             return DefenderInterceptionPredictionAnalysis(emptyList())
         }
 
-        // 1. Zero-Allocation Strategy: Pre-allocate precise capacity to stop GC thrashing at 60FPS
+        // Zero-Allocation Strategy: Pre-allocate precise capacity to stop GC thrashing at 60FPS
         val result = ArrayList<DefenderInterceptionPrediction>(graph.lanes.size)
         val playersSize = scene.trackedPlayers.size
 
-        // 2. Index loops to avoid iterator object creation
         for (i in 0 until graph.lanes.size) {
             val lane = graph.lanes[i]
             val passer = lane.passer
@@ -58,7 +55,7 @@ object DefenderInterceptionPredictionEngine {
             for (j in 0 until playersSize) {
                 val defender = scene.trackedPlayers[j]
                 
-                // Inline filter: replaces scene.trackedPlayers.filter { !it.isUserTeam } (saves 1 allocation per frame)
+                // Inline filter: replaces scene.trackedPlayers.filter { !it.isUserTeam }
                 if (defender.isUserTeam) continue
 
                 val pdX = defender.x - passer.x
@@ -122,7 +119,6 @@ object DefenderInterceptionPredictionEngine {
                 val finalInterceptX: Float
                 val finalInterceptY: Float
 
-                // Deterministic projection replaces Random fuzzing for 100% predictable AI logic
                 if (maximumCalculatedRisk > 0.40f) {
                     finalInterceptX = bestInterceptX + (finalDefender.velocityX * 0.25f)
                     finalInterceptY = bestInterceptY + (finalDefender.velocityY * 0.25f)
@@ -143,7 +139,7 @@ object DefenderInterceptionPredictionEngine {
             }
         }
 
-        // In-place sort avoids creating a third List allocation
+        // In-place sort avoids creating extra List allocations
         result.sortByDescending { it.interceptionRisk }
         return DefenderInterceptionPredictionAnalysis(result)
     }
