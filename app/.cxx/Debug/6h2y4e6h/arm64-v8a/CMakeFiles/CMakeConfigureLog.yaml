@@ -1,0 +1,2170 @@
+
+---
+events:
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineSystem.cmake:12 (find_program)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_UNAME"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "uname"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/bin/"
+      - "/usr/bin/"
+      - "/usr/local/bin/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/bin/uname"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/uname"
+    found: "/data/data/com.termux/files/usr/bin/uname"
+    search_context:
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineSystem.cmake:207 (message)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      The target system is: Android - 1 - aarch64
+      The host system is: Android - 36 - aarch64
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:468 (find_file)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:506 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCCompilerId.c.in"
+    candidate_directories:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/"
+    found: "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeCCompilerId.c.in"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/clang 
+      Build flags: -g;-DANDROID;-fdata-sections;-ffunction-sections;-funwind-tables;-fstack-protector-strong;-no-canonical-prefixes;-D_FORTIFY_SOURCE=2;-Wformat;-Werror=format-security
+      Id flags: -c;--target=aarch64-none-linux-android26 
+      
+      The output was:
+      0
+      clang: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android' [-Wunused-command-line-argument]
+      clang: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64' [-Wunused-command-line-argument]
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+      
+      The C compiler identification is Clang, found in:
+        /data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/4.3.4/CompilerIdC/CMakeCCompilerId.o
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_LINKER"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-ld.lld"
+      - "ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-ld"
+      - "ld"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-ld.lld"
+    found: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/ld.lld"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_NM"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-nm"
+      - "llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-nm"
+      - "nm"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-nm"
+    found: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/llvm-nm"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_OBJDUMP"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-objdump"
+      - "llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-objdump"
+      - "objdump"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objdump"
+    found: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/llvm-objdump"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_OBJCOPY"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-objcopy"
+      - "llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-objcopy"
+      - "objcopy"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-objcopy"
+    found: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/llvm-objcopy"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_READELF"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-readelf"
+      - "llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-readelf"
+      - "readelf"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-readelf"
+    found: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/llvm-readelf"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_DLLTOOL"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-dlltool"
+      - "llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-dlltool"
+      - "dlltool"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-dlltool"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/llvm-dlltool"
+      - "/data/data/com.termux/files/home/bin/llvm-dlltool"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/llvm-dlltool"
+    found: "/data/data/com.termux/files/usr/bin/llvm-dlltool"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_ADDR2LINE"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-addr2line"
+      - "llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-addr2line"
+      - "addr2line"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-addr2line"
+    found: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/llvm-addr2line"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_TAPI"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-tapi"
+      - "tapi"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-tapi"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/tapi"
+      - "/data/data/com.termux/files/home/bin/tapi"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/tapi"
+      - "/data/data/com.termux/files/usr/bin/tapi"
+      - "/product/bin/tapi"
+      - "/apex/com.android.runtime/bin/tapi"
+      - "/apex/com.android.art/bin/tapi"
+      - "/apex/com.android.virt/bin/tapi"
+      - "/system_ext/bin/tapi"
+      - "/system/bin/tapi"
+      - "/system/xbin/tapi"
+      - "/odm/bin/tapi"
+      - "/vendor/bin/tapi"
+      - "/vendor/xbin/tapi"
+      - "/usr/lib/aarch64-linux-android/26/bin/tapi"
+      - "/usr/lib/aarch64-linux-android/26/sbin/tapi"
+      - "/usr/lib/aarch64-linux-android/26/tapi"
+    found: false
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/Compiler/Clang-FindBinUtils.cmake:26 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:201 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_C_COMPILER_AR"
+    description: "LLVM archiver"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ar"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+    found: false
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/Compiler/Clang-FindBinUtils.cmake:38 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:201 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_C_COMPILER_RANLIB"
+    description: "Generate index for LLVM archive"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ranlib"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+    found: false
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/Compiler/Clang-FindBinUtils.cmake:50 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:201 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_C_COMPILER_CLANG_SCAN_DEPS"
+    description: "`clang-scan-deps` dependency scanner"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-clang-scan-deps"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+    found: false
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:468 (find_file)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:506 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCXXCompilerId.cpp.in"
+    candidate_directories:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/"
+    found: "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeCXXCompilerId.cpp.in"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/clang++ 
+      Build flags: -g;-DANDROID;-fdata-sections;-ffunction-sections;-funwind-tables;-fstack-protector-strong;-no-canonical-prefixes;-D_FORTIFY_SOURCE=2;-Wformat;-Werror=format-security;-std=c++17
+      Id flags: -c;--target=aarch64-none-linux-android26 
+      
+      The output was:
+      0
+      clang++: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android' [-Wunused-command-line-argument]
+      clang++: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64' [-Wunused-command-line-argument]
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.o"
+      
+      The CXX compiler identification is Clang, found in:
+        /data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/4.3.4/CompilerIdCXX/CMakeCXXCompilerId.o
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/Compiler/Clang-FindBinUtils.cmake:26 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:207 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_CXX_COMPILER_AR"
+    description: "LLVM archiver"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ar"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ar"
+    found: false
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/Compiler/Clang-FindBinUtils.cmake:38 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:207 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_CXX_COMPILER_RANLIB"
+    description: "Generate index for LLVM archive"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-llvm-ranlib"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-llvm-ranlib"
+    found: false
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/Compiler/Clang-FindBinUtils.cmake:50 (find_program)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:207 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS"
+    description: "`clang-scan-deps` dependency scanner"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//bin/aarch64-linux-android-clang-scan-deps"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/"
+      - "/data/data/com.termux/files/home/bin/"
+      - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin/"
+      - "/data/data/com.termux/files/usr/bin/"
+      - "/product/bin/"
+      - "/apex/com.android.runtime/bin/"
+      - "/apex/com.android.art/bin/"
+      - "/apex/com.android.virt/bin/"
+      - "/system_ext/bin/"
+      - "/system/bin/"
+      - "/system/xbin/"
+      - "/odm/bin/"
+      - "/vendor/bin/"
+      - "/vendor/xbin/"
+      - "/usr/lib/aarch64-linux-android/26/bin/"
+      - "/usr/lib/aarch64-linux-android/26/sbin/"
+      - "/usr/lib/aarch64-linux-android/26/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21.1"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps-21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps21"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/aarch64-linux-android-clang-scan-deps"
+    found: false
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:83 (try_compile)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-zVZkso"
+      binary: "/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-zVZkso"
+    cmakeVariables:
+      ANDROID_ABI: "arm64-v8a"
+      ANDROID_ARM_MODE: "thumb"
+      ANDROID_PIE: "TRUE"
+      ANDROID_PLATFORM: "android-26"
+      ANDROID_STL: "c++_shared"
+      ANDROID_TOOLCHAIN: "clang"
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND"
+      CMAKE_CXX_COMPILER_TARGET: "aarch64-none-linux-android26"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_COMPILER_TARGET: "aarch64-none-linux-android26"
+      CMAKE_C_FLAGS: "-g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat "
+      CMAKE_C_FLAGS_DEBUG: "-fno-limit-debug-info "
+      CMAKE_EXE_LINKER_FLAGS: "-Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections "
+      CMAKE_POSITION_INDEPENDENT_CODE: "TRUE"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-zVZkso'
+        
+        Run Build Command(s): /data/data/com.termux/files/usr/bin/ninja -v cmTC_ee07e
+        [1/2] /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/clang --target=aarch64-none-linux-android26 --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat   -fPIE   -v -MD -MT CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o -c /data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeCCompilerABI.c
+        clang version 21.1.8
+        Target: aarch64-none-linux-android26
+        Thread model: posix
+        InstalledDir: /data/data/com.termux/files/usr/bin
+        clang: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android' [-Wunused-command-line-argument]
+        clang: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64' [-Wunused-command-line-argument]
+         (in-process)
+         "/data/data/com.termux/files/usr/bin/clang" -cc1 -triple aarch64-none-linux-android26 -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -enable-tlsdesc -target-cpu generic -target-feature +v8a -target-feature +fp-armv8 -target-feature +neon -target-feature +fix-cortex-a53-835769 -target-abi aapcs -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -fdebug-compilation-dir=/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-zVZkso -v -ffunction-sections -fdata-sections -fcoverage-compilation-dir=/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-zVZkso -resource-dir /data/data/com.termux/files/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -internal-isystem /data/data/com.termux/files/usr/lib/clang/21/include -internal-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/include -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include -Wformat -ferror-limit 19 -femulated-tls -stack-protector 2 -fno-signed-char -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -target-feature +outline-atomics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o -x c /data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeCCompilerABI.c
+        clang -cc1 version 21.1.8 based upon LLVM 21.1.8 default target aarch64-unknown-linux-android30
+        ignoring nonexistent directory "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /data/data/com.termux/files/usr/lib/clang/21/include
+         /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include
+         /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android
+         /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include
+        End of search list.
+        [2/2] : && /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/clang --target=aarch64-none-linux-android26 --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections  -v CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o -o cmTC_ee07e   && :
+        clang version 21.1.8
+        Target: aarch64-none-linux-android26
+        Thread model: posix
+        InstalledDir: /data/data/com.termux/files/usr/bin
+         "/data/data/com.termux/files/usr/bin/ld.lld" --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -EL --fix-cortex-a53-843419 -z now -z relro -z max-page-size=16384 --no-rosegment --hash-style=gnu -rpath=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib --eh-frame-hdr -m aarch64linux -pie -dynamic-linker /system/bin/linker64 -o cmTC_ee07e /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64 -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26 -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib -L/system/lib64 --build-id=sha1 --no-rosegment --fatal-warnings --gc-sections --no-undefined --gc-sections CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o /data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a -l:libunwind.a -ldl -lc /data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a -l:libunwind.a -ldl /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:217 (message)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed C implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/data/data/com.termux/files/usr/lib/clang/21/include]
+          add: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include]
+          add: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android]
+          add: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include]
+        end of search list found
+        collapse include dir [/data/data/com.termux/files/usr/lib/clang/21/include] ==> [/data/data/com.termux/files/usr/lib/clang/21/include]
+        collapse include dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/local/include]
+        collapse include dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/include/aarch64-linux-android]
+        collapse include dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/include]
+        implicit include dirs: [/data/data/com.termux/files/usr/lib/clang/21/include;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/local/include;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/include/aarch64-linux-android;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:253 (message)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)))("|,| |$)]
+        ignore line: [Change Dir: '/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-zVZkso']
+        ignore line: []
+        ignore line: [Run Build Command(s): /data/data/com.termux/files/usr/bin/ninja -v cmTC_ee07e]
+        ignore line: [[1/2] /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/clang --target=aarch64-none-linux-android26 --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat   -fPIE   -v -MD -MT CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o -c /data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeCCompilerABI.c]
+        ignore line: [clang version 21.1.8]
+        ignore line: [Target: aarch64-none-linux-android26]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /data/data/com.termux/files/usr/bin]
+        ignore line: [clang: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android' [-Wunused-command-line-argument]]
+        ignore line: [clang: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64' [-Wunused-command-line-argument]]
+        ignore line: [ (in-process)]
+        ignore line: [ "/data/data/com.termux/files/usr/bin/clang" -cc1 -triple aarch64-none-linux-android26 -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -enable-tlsdesc -target-cpu generic -target-feature +v8a -target-feature +fp-armv8 -target-feature +neon -target-feature +fix-cortex-a53-835769 -target-abi aapcs -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -fdebug-compilation-dir=/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-zVZkso -v -ffunction-sections -fdata-sections -fcoverage-compilation-dir=/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-zVZkso -resource-dir /data/data/com.termux/files/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -internal-isystem /data/data/com.termux/files/usr/lib/clang/21/include -internal-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/include -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include -Wformat -ferror-limit 19 -femulated-tls -stack-protector 2 -fno-signed-char -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -target-feature +outline-atomics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o -x c /data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeCCompilerABI.c]
+        ignore line: [clang -cc1 version 21.1.8 based upon LLVM 21.1.8 default target aarch64-unknown-linux-android30]
+        ignore line: [ignoring nonexistent directory "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /data/data/com.termux/files/usr/lib/clang/21/include]
+        ignore line: [ /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include]
+        ignore line: [ /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android]
+        ignore line: [ /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include]
+        ignore line: [End of search list.]
+        ignore line: [[2/2] : && /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/clang --target=aarch64-none-linux-android26 --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Wl --build-id=sha1 -Wl --no-rosegment -Wl --fatal-warnings -Wl --gc-sections -Wl --no-undefined -Qunused-arguments -Wl --gc-sections  -v CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o -o cmTC_ee07e   && :]
+        ignore line: [clang version 21.1.8]
+        ignore line: [Target: aarch64-none-linux-android26]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /data/data/com.termux/files/usr/bin]
+        link line: [ "/data/data/com.termux/files/usr/bin/ld.lld" --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -EL --fix-cortex-a53-843419 -z now -z relro -z max-page-size=16384 --no-rosegment --hash-style=gnu -rpath=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib --eh-frame-hdr -m aarch64linux -pie -dynamic-linker /system/bin/linker64 -o cmTC_ee07e /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64 -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26 -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib -L/system/lib64 --build-id=sha1 --no-rosegment --fatal-warnings --gc-sections --no-undefined --gc-sections CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o /data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a -l:libunwind.a -ldl -lc /data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a -l:libunwind.a -ldl /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o]
+          arg [/data/data/com.termux/files/usr/bin/ld.lld] ==> ignore
+          arg [--sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot] ==> ignore
+          arg [-EL] ==> ignore
+          arg [--fix-cortex-a53-843419] ==> ignore
+          arg [-znow] ==> ignore
+          arg [-zrelro] ==> ignore
+          arg [-zmax-page-size=16384] ==> ignore
+          arg [--no-rosegment] ==> ignore
+          arg [--hash-style=gnu] ==> ignore
+          arg [-rpath=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [aarch64linux] ==> ignore
+          arg [-pie] ==> ignore
+          arg [-dynamic-linker] ==> ignore
+          arg [/system/bin/linker64] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_ee07e] ==> ignore
+          arg [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o] ==> obj [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o]
+          arg [-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android] ==> dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android]
+          arg [-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64] ==> dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64]
+          arg [-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26] ==> dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26]
+          arg [-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android] ==> dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android]
+          arg [-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib] ==> dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib]
+          arg [-L/system/lib64] ==> dir [/system/lib64]
+          arg [--build-id=sha1] ==> ignore
+          arg [--no-rosegment] ==> ignore
+          arg [--fatal-warnings] ==> ignore
+          arg [--gc-sections] ==> ignore
+          arg [--no-undefined] ==> ignore
+          arg [--gc-sections] ==> ignore
+          arg [CMakeFiles/cmTC_ee07e.dir/CMakeCCompilerABI.c.o] ==> ignore
+          arg [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a] ==> lib [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a]
+          arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+          arg [-ldl] ==> lib [dl]
+          arg [-lc] ==> lib [c]
+          arg [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a] ==> lib [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a]
+          arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+          arg [-ldl] ==> lib [dl]
+          arg [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o] ==> obj [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o]
+        linker tool for 'C': /data/data/com.termux/files/usr/bin/ld.lld
+        remove lib [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a]
+        remove lib [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a]
+        collapse obj [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o]
+        collapse obj [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o]
+        collapse library dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android]
+        collapse library dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64]
+        collapse library dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26]
+        collapse library dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android]
+        collapse library dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib]
+        collapse library dir [/system/lib64] ==> [/system/lib64]
+        implicit libs: [-l:libunwind.a;dl;c;-l:libunwind.a;dl]
+        implicit objs: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o]
+        implicit dirs: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib;/system/lib64]
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/Internal/CMakeDetermineLinkerId.cmake:38 (message)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:299 (cmake_determine_linker_id)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Running the C compiler's linker: "/data/data/com.termux/files/usr/bin/ld.lld" "-v"
+      LLD 21.1.8 (compatible with GNU linkers)
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:83 (try_compile)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-wKDAQ3"
+      binary: "/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-wKDAQ3"
+    cmakeVariables:
+      ANDROID_ABI: "arm64-v8a"
+      ANDROID_ARM_MODE: "thumb"
+      ANDROID_PIE: "TRUE"
+      ANDROID_PLATFORM: "android-26"
+      ANDROID_STL: "c++_shared"
+      ANDROID_TOOLCHAIN: "clang"
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND"
+      CMAKE_CXX_COMPILER_TARGET: "aarch64-none-linux-android26"
+      CMAKE_CXX_FLAGS: "-g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat  -std=c++17"
+      CMAKE_CXX_FLAGS_DEBUG: "-fno-limit-debug-info "
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_COMPILER_TARGET: "aarch64-none-linux-android26"
+      CMAKE_EXE_LINKER_FLAGS: "-Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections "
+      CMAKE_POSITION_INDEPENDENT_CODE: "TRUE"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-wKDAQ3'
+        
+        Run Build Command(s): /data/data/com.termux/files/usr/bin/ninja -v cmTC_8efee
+        [1/2] /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/clang++ --target=aarch64-none-linux-android26 --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat  -std=c++17  -fPIE   -v -MD -MT CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -c /data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeCXXCompilerABI.cpp
+        clang version 21.1.8
+        Target: aarch64-none-linux-android26
+        Thread model: posix
+        InstalledDir: /data/data/com.termux/files/usr/bin
+        clang++: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android' [-Wunused-command-line-argument]
+        clang++: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64' [-Wunused-command-line-argument]
+         (in-process)
+         "/data/data/com.termux/files/usr/bin/clang++" -cc1 -triple aarch64-none-linux-android26 -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -enable-tlsdesc -target-cpu generic -target-feature +v8a -target-feature +fp-armv8 -target-feature +neon -target-feature +fix-cortex-a53-835769 -target-abi aapcs -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -fdebug-compilation-dir=/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-wKDAQ3 -v -ffunction-sections -fdata-sections -fcoverage-compilation-dir=/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-wKDAQ3 -resource-dir /data/data/com.termux/files/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -internal-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/c++/v1 -internal-isystem /data/data/com.termux/files/usr/lib/clang/21/include -internal-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/include -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include -Wformat -std=c++17 -fdeprecated-macro -ferror-limit 19 -femulated-tls -stack-protector 2 -fno-signed-char -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -target-feature +outline-atomics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -x c++ /data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeCXXCompilerABI.cpp
+        clang -cc1 version 21.1.8 based upon LLVM 21.1.8 default target aarch64-unknown-linux-android30
+        ignoring nonexistent directory "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/c++/v1
+         /data/data/com.termux/files/usr/lib/clang/21/include
+         /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include
+         /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android
+         /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include
+        End of search list.
+        [2/2] : && /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/clang++ --target=aarch64-none-linux-android26 --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat  -std=c++17 -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections  -v CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_8efee   && :
+        clang version 21.1.8
+        Target: aarch64-none-linux-android26
+        Thread model: posix
+        InstalledDir: /data/data/com.termux/files/usr/bin
+         "/data/data/com.termux/files/usr/bin/ld.lld" --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -EL --fix-cortex-a53-843419 -z now -z relro -z max-page-size=16384 --no-rosegment --hash-style=gnu -rpath=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib --eh-frame-hdr -m aarch64linux -pie -dynamic-linker /system/bin/linker64 -o cmTC_8efee /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64 -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26 -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib -L/system/lib64 --build-id=sha1 --no-rosegment --fatal-warnings --gc-sections --no-undefined --gc-sections CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -lc++_shared /data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a -l:libunwind.a -ldl -lm -lc /data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a -l:libunwind.a -ldl /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:217 (message)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/c++/v1]
+          add: [/data/data/com.termux/files/usr/lib/clang/21/include]
+          add: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include]
+          add: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android]
+          add: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include]
+        end of search list found
+        collapse include dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/c++/v1] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/include/c++/v1]
+        collapse include dir [/data/data/com.termux/files/usr/lib/clang/21/include] ==> [/data/data/com.termux/files/usr/lib/clang/21/include]
+        collapse include dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/local/include]
+        collapse include dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/include/aarch64-linux-android]
+        collapse include dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/include]
+        implicit include dirs: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/include/c++/v1;/data/data/com.termux/files/usr/lib/clang/21/include;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/local/include;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/include/aarch64-linux-android;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:253 (message)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)))("|,| |$)]
+        ignore line: [Change Dir: '/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-wKDAQ3']
+        ignore line: []
+        ignore line: [Run Build Command(s): /data/data/com.termux/files/usr/bin/ninja -v cmTC_8efee]
+        ignore line: [[1/2] /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/clang++ --target=aarch64-none-linux-android26 --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat  -std=c++17  -fPIE   -v -MD -MT CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -c /data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang version 21.1.8]
+        ignore line: [Target: aarch64-none-linux-android26]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /data/data/com.termux/files/usr/bin]
+        ignore line: [clang++: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android' [-Wunused-command-line-argument]]
+        ignore line: [clang++: warning: argument unused during compilation: '-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64' [-Wunused-command-line-argument]]
+        ignore line: [ (in-process)]
+        ignore line: [ "/data/data/com.termux/files/usr/bin/clang++" -cc1 -triple aarch64-none-linux-android26 -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -enable-tlsdesc -target-cpu generic -target-feature +v8a -target-feature +fp-armv8 -target-feature +neon -target-feature +fix-cortex-a53-835769 -target-abi aapcs -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -fdebug-compilation-dir=/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-wKDAQ3 -v -ffunction-sections -fdata-sections -fcoverage-compilation-dir=/data/data/com.termux/files/home/projects/Splendor-Assist/app/.cxx/Debug/6h2y4e6h/arm64-v8a/CMakeFiles/CMakeScratch/TryCompile-wKDAQ3 -resource-dir /data/data/com.termux/files/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -internal-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/c++/v1 -internal-isystem /data/data/com.termux/files/usr/lib/clang/21/include -internal-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/include -internal-externc-isystem /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include -Wformat -std=c++17 -fdeprecated-macro -ferror-limit 19 -femulated-tls -stack-protector 2 -fno-signed-char -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -target-feature +outline-atomics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -x c++ /data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang -cc1 version 21.1.8 based upon LLVM 21.1.8 default target aarch64-unknown-linux-android30]
+        ignore line: [ignoring nonexistent directory "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/c++/v1]
+        ignore line: [ /data/data/com.termux/files/usr/lib/clang/21/include]
+        ignore line: [ /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/local/include]
+        ignore line: [ /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include/aarch64-linux-android]
+        ignore line: [ /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/include]
+        ignore line: [End of search list.]
+        ignore line: [[2/2] : && /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/clang++ --target=aarch64-none-linux-android26 --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat  -std=c++17 -Wl --build-id=sha1 -Wl --no-rosegment -Wl --fatal-warnings -Wl --gc-sections -Wl --no-undefined -Qunused-arguments -Wl --gc-sections  -v CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_8efee   && :]
+        ignore line: [clang version 21.1.8]
+        ignore line: [Target: aarch64-none-linux-android26]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /data/data/com.termux/files/usr/bin]
+        link line: [ "/data/data/com.termux/files/usr/bin/ld.lld" --sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot -EL --fix-cortex-a53-843419 -z now -z relro -z max-page-size=16384 --no-rosegment --hash-style=gnu -rpath=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib --eh-frame-hdr -m aarch64linux -pie -dynamic-linker /system/bin/linker64 -o cmTC_8efee /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64 -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26 -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android -L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib -L/system/lib64 --build-id=sha1 --no-rosegment --fatal-warnings --gc-sections --no-undefined --gc-sections CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o -lc++_shared /data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a -l:libunwind.a -ldl -lm -lc /data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a -l:libunwind.a -ldl /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o]
+          arg [/data/data/com.termux/files/usr/bin/ld.lld] ==> ignore
+          arg [--sysroot=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot] ==> ignore
+          arg [-EL] ==> ignore
+          arg [--fix-cortex-a53-843419] ==> ignore
+          arg [-znow] ==> ignore
+          arg [-zrelro] ==> ignore
+          arg [-zmax-page-size=16384] ==> ignore
+          arg [--no-rosegment] ==> ignore
+          arg [--hash-style=gnu] ==> ignore
+          arg [-rpath=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [aarch64linux] ==> ignore
+          arg [-pie] ==> ignore
+          arg [-dynamic-linker] ==> ignore
+          arg [/system/bin/linker64] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_8efee] ==> ignore
+          arg [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o] ==> obj [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o]
+          arg [-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android] ==> dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android]
+          arg [-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64] ==> dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64]
+          arg [-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26] ==> dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26]
+          arg [-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android] ==> dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android]
+          arg [-L/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib] ==> dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib]
+          arg [-L/system/lib64] ==> dir [/system/lib64]
+          arg [--build-id=sha1] ==> ignore
+          arg [--no-rosegment] ==> ignore
+          arg [--fatal-warnings] ==> ignore
+          arg [--gc-sections] ==> ignore
+          arg [--no-undefined] ==> ignore
+          arg [--gc-sections] ==> ignore
+          arg [CMakeFiles/cmTC_8efee.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [-lc++_shared] ==> lib [c++_shared]
+          arg [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a] ==> lib [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a]
+          arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+          arg [-ldl] ==> lib [dl]
+          arg [-lm] ==> lib [m]
+          arg [-lc] ==> lib [c]
+          arg [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a] ==> lib [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a]
+          arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+          arg [-ldl] ==> lib [dl]
+          arg [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o] ==> obj [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o]
+        linker tool for 'CXX': /data/data/com.termux/files/usr/bin/ld.lld
+        remove lib [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a]
+        remove lib [/data/data/com.termux/files/usr/lib/clang/21/lib/linux/libclang_rt.builtins-aarch64-android.a]
+        collapse obj [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o]
+        collapse obj [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o]
+        collapse library dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android]
+        collapse library dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64]
+        collapse library dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android/26] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26]
+        collapse library dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib/aarch64-linux-android] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android]
+        collapse library dir [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot/usr/lib] ==> [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib]
+        collapse library dir [/system/lib64] ==> [/system/lib64]
+        implicit libs: [c++_shared;-l:libunwind.a;dl;m;c;-l:libunwind.a;dl]
+        implicit objs: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26/crtbegin_dynamic.o;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26/crtend_android.o]
+        implicit dirs: [/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/lib/linux/aarch64;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android;/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib;/system/lib64]
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/Internal/CMakeDetermineLinkerId.cmake:38 (message)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:299 (cmake_determine_linker_id)"
+      - "/data/data/com.termux/files/usr/share/cmake-4.3/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Running the CXX compiler's linker: "/data/data/com.termux/files/usr/bin/ld.lld" "-v"
+      LLD 21.1.8 (compatible with GNU linkers)
+  -
+    kind: "find-v1"
+    backtrace:
+      - "CMakeLists.txt:7 (find_library)"
+    mode: "library"
+    variable: "log-lib"
+    description: "Path to a library."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "log"
+    candidate_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/lib64/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/local/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/"
+    searched_directories:
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/lib64/"
+      - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+    found: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/sysroot/usr/lib/aarch64-linux-android/26/liblog.so"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/"
+      ENV{PATH}:
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk/bin"
+        - "/data/data/com.termux/files/home/bin"
+        - "/data/data/com.termux/files/usr/bin"
+        - "/product/bin"
+        - "/apex/com.android.runtime/bin"
+        - "/apex/com.android.art/bin"
+        - "/apex/com.android.virt/bin"
+        - "/system_ext/bin"
+        - "/system/bin"
+        - "/system/xbin"
+        - "/odm/bin"
+        - "/vendor/bin"
+        - "/vendor/xbin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/lib/aarch64-linux-android/26"
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/data/data/com.termux/files/usr"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+      CMAKE_SYSTEM_LIBRARY_PATH:
+        - "/usr/lib/X11"
+      CMAKE_SYSROOT: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt//sysroot"
+      CMAKE_FIND_ROOT_PATH: "/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393"
+...
