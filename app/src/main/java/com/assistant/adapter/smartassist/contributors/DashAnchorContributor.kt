@@ -10,12 +10,7 @@ object DashAnchorContributor : GameplayContributor {
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
 
-        // When a real passing lane exists, aim the anchor toward it.
-        // When there is no lane (high pressure, closed space) the anchor
-        // must still fire — use goal position when detected, otherwise
-        // project forward 200px from ball. Without this fallback the
-        // contributor silently returned null every high-pressure frame
-        // (directionalX == dashX → velocity 0 → strength 0 → null).
+        // Resolve high-speed target vector with fallback guarantees
         val directionalX = when {
             frame.passTargetX > 0f -> frame.passTargetX
             frame.goalDetected && frame.goalRightX > 0f ->
