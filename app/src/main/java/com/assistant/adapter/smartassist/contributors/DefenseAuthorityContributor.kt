@@ -51,17 +51,21 @@ object DefenseAuthorityContributor : GameplayContributor {
         val targetY: Float
 
         if (r.containment > r.interception) {
-            // Containment positioning: position goal-side to block dangerous passing/shooting angles
+            // Containment positioning: vector goal-side using defender coordinates when present
             val goalX = 0f
             val goalY = 540f
-            val dx = (goalX - ballX).toDouble()
-            val dy = (goalY - ballY).toDouble()
+            val refX = defX ?: ballX
+            val refY = defY ?: ballY
+
+            val dx = (goalX - refX).toDouble()
+            val dy = (goalY - refY).toDouble()
             val angle = atan2(dy, dx)
             val containOffset = 60f + ((1f - (distance / 1200f)) * 40f)
-            targetX = (ballX + cos(angle).toFloat() * containOffset).coerceIn(0f, 1650f)
-            targetY = (ballY + sin(angle).toFloat() * containOffset).coerceIn(0f, 1080f)
+
+            targetX = (refX + cos(angle).toFloat() * containOffset).coerceIn(0f, 1650f)
+            targetY = (refY + sin(angle).toFloat() * containOffset).coerceIn(0f, 1080f)
         } else {
-            // Direct press/interception positioning
+            // Direct press / interception targeting
             targetX = ballX
             targetY = ballY
         }
