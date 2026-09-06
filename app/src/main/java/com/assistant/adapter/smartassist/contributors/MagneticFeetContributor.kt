@@ -5,6 +5,7 @@ import com.assistant.runtime.EngineCapability
 import com.assistant.runtime.EngineContribution
 import com.assistant.runtime.RuntimeFrame
 import com.assistant.runtime.ActionClass
+import com.assistant.adapter.smartassist.MagneticFeetEngine
 
 /**
  * Contributor for Magnetic Feet Data Resolution.
@@ -48,18 +49,48 @@ object MagneticFeetContributor : GameplayContributor {
         val playerState = getActivePlayerState()
         
         if (ballState.isValid && playerState.isValid) {
+            val pressure = (frame.defenderDensity * 100f)
+                .toInt()
+                .coerceIn(0, 100)
+
+            val strength = (frame.bestLaneConfidence * 100f)
+                .toInt()
+                .coerceIn(0, 100)
+
+            val result = MagneticFeetEngine.stabilize(
+                pressure,
+                strength
+            )
+
             val deltaX = ballState.x - playerState.x
             val deltaY = ballState.y - playerState.y
-            val distance = kotlin.math.sqrt((deltaX * deltaX) + (deltaY * deltaY).toDouble()).toFloat()
-            
+            val distance = kotlin.math.sqrt(
+                (deltaX * deltaX) + (deltaY * deltaY).toDouble()
+            ).toFloat()
+
             if (distance <= magneticRadius) {
+                val possessionWeight = 1.5f
+                val trustWeight = 1.2f
+                val cap = 1.2f
+                val amplification = 1.2f
+                val fluidMultiplier =
+                    (possessionWeight + trustWeight) / 2.0f
+
+                val rawAuthority =
+                    (result.touchRetention / 5f) * amplification
+
+                val authority =
+                    (rawAuthority * fluidMultiplier)
+                        .coerceIn(0.9f, cap)
+
                 return EngineContribution(
                     engine = engineName,
                     actionClass = ActionClass.MOVE,
                     targetX = ballState.x,
                     targetY = ballState.y,
-                    authority = 1.0f,
-                    confidence = 1.0f - (distance / magneticRadius).coerceIn(0f, 1f),
+                    authority = authority,
+                    confidence = 1.0f -
+                        (distance / magneticRadius).coerceIn(0f, 1f),
                     durationHintMs = 16L
                 )
             }
