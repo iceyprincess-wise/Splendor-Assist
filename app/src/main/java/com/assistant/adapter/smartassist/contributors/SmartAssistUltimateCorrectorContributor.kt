@@ -2,6 +2,7 @@ package com.assistant.adapter.smartassist.contributors
 
 import com.assistant.adapter.smartassist.SceneTracker
 import com.assistant.adapter.smartassist.SmartAssistUltimateCorrectorEngine
+import com.assistant.adapter.smartassist.TrackedPlayer
 import com.assistant.runtime.ActionClass
 import com.assistant.runtime.EngineCapability
 import com.assistant.runtime.EngineContribution
@@ -12,12 +13,8 @@ import kotlin.math.hypot
 /**
  * SmartAssistUltimateCorrectorContributor
  *
- * Always-on SA drift correction for every action type.
- * Decision tree per frame:
- *   hasBall + goalDetected + within 720px  -> SHOT  correction (open post)
- *   hasBall + viable pass lane             -> PASS  correction (run prediction + anti-drift)
- *   hasBall + viable cross lane            -> CROSS correction (receiver run lead)
- *   !hasBall + goalkeeper visible          -> KEEPER correction (ball-path intercept)
+ * Zero-allocation always-on contributor for correcting eFootball Smart Assist drift.
+ * Eliminates lambda/filter object creation inside 60 FPS hot paths.
  */
 object SmartAssistUltimateCorrectorContributor : GameplayContributor {
     override val engineName = "SAUltimateCorrector"
@@ -30,9 +27,9 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted) return null
-        val scene = try { SceneTracker.current() } catch (_: Throwable) { null }
+        val scene = SceneTracker.current()
 
-        // SHOT
+        // SHOT Evaluation
         if (frame.hasBall && frame.goalDetected) {
             val goalCX = (frame.goalLeftX + frame.goalRightX) * 0.5f
             val goalCY = (frame.goalTopY + frame.goalBottomY) * 0.5f
@@ -40,6 +37,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                 (frame.ballX - goalCX).toDouble(),
                 (frame.ballY - goalCY).toDouble()
             ).toFloat()
+            
             if (dist <= 720f) {
                 val c = SmartAssistUltimateCorrectorEngine.correctShot(
                     frame.ballX, frame.ballY,
@@ -48,6 +46,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                     frame.goalkeeperX, frame.goalkeeperVisible,
                     frame.goalDetected
                 ) ?: return null
+
                 return EngineContribution(
                     engine = engineName,
                     actionClass = ActionClass.SHOT,
@@ -60,25 +59,34 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
             }
         }
 
-        // PASS
+        // PASS Evaluation
         if (frame.hasBall && frame.viableLaneCount > 0 && frame.passTargetX > 0f) {
-            val players = scene?.trackedPlayers.orEmpty()
-            val receiver = players
-                .filter { it.isUserTeam && !it.isGoalkeeper }
-                .minByOrNull {
-                    hypot(
-                        (it.x - frame.passTargetX).toDouble(),
-                        (it.y - frame.passTargetY).toDouble()
-                    )
+            val players = scene?.trackedPlayers
+            var receiver: TrackedPlayer? = null
+            var opponent: TrackedPlayer? = null
+            var minReceiverDist = Float.MAX_VALUE
+            var minOpponentDist = Float.MAX_VALUE
+
+            if (players != null) {
+                val size = players.size
+                for (i in 0 until size) {
+                    val p = players[i]
+                    val d = hypot((p.x - frame.passTargetX).toDouble(), (p.y - frame.passTargetY).toDouble()).toFloat()
+                    
+                    if (p.isUserTeam && !p.isGoalkeeper) {
+                        if (d < minReceiverDist) {
+                            minReceiverDist = d
+                            receiver = p
+                        }
+                    } else if (!p.isUserTeam) {
+                        if (d < minOpponentDist) {
+                            minOpponentDist = d
+                            opponent = p
+                        }
+                    }
                 }
-            val opponent = players
-                .filter { !it.isUserTeam }
-                .minByOrNull {
-                    hypot(
-                        (it.x - frame.passTargetX).toDouble(),
-                        (it.y - frame.passTargetY).toDouble()
-                    )
-                }
+            }
+
             val c = SmartAssistUltimateCorrectorEngine.correctPass(
                 frame.ballX, frame.ballY,
                 receiver?.x ?: frame.passTargetX,
@@ -89,8 +97,8 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                 opponent?.y ?: frame.passTargetY,
                 frame.defenderDensity
             )
-            val authority = (c.correctionStrength * frame.bestLaneConfidence
-                .coerceAtLeast(0.4f)).coerceIn(0f, 1f)
+            
+            val authority = (c.correctionStrength * frame.bestLaneConfidence.coerceAtLeast(0.4f)).coerceIn(0f, 1f)
             return EngineContribution(
                 engine = engineName,
                 actionClass = ActionClass.PASS,
@@ -102,21 +110,29 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
             )
         }
 
-        // CROSS
+        // CROSS Evaluation
         if (frame.hasBall && frame.viableLaneCount > 0 && frame.bestLaneConfidence > 0f) {
-            val players = scene?.trackedPlayers.orEmpty()
-            val receiver = players
-                .filter { it.isUserTeam && !it.isGoalkeeper }
-                .minByOrNull {
-                    hypot(
-                        (it.x - frame.passTargetX).toDouble(),
-                        (it.y - frame.passTargetY).toDouble()
-                    )
+            val players = scene?.trackedPlayers
+            var receiver: TrackedPlayer? = null
+            var minReceiverDist = Float.MAX_VALUE
+
+            if (players != null) {
+                val size = players.size
+                for (i in 0 until size) {
+                    val p = players[i]
+                    if (p.isUserTeam && !p.isGoalkeeper) {
+                        val d = hypot((p.x - frame.passTargetX).toDouble(), (p.y - frame.passTargetY).toDouble()).toFloat()
+                        if (d < minReceiverDist) {
+                            minReceiverDist = d
+                            receiver = p
+                        }
+                    }
                 }
-            val goalCX = if (frame.goalDetected)
-                (frame.goalLeftX + frame.goalRightX) * 0.5f else 1650f
-            val goalCY = if (frame.goalDetected)
-                (frame.goalTopY + frame.goalBottomY) * 0.5f else frame.ballY
+            }
+
+            val goalCX = if (frame.goalDetected) (frame.goalLeftX + frame.goalRightX) * 0.5f else 1650f
+            val goalCY = if (frame.goalDetected) (frame.goalTopY + frame.goalBottomY) * 0.5f else frame.ballY
+
             val c = SmartAssistUltimateCorrectorEngine.correctCross(
                 frame.ballX, frame.ballY,
                 receiver?.x ?: frame.passTargetX,
@@ -126,6 +142,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                 goalCX, goalCY,
                 frame.bestLaneConfidence
             ) ?: return null
+
             return EngineContribution(
                 engine = engineName,
                 actionClass = ActionClass.CROSS,
@@ -137,7 +154,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
             )
         }
 
-        // KEEPER
+        // KEEPER Evaluation
         if (!frame.hasBall && frame.goalkeeperVisible) {
             val c = SmartAssistUltimateCorrectorEngine.correctKeeper(
                 frame.ballX, frame.ballY,
