@@ -1,0 +1,1 @@
+/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/cpp/CMakeLists.txt

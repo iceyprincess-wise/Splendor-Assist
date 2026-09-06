@@ -390,9 +390,6 @@ val offsideRiskEstimationResult =
 
 
 
-    val t3 = System.nanoTime()
-    com.assistant.diagnostic.Phase7FrameContext.visRemTimeNs = t3 - t2
-
     Phase3WorldStateStore.update(
         Phase3WorldState(
             closestPlayer = closestPlayer,
