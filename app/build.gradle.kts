@@ -15,7 +15,7 @@ android {
         applicationId = "com.assistant.overlay"
         minSdk = 26
         targetSdk = 34
-        versionCode = 83
+        versionCode = 84
         versionName = "1.0-SECURE-LOCKED"
         
         externalNativeBuild {
@@ -25,7 +25,7 @@ android {
             }
         }
         ndk {
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+            abiFilters += listOf("arm64-v8a")
         }
     }
 
