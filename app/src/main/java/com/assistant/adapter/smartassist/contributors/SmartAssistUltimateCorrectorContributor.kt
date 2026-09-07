@@ -14,7 +14,7 @@ import kotlin.math.hypot
  * SmartAssistUltimateCorrectorContributor
  *
  * Zero-allocation always-on contributor for correcting eFootball Smart Assist drift.
- * Eliminates lambda/filter object creation inside 60 FPS hot paths.
+ * Eliminates redundant null checks and object creations inside 60 FPS hot paths.
  */
 object SmartAssistUltimateCorrectorContributor : GameplayContributor {
     override val engineName = "SAUltimateCorrector"
@@ -67,22 +67,20 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
             var minReceiverDist = Float.MAX_VALUE
             var minOpponentDist = Float.MAX_VALUE
 
-            if (players != null) {
-                val size = players.size
-                for (i in 0 until size) {
-                    val p = players[i]
-                    val d = hypot((p.x - frame.passTargetX).toDouble(), (p.y - frame.passTargetY).toDouble()).toFloat()
-                    
-                    if (p.isUserTeam && !p.isGoalkeeper) {
-                        if (d < minReceiverDist) {
-                            minReceiverDist = d
-                            receiver = p
-                        }
-                    } else if (!p.isUserTeam) {
-                        if (d < minOpponentDist) {
-                            minOpponentDist = d
-                            opponent = p
-                        }
+            val size = players.size
+            for (i in 0 until size) {
+                val p = players[i]
+                val d = hypot((p.x - frame.passTargetX).toDouble(), (p.y - frame.passTargetY).toDouble()).toFloat()
+                
+                if (p.isUserTeam && !p.isGoalkeeper) {
+                    if (d < minReceiverDist) {
+                        minReceiverDist = d
+                        receiver = p
+                    }
+                } else if (!p.isUserTeam) {
+                    if (d < minOpponentDist) {
+                        minOpponentDist = d
+                        opponent = p
                     }
                 }
             }
@@ -116,16 +114,14 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
             var receiver: TrackedPlayer? = null
             var minReceiverDist = Float.MAX_VALUE
 
-            if (players != null) {
-                val size = players.size
-                for (i in 0 until size) {
-                    val p = players[i]
-                    if (p.isUserTeam && !p.isGoalkeeper) {
-                        val d = hypot((p.x - frame.passTargetX).toDouble(), (p.y - frame.passTargetY).toDouble()).toFloat()
-                        if (d < minReceiverDist) {
-                            minReceiverDist = d
-                            receiver = p
-                        }
+            val size = players.size
+            for (i in 0 until size) {
+                val p = players[i]
+                if (p.isUserTeam && !p.isGoalkeeper) {
+                    val d = hypot((p.x - frame.passTargetX).toDouble(), (p.y - frame.passTargetY).toDouble()).toFloat()
+                    if (d < minReceiverDist) {
+                        minReceiverDist = d
+                        receiver = p
                     }
                 }
             }
