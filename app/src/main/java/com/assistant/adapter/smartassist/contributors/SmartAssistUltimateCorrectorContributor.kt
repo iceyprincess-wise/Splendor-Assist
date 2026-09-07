@@ -61,7 +61,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
 
         // PASS Evaluation
         if (frame.hasBall && frame.viableLaneCount > 0 && frame.passTargetX > 0f) {
-            val players = scene?.trackedPlayers
+            val players = scene.trackedPlayers
             var receiver: TrackedPlayer? = null
             var opponent: TrackedPlayer? = null
             var minReceiverDist = Float.MAX_VALUE
@@ -112,7 +112,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
 
         // CROSS Evaluation
         if (frame.hasBall && frame.viableLaneCount > 0 && frame.bestLaneConfidence > 0f) {
-            val players = scene?.trackedPlayers
+            val players = scene.trackedPlayers
             var receiver: TrackedPlayer? = null
             var minReceiverDist = Float.MAX_VALUE
 
