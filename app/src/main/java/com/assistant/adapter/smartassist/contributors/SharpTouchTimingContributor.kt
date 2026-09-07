@@ -59,7 +59,7 @@ object SharpTouchTimingContributor : GameplayContributor {
         val action = when {
             frame.hasBall && frame.goalDetected -> ActionClass.SHOT
             frame.hasBall -> ActionClass.PASS
-            else -> ActionClass.DEFENSE
+            else -> ActionClass.DEFEND
         }
 
         val targetX = if (frame.passTargetX > 0f) frame.passTargetX else frame.ballX

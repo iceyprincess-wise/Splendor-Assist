@@ -14,7 +14,7 @@ enum class RegistrationState { IDLE, REGISTERING, READY, PARTIAL, FAILED }
 object AppContributorRegistration {
 
     const val ALLOWS_REDUCED_FIRST_FRAMES = true
-    const val EXPECTED_CONTRIBUTOR_COUNT = 37
+    const val EXPECTED_CONTRIBUTOR_COUNT = 39
 
     // HIGH: Completeness invariant - explicit set of expected names
     private val EXPECTED_CONTRIBUTOR_NAMES = setOf(
@@ -22,7 +22,8 @@ object AppContributorRegistration {
         "MagneticFeet", "Passing", "Support", "Defense", "Evade", "AttackingVector", "Cross", "Agility", "WingBlock",
         "DashPressure", "InterceptMatrix", "TouchRecovery", "OverloadPlaystyle", "TruePass", "ReceiverEngagement", "ForwardRun",
         "ShotOpportunity", "DefenseAuthority", "ShotAnticipation", "KeeperFeedback", "DashAnchor", "SpeedCompensation",
-        "InstantIntercept", "BuildUpPress", "BallRetentionShield", "TrueShot", "TrueCross", "SAUltimateCorrector"
+        "InstantIntercept", "BuildUpPress", "BallRetentionShield", "TrueShot", "TrueCross", "SAUltimateCorrector",
+        "SharpTouchTiming", "KickingPosture"
     )
 
     private val state = AtomicReference(RegistrationState.IDLE)
@@ -114,7 +115,9 @@ object AppContributorRegistration {
                         com.assistant.adapter.smartassist.contributors.BallRetentionShieldContributor,
                         com.assistant.adapter.smartassist.contributors.TrueShotContributor,
                         com.assistant.adapter.smartassist.contributors.TrueCrossContributor,
-                        com.assistant.adapter.smartassist.contributors.SmartAssistUltimateCorrectorContributor
+                        com.assistant.adapter.smartassist.contributors.SmartAssistUltimateCorrectorContributor,
+                        com.assistant.adapter.smartassist.contributors.SharpTouchTimingContributor,
+                        com.assistant.adapter.smartassist.contributors.KickingPostureContributor
                     )
                     
                     // MEDIUM: Runtime assertion for 37-contributor contract

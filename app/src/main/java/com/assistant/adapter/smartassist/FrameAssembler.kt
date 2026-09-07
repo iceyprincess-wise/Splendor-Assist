@@ -56,6 +56,8 @@ object FrameAssembler {
         val telemetry = try { TelemetryRepository.current() } catch (_: Throwable) { null }
         val ballX = telemetry?.ballX ?: 0f
         val ballY = telemetry?.ballY ?: 0f
+        val ballVx = telemetry?.ballVelocityX ?: 0f
+        val ballVy = telemetry?.ballVelocityY ?: 0f
         val ballTrustNow = VisionTrust.ballTrust()
         val ballSeen = ballTrustNow > 0f && (ballX != 0f || ballY != 0f)
 
@@ -128,6 +130,8 @@ object FrameAssembler {
             hasBall = hasBall,
             ballX = ballX,
             ballY = ballY,
+            ballVelocityX = ballVx,
+            ballVelocityY = ballVy,
             playerCount = players.size,
             opponentCount = opponents,
             laneCount = laneCount,

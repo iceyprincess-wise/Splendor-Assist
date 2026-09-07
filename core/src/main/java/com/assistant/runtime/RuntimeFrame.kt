@@ -24,6 +24,8 @@ data class RuntimeFrame(
     val hasBall: Boolean,
     val ballX: Float,
     val ballY: Float,
+    val ballVelocityX: Float = 0f,
+    val ballVelocityY: Float = 0f,
     val playerCount: Int,
     val opponentCount: Int,
     val laneCount: Int,
