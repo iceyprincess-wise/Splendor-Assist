@@ -1,16 +1,16 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-11 09:37:59 WAT
+Started: 2026-09-11 09:49:20 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
 === HEAD ===
-f76e3d13 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
+94919979 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,app/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt,app/src/main/java/com/assistant/adapter/smartassist/contributors/SpeedCompensationContributor.kt,app/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
 
 === MAIN ===
-f76e3d13 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
+94919979 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,app/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt,app/src/main/java/com/assistant/adapter/smartassist/contributors/SpeedCompensationContributor.kt,app/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
 
 
 ================================================================
@@ -36,23 +36,22 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 103 -> 104
+versionCode: 104 -> 105
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/diagnostic/FilterEngine.kt:35:15 Parameter 'context' is never used
-BUILD SUCCESSFUL in 2m 58s
+BUILD SUCCESSFUL in 3m 15s
 
 ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v104-20260911_094127.apk
--rw-rw----. 1 u0_a262 media_rw 29M Sep 11 09:41 /storage/emulated/0/Download/Splendor-Assist-v104-20260911_094127.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v105-20260911_095310.apk
+-rw-rw----. 1 u0_a262 media_rw 29M Sep 11 09:53 /storage/emulated/0/Download/Splendor-Assist-v105-20260911_095310.apk
 VERSION TRANSACTION: COMMITTED
 
 ================================================================
@@ -62,9 +61,10 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 28811 IDLE     8.5
+ 32241 IDLE     8.5
  17790 STOPPED  (by user or operating system)
  22475 STOPPED  (by user or operating system)
+ 28811 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -85,11 +85,11 @@ GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
 === HEAD ===
-f76e3d13 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
+94919979 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,app/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt,app/src/main/java/com/assistant/adapter/smartassist/contributors/SpeedCompensationContributor.kt,app/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
 
 === MAIN ===
-f76e3d13 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
+94919979 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,app/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt,app/src/main/java/com/assistant/adapter/smartassist/contributors/SpeedCompensationContributor.kt,app/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
 
-Finished: 2026-09-11 09:41:40 WAT
-Report size: 4646 bytes
+Finished: 2026-09-11 09:53:20 WAT
+Report size: 5204 bytes
 ================================================================
