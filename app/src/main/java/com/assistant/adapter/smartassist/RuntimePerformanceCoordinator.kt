@@ -85,24 +85,9 @@ object RuntimePerformanceCoordinator {
 
     
 
-    // PHASE9_EXISTING_ENGINE_INTEGRATION_MARKER
-
     fun synchronizeExistingPerformanceEngines() {
-
-        /*
-         * Existing performance engines are preserved.
-         * Integration remains indirect until concrete module-visible
-         * APIs are audited. This avoids introducing unresolved
-         * cross-module references while keeping the orchestration
-         * entry point stable.
-         */
-
         synchronizeRuntimePipeline()
     }
-
-
-
-// PHASE9_RUNTIME_PERFORMANCE_ORCHESTRATION_MARKER
 
     fun synchronizeRuntimePipeline() {
 

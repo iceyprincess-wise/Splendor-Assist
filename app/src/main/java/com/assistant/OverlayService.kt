@@ -733,7 +733,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         trajectoryRunnable = object : Runnable {
             override fun run() {
                 if (!::overlayView.isInitialized) return
-                val panicActive = SmartAssistRepository.panicActive() && System.currentTimeMillis() - 0L <= 3000L
+                val panicActive = SmartAssistRepository.panicActive()
                 if (!panicActive && SmartAssistRepository.panicActive()) {
                     // PHASE10_PANIC_PERSISTENCE_KEEP_STATE
                 }

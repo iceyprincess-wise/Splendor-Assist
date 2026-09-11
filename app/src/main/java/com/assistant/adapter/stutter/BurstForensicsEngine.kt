@@ -55,11 +55,13 @@ object BurstForensicsEngine {
         
         // MASSIVE POWER: Performance Bee Intervention
         val aggro = com.assistant.diagnostic.AdapterSignalBus.filterAggression
-        if (next == "SEIZURE" && aggro <= 1.5f) {
+        if (next == "SEIZURE") {
             try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(2) } catch (_: Throwable) {}
-            RuntimeLogger.log("STUTTER SEIZURE: Execution brake applied to protect SmartAssist", "STUTTER_BEE")
-        } else if (next == "SEIZURE" && aggro > 1.5f) {
-            RuntimeLogger.log("STUTTER SEIZURE: Suppressed by Filter Extremist Push (${"%.2f".format(aggro)}x)", "FILTER_OVERRIDE")
+            if (aggro > 1.5f) {
+                RuntimeLogger.log("STUTTER SEIZURE: Execution brake applied despite Filter Extremist Push (${"%.2f".format(aggro)}x)", "STUTTER_BEE")
+            } else {
+                RuntimeLogger.log("STUTTER SEIZURE: Execution brake applied to protect SmartAssist", "STUTTER_BEE")
+            }
         } else if (next == "CALM") {
             try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(0) } catch (_: Throwable) {}
         }

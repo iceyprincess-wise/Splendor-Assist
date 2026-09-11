@@ -504,10 +504,10 @@ object LagVerdictEngine {
                         // MASSIVE POWER: Performance Bee Intervention
                         val aggro = com.assistant.diagnostic.AdapterSignalBus.filterAggression
                         if (candidate == "CHOKING") {
+                            try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(2) } catch (_: Throwable) {}
                             if (aggro > 1.5f) {
-                                RuntimeLogger.log("LAG CHOKING: Suppressed by Filter Extremist Push (${"%.2f".format(aggro)}x)", "FILTER_OVERRIDE")
+                                RuntimeLogger.log("LAG CHOKING: Execution brake applied despite Filter Extremist Push (${"%.2f".format(aggro)}x)", "LAG_BEE")
                             } else {
-                                try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(2) } catch (_: Throwable) {}
                                 RuntimeLogger.log("LAG CHOKING: Execution brake applied to protect SmartAssist", "LAG_BEE")
                             }
                         } else if (candidate == "SMOOTH") {
@@ -656,12 +656,10 @@ object LoadShedGovernor {
                     val burst = PerformanceTelemetryRegistry.currentStutterState()
                     val bootAge=System.currentTimeMillis()-startTimeMs
                     if(startTimeMs>0L&&bootAge<10_000L){try{Thread.sleep(POLL_MS.coerceAtLeast(1L))}catch(_:Throwable){return@Thread};continue}
-                    val aggro = com.assistant.diagnostic.AdapterSignalBus.filterAggression
-                    val want = if (aggro > 1.5f) {
-                        "NONE" // EXTREMIST OVERRIDE: Prevent load shedding to force max execution
-                    } else if (burst == "SEIZURE") "HEAVY" else when (LagVerdictEngine.verdict) {
-                        "CHOKING" -> "HEAVY"
-                        "JITTERY" -> "LIGHT"
+                    val want = when {
+                        burst == "SEIZURE" -> "HEAVY"
+                        LagVerdictEngine.verdict == "CHOKING" -> "HEAVY"
+                        LagVerdictEngine.verdict == "JITTERY" -> "LIGHT"
                         else -> "NONE"
                     }
                     if (want == candidate) streak++ else { candidate = want; streak = 1 }

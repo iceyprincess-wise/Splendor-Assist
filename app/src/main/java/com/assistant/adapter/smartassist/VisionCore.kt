@@ -448,22 +448,5 @@ return state
 }
 
 
-/* ============================================================
- RuntimePerformanceCoordinator.synchronizeExistingPerformanceEngines()
-        RuntimePerformanceCoordinator.synchronizeRuntimePipeline()
 
- PHASE9_RUNTIME_ACTIVATION_MARKER
-
- Verified activation target.
-
- VisionConfiguration
- TrackingConfiguration
- Runtime tuning
- Vision debug overlay
-
- Existing implementation preserved.
- Activation wiring to be completed without
- replacing existing architecture.
-
-============================================================ */
 
