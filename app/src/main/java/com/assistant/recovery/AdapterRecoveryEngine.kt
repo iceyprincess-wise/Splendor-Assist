@@ -32,53 +32,16 @@ object AdapterRecoveryEngine {
     private const val COOLDOWN_MS =
         120000L
 
-    private val adapterMap =
+        private val adapterMap =
         mapOf(
-
-            "adapter_net" to
-                "com.assistant.adapter.net.NetAdapterService",
-
-            "adapter_input" to
-                "com.assistant.adapter.input.InputAdapterService",
-
-            "adapter_lmk" to
-                "com.assistant.adapter.lmk.LmkAdapterService",
-
-            "adapter_sync" to
-                "com.assistant.adapter.sync.SyncAdapterService",
-
-            "adapter_ping" to
-                "com.assistant.adapter.ping.PingAdapterService",
-
-            "adapter_stutter" to
-                "com.assistant.adapter.stutter.StutterAdapterService",
-
-            "adapter_lag" to
-                "com.assistant.adapter.lag.LagAdapterService",
-
-            "adapter_boot" to
-                "com.assistant.adapter.boot.BootAdapterService",
+            "performance_engine" to
+                "com.assistant.PerformanceEngineService",
 
             "adapter_watchdog" to
                 "com.assistant.adapter.watchdog.WatchdogAdapterService",
 
-            "adapter_memory" to
-                "com.assistant.adapter.memory.MemoryAdapterService",
-
-            "adapter_thermal" to
-                "com.assistant.adapter.thermal.ThermalAdapterService",
-
-            "adapter_battery" to
-                "com.assistant.adapter.battery.BatteryAdapterService",
-
-            "adapter_scheduler" to
-                "com.assistant.adapter.scheduler.SchedulerAdapterService",
-
             "adapter_smartassist" to
-                "com.assistant.adapter.smartassist.SmartAssistAdapterService",
-
-            "adapter_interruption" to
-                "com.assistant.adapter.interruption.InterruptionAdapterService"
+                "com.assistant.adapter.smartassist.SmartAssistAdapterService"
         )
 
     private fun launchAdapter(

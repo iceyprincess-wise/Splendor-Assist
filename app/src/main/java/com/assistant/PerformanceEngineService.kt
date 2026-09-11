@@ -46,7 +46,7 @@ class PerformanceEngineService : Service() {
 
         try { NetProbeEngine.start(this) } catch (_: Throwable) {}
         try { InputLatencyEngine.start() } catch (_: Throwable) {}
-        try { StutterPulseEngine.start(this) } catch (_: Throwable) {}
+        try { StutterPulseEngine.start() } catch (_: Throwable) {}
         
         workerThread = HandlerThread("PerfEngineWorker", Process.THREAD_PRIORITY_URGENT_DISPLAY).apply { start() }
         workerHandler = Handler(workerThread.looper)

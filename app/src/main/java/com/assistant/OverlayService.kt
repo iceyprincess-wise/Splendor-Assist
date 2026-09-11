@@ -147,7 +147,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     @Volatile private var lastFrameProcessedMs = 0L
     private val captureFrameIntervalBase = 33L
     private val captureFrameIntervalMs: Long
-        get() = com.assistant.adapter.memory.MemoryCaptureGateEngine.recommendedIntervalMs()
+        get() = com.assistant.MemoryCaptureGateEngine.recommendedIntervalMs()
 
     @Volatile private var captureFrameCount = 0L
     private val trajectoryHandler = Handler(Looper.getMainLooper())

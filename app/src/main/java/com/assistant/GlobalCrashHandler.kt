@@ -412,17 +412,17 @@ class GlobalCrashHandler(
                 EngineEntry("HybridOmnipotentMatrixEngine","com.assistant.adapter.smartassist.HybridOmnipotentMatrixEngine","ACTIVE","direct intercept injector; 16ms cooldown; bypasses contributor registry"),
                 EngineEntry("AntiCutbackSubEngine","com.assistant.adapter.smartassist.AntiCutbackSubEngine","ACTIVE","anti-cutback defensive sub-engine"),
                 EngineEntry("AdaptiveLoftedThroughEngine","com.assistant.adapter.smartassist.AdaptiveLoftedThroughEngine","ACTIVE","lofted through-ball emergency path"),
-                EngineEntry("CpuGovernorEngine","com.assistant.adapter.lag.CpuGovernorEngine","ACTIVE","A75 core pinned to eFootball; A55 to Splendor"),
-                EngineEntry("ConnectionHealEngine","com.assistant.adapter.net.ConnectionHealEngine","ACTIVE","WiFi rescan+rebind on HOLD; 15s cooldown"),
-                EngineEntry("InputLatencyEngine","com.assistant.adapter.input.InputLatencyEngine","ACTIVE","main-thread dispatch latency; 6s boot suppress"),
-                EngineEntry("InputPriorityEngine","com.assistant.adapter.input.InputPriorityEngine","ACTIVE","URGENT_DISPLAY priority; re-applies every 30s"),
-                EngineEntry("TouchQualityEngine","com.assistant.adapter.input.TouchQualityEngine","ACTIVE","OOM adj + IRQ stall monitor"),
-                EngineEntry("MemoryPressureBusEngine","com.assistant.adapter.memory.MemoryPressureBusEngine","ACTIVE","memory tier → bus publish"),
-                EngineEntry("StutterPulseEngine","com.assistant.adapter.stutter.StutterPulseEngine","ACTIVE","burst radar; BURST_MULT=4 for 30fps eFootball on 90Hz panel"),
-                EngineEntry("BurstForensicsEngine","com.assistant.adapter.stutter.BurstForensicsEngine","ACTIVE","burst classifier; now correctly publishes to AdapterSignalBus"),
-                EngineEntry("LagVerdictEngine","com.assistant.adapter.lag.LagVerdictEngine","ACTIVE","SMOOTH/JITTERY/CHOKING verdict; CHOKE_STALLS=18"),
-                EngineEntry("LoadShedGovernor","com.assistant.adapter.lag.LoadShedGovernor","ACTIVE","load shed; 10s boot grace; ARM_POLLS=4"),
-                EngineEntry("FramePacingEngine","com.assistant.adapter.lag.FramePacingEngine","ACTIVE","vsync bucket mixture analysis; real stall detection"),
+                EngineEntry("CpuGovernorEngine","com.assistant.CpuGovernorEngine","ACTIVE","A75 core pinned to eFootball; A55 to Splendor"),
+                EngineEntry("ConnectionHealEngine","com.assistant.ConnectionHealEngine","ACTIVE","WiFi rescan+rebind on HOLD; 15s cooldown"),
+                EngineEntry("InputLatencyEngine","com.assistant.InputLatencyEngine","ACTIVE","main-thread dispatch latency; 6s boot suppress"),
+                EngineEntry("InputPriorityEngine","com.assistant.InputPriorityEngine","ACTIVE","URGENT_DISPLAY priority; re-applies every 30s"),
+                EngineEntry("TouchQualityEngine","com.assistant.TouchQualityEngine","ACTIVE","OOM adj + IRQ stall monitor"),
+                EngineEntry("MemoryPressureBusEngine","com.assistant.MemoryPressureBusEngine","ACTIVE","memory tier → bus publish"),
+                EngineEntry("StutterPulseEngine","com.assistant.StutterPulseEngine","ACTIVE","burst radar; BURST_MULT=4 for 30fps eFootball on 90Hz panel"),
+                EngineEntry("BurstForensicsEngine","com.assistant.BurstForensicsEngine","ACTIVE","burst classifier; now correctly publishes to AdapterSignalBus"),
+                EngineEntry("LagVerdictEngine","com.assistant.LagVerdictEngine","ACTIVE","SMOOTH/JITTERY/CHOKING verdict; CHOKE_STALLS=18"),
+                EngineEntry("LoadShedGovernor","com.assistant.LoadShedGovernor","ACTIVE","load shed; 10s boot grace; ARM_POLLS=4"),
+                EngineEntry("FramePacingEngine","com.assistant.FramePacingEngine","ACTIVE","vsync bucket mixture analysis; real stall detection"),
                 EngineEntry("GridRecentsInterceptor","com.assistant.overlay.interceptor.GridRecentsInterceptor","STATIC","REMOVED Phase3 — user confirmed not needed; empty stub"),
                 EngineEntry("SpeedCompensationEngine","com.assistant.adapter.smartassist.SpeedCompensationEngine","ACTIVE","speed compensation math; called by SpeedCompensationContributor"),
                 EngineEntry("AutoEvadeEngine","com.assistant.adapter.smartassist.AutoEvadeEngine","ACTIVE","auto-evade evasion path")
@@ -457,7 +457,7 @@ class GlobalCrashHandler(
 
             out.appendLine("═══ LOAD SHED GOVERNOR ═══")
             try {
-                val lsg = Class.forName("com.assistant.adapter.lag.LoadShedGovernor")
+                val lsg = Class.forName("com.assistant.LoadShedGovernor")
                 val level = lsg.getField("level").get(null) as? String ?: "UNKNOWN"
                 out.appendLine("  current level     : $level")
                 out.appendLine("  NONE=full engines  LIGHT=minor shed  HEAVY=major shed (kills most gameplay compute)")

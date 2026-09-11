@@ -70,9 +70,9 @@ import kotlin.math.min
 import kotlin.math.sin
 import kotlin.random.Random
 
-========
+/* ========
 LagAdapterService
-========
+======== */
 class LagAdapterService : Service() {
 
     companion object {
@@ -944,13 +944,13 @@ object NetJitterEngine {
     }
     fun stop() { running = false }
 }
-======
+/* ======
 LagAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 BurstForensicsEngine
-========
+======== */
 // V3 ADMIN-WIRED - every classification line answers the admin store live
 
 /**
@@ -1051,13 +1051,13 @@ object BurstForensicsEngine {
 
     fun stopDecay() { decayRunning = false }
 }
-======
+/* ======
 BurstForensicsEngine Anchor
-======
+====== */
 
-========
+/* ========
 PanelWatchEngine
-========
+======== */
 // V3 ADMIN-WIRED - NEW ENGINE: closes the adaptive-panel loophole
 
 /**
@@ -1120,13 +1120,13 @@ object PanelWatchEngine {
         listener = null
     }
 }
-======
+/* ======
 PanelWatchEngine Anchor
-======
+====== */
 
-========
+/* ========
 StutterAdapterService
-========
+======== */
 // V3 ADMIN-WIRED
 
 /**
@@ -1194,13 +1194,13 @@ class StutterAdapterService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = messenger.binder
 }
-======
+/* ======
 StutterAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 StutterPulseEngine
-========
+======== */
 // V3 ADMIN-WIRED - every knob answers the admin store live, publishes for the Detector
 
 /**
@@ -1312,13 +1312,13 @@ object StutterPulseEngine {
         }
     }
 }
-======
+/* ======
 StutterPulseEngine Anchor
-======
+====== */
 
-========
+/* ========
 PingAdapterService
-========
+======== */
 class PingAdapterService : Service() {
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
     private val heartbeatHandler = Handler(Looper.getMainLooper())
@@ -1443,13 +1443,13 @@ class PingAdapterService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = messenger.binder
 }
-======
+/* ======
 PingAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 ActionWindowEngine
-========
+======== */
 // V3 INSTANT-REFLEX
 
 /**
@@ -1516,13 +1516,13 @@ object ActionWindowEngine {
         return verdict + "(" + held + "s)"
     }
 }
-======
+/* ======
 ActionWindowEngine Anchor
-======
+====== */
 
-========
+/* ========
 CarrierProfileEngine
-========
+======== */
 data class CarrierProfile(
     val name: String,
     val expectedRttMs: Int,
@@ -1589,13 +1589,13 @@ object CarrierProfileEngine {
 
     fun useWifiProfile() { current = WIFI }
 }
-======
+/* ======
 CarrierProfileEngine Anchor
-======
+====== */
 
-========
+/* ========
 CongestionSentinelEngine
-========
+======== */
 // V3 INSTANT-REFLEX
 
 /**
@@ -1650,13 +1650,13 @@ object CongestionSentinelEngine {
 
     fun stop() { running = false }
 }
-======
+/* ======
 CongestionSentinelEngine Anchor
-======
+====== */
 
-========
+/* ========
 ConnectionHealEngine
-========
+======== */
 /**
  * ConnectionHealEngine — Active network healer. Never accept a bad connection.
  * When HOLD is detected: WiFi rescan + rebind to best available network.
@@ -1721,13 +1721,13 @@ object ConnectionHealEngine {
         } catch (_: Throwable) {}
     }
 }
-======
+/* ======
 ConnectionHealEngine Anchor
-======
+====== */
 
-========
+/* ========
 DnsWarmupEngine
-========
+======== */
 // V3 INSTANT-REFLEX
 
 /**
@@ -1775,13 +1775,13 @@ object DnsWarmupEngine {
 
     fun stop() { running = false; warmNow() }
 }
-======
+/* ======
 DnsWarmupEngine Anchor
-======
+====== */
 
-========
+/* ========
 NetAdapterService
-========
+======== */
 class NetAdapterService : Service() {
     private val heartbeatHandler = Handler(Looper.getMainLooper())
 
@@ -1857,13 +1857,13 @@ class NetAdapterService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = messenger.binder
 }
-======
+/* ======
 NetAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 NetProbeEngine
-========
+======== */
 // V3 INSTANT-REFLEX
 
 /**
@@ -1979,13 +1979,13 @@ object NetProbeEngine {
         "% carrier=" + CarrierProfileEngine.current.name +
         " probes=" + probes + " fail=" + failures
 }
-======
+/* ======
 NetProbeEngine Anchor
-======
+====== */
 
-========
+/* ========
 NetworkStateEngine
-========
+======== */
 // V3 INSTANT-REFLEX
 
 /**
@@ -2065,13 +2065,13 @@ object NetworkStateEngine {
         callback = null
     }
 }
-======
+/* ======
 NetworkStateEngine Anchor
-======
+====== */
 
-========
+/* ========
 PacketLossProbeEngine
-========
+======== */
 // V3 INSTANT-REFLEX
 
 /**
@@ -2159,13 +2159,13 @@ object PacketLossProbeEngine {
         return b.toByteArray()
     }
 }
-======
+/* ======
 PacketLossProbeEngine Anchor
-======
+====== */
 
-========
+/* ========
 RadioKeepAliveEngine
-========
+======== */
 // V3 INSTANT-REFLEX
 
 /**
@@ -2207,13 +2207,13 @@ object RadioKeepAliveEngine {
 
     fun stop() { running = false }
 }
-======
+/* ======
 RadioKeepAliveEngine Anchor
-======
+====== */
 
-========
+/* ========
 SpikeBurstEngine
-========
+======== */
 // V3 INSTANT-REFLEX
 
 /**
@@ -2283,13 +2283,13 @@ object SpikeBurstEngine {
 
     fun stop() { running = false }
 }
-======
+/* ======
 SpikeBurstEngine Anchor
-======
+====== */
 
-========
+/* ========
 GestureTimingFeedbackEngine
-========
+======== */
 /**
  * GestureTimingFeedbackEngine — actual gesture dispatch latency tracker & ELIMINATOR.
  *
@@ -2402,13 +2402,13 @@ object GestureTimingFeedbackEngine {
         lastDispatchMs = 0L; pendingSubmitMs.set(-1L); pendingSeq.set(-1L)
     }
 }
-======
+/* ======
 GestureTimingFeedbackEngine Anchor
-======
+====== */
 
-========
+/* ========
 InputAdapterService
-========
+======== */
 class InputAdapterService : Service() {
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
     private val heartbeatHandler = Handler(Looper.getMainLooper())
@@ -2479,13 +2479,13 @@ class InputAdapterService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = messenger.binder
 }
-======
+/* ======
 InputAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 InputLatencyEngine
-========
+======== */
 object InputLatencyEngine {
 
     @Volatile private var running = false
@@ -2567,13 +2567,13 @@ object InputLatencyEngine {
         }
     }
 }
-======
+/* ======
 InputLatencyEngine Anchor
-======
+====== */
 
-========
+/* ========
 InputPriorityEngine
-========
+======== */
 /**
  * InputPriorityEngine — HARDWORKING BOOSTER & ELIMINATOR.
  *
@@ -2638,13 +2638,13 @@ object InputPriorityEngine {
         }
     }
 }
-======
+/* ======
 InputPriorityEngine Anchor
-======
+====== */
 
-========
+/* ========
 InputThermalEliminatorEngine
-========
+======== */
 /**
  * InputThermalEliminatorEngine — HARDWORKING ELIMINATOR for Thermal Throttling.
  *
@@ -2713,13 +2713,13 @@ object InputThermalEliminatorEngine {
 
     fun stop() { running = false }
 }
-======
+/* ======
 InputThermalEliminatorEngine Anchor
-======
+====== */
 
-========
+/* ========
 InputVsyncEliminatorEngine
-========
+======== */
 /**
  * InputVsyncEliminatorEngine — HARDWORKING ELIMINATOR for Vsync/Choreographer Starvation.
  *
@@ -2779,13 +2779,13 @@ object InputVsyncEliminatorEngine {
 
     fun stop() { running = false }
 }
-======
+/* ======
 InputVsyncEliminatorEngine Anchor
-======
+====== */
 
-========
+/* ========
 OomAdaptiveThrottleEngine
-========
+======== */
 /**
  * OomAdaptiveThrottleEngine — HARDWORKING ELIMINATOR & BOOSTER for HyperOS OOM/Cgroup throttling.
  *
@@ -2878,13 +2878,13 @@ object OomAdaptiveThrottleEngine {
             .use { it.readLine()?.trim()?.toIntOrNull() ?: 0 }
     } catch (_: Throwable) { 0 }
 }
-======
+/* ======
 OomAdaptiveThrottleEngine Anchor
-======
+====== */
 
-========
+/* ========
 TouchQualityEngine
-========
+======== */
 /**
  * TouchQualityEngine — HARDWORKING ELIMINATOR for Touch IRQ Stalls.
  *
@@ -2985,25 +2985,25 @@ object TouchQualityEngine {
         if (found) total else -1L
     } catch (_: Throwable) { -1L }
 }
-======
+/* ======
 TouchQualityEngine Anchor
-======
+====== */
 
-========
+/* ========
 CompressedSnapshot
-========
+======== */
 data class CompressedSnapshot(
     val componentName: String,
     val timestamp: Long,
     val payload: ByteArray
 )
-======
+/* ======
 CompressedSnapshot Anchor
-======
+====== */
 
-========
+/* ========
 CompressedSnapshotRepository
-========
+======== */
 object CompressedSnapshotRepository {
 
     private val snapshots =
@@ -3024,13 +3024,13 @@ object CompressedSnapshotRepository {
         return snapshots.values.toList()
     }
 }
-======
+/* ======
 CompressedSnapshotRepository Anchor
-======
+====== */
 
-========
+/* ========
 LifecycleSerializationEngine
-========
+======== */
 object LifecycleSerializationEngine {
 
     fun capture(
@@ -3077,13 +3077,13 @@ object LifecycleSerializationEngine {
         )
     }
 }
-======
+/* ======
 LifecycleSerializationEngine Anchor
-======
+====== */
 
-========
+/* ========
 LifecycleSnapshotRepository
-========
+======== */
 object LifecycleSnapshotRepository {
 
     private val snapshots =
@@ -3104,13 +3104,13 @@ object LifecycleSnapshotRepository {
         return snapshots.values.toList()
     }
 }
-======
+/* ======
 LifecycleSnapshotRepository Anchor
-======
+====== */
 
-========
+/* ========
 LmkAdapterService
-========
+======== */
 /**
  * LMK ADAPTER NODE (Task C upgrade).
  *
@@ -3239,13 +3239,13 @@ class LmkAdapterService : Service() {
     override fun onBind(intent: Intent?): IBinder? =
         messenger.binder
 }
-======
+/* ======
 LmkAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 PerformanceHintEngine
-========
+======== */
 object PerformanceHintEngine {
 
     fun reportActualWorkload(
@@ -3275,13 +3275,13 @@ object PerformanceHintEngine {
         session.close()
     }
 }
-======
+/* ======
 PerformanceHintEngine Anchor
-======
+====== */
 
-========
+/* ========
 RehydratedStateSnapshot
-========
+======== */
 data class RehydratedStateSnapshot(
     val componentName: String,
     val lifecycleState: String,
@@ -3289,13 +3289,13 @@ data class RehydratedStateSnapshot(
     val memoryPressure: String,
     val details: String
 )
-======
+/* ======
 RehydratedStateSnapshot Anchor
-======
+====== */
 
-========
+/* ========
 RehydrationEngine
-========
+======== */
 object RehydrationEngine {
 
     fun restore(
@@ -3326,13 +3326,13 @@ object RehydrationEngine {
         )
     }
 }
-======
+/* ======
 RehydrationEngine Anchor
-======
+====== */
 
-========
+/* ========
 RehydrationRepository
-========
+======== */
 object RehydrationRepository {
 
     private val restored =
@@ -3355,13 +3355,13 @@ object RehydrationRepository {
         return restored.values.toList()
     }
 }
-======
+/* ======
 RehydrationRepository Anchor
-======
+====== */
 
-========
+/* ========
 SnapshotCompressionEngine
-========
+======== */
 object SnapshotCompressionEngine {
 
     fun compress(text: String): ByteArray {
@@ -3383,13 +3383,13 @@ object SnapshotCompressionEngine {
             .use { it.readText() }
     }
 }
-======
+/* ======
 SnapshotCompressionEngine Anchor
-======
+====== */
 
-========
+/* ========
 StateSnapshot
-========
+======== */
 data class StateSnapshot(
     val componentName: String,
     val lifecycleState: String,
@@ -3397,25 +3397,25 @@ data class StateSnapshot(
     val memoryPressure: String,
     val details: String
 )
-======
+/* ======
 StateSnapshot Anchor
-======
+====== */
 
-========
+/* ========
 ViewInvalidationEvent
-========
+======== */
 data class ViewInvalidationEvent(
     val source: String,
     val critical: Boolean,
     val timestamp: Long
 )
-======
+/* ======
 ViewInvalidationEvent Anchor
-======
+====== */
 
-========
+/* ========
 ViewInvalidationFilter
-========
+======== */
 object ViewInvalidationFilter {
 
     fun shouldInvalidate(
@@ -3434,13 +3434,13 @@ object ViewInvalidationFilter {
         return critical
     }
 }
-======
+/* ======
 ViewInvalidationFilter Anchor
-======
+====== */
 
-========
+/* ========
 ViewInvalidationRepository
-========
+======== */
 object ViewInvalidationRepository {
 
     private val events =
@@ -3458,13 +3458,13 @@ object ViewInvalidationRepository {
         return events.toList()
     }
 }
-======
+/* ======
 ViewInvalidationRepository Anchor
-======
+====== */
 
-========
+/* ========
 AggressiveMemoryHoarding
-========
+======== */
 /**
  * MEMORY RECLAIM ENGINE (Task C upgrade).
  *
@@ -3582,13 +3582,13 @@ object AggressiveMemoryHoarding {
         "lastReclaimedMb" to lastReclaimedMb
     )
 }
-======
+/* ======
 AggressiveMemoryHoarding Anchor
-======
+====== */
 
-========
+/* ========
 MemoryAdapterService
-========
+======== */
 /**
  * PRESSURE-TIERED MEMORY ADAPTER NODE (Task C upgrade).
  *
@@ -3768,13 +3768,13 @@ class MemoryAdapterService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = messenger.binder
 }
-======
+/* ======
 MemoryAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 MemoryCaptureGateEngine
-========
+======== */
 /**
  * MemoryCaptureGateEngine — memory pressure → capture cadence bridge.
  *
@@ -3855,13 +3855,13 @@ object MemoryCaptureGateEngine {
      */
     fun shouldSkipFullVision(): Boolean = captureThrottle >= 3
 }
-======
+/* ======
 MemoryCaptureGateEngine Anchor
-======
+====== */
 
-========
+/* ========
 MemoryPressureBusEngine
-========
+======== */
 object MemoryPressureBusEngine {
     fun publish(tier: String, availMb: Long) {
         AdapterSignalBus.publishMemory(tier, availMb)
@@ -3869,13 +3869,13 @@ object MemoryPressureBusEngine {
             RuntimeLogger.log("MemoryPressureBus: CRITICAL (avail=${availMb}MB)", "MEMBUSENGINE")
     }
 }
-======
+/* ======
 MemoryPressureBusEngine Anchor
-======
+====== */
 
-========
+/* ========
 ThermalAdapterService
-========
+======== */
 class ThermalAdapterService : Service() {
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
     private val heartbeatHandler = Handler(Looper.getMainLooper())
@@ -3978,13 +3978,13 @@ class ThermalAdapterService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = messenger.binder
 }
-======
+/* ======
 ThermalAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 BatteryAdapterService
-========
+======== */
 class BatteryAdapterService : Service() {
     // Keep messenger on main looper for binding if needed by system
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
@@ -4129,13 +4129,13 @@ class BatteryAdapterService : Service() {
         }
     }
 }
-======
+/* ======
 BatteryAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 SyncAdapterService
-========
+======== */
 /**
  * PHASE3 UPGRADE: SyncAdapterService
  * Previous state: DEAD SHELL — only a heartbeat, zero actual logic.
@@ -4230,13 +4230,13 @@ class SyncAdapterService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = messenger.binder
 }
-======
+/* ======
 SyncAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 BootAdapterService
-========
+======== */
 class BootAdapterService : Service() {
 
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
@@ -4459,13 +4459,13 @@ class BootAdapterService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = messenger.binder
 }
-======
+/* ======
 BootAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 SchedulerAdapterService
-========
+======== */
 class SchedulerAdapterService : Service() {
     private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
     private val heartbeatHandler = Handler(Looper.getMainLooper())
@@ -4565,25 +4565,25 @@ class SchedulerAdapterService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = messenger.binder
 }
-======
+/* ======
 SchedulerAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 CallOverlayRepository
-========
+======== */
 object CallOverlayRepository {
 
     @Volatile
     var incomingCallVisible: Boolean = false
 }
-======
+/* ======
 CallOverlayRepository Anchor
-======
+====== */
 
-========
+/* ========
 InterruptionAdapterService
-========
+======== */
 class InterruptionAdapterService : Service() {
 
     private lateinit var workerThread: HandlerThread
@@ -4840,13 +4840,13 @@ class InterruptionAdapterService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 }
-======
+/* ======
 InterruptionAdapterService Anchor
-======
+====== */
 
-========
+/* ========
 InterruptionCoordinator
-========
+======== */
 object InterruptionCoordinator {
 
     fun evaluate(
@@ -4872,13 +4872,13 @@ object InterruptionCoordinator {
         )
     }
 }
-======
+/* ======
 InterruptionCoordinator Anchor
-======
+====== */
 
-========
+/* ========
 InterruptionRepository
-========
+======== */
 object InterruptionRepository {
 
     @Volatile
@@ -4892,13 +4892,13 @@ object InterruptionRepository {
         return latest
     }
 }
-======
+/* ======
 InterruptionRepository Anchor
-======
+====== */
 
-========
+/* ========
 InterruptionState
-========
+======== */
 data class InterruptionState(
     val batteryLevel: Int,
     val charging: Boolean,
@@ -4906,19 +4906,19 @@ data class InterruptionState(
     val severity: String,
     val timestamp: Long
 )
-======
+/* ======
 InterruptionState Anchor
-======
+====== */
 
-========
+/* ========
 TelephonyStateRepository
-========
+======== */
 object TelephonyStateRepository {
 
     @Volatile
     var activeCall: Boolean = false
 }
-======
+/* ======
 TelephonyStateRepository Anchor
-======
+====== */
 
