@@ -35,21 +35,9 @@ object IgnitionEngine {
         }
 
         val adapters = listOf(
-            "com.assistant.adapter.net.NetAdapterService",
-            "com.assistant.adapter.input.InputAdapterService",
-            "com.assistant.adapter.lmk.LmkAdapterService",
-            "com.assistant.adapter.sync.SyncAdapterService",
-            "com.assistant.adapter.ping.PingAdapterService",
-            "com.assistant.adapter.stutter.StutterAdapterService",
-            "com.assistant.adapter.lag.LagAdapterService",
-            "com.assistant.adapter.boot.BootAdapterService",
-            "com.assistant.adapter.watchdog.WatchdogAdapterService",
-            "com.assistant.adapter.memory.MemoryAdapterService",
-            "com.assistant.adapter.thermal.ThermalAdapterService",
-            "com.assistant.adapter.battery.BatteryAdapterService",
-            "com.assistant.adapter.scheduler.SchedulerAdapterService",
+            "com.assistant.PerformanceEngineService",
             "com.assistant.adapter.smartassist.SmartAssistAdapterService",
-            "com.assistant.adapter.interruption.InterruptionAdapterService"
+            "com.assistant.adapter.watchdog.WatchdogAdapterService"
         )
 
         // UPGRADE: Replaced blocking Thread.sleep loop with non-blocking Handler.postDelayed chain.

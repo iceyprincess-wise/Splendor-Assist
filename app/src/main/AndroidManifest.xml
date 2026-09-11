@@ -75,85 +75,21 @@
                 android:value="Coordinates SmartAssist orchestration and decision telemetry." />
         </service>
 
-        <service
-            android:name="com.assistant.adapter.lmk.LmkAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="System performance optimization and thread priority alignment for active workloads." />
-        </service>
+        
 
-        <service
-            android:name="com.assistant.adapter.net.NetAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Asynchronous data transmission balancing and routing telemetry processing." />
-        </service>
+        
 
-        <service
-            android:name="com.assistant.adapter.input.InputAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Coordinates input hardware event data collection pipelines." />
-        </service>
+        
 
-        <service
-            android:name="com.assistant.adapter.sync.SyncAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Synchronizes frame updates and graphics commands during system rendering events." />
-        </service>
+        
 
-        <service
-            android:name="com.assistant.adapter.ping.PingAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Monitors network latency and connectivity telemetry." />
-        </service>
+        
 
-        <service
-            android:name="com.assistant.adapter.stutter.StutterAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Monitors frame pacing and stutter conditions." />
-        </service>
+        
 
-        <service
-            android:name="com.assistant.adapter.lag.LagAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Monitors application responsiveness and lag conditions." />
-        </service>
+        
 
-        <service
-            android:name="com.assistant.adapter.boot.BootAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Monitors boot lifecycle and startup stabilization telemetry." />
-        </service>
+        
 
         <service
             android:name="com.assistant.adapter.watchdog.WatchdogAdapterService"
@@ -165,54 +101,15 @@
                 android:value="Supervises adapter health, failures and recovery telemetry." />
         </service>
 
-        <service
-            android:name="com.assistant.adapter.memory.MemoryAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Monitors memory pressure and RAM telemetry." />
-        </service>
+        
 
-        <service
-            android:name="com.assistant.adapter.thermal.ThermalAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Monitors device thermal state and throttling conditions." />
-        </service>
+        
 
-        <service
-            android:name="com.assistant.adapter.battery.BatteryAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Monitors battery state and power conditions." />
-        </service>
+        
 
-        <service
-            android:name="com.assistant.adapter.scheduler.SchedulerAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Coordinates adapter scheduling and fleet orchestration telemetry." />
-        </service>
+        
 
-        <service
-            android:name="com.assistant.adapter.interruption.InterruptionAdapterService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Interruption management and anti-stutter coordination" />
-        </service>
+        
 
         <service
             android:name="com.assistant.PingEliminatorVpnService"
@@ -239,5 +136,15 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
 
+    
+        <service
+            android:name="com.assistant.PerformanceEngineService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Consolidated performance domain (lag, stutter, net, input, lmk, memory, thermal, battery)." />
+        </service>
     </application>
 </manifest>

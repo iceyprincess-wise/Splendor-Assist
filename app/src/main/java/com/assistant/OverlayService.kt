@@ -40,7 +40,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.ViewTreeObserver
 import android.widget.TextView
-import com.assistant.adapter.interruption.CallOverlayRepository
+import com.assistant.CallOverlayRepository
 import androidx.core.app.NotificationCompat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
