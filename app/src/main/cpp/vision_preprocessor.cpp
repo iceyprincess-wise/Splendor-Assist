@@ -36,8 +36,8 @@ Java_com_assistant_adapter_smartassist_VisionPreprocessor_processFrameNative(
     jfloatArray outBlobs, jint outCapacity) {
 
     if (adaptiveNoiseVariance != 0 || serverTickSyncScale != 1.0f) return -1;
-    if (pixelStride != 4 || rowStride != width * 4) return -1;
-    if (width <= 0 || height <= 0) return -1;
+    if (pixelStride != 4) return -1;
+    if (width <= 0 || height <= 0 || rowStride < width * 4) return -1;
 
     uint8_t* pixels = (uint8_t*) env->GetDirectBufferAddress(buffer);
     if (!pixels) return -1;
@@ -54,84 +54,73 @@ Java_com_assistant_adapter_smartassist_VisionPreprocessor_processFrameNative(
     const int WEIGHT_B = 4732;
     const int LUMINANCE_SHIFT = 16;
 
-    int index = 0;
     int sampleIdx = 0;
     for (int y = 0; y < height; y++) {
+        uint8_t* rowPtr = pixels + y * rowStride;
         for (int x = 0; x < width; x++) {
-            int r = pixels[index];
-            int g = pixels[index + 1];
-            int b = pixels[index + 2];
+            int r = rowPtr[x * 4];
+            int g = rowPtr[x * 4 + 1];
+            int b = rowPtr[x * 4 + 2];
             int lum = (r * WEIGHT_R + g * WEIGHT_G + b * WEIGHT_B) >> LUMINANCE_SHIFT;
             
             if (lum >= thresholdInt) {
                 g_ws.grid[y * width + x] = sampleIdx;
                 sampleIdx++;
             }
-            index += 4;
         }
     }
 
     const int dx[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
     const int dy[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
 
-    int globalSampleIdx = 0;
-    index = 0;
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int r = pixels[index];
-            int g = pixels[index + 1];
-            int b = pixels[index + 2];
-            int lum = (r * WEIGHT_R + g * WEIGHT_G + b * WEIGHT_B) >> LUMINANCE_SHIFT;
-            
-            if (lum >= thresholdInt) {
-                int gridIdx = y * width + x;
-                if (!g_ws.visited[gridIdx] && g_ws.grid[gridIdx] == globalSampleIdx) {
-                    Blob blob;
-                    blob.minX = x; blob.maxX = x;
-                    blob.minY = y; blob.maxY = y;
-                    blob.pixelCount = 0;
-                    blob.sumR = 0; blob.sumG = 0; blob.sumB = 0;
+    for (int gridIdx = 0; gridIdx < size; gridIdx++) {
+        if (g_ws.grid[gridIdx] != -1 && !g_ws.visited[gridIdx]) {
+            int startX = gridIdx % width;
+            int startY = gridIdx / width;
 
-                    g_ws.queue.push_back(gridIdx);
-                    g_ws.visited[gridIdx] = 1;
+            Blob blob;
+            blob.minX = startX; blob.maxX = startX;
+            blob.minY = startY; blob.maxY = startY;
+            blob.pixelCount = 0;
+            blob.sumR = 0; blob.sumG = 0; blob.sumB = 0;
 
-                    size_t qHead = 0;
-                    while (qHead < g_ws.queue.size()) {
-                        int curr = g_ws.queue[qHead++];
-                        int cx = curr % width;
-                        int cy = curr / width;
-                        
-                        int cIdx = (cy * width + cx) * 4;
-                        float cr = pixels[cIdx];
-                        float cg = pixels[cIdx + 1];
-                        float cb = pixels[cIdx + 2];
+            g_ws.queue.clear();
+            g_ws.queue.push_back(gridIdx);
+            g_ws.visited[gridIdx] = 1;
 
-                        blob.pixelCount++;
-                        if (cx < blob.minX) blob.minX = cx;
-                        if (cy < blob.minY) blob.minY = cy;
-                        if (cx > blob.maxX) blob.maxX = cx;
-                        if (cy > blob.maxY) blob.maxY = cy;
-                        blob.sumR += cr;
-                        blob.sumG += cg;
-                        blob.sumB += cb;
+            size_t qHead = 0;
+            while (qHead < g_ws.queue.size()) {
+                int curr = g_ws.queue[qHead++];
+                int cx = curr % width;
+                int cy = curr / width;
+                
+                int cIdx = cy * rowStride + cx * 4;
+                float cr = pixels[cIdx];
+                float cg = pixels[cIdx + 1];
+                float cb = pixels[cIdx + 2];
 
-                        for (int i = 0; i < 8; i++) {
-                            int nx = cx + dx[i];
-                            int ny = cy + dy[i];
-                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                                int nIdx = ny * width + nx;
-                                if (!g_ws.visited[nIdx] && g_ws.grid[nIdx] != -1) {
-                                    g_ws.visited[nIdx] = 1;
-                                    g_ws.queue.push_back(nIdx);
-                                }
-                            }
+                blob.pixelCount++;
+                if (cx < blob.minX) blob.minX = cx;
+                if (cy < blob.minY) blob.minY = cy;
+                if (cx > blob.maxX) blob.maxX = cx;
+                if (cy > blob.maxY) blob.maxY = cy;
+                blob.sumR += cr;
+                blob.sumG += cg;
+                blob.sumB += cb;
+
+                for (int i = 0; i < 8; i++) {
+                    int nx = cx + dx[i];
+                    int ny = cy + dy[i];
+                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                        int nIdx = ny * width + nx;
+                        if (!g_ws.visited[nIdx] && g_ws.grid[nIdx] != -1) {
+                            g_ws.visited[nIdx] = 1;
+                            g_ws.queue.push_back(nIdx);
                         }
                     }
-                    g_ws.blobs.push_back(blob);
                 }
-                globalSampleIdx++;
             }
-            index += 4;
+            g_ws.blobs.push_back(blob);
         }
     }
 

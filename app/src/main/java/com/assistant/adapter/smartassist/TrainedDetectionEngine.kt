@@ -130,7 +130,7 @@ object TrainedDetectionEngine {
                 var x = 0
                 while (x < INPUT_SIZE) {
                     val srcX = x * w / INPUT_SIZE
-                    val idx = (srcY * w + srcX) * 4
+                    val idx = srcY * frame.rowStride + srcX * 4
                     inputBuffer.putFloat((src.get(idx).toInt() and 0xFF) / 255f)
                     inputBuffer.putFloat((src.get(idx + 1).toInt() and 0xFF) / 255f)
                     inputBuffer.putFloat((src.get(idx + 2).toInt() and 0xFF) / 255f)

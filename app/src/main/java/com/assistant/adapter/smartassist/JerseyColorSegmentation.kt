@@ -48,7 +48,7 @@ object JerseyColorSegmentation {
         val width = frame.width
         val height = frame.height
 
-        val stride = width * 4
+        val stride = frame.rowStride
 
         var userPixels = 0
         var opponentPixels = 0

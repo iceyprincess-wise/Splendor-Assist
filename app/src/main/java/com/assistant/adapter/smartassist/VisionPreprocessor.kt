@@ -34,7 +34,7 @@ object VisionPreprocessor {
         while (true) {
             val capacity = outBlobs.size / 8
             val result = processFrameNative(
-                buffer, width, height, width * 4, 4,
+                buffer, width, height, frame.rowStride, frame.pixelStride,
                 thresholdInt, 0, 1.0f,
                 outBlobs, capacity
             )

@@ -211,8 +211,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
 
             try {
-                val scanBuffer = image.planes[0].buffer.duplicate()
-                val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height)
+                val plane = image.planes[0]
+                val scanBuffer = plane.buffer.duplicate()
+                val rowStride = plane.rowStride
+                val pixelStride = plane.pixelStride
+                val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height, rowStride, pixelStride)
                 val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
                 com.assistant.BoosterIgnition.ensureIgnited(this)
                 com.assistant.AppContributorRegistration.ensureRegistered()
@@ -220,7 +223,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val frame = com.assistant.adapter.smartassist.FrameAssembler.assemble()
                 com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
                 com.assistant.adapter.smartassist.GameStateBuilder.update(state)
-                com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height)
+                com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height, rowStride)
             } catch (t: Throwable) {
                 try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
             }

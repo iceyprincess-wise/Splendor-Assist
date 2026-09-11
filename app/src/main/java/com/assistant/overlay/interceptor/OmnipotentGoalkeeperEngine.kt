@@ -176,7 +176,7 @@ object OmnipotentGoalkeeperEngine {
     }
 
     // [ACTIVE TELEMETRY BRIDGE] - 1000% Capacity Hardware Heuristic Scanner
-    fun scanFrameForOpponentAnimation(buffer: ByteBuffer, width: Int, height: Int) {
+    fun scanFrameForOpponentAnimation(buffer: ByteBuffer, width: Int, height: Int, rowStride: Int = width * 4) {
         capturedWidth = width.toFloat()
         capturedHeight = height.toFloat()
         if (SmartAssistAccessibilityEngine.globalInstance == null) return
@@ -186,7 +186,7 @@ object OmnipotentGoalkeeperEngine {
         var detectedThreat = ThreatType.NONE
         var detectedZone = ThreatZone.CENTER
 
-        val stride = width * 4
+        val stride = rowStride
 
         // Target the bottom 25% of the frame where eFootball power gauges trigger
         val startY = (height * 0.75).toInt()

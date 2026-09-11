@@ -32,6 +32,8 @@ object FrameNormalizer {
         val buffer: ByteBuffer,
         val width: Int,
         val height: Int,
+        val rowStride: Int,
+        val pixelStride: Int,
         val metadata: FrameMetadata
     )
 
@@ -43,6 +45,8 @@ object FrameNormalizer {
         buffer: ByteBuffer,
         width: Int,
         height: Int,
+        rowStride: Int = width * 4,
+        pixelStride: Int = 4,
         targetHz: Int = TARGET_FPS_60
     ): NormalizedFrame {
         val currentTime = System.nanoTime()
@@ -84,6 +88,8 @@ object FrameNormalizer {
             buffer = buffer,
             width = width,
             height = height,
+            rowStride = rowStride,
+            pixelStride = pixelStride,
             metadata = metadata
         )
     }
