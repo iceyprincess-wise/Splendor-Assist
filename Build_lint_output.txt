@@ -1,16 +1,16 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-11 15:40:33 WAT
+Started: 2026-09-11 16:59:38 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
 === HEAD ===
-9a894402 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt,app/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt,app/src/main/java/com/assistant/adapter/smartassist/RuntimePerformanceCoordinator.kt,app/src/main/java/com/assistant/adapter/smartassist/TrackingConfiguration.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionConfiguration.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionCore.kt,app/src/main/java/com/assistant/adapter/smartassist/contributors/SpeedCompensationContributor.kt,app/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt
+2c7bb771 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/smartassist/ControlMappingTrainer.kt,app/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt
 
 === MAIN ===
-9a894402 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt,app/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt,app/src/main/java/com/assistant/adapter/smartassist/RuntimePerformanceCoordinator.kt,app/src/main/java/com/assistant/adapter/smartassist/TrackingConfiguration.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionConfiguration.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionCore.kt,app/src/main/java/com/assistant/adapter/smartassist/contributors/SpeedCompensationContributor.kt,app/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt
+2c7bb771 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/smartassist/ControlMappingTrainer.kt,app/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt
 
 
 ================================================================
@@ -36,22 +36,22 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 105 -> 106
+versionCode: 106 -> 107
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 3m 57s
+BUILD SUCCESSFUL in 3m 45s
 
 ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v106-20260911_154442.apk
--rw-rw----. 1 u0_a262 media_rw 29M Sep 11 15:44 /storage/emulated/0/Download/Splendor-Assist-v106-20260911_154442.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v107-20260911_170329.apk
+-rw-rw----. 1 u0_a262 media_rw 29M Sep 11 17:03 /storage/emulated/0/Download/Splendor-Assist-v107-20260911_170329.apk
 VERSION TRANSACTION: COMMITTED
 
 ================================================================
@@ -61,8 +61,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 19939 IDLE     8.5
- 32241 STOPPED  (by user or operating system)
+  3704 IDLE     8.5
+ 19939 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -83,11 +83,11 @@ GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
 === HEAD ===
-9a894402 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt,app/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt,app/src/main/java/com/assistant/adapter/smartassist/RuntimePerformanceCoordinator.kt,app/src/main/java/com/assistant/adapter/smartassist/TrackingConfiguration.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionConfiguration.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionCore.kt,app/src/main/java/com/assistant/adapter/smartassist/contributors/SpeedCompensationContributor.kt,app/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt
+2c7bb771 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/smartassist/ControlMappingTrainer.kt,app/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt
 
 === MAIN ===
-9a894402 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/lag/LagAdapterService.kt,app/src/main/java/com/assistant/adapter/smartassist/ActiveGestureController.kt,app/src/main/java/com/assistant/adapter/smartassist/RuntimePerformanceCoordinator.kt,app/src/main/java/com/assistant/adapter/smartassist/TrackingConfiguration.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionConfiguration.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionCore.kt,app/src/main/java/com/assistant/adapter/smartassist/contributors/SpeedCompensationContributor.kt,app/src/main/java/com/assistant/adapter/stutter/BurstForensicsEngine.kt
+2c7bb771 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/smartassist/ControlMappingTrainer.kt,app/src/main/java/com/assistant/adapter/smartassist/RuntimeDecisionLoop.kt
 
-Finished: 2026-09-11 15:45:17 WAT
-Report size: 6396 bytes
+Finished: 2026-09-11 17:04:03 WAT
+Report size: 4540 bytes
 ================================================================
