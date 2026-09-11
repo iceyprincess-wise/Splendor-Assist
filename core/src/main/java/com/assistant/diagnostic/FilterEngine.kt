@@ -1,6 +1,5 @@
 package com.assistant.diagnostic
 
-import android.content.Context
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 import java.io.File
 import java.text.SimpleDateFormat
@@ -32,7 +31,7 @@ object FilterEngine {
     
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
 
-    fun start(context: Context) {
+    fun start() {
         if (isActive) return
         isActive = true
         

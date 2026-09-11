@@ -40,7 +40,7 @@ object BoosterIgnition {
             fleetState = FleetLifecycleState.WARMING
             try {
                 IgnitionEngine.ignite(context.applicationContext)
-                FilterEngine.start(context.applicationContext)
+                FilterEngine.start()
                 RuntimeLogger.log(
                     "BoosterIgnition: adapter services ignited from runtime start path",
                     "RUNTIME"

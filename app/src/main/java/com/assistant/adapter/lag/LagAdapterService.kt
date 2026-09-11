@@ -502,17 +502,14 @@ object LagVerdictEngine {
                         lastHeartbeat = now
                         
                         // MASSIVE POWER: Performance Bee Intervention
+                        val aggro = com.assistant.diagnostic.AdapterSignalBus.filterAggression
                         if (candidate == "CHOKING") {
-                            try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(2) } catch (_: Throwable) {}
-                            RuntimeLogger.log("LAG CHOKING: Execution brake applied to protect SmartAssist", "LAG_BEE")
-                        } else if (candidate == "SMOOTH") {
-                            try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(0) } catch (_: Throwable) {}
-                        }
-                        
-                        // MASSIVE POWER: Performance Bee Intervention
-                        if (candidate == "CHOKING") {
-                            try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(2) } catch (_: Throwable) {}
-                            RuntimeLogger.log("LAG CHOKING: Execution brake applied to protect SmartAssist", "LAG_BEE")
+                            if (aggro > 1.5f) {
+                                RuntimeLogger.log("LAG CHOKING: Suppressed by Filter Extremist Push (${"%.2f".format(aggro)}x)", "FILTER_OVERRIDE")
+                            } else {
+                                try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(2) } catch (_: Throwable) {}
+                                RuntimeLogger.log("LAG CHOKING: Execution brake applied to protect SmartAssist", "LAG_BEE")
+                            }
                         } else if (candidate == "SMOOTH") {
                             try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(0) } catch (_: Throwable) {}
                         }
@@ -659,7 +656,10 @@ object LoadShedGovernor {
                     val burst = PerformanceTelemetryRegistry.currentStutterState()
                     val bootAge=System.currentTimeMillis()-startTimeMs
                     if(startTimeMs>0L&&bootAge<10_000L){try{Thread.sleep(POLL_MS.coerceAtLeast(1L))}catch(_:Throwable){return@Thread};continue}
-                    val want = if (burst == "SEIZURE") "HEAVY" else when (LagVerdictEngine.verdict) {
+                    val aggro = com.assistant.diagnostic.AdapterSignalBus.filterAggression
+                    val want = if (aggro > 1.5f) {
+                        "NONE" // EXTREMIST OVERRIDE: Prevent load shedding to force max execution
+                    } else if (burst == "SEIZURE") "HEAVY" else when (LagVerdictEngine.verdict) {
                         "CHOKING" -> "HEAVY"
                         "JITTERY" -> "LIGHT"
                         else -> "NONE"

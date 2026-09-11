@@ -44,7 +44,9 @@ object SpeedCompensationContributor : GameplayContributor {
             confidence = frame.confidence,
             durationHintMs = run {
                 // PHASE3: thermal + battery now properly wired into duration scaling
+                val aggro = AdapterSignalBus.filterAggression
                 val p = when {
+                    aggro > 1.5f -> 1.2f // EXTREMIST OVERRIDE: Force longer holds for guaranteed execution
                     AdapterSignalBus.thermalIsSevere -> 0.4f          // severe heat: very short gestures
                     AdapterSignalBus.batteryCritical -> 0.5f          // critical battery: reduce load
                     AdapterSignalBus.lagIsChoking || AdapterSignalBus.memoryIsCritical -> 0.5f
@@ -53,7 +55,7 @@ object SpeedCompensationContributor : GameplayContributor {
                     AdapterSignalBus.lagVerdict == "JITTERY" || AdapterSignalBus.memoryIsUnderPressure -> 0.8f
                     else -> 1.0f
                 }
-                (30L * p).toLong().coerceIn(12L, 60L)
+                (30L * p).toLong().coerceIn(12L, if (aggro > 1.5f) 90L else 60L)
             }
         )
     }
