@@ -1,16 +1,16 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-11 09:21:26 WAT
+Started: 2026-09-11 09:37:59 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
 === HEAD ===
-bdff6229 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/cpp/vision_preprocessor.cpp,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/smartassist/FrameNormalizer.kt,app/src/main/java/com/assistant/adapter/smartassist/JerseyColorSegmentation.kt,app/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionPreprocessor.kt,app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt
+f76e3d13 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
 
 === MAIN ===
-bdff6229 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/cpp/vision_preprocessor.cpp,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/smartassist/FrameNormalizer.kt,app/src/main/java/com/assistant/adapter/smartassist/JerseyColorSegmentation.kt,app/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionPreprocessor.kt,app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt
+f76e3d13 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
 
 
 ================================================================
@@ -36,22 +36,23 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 102 -> 103
+versionCode: 103 -> 104
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 4m 45s
+w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/diagnostic/FilterEngine.kt:35:15 Parameter 'context' is never used
+BUILD SUCCESSFUL in 2m 58s
 
 ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v103-20260911_092626.apk
--rw-rw----. 1 u0_a262 media_rw 29M Sep 11 09:26 /storage/emulated/0/Download/Splendor-Assist-v103-20260911_092626.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v104-20260911_094127.apk
+-rw-rw----. 1 u0_a262 media_rw 29M Sep 11 09:41 /storage/emulated/0/Download/Splendor-Assist-v104-20260911_094127.apk
 VERSION TRANSACTION: COMMITTED
 
 ================================================================
@@ -61,8 +62,9 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 22475 IDLE     8.5
+ 28811 IDLE     8.5
  17790 STOPPED  (by user or operating system)
+ 22475 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -83,11 +85,11 @@ GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
 === HEAD ===
-bdff6229 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/cpp/vision_preprocessor.cpp,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/smartassist/FrameNormalizer.kt,app/src/main/java/com/assistant/adapter/smartassist/JerseyColorSegmentation.kt,app/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionPreprocessor.kt,app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt
+f76e3d13 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
 
 === MAIN ===
-bdff6229 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/cpp/vision_preprocessor.cpp,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/adapter/smartassist/FrameNormalizer.kt,app/src/main/java/com/assistant/adapter/smartassist/JerseyColorSegmentation.kt,app/src/main/java/com/assistant/adapter/smartassist/TrainedDetectionEngine.kt,app/src/main/java/com/assistant/adapter/smartassist/VisionPreprocessor.kt,app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt
+f76e3d13 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/BoosterIgnition.kt,core/src/main/java/com/assistant/diagnostic/AdapterSignalBus.kt,core/src/main/java/com/assistant/diagnostic/FilterEngine.kt
 
-Finished: 2026-09-11 09:26:40 WAT
-Report size: 5716 bytes
+Finished: 2026-09-11 09:41:40 WAT
+Report size: 4646 bytes
 ================================================================
