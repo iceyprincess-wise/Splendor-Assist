@@ -65,4 +65,8 @@ object AdapterSignalBus {
         crowdingZone = zone
         crowdingLevel = level.coerceIn(0f, 1f)
     }
+
+    // FILTER ENGINE: Extremist push multiplier
+    @Volatile var filterAggression: Float = 1.0f; private set
+    fun publishFilterAggression(multiplier: Float) { filterAggression = multiplier.coerceIn(1.0f, 3.0f) }
 }

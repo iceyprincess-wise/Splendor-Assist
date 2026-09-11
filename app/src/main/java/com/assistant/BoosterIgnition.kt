@@ -2,6 +2,7 @@ package com.assistant
 
 import android.content.Context
 import com.assistant.diagnostic.AdapterSignalBus
+import com.assistant.diagnostic.FilterEngine
 import com.assistant.diagnostic.RuntimeLogger
 
 /**
@@ -39,6 +40,7 @@ object BoosterIgnition {
             fleetState = FleetLifecycleState.WARMING
             try {
                 IgnitionEngine.ignite(context.applicationContext)
+                FilterEngine.start(context.applicationContext)
                 RuntimeLogger.log(
                     "BoosterIgnition: adapter services ignited from runtime start path",
                     "RUNTIME"
