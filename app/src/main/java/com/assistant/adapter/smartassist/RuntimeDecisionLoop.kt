@@ -63,6 +63,14 @@ object RuntimeDecisionLoop {
             return false
         }
 
+        // CONTROL-MAPPING GATE: the mapping/settings screen must never
+        // receive gameplay gestures; trained in-match cluster arms the stack.
+        if (ControlMappingTrainer.uiMode == ControlMappingTrainer.UiMode.SETTINGS) {
+            lastAction = "idle-mapping-settings"
+            return false
+        }
+        ControlMappingTrainer.observeOutcome(frame)
+
         val contributions = GameplayEngineRegistry.collect(frame)
         val netHold = AdapterSignalBus.netIsHold
         
@@ -133,6 +141,7 @@ object RuntimeDecisionLoop {
         val accepted = HybridExecutionTerminal.route(terminalRequest)
         if (accepted) {
             routed.incrementAndGet()
+            ControlMappingTrainer.recordDispatch(terminalRequest.phase, terminalRequest.duration)
             try {
                 com.assistant.events.GameplayEventHub.emit(
                     "routed",
@@ -168,7 +177,7 @@ object RuntimeDecisionLoop {
             startY = 550f,
             endX = best.targetX.coerceAtLeast(0f),
             endY = best.targetY.coerceAtLeast(0f),
-            duration = best.durationHintMs.coerceIn(15L, 85L)
+            duration = ControlMappingTrainer.personalDuration(best.actionClass, best.durationHintMs).coerceIn(15L, 85L)
         )
     }
 
@@ -195,6 +204,9 @@ object RuntimeDecisionLoop {
         "idleNoContribution" to idleNoContribution.get(),
         "lastAction" to lastAction,
         "lastWeight" to lastWeight,
-        "lastUpdatedMs" to lastUpdatedMs
+        "lastUpdatedMs" to lastUpdatedMs,
+        "mappingUiMode" to ControlMappingTrainer.uiMode.name,
+        "mappingMatchActive" to ControlMappingTrainer.matchActive,
+        "mappingTrainedSlots" to ControlMappingTrainer.trainedSlots()
     )
 }

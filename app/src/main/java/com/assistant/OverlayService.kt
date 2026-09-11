@@ -224,6 +224,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
                 com.assistant.adapter.smartassist.GameStateBuilder.update(state)
                 com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height, rowStride)
+                com.assistant.adapter.smartassist.ControlMappingTrainer.observe(scanBuffer, image.width, image.height, rowStride)
             } catch (t: Throwable) {
                 try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
             }
