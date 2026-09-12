@@ -1,9 +1,5 @@
 package com.assistant
 
-import com.assistant.fps.FrameDropStabilizer
-import com.assistant.fps.MemoryStabilityOptimizer
-import com.assistant.fps.VsyncInputAnchor
-import com.assistant.fps.LatencyDefeatingInputEngine
 
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.execution.CentralExecutionBus
