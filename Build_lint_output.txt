@@ -1,16 +1,16 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-11 22:28:35 WAT
+Started: 2026-09-13 00:14:10 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
 === HEAD ===
-cbf7a623 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/GlobalCrashHandler.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/PerformanceEngineService.kt,app/src/main/java/com/assistant/core/AdapterIpcBridge.kt,app/src/main/java/com/assistant/performance_engine.kt,app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt
+57652452 (HEAD -> main) c9b91894 (HEAD -> main, origin/main, origin/HEAD)
 
 === MAIN ===
-cbf7a623 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/GlobalCrashHandler.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/PerformanceEngineService.kt,app/src/main/java/com/assistant/core/AdapterIpcBridge.kt,app/src/main/java/com/assistant/performance_engine.kt,app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt
+57652452 (HEAD -> main) c9b91894 (HEAD -> main, origin/main, origin/HEAD)
 
 
 ================================================================
@@ -36,22 +36,60 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 107 -> 108
+versionCode: 108 -> 109
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-BUILD SUCCESSFUL in 4m
+w: Detected multiple Kotlin daemon sessions at kotlin/sessions
+[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
+	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/ActiveGestureController.kt:3:22 Unresolved reference: fps
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/ActiveGestureController.kt:4:22 Unresolved reference: fps
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/ActiveGestureController.kt:5:22 Unresolved reference: fps
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/ActiveGestureController.kt:6:22 Unresolved reference: fps
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:91:52 Unresolved reference: MagneticFeetContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:92:52 Unresolved reference: PassingContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:93:52 Unresolved reference: SupportContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:94:52 Unresolved reference: DefenseContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:95:52 Unresolved reference: EvadeContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:96:52 Unresolved reference: AttackingVectorContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:97:52 Unresolved reference: CrossContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:98:52 Unresolved reference: AgilityContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:99:52 Unresolved reference: WingBlockContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:100:52 Unresolved reference: DashPressureContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:101:52 Unresolved reference: InterceptMatrixContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:102:52 Unresolved reference: TouchRecoveryContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:103:52 Unresolved reference: OverloadPlaystyleContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:104:52 Unresolved reference: TruePassContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:105:52 Unresolved reference: ReceiverEngagementContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:106:52 Unresolved reference: ForwardRunContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:107:52 Unresolved reference: ShotOpportunityContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:108:52 Unresolved reference: DefenseAuthorityContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:109:52 Unresolved reference: ShotAnticipationContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:110:52 Unresolved reference: KeeperFeedbackContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:111:52 Unresolved reference: DashAnchorContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:112:52 Unresolved reference: SpeedCompensationContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:113:52 Unresolved reference: InstantInterceptContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:114:52 Unresolved reference: BuildUpPressContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:115:52 Unresolved reference: BallRetentionShieldContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:116:52 Unresolved reference: TrueShotContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:117:52 Unresolved reference: TrueCrossContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:118:52 Unresolved reference: SmartAssistUltimateCorrectorContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:119:52 Unresolved reference: SharpTouchTimingContributor
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/AppContributorRegistration.kt:120:52 Unresolved reference: KickingPostureContributor
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 6m 38s
 
-ASSEMBLE DEBUG APK EXIT: 0
+ASSEMBLE DEBUG APK EXIT: 1
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v108-20260911_223246.apk
--rw-rw----. 1 u0_a262 media_rw 29M Sep 11 22:32 /storage/emulated/0/Download/Splendor-Assist-v108-20260911_223246.apk
-VERSION TRANSACTION: COMMITTED
-
+SKIPPED — build exit=1, apk_exists=YES
+VERSION TRANSACTION: ROLLED BACK
+Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
@@ -59,9 +97,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 19864 IDLE     8.5
-  3704 STOPPED  (by user or operating system)
-  8865 STOPPED  (by user or operating system)
+  3056 IDLE     8.5
+ 19864 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -72,21 +109,20 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  0
-APK EXPORT:                      0
+ASSEMBLE DEBUG:                  1
+APK EXPORT:                      1
 GRADLE DAEMON STOP:              0
 
-FINAL STATUS: ALL PASSED
+FINAL STATUS: FAILED — check items above
 
 GIT STATUS:
  M Build_lint_output.txt
- M app/build.gradle.kts
 === HEAD ===
-cbf7a623 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/GlobalCrashHandler.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/PerformanceEngineService.kt,app/src/main/java/com/assistant/core/AdapterIpcBridge.kt,app/src/main/java/com/assistant/performance_engine.kt,app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt
+57652452 (HEAD -> main) c9b91894 (HEAD -> main, origin/main, origin/HEAD)
 
 === MAIN ===
-cbf7a623 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/GlobalCrashHandler.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/PerformanceEngineService.kt,app/src/main/java/com/assistant/core/AdapterIpcBridge.kt,app/src/main/java/com/assistant/performance_engine.kt,app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt
+57652452 (HEAD -> main) c9b91894 (HEAD -> main, origin/main, origin/HEAD)
 
-Finished: 2026-09-11 22:33:56 WAT
-Report size: 4605 bytes
+Finished: 2026-09-13 00:24:12 WAT
+Report size: 9974 bytes
 ================================================================
