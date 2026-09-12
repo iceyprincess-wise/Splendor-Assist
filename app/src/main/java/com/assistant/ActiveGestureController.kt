@@ -1,9 +1,9 @@
-package com.assistant.adapter.smartassist
+package com.assistant
 
-import com.assistant.adapter.smartassist.fps.FrameDropStabilizer
-import com.assistant.adapter.smartassist.fps.MemoryStabilityOptimizer
-import com.assistant.adapter.smartassist.fps.VsyncInputAnchor
-import com.assistant.adapter.smartassist.fps.LatencyDefeatingInputEngine
+import com.assistant.fps.FrameDropStabilizer
+import com.assistant.fps.MemoryStabilityOptimizer
+import com.assistant.fps.VsyncInputAnchor
+import com.assistant.fps.LatencyDefeatingInputEngine
 
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.execution.CentralExecutionBus

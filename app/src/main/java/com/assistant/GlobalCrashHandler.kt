@@ -248,7 +248,7 @@ class GlobalCrashHandler(
             out.appendLine("═══ RUNTIME GATES (G0-G6) ═══")
             out.appendLine("  G0=permissions G1=accessibility G2=capture G3=booster G4=engines G5=bus G6=ready")
             try {
-                val rc = Class.forName("com.assistant.adapter.smartassist.RuntimeCoordinator")
+                val rc = Class.forName("com.assistant.RuntimeCoordinator")
                 val snap = rc.getMethod("runtimeState").invoke(null) as? Map<*, *>
                 if (snap != null) {
                     val ready = snap["runtimeReady"] as? Boolean ?: false
@@ -270,7 +270,7 @@ class GlobalCrashHandler(
 
             out.appendLine("═══ FRAME / VISION TRUST ═══")
             try {
-                val fa = Class.forName("com.assistant.adapter.smartassist.FrameAssembler")
+                val fa = Class.forName("com.assistant.FrameAssembler")
                 val snap = fa.getMethod("frameRuntimeSnapshot").invoke(null) as? Map<*, *>
                 if (snap != null) {
                     val trusted = snap["trusted"] as? Boolean ?: false
@@ -301,7 +301,7 @@ class GlobalCrashHandler(
 
             out.appendLine("═══ RUNTIME DECISION LOOP ═══")
             try {
-                val rdl = Class.forName("com.assistant.adapter.smartassist.RuntimeDecisionLoop")
+                val rdl = Class.forName("com.assistant.RuntimeDecisionLoop")
                 val snap = rdl.getMethod("decisionRuntimeSnapshot").invoke(null) as? Map<*, *>
                 if (snap != null) {
                     val routed = (snap["routed"] as? Long) ?: 0L
@@ -364,43 +364,43 @@ class GlobalCrashHandler(
             data class EngineEntry(val name: String, val cls: String, val expectedStatus: String, val why: String)
 
             val engines = listOf(
-                EngineEntry("BallDetector","com.assistant.adapter.smartassist.BallDetector","ACTIVE","runs every frame inside VisionCore"),
-                EngineEntry("PlayerDetector","com.assistant.adapter.smartassist.PlayerDetector","ACTIVE","runs every frame inside VisionCore"),
-                EngineEntry("GoalkeeperDetector","com.assistant.adapter.smartassist.GoalkeeperDetector","ACTIVE","runs every frame inside VisionCore"),
-                EngineEntry("GoalDetector","com.assistant.adapter.smartassist.GoalDetector","ACTIVE","runs every frame; MIN_PIXEL_COUNT=12 score-based detection"),
-                EngineEntry("BallCandidateEngine","com.assistant.adapter.smartassist.BallCandidateEngine","ACTIVE","runs every frame on filtered blobs"),
-                EngineEntry("TrainedDetectionEngine","com.assistant.adapter.smartassist.TrainedDetectionEngine","PASSIVE","dormant: no .tflite model asset present; returns null always, falls back to heuristic"),
-                EngineEntry("ConnectedComponentEngine","com.assistant.adapter.smartassist.ConnectedComponentEngine","ACTIVE","BFS blob extraction runs every frame"),
-                EngineEntry("FrameScanner","com.assistant.adapter.smartassist.FrameScanner","ACTIVE","pixel scan hot-loop runs every frame"),
-                EngineEntry("MagneticFeetContributor","com.assistant.adapter.smartassist.contributors.MagneticFeetContributor","ACTIVE","vision-backed possession movement assist; bounded MOVE contribution"),
+                EngineEntry("BallDetector","com.assistant.BallDetector","ACTIVE","runs every frame inside VisionCore"),
+                EngineEntry("PlayerDetector","com.assistant.PlayerDetector","ACTIVE","runs every frame inside VisionCore"),
+                EngineEntry("GoalkeeperDetector","com.assistant.GoalkeeperDetector","ACTIVE","runs every frame inside VisionCore"),
+                EngineEntry("GoalDetector","com.assistant.GoalDetector","ACTIVE","runs every frame; MIN_PIXEL_COUNT=12 score-based detection"),
+                EngineEntry("BallCandidateEngine","com.assistant.BallCandidateEngine","ACTIVE","runs every frame on filtered blobs"),
+                EngineEntry("TrainedDetectionEngine","com.assistant.TrainedDetectionEngine","PASSIVE","dormant: no .tflite model asset present; returns null always, falls back to heuristic"),
+                EngineEntry("ConnectedComponentEngine","com.assistant.ConnectedComponentEngine","ACTIVE","BFS blob extraction runs every frame"),
+                EngineEntry("FrameScanner","com.assistant.FrameScanner","ACTIVE","pixel scan hot-loop runs every frame"),
+                EngineEntry("MagneticFeetContributor","com.assistant.contributors.MagneticFeetContributor","ACTIVE","vision-backed possession movement assist; bounded MOVE contribution"),
                 EngineEntry("ShotContributor","com.assistant.contributors.ShotContributor","ACTIVE","fires only on real goal detection; no hallucinated aim points"),
-                EngineEntry("PassingContributor","com.assistant.adapter.smartassist.contributors.PassingContributor","ACTIVE","fires when viable pass lanes exist"),
-                EngineEntry("CrossContributor","com.assistant.adapter.smartassist.contributors.CrossContributor","ACTIVE","fires on crossing lane detection"),
-                EngineEntry("DefenseContributor","com.assistant.adapter.smartassist.contributors.DefenseContributor","ACTIVE","fires when !hasBall and defenders threatening"),
-                EngineEntry("InstantInterceptContributor","com.assistant.adapter.smartassist.contributors.InstantInterceptContributor","ACTIVE","0-delay intercept on opponent proximity"),
-                EngineEntry("BuildUpPressContributor","com.assistant.adapter.smartassist.contributors.BuildUpPressContributor","ACTIVE","build-up press when opponent in possession"),
-                EngineEntry("BallRetentionShieldContributor","com.assistant.adapter.smartassist.contributors.BallRetentionShieldContributor","ACTIVE","shield on possession + pressure"),
-                EngineEntry("SpeedCompensationContributor","com.assistant.adapter.smartassist.contributors.SpeedCompensationContributor","ACTIVE","reads all bus signals for duration scaling"),
-                EngineEntry("TrueShotContributor","com.assistant.adapter.smartassist.contributors.TrueShotContributor","ACTIVE","high-accuracy shot with keeper bias"),
-                EngineEntry("TrueCrossContributor","com.assistant.adapter.smartassist.contributors.TrueCrossContributor","ACTIVE","precision cross delivery"),
-                EngineEntry("TruePassContributor","com.assistant.adapter.smartassist.contributors.TruePassContributor","ACTIVE","true target passing with receiver prediction"),
-                EngineEntry("SmartAssistUltimateCorrectorContributor","com.assistant.adapter.smartassist.contributors.SmartAssistUltimateCorrectorContributor","ACTIVE","ultimate corrector — last-resort normalizer"),
-                EngineEntry("KeeperFeedbackContributor","com.assistant.adapter.smartassist.contributors.KeeperFeedbackContributor","ACTIVE","goalkeeper real-position feedback"),
-                EngineEntry("AgilityContributor","com.assistant.adapter.smartassist.contributors.AgilityContributor","ACTIVE","agility-based movement contributor"),
-                EngineEntry("AttackingVectorContributor","com.assistant.adapter.smartassist.contributors.AttackingVectorContributor","ACTIVE","attacking vector director"),
-                EngineEntry("ForwardRunContributor","com.assistant.adapter.smartassist.contributors.ForwardRunContributor","ACTIVE","forward run opportunity contributor"),
-                EngineEntry("TouchRecoveryContributor","com.assistant.adapter.smartassist.contributors.TouchRecoveryContributor","ACTIVE","ball retention touch recovery"),
-                EngineEntry("InterceptMatrixContributor","com.assistant.adapter.smartassist.contributors.InterceptMatrixContributor","ACTIVE","defensive intercept matrix"),
-                EngineEntry("DashAnchorContributor","com.assistant.adapter.smartassist.contributors.DashAnchorContributor","ACTIVE","dash anchor with pressure fallback"),
-                EngineEntry("DashPressureContributor","com.assistant.adapter.smartassist.contributors.DashPressureContributor","ACTIVE","dash under defensive pressure"),
-                EngineEntry("ShotOpportunityContributor","com.assistant.adapter.smartassist.contributors.ShotOpportunityContributor","ACTIVE","shot opportunity analyzer"),
-                EngineEntry("DefenseAuthorityContributor","com.assistant.adapter.smartassist.contributors.DefenseAuthorityContributor","ACTIVE","defensive authority claim"),
-                EngineEntry("ShotAnticipationContributor","com.assistant.adapter.smartassist.contributors.ShotAnticipationContributor","ACTIVE","shot anticipation keeper response"),
-                EngineEntry("ReceiverEngagementContributor","com.assistant.adapter.smartassist.contributors.ReceiverEngagementContributor","ACTIVE","receiver engagement for passing"),
-                EngineEntry("OverloadPlaystyleContributor","com.assistant.adapter.smartassist.contributors.OverloadPlaystyleContributor","ACTIVE","overload playstyle contributor"),
-                EngineEntry("WingBlockContributor","com.assistant.adapter.smartassist.contributors.WingBlockContributor","ACTIVE","wing block defensive contributor"),
-                EngineEntry("EvadeContributor","com.assistant.adapter.smartassist.contributors.EvadeContributor","ACTIVE","evade/dodge contributor"),
-                EngineEntry("SupportContributor","com.assistant.adapter.smartassist.contributors.SupportContributor","ACTIVE","support movement contributor"),
+                EngineEntry("PassingContributor","com.assistant.contributors.PassingContributor","ACTIVE","fires when viable pass lanes exist"),
+                EngineEntry("CrossContributor","com.assistant.contributors.CrossContributor","ACTIVE","fires on crossing lane detection"),
+                EngineEntry("DefenseContributor","com.assistant.contributors.DefenseContributor","ACTIVE","fires when !hasBall and defenders threatening"),
+                EngineEntry("InstantInterceptContributor","com.assistant.contributors.InstantInterceptContributor","ACTIVE","0-delay intercept on opponent proximity"),
+                EngineEntry("BuildUpPressContributor","com.assistant.contributors.BuildUpPressContributor","ACTIVE","build-up press when opponent in possession"),
+                EngineEntry("BallRetentionShieldContributor","com.assistant.contributors.BallRetentionShieldContributor","ACTIVE","shield on possession + pressure"),
+                EngineEntry("SpeedCompensationContributor","com.assistant.contributors.SpeedCompensationContributor","ACTIVE","reads all bus signals for duration scaling"),
+                EngineEntry("TrueShotContributor","com.assistant.contributors.TrueShotContributor","ACTIVE","high-accuracy shot with keeper bias"),
+                EngineEntry("TrueCrossContributor","com.assistant.contributors.TrueCrossContributor","ACTIVE","precision cross delivery"),
+                EngineEntry("TruePassContributor","com.assistant.contributors.TruePassContributor","ACTIVE","true target passing with receiver prediction"),
+                EngineEntry("SmartAssistUltimateCorrectorContributor","com.assistant.contributors.SmartAssistUltimateCorrectorContributor","ACTIVE","ultimate corrector — last-resort normalizer"),
+                EngineEntry("KeeperFeedbackContributor","com.assistant.contributors.KeeperFeedbackContributor","ACTIVE","goalkeeper real-position feedback"),
+                EngineEntry("AgilityContributor","com.assistant.contributors.AgilityContributor","ACTIVE","agility-based movement contributor"),
+                EngineEntry("AttackingVectorContributor","com.assistant.contributors.AttackingVectorContributor","ACTIVE","attacking vector director"),
+                EngineEntry("ForwardRunContributor","com.assistant.contributors.ForwardRunContributor","ACTIVE","forward run opportunity contributor"),
+                EngineEntry("TouchRecoveryContributor","com.assistant.contributors.TouchRecoveryContributor","ACTIVE","ball retention touch recovery"),
+                EngineEntry("InterceptMatrixContributor","com.assistant.contributors.InterceptMatrixContributor","ACTIVE","defensive intercept matrix"),
+                EngineEntry("DashAnchorContributor","com.assistant.contributors.DashAnchorContributor","ACTIVE","dash anchor with pressure fallback"),
+                EngineEntry("DashPressureContributor","com.assistant.contributors.DashPressureContributor","ACTIVE","dash under defensive pressure"),
+                EngineEntry("ShotOpportunityContributor","com.assistant.contributors.ShotOpportunityContributor","ACTIVE","shot opportunity analyzer"),
+                EngineEntry("DefenseAuthorityContributor","com.assistant.contributors.DefenseAuthorityContributor","ACTIVE","defensive authority claim"),
+                EngineEntry("ShotAnticipationContributor","com.assistant.contributors.ShotAnticipationContributor","ACTIVE","shot anticipation keeper response"),
+                EngineEntry("ReceiverEngagementContributor","com.assistant.contributors.ReceiverEngagementContributor","ACTIVE","receiver engagement for passing"),
+                EngineEntry("OverloadPlaystyleContributor","com.assistant.contributors.OverloadPlaystyleContributor","ACTIVE","overload playstyle contributor"),
+                EngineEntry("WingBlockContributor","com.assistant.contributors.WingBlockContributor","ACTIVE","wing block defensive contributor"),
+                EngineEntry("EvadeContributor","com.assistant.contributors.EvadeContributor","ACTIVE","evade/dodge contributor"),
+                EngineEntry("SupportContributor","com.assistant.contributors.SupportContributor","ACTIVE","support movement contributor"),
                 EngineEntry("ThreatPriorityContributor","com.assistant.contributors.ThreatPriorityContributor","ACTIVE","defensive threat priority; fires when !hasBall and threat detected"),
                 EngineEntry("CrossClaimContributor","com.assistant.contributors.CrossClaimContributor","ACTIVE","goalkeeper cross claim"),
                 EngineEntry("KeeperBiasContributor","com.assistant.contributors.KeeperBiasContributor","ACTIVE","keeper positional bias"),
@@ -409,9 +409,9 @@ class GlobalCrashHandler(
                 EngineEntry("BallPressContributor","com.assistant.contributors.BallPressContributor","ACTIVE","out-of-possession pressing"),
                 EngineEntry("PressEvadeContributor","com.assistant.contributors.PressEvadeContributor","ACTIVE","press evasion when being pressed"),
                                 EngineEntry("CrossDeliveryContributor","com.assistant.contributors.CrossDeliveryContributor","ACTIVE","cross into goal box delivery"),
-                EngineEntry("HybridOmnipotentMatrixEngine","com.assistant.adapter.smartassist.HybridOmnipotentMatrixEngine","ACTIVE","direct intercept injector; 16ms cooldown; bypasses contributor registry"),
-                EngineEntry("AntiCutbackSubEngine","com.assistant.adapter.smartassist.AntiCutbackSubEngine","ACTIVE","anti-cutback defensive sub-engine"),
-                EngineEntry("AdaptiveLoftedThroughEngine","com.assistant.adapter.smartassist.AdaptiveLoftedThroughEngine","ACTIVE","lofted through-ball emergency path"),
+                EngineEntry("HybridOmnipotentMatrixEngine","com.assistant.HybridOmnipotentMatrixEngine","ACTIVE","direct intercept injector; 16ms cooldown; bypasses contributor registry"),
+                EngineEntry("AntiCutbackSubEngine","com.assistant.AntiCutbackSubEngine","ACTIVE","anti-cutback defensive sub-engine"),
+                EngineEntry("AdaptiveLoftedThroughEngine","com.assistant.AdaptiveLoftedThroughEngine","ACTIVE","lofted through-ball emergency path"),
                 EngineEntry("CpuGovernorEngine","com.assistant.CpuGovernorEngine","ACTIVE","A75 core pinned to eFootball; A55 to Splendor"),
                 EngineEntry("ConnectionHealEngine","com.assistant.ConnectionHealEngine","ACTIVE","WiFi rescan+rebind on HOLD; 15s cooldown"),
                 EngineEntry("InputLatencyEngine","com.assistant.InputLatencyEngine","ACTIVE","main-thread dispatch latency; 6s boot suppress"),
@@ -424,8 +424,8 @@ class GlobalCrashHandler(
                 EngineEntry("LoadShedGovernor","com.assistant.LoadShedGovernor","ACTIVE","load shed; 10s boot grace; ARM_POLLS=4"),
                 EngineEntry("FramePacingEngine","com.assistant.FramePacingEngine","ACTIVE","vsync bucket mixture analysis; real stall detection"),
                 EngineEntry("GridRecentsInterceptor","com.assistant.overlay.interceptor.GridRecentsInterceptor","STATIC","REMOVED Phase3 — user confirmed not needed; empty stub"),
-                EngineEntry("SpeedCompensationEngine","com.assistant.adapter.smartassist.SpeedCompensationEngine","ACTIVE","speed compensation math; called by SpeedCompensationContributor"),
-                EngineEntry("AutoEvadeEngine","com.assistant.adapter.smartassist.AutoEvadeEngine","ACTIVE","auto-evade evasion path")
+                EngineEntry("SpeedCompensationEngine","com.assistant.SpeedCompensationEngine","ACTIVE","speed compensation math; called by SpeedCompensationContributor"),
+                EngineEntry("AutoEvadeEngine","com.assistant.AutoEvadeEngine","ACTIVE","auto-evade evasion path")
             )
 
             for (e in engines) {
@@ -472,7 +472,7 @@ class GlobalCrashHandler(
 
             out.appendLine("═══ ACCESSIBILITY ENGINE (gesture dispatch) ═══")
             try {
-                val aec = Class.forName("com.assistant.adapter.smartassist.SmartAssistAccessibilityEngine")
+                val aec = Class.forName("com.assistant.SmartAssistAccessibilityEngine")
                 val instanceField = try { aec.getDeclaredField("globalInstance").also { it.isAccessible = true } } catch (_: Throwable) { null }
                 val instance = instanceField?.get(null)
                 out.appendLine("  class loaded      : YES")
@@ -493,7 +493,7 @@ class GlobalCrashHandler(
 
             out.appendLine("═══ VISION TRUST (frame gating) ═══")
             try {
-                val vt = Class.forName("com.assistant.adapter.smartassist.VisionTrust")
+                val vt = Class.forName("com.assistant.VisionTrust")
                 val diag = vt.getMethod("diagnostics").invoke(null) as? String
                 out.appendLine("  $diag")
                 out.appendLine("  NOTE: fg=false OR ballTrust<0.55 → ALL contributors blocked that frame")

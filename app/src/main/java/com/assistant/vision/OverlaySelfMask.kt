@@ -35,14 +35,14 @@ object OverlaySelfMask {
                 loc[1] + v.height + EDGE_PAD
             )
             rects[tag] = r
-            com.assistant.adapter.smartassist.VisionOverlayRegistry.publishBounds(tag, r)
+            com.assistant.VisionOverlayRegistry.publishBounds(tag, r)
         }
     }
 
     @JvmStatic
     fun clear(tag: String) {
         rects.remove(tag)
-        com.assistant.adapter.smartassist.VisionOverlayRegistry.clearBounds(tag)
+        com.assistant.VisionOverlayRegistry.clearBounds(tag)
     }
 
     @JvmStatic

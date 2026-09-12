@@ -40,8 +40,8 @@ object AdapterRecoveryEngine {
             "adapter_watchdog" to
                 "com.assistant.adapter.watchdog.WatchdogAdapterService",
 
-            "adapter_smartassist" to
-                "com.assistant.adapter.smartassist.SmartAssistAdapterService"
+            "gameplay_engine" to
+                "com.assistant.GameplayEngineService"
         )
 
     private fun launchAdapter(

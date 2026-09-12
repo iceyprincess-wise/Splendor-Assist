@@ -8,17 +8,17 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.assistant.overlay.R
-import com.assistant.adapter.smartassist.SmartAssistConfiguration
-import com.assistant.adapter.smartassist.SmartAssistMetrics
-import com.assistant.adapter.smartassist.SmartAssistRepository
-import com.assistant.adapter.smartassist.RuntimePerformanceCoordinator
-import com.assistant.adapter.smartassist.RuntimeDiagnosticsRegistry
-import com.assistant.adapter.smartassist.RuntimeVisualizationRegistry
-import com.assistant.adapter.smartassist.RuntimeOverlayHub
-import com.assistant.adapter.smartassist.VisionOverlayRegistry
-import com.assistant.adapter.smartassist.FPSMonitor
-import com.assistant.adapter.smartassist.VisionLatencyMonitor
-import com.assistant.adapter.smartassist.ConfidenceHeatmap
+import com.assistant.SmartAssistConfiguration
+import com.assistant.SmartAssistMetrics
+import com.assistant.SmartAssistRepository
+import com.assistant.RuntimePerformanceCoordinator
+import com.assistant.RuntimeDiagnosticsRegistry
+import com.assistant.RuntimeVisualizationRegistry
+import com.assistant.RuntimeOverlayHub
+import com.assistant.VisionOverlayRegistry
+import com.assistant.FPSMonitor
+import com.assistant.VisionLatencyMonitor
+import com.assistant.ConfidenceHeatmap
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionRequest
@@ -66,17 +66,17 @@ setContentView(R.layout.activity_smartassist_control_room)
 
         fun refreshMetrics() {
             val runtime =
-                com.assistant.adapter.smartassist.RuntimeCoordinator.runtimeState()
+                com.assistant.RuntimeCoordinator.runtimeState()
             val health =
-                com.assistant.adapter.smartassist.RuntimeHealthMonitor.runtimeHealthSnapshot()
+                com.assistant.RuntimeHealthMonitor.runtimeHealthSnapshot()
             val frame =
-                com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot()
+                com.assistant.FrameAssembler.frameRuntimeSnapshot()
             val decision =
-                com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot()
+                com.assistant.RuntimeDecisionLoop.decisionRuntimeSnapshot()
             val contributions =
                 com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot()
             val execution =
-                com.assistant.adapter.smartassist.GestureExecutionAuthority
+                com.assistant.GestureExecutionAuthority
                     .executionRuntimeSnapshot()
             val registry =
                 com.assistant.runtime.GameplayEngineRegistry

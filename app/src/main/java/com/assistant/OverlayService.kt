@@ -3,7 +3,7 @@ package com.assistant
 import android.annotation.SuppressLint
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.RuntimeMetricsRegistry
-import com.assistant.adapter.smartassist.SmartAssistRepository
+import com.assistant.SmartAssistRepository
 import com.assistant.survival.OverlaySurvivalEngine
 import com.assistant.overlay.metrics.SmartAssistMetrics
 import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
@@ -215,16 +215,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val scanBuffer = plane.buffer.duplicate()
                 val rowStride = plane.rowStride
                 val pixelStride = plane.pixelStride
-                val normalized = com.assistant.adapter.smartassist.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height, rowStride, pixelStride)
-                val state = com.assistant.adapter.smartassist.VisionCore.process(normalized)
+                val normalized = com.assistant.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height, rowStride, pixelStride)
+                val state = com.assistant.VisionCore.process(normalized)
                 com.assistant.BoosterIgnition.ensureIgnited(this)
                 com.assistant.AppContributorRegistration.ensureRegistered()
-                com.assistant.adapter.smartassist.RuntimeCoordinator.reportCaptureReady()
-                val frame = com.assistant.adapter.smartassist.FrameAssembler.assemble()
-                com.assistant.adapter.smartassist.RuntimeDecisionLoop.onFrame(frame)
-                com.assistant.adapter.smartassist.GameStateBuilder.update(state)
+                com.assistant.RuntimeCoordinator.reportCaptureReady()
+                val frame = com.assistant.FrameAssembler.assemble()
+                com.assistant.RuntimeDecisionLoop.onFrame(frame)
+                com.assistant.GameStateBuilder.update(state)
                 com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height, rowStride)
-                com.assistant.adapter.smartassist.ControlMappingTrainer.observe(scanBuffer, image.width, image.height, rowStride)
+                com.assistant.ControlMappingTrainer.observe(scanBuffer, image.width, image.height, rowStride)
             } catch (t: Throwable) {
                 try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
             }
@@ -296,10 +296,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         com.assistant.vision.ForegroundGate.install(application)
 
-        try { com.assistant.adapter.smartassist.RuntimeSelfHealEngine.init(applicationContext)
-              com.assistant.adapter.smartassist.RuntimeSelfHealEngine.start() } catch (_: Throwable) {}
-        try { com.assistant.adapter.smartassist.CaptaincySkillEngine.init(applicationContext) } catch (_: Throwable) {}
-        try { com.assistant.adapter.smartassist.CrowdingZoneDetector.init(applicationContext) } catch (_: Throwable) {}
+        try { com.assistant.RuntimeSelfHealEngine.init(applicationContext)
+              com.assistant.RuntimeSelfHealEngine.start() } catch (_: Throwable) {}
+        try { com.assistant.CaptaincySkillEngine.init(applicationContext) } catch (_: Throwable) {}
+        try { com.assistant.CrowdingZoneDetector.init(applicationContext) } catch (_: Throwable) {}
 
         instance = this
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -680,11 +680,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             System.currentTimeMillis() - lastMatchDetectionTime >= 5000L
                         ) {
                             SmartAssistRepository.activatePanic()
-                            val lv = com.assistant.adapter.smartassist.LiveVectorResolver.resolve(
+                            val lv = com.assistant.LiveVectorResolver.resolve(
                                 reusableBitmap?.width?.toFloat() ?: 1080f,
                                 reusableBitmap?.height?.toFloat() ?: 2400f
                             )
-                            val pipe = com.assistant.adapter.smartassist.SmartAssistPipeline()
+                            val pipe = com.assistant.SmartAssistPipeline()
                             val vectorDx = lv.endX - lv.startX
                             val vectorDy = lv.endY - lv.startY
                             val vectorDistance = kotlin.math.hypot(vectorDx, vectorDy)
@@ -768,7 +768,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     override fun onDestroy() {
         com.assistant.vision.OverlaySelfMask.clearPrefix("hud")
-        com.assistant.adapter.smartassist.RuntimeCoordinator.shutdown()
+        com.assistant.RuntimeCoordinator.shutdown()
         OverlaySurvivalEngine.destroyed()
 
         isRunning = false

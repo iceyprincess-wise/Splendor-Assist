@@ -32,10 +32,10 @@ import com.assistant.overlay.interceptor.GoalkeeperExecutionEngine
 import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
-import com.assistant.adapter.smartassist.SmartAssistAccessibilityEngine
+import com.assistant.SmartAssistAccessibilityEngine
 import com.assistant.overlay.repository.GoalkeeperRuntimeState
-import com.assistant.adapter.smartassist.TelemetryCoordinator
-import com.assistant.adapter.smartassist.TelemetryRepository
+import com.assistant.TelemetryCoordinator
+import com.assistant.TelemetryRepository
 
 object OmnipotentGoalkeeperEngine {
     // Zero-allocation primitive matrix tracking variables
@@ -103,7 +103,7 @@ object OmnipotentGoalkeeperEngine {
                 )
 
                 if (CentralExecutionBus.submit(rushRequest)) {
-                    com.assistant.adapter.smartassist.SmartAssistMetrics.recordGoalkeeperShadow(
+                    com.assistant.SmartAssistMetrics.recordGoalkeeperShadow(
                         rushRequest,
                         "phase-5 goalkeeper rush submitted unchanged as shadow-observed emergency gesture"
                     )
@@ -139,7 +139,7 @@ object OmnipotentGoalkeeperEngine {
             )
 
             if (CentralExecutionBus.submit(reflexRequest)) {
-                com.assistant.adapter.smartassist.SmartAssistMetrics.recordGoalkeeperShadow(
+                com.assistant.SmartAssistMetrics.recordGoalkeeperShadow(
                     reflexRequest,
                     "phase-6 goalkeeper reflex submitted unchanged as shadow-observed emergency gesture"
                 )

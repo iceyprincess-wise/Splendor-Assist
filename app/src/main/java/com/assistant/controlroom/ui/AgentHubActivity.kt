@@ -11,8 +11,8 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.assistant.adapter.smartassist.RuntimeSelfHealEngine
-import com.assistant.adapter.smartassist.InAppAgentCore
+import com.assistant.RuntimeSelfHealEngine
+import com.assistant.InAppAgentCore
 
 /**
  * Agent Hub Room (Item 4/6)

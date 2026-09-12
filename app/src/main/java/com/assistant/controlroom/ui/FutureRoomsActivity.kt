@@ -12,7 +12,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.assistant.adapter.smartassist.RuntimeSelfHealEngine
+import com.assistant.RuntimeSelfHealEngine
 
 /**
  * PHASE4 UPGRADE: FutureRoomsActivity

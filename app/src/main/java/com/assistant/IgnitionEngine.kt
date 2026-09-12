@@ -36,7 +36,7 @@ object IgnitionEngine {
 
         val adapters = listOf(
             "com.assistant.PerformanceEngineService",
-            "com.assistant.adapter.smartassist.SmartAssistAdapterService",
+            "com.assistant.GameplayEngineService",
             "com.assistant.adapter.watchdog.WatchdogAdapterService"
         )
 

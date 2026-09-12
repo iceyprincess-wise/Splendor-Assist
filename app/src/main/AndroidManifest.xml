@@ -65,15 +65,7 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <service
-            android:name="com.assistant.adapter.smartassist.SmartAssistAdapterService"
-            android:exported="true"
-            android:process=":survival"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Coordinates SmartAssist orchestration and decision telemetry." />
-        </service>
+        
 
         
 
@@ -145,6 +137,16 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Consolidated performance domain (lag, stutter, net, input, lmk, memory, thermal, battery)." />
+        </service>
+    
+        <service
+            android:name="com.assistant.GameplayEngineService"
+            android:exported="true"
+            android:process=":survival"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Consolidated gameplay domain (movement, passing, shooting, defending, keeper, tactical)." />
         </service>
     </application>
 </manifest>

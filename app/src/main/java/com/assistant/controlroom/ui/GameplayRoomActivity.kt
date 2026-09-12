@@ -12,10 +12,10 @@ import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.assistant.adapter.smartassist.CaptaincySkillEngine
-import com.assistant.adapter.smartassist.CrowdingZoneDetector
-import com.assistant.adapter.smartassist.FightingSpiritEngine
-import com.assistant.adapter.smartassist.RuntimeDecisionLoop
+import com.assistant.CaptaincySkillEngine
+import com.assistant.CrowdingZoneDetector
+import com.assistant.FightingSpiritEngine
+import com.assistant.RuntimeDecisionLoop
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.storage.SplendorStorageRoot
@@ -365,7 +365,7 @@ class GameplayRoomActivity : AppCompatActivity() {
     ): String {
         val frameSnap = try {
             RuntimeDecisionLoop.let {
-                com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot()
+                com.assistant.FrameAssembler.frameRuntimeSnapshot()
             }
         } catch (_: Throwable) {
             emptyMap<String, Any>()

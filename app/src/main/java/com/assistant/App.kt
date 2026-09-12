@@ -67,7 +67,7 @@ class App : Application() {
                 logSafe("App.onCreate: IN-APP AGENT SKIPPED - Storage not ready", "BOOT")
             } else {
                 val agentStarted = try {
-                    com.assistant.adapter.smartassist.InAppAgentCore.tryStart()
+                    com.assistant.InAppAgentCore.tryStart()
                 } catch (t: Throwable) {
                     val reason = "${t.javaClass.simpleName}: ${t.message ?: "unknown"}"
                     logSafe("IN-APP AGENT FAILED TO START: $reason", "BOOT")
@@ -75,11 +75,11 @@ class App : Application() {
                     false
                 }
 
-                if (agentStarted && com.assistant.adapter.smartassist.InAppAgentCore.isRunning()) {
+                if (agentStarted && com.assistant.InAppAgentCore.isRunning()) {
                     logSafe("App.onCreate: InAppAgentCore bootstrap verified running", "BOOT")
                 } else {
                     val snapshotRunning = try {
-                        com.assistant.adapter.smartassist.InAppAgentCore.snapshot().running
+                        com.assistant.InAppAgentCore.snapshot().running
                     } catch (_: Throwable) {
                         false
                     }

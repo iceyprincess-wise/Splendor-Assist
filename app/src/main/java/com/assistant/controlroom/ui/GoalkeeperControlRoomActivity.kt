@@ -11,13 +11,13 @@ import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.slider.Slider
 import com.assistant.overlay.R
 import com.assistant.overlay.repository.GoalkeeperRepository
-import com.assistant.adapter.smartassist.FrameAssembler
-import com.assistant.adapter.smartassist.GestureExecutionAuthority
-import com.assistant.adapter.smartassist.RuntimeCoordinator
-import com.assistant.adapter.smartassist.RuntimeDecisionLoop
-import com.assistant.adapter.smartassist.RuntimeHealthMonitor
-import com.assistant.adapter.smartassist.RuntimePerformanceCoordinator
-import com.assistant.adapter.smartassist.SmartAssistRepository
+import com.assistant.FrameAssembler
+import com.assistant.GestureExecutionAuthority
+import com.assistant.RuntimeCoordinator
+import com.assistant.RuntimeDecisionLoop
+import com.assistant.RuntimeHealthMonitor
+import com.assistant.RuntimePerformanceCoordinator
+import com.assistant.SmartAssistRepository
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 

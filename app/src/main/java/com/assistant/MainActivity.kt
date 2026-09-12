@@ -25,15 +25,15 @@ import com.assistant.controlroom.ui.GameplayRoomActivity
 import com.assistant.controlroom.ui.GoalkeeperControlRoomActivity
 import com.assistant.controlroom.ui.InterceptionControlRoomActivity
 import com.assistant.controlroom.ui.SmartAssistControlRoomActivity
-import com.assistant.adapter.smartassist.SmartAssistRepository
-import com.assistant.adapter.smartassist.RuntimePerformanceCoordinator
-import com.assistant.adapter.smartassist.RuntimeDiagnosticsRegistry
-import com.assistant.adapter.smartassist.RuntimeVisualizationRegistry
-import com.assistant.adapter.smartassist.RuntimeOverlayHub
-import com.assistant.adapter.smartassist.VisionOverlayRegistry
-import com.assistant.adapter.smartassist.FPSMonitor
-import com.assistant.adapter.smartassist.VisionLatencyMonitor
-import com.assistant.adapter.smartassist.ConfidenceHeatmap
+import com.assistant.SmartAssistRepository
+import com.assistant.RuntimePerformanceCoordinator
+import com.assistant.RuntimeDiagnosticsRegistry
+import com.assistant.RuntimeVisualizationRegistry
+import com.assistant.RuntimeOverlayHub
+import com.assistant.VisionOverlayRegistry
+import com.assistant.FPSMonitor
+import com.assistant.VisionLatencyMonitor
+import com.assistant.ConfidenceHeatmap
 import com.assistant.compliance.ComplianceState
 
 class MainActivity : AppCompatActivity() {
@@ -256,7 +256,7 @@ class MainActivity : AppCompatActivity() {
             permissionPipelineActive = false
             permissionPipelineStarted = false
             stopService(Intent(this, OverlayService::class.java))
-            com.assistant.adapter.smartassist.RuntimeCoordinator.shutdown()
+            com.assistant.RuntimeCoordinator.shutdown()
             refreshRuntimeHub()
         }
 
@@ -389,7 +389,7 @@ class MainActivity : AppCompatActivity() {
         permissionStage = PermissionStage.BATTERY
         try {
             if (ComplianceState.battery(this)) {
-                com.assistant.adapter.smartassist.RuntimeCoordinator.reportPermissionsVerified()
+                com.assistant.RuntimeCoordinator.reportPermissionsVerified()
                 checkAccessibilityAndProceed()
                 return
             }
@@ -408,7 +408,7 @@ class MainActivity : AppCompatActivity() {
             contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ) ?: ""
 
-        val expectedService = "com.assistant.adapter.smartassist.SmartAssistAccessibilityEngine"
+        val expectedService = "com.assistant.SmartAssistAccessibilityEngine"
 
         if (!enabled.contains(expectedService, true) && !enabled.contains(packageName, true)) {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -492,12 +492,12 @@ class MainActivity : AppCompatActivity() {
     private fun refreshRuntimeHub() {
         val view = findViewById<android.widget.TextView>(com.assistant.overlay.R.id.txtRuntimeHub) ?: return
 
-        val runtime = com.assistant.adapter.smartassist.RuntimeCoordinator.runtimeState()
+        val runtime = com.assistant.RuntimeCoordinator.runtimeState()
         val contributions = com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot()
-        val execution = com.assistant.adapter.smartassist.GestureExecutionAuthority.executionRuntimeSnapshot()
-        val health = com.assistant.adapter.smartassist.RuntimeHealthMonitor.runtimeHealthSnapshot()
-        val frame = com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot()
-        val decision = com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot()
+        val execution = com.assistant.GestureExecutionAuthority.executionRuntimeSnapshot()
+        val health = com.assistant.RuntimeHealthMonitor.runtimeHealthSnapshot()
+        val frame = com.assistant.FrameAssembler.frameRuntimeSnapshot()
+        val decision = com.assistant.RuntimeDecisionLoop.decisionRuntimeSnapshot()
         val registry = com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot()
 
         view.text = buildString {

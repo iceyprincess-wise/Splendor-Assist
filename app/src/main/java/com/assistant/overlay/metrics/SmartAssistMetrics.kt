@@ -1,6 +1,6 @@
 package com.assistant.overlay.metrics
 
-import com.assistant.adapter.smartassist.SmartAssistMetrics as RuntimeMetrics
+import com.assistant.SmartAssistMetrics as RuntimeMetrics
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

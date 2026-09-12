@@ -45,7 +45,7 @@ class WatchdogAdapterService : Service() {
         "adapter_sync"         to "com.assistant.adapter.sync.SyncAdapterService",
         "adapter_lmk"          to "com.assistant.adapter.lmk.LmkAdapterService",
         "adapter_interruption" to "com.assistant.adapter.interruption.InterruptionAdapterService",
-        "adapter_smartassist"  to "com.assistant.adapter.smartassist.SmartAssistAdapterService"
+        "adapter_smartassist"  to "com.assistant.SmartAssistAdapterService"
     )
 
     private val heartbeatRunnable = object : Runnable {

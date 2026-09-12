@@ -1,8 +1,8 @@
 package com.assistant.overlay.bridge
 
 import kotlinx.coroutines.flow.StateFlow
-import com.assistant.adapter.smartassist.SmartAssistRepository
-import com.assistant.adapter.smartassist.SmartAssistState
+import com.assistant.SmartAssistRepository
+import com.assistant.SmartAssistState
 
 
 class SmartAssistControlRoomBridge(

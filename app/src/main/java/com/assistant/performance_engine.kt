@@ -37,7 +37,7 @@ import android.os.Process
 import android.os.SystemClock
 import android.telephony.TelephonyManager
 import android.view.Choreographer
-import com.assistant.adapter.smartassist.VisionTrust
+import com.assistant.VisionTrust
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.notification.NodeNotificationHub

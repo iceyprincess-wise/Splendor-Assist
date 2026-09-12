@@ -15,11 +15,11 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.assistant.adapter.smartassist.CrossingLaneAnalysisEngine
-import com.assistant.adapter.smartassist.GameplayDecisionEngine
-import com.assistant.adapter.smartassist.MagneticFeetEngine
-import com.assistant.adapter.smartassist.RuntimeDiagnosticsRegistry
-import com.assistant.adapter.smartassist.SmartAssistMetrics
+import com.assistant.CrossingLaneAnalysisEngine
+import com.assistant.GameplayDecisionEngine
+import com.assistant.MagneticFeetEngine
+import com.assistant.RuntimeDiagnosticsRegistry
+import com.assistant.SmartAssistMetrics
 import com.assistant.diagnostic.RuntimeLogger
 import java.io.File
 
@@ -132,15 +132,15 @@ class DiagnosisDetailActivity : AppCompatActivity() {
 
     private fun stateFor(name: String): String = when (name) {
         "MagneticFeetEngine" -> MagneticFeetEngine.magneticFeetSnapshot()?.toString() ?: "No MagneticFeet snapshot yet."
-        "GameplayDecisionEngine" -> "decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot()
-        "CrossingLaneAnalysisEngine" -> "crossing=" + SmartAssistMetrics.crossingLaneRuntimeSnapshot() + "\nframe=" + com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot()
+        "GameplayDecisionEngine" -> "decision=" + com.assistant.RuntimeDecisionLoop.decisionRuntimeSnapshot()
+        "CrossingLaneAnalysisEngine" -> "crossing=" + SmartAssistMetrics.crossingLaneRuntimeSnapshot() + "\nframe=" + com.assistant.FrameAssembler.frameRuntimeSnapshot()
         "SmartAssistMetrics" -> buildString {
-            appendLine("runtime=" + com.assistant.adapter.smartassist.RuntimeCoordinator.runtimeState())
-            appendLine("health=" + com.assistant.adapter.smartassist.RuntimeHealthMonitor.runtimeHealthSnapshot())
-            appendLine("frame=" + com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot())
-            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+            appendLine("runtime=" + com.assistant.RuntimeCoordinator.runtimeState())
+            appendLine("health=" + com.assistant.RuntimeHealthMonitor.runtimeHealthSnapshot())
+            appendLine("frame=" + com.assistant.FrameAssembler.frameRuntimeSnapshot())
+            appendLine("decision=" + com.assistant.RuntimeDecisionLoop.decisionRuntimeSnapshot())
             appendLine("contributions=" + com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot())
-            appendLine("execution=" + com.assistant.adapter.smartassist.GestureExecutionAuthority.executionRuntimeSnapshot())
+            appendLine("execution=" + com.assistant.GestureExecutionAuthority.executionRuntimeSnapshot())
             appendLine("registry=" + com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot())
         }
         "SmartAssistControlRoomActivity" -> "Displays runtime, health, frame, decision, contribution, execution and registry truth."
@@ -152,23 +152,23 @@ class DiagnosisDetailActivity : AppCompatActivity() {
         "MagneticFeetEngine" -> buildString {
             appendLine("magneticFeet=" + SmartAssistMetrics.magneticFeetRuntimeSnapshot())
             appendLine("registry=" + com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot())
-            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+            appendLine("decision=" + com.assistant.RuntimeDecisionLoop.decisionRuntimeSnapshot())
         }
         "GameplayDecisionEngine" -> buildString {
-            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+            appendLine("decision=" + com.assistant.RuntimeDecisionLoop.decisionRuntimeSnapshot())
             appendLine("legacyActivation=" + SmartAssistMetrics.gameplayActivationRuntimeSnapshot())
         }
         "CrossingLaneAnalysisEngine" -> buildString {
             appendLine("crossing=" + SmartAssistMetrics.crossingLaneRuntimeSnapshot())
-            appendLine("frame=" + com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot())
+            appendLine("frame=" + com.assistant.FrameAssembler.frameRuntimeSnapshot())
         }
         "SmartAssistMetrics" -> buildString {
-            appendLine("runtime=" + com.assistant.adapter.smartassist.RuntimeCoordinator.runtimeState())
-            appendLine("health=" + com.assistant.adapter.smartassist.RuntimeHealthMonitor.runtimeHealthSnapshot())
-            appendLine("frame=" + com.assistant.adapter.smartassist.FrameAssembler.frameRuntimeSnapshot())
-            appendLine("decision=" + com.assistant.adapter.smartassist.RuntimeDecisionLoop.decisionRuntimeSnapshot())
+            appendLine("runtime=" + com.assistant.RuntimeCoordinator.runtimeState())
+            appendLine("health=" + com.assistant.RuntimeHealthMonitor.runtimeHealthSnapshot())
+            appendLine("frame=" + com.assistant.FrameAssembler.frameRuntimeSnapshot())
+            appendLine("decision=" + com.assistant.RuntimeDecisionLoop.decisionRuntimeSnapshot())
             appendLine("contributions=" + com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot())
-            appendLine("execution=" + com.assistant.adapter.smartassist.GestureExecutionAuthority.executionRuntimeSnapshot())
+            appendLine("execution=" + com.assistant.GestureExecutionAuthority.executionRuntimeSnapshot())
             appendLine("registry=" + com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot())
         }
         "SmartAssistControlRoomActivity" -> "Control Room consumes runtime truth surfaces and displays live runtime state."
