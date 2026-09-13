@@ -19,9 +19,6 @@ object HybridExecutionTerminal {
     fun route(
         request: ExecutionRequest
     ): Boolean {
-
-        RuntimeLogger.execution("HYBRID_ROUTE","source=${request.source} phase=${request.phase}")
-
         return CentralExecutionBus.submit(request)
     }
 }

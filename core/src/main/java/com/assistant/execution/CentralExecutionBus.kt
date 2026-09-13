@@ -4,7 +4,7 @@ import com.assistant.diagnostic.RuntimeLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.concurrent.PriorityBlockingQueue
+import java.util.PriorityQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -78,7 +78,7 @@ object CentralExecutionBus {
         }
 
     private val queue =
-        PriorityBlockingQueue(
+        PriorityQueue(
             11,
             queueComparator
         )
