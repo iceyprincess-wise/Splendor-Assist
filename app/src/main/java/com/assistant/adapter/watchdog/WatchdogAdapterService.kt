@@ -32,20 +32,20 @@ class WatchdogAdapterService : Service() {
 
     // Map from adapter registry name to its service class name
     private val adapterMap = mapOf(
-        "adapter_net"          to "com.assistant.adapter.net.NetAdapterService",
-        "adapter_input"        to "com.assistant.adapter.input.InputAdapterService",
-        "adapter_lag"          to "com.assistant.adapter.lag.LagAdapterService",
-        "adapter_stutter"      to "com.assistant.adapter.stutter.StutterAdapterService",
-        "adapter_ping"         to "com.assistant.adapter.ping.PingAdapterService",
-        "adapter_memory"       to "com.assistant.adapter.memory.MemoryAdapterService",
-        "adapter_thermal"      to "com.assistant.adapter.thermal.ThermalAdapterService",
-        "adapter_battery"      to "com.assistant.adapter.battery.BatteryAdapterService",
-        "adapter_scheduler"    to "com.assistant.adapter.scheduler.SchedulerAdapterService",
-        "adapter_boot"         to "com.assistant.adapter.boot.BootAdapterService",
-        "adapter_sync"         to "com.assistant.adapter.sync.SyncAdapterService",
-        "adapter_lmk"          to "com.assistant.adapter.lmk.LmkAdapterService",
-        "adapter_interruption" to "com.assistant.adapter.interruption.InterruptionAdapterService",
-        "adapter_smartassist"  to "com.assistant.SmartAssistAdapterService"
+        "performance_engine"          to "com.assistant.NetAdapterService",
+        "performance_engine"        to "com.assistant.InputAdapterService",
+        "performance_engine"          to "com.assistant.LagAdapterService",
+        "performance_engine"      to "com.assistant.StutterAdapterService",
+        "performance_engine"         to "com.assistant.PingAdapterService",
+        "performance_engine"       to "com.assistant.MemoryAdapterService",
+        "performance_engine"      to "com.assistant.ThermalAdapterService",
+        "performance_engine"      to "com.assistant.BatteryAdapterService",
+        "performance_engine"    to "com.assistant.SchedulerAdapterService",
+        "performance_engine"         to "com.assistant.BootAdapterService",
+        "performance_engine"         to "com.assistant.SyncAdapterService",
+        "performance_engine"          to "com.assistant.LmkAdapterService",
+        "performance_engine" to "com.assistant.InterruptionAdapterService",
+        "performance_engine"  to "com.assistant.SmartAssistAdapterService"
     )
 
     private val heartbeatRunnable = object : Runnable {
