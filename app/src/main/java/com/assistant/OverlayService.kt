@@ -9,6 +9,13 @@ import com.assistant.overlay.metrics.SmartAssistMetrics
 import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
 import com.assistant.overlay.notification.RuntimeNotificationCoordinator
 import com.assistant.overlay.runtime.PerformanceGovernor
+import com.assistant.memory.MmapStateEngine
+import com.assistant.render.ChoreographerRenderLoop
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
@@ -116,6 +123,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     private var captureState: CaptureState = CaptureState.IDLE
     private val captureLock = ReentrantLock()
+    private val visionScope = CoroutineScope(Dispatchers.Default + Job())
 
     private fun readCaptureState(): CaptureState {
         captureLock.lock()
@@ -211,6 +219,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 return@OnImageAvailableListener
             }
 
+            visionScope.launch {
             try {
                 val plane = image.planes[0]
                 val scanBuffer = plane.buffer.duplicate()
@@ -218,7 +227,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val pixelStride = plane.pixelStride
                 val normalized = com.assistant.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height, rowStride, pixelStride)
                 val state = com.assistant.VisionCore.process(normalized)
-                com.assistant.BoosterIgnition.ensureIgnited(this)
+                com.assistant.BoosterIgnition.ensureIgnited(this@OverlayService)
                 com.assistant.AppContributorRegistration.ensureRegistered()
                 com.assistant.RuntimeCoordinator.reportCaptureReady()
                 val frame = com.assistant.FrameAssembler.assemble()
@@ -228,6 +237,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 com.assistant.ControlMappingTrainer.observe(scanBuffer, image.width, image.height, rowStride)
             } catch (t: Throwable) {
                 try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+            }
             }
 
             val shedFactor = when (com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentLoadShed()) {
@@ -305,6 +315,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
         instance = this
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initializePerformanceMode()
+        MmapStateEngine.initialize(cacheDir)
+        ChoreographerRenderLoop.start()
         ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_DEFAULT).apply { start() }
         ocrIoHandler = android.os.Handler(ocrIoThread!!.looper)
         initializeOverlayUI()
@@ -406,7 +418,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     private fun updateOverlayVisuals(text: String, color: Int) {
-        Handler(Looper.getMainLooper()).post {
+        ChoreographerRenderLoop.postUpdate {
             txtEngineStatus.text = if (CallOverlayRepository.incomingCallVisible) "[CALL PROTECTED] " + text else text
             txtEngineStatus.setTextColor(color)
         }
@@ -793,6 +805,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         processingThread?.interrupt()
         processingThread = null
+        visionScope.cancel()
 
         teardownCaptureResources(CaptureState.IDLE)
 
@@ -804,6 +817,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
             try { perfHintSession?.close() } catch (_: Throwable) {}
         }
         perfHintSession = null
+        ChoreographerRenderLoop.stop()
+        MmapStateEngine.release()
         ocrIoThread?.quitSafely()
         ocrIoThread = null
 
