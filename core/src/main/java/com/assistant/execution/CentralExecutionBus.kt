@@ -12,8 +12,7 @@ enum class ExecutionSource {
     SMART_ASSIST,
     GOALKEEPER,
     INTERCEPTION,
-    STUTTER,
-    FUTURE_ENGINE
+    STUTTER
 }
 
 data class ExecutionRequest(
@@ -302,8 +301,8 @@ object CentralExecutionBus {
         when (source) {
             ExecutionSource.GOALKEEPER -> 120L
             ExecutionSource.INTERCEPTION -> 120L
-            ExecutionSource.SMART_ASSIST -> 130L
-            ExecutionSource.STUTTER -> 140L
+            ExecutionSource.SMART_ASSIST -> 200L
+            ExecutionSource.STUTTER -> 400L
         }
 
     private fun removeSupersededLocked(
