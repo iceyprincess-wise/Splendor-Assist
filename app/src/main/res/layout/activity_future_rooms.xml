@@ -5,7 +5,7 @@
     android:background="#173A6A"
     android:fillViewport="true">
 
-    <LinearLayout
+    <LinearLayout android:baselineAligned="false"
     android:tag="PHASE10_MATERIAL3_LAYOUT_MARKER"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,7 +16,7 @@
             android:id="@+id/tvFutureEmoji"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="➕"
+            android:text="@string/auto_extracted_65"
             android:textSize="28sp"
             android:textColor="#FFFFFF"/>
 
@@ -24,7 +24,7 @@
             android:id="@+id/tvFutureTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="FUTURE ROOMS"
+            android:text="@string/auto_extracted_66"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
             android:textSize="24sp"/>
@@ -33,7 +33,7 @@
             android:id="@+id/tvFutureSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Planned expansion rooms"
+            android:text="@string/auto_extracted_67"
             android:textColor="#E0E0E0"
             android:layout_marginBottom="18dp"/>
 
@@ -51,7 +51,7 @@
             android:id="@+id/btnBack"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="BACK"
+            android:text="@string/auto_extracted_68"
             android:layout_marginTop="20dp"
             android:background="@drawable/button_premium"
             android:textColor="#FFFFFF"/>

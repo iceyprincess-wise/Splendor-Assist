@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <LinearLayout android:baselineAligned="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Interception Control Room"
+            android:text="@string/auto_extracted_78"
             android:textAppearance="?attr/textAppearanceHeadlineSmall"/>
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -21,19 +21,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Enable Interception"/>
+            android:text="@string/auto_extracted_79"/>
 
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/switch_auto_intercept"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Auto Intercept"/>
+            android:text="@string/auto_extracted_80"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Awareness"/>
+            android:text="@string/auto_extracted_81"/>
 
         <com.google.android.material.slider.Slider
             android:id="@+id/seekbar_awareness"
@@ -46,13 +46,13 @@
             android:id="@+id/text_awareness_value"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="50%"/>
+            android:text="@string/auto_extracted_82"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Prediction"/>
+            android:text="@string/auto_extracted_83"/>
 
         <com.google.android.material.slider.Slider
             android:id="@+id/seekbar_prediction"
@@ -65,21 +65,21 @@
             android:id="@+id/text_prediction_value"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="50%"/>
+            android:text="@string/auto_extracted_84"/>
 
         <TextView
             android:id="@+id/text_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="INACTIVE"/>
+            android:text="@string/auto_extracted_85"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_save"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Save Settings"/>
+            android:text="@string/auto_extracted_86"/>
 
     </LinearLayout>
 

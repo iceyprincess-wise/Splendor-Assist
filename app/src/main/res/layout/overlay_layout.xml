@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top|center_horizontal"
         android:layout_marginTop="45dp"
-        android:text="HYBRID COACH ACTIVE"
+        android:text="@string/auto_extracted_48"
         android:textColor="#00FF00"
         android:textSize="14sp"
         android:textStyle="bold"

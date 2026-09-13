@@ -14,7 +14,7 @@ android {
     defaultConfig {
         applicationId = "com.assistant.overlay"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 112
         versionName = "1.0-SECURE-LOCKED"
         
@@ -72,11 +72,11 @@ android {
 
 dependencies {
     implementation(project(":core"))
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.14.0")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.2.2")
+    implementation("androidx.core:core-ktx:1.19.0")
+    implementation("androidx.appcompat:appcompat:1.8.0")
     implementation("com.google.mlkit:text-recognition:16.0.1") {
         exclude(group = "org.tensorflow", module = "tensorflow-lite-api")
     }

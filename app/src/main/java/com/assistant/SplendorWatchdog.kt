@@ -46,7 +46,10 @@ class SplendorWatchdogService : Service() {
             val am = getSystemService(AlarmManager::class.java)
             val pi = PendingIntent.getService(this, 1, Intent(this, SplendorWatchdogService::class.java),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-            am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 5 * 60_000L, pi)
+            try {
+                if (Build.VERSION.SDK_INT >= 31 && !am.canScheduleExactAlarms()) return
+                am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 5 * 60_000L, pi)
+            } catch (e: SecurityException) { }
         } catch (e: Exception) { }
     }
     override fun onBind(i: Intent?): IBinder? = null

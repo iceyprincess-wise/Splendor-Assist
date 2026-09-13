@@ -14,7 +14,7 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.BIND_VPN_SERVICE" />
+    <uses-permission android:name="android.permission.BIND_VPN_SERVICE" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
 
@@ -41,12 +41,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.assistant.ErrorActivity" android:exported="false" />
+        
         <activity android:name="com.assistant.DiagnosisDetailActivity" android:exported="false" />
         <activity android:name="com.assistant.DiagnosisRoomActivity" android:exported="false" />
-        <activity android:name="com.assistant.LogActivity" android:exported="false" />
-        <activity android:name="com.assistant.WelcomeActivity" android:exported="false" />
-        <activity android:name="com.assistant.UpdateActivity" android:exported="false" />
+        
+        
+        
 
         <service
             android:name="com.assistant.OverlayService"
@@ -111,21 +111,9 @@
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
-        <service
-            android:name=".SplendorWatchdogService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse"
-            android:process=":watch">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="session_watchdog" />
-        </service>
+        
 
-        <activity
-            android:name=".SplendorReauthActivity"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        
 
 
     

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <LinearLayout android:baselineAligned="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Smart Assist Control Room"
+            android:text="@string/auto_extracted_49"
             android:textAppearance="?attr/textAppearanceHeadlineSmall"/>
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -21,19 +21,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Enable Smart Assist"/>
+            android:text="@string/auto_extracted_50"/>
 
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/swPanic"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Panic Mode"/>
+            android:text="@string/auto_extracted_51"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Pass Threshold"/>
+            android:text="@string/auto_extracted_52"/>
 
         <com.google.android.material.slider.Slider
             android:id="@+id/passSeek"
@@ -45,7 +45,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Shot Threshold"/>
+            android:text="@string/auto_extracted_53"/>
 
         <com.google.android.material.slider.Slider
             android:id="@+id/shotSeek"
@@ -57,7 +57,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cross Threshold"/>
+            android:text="@string/auto_extracted_54"/>
 
         <com.google.android.material.slider.Slider
             android:id="@+id/crossSeek"
@@ -70,7 +70,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Runtime Authority"/>
+            android:text="@string/auto_extracted_55"/>
 
         <com.google.android.material.slider.Slider
             android:id="@+id/authoritySeek"
@@ -84,7 +84,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="12dp"
-            android:text="50%"/>
+            android:text="@string/auto_extracted_56"/>
 
         <TextView
             android:id="@+id/tvRuntime"
@@ -103,7 +103,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Save"/>
+            android:text="@string/auto_extracted_57"/>
 
     </LinearLayout>
 

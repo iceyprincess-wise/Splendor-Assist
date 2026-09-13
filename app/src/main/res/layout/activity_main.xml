@@ -13,7 +13,7 @@
     app:cardCornerRadius="18dp"
     app:cardUseCompatPadding="true">
 
-    <LinearLayout
+    <LinearLayout android:baselineAligned="false"
     android:tag="PHASE10_MATERIAL3_LAYOUT_MARKER"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,20 +22,20 @@
 
         <TextView android:id="@+id/tvTitle"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="SPLENDOR ASSIST" android:textColor="#FFFFFF"
+            android:text="@string/auto_extracted_3" android:textColor="#FFFFFF"
             android:textStyle="bold" android:textSize="28sp"/>
         <TextView android:id="@+id/tvSubtitle"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="Runtime Control Center" android:textColor="#B8CCE6"
+            android:text="@string/auto_extracted_4" android:textColor="#B8CCE6"
             android:layout_marginBottom="20dp"/>
 
         <com.google.android.material.button.MaterialButton android:id="@+id/btnStartEngine"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="START ENGINE" android:textStyle="bold"
+            android:text="@string/auto_extracted_5" android:textStyle="bold"
             android:background="@drawable/button_premium" android:textColor="#FFFFFF"/>
         <com.google.android.material.button.MaterialButton android:id="@+id/btnStopEngine"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="STOP ENGINE" android:textStyle="bold"
+            android:text="@string/auto_extracted_6" android:textStyle="bold"
             android:background="@drawable/button_premium" android:textColor="#FFFFFF"/>
 
         <TextView android:id="@+id/txtRuntimeHub"
@@ -44,22 +44,22 @@
             android:layout_marginTop="12dp"
             android:textSize="12sp"
             android:fontFamily="monospace"
-            android:text="Runtime cold" />
+            android:text="@string/auto_extracted_7" />
 
         <com.google.android.material.button.MaterialButton android:id="@+id/btnViewLogs"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="12dp" android:text="VIEW LOGS"
+            android:layout_marginTop="12dp" android:text="@string/auto_extracted_8"
             android:background="@drawable/button_premium" android:textColor="#FFFFFF"/>
 
         <TextView android:id="@+id/tvOptimizationTitle"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginTop="24dp" android:text="SET YOUR OPTIMIZATION"
+            android:layout_marginTop="24dp" android:text="@string/auto_extracted_9"
             android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="18sp"/>
         <TextView android:id="@+id/tvOptimizationBanner"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="10dp" android:padding="14dp"
             android:background="@drawable/banner_premium"
-            android:text="Configure engine rooms before runtime startup."
+            android:text="@string/auto_extracted_10"
             android:textColor="#FFFFFF"/>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -81,15 +81,15 @@
                         android:gravity="center" android:orientation="vertical" android:padding="8dp">
                         <TextView android:id="@+id/tvSmartAssistBulb"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="●" android:textSize="14sp" android:textColor="#40E36A"/>
+                            android:text="@string/auto_extracted_11" android:textSize="14sp" android:textColor="#40E36A"/>
                         <TextView android:id="@+id/tvSmartAssistState"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="LOCKED" android:textSize="10sp" android:textColor="#B8CCE6"/>
+                            android:text="@string/auto_extracted_12" android:textSize="12sp" android:textColor="#B8CCE6"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="⚡" android:textSize="24sp" android:layout_marginTop="4dp"/>
+                            android:text="@string/auto_extracted_13" android:textSize="24sp" android:layout_marginTop="4dp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="SMART ASSIST" android:textColor="#FFFFFF"
-                            android:textStyle="bold" android:textSize="11sp" android:gravity="center"/>
+                            android:text="@string/auto_extracted_14" android:textColor="#FFFFFF"
+                            android:textStyle="bold" android:textSize="12sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -105,15 +105,15 @@
                         android:gravity="center" android:orientation="vertical" android:padding="8dp">
                         <TextView android:id="@+id/tvGoalkeeperBulb"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="●" android:textSize="14sp" android:textColor="#D0D0D0"/>
+                            android:text="@string/auto_extracted_15" android:textSize="14sp" android:textColor="#D0D0D0"/>
                         <TextView android:id="@+id/tvGoalkeeperState"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="OFF" android:textSize="10sp" android:textColor="#B8CCE6"/>
+                            android:text="@string/auto_extracted_16" android:textSize="12sp" android:textColor="#B8CCE6"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🧤" android:textSize="24sp" android:layout_marginTop="4dp"/>
+                            android:text="@string/auto_extracted_17" android:textSize="24sp" android:layout_marginTop="4dp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="GOALKEEPER" android:textColor="#FFFFFF"
-                            android:textStyle="bold" android:textSize="11sp" android:gravity="center"/>
+                            android:text="@string/auto_extracted_18" android:textColor="#FFFFFF"
+                            android:textStyle="bold" android:textSize="12sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -129,15 +129,15 @@
                         android:gravity="center" android:orientation="vertical" android:padding="8dp">
                         <TextView android:id="@+id/tvInterceptionBulb"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="●" android:textSize="14sp" android:textColor="#D0D0D0"/>
+                            android:text="@string/auto_extracted_19" android:textSize="14sp" android:textColor="#D0D0D0"/>
                         <TextView android:id="@+id/tvInterceptionState"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="OFF" android:textSize="10sp" android:textColor="#B8CCE6"/>
+                            android:text="@string/auto_extracted_20" android:textSize="12sp" android:textColor="#B8CCE6"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🛡️" android:textSize="24sp" android:layout_marginTop="4dp"/>
+                            android:text="@string/auto_extracted_21" android:textSize="24sp" android:layout_marginTop="4dp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="INTERCEPTION" android:textColor="#FFFFFF"
-                            android:textStyle="bold" android:textSize="11sp" android:gravity="center"/>
+                            android:text="@string/auto_extracted_22" android:textColor="#FFFFFF"
+                            android:textStyle="bold" android:textSize="12sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
@@ -155,10 +155,10 @@
                         android:background="@drawable/card_inner_premium"
                         android:gravity="center" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🎮" android:textSize="24sp"/>
+                            android:text="@string/auto_extracted_23" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="GAMEPLAY ROOM" android:textColor="#FFFFFF"
-                            android:textStyle="bold" android:textSize="10sp" android:gravity="center"/>
+                            android:text="@string/auto_extracted_24" android:textColor="#FFFFFF"
+                            android:textStyle="bold" android:textSize="12sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -172,10 +172,10 @@
                         android:background="@drawable/card_inner_premium"
                         android:gravity="center" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🤖" android:textSize="24sp"/>
+                            android:text="@string/auto_extracted_25" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="AGENT HUB ROOM" android:textColor="#FFFFFF"
-                            android:textStyle="bold" android:textSize="9sp" android:gravity="center"/>
+                            android:text="@string/auto_extracted_26" android:textColor="#FFFFFF"
+                            android:textStyle="bold" android:textSize="12sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -189,10 +189,10 @@
                         android:background="@drawable/card_inner_premium"
                         android:gravity="center" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🔔" android:textSize="24sp"/>
+                            android:text="@string/auto_extracted_27" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="NOTIFICATIONS" android:textColor="#FFFFFF"
-                            android:textStyle="bold" android:textSize="10sp" android:gravity="center"/>
+                            android:text="@string/auto_extracted_28" android:textColor="#FFFFFF"
+                            android:textStyle="bold" android:textSize="12sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
@@ -210,10 +210,10 @@
                         android:background="@drawable/card_inner_premium"
                         android:gravity="center" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🎮" android:textSize="24sp"/>
+                            android:text="@string/auto_extracted_29" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="GAMEPLAY" android:textColor="#FFFFFF"
-                            android:textStyle="bold" android:textSize="10sp" android:gravity="center"/>
+                            android:text="@string/auto_extracted_30" android:textColor="#FFFFFF"
+                            android:textStyle="bold" android:textSize="12sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -227,10 +227,10 @@
                         android:background="@drawable/card_inner_premium"
                         android:gravity="center" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📊" android:textSize="24sp"/>
+                            android:text="@string/auto_extracted_31" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="DIAGNOSTICS" android:textColor="#FFFFFF"
-                            android:textStyle="bold" android:textSize="10sp" android:gravity="center"/>
+                            android:text="@string/auto_extracted_32" android:textColor="#FFFFFF"
+                            android:textStyle="bold" android:textSize="12sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -245,15 +245,15 @@
                         android:gravity="center" android:orientation="vertical" android:padding="8dp">
                         <TextView android:id="@+id/tvFutureBulb"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="●" android:textSize="14sp" android:textColor="#40E36A"/>
+                            android:text="@string/auto_extracted_33" android:textSize="14sp" android:textColor="#40E36A"/>
                         <TextView android:id="@+id/tvFutureState"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="30 ROOMS" android:textSize="10sp" android:textColor="#B8CCE6"/>
+                            android:text="@string/auto_extracted_34" android:textSize="12sp" android:textColor="#B8CCE6"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="➕" android:textSize="24sp" android:layout_marginTop="4dp"/>
+                            android:text="@string/auto_extracted_35" android:textSize="24sp" android:layout_marginTop="4dp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="FUTURE" android:textColor="#FFFFFF"
-                            android:textStyle="bold" android:textSize="11sp" android:gravity="center"/>
+                            android:text="@string/auto_extracted_36" android:textColor="#FFFFFF"
+                            android:textStyle="bold" android:textSize="12sp" android:gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
@@ -273,27 +273,27 @@
             android:id="@+id/txtRuntimeStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Runtime"/>
+            android:text="@string/auto_extracted_37"/>
 
         <TextView
             android:id="@+id/txtVisionStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Vision"/>
+            android:text="@string/auto_extracted_38"/>
 
         <TextView
             android:id="@+id/txtDiagnosticsStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Diagnostics"/>
+            android:text="@string/auto_extracted_39"/>
 
     </LinearLayout>
 
 
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="v1.0-SECURE-LOCKED • Adapter Build"
-            android:textColor="#6B8AAA" android:textSize="11sp"
+            android:text="@string/auto_extracted_40"
+            android:textColor="#6B8AAA" android:textSize="12sp"
             android:layout_marginTop="24dp" android:layout_gravity="center_horizontal"/>
     </LinearLayout></com.google.android.material.card.MaterialCardView>
 
