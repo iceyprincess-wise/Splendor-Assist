@@ -300,9 +300,9 @@ object CentralExecutionBus {
     ): Long =
         when (source) {
             ExecutionSource.GOALKEEPER -> 300L // Reconciled with 250ms dispatch latch
-            ExecutionSource.INTERCEPTION -> 120L
-            ExecutionSource.SMART_ASSIST -> 200L
-            ExecutionSource.STUTTER -> 400L
+            ExecutionSource.INTERCEPTION -> 300L
+            ExecutionSource.SMART_ASSIST -> 250L
+            ExecutionSource.STUTTER -> 350L
         }
 
     private fun removeSupersededLocked(
