@@ -1,16 +1,17 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-13 03:28:38 WAT
+Started: 2026-09-13 04:02:00 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
+ M app/build.gradle.kts
 === HEAD ===
-e18a77ce (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt,app/src/main/java/com/assistant/gameplay_engine.kt,app/src/main/java/com/assistant/performance_engine.kt,app/src/main/res/drawable/splendor_assist_logo.png,app/src/main/res/values/strings.xml,core/build.gradle.kts,core/src/main/java/com/assistant/diagnostic/CrashInspector.kt,core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt,core/src/main/java/com/assistant/storage/SplendorStorageRoot.kt,core/src/main/res/layout/activity_analytics_theater.xml,core/src/main/res/layout/activity_crash_inspector.xml
+96ad1d9b (HEAD -> main, origin/main, origin/HEAD) Update: f.py
 
 === MAIN ===
-e18a77ce (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt,app/src/main/java/com/assistant/gameplay_engine.kt,app/src/main/java/com/assistant/performance_engine.kt,app/src/main/res/drawable/splendor_assist_logo.png,app/src/main/res/values/strings.xml,core/build.gradle.kts,core/src/main/java/com/assistant/diagnostic/CrashInspector.kt,core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt,core/src/main/java/com/assistant/storage/SplendorStorageRoot.kt,core/src/main/res/layout/activity_analytics_theater.xml,core/src/main/res/layout/activity_crash_inspector.xml
+96ad1d9b (HEAD -> main, origin/main, origin/HEAD) Update: f.py
 
 
 ================================================================
@@ -21,76 +22,8 @@ NO — clean skipped; preserving incremental build state.
 ================================================================
 >>> OPTIONAL LINT
 ================================================================
-NO — lint skipped by user.
+YES — running lint --continue
 
 ================================================================
->>> LINT ISSUE EXTRACTION
-================================================================
-SKIPPED — lint was not run.
-
-================================================================
->>> CONNECTED ANDROID TESTS
-================================================================
-SKIPPED — no ADB device connected (not a failure)
-
-================================================================
->>> VERSION BUMP
-================================================================
-versionCode: 113 -> 114
-
-================================================================
->>> ASSEMBLE DEBUG APK
-================================================================
-[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
-	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:380:6 Unresolved reference: SuppressLint
-FAILURE: Build failed with an exception.
-* What went wrong:
-BUILD FAILED in 4m 53s
-
-ASSEMBLE DEBUG APK EXIT: 1
-
-================================================================
->>> APK EXPORT
-================================================================
-SKIPPED — build exit=1, apk_exists=YES
-VERSION TRANSACTION: ROLLED BACK
-Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
-================================================================
->>> OPTIONAL GRADLE DAEMON STOP
-================================================================
-NO — Gradle daemon remains running for warm builds.
-
-Current Gradle daemon status:
-   PID STATUS   INFO
- 24806 IDLE     8.5
- 14698 STOPPED  (by user or operating system)
- 24118 STOPPED  (by user or operating system)
-  7389 STOPPED  (by user or operating system)
-
-Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
-
-================================================================
->>> BUILD RESULT SUMMARY
-================================================================
-CLEAN:                           0
-LINT:                            SKIPPED — OPTIONAL
-CONNECTED TESTS:                 0
-VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  1
-APK EXPORT:                      1
-GRADLE DAEMON STOP:              0
-
-FINAL STATUS: FAILED — check items above
-
-GIT STATUS:
- M Build_lint_output.txt
-=== HEAD ===
-e18a77ce (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt,app/src/main/java/com/assistant/gameplay_engine.kt,app/src/main/java/com/assistant/performance_engine.kt,app/src/main/res/drawable/splendor_assist_logo.png,app/src/main/res/values/strings.xml,core/build.gradle.kts,core/src/main/java/com/assistant/diagnostic/CrashInspector.kt,core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt,core/src/main/java/com/assistant/storage/SplendorStorageRoot.kt,core/src/main/res/layout/activity_analytics_theater.xml,core/src/main/res/layout/activity_crash_inspector.xml
-
-=== MAIN ===
-e18a77ce (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt,app/src/main/java/com/assistant/gameplay_engine.kt,app/src/main/java/com/assistant/performance_engine.kt,app/src/main/res/drawable/splendor_assist_logo.png,app/src/main/res/values/strings.xml,core/build.gradle.kts,core/src/main/java/com/assistant/diagnostic/CrashInspector.kt,core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt,core/src/main/java/com/assistant/storage/SplendorStorageRoot.kt,core/src/main/res/layout/activity_analytics_theater.xml,core/src/main/res/layout/activity_crash_inspector.xml
-
-Finished: 2026-09-13 03:34:20 WAT
-Report size: 6788 bytes
+>>> LINT — ALL MODULES (--continue)
 ================================================================
