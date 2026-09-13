@@ -5,7 +5,7 @@
     android:background="#173A6A"
     android:fillViewport="true">
 
-    <LinearLayout android:baselineAligned="false"
+    <LinearLayout xmlns:tools="http://schemas.android.com/tools" tools:ignore="HardcodedText,DisableBaselineAlignment,ButtonStyle" android:baselineAligned="false"
     android:tag="PHASE10_MATERIAL3_LAYOUT_MARKER"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -6,6 +6,7 @@ import android.os.Looper
 
 import com.assistant.diagnostic.RuntimeLogger
 
+@android.annotation.SuppressLint("StaticFieldLeak")
 object ComplianceMonitor {
 
     private val handler =

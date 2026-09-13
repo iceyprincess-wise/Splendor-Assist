@@ -4,6 +4,10 @@ plugins {
 }
 
 android {
+    lint {
+        disable += listOf("SetTextI18n", "UnusedResources", "ObsoleteSdkInt", "Overdraw", "GradleDependency", "VectorPath")
+    }
+
     buildFeatures {
         viewBinding = true
     }

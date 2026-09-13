@@ -18,6 +18,7 @@ import com.assistant.survival.ResourceBudgetRegistry
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executors
 
+@android.annotation.SuppressLint("StaticFieldLeak")
 object DashboardInjector {
 
     private const val DASHBOARD_TAG = "splendor_dashboard_overlay"

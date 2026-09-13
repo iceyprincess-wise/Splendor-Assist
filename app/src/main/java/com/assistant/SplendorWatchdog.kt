@@ -48,7 +48,10 @@ class SplendorWatchdogService : Service() {
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
             try {
                 if (Build.VERSION.SDK_INT >= 31 && !am.canScheduleExactAlarms()) return
+                try {
+                if (Build.VERSION.SDK_INT >= 31 && !am.canScheduleExactAlarms()) return
                 am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 5 * 60_000L, pi)
+            } catch (e: SecurityException) { }
             } catch (e: SecurityException) { }
         } catch (e: Exception) { }
     }

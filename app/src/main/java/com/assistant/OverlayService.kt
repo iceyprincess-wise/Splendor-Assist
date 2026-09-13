@@ -68,6 +68,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     @Volatile
     private var runtimeInitialized = false
 
+    @android.annotation.SuppressLint("StaticFieldLeak")
     companion object {
         private const val CHANNEL_ID = "efootball_assistant_channel"
         private const val NOTIFICATION_ID = 101

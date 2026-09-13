@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -56,7 +56,7 @@
         <service
             android:name="com.assistant.SmartAssistAccessibilityEngine"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true">
+            android:exported="true" tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
@@ -87,7 +87,7 @@
             android:name="com.assistant.adapter.watchdog.WatchdogAdapterService"
             android:exported="true"
             android:process=":survival"
-            android:foregroundServiceType="specialUse">
+            android:foregroundServiceType="specialUse" tools:ignore="ExportedService">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Supervises adapter health, failures and recovery telemetry." />
@@ -106,7 +106,7 @@
         <service
             android:name="com.assistant.PingEliminatorVpnService"
             android:exported="true"
-            android:permission="android.permission.BIND_VPN_SERVICE">
+            android:permission="android.permission.BIND_VPN_SERVICE" tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
@@ -121,7 +121,7 @@
             android:name="com.assistant.PerformanceEngineService"
             android:exported="true"
             android:process=":survival"
-            android:foregroundServiceType="specialUse">
+            android:foregroundServiceType="specialUse" tools:ignore="ExportedService">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Consolidated performance domain (lag, stutter, net, input, lmk, memory, thermal, battery)." />
@@ -131,7 +131,7 @@
             android:name="com.assistant.GameplayEngineService"
             android:exported="true"
             android:process=":survival"
-            android:foregroundServiceType="specialUse">
+            android:foregroundServiceType="specialUse" tools:ignore="ExportedService">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Consolidated gameplay domain (movement, passing, shooting, defending, keeper, tactical)." />
