@@ -1,16 +1,16 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-13 02:13:58 WAT
+Started: 2026-09-13 02:34:03 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
 === HEAD ===
-83553363 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/debug/AndroidManifest.xml,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,app/src/main/res/values/strings.xml
+daeebb53 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/DashboardInjector.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,core/src/main/AndroidManifest.xml
 
 === MAIN ===
-83553363 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/debug/AndroidManifest.xml,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,app/src/main/res/values/strings.xml
+daeebb53 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/DashboardInjector.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,core/src/main/AndroidManifest.xml
 
 
 ================================================================
@@ -30,7 +30,7 @@ YES — running lint --continue
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
 FAILURE: Build failed with an exception.
 * What went wrong:
-BUILD FAILED in 2m 33s
+BUILD FAILED in 2m 1s
 
 LINT — ALL MODULES (--continue) EXIT: 1
 
@@ -265,7 +265,9 @@ LINT — ALL MODULES (--continue) EXIT: 1
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/xml/filepaths.xml:2: Warning: The resource R.xml.filepaths appears to be unused [UnusedResources]
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/xml/provider_paths.xml:2: Warning: The resource R.xml.provider_paths appears to be unused [UnusedResources]
 
-[0 err, 11 warn] ./core/build/reports/lint-results-debug.txt
+[0 err, 13 warn] ./core/build/reports/lint-results-debug.txt
+/data/data/com.termux/files/home/projects/Splendor-Assist/core/build.gradle.kts:32: Warning: A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-core than 1.7.3 is available: 1.9.0 [GradleDependency]
+/data/data/com.termux/files/home/projects/Splendor-Assist/core/build.gradle.kts:33: Warning: A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-android than 1.7.3 is available: 1.9.0 [GradleDependency]
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/build.gradle.kts:34: Warning: A newer version of androidx.appcompat:appcompat than 1.7.0 is available: 1.8.0 [GradleDependency]
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/diagnostic/CrashInspector.kt:5: Warning: Do not hardcode "/sdcard/"; use Environment.getExternalStorageDirectory().getPath() instead [SdCardPath]
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:61: Warning: Do not hardcode "/sdcard/"; use Environment.getExternalStorageDirectory().getPath() instead [SdCardPath]
@@ -278,7 +280,7 @@ LINT — ALL MODULES (--continue) EXIT: 1
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/res/layout/activity_crash_inspector.xml:13: Warning: Hardcoded string "Crash Logs...", should use @string resource [HardcodedText]
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/res/layout/activity_crash_inspector.xml:18: Warning: Hardcoded string "Copy Full Error Report", should use @string resource [HardcodedText]
 
---- LINT TOTAL: 10 errors, 225 warnings ---
+--- LINT TOTAL: 10 errors, 227 warnings ---
 
 ================================================================
 >>> CONNECTED ANDROID TESTS
@@ -295,7 +297,7 @@ versionCode: 112 -> 113
 ================================================================
 FAILURE: Build failed with an exception.
 * What went wrong:
-BUILD FAILED in 26s
+BUILD FAILED in 36s
 
 ASSEMBLE DEBUG APK EXIT: 1
 
@@ -314,7 +316,6 @@ Current Gradle daemon status:
    PID STATUS   INFO
  14698 IDLE     8.5
   7672 STOPPED  (stop command received)
- 13788 STOPPED  (by user or operating system)
  29386 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
@@ -335,11 +336,11 @@ FINAL STATUS: FAILED — check items above
 GIT STATUS:
  M Build_lint_output.txt
 === HEAD ===
-83553363 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/debug/AndroidManifest.xml,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,app/src/main/res/values/strings.xml
+daeebb53 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/DashboardInjector.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,core/src/main/AndroidManifest.xml
 
 === MAIN ===
-83553363 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/debug/AndroidManifest.xml,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,app/src/main/res/values/strings.xml
+daeebb53 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/DashboardInjector.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,core/src/main/AndroidManifest.xml
 
-Finished: 2026-09-13 02:17:43 WAT
-Report size: 57433 bytes
+Finished: 2026-09-13 02:37:02 WAT
+Report size: 58329 bytes
 ================================================================
