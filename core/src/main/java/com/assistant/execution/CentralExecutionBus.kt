@@ -37,11 +37,11 @@ object CentralExecutionBus {
 
     // Disruptor Pattern: 3 Rings for Priority Levels (High=100, Med=90, Low=80)
     // Capacity must be power of 2 for fast bitwise AND masking
-    private const val RING_CAPACITY = 1024
-    private const val MASK = RING_CAPACITY - 1
+    private const val RING_CAPACITY = 1024L
+    private const val MASK = RING_CAPACITY - 1L
 
     private class LockFreeRing {
-        val buffer = AtomicReferenceArray<ExecutionRequest>(RING_CAPACITY)
+        val buffer = AtomicReferenceArray<ExecutionRequest>(RING_CAPACITY.toInt())
         val writeCursor = AtomicLong(0)
         val readCursor = AtomicLong(0)
     }
