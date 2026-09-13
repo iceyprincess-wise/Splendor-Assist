@@ -10,10 +10,10 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:scrollbars="vertical"
-        android:text="@string/crash_logs" />
+        android:text="Crash Logs..." />
     <Button
         android:id="@+id/copyButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/copy_full_error_report" />
+        android:text="Copy Full Error Report" />
 </LinearLayout>

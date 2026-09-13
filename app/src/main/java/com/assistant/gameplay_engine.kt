@@ -11346,7 +11346,7 @@ object RuntimeSelfHealEngine {
     @Volatile private var running = false
     @Volatile private var agentStartedMs: Long = 0L
     private var contextRef: WeakReference<android.content.Context>? = null
-    private val fmt = SimpleDateFormat("HH:mm:ss.SSS", java.util.Locale.ROOT)
+    private val fmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
 
     // Deduplication: category → last logged details hash + last log time
     private val lastLoggedMs = HashMap<String, Long>()
@@ -11894,7 +11894,7 @@ object RuntimeSelfHealEngine {
             val file = healLogFile() ?: return
             FileWriter(file, true).use { w ->
                 if (header) {
-                    val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.ROOT).format(Date())
+                    val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
                     w.write("\n" + "=".repeat(60) + "\n")
                     w.write("SPLENDOR SELF-HEAL AGENT SESSION: $ts\n")
                     w.write("Read: cat /sdcard/Splendor-Assist/SplendorHealLog.txt\n")

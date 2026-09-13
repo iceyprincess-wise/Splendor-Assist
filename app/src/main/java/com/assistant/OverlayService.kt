@@ -1,6 +1,5 @@
 package com.assistant
 
-import android.annotation.SuppressLint
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.RuntimeMetricsRegistry
 import com.assistant.SmartAssistRepository
@@ -73,7 +72,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
         private const val CHANNEL_ID = "efootball_assistant_channel"
         private const val NOTIFICATION_ID = 101
 
-        @SuppressLint("StaticFieldLeak")
         @Volatile var instance: OverlayService? = null
             private set
 

@@ -6,7 +6,7 @@ import java.io.File
 
 object SplendorStorageRoot {
 
-    const val ROOT_PATH = android.os.Environment.getExternalStorageDirectory().path + "Splendor-Assist"
+    const val ROOT_PATH = "/sdcard/Splendor-Assist"
 
     private val root = File(ROOT_PATH)
 

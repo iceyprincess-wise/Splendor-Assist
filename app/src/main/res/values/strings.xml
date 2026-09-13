@@ -44,7 +44,7 @@
     <string name="auto_extracted_44">DOWNLOAD &amp;amp; INSTALL</string>
     <string name="auto_extracted_45">SKIP FOR NOW</string>
     <string name="auto_extracted_46">SPLENDOR ASSIST</string>
-    <string name="auto_extracted_47">[*] INITIALIZING DYNAMIC SECURE STATE…</string>
+    <string name="auto_extracted_47">[*] INITIALIZING DYNAMIC SECURE STATE...</string>
     <string name="auto_extracted_48">HYBRID COACH ACTIVE</string>
     <string name="auto_extracted_49">Smart Assist Control Room</string>
     <string name="auto_extracted_50">Enable Smart Assist</string>
@@ -84,8 +84,5 @@
     <string name="auto_extracted_84">50%</string>
     <string name="auto_extracted_85">INACTIVE</string>
     <string name="auto_extracted_86">Save Settings</string>
-    <string name="save">Save</string>
-    <string name="delete">Delete</string>
-    <string name="crash_logs">Crash Logs…</string>
-    <string name="copy_full_error_report">Copy Full Error Report</string>
+    <string name="crash_logs">Crash Logs...</string>
 </resources>

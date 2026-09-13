@@ -58,14 +58,14 @@ object RuntimeLogger {
 
         if (isMainProcess) {
             if (externalLogFile == null) {
-                externalLogFile = File(android.os.Environment.getExternalStorageDirectory().path + "Splendor-Assist", "Splendor_Field_Logs.txt").also { it.parentFile?.mkdirs() }
+                externalLogFile = File("/sdcard/Splendor-Assist", "Splendor_Field_Logs.txt").also { it.parentFile?.mkdirs() }
             }
 
             if (forensicDir == null) {
 
                 forensicDir =
                     File(
-                        android.os.Environment.getExternalStorageDirectory().path + "Splendor-Assist/Forensics"
+                        "/sdcard/Splendor-Assist/Forensics"
                     ).apply {
                         mkdirs()
                     }
