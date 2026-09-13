@@ -30,7 +30,7 @@ class SplendorWatchdogService : Service() {
     }
     private fun tick() {
         try {
-            val dir = File("/sdcard/Splendor-Assist")
+            val dir = File(android.os.Environment.getExternalStorageDirectory().path + "Splendor-Assist")
             val files = dir.listFiles() ?: return
             val ref = files.filter { it.name.contains("heartbeat", true) || it.name.contains("marker", true) }
                 .maxByOrNull { it.lastModified() } ?: files.maxByOrNull { it.lastModified() } ?: return

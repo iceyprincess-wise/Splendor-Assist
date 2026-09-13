@@ -4631,7 +4631,7 @@ class InterruptionAdapterService : Service() {
                 val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
                 val request = NetworkRequest.Builder()
                     .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                    .addCapability(NetworkCapabilities.NET_CAPABILITY_FOREGROUND)
+                    .apply { if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) addCapability(NetworkCapabilities.NET_CAPABILITY_FOREGROUND) }
                     .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
                     .build()
                 

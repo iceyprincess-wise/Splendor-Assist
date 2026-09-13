@@ -73,6 +73,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         private const val CHANNEL_ID = "efootball_assistant_channel"
         private const val NOTIFICATION_ID = 101
 
+        @SuppressLint("StaticFieldLeak")
         @Volatile var instance: OverlayService? = null
             private set
 

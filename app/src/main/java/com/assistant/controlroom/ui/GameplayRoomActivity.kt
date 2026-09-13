@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
-import android.widget.Switch
+import androidx.appcompat.widget.SwitchCompat
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.assistant.CaptaincySkillEngine
@@ -47,7 +47,7 @@ class GameplayRoomActivity : AppCompatActivity() {
     private var amplifierView: TextView? = null
     private var busView: TextView? = null
     private var crowdView: TextView? = null
-    private var captaincyToggle: Switch? = null
+    private var captaincyToggle: SwitchCompat? = null
 
     private val logFmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
     private val LOG_FILE: File
