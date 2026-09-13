@@ -3022,7 +3022,6 @@ object PerformanceScheduler {
                     val charging = intent?.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) == android.os.BatteryManager.BATTERY_STATUS_CHARGING
                     val pct = if (scale > 0) (level * 100) / scale else level
                     com.assistant.diagnostic.AdapterSignalBus.publishBattery(pct, charging)
-                    try { BatteryAdapterService.GameplayPowerEngine.evaluate(pct, charging, 0f) } catch (_: Throwable) {}
                 } catch (_: Throwable) {}
                 schedulerHandler?.postDelayed(this, 5000L)
             }
