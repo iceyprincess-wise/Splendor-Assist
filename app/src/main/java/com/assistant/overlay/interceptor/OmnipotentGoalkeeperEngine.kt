@@ -215,11 +215,10 @@ object OmnipotentGoalkeeperEngine {
             // Buffer safety catch
         }
 
-        var defensiveActionPerformed = false
-        run {
+        val defensiveActionPerformed = run {
             val t = TelemetryRepository.current()
 
-            defensiveActionPerformed = processGoalkeeperDefensiveLayer(
+            processGoalkeeperDefensiveLayer(
                 ballX = if (t.ballX != 0f) t.ballX else width / 2f,
                 ballY = if (t.ballY != 0f) t.ballY else height * 0.8f,
                 ballVx = t.ballVelocityX,
