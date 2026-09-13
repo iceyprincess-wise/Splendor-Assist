@@ -112,11 +112,13 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
+        val isMove = request.phase == com.assistant.runtime.ActionClass.MOVE.ordinal
+        
         if (isDispatching) {
-            if (!latchStuck()) {
+            if (!isMove && !latchStuck()) {
                 return false
             }
-            isDispatching = false
+            isDispatching = false // Allow MOVE requests to preempt and continuously update joystick vector
         }
 
         isDispatching = true

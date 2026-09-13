@@ -7868,7 +7868,7 @@ object RuntimeDecisionLoop {
     private fun classScale(actionClass: ActionClass): Float =
         when (actionClass) {
             ActionClass.MOVE ->
-                0.35f
+                1.0f // UPGRADE: Movement must compete equally in arbitration to prevent magnetic starvation
             ActionClass.NONE -> 0f
             else -> 1f
         }
@@ -15246,13 +15246,13 @@ object MagneticFeetContributor : GameplayContributor {
                 inverseDistance
 
         val travel =
-            MIN_TRAVEL +
+            MAX_TRAVEL -
                 (
                     (
                         MAX_TRAVEL -
                             MIN_TRAVEL
                     ) * proximity
-                )
+                ) // UPGRADE: Inverted logic fixed. Far = long swipe (fast approach), Close = short swipe (fine magnetic correction)
 
         val targetX =
             (
