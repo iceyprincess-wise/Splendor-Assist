@@ -45,6 +45,33 @@ object GoalkeeperExecutionEngine {
 
             GoalkeeperAction.HOLD ->
                 HoldPositionActionEngine.vector(width, height)
+
+            GoalkeeperAction.JUMP_TOP_CENTER ->
+                JumpTopCenterActionEngine.vector(width, height)
+
+            GoalkeeperAction.JUMP_TOP_LEFT ->
+                JumpTopLeftActionEngine.vector(width, height)
+
+            GoalkeeperAction.JUMP_TOP_RIGHT ->
+                JumpTopRightActionEngine.vector(width, height)
+
+            GoalkeeperAction.REACH_LEFT_CENTER ->
+                ReachLeftCenterActionEngine.vector(width, height)
+
+            GoalkeeperAction.REACH_RIGHT_CENTER ->
+                ReachRightCenterActionEngine.vector(width, height)
+
+            GoalkeeperAction.CATCH_CENTER ->
+                CatchCenterActionEngine.vector(width, height)
+
+            GoalkeeperAction.REFLEX_CENTER ->
+                ReflexCenterActionEngine.vector(width, height)
+
+            GoalkeeperAction.PARRY_BOTTOM_CENTER ->
+                ParryBottomCenterActionEngine.vector(width, height)
+
+            GoalkeeperAction.AERIAL_CLAIM ->
+                AerialClaimActionEngine.vector(width, height)
         }
     }
 }

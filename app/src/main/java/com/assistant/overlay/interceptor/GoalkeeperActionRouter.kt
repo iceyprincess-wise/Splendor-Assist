@@ -14,7 +14,16 @@ enum class GoalkeeperAction {
     RECOVER,
     HOLD,
     DIVE_BOTTOM_LEFT,
-    DIVE_BOTTOM_RIGHT
+    DIVE_BOTTOM_RIGHT,
+    JUMP_TOP_CENTER,
+    JUMP_TOP_LEFT,
+    JUMP_TOP_RIGHT,
+    REACH_LEFT_CENTER,
+    REACH_RIGHT_CENTER,
+    CATCH_CENTER,
+    REFLEX_CENTER,
+    PARRY_BOTTOM_CENTER,
+    AERIAL_CLAIM
 }
 
 object GoalkeeperActionRouter {
@@ -120,6 +129,11 @@ object GoalkeeperActionRouter {
                 GoalkeeperAction.DIVE_BOTTOM_RIGHT
             }
 
+            panicOverride && decision.heightBand == HeightBand.BOTTOM && decision.normX in 0.33f..0.66f -> {
+                GoalkeeperMetricsRegistry.panicSaves.incrementAndGet()
+                GoalkeeperAction.PARRY_BOTTOM_CENTER
+            }
+
             panicOverride &&
                 panic ==
                 PanicAction.BLOCK_LEFT -> {
@@ -148,6 +162,35 @@ object GoalkeeperActionRouter {
 
                 GoalkeeperAction.RUSH_OUT
             }
+
+            // PRECISE 2D GOALMOUTH COVERAGE MATRIX
+            anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.TOP && decision.normX < 0.33f ->
+                GoalkeeperAction.JUMP_TOP_LEFT
+
+            anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.TOP && decision.normX > 0.66f ->
+                GoalkeeperAction.JUMP_TOP_RIGHT
+
+            anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.TOP ->
+                GoalkeeperAction.JUMP_TOP_CENTER
+
+            anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.MID && decision.normX < 0.33f ->
+                GoalkeeperAction.REACH_LEFT_CENTER
+
+            anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.MID && decision.normX > 0.66f ->
+                GoalkeeperAction.REACH_RIGHT_CENTER
+
+            anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.MID && decision.priority >= 120 ->
+                GoalkeeperAction.REFLEX_CENTER
+
+            anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.MID ->
+                GoalkeeperAction.CATCH_CENTER
+
+            anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.BOTTOM && decision.normX in 0.33f..0.66f ->
+                GoalkeeperAction.PARRY_BOTTOM_CENTER
+
+            // AERIAL COVERAGE
+            cross == CrossAction.CLAIM && decision.heightBand == HeightBand.TOP ->
+                GoalkeeperAction.AERIAL_CLAIM
 
             anticipation ==
                 AnticipationResult.SAVE &&

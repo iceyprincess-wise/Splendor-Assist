@@ -262,7 +262,6 @@ object OmnipotentGoalkeeperEngine {
 
         com.assistant.diagnostic.RuntimeMetricsRegistry.goalkeeperTriggers.incrementAndGet()
 
-        val workStartNanos = System.nanoTime()
         try {
 
             // Absolute Hardware Limit Vectors for Redmi 15C class
