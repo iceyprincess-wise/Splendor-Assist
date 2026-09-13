@@ -10330,11 +10330,6 @@ object TouchStabilizationEngine {
         endY: Float, 
         durationMs: Long
     ): Boolean {
-        val path = Path().apply {
-            moveTo(startX, startY)
-            lineTo(endX, endY)
-        }
-        
         // Ensure duration doesn't violate engine bounds but pushes the hardware limit
         val safeDuration = max(OVERRIDE_LATENCY_MS, durationMs)
         return com.assistant.input.NativeInputBridge.injectSwipe(service, startX, startY, endX, endY, safeDuration)
