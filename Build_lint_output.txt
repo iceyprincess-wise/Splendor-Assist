@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-13 11:55:54 WAT
+Started: 2026-09-13 20:13:21 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -30,33 +30,34 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 121 -> 122
+versionCode: 122 -> 123
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 34s
+w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine.kt:218:40 Variable 'defensiveActionPerformed' initializer is redundant
+BUILD SUCCESSFUL in 3m 56s
 
 ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v122-20260913_115631.apk
--rw-rw----. 1 u0_a262 media_rw 29M Sep 13 11:56 /storage/emulated/0/Download/Splendor-Assist-v122-20260913_115631.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v123-20260913_201724.apk
+-rw-rw----. 1 u0_a262 media_rw 29M Sep 13 20:17 /storage/emulated/0/Download/Splendor-Assist-v123-20260913_201724.apk
 VERSION TRANSACTION: COMMITTED
 
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
-Invalid choice ".". Daemon will remain running.
+NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 32192 IDLE     8.5
- 27896 STOPPED  (by user or operating system)
+ 20480 IDLE     8.5
+ 32192 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -77,6 +78,6 @@ GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
  M app/build.gradle.kts
 
-Finished: 2026-09-13 12:10:20 WAT
-Report size: 3505 bytes
+Finished: 2026-09-13 20:17:33 WAT
+Report size: 3732 bytes
 ================================================================
