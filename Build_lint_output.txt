@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-13 20:21:38 WAT
+Started: 2026-09-14 00:29:44 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -30,24 +30,30 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 123 -> 124
+versionCode: 124 -> 125
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 1m 11s
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:89:39 Type mismatch: inferred type is Int but Long was expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:108:56 Type mismatch: inferred type is Int but Long was expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:125:54 Type mismatch: inferred type is Int but Long was expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:131:53 Type mismatch: inferred type is Int but Long was expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/execution/CentralExecutionBus.kt:137:53 Type mismatch: inferred type is Int but Long was expected
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 1m 59s
 
-ASSEMBLE DEBUG APK EXIT: 0
+ASSEMBLE DEBUG APK EXIT: 1
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v124-20260913_202254.apk
--rw-rw----. 1 u0_a262 media_rw 29M Sep 13 20:22 /storage/emulated/0/Download/Splendor-Assist-v124-20260913_202254.apk
-VERSION TRANSACTION: COMMITTED
-
+SKIPPED — build exit=1, apk_exists=YES
+VERSION TRANSACTION: ROLLED BACK
+Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
@@ -55,8 +61,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 20480 IDLE     8.5
- 32192 STOPPED  (by user or operating system)
+ 28150 IDLE     8.5
+ 20480 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -67,16 +73,16 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  0
-APK EXPORT:                      0
+ASSEMBLE DEBUG:                  1
+APK EXPORT:                      1
 GRADLE DAEMON STOP:              0
 
-FINAL STATUS: ALL PASSED
+FINAL STATUS: FAILED — check items above
 
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
- M app/build.gradle.kts
+ D fix_warning.py
 
-Finished: 2026-09-13 20:23:16 WAT
-Report size: 3514 bytes
+Finished: 2026-09-14 00:33:30 WAT
+Report size: 4511 bytes
 ================================================================
