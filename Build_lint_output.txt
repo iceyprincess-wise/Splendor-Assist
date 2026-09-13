@@ -1,17 +1,16 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-13 01:35:11 WAT
+Started: 2026-09-13 01:51:52 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
- M app/build.gradle.kts
 === HEAD ===
-fbbee45c (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/AndroidManifest.xml
+5f5c433d (HEAD -> main, origin/main, origin/HEAD) Update: core/src/main/AndroidManifest.xml
 
 === MAIN ===
-fbbee45c (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/AndroidManifest.xml
+5f5c433d (HEAD -> main, origin/main, origin/HEAD) Update: core/src/main/AndroidManifest.xml
 
 
 ================================================================
@@ -27,20 +26,16 @@ YES — running lint --continue
 ================================================================
 >>> LINT — ALL MODULES (--continue)
 ================================================================
-Lint found 1 errors, 11 warnings. First failure:
-/data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/AndroidManifest.xml:5: Error: Class referenced in the manifest, com.assistant.admin.AdminSettingsActivity, was not found in the project or the libraries [MissingClass]
+[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
+	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
 Lint found 10 errors, 227 warnings. First failure:
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/debug/AndroidManifest.xml:4: Error: Class referenced in the manifest, com.assistant.overlay.dvr.DvrProjectionService, was not found in the project or the libraries [MissingClass]
-FAILURE: Build completed with 2 failures.
-* What went wrong:
-> Lint found errors in the project; aborting build.
-  Lint found 1 errors, 11 warnings. First failure:
-  /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/AndroidManifest.xml:5: Error: Class referenced in the manifest, com.assistant.admin.AdminSettingsActivity, was not found in the project or the libraries [MissingClass]
+FAILURE: Build failed with an exception.
 * What went wrong:
 > Lint found errors in the project; aborting build.
   Lint found 10 errors, 227 warnings. First failure:
   /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/debug/AndroidManifest.xml:4: Error: Class referenced in the manifest, com.assistant.overlay.dvr.DvrProjectionService, was not found in the project or the libraries [MissingClass]
-BUILD FAILED in 6m 39s
+BUILD FAILED in 7m 23s
 
 LINT — ALL MODULES (--continue) EXIT: 1
 
@@ -275,9 +270,8 @@ LINT — ALL MODULES (--continue) EXIT: 1
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/xml/filepaths.xml:2: Warning: The resource R.xml.filepaths appears to be unused [UnusedResources]
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/xml/provider_paths.xml:2: Warning: The resource R.xml.provider_paths appears to be unused [UnusedResources]
 
-[1 err, 11 warn] ./core/build/reports/lint-results-debug.txt
+[0 err, 11 warn] ./core/build/reports/lint-results-debug.txt
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/build.gradle.kts:34: Warning: A newer version of androidx.appcompat:appcompat than 1.7.0 is available: 1.8.0 [GradleDependency]
-/data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/AndroidManifest.xml:5: Error: Class referenced in the manifest, com.assistant.admin.AdminSettingsActivity, was not found in the project or the libraries [MissingClass]
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/diagnostic/CrashInspector.kt:5: Warning: Do not hardcode "/sdcard/"; use Environment.getExternalStorageDirectory().getPath() instead [SdCardPath]
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:61: Warning: Do not hardcode "/sdcard/"; use Environment.getExternalStorageDirectory().getPath() instead [SdCardPath]
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/java/com/assistant/diagnostic/RuntimeLogger.kt:68: Warning: Do not hardcode "/sdcard/"; use Environment.getExternalStorageDirectory().getPath() instead [SdCardPath]
@@ -289,7 +283,7 @@ LINT — ALL MODULES (--continue) EXIT: 1
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/res/layout/activity_crash_inspector.xml:13: Warning: Hardcoded string "Crash Logs...", should use @string resource [HardcodedText]
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/res/layout/activity_crash_inspector.xml:18: Warning: Hardcoded string "Copy Full Error Report", should use @string resource [HardcodedText]
 
---- LINT TOTAL: 11 errors, 225 warnings ---
+--- LINT TOTAL: 10 errors, 225 warnings ---
 
 ================================================================
 >>> CONNECTED ANDROID TESTS
@@ -299,34 +293,38 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 110 -> 111
+versionCode: 111 -> 112
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 49s
+BUILD SUCCESSFUL in 1m 36s
 
 ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v111-20260913_014249.apk
--rw-rw----. 1 u0_a262 media_rw 29M Sep 13 01:42 /storage/emulated/0/Download/Splendor-Assist-v111-20260913_014249.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v112-20260913_020103.apk
+-rw-rw----. 1 u0_a262 media_rw 29M Sep 13 02:01 /storage/emulated/0/Download/Splendor-Assist-v112-20260913_020103.apk
 VERSION TRANSACTION: COMMITTED
 
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
-NO — Gradle daemon remains running for warm builds.
+YES — stopping Gradle daemon.
+Stopping Daemon(s)
+1 Daemon stopped
+PROVEN: Gradle daemon stop command completed.
 
 Current Gradle daemon status:
+No Gradle daemons are running.
    PID STATUS   INFO
- 29386 IDLE     8.5
-  3056 STOPPED  (by user or operating system)
+  7672 STOPPED  (stop command received)
  13788 STOPPED  (by user or operating system)
+ 29386 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -347,11 +345,11 @@ GIT STATUS:
  M Build_lint_output.txt
  M app/build.gradle.kts
 === HEAD ===
-fbbee45c (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/AndroidManifest.xml
+5f5c433d (HEAD -> main, origin/main, origin/HEAD) Update: core/src/main/AndroidManifest.xml
 
 === MAIN ===
-fbbee45c (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/AndroidManifest.xml
+5f5c433d (HEAD -> main, origin/main, origin/HEAD) Update: core/src/main/AndroidManifest.xml
 
-Finished: 2026-09-13 01:44:10 WAT
-Report size: 56416 bytes
+Finished: 2026-09-13 02:03:36 WAT
+Report size: 56149 bytes
 ================================================================
