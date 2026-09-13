@@ -32,20 +32,8 @@ class WatchdogAdapterService : Service() {
 
     // Map from adapter registry name to its service class name
     private val adapterMap = mapOf(
-        "performance_engine"          to "com.assistant.NetAdapterService",
-        "performance_engine"        to "com.assistant.InputAdapterService",
-        "performance_engine"          to "com.assistant.LagAdapterService",
-        "performance_engine"      to "com.assistant.StutterAdapterService",
-        "performance_engine"         to "com.assistant.PingAdapterService",
-        "performance_engine"       to "com.assistant.MemoryAdapterService",
-        "performance_engine"      to "com.assistant.ThermalAdapterService",
-        "performance_engine"      to "com.assistant.BatteryAdapterService",
-        "performance_engine"    to "com.assistant.SchedulerAdapterService",
-        "performance_engine"         to "com.assistant.BootAdapterService",
-        "performance_engine"         to "com.assistant.SyncAdapterService",
-        "performance_engine"          to "com.assistant.LmkAdapterService",
-        "performance_engine" to "com.assistant.InterruptionAdapterService",
-        "performance_engine"  to "com.assistant.SmartAssistAdapterService"
+        "performance_engine" to "com.assistant.PerformanceEngineService",
+        "gameplay_engine"    to "com.assistant.GameplayEngineService"
     )
 
     private val heartbeatRunnable = object : Runnable {
