@@ -7989,13 +7989,16 @@ object RuntimeDecisionLoop {
         }
         if (best == null) return null
 
+        val pred = BallTrajectoryPredictor.current()
+        val leadX = if (pred.speed > 20f) pred.predictedX else best.targetX
+        val leadY = if (pred.speed > 20f) pred.predictedY else best.targetY
         return ExecutionRequest(
             source = ExecutionSource.SMART_ASSIST,
             phase = best.actionClass.ordinal,
             startX = 250f,  // FIX: joystick origin, not ball position
             startY = 550f,
-            endX = best.targetX.coerceAtLeast(0f),
-            endY = best.targetY.coerceAtLeast(0f),
+            endX = leadX.coerceAtLeast(0f),
+            endY = leadY.coerceAtLeast(0f),
             duration = ControlMappingTrainer.personalDuration(best.actionClass, best.durationHintMs).coerceIn(15L, 85L)
         )
     }
@@ -10311,10 +10314,7 @@ object TouchStabilizationEngine {
         }
         
         // Build the gesture with absolute minimal duration for instant registration
-        val stroke = GestureDescription.StrokeDescription(path, 0, OVERRIDE_LATENCY_MS)
-        val gesture = GestureDescription.Builder().addStroke(stroke).build()
-        
-        return GestureExecutionAuthority.execute(service, gesture, null, null)
+        return com.assistant.input.NativeInputBridge.injectTap(service, x, y)
     }
     
     /**
@@ -10337,11 +10337,7 @@ object TouchStabilizationEngine {
         
         // Ensure duration doesn't violate engine bounds but pushes the hardware limit
         val safeDuration = max(OVERRIDE_LATENCY_MS, durationMs)
-        
-        val stroke = GestureDescription.StrokeDescription(path, 0, safeDuration)
-        val gesture = GestureDescription.Builder().addStroke(stroke).build()
-        
-        return GestureExecutionAuthority.execute(service, gesture, null, null)
+        return com.assistant.input.NativeInputBridge.injectSwipe(service, startX, startY, endX, endY, safeDuration)
     }
 }
 /* ======

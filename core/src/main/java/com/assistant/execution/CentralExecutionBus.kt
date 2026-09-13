@@ -4,9 +4,9 @@ import com.assistant.diagnostic.RuntimeLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.PriorityQueue
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReferenceArray
+import java.util.concurrent.atomic.AtomicBoolean
 
 enum class ExecutionSource {
     SMART_ASSIST,
@@ -35,308 +35,149 @@ data class BusStatistics(
 
 object CentralExecutionBus {
 
-    private const val MAX_PENDING_REQUESTS = 64
+    // Disruptor Pattern: 3 Rings for Priority Levels (High=100, Med=90, Low=80)
+    // Capacity must be power of 2 for fast bitwise AND masking
+    private const val RING_CAPACITY = 1024
+    private const val MASK = RING_CAPACITY - 1
 
-    private data class QueuedRequest(
-        val request: ExecutionRequest,
-        val sequence: Long
-    )
+    private class LockFreeRing {
+        val buffer = AtomicReferenceArray<ExecutionRequest>(RING_CAPACITY)
+        val writeCursor = AtomicLong(0)
+        val readCursor = AtomicLong(0)
+    }
 
-    data class DropStatistics(
-        val stopped: Long,
-        val invalid: Long,
-        val stale: Long,
-        val superseded: Long,
-        val capacity: Long
-    )
-
-    private val queueComparator =
-        Comparator<QueuedRequest> { left, right ->
-            val priorityComparison =
-                HybridExecutionTerminal
-                    .priority(right.request.source)
-                    .compareTo(
-                        HybridExecutionTerminal.priority(
-                            left.request.source
-                        )
-                    )
-
-            if (priorityComparison != 0) {
-                priorityComparison
-            } else {
-                val timestampComparison =
-                    left.request.timestamp.compareTo(
-                        right.request.timestamp
-                    )
-
-                if (timestampComparison != 0) {
-                    timestampComparison
-                } else {
-                    left.sequence.compareTo(right.sequence)
-                }
-            }
-        }
-
-    private val queue =
-        PriorityQueue(
-            11,
-            queueComparator
-        )
+    private val highRing = LockFreeRing() // GK, Intercept
+    private val medRing = LockFreeRing()  // SmartAssist
+    private val lowRing = LockFreeRing()  // Stutter
 
     private val accepted = AtomicLong(0L)
     private val consumed = AtomicLong(0L)
-    private val submissionSequence = AtomicLong(0L)
-
     private val stoppedDrops = AtomicLong(0L)
     private val invalidDrops = AtomicLong(0L)
     private val staleDrops = AtomicLong(0L)
-    private val supersededDrops = AtomicLong(0L)
     private val capacityDrops = AtomicLong(0L)
-
     private val running = AtomicBoolean(true)
-    private val mutationLock = Any()
 
-    private val _statistics =
-        MutableStateFlow(BusStatistics())
-
-    val statistics: StateFlow<BusStatistics> =
-        _statistics.asStateFlow()
+    private val _statistics = MutableStateFlow(BusStatistics())
+    val statistics: StateFlow<BusStatistics> = _statistics.asStateFlow()
 
     fun submit(request: ExecutionRequest): Boolean {
         if (!running.get()) {
             stoppedDrops.incrementAndGet()
-            updateStatistics()
             return false
         }
-
         if (!requestIsValid(request)) {
             invalidDrops.incrementAndGet()
-            updateStatistics()
             return false
         }
 
-        val now = System.currentTimeMillis()
-        if (requestIsStale(request, now)) {
-            staleDrops.incrementAndGet()
-            updateStatistics()
+        val ring = when (request.source) {
+            ExecutionSource.GOALKEEPER, ExecutionSource.INTERCEPTION -> highRing
+            ExecutionSource.SMART_ASSIST -> medRing
+            ExecutionSource.STUTTER -> lowRing
+        }
+
+        val writePos = ring.writeCursor.getAndIncrement()
+        val readPos = ring.readCursor.get()
+
+        if (writePos - readPos >= RING_CAPACITY) {
+            ring.writeCursor.decrementAndGet() // Rollback
+            capacityDrops.incrementAndGet()
             return false
         }
 
-        synchronized(mutationLock) {
-            if (!running.get()) {
-                stoppedDrops.incrementAndGet()
-                updateStatisticsLocked()
-                return false
-            }
-
-            removeSupersededLocked(request)
-
-            if (queue.size >= MAX_PENDING_REQUESTS) {
-                capacityDrops.incrementAndGet()
-                updateStatisticsLocked()
-                return false
-            }
-
-            val queued =
-                QueuedRequest(
-                    request = request,
-                    sequence = submissionSequence.incrementAndGet()
-                )
-
-            val offered = queue.offer(queued)
-            if (!offered) {
-                capacityDrops.incrementAndGet()
-                updateStatisticsLocked()
-                return false
-            }
-
-            accepted.incrementAndGet()
-            updateStatisticsLocked()
-        }
-
-        RuntimeLogger.execution(
-            "BUS_SUBMIT",
-            "source=${request.source} phase=${request.phase}"
-        )
+        ring.buffer.set((writePos and MASK).toInt(), request)
+        accepted.incrementAndGet()
+        updateStatistics()
         return true
     }
 
     fun consume(): ExecutionRequest? {
+        // Priority Arbitration: High -> Med -> Low
+        consumeFrom(highRing)?.let { return it }
+        consumeFrom(medRing)?.let { return it }
+        return consumeFrom(lowRing)
+    }
+
+    private fun consumeFrom(ring: LockFreeRing): ExecutionRequest? {
         while (true) {
-            val queued =
-                synchronized(mutationLock) {
-                    val next = queue.poll()
-                    updateStatisticsLocked()
-                    next
-                } ?: return null
+            val readPos = ring.readCursor.get()
+            val writePos = ring.writeCursor.get()
+            if (readPos >= writePos) return null // Empty
 
-            val request = queued.request
-            if (requestIsStale(request, System.currentTimeMillis())) {
-                staleDrops.incrementAndGet()
-                updateStatistics()
-                continue
+            val request = ring.buffer.get((readPos and MASK).toInt())
+            if (ring.readCursor.compareAndSet(readPos, readPos + 1)) {
+                if (request == null) continue // Race condition, slot empty
+                if (requestIsStale(request, System.currentTimeMillis())) {
+                    staleDrops.incrementAndGet()
+                    continue // Drop stale and try next
+                }
+                consumed.incrementAndGet()
+                return request
             }
-
-            consumed.incrementAndGet()
-            updateStatistics()
-
-            RuntimeLogger.execution(
-                "BUS_CONSUME",
-                "source=${request.source} phase=${request.phase}"
-            )
-            return request
         }
     }
 
-    /*
-     * Non-destructive look at the highest-priority fresh request. Purges
-     * stale corpses first (attributed to staleDrops exactly like consume()).
-     *
-     * This exists for the dispatcher's preemption decision: while a gesture
-     * is in flight, the dispatcher needs to know whether something MORE
-     * important than the in-flight action is waiting - without consuming
-     * it prematurely. Returns only the source; the request itself stays
-     * queued until consume().
-     */
-    fun peekSource(): ExecutionSource? =
-        synchronized(mutationLock) {
-            purgeStaleLocked()
-            queue.peek()?.request?.source
+    fun peekSource(): ExecutionSource? {
+        // Check High
+        val hRead = highRing.readCursor.get()
+        if (hRead < highRing.writeCursor.get()) {
+            val req = highRing.buffer.get((hRead and MASK).toInt())
+            if (req != null) return req.source
         }
-
-    fun start() {
-        running.set(true)
-        updateStatistics()
+        // Check Med
+        val mRead = medRing.readCursor.get()
+        if (mRead < medRing.writeCursor.get()) {
+            val req = medRing.buffer.get((mRead and MASK).toInt())
+            if (req != null) return req.source
+        }
+        // Check Low
+        val lRead = lowRing.readCursor.get()
+        if (lRead < lowRing.writeCursor.get()) {
+            val req = lowRing.buffer.get((lRead and MASK).toInt())
+            if (req != null) return req.source
+        }
+        return null
     }
 
-    fun stop() {
-        synchronized(mutationLock) {
-            running.set(false)
-
-            val discarded = queue.size
-            if (discarded > 0) {
-                queue.clear()
-                staleDrops.addAndGet(discarded.toLong())
-            }
-
-            updateStatisticsLocked()
-        }
-    }
-
+    fun start() { running.set(true); updateStatistics() }
+    fun stop() { running.set(false); updateStatistics() }
     fun acceptedCount(): Long = accepted.get()
-
     fun consumedCount(): Long = consumed.get()
+    
+    fun pendingCount(): Int {
+        var count = 0
+        count += (highRing.writeCursor.get() - highRing.readCursor.get()).toInt()
+        count += (medRing.writeCursor.get() - medRing.readCursor.get()).toInt()
+        count += (lowRing.writeCursor.get() - lowRing.readCursor.get()).toInt()
+        return count
+    }
 
-    /*
-     * Truthful pending count. Requests carry hard per-source lifetimes
-     * (120-750ms); anything older is already undeliverable - consume()
-     * would discard it on sight. Leaving corpses in the queue poisoned
-     * this reading (the idle "busPending = 2..4" reports): they counted
-     * as pending while being nothing but stale bodies awaiting a consumer
-     * that had no reason to run. Purge them here, attributed to staleDrops
-     * exactly as consume() would have done.
-     */
-    fun pendingCount(): Int =
-        synchronized(mutationLock) {
-            purgeStaleLocked()
-            queue.size
-        }
+    fun dropStatistics() = mapOf(
+        "stopped" to stoppedDrops.get(), "invalid" to invalidDrops.get(),
+        "stale" to staleDrops.get(), "capacity" to capacityDrops.get()
+    )
 
-    fun dropStatistics(): DropStatistics =
-        DropStatistics(
-            stopped = stoppedDrops.get(),
-            invalid = invalidDrops.get(),
-            stale = staleDrops.get(),
-            superseded = supersededDrops.get(),
-            capacity = capacityDrops.get()
+    private fun updateStatistics() {
+        _statistics.value = BusStatistics(
+            acceptedCount = accepted.get(), consumedCount = consumed.get(),
+            pendingCount = pendingCount(), isRunning = running.get()
         )
-
-    private fun purgeStaleLocked() {
-        val now = System.currentTimeMillis()
-        var dropped = 0L
-        val iterator = queue.iterator()
-        while (iterator.hasNext()) {
-            if (requestIsStale(iterator.next().request, now)) {
-                iterator.remove()
-                dropped++
-            }
-        }
-        if (dropped > 0L) {
-            staleDrops.addAndGet(dropped)
-            updateStatisticsLocked()
-        }
     }
 
-    private fun requestIsValid(
-        request: ExecutionRequest
-    ): Boolean =
-        request.phase >= 0 &&
-            request.startX.isFinite() &&
-            request.startY.isFinite() &&
-            request.endX.isFinite() &&
-            request.endY.isFinite() &&
-            request.startX >= 0.0f &&
-            request.startY >= 0.0f &&
-            request.endX >= 0.0f &&
-            request.endY >= 0.0f &&
-            request.duration > 0L &&
-            request.timestamp > 0L
+    private fun requestIsValid(req: ExecutionRequest): Boolean =
+        req.phase >= 0 && req.startX.isFinite() && req.startY.isFinite() && 
+        req.endX.isFinite() && req.endY.isFinite() && req.duration > 0L
 
-    private fun requestIsStale(
-        request: ExecutionRequest,
-        now: Long
-    ): Boolean {
-        val age = now - request.timestamp
-
-        if (age < 0L) {
-            return false
-        }
-
-        return age > maximumAgeMs(request.source)
-    }
-
-    private fun maximumAgeMs(
-        source: ExecutionSource
-    ): Long =
-        when (source) {
-            ExecutionSource.GOALKEEPER -> 300L // Reconciled with 250ms dispatch latch
+    private fun requestIsStale(req: ExecutionRequest, now: Long): Boolean {
+        val age = now - req.timestamp
+        if (age < 0L) return false
+        val maxAge = when (req.source) {
+            ExecutionSource.GOALKEEPER -> 300L
             ExecutionSource.INTERCEPTION -> 300L
             ExecutionSource.SMART_ASSIST -> 250L
             ExecutionSource.STUTTER -> 350L
         }
-
-    private fun removeSupersededLocked(
-        incoming: ExecutionRequest
-    ) {
-        val removed =
-            queue.removeIf { queued ->
-                if (incoming.source == ExecutionSource.GOALKEEPER) {
-                    // A new goalkeeper decision supersedes any older goalkeeper decision regardless of phase
-                    queued.request.source == ExecutionSource.GOALKEEPER
-                } else {
-                    queued.request.source == incoming.source &&
-                        queued.request.phase == incoming.phase
-                }
-            }
-
-        if (removed) {
-            supersededDrops.incrementAndGet()
-        }
-    }
-
-    private fun updateStatistics() {
-        synchronized(mutationLock) {
-            updateStatisticsLocked()
-        }
-    }
-
-    private fun updateStatisticsLocked() {
-        _statistics.value =
-            BusStatistics(
-                acceptedCount = accepted.get(),
-                consumedCount = consumed.get(),
-                pendingCount = queue.size,
-                isRunning = running.get()
-            )
+        return age > maxAge
     }
 }
