@@ -1,16 +1,16 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-13 02:34:03 WAT
+Started: 2026-09-13 02:43:12 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
 === HEAD ===
-daeebb53 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/DashboardInjector.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,core/src/main/AndroidManifest.xml
+48f66cc4 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts
 
 === MAIN ===
-daeebb53 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/DashboardInjector.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,core/src/main/AndroidManifest.xml
+48f66cc4 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts
 
 
 ================================================================
@@ -28,9 +28,16 @@ YES — running lint --continue
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+Lint found 1 errors, 11 warnings. First failure:
+/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:16360: Error: Suspicious indentation: This is indented but is not continuing the previous expression (val request = Execut...) [SuspiciousIndentation]
+    /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:16350: Previous statement here
 FAILURE: Build failed with an exception.
 * What went wrong:
-BUILD FAILED in 2m 1s
+> Lint found errors in the project; aborting build.
+  Lint found 1 errors, 11 warnings. First failure:
+  /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:16360: Error: Suspicious indentation: This is indented but is not continuing the previous expression (val request = Execut...) [SuspiciousIndentation]
+      /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:16350: Previous statement here
+BUILD FAILED in 10m 1s
 
 LINT — ALL MODULES (--continue) EXIT: 1
 
@@ -38,232 +45,20 @@ LINT — ALL MODULES (--continue) EXIT: 1
 >>> LINT ISSUES — TEXT REPORT SUMMARY
 ================================================================
 
-[10 err, 214 warn] ./app/build/reports/lint-results-debug.txt
+[1 err, 11 warn] ./app/build/reports/lint-results-debug.txt
     /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:16350: Previous statement here
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts:17: Warning: Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details. [OldTargetApi]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts:28: Warning: Missing x86 and x86_64 ABI support for ChromeOS [ChromeOsAbiSupport]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts:75: Warning: A newer version of com.google.android.material:material than 1.12.0 is available: 1.14.0 [GradleDependency]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts:76: Warning: A newer version of androidx.recyclerview:recyclerview than 1.3.2 is available: 1.4.0 [GradleDependency]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts:77: Warning: A newer version of androidx.constraintlayout:constraintlayout than 2.1.4 is available: 2.2.2 [GradleDependency]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts:78: Warning: A newer version of androidx.core:core-ktx than 1.12.0 is available: 1.19.0 [GradleDependency]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts:79: Warning: A newer version of androidx.appcompat:appcompat than 1.6.1 is available: 1.8.0 [GradleDependency]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/debug/AndroidManifest.xml:4: Error: Class referenced in the manifest, com.assistant.overlay.dvr.DvrProjectionService, was not found in the project or the libraries [MissingClass]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:115: Error: Class referenced in the manifest, com.assistant.overlay.SplendorWatchdogService, was not found in the project or the libraries [MissingClass]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:125: Error: Class referenced in the manifest, com.assistant.overlay.SplendorReauthActivity, was not found in the project or the libraries [MissingClass]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:132: Warning: Exported service does not require permission [ExportedService]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:142: Warning: Exported service does not require permission [ExportedService]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:17: Error: Permission is only granted to system apps [ProtectedPermissions]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:44: Error: Class referenced in the manifest, com.assistant.ErrorActivity, was not found in the project or the libraries [MissingClass]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:47: Error: Class referenced in the manifest, com.assistant.LogActivity, was not found in the project or the libraries [MissingClass]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:48: Error: Class referenced in the manifest, com.assistant.WelcomeActivity, was not found in the project or the libraries [MissingClass]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:49: Error: Class referenced in the manifest, com.assistant.UpdateActivity, was not found in the project or the libraries [MissingClass]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:5: Warning: The Google Play store has a policy that limits usage of MANAGE_EXTERNAL_STORAGE [ScopedStorage]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:86: Warning: Exported service does not require permission [ExportedService]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:21: Warning: Do not place Android context classes in static fields (static reference to DashboardInjector which has field activeContainer pointing to LinearLayout); this is a memory leak [StaticFieldLeak]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:25: Warning: Do not place Android context classes in static fields; this is a memory leak [StaticFieldLeak]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:47: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:58: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:58: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:76: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:85: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:85: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DashboardInjector.kt:93: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:66: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DiagnosisDetailActivity.kt:70: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DiagnosisRoomActivity.kt:47: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DiagnosisRoomActivity.kt:54: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/DiagnosisRoomActivity.kt:77: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/IgnitionEngine.kt:59: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/MainActivity.kt:160: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/MainActivity.kt:161: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/MainActivity.kt:162: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/MainActivity.kt:94: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:363: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:390: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:420: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:435: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:75: Warning: Do not place Android context classes in static fields (static reference to OverlayService which has field overlayView pointing to View); this is a memory leak [StaticFieldLeak]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/PingEliminatorVpnService.kt:123: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/PingEliminatorVpnService.kt:68: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/PingEliminatorVpnService.kt:84: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
+/data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts:21: Warning: Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details. [OldTargetApi]
+/data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts:32: Warning: Missing x86 and x86_64 ABI support for ChromeOS [ChromeOsAbiSupport]
+/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:76: Warning: Do not place Android context classes in static fields (static reference to OverlayService which has field overlayView pointing to View); this is a memory leak [StaticFieldLeak]
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/SplendorWatchdog.kt:33: Warning: Do not hardcode "/sdcard/"; use Environment.getExternalStorageDirectory().getPath() instead [SdCardPath]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/SplendorWatchdog.kt:49: Error: When scheduling exact alarms, apps should explicitly call AlarmManager#canScheduleExactAlarms or handle `SecurityException`s [ScheduleExactAlarm]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/SplendorWatchdog.kt:59: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt:38: Warning: Do not place Android context classes in static fields; this is a memory leak [StaticFieldLeak]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt:9: Warning: Do not place Android context classes in static fields (static reference to ComplianceMonitor which has field contextRef pointing to Context); this is a memory leak [StaticFieldLeak]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/compliance/ComplianceState.kt:15: Warning: Unnecessary; SDK_INT is never < 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:106: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:116: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:129: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:166: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:166: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:167: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:167: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:168: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:168: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:169: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:169: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:170: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:170: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:171: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:171: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:172: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/AgentHubActivity.kt:172: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/FutureRoomsActivity.kt:194: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/FutureRoomsActivity.kt:208: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt:117: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt:125: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt:151: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt:178: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt:178: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt:179: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt:179: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt:180: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt:194: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GameplayRoomActivity.kt:50: Warning: Use SwitchCompat from AppCompat or MaterialSwitch from Material library [UseSwitchCompatOrMaterialCode from androidx.appcompat]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GoalkeeperControlRoomActivity.kt:105: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GoalkeeperControlRoomActivity.kt:65: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GoalkeeperControlRoomActivity.kt:66: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GoalkeeperControlRoomActivity.kt:73: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/GoalkeeperControlRoomActivity.kt:81: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/InterceptionControlRoomActivity.kt:104: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/InterceptionControlRoomActivity.kt:64: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/InterceptionControlRoomActivity.kt:65: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/InterceptionControlRoomActivity.kt:72: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/InterceptionControlRoomActivity.kt:80: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:116: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:116: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:127: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:127: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:62: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:62: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:63: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:63: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/controlroom/ui/SmartAssistControlRoomActivity.kt:64: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:11349: Warning: Assigning Locale.getDefault() to a final static field is suspicious; this code will not work correctly if the user changes locale while the app is running [ConstantLocale]
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:118: Warning: Do not place Android context classes in static fields (static reference to AccessibilitySurvivalEngine which has field context pointing to Context); this is a memory leak [StaticFieldLeak]
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:16360: Error: Suspicious indentation: This is indented but is not continuing the previous expression (val request = Execut...) [SuspiciousIndentation]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/overlay/notification/RuntimeNotificationCoordinator.kt:27: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/performance_engine.kt:1571: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/performance_engine.kt:4634: Warning: Field requires API level 28 (current min is 26): android.net.NetworkCapabilities#NET_CAPABILITY_FOREGROUND [InlinedApi]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/performance_engine.kt:4666: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/performance_engine.kt:4729: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/recovery/AdapterRecoveryEngine.kt:84: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/drawable/ic_extension.xml:1: Warning: The resource R.drawable.ic_extension appears to be unused [UnusedResources]
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/drawable/splendor_assist_logo.png: Warning: Found bitmap drawable res/drawable/splendor_assist_logo.png in densityless folder [IconLocation]
 /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/drawable/splendor_assist_logo.png: Warning: The splendor_assist_logo.png icon has identical contents in the following configuration folders: drawable-nodpi, drawable [IconDuplicatesConfig]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_error.xml:13: Warning: Hardcoded string "ENGINE FATAL ERROR", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_error.xml:23: Warning: Hardcoded string "COPY LOG TO CLIPBOARD", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_error.xml:2: Warning: The resource R.layout.activity_error appears to be unused [UnusedResources]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_error.xml:7: Warning: Possible overdraw: Root element paints background #000000 with a theme that also paints a background (inferred theme is @style/Theme.SplendorAssist) [Overdraw]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_future_rooms.xml:19: Warning: Hardcoded string "➕", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_future_rooms.xml:27: Warning: Hardcoded string "FUTURE ROOMS", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_future_rooms.xml:2: Warning: The resource R.layout.activity_future_rooms appears to be unused [UnusedResources]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_future_rooms.xml:36: Warning: Hardcoded string "Planned expansion rooms", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_future_rooms.xml:54: Warning: Hardcoded string "BACK", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_future_rooms.xml:5: Warning: Possible overdraw: Root element paints background #173A6A with a theme that also paints a background (inferred theme is @style/Theme.SplendorAssist) [Overdraw]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_goalkeeper_control_room.xml:16: Warning: Hardcoded string "Goalkeeper Control Room", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_goalkeeper_control_room.xml:24: Warning: Hardcoded string "Enable Goalkeeper", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_goalkeeper_control_room.xml:30: Warning: Hardcoded string "Aggressive Mode", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_goalkeeper_control_room.xml:36: Warning: Hardcoded string "Positioning", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_goalkeeper_control_room.xml:49: Warning: Hardcoded string "50%", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_goalkeeper_control_room.xml:55: Warning: Hardcoded string "Reactions", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_goalkeeper_control_room.xml:68: Warning: Hardcoded string "50%", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_goalkeeper_control_room.xml:75: Warning: Hardcoded string "INACTIVE", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_goalkeeper_control_room.xml:82: Warning: Hardcoded string "Save Settings", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_interception_control_room.xml:16: Warning: Hardcoded string "Interception Control Room", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_interception_control_room.xml:24: Warning: Hardcoded string "Enable Interception", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_interception_control_room.xml:30: Warning: Hardcoded string "Auto Intercept", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_interception_control_room.xml:36: Warning: Hardcoded string "Awareness", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_interception_control_room.xml:49: Warning: Hardcoded string "50%", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_interception_control_room.xml:55: Warning: Hardcoded string "Prediction", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_interception_control_room.xml:68: Warning: Hardcoded string "50%", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_interception_control_room.xml:75: Warning: Hardcoded string "INACTIVE", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_interception_control_room.xml:82: Warning: Hardcoded string "Save Settings", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:108: Warning: Hardcoded string "●", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:111: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:111: Warning: Hardcoded string "OFF", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:113: Warning: Hardcoded string "🧤", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:115: Warning: Hardcoded string "GOALKEEPER", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:132: Warning: Hardcoded string "●", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:135: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:135: Warning: Hardcoded string "OFF", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:137: Warning: Hardcoded string "🛡️", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:139: Warning: Hardcoded string "INTERCEPTION", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:145: Warning: Set android:baselineAligned="false" on this element for better performance [DisableBaselineAlignment]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:158: Warning: Hardcoded string "🎮", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:160: Warning: Hardcoded string "GAMEPLAY ROOM", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:161: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:175: Warning: Hardcoded string "🤖", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:177: Warning: Hardcoded string "AGENT HUB ROOM", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:178: Warning: Avoid using sizes smaller than 11sp: 9sp [SmallSp]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:192: Warning: Hardcoded string "🔔", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:194: Warning: Hardcoded string "NOTIFICATIONS", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:195: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:200: Warning: Set android:baselineAligned="false" on this element for better performance [DisableBaselineAlignment]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:213: Warning: Hardcoded string "🎮", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:215: Warning: Hardcoded string "GAMEPLAY", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:216: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:230: Warning: Hardcoded string "📊", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:232: Warning: Hardcoded string "DIAGNOSTICS", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:233: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:248: Warning: Hardcoded string "●", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:251: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:251: Warning: Hardcoded string "30 ROOMS", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:253: Warning: Hardcoded string "➕", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:255: Warning: Hardcoded string "FUTURE", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:25: Warning: Hardcoded string "SPLENDOR ASSIST", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:276: Warning: Hardcoded string "Runtime", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:282: Warning: Hardcoded string "Vision", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:288: Warning: Hardcoded string "Diagnostics", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:295: Warning: Hardcoded string "v1.0-SECURE-LOCKED • Adapter Build", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:29: Warning: Hardcoded string "Runtime Control Center", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:34: Warning: Hardcoded string "START ENGINE", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:38: Warning: Hardcoded string "STOP ENGINE", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:47: Warning: Hardcoded string "Runtime cold", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:51: Warning: Hardcoded string "VIEW LOGS", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:56: Warning: Hardcoded string "SET YOUR OPTIMIZATION", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:62: Warning: Hardcoded string "Configure engine rooms before runtime startup.", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:69: Warning: Set android:baselineAligned="false" on this element for better performance [DisableBaselineAlignment]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:7: Warning: Possible overdraw: Root element paints background #173A6A with a theme that also paints a background (inferred theme is @style/Theme.SplendorAssist) [Overdraw]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:84: Warning: Hardcoded string "●", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:87: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:87: Warning: Hardcoded string "LOCKED", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:89: Warning: Hardcoded string "⚡", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_main.xml:91: Warning: Hardcoded string "SMART ASSIST", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_room_tuner.xml:19: Warning: Hardcoded string "⚙️", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_room_tuner.xml:27: Warning: Hardcoded string "ROOM", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_room_tuner.xml:2: Warning: The resource R.layout.activity_room_tuner appears to be unused [UnusedResources]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_room_tuner.xml:36: Warning: Hardcoded string "Tuning panel", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_room_tuner.xml:44: Warning: Hardcoded string "ENABLE ROOM", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_room_tuner.xml:50: Warning: Hardcoded string "INTENSITY", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_room_tuner.xml:5: Warning: Possible overdraw: Root element paints background #173A6A with a theme that also paints a background (inferred theme is @style/Theme.SplendorAssist) [Overdraw]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_room_tuner.xml:79: Warning: Hardcoded string "SAVE", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_room_tuner.xml:92: Warning: Hardcoded string "BACK", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_smartassist_control_room.xml:106: Warning: Hardcoded string "Save", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_smartassist_control_room.xml:16: Warning: Hardcoded string "Smart Assist Control Room", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_smartassist_control_room.xml:24: Warning: Hardcoded string "Enable Smart Assist", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_smartassist_control_room.xml:30: Warning: Hardcoded string "Panic Mode", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_smartassist_control_room.xml:36: Warning: Hardcoded string "Pass Threshold", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_smartassist_control_room.xml:48: Warning: Hardcoded string "Shot Threshold", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_smartassist_control_room.xml:60: Warning: Hardcoded string "Cross Threshold", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_smartassist_control_room.xml:73: Warning: Hardcoded string "Runtime Authority", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_smartassist_control_room.xml:87: Warning: Hardcoded string "50%", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_update.xml:14: Warning: Hardcoded string "SPLENDOR ASSIST", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_update.xml:23: Warning: Hardcoded string "A new premium update is available.", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_update.xml:2: Warning: The resource R.layout.activity_update appears to be unused [UnusedResources]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_update.xml:45: Warning: Hardcoded string "0%", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_update.xml:56: Warning: Hardcoded string "DOWNLOAD & INSTALL", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_update.xml:65: Warning: Hardcoded string "SKIP FOR NOW", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_update.xml:6: Warning: Possible overdraw: Root element paints background #121212 with a theme that also paints a background (inferred theme is @style/Theme.SplendorAssist) [Overdraw]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_welcome.xml:13: Warning: Hardcoded string "SPLENDOR ASSIST", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_welcome.xml:24: Warning: Hardcoded string "[*] INITIALIZING DYNAMIC SECURE STATE...", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_welcome.xml:2: Warning: The resource R.layout.activity_welcome appears to be unused [UnusedResources]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/activity_welcome.xml:6: Warning: Possible overdraw: Root element paints background #0A0A0A with a theme that also paints a background (inferred theme is @style/Theme.SplendorAssist) [Overdraw]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/layout/overlay_layout.xml:12: Warning: Hardcoded string "HYBRID COACH ACTIVE", should use @string resource [HardcodedText]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/mipmap-anydpi-v26: Warning: This folder configuration (v26) is unnecessary; minSdkVersion is 26. Merge all the resources in this folder into mipmap-anydpi. [ObsoleteSdkInt]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/xml/filepaths.xml:2: Warning: The resource R.xml.filepaths appears to be unused [UnusedResources]
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/xml/provider_paths.xml:2: Warning: The resource R.xml.provider_paths appears to be unused [UnusedResources]
+/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/res/values/strings.xml:47: Warning: Replace "..." with ellipsis character (…, &#8230;) ? [TypographyEllipsis]
 
 [0 err, 13 warn] ./core/build/reports/lint-results-debug.txt
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/build.gradle.kts:32: Warning: A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-core than 1.7.3 is available: 1.9.0 [GradleDependency]
@@ -280,7 +75,7 @@ LINT — ALL MODULES (--continue) EXIT: 1
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/res/layout/activity_crash_inspector.xml:13: Warning: Hardcoded string "Crash Logs...", should use @string resource [HardcodedText]
 /data/data/com.termux/files/home/projects/Splendor-Assist/core/src/main/res/layout/activity_crash_inspector.xml:18: Warning: Hardcoded string "Copy Full Error Report", should use @string resource [HardcodedText]
 
---- LINT TOTAL: 10 errors, 227 warnings ---
+--- LINT TOTAL: 1 errors, 24 warnings ---
 
 ================================================================
 >>> CONNECTED ANDROID TESTS
@@ -295,18 +90,19 @@ versionCode: 112 -> 113
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-FAILURE: Build failed with an exception.
-* What went wrong:
-BUILD FAILED in 36s
+[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
+	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+BUILD SUCCESSFUL in 2m 27s
 
-ASSEMBLE DEBUG APK EXIT: 1
+ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-SKIPPED — build exit=1, apk_exists=YES
-VERSION TRANSACTION: ROLLED BACK
-Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
+Exported: /storage/emulated/0/Download/Splendor-Assist-v113-20260913_025554.apk
+-rw-rw----. 1 u0_a262 media_rw 29M Sep 13 02:55 /storage/emulated/0/Download/Splendor-Assist-v113-20260913_025554.apk
+VERSION TRANSACTION: COMMITTED
+
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
@@ -314,9 +110,9 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 14698 IDLE     8.5
+ 24118 IDLE     8.5
   7672 STOPPED  (stop command received)
- 29386 STOPPED  (by user or operating system)
+ 14698 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -327,20 +123,21 @@ CLEAN:                           0
 LINT (all modules):              1
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  1
-APK EXPORT:                      1
+ASSEMBLE DEBUG:                  0
+APK EXPORT:                      0
 GRADLE DAEMON STOP:              0
 
 FINAL STATUS: FAILED — check items above
 
 GIT STATUS:
  M Build_lint_output.txt
+ M app/build.gradle.kts
 === HEAD ===
-daeebb53 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/DashboardInjector.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,core/src/main/AndroidManifest.xml
+48f66cc4 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts
 
 === MAIN ===
-daeebb53 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/DashboardInjector.kt,app/src/main/java/com/assistant/OverlayService.kt,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/java/com/assistant/compliance/ComplianceMonitor.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,core/src/main/AndroidManifest.xml
+48f66cc4 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts
 
-Finished: 2026-09-13 02:37:02 WAT
-Report size: 58329 bytes
+Finished: 2026-09-13 02:56:04 WAT
+Report size: 11901 bytes
 ================================================================
