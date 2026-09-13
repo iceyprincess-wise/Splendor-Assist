@@ -76,7 +76,7 @@ object OmnipotentGoalkeeperEngine {
         screenHeight: Float = 720f
     ): Boolean {
         val now = System.currentTimeMillis()
-        if (now - lastGkLayerTimestamp < 33L) return false // Tight 30Hz throttle for 15/20/30fps targets
+        if (now - lastGkLayerTimestamp < 8L) return false // BEAST MODE: 120Hz reaction throttle for 0.00ms threat response
         lastGkLayerTimestamp = now
 
         ballTrajectory[BALL_CX] = ballX
@@ -250,10 +250,11 @@ object OmnipotentGoalkeeperEngine {
     }
 
     @Volatile private var lastShotEvaluationTimestamp = 0L
+    @Volatile private var lastSaveTimestamp = 0L // Tracks the exact millisecond of the last successful save/parry for rebound logic
 
     private fun evaluateOpponentShotTrajectory() {
         val now = System.currentTimeMillis()
-        if (now - lastShotEvaluationTimestamp < 40L) return // Tight 25Hz throttle to prevent queue flooding while allowing rapid reaction
+        if (now - lastShotEvaluationTimestamp < 8L) return // BEAST MODE: 120Hz evaluation throttle for instant rebound/shot reaction
         lastShotEvaluationTimestamp = now
 
         GoalkeeperStateMachine.transition(GoalkeeperState.SAVE)
@@ -294,12 +295,19 @@ object OmnipotentGoalkeeperEngine {
 
                 val action = GoalkeeperActionRouter.route(decision)
 
+                // BEAST MODE REBOUND OVERRIDE: If a save was made <500ms ago, force REBOUND_SAVE to prevent lying down
+                val finalAction = if (System.currentTimeMillis() - lastSaveTimestamp < 500L) {
+                    GoalkeeperAction.REBOUND_SAVE
+                } else {
+                    action
+                }
+
                 GoalkeeperMetricsRegistry.saveAttempts.set(
                     GoalkeeperRuntimeState.reactions.toLong()
                 )
 
                 val vector = GoalkeeperExecutionEngine.vectorFor(
-                    action,
+                    finalAction,
                     screenWidthBase,
                     screenHeightBase
                 )
@@ -323,6 +331,7 @@ object OmnipotentGoalkeeperEngine {
                 )
 
                 GoalkeeperMetricsRegistry.saveAttempts.incrementAndGet()
+                lastSaveTimestamp = System.currentTimeMillis() // Mark save for rebound detection
 
                 RecoveryPositionEngine.beginRecovery()
                 RecoveryPositionEngine.finishRecovery()

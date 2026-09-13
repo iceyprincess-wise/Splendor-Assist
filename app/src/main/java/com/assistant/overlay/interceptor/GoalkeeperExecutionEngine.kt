@@ -72,6 +72,9 @@ object GoalkeeperExecutionEngine {
 
             GoalkeeperAction.AERIAL_CLAIM ->
                 AerialClaimActionEngine.vector(width, height)
+
+            GoalkeeperAction.REBOUND_SAVE ->
+                ReboundSaveActionEngine.vector(width, height)
         }
     }
 }

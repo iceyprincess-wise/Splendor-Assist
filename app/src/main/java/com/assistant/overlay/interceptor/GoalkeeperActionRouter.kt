@@ -23,7 +23,8 @@ enum class GoalkeeperAction {
     CATCH_CENTER,
     REFLEX_CENTER,
     PARRY_BOTTOM_CENTER,
-    AERIAL_CLAIM
+    AERIAL_CLAIM,
+    REBOUND_SAVE
 }
 
 object GoalkeeperActionRouter {

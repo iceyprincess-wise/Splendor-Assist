@@ -7886,10 +7886,8 @@ object RuntimeDecisionLoop {
 
         // CONTROL-MAPPING GATE: the mapping/settings screen must never
         // receive gameplay gestures; trained in-match cluster arms the stack.
-        if (ControlMappingTrainer.uiMode == ControlMappingTrainer.UiMode.SETTINGS) {
-            lastAction = "idle-mapping-settings"
-            return false
-        }
+        // REMOVED SETTINGS GATE: Button visibility/match MUST NOT be the activation gate for the full gameplay engine.
+        // Gameplay engines must run unconditionally to ensure 0.00ms reaction to live match states.
         ControlMappingTrainer.observeOutcome(frame)
 
         val contributions = GameplayEngineRegistry.collect(frame)
