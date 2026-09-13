@@ -1,5 +1,6 @@
 package com.assistant
 
+import android.annotation.SuppressLint
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.RuntimeMetricsRegistry
 import com.assistant.SmartAssistRepository
