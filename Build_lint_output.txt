@@ -1,16 +1,16 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-13 00:45:33 WAT
+Started: 2026-09-13 01:24:35 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
 === HEAD ===
-ee5fcdda (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/ActiveGestureController.kt,app/src/main/java/com/assistant/AppContributorRegistration.kt
+ad790f15 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt
 
 === MAIN ===
-ee5fcdda (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/ActiveGestureController.kt,app/src/main/java/com/assistant/AppContributorRegistration.kt
+ad790f15 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt
 
 
 ================================================================
@@ -36,22 +36,29 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 108 -> 109
+versionCode: 109 -> 110
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-BUILD SUCCESSFUL in 8m 7s
+w: Detected multiple Kotlin daemon sessions at kotlin/sessions
+[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
+	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml:142:9-150:19 Error:
+	Element service#com.assistant.GameplayEngineService at AndroidManifest.xml:142:9-150:19 duplicated with element declared at AndroidManifest.xml:56:9-66:19
+/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/AndroidManifest.xml Error:
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 1m 44s
 
-ASSEMBLE DEBUG APK EXIT: 0
+ASSEMBLE DEBUG APK EXIT: 1
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v109-20260913_005348.apk
--rw-rw----. 1 u0_a262 media_rw 29M Sep 13 00:53 /storage/emulated/0/Download/Splendor-Assist-v109-20260913_005348.apk
-VERSION TRANSACTION: COMMITTED
-
+SKIPPED — build exit=1, apk_exists=YES
+VERSION TRANSACTION: ROLLED BACK
+Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
@@ -59,9 +66,9 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 13788 IDLE     8.5
- 19864 STOPPED  (by user or operating system)
+ 29386 IDLE     8.5
   3056 STOPPED  (by user or operating system)
+ 13788 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -72,21 +79,20 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  0
-APK EXPORT:                      0
+ASSEMBLE DEBUG:                  1
+APK EXPORT:                      1
 GRADLE DAEMON STOP:              0
 
-FINAL STATUS: ALL PASSED
+FINAL STATUS: FAILED — check items above
 
 GIT STATUS:
  M Build_lint_output.txt
- M app/build.gradle.kts
 === HEAD ===
-ee5fcdda (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/ActiveGestureController.kt,app/src/main/java/com/assistant/AppContributorRegistration.kt
+ad790f15 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt
 
 === MAIN ===
-ee5fcdda (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/java/com/assistant/ActiveGestureController.kt,app/src/main/java/com/assistant/AppContributorRegistration.kt
+ad790f15 (HEAD -> main, origin/main, origin/HEAD) Update: app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/adapter/watchdog/WatchdogAdapterService.kt
 
-Finished: 2026-09-13 00:54:03 WAT
-Report size: 3728 bytes
+Finished: 2026-09-13 01:26:56 WAT
+Report size: 4623 bytes
 ================================================================
