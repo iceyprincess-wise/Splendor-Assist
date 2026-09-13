@@ -289,7 +289,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     override fun onCreate() {
         com.assistant.SplendorCaptureRecovery.attach(this)
-        com.assistant.SplendorWatchdogStart.start(this)
+        // SplendorWatchdog removed: WatchdogAdapterService handles survival process watchdog
         if(runtimeInitialized) return
         runtimeInitialized = true
 

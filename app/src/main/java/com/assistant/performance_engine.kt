@@ -4922,3 +4922,56 @@ object TelephonyStateRepository {
 TelephonyStateRepository Anchor
 ====== */
 
+
+
+/* ========
+PerformanceScheduler
+======== */
+object PerformanceScheduler {
+    private var schedulerThread: android.os.HandlerThread? = null
+    private var schedulerHandler: android.os.Handler? = null
+
+    fun start(context: android.content.Context) {
+        if (schedulerThread != null) return
+        schedulerThread = android.os.HandlerThread("PerfScheduler", android.os.Process.THREAD_PRIORITY_BACKGROUND).apply { start() }
+        schedulerHandler = android.os.Handler(schedulerThread!!.looper)
+
+        schedulerHandler!!.post(object : Runnable {
+            override fun run() {
+                try {
+                    val intent = context.registerReceiver(null, android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED))
+                    val level = intent?.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                    val scale = intent?.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1) ?: -1
+                    val charging = intent?.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) == android.os.BatteryManager.BATTERY_STATUS_CHARGING
+                    val pct = if (scale > 0) (level * 100) / scale else level
+                    com.assistant.diagnostic.AdapterSignalBus.publishBattery(pct, charging)
+                    try { BatteryAdapterService.GameplayPowerEngine.evaluate(pct, charging, 0f) } catch (_: Throwable) {}
+                } catch (_: Throwable) {}
+                schedulerHandler?.postDelayed(this, 5000L)
+            }
+        })
+
+        schedulerHandler!!.postDelayed(object : Runnable {
+            override fun run() {
+                try {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        val pm = context.getSystemService(android.content.Context.POWER_SERVICE) as? android.os.PowerManager
+                        val status = pm?.currentThermalStatus ?: -1
+                        com.assistant.diagnostic.AdapterSignalBus.publishThermal(status)
+                    }
+                } catch (_: Throwable) {}
+                schedulerHandler?.postDelayed(this, 30000L)
+            }
+        }, 10000L)
+    }
+
+    fun stop() {
+        schedulerHandler?.removeCallbacksAndMessages(null)
+        schedulerThread?.quitSafely()
+        schedulerThread = null
+        schedulerHandler = null
+    }
+}
+/* ======
+PerformanceScheduler Anchor
+====== */

@@ -2,39 +2,12 @@ package com.assistant
 
 import android.app.Service
 import android.content.Intent
-import android.os.Handler
-import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Process
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.notification.NodeNotificationHub
-import com.assistant.diagnostic.registry.AdapterHealthRegistry
-import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 
 class GameplayEngineService : Service() {
-
-    private lateinit var workerThread: HandlerThread
-    private lateinit var workerHandler: Handler
-
-    private val telemetryRunnable = object : Runnable {
-        override fun run() {
-            try {
-                AdapterHealthRegistry.update(
-                    AdapterHealthSnapshot(
-                        adapterName = "gameplay_engine",
-                        status = "ACTIVE",
-                        lastHeartbeat = System.currentTimeMillis(),
-                        errorCount = 0,
-                        recoveryCount = 0,
-                        details = "Consolidated gameplay domain active"
-                    )
-                )
-            } catch (e: Exception) {
-                RuntimeLogger.log("GameplayEngine telemetry error: ${e.message}", "ERROR")
-            }
-            workerHandler.postDelayed(this, 2000L)
-        }
-    }
 
     override fun onCreate() {
         super.onCreate()
@@ -43,16 +16,19 @@ class GameplayEngineService : Service() {
 
         NodeNotificationHub.attach(this, "gameplay_engine")
 
-        workerThread = HandlerThread("GameplayEngineWorker", Process.THREAD_PRIORITY_URGENT_DISPLAY).apply { start() }
-        workerHandler = Handler(workerThread.looper)
-        workerHandler.post(telemetryRunnable)
+        // IGNITE CONSOLIDATED GAMEPLAY ENGINES & STATE STORES
+        try { AppContributorRegistration.ensureRegistered() } catch (_: Throwable) {}
+        try { AccessibilitySurvivalEngine.getInstance(this).protect() } catch (_: Throwable) {}
+        
+        RuntimeLogger.log("Gameplay domain ignited", "ENGINE")
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
         super.onDestroy()
-        try { workerThread.quitSafely() } catch (_: Throwable) {}
+        try { AccessibilitySurvivalEngine.getInstance(this).release() } catch (_: Throwable) {}
+        NodeNotificationHub.detach(this, "gameplay_engine")
         RuntimeLogger.log("GameplayEngineService destroyed", "ENGINE")
     }
 }
