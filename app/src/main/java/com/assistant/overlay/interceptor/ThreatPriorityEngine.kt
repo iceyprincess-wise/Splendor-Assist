@@ -15,7 +15,11 @@ object ThreatPriorityEngine {
 
     fun evaluate(
         threat: ThreatType,
-        zone: ThreatZone
+        zone: ThreatZone,
+        x: Int = 0,
+        y: Int = 0,
+        width: Int = 1,
+        height: Int = 1
     ): ThreatDecision {
 
         val direction =
@@ -37,7 +41,6 @@ object ThreatPriorityEngine {
 
             else -> {}
         }
-
 
         priority +=
             (InterceptionRuntimeRegistry.awareness / 2)
@@ -67,11 +70,21 @@ object ThreatPriorityEngine {
             else -> {}
         }
 
+        val ny = if (height > 0) y.toFloat() / height.toFloat() else 0.5f
+        val nx = if (width > 0) x.toFloat() / width.toFloat() else 0.5f
+        val band = when {
+            ny > 0.80f -> HeightBand.BOTTOM
+            ny < 0.40f -> HeightBand.TOP
+            else -> HeightBand.MID
+        }
+
         return ThreatDecision(
             threat = threat,
             zone = zone,
             direction = direction,
-            priority = priority
+            priority = priority,
+            heightBand = band,
+            normX = nx
         )
     }
 }

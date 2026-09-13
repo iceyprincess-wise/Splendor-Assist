@@ -10658,32 +10658,30 @@ object ControlMappingTrainer {
 
     private fun px(b: ByteBuffer, idx: Int): Int = b.get(idx).toInt() and 0xFF
 
-    private fun probe(b: ByteBuffer, w: Int, h: Int, stride: Int, nx: Float, ny: Float): IntArray? {
+    private val probeBuffer = IntArray(3)
+    private fun probe(b: ByteBuffer, w: Int, h: Int, stride: Int, nx: Float, ny: Float): Boolean {
         val x = (nx * w).toInt(); val y = (ny * h).toInt()
         val idx = y * stride + x * 4
-        if (idx < 0 || idx + 2 >= b.capacity()) return null
+        if (idx < 0 || idx + 2 >= b.capacity()) return false
         probesRead.incrementAndGet()
-        return intArrayOf(px(b, idx), px(b, idx + 1), px(b, idx + 2))
+        probeBuffer[0] = px(b, idx); probeBuffer[1] = px(b, idx + 1); probeBuffer[2] = px(b, idx + 2)
+        return true
     }
 
-    private fun isGreen(c: IntArray) = c[1] > c[0] + 8 && c[1] > c[2] + 8
-    private fun isGray(c: IntArray) = kotlin.math.abs(c[0] - c[1]) <= 14 && kotlin.math.abs(c[1] - c[2]) <= 14 && c[0] in 110..215
-    private fun isBlue(c: IntArray) = c[2] > c[0] + 50 && c[2] > 140
+    private fun isGreen() = probeBuffer[1] > probeBuffer[0] + 8 && probeBuffer[1] > probeBuffer[2] + 8
+    private fun isGray() = kotlin.math.abs(probeBuffer[0] - probeBuffer[1]) <= 14 && kotlin.math.abs(probeBuffer[1] - probeBuffer[2]) <= 14 && probeBuffer[0] in 110..215
+    private fun isBlue() = probeBuffer[2] > probeBuffer[0] + 50 && probeBuffer[2] > 140
 
     fun observe(buffer: ByteBuffer, w: Int, h: Int, rowStride: Int) {
         if (w <= 0 || h <= 0) return
         observed.incrementAndGet()
-        val tab = probe(buffer, w, h, rowStride, TAB_NX, TAB_NY)
-        val back = probe(buffer, w, h, rowStride, BACK_NX, BACK_NY)
-        val tabGray = tab != null && isGray(tab)
-        val backBlue = back != null && isBlue(back)
+        val tabGray = probe(buffer, w, h, rowStride, TAB_NX, TAB_NY) && isGray()
+        val backBlue = probe(buffer, w, h, rowStride, BACK_NX, BACK_NY) && isBlue()
         var green = 0
         for (s in SLOTS) {
-            val c = probe(buffer, w, h, rowStride, slotX[s.id], slotY[s.id])
-            if (c != null && isGreen(c)) green++
+            if (probe(buffer, w, h, rowStride, slotX[s.id], slotY[s.id]) && isGreen()) green++
         }
-        val joy = probe(buffer, w, h, rowStride, JOY_NX, JOY_NY)
-        val joyGray = joy != null && (isGray(joy) || isGreen(joy))
+        val joyGray = probe(buffer, w, h, rowStride, JOY_NX, JOY_NY) && (isGray() || isGreen())
         val next = when {
             tabGray && backBlue -> UiMode.SETTINGS
             green >= 2 && joyGray -> UiMode.IN_MATCH
@@ -10694,11 +10692,12 @@ object ControlMappingTrainer {
             settingsFrames.incrementAndGet()
             for (s in SLOTS) {
                 var bestNx = slotX[s.id]; var bestNy = slotY[s.id]; var bestScore = -1; var hit = false
-                for (oy in intArrayOf(-2, 0, 2)) for (ox in intArrayOf(-2, 0, 2)) {
+                for (oy in -2..2 step 2) for (ox in -2..2 step 2) {
                     val nx = s.nx + ox * 0.01f; val ny = s.ny + oy * 0.01f
-                    val c = probe(buffer, w, h, rowStride, nx, ny) ?: continue
-                    val score = c[1] - (c[0] + c[2]) / 2
-                    if (isGreen(c) && score > bestScore) { bestScore = score; bestNx = nx; bestNy = ny; hit = true }
+                    if (probe(buffer, w, h, rowStride, nx, ny) && isGreen()) {
+                        val score = probeBuffer[1] - (probeBuffer[0] + probeBuffer[2]) / 2
+                        if (score > bestScore) { bestScore = score; bestNx = nx; bestNy = ny; hit = true }
+                    }
                 }
                 if (hit) {
                     slotX[s.id] = slotX[s.id] * 0.7f + bestNx * 0.3f

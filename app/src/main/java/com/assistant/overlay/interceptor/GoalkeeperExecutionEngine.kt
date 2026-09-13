@@ -16,6 +16,12 @@ object GoalkeeperExecutionEngine {
             GoalkeeperAction.DIVE_RIGHT ->
                 DiveRightActionEngine.vector(width, height)
 
+            GoalkeeperAction.DIVE_BOTTOM_LEFT ->
+                BottomLeftActionEngine.vector(width, height)
+
+            GoalkeeperAction.DIVE_BOTTOM_RIGHT ->
+                BottomRightActionEngine.vector(width, height)
+
             GoalkeeperAction.BLOCK_LEFT ->
                 BlockLeftActionEngine.vector(width, height)
 

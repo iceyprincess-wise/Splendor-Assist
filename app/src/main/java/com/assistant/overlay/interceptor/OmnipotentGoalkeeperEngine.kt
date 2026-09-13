@@ -156,24 +156,7 @@ object OmnipotentGoalkeeperEngine {
     @Volatile private var capturedWidth = 1650.0f
     @Volatile private var capturedHeight = 720.0f
     private val executionCoordinates = FloatArray(4)
-    private var executionThread: HandlerThread? = null
-    private var executionHandler: Handler? = null
-    private var hintSession: PerformanceHintManager.Session? = null
 
-    fun initializeEngine(hintManager: PerformanceHintManager?) {
-        if (executionThread != null) return
-        executionThread = HandlerThread("OmnipotentGKCoreThread", Process.THREAD_PRIORITY_URGENT_DISPLAY).apply {
-            start()
-            executionHandler = Handler(looper)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && hintManager != null) {
-            try {
-                hintSession = hintManager.createHintSession(intArrayOf(executionThread!!.threadId), 2000000L)
-            } catch (e: Exception) {
-                // Silently bypass hint initialization failures per strict architectural constraints
-            }
-        }
-    }
 
     // [ACTIVE TELEMETRY BRIDGE] - 1000% Capacity Hardware Heuristic Scanner
     fun scanFrameForOpponentAnimation(buffer: ByteBuffer, width: Int, height: Int, rowStride: Int = width * 4) {
@@ -185,6 +168,8 @@ object OmnipotentGoalkeeperEngine {
         var anomalyDetected = false
         var detectedThreat = ThreatType.NONE
         var detectedZone = ThreatZone.CENTER
+        var detectedX = 0
+        var detectedY = 0
 
         val stride = rowStride
 
@@ -208,6 +193,8 @@ object OmnipotentGoalkeeperEngine {
                         if (threat != ThreatType.NONE) {
                             detectedThreat = threat
                             detectedZone = ThreatZoneEngine.detect(x, y, width, height)
+                            detectedX = x
+                            detectedY = y
 
                             TelemetryCoordinator.updatePlayerMotion(
                                 velocity = ((height - y).toFloat() / height.toFloat()),
@@ -249,7 +236,11 @@ object OmnipotentGoalkeeperEngine {
         if (anomalyDetected) {
             val decision = ThreatPriorityEngine.evaluate(
                 detectedThreat,
-                detectedZone
+                detectedZone,
+                detectedX,
+                detectedY,
+                width,
+                height
             )
 
             GoalkeeperDecisionRegistry.latestDecision = decision
@@ -271,13 +262,12 @@ object OmnipotentGoalkeeperEngine {
 
         com.assistant.diagnostic.RuntimeMetricsRegistry.goalkeeperTriggers.incrementAndGet()
 
-        executionHandler?.post { 
-            val workStartNanos = System.nanoTime()
-            try {
+        val workStartNanos = System.nanoTime()
+        try {
 
-                // Absolute Hardware Limit Vectors for Redmi 15C class
-                val screenWidthBase = capturedWidth
-                val screenHeightBase = capturedHeight
+            // Absolute Hardware Limit Vectors for Redmi 15C class
+            val screenWidthBase = capturedWidth
+            val screenHeightBase = capturedHeight
 
                 val decision = GoalkeeperDecisionRegistry.latestDecision ?: ThreatDecision(
                     threat = ThreatType.PURPLE,
@@ -338,14 +328,9 @@ object OmnipotentGoalkeeperEngine {
                 RecoveryPositionEngine.beginRecovery()
                 RecoveryPositionEngine.finishRecovery()
 
-                GoalkeeperMetricsRegistry.recoveryCount.incrementAndGet()
-            } finally { 
-                // MOVED: reportActualWorkDuration MUST be called AFTER work is done with actual duration
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    hintSession?.reportActualWorkDuration(System.nanoTime() - workStartNanos)
-                }
-                GoalkeeperStateMachine.transition(GoalkeeperState.IDLE) 
-            }
+            GoalkeeperMetricsRegistry.recoveryCount.incrementAndGet()
+        } finally { 
+            GoalkeeperStateMachine.transition(GoalkeeperState.IDLE) 
         }
     }
 }

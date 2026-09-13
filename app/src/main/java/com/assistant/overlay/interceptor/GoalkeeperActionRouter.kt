@@ -12,7 +12,9 @@ enum class GoalkeeperAction {
     BLOCK_LEFT,
     BLOCK_RIGHT,
     RECOVER,
-    HOLD
+    HOLD,
+    DIVE_BOTTOM_LEFT,
+    DIVE_BOTTOM_RIGHT
 }
 
 object GoalkeeperActionRouter {
@@ -107,6 +109,16 @@ object GoalkeeperActionRouter {
         }
 
         return when {
+
+            panicOverride && decision.heightBand == HeightBand.BOTTOM && decision.normX < 0.4f -> {
+                GoalkeeperMetricsRegistry.panicSaves.incrementAndGet()
+                GoalkeeperAction.DIVE_BOTTOM_LEFT
+            }
+
+            panicOverride && decision.heightBand == HeightBand.BOTTOM && decision.normX > 0.6f -> {
+                GoalkeeperMetricsRegistry.panicSaves.incrementAndGet()
+                GoalkeeperAction.DIVE_BOTTOM_RIGHT
+            }
 
             panicOverride &&
                 panic ==
