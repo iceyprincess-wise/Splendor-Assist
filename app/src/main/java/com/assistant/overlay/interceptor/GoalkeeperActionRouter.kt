@@ -120,20 +120,17 @@ object GoalkeeperActionRouter {
 
         return when {
 
-            panicOverride && decision.heightBand == HeightBand.BOTTOM && decision.normX < 0.4f -> {
-                GoalkeeperMetricsRegistry.panicSaves.incrementAndGet()
+            anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.BOTTOM && decision.normX < 0.4f -> {
+                GoalkeeperMetricsRegistry.saveAttempts.incrementAndGet()
                 GoalkeeperAction.DIVE_BOTTOM_LEFT
             }
 
-            panicOverride && decision.heightBand == HeightBand.BOTTOM && decision.normX > 0.6f -> {
-                GoalkeeperMetricsRegistry.panicSaves.incrementAndGet()
+            anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.BOTTOM && decision.normX > 0.6f -> {
+                GoalkeeperMetricsRegistry.saveAttempts.incrementAndGet()
                 GoalkeeperAction.DIVE_BOTTOM_RIGHT
             }
 
-            panicOverride && decision.heightBand == HeightBand.BOTTOM && decision.normX in 0.33f..0.66f -> {
-                GoalkeeperMetricsRegistry.panicSaves.incrementAndGet()
-                GoalkeeperAction.PARRY_BOTTOM_CENTER
-            }
+
 
             panicOverride &&
                 panic ==

@@ -162,7 +162,8 @@ object OmnipotentGoalkeeperEngine {
     fun scanFrameForOpponentAnimation(buffer: ByteBuffer, width: Int, height: Int, rowStride: Int = width * 4) {
         capturedWidth = width.toFloat()
         capturedHeight = height.toFloat()
-        if (SmartAssistAccessibilityEngine.globalInstance == null) return
+        // Accessibility connectivity is a dispatch prerequisite, not a detection gate.
+        // Detection and decision readiness proceed regardless of dispatch availability.
         // REMOVED: if (isProcessingFrame) return. Frame scanning MUST NEVER be blocked by execution queue!
 
         var anomalyDetected = false
@@ -214,10 +215,11 @@ object OmnipotentGoalkeeperEngine {
             // Buffer safety catch
         }
 
+        var defensiveActionPerformed = false
         run {
             val t = TelemetryRepository.current()
 
-            processGoalkeeperDefensiveLayer(
+            defensiveActionPerformed = processGoalkeeperDefensiveLayer(
                 ballX = if (t.ballX != 0f) t.ballX else width / 2f,
                 ballY = if (t.ballY != 0f) t.ballY else height * 0.8f,
                 ballVx = t.ballVelocityX,
@@ -233,7 +235,7 @@ object OmnipotentGoalkeeperEngine {
             )
         }
 
-        if (anomalyDetected) {
+        if (anomalyDetected && !defensiveActionPerformed) {
             val decision = ThreatPriorityEngine.evaluate(
                 detectedThreat,
                 detectedZone,
@@ -318,10 +320,10 @@ object OmnipotentGoalkeeperEngine {
                 executionCoordinates[2] = applyHumanizedNoise(vector[2], 2.5f)
                 executionCoordinates[3] = applyHumanizedNoise(vector[3], 2.5f)
 
-                CentralExecutionBus.submit(
+                val accepted = CentralExecutionBus.submit(
                     ExecutionRequest(
                         source = ExecutionSource.GOALKEEPER,
-                        phase = action.ordinal,
+                        phase = finalAction.ordinal,
                         startX = executionCoordinates[0],
                         startY = executionCoordinates[1],
                         endX = executionCoordinates[2],
@@ -330,8 +332,10 @@ object OmnipotentGoalkeeperEngine {
                     )
                 )
 
-                GoalkeeperMetricsRegistry.saveAttempts.incrementAndGet()
-                lastSaveTimestamp = System.currentTimeMillis() // Mark save for rebound detection
+                if (accepted) {
+                    GoalkeeperMetricsRegistry.saveAttempts.incrementAndGet()
+                    lastSaveTimestamp = System.currentTimeMillis() // Mark save for rebound detection ONLY if bus accepted
+                }
 
                 RecoveryPositionEngine.beginRecovery()
                 RecoveryPositionEngine.finishRecovery()

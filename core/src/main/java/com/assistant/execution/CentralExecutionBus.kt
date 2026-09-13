@@ -299,7 +299,7 @@ object CentralExecutionBus {
         source: ExecutionSource
     ): Long =
         when (source) {
-            ExecutionSource.GOALKEEPER -> 120L
+            ExecutionSource.GOALKEEPER -> 300L // Reconciled with 250ms dispatch latch
             ExecutionSource.INTERCEPTION -> 120L
             ExecutionSource.SMART_ASSIST -> 200L
             ExecutionSource.STUTTER -> 400L
@@ -310,8 +310,13 @@ object CentralExecutionBus {
     ) {
         val removed =
             queue.removeIf { queued ->
-                queued.request.source == incoming.source &&
-                    queued.request.phase == incoming.phase
+                if (incoming.source == ExecutionSource.GOALKEEPER) {
+                    // A new goalkeeper decision supersedes any older goalkeeper decision regardless of phase
+                    queued.request.source == ExecutionSource.GOALKEEPER
+                } else {
+                    queued.request.source == incoming.source &&
+                        queued.request.phase == incoming.phase
+                }
             }
 
         if (removed) {

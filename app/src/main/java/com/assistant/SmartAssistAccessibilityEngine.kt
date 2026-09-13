@@ -30,6 +30,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         private var dispatchStartedMs = 0L
         @Volatile
         private var dispatchingPriority = Int.MIN_VALUE
+        @Volatile
+        private var dispatchingSource: com.assistant.execution.ExecutionSource? = null
         private const val DISPATCH_LATCH_TIMEOUT_MS = 250L
         private const val LATCH_RELEASE_MARGIN_MS = 0L  
 
@@ -91,6 +93,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         h.postDelayed({
             if (isDispatching && dispatchStartedMs == startedAt) {
                 isDispatching = false
+                dispatchingSource = null
             }
         }, durationMs + LATCH_RELEASE_MARGIN_MS)
     }
@@ -124,6 +127,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         isDispatching = true
         dispatchStartedMs = System.currentTimeMillis()
         dispatchingPriority = HybridExecutionTerminal.priority(request.source)
+        dispatchingSource = request.source
         val startedAt = dispatchStartedMs
 
         return try {
@@ -154,11 +158,17 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 gesture,
                 object : GestureResultCallback() {
                     override fun onCompleted(gestureDescription: GestureDescription?) {
-                        if (dispatchStartedMs == startedAt) isDispatching = false
+                        if (dispatchStartedMs == startedAt) {
+                            isDispatching = false
+                            dispatchingSource = null
+                        }
                     }
 
                     override fun onCancelled(gestureDescription: GestureDescription?) {
-                        if (dispatchStartedMs == startedAt) isDispatching = false
+                        if (dispatchStartedMs == startedAt) {
+                            isDispatching = false
+                            dispatchingSource = null
+                        }
                     }
                 },
                 null,
@@ -167,6 +177,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
             if (!accepted) {
                 isDispatching = false
+                dispatchingSource = null
             } else {
                 scheduleLatchRelease(startedAt, syncedDuration)
                 recordDispatchForRate()
@@ -175,6 +186,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             accepted
         } catch (e: Exception) {
             isDispatching = false
+            dispatchingSource = null
             RuntimeLogger.log(
                 "Direct dispatch vector crash: ${e.message}",
                 "SMART_ASSIST"
@@ -188,6 +200,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             try {
                 if (latchStuck()) {
                     isDispatching = false
+                    dispatchingSource = null
                     RuntimeLogger.log(
                         "dispatch latch watchdog: backstop fired (anomaly)",
                         "SMART_ASSIST"
@@ -201,14 +214,17 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
                 if (isDispatching) {
                     val headSource = CentralExecutionBus.peekSource()
+                    val headPriority = if (headSource != null) HybridExecutionTerminal.priority(headSource) else Int.MIN_VALUE
                     val preempt =
                         headSource != null &&
-                            HybridExecutionTerminal.priority(headSource) > dispatchingPriority
+                            (headPriority > dispatchingPriority || 
+                             (headSource == com.assistant.execution.ExecutionSource.GOALKEEPER && dispatchingSource == com.assistant.execution.ExecutionSource.GOALKEEPER))
                     if (!preempt) {
                         busHandler.postDelayed(this, BUS_POLL_RATE_MS)
                         return
                     }
                     isDispatching = false
+                    dispatchingSource = null
                     RuntimeLogger.execution(
                         "BUS_PREEMPT",
                         "head=$headSource overIntPriority=$dispatchingPriority"
@@ -299,6 +315,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             busThread.quitSafely()
         }
         isDispatching = false
+        dispatchingSource = null
         if (globalInstance === this) {
             globalInstance = null
         }
