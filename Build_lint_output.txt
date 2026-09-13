@@ -1,16 +1,16 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-13 01:51:52 WAT
+Started: 2026-09-13 02:13:58 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 GIT STATUS:
  M Build_lint_output.txt
 === HEAD ===
-5f5c433d (HEAD -> main, origin/main, origin/HEAD) Update: core/src/main/AndroidManifest.xml
+83553363 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/debug/AndroidManifest.xml,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,app/src/main/res/values/strings.xml
 
 === MAIN ===
-5f5c433d (HEAD -> main, origin/main, origin/HEAD) Update: core/src/main/AndroidManifest.xml
+83553363 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/debug/AndroidManifest.xml,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,app/src/main/res/values/strings.xml
 
 
 ================================================================
@@ -28,14 +28,9 @@ YES — running lint --continue
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-Lint found 10 errors, 227 warnings. First failure:
-/data/data/com.termux/files/home/projects/Splendor-Assist/app/src/debug/AndroidManifest.xml:4: Error: Class referenced in the manifest, com.assistant.overlay.dvr.DvrProjectionService, was not found in the project or the libraries [MissingClass]
 FAILURE: Build failed with an exception.
 * What went wrong:
-> Lint found errors in the project; aborting build.
-  Lint found 10 errors, 227 warnings. First failure:
-  /data/data/com.termux/files/home/projects/Splendor-Assist/app/src/debug/AndroidManifest.xml:4: Error: Class referenced in the manifest, com.assistant.overlay.dvr.DvrProjectionService, was not found in the project or the libraries [MissingClass]
-BUILD FAILED in 7m 23s
+BUILD FAILED in 2m 33s
 
 LINT — ALL MODULES (--continue) EXIT: 1
 
@@ -293,35 +288,31 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 111 -> 112
+versionCode: 112 -> 113
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
-	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 1m 36s
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 26s
 
-ASSEMBLE DEBUG APK EXIT: 0
+ASSEMBLE DEBUG APK EXIT: 1
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v112-20260913_020103.apk
--rw-rw----. 1 u0_a262 media_rw 29M Sep 13 02:01 /storage/emulated/0/Download/Splendor-Assist-v112-20260913_020103.apk
-VERSION TRANSACTION: COMMITTED
-
+SKIPPED — build exit=1, apk_exists=YES
+VERSION TRANSACTION: ROLLED BACK
+Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
-YES — stopping Gradle daemon.
-Stopping Daemon(s)
-1 Daemon stopped
-PROVEN: Gradle daemon stop command completed.
+NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
-No Gradle daemons are running.
    PID STATUS   INFO
+ 14698 IDLE     8.5
   7672 STOPPED  (stop command received)
  13788 STOPPED  (by user or operating system)
  29386 STOPPED  (by user or operating system)
@@ -335,21 +326,20 @@ CLEAN:                           0
 LINT (all modules):              1
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  0
-APK EXPORT:                      0
+ASSEMBLE DEBUG:                  1
+APK EXPORT:                      1
 GRADLE DAEMON STOP:              0
 
 FINAL STATUS: FAILED — check items above
 
 GIT STATUS:
  M Build_lint_output.txt
- M app/build.gradle.kts
 === HEAD ===
-5f5c433d (HEAD -> main, origin/main, origin/HEAD) Update: core/src/main/AndroidManifest.xml
+83553363 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/debug/AndroidManifest.xml,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,app/src/main/res/values/strings.xml
 
 === MAIN ===
-5f5c433d (HEAD -> main, origin/main, origin/HEAD) Update: core/src/main/AndroidManifest.xml
+83553363 (HEAD -> main, origin/main, origin/HEAD) Update: app/build.gradle.kts,app/src/debug/AndroidManifest.xml,app/src/main/AndroidManifest.xml,app/src/main/java/com/assistant/SplendorWatchdog.kt,app/src/main/res/layout/activity_error.xml,app/src/main/res/layout/activity_future_rooms.xml,app/src/main/res/layout/activity_goalkeeper_control_room.xml,app/src/main/res/layout/activity_interception_control_room.xml,app/src/main/res/layout/activity_main.xml,app/src/main/res/layout/activity_room_tuner.xml,app/src/main/res/layout/activity_smartassist_control_room.xml,app/src/main/res/layout/activity_update.xml,app/src/main/res/layout/activity_welcome.xml,app/src/main/res/layout/overlay_layout.xml,app/src/main/res/values/strings.xml
 
-Finished: 2026-09-13 02:03:36 WAT
-Report size: 56149 bytes
+Finished: 2026-09-13 02:17:43 WAT
+Report size: 57433 bytes
 ================================================================
