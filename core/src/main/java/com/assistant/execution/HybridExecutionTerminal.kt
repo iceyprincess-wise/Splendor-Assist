@@ -11,8 +11,8 @@ object HybridExecutionTerminal {
         return when(source) {
             ExecutionSource.GOALKEEPER -> 100
             ExecutionSource.INTERCEPTION -> 100
-            ExecutionSource.SMART_ASSIST -> 90
-            ExecutionSource.STUTTER -> 80
+            ExecutionSource.SMART_ASSIST -> 99
+            ExecutionSource.STUTTER -> 98
         }
     }
 

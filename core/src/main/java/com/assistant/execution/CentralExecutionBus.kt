@@ -302,8 +302,8 @@ object CentralExecutionBus {
         when (source) {
             ExecutionSource.GOALKEEPER -> 120L
             ExecutionSource.INTERCEPTION -> 120L
-            ExecutionSource.SMART_ASSIST -> 200L
-            ExecutionSource.STUTTER -> 400L
+            ExecutionSource.SMART_ASSIST -> 130L
+            ExecutionSource.STUTTER -> 140L
         }
 
     private fun removeSupersededLocked(
