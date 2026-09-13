@@ -1,10 +1,14 @@
 package com.assistant.overlay.interceptor
 
+enum class HeightBand { TOP, MID, BOTTOM }
+
 data class ThreatDecision(
     val threat: ThreatType,
     val zone: ThreatZone,
     val direction: ShotDirection,
-    val priority: Int
+    val priority: Int,
+    val heightBand: HeightBand = HeightBand.MID,
+    val normX: Float = 0.5f
 )
 
 object ThreatPriorityEngine {
