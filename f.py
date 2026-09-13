@@ -2,7 +2,7 @@
 import os, sys, subprocess, shutil
 
 REPO_DIR = os.path.expanduser('~/projects/Splendor-Assist')
-HEAD_EXPECTED = 'c6220ca'
+HEAD_EXPECTED = '6cb817ec'
 
 def run_cmd(cmd, cwd=None):
     print(f'Running: {" ".join(cmd)}')
