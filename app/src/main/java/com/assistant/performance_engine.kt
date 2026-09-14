@@ -271,14 +271,15 @@ object FramePacingEngine {
  */
 object LagVerdictEngine {
 
-    // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val POLL_MS: Long get() = 2000L
-    private val JITTER_MS: Float get() = 10f
-    private val STABILITY_PCT: Float get() = 65f
-    private val CHOKE_STALLS: Float get() = 18f
-    private val CHOKE_MTSTALL_MS: Float get() = 120f
-    private val CHOKE_SPIKES: Float get() = 20f
-    private val CONFIRM_POLLS: Int get() = 2
+    // OMEGA FIX: Zero-Delay Micro-Defect Elimination
+    // 2000ms poll rate is 4 seconds to detect CHOKING. Too slow for eFootball.
+    private val POLL_MS: Long get() = 500L
+    private val JITTER_MS: Float get() = 8f
+    private val STABILITY_PCT: Float get() = 75f
+    private val CHOKE_STALLS: Float get() = 12f
+    private val CHOKE_MTSTALL_MS: Float get() = 80f
+    private val CHOKE_SPIKES: Float get() = 15f
+    private val CONFIRM_POLLS: Int get() = 1 // Instant confirmation for severe spikes
 
     @Volatile private var running = false
     @Volatile var verdict = "UNKNOWN"; private set
@@ -755,12 +756,13 @@ object BurstForensicsEngine {
         try { AdapterSignalBus.publishStutter("CALM") } catch (_: Throwable) {}
     }
 
-    // ADMIN-TUNABLE (defaults = original hard-coded values)
-    private val SEIZURE_MS: Float get() = 150f
-    private val OSC_BURSTS: Int get() = 3
-    private val OSC_WINDOW_MS: Long get() = 15000L
-    private val CALM_AFTER_MS: Long get() = 10000L
-    private val DECAY_POLL_MS: Long get() = 5000L
+    // OMEGA FIX: Catch silent micro-stutters that ruin input timing
+    // 150ms is 9 dropped frames. 45ms is 3 dropped frames (noticeable input delay).
+    private val SEIZURE_MS: Float get() = 45f
+    private val OSC_BURSTS: Int get() = 2
+    private val OSC_WINDOW_MS: Long get() = 10000L
+    private val CALM_AFTER_MS: Long get() = 5000L
+    private val DECAY_POLL_MS: Long get() = 2500L
 
     @Volatile var state = "CALM"; private set
     @Volatile private var decayRunning = false

@@ -68,9 +68,11 @@ object FilterEngine {
         
         var score = 100
         
+        // OMEGA FIX: Stop lying. If telemetry is UNKNOWN, assume worst-case blind spot.
         score -= when (lag) {
             "CHOKING" -> 40
             "JITTERY" -> 15
+            "UNKNOWN" -> 60 // Blind telemetry = device is struggling silently
             else -> 0
         }
         
@@ -78,6 +80,7 @@ object FilterEngine {
             "SEIZURE" -> 50
             "OSCILLATION" -> 25
             "HICCUP" -> 10
+            "UNKNOWN" -> 60 // Blind telemetry = device is struggling silently
             else -> 0
         }
         
