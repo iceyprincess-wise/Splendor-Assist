@@ -156,6 +156,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
     @Volatile private var lastFrameProcessedMs = 0L
+    private val visionInFlight = java.util.concurrent.atomic.AtomicBoolean(false)
     private val captureFrameIntervalBase = 33L
     private val captureFrameIntervalMs: Long
         get() = com.assistant.MemoryCaptureGateEngine.recommendedIntervalMs()
@@ -233,6 +234,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         val visionBuffer = ByteBuffer.allocateDirect(originalBuffer.remaining())
         visionBuffer.put(originalBuffer)
         visionBuffer.flip()
+        val startVision = visionInFlight.compareAndSet(false, true)
         
         // Deep copy for OCR (sync safe via reusableBitmap)
         val ocrReady = try {
@@ -248,7 +250,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         image.close()
 
         // Launch Vision Coroutine with SAFE copied buffer
-        visionScope.launch {
+        if (startVision) visionScope.launch {
             try {
                 val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride)
                 val state = com.assistant.VisionCore.process(normalized)
@@ -266,6 +268,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     lastCaptureFaultLog = now
                     try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
                 }
+            } finally {
+                visionInFlight.set(false)
             }
         }
 
