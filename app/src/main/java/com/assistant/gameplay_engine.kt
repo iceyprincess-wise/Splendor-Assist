@@ -2259,7 +2259,7 @@ object ConnectedComponentEngine {
 
         // Phase 3 optimization: packed Int keys (x shl 16 or y)
         // Map stores the INDEX in the PixelSampleBuffer to retrieve RGB values
-        val lookup = threadLocalLookup.get()
+        val lookup = threadLocalLookup.get()!!
         lookup.clear()
         for (i in 0 until count) {
             val packed = data[i]
@@ -2269,10 +2269,10 @@ object ConnectedComponentEngine {
             lookup[key] = i
         }
 
-        val visited = threadLocalVisited.get()
+        val visited = threadLocalVisited.get()!!
         visited.clear()
         val blobs = ArrayList<Blob>()
-        val queue = reusableQueue.get()
+        val queue = reusableQueue.get()!!
 
         for (i in 0 until count) {
             val packed = data[i]
