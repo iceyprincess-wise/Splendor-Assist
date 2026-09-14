@@ -674,8 +674,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                         val detectedText = visionText.textBlocks.asSequence()
                             .filterNot { com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(it.boundingBox) }
                             .joinToString("") { it.text }
-                            .replace("
-", "")
+                            .replace("\n", "")
                             .take(120)
 
                         com.assistant.vision.OverlaySelfMask.tickAndLog()
