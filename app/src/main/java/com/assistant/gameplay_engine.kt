@@ -2296,8 +2296,8 @@ object ConnectedComponentEngine {
             var g = 0f
             var b = 0f
 
-            while (reusableQueue.isNotEmpty()) {
-                val current = reusableQueue.removeFirst()
+            while (queue.isNotEmpty()) {
+                val current = queue.removeFirst()
                 
                 val idx = lookup[current] ?: continue
                 val currentPacked = data[idx]
@@ -2325,7 +2325,7 @@ object ConnectedComponentEngine {
                     val nextKey = (nx shl 16) or ny
 
                     if (visited.add(nextKey) && lookup.containsKey(nextKey)) {
-                        reusableQueue.add(nextKey)
+                        queue.add(nextKey)
                     }
                 }
             }

@@ -230,9 +230,9 @@ object RuntimeLogger {
         tag: String
     ) {
 
-        val date = threadLocalDate.get()
+        val date = threadLocalDate.get()!!
         date.time = System.currentTimeMillis()
-        val timestamp = dateFormat.get().format(date)
+        val timestamp = dateFormat.get()!!.format(date)
 
         val logEntry =
             "$timestamp [$tag] $message\n"
