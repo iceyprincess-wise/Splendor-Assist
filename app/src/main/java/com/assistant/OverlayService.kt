@@ -32,6 +32,7 @@ import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.Image
 import android.media.ImageReader
+import java.nio.ByteBuffer
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
@@ -203,29 +204,52 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var currentDpi = 0
 
     private val imageAvailableListener = ImageReader.OnImageAvailableListener { reader ->
-            val image = try { reader.acquireLatestImage() } catch (_: Throwable) { null } ?: return@OnImageAvailableListener
-            val captureNow = System.currentTimeMillis()
-            if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
-                image.close()
-                return@OnImageAvailableListener
+        val image = try { reader.acquireLatestImage() } catch (_: Throwable) { null } ?: return@OnImageAvailableListener
+        val captureNow = System.currentTimeMillis()
+        if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
+            image.close()
+            return@OnImageAvailableListener
+        }
+        lastFrameProcessedMs = captureNow
+        captureFrameCount++
+
+        com.assistant.SplendorCaptureRecovery.markFrame()
+
+        if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
+            image.close()
+            return@OnImageAvailableListener
+        }
+
+        // OMEGA FIX: SYNCHRONOUS EXTRACTION prevents "Image is already closed" race conditions
+        val width = image.width
+        val height = image.height
+        val plane = try { image.planes[0] } catch (t: Throwable) { image.close(); return@OnImageAvailableListener }
+        val rowStride = plane.rowStride
+        val pixelStride = plane.pixelStride
+        val originalBuffer = plane.buffer
+        
+        // Deep copy for Vision Pipeline (async safe)
+        val visionBuffer = ByteBuffer.allocateDirect(originalBuffer.remaining())
+        visionBuffer.put(originalBuffer)
+        visionBuffer.flip()
+        
+        // Deep copy for OCR (sync safe via reusableBitmap)
+        val ocrReady = try {
+            if (reusableBitmap == null || reusableBitmap!!.width != width || reusableBitmap!!.height != height) {
+                reusableBitmap?.recycle()
+                reusableBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             }
-            lastFrameProcessedMs = captureNow
-            captureFrameCount++
+            reusableBitmap!!.copyPixelsFromBuffer(originalBuffer)
+            true
+        } catch (_: Throwable) { false }
 
-            com.assistant.SplendorCaptureRecovery.markFrame()
+        // CLOSE IMAGE IMMEDIATELY: Frees native surface, prevents queue backup and faults
+        image.close()
 
-            if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
-                image.close()
-                return@OnImageAvailableListener
-            }
-
-            visionScope.launch {
+        // Launch Vision Coroutine with SAFE copied buffer
+        visionScope.launch {
             try {
-                val plane = image.planes[0]
-                val scanBuffer = plane.buffer.duplicate()
-                val rowStride = plane.rowStride
-                val pixelStride = plane.pixelStride
-                val normalized = com.assistant.FrameNormalizer.normalize(scanBuffer.duplicate(), image.width, image.height, rowStride, pixelStride)
+                val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride)
                 val state = com.assistant.VisionCore.process(normalized)
                 com.assistant.BoosterIgnition.ensureIgnited(this@OverlayService)
                 com.assistant.AppContributorRegistration.ensureRegistered()
@@ -233,25 +257,24 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val frame = com.assistant.FrameAssembler.assemble()
                 com.assistant.RuntimeDecisionLoop.onFrame(frame)
                 com.assistant.GameStateBuilder.update(state)
-                com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(scanBuffer, image.width, image.height, rowStride)
-                com.assistant.ControlMappingTrainer.observe(scanBuffer, image.width, image.height, rowStride)
+                com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(visionBuffer, width, height, rowStride)
+                com.assistant.ControlMappingTrainer.observe(visionBuffer, width, height, rowStride)
             } catch (t: Throwable) {
                 try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
             }
-            }
+        }
 
-            val shedFactor = when (com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentLoadShed()) {
-                "HEAVY" -> 4L
-                "LIGHT" -> 2L
-                else -> 1L
-            }
+        // Trigger OCR if interval met (uses already-populated reusableBitmap)
+        val shedFactor = when (com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentLoadShed()) {
+            "HEAVY" -> 4L
+            "LIGHT" -> 2L
+            else -> 1L
+        }
 
-            if (System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS * shedFactor) {
-                lastOcrTime = System.currentTimeMillis()
-                processImageForOCR(image)
-            } else {
-                image.close()
-            }
+        if (ocrReady && System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS * shedFactor) {
+            lastOcrTime = System.currentTimeMillis()
+            processBitmapForOCR()
+        }
     }
 
     fun applyFreshProjection(code: Int, data: Intent) {
@@ -642,26 +665,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
         keepAliveHandler.postDelayed(keepAliveRunnable!!, 45000L)
     }
 
-    private fun processImageForOCR(image: Image) {
-        try {
-            image.width
-        } catch (_: IllegalStateException) {
-            try { image.close() } catch (_: Throwable) {}
-            return
-        }
+    private fun processBitmapForOCR() {
+        if (reusableBitmap == null || reusableBitmap!!.isRecycled) return
         if (taskExecutionLock.tryLock()) {
             try {
-                if (reusableBitmap == null || reusableBitmap!!.width != image.width || reusableBitmap!!.height != image.height) {
-                    reusableBitmap?.recycle()
-                    reusableBitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
-                }
-                reusableBitmap!!.copyPixelsFromBuffer(image.planes[0].buffer)
                 recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))
                     .addOnSuccessListener { visionText ->
                         val detectedText = visionText.textBlocks.asSequence()
                             .filterNot { com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(it.boundingBox) }
                             .joinToString("") { it.text }
-                            .replace("\n", "")
+                            .replace("
+", "")
                             .take(120)
 
                         com.assistant.vision.OverlaySelfMask.tickAndLog()
@@ -726,10 +740,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     }
             } finally {
                 taskExecutionLock.unlock()
-                try { image.close() } catch(e:Exception){}
             }
-        } else {
-            image.close()
         }
     }
 
@@ -825,3 +836,4 @@ class OverlayService : Service(), ComponentCallbacks2 {
         super.onDestroy()
     }
 }
+
