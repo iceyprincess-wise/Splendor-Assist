@@ -33,6 +33,9 @@ class PerformanceEngineService : Service() {
         try { NetProbeEngine.start(this) } catch (_: Throwable) {}
         try { InputLatencyEngine.start() } catch (_: Throwable) {}
         try { StutterPulseEngine.start() } catch (_: Throwable) {}
+        try { ActionWindowEngine.start() } catch (_: Throwable) {}
+        try { BurstForensicsEngine.startDecay() } catch (_: Throwable) {}
+        try { MemoryMonitorEngine.start(this) } catch (_: Throwable) {}
         
         // Start consolidated scheduler for adapter telemetry
         try { PerformanceScheduler.start(this) } catch (_: Throwable) {}
@@ -48,6 +51,9 @@ class PerformanceEngineService : Service() {
         try { NetProbeEngine.stop() } catch (_: Throwable) {}
         try { InputLatencyEngine.stop() } catch (_: Throwable) {}
         try { StutterPulseEngine.stop() } catch (_: Throwable) {}
+        try { ActionWindowEngine.stop() } catch (_: Throwable) {}
+        try { BurstForensicsEngine.stopDecay() } catch (_: Throwable) {}
+        try { MemoryMonitorEngine.stop() } catch (_: Throwable) {}
         try { FramePacingEngine.stop() } catch (_: Throwable) {}
         try { MainThreadStallEngine.stop() } catch (_: Throwable) {}
         try { LagVerdictEngine.stop() } catch (_: Throwable) {}
