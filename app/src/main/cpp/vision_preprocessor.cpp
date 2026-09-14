@@ -29,7 +29,7 @@ struct Workspace {
 static Workspace g_ws;
 
 extern "C" JNIEXPORT jint JNICALL
-Java_com_assistant_adapter_smartassist_VisionPreprocessor_processFrameNative(
+Java_com_assistant_VisionPreprocessor_processFrameNative(
     JNIEnv* env, jobject thiz,
     jobject buffer, jint width, jint height, jint rowStride, jint pixelStride,
     jint thresholdInt, jint adaptiveNoiseVariance, jfloat serverTickSyncScale,
