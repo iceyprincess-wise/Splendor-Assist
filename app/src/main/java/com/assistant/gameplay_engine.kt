@@ -3369,12 +3369,14 @@ object FieldLineDetector {
         val pixels =
             whiteBlobs.sumOf { it.pixelCount }
 
+        // OMEGA FIX: Dynamic Wide Camera Scaling
+        // Lines are thinner/further in Wide camera. Total white pixels drop by ~60%.
         return FieldLineDetectionResult(
-            touchLinesDetected = pixels > 150,
-            penaltyAreaDetected = pixels > 250,
-            centerCircleDetected = pixels > 350,
-            goalAreaDetected = pixels > 200,
-            confidence = (pixels / 1000f).coerceIn(0f,1f)
+            touchLinesDetected = pixels > 60,
+            penaltyAreaDetected = pixels > 100,
+            centerCircleDetected = pixels > 140,
+            goalAreaDetected = pixels > 80,
+            confidence = (pixels / 400f).coerceIn(0f,1f)
         )
     }
 
@@ -4928,10 +4930,10 @@ GoalDetector
 ======== */
 object GoalDetector {
 
-    // Goal is always on the RIGHT side of the attack direction.
-    // Only consider white blobs in the right 45% of the screen width.
-    private const val GOAL_SCREEN_FRACTION = 0.55f
-    private const val MIN_GOAL_PIXELS = 40
+    // OMEGA FIX: Dynamic Wide Camera Scaling
+    // Expanded search region to rightmost 70% (0.30f fraction).
+    private const val GOAL_SCREEN_FRACTION = 0.30f
+    private const val MIN_GOAL_PIXELS = 15
 
     fun detect(
         blobs: List<ConnectedComponentEngine.Blob>
@@ -5059,7 +5061,8 @@ GoalkeeperDetector
  */
 object GoalkeeperDetector {
 
-    private const val MIN_PIXEL_COUNT = 12
+    // OMEGA FIX: Dynamic Wide Camera Scaling
+    private const val MIN_PIXEL_COUNT = 6
     private const val COAST_FRAMES = 3      // 15fps: 3 frames = 200ms coast
     private const val MIN_CONFIDENCE = 0.18f
 
@@ -5087,8 +5090,8 @@ object GoalkeeperDetector {
             )
             if (jersey.team != JerseyColorSegmentation.Team.GOALKEEPER) continue
 
-            // Score: jersey confidence weighted with blob size
-            val sizeScore = (blob.pixelCount / 200f).coerceIn(0f, 1f)
+            // OMEGA FIX: Distant keepers occupy fewer pixels. Divisor lowered.
+            val sizeScore = (blob.pixelCount / 100f).coerceIn(0f, 1f)
             val composite = jersey.confidence * 0.65f + sizeScore * 0.35f
 
             if (composite > bestScore) {
@@ -9221,13 +9224,17 @@ object PlayerDetector {
             val centerX = (blob.minX + blob.maxX) * 0.5f
             val centerY = (blob.minY + blob.maxY) * 0.5f
 
+            // OMEGA FIX: Dynamic Wide Camera Depth Scaling
+            val depthFactor = if (centerY < 400f) 0.25f else 1.0f
+            val effectivePixelCount = blob.pixelCount / depthFactor
+
             val jersey = JerseyColorSegmentation.classify(
                 blob.averageRed,
                 blob.averageGreen,
                 blob.averageBlue
             )
 
-            val sizeScore = (blob.pixelCount / 64f).coerceIn(0f, 1f)
+            val sizeScore = (effectivePixelCount / 64f).coerceIn(0f, 1f)
             val densityScore = density.coerceIn(0f, 1f)
             val shapeScore = ((aspectRatio - MIN_ASPECT_RATIO) /
                 (1f - MIN_ASPECT_RATIO)).coerceIn(0f, 1f)
