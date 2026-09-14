@@ -2245,7 +2245,9 @@ object ConnectedComponentEngine {
     )
 
     // Reusable queue to prevent per-component ArrayDeque allocation (Phase 3)
-    private val reusableQueue = java.util.ArrayDeque<Int>(1024)
+    private val reusableQueue = ThreadLocal.withInitial { java.util.ArrayDeque<Int>(1024) }
+    private val threadLocalLookup = ThreadLocal.withInitial { HashMap<Int, Int>(2048) }
+    private val threadLocalVisited = ThreadLocal.withInitial { HashSet<Int>(2048) }
 
     fun extract(
         buffer: FrameScanner.PixelSampleBuffer
@@ -2257,7 +2259,8 @@ object ConnectedComponentEngine {
 
         // Phase 3 optimization: packed Int keys (x shl 16 or y)
         // Map stores the INDEX in the PixelSampleBuffer to retrieve RGB values
-        val lookup = HashMap<Int, Int>(count)
+        val lookup = threadLocalLookup.get()
+        lookup.clear()
         for (i in 0 until count) {
             val packed = data[i]
             val x = (packed shr 40 and 0xFFFF).toInt()
@@ -2266,8 +2269,10 @@ object ConnectedComponentEngine {
             lookup[key] = i
         }
 
-        val visited = HashSet<Int>(count)
+        val visited = threadLocalVisited.get()
+        visited.clear()
         val blobs = ArrayList<Blob>()
+        val queue = reusableQueue.get()
 
         for (i in 0 until count) {
             val packed = data[i]
@@ -2278,8 +2283,8 @@ object ConnectedComponentEngine {
             if (!visited.add(startKey))
                 continue
 
-            reusableQueue.clear()
-            reusableQueue.add(startKey)
+            queue.clear()
+            queue.add(startKey)
 
             var minX = startX
             var minY = startY

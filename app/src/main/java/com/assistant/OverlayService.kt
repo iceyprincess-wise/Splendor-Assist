@@ -62,6 +62,7 @@ import java.util.Locale
 import java.util.concurrent.locks.ReentrantLock
 
 class OverlayService : Service(), ComponentCallbacks2 {
+    private var lastCaptureFaultLog = 0L
 
     enum class CaptureState {
         IDLE,
@@ -260,7 +261,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(visionBuffer, width, height, rowStride)
                 com.assistant.ControlMappingTrainer.observe(visionBuffer, width, height, rowStride)
             } catch (t: Throwable) {
-                try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+                val now = System.currentTimeMillis()
+                if (now - lastCaptureFaultLog > 1000L) {
+                    lastCaptureFaultLog = now
+                    try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
+                }
             }
         }
 

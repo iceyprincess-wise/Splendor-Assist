@@ -218,17 +218,21 @@ object RuntimeLogger {
         }
     }
 
+
+    private val dateFormat = ThreadLocal.withInitial {
+        java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", java.util.Locale.US)
+    }
+    private val threadLocalDate = ThreadLocal.withInitial { java.util.Date() }
+
     @Synchronized
     fun log(
         message: String,
         tag: String
     ) {
 
-        val timestamp =
-            SimpleDateFormat(
-                "yyyy-MM-dd HH:mm:ss.SSS",
-                Locale.US
-            ).format(Date())
+        val date = threadLocalDate.get()
+        date.time = System.currentTimeMillis()
+        val timestamp = dateFormat.get().format(date)
 
         val logEntry =
             "$timestamp [$tag] $message\n"
