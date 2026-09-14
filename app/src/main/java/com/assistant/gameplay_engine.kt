@@ -8182,6 +8182,8 @@ object SceneTracker {
 
     private val trackedPlayers = mutableListOf<TrackedPlayer>()
 
+    private val mutationLock = Any()
+
     private var trackedGoalkeeper: TrackedPlayer? = null
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
@@ -8195,7 +8197,7 @@ object SceneTracker {
     fun update(
         state: GameStateSnapshot,
         players: PlayerDetectionResult
-    ): SceneSnapshot {
+    ): SceneSnapshot = synchronized(mutationLock) {
 
         frameCounter++
 
@@ -8337,7 +8339,7 @@ object SceneTracker {
                 confidence = state.confidence
             )
 
-        return latest
+        latest
     }
 
     fun current(): SceneSnapshot =
