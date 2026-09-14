@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-14 04:06:43 WAT
+Started: 2026-09-14 12:35:10 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -30,23 +30,22 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 128 -> 129
+versionCode: 129 -> 130
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-w: Detected multiple Kotlin daemon sessions at kotlin/sessions
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 1m 39s
+BUILD SUCCESSFUL in 1m 37s
 
 ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v129-20260914_040829.apk
--rw-rw----. 1 u0_a262 media_rw 29M Sep 14 04:08 /storage/emulated/0/Download/Splendor-Assist-v129-20260914_040829.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v130-20260914_123654.apk
+-rw-rw----. 1 u0_a262 media_rw 30M Sep 14 12:36 /storage/emulated/0/Download/Splendor-Assist-v130-20260914_123654.apk
 VERSION TRANSACTION: COMMITTED
 
 ================================================================
@@ -56,9 +55,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 16548 IDLE     8.5
- 10099 STOPPED  (by user or operating system)
- 13958 STOPPED  (by user or operating system)
+ 22472 IDLE     8.5
+  8175 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -78,7 +76,8 @@ FINAL STATUS: ALL PASSED
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
  M app/build.gradle.kts
+?? "app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
 
-Finished: 2026-09-14 04:10:36 WAT
-Report size: 3623 bytes
+Finished: 2026-09-14 12:37:02 WAT
+Report size: 3573 bytes
 ================================================================
