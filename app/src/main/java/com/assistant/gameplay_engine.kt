@@ -10316,11 +10316,8 @@ object TouchStabilizationEngine {
      */
     @JvmStatic
     fun injectZeroLatencyTap(service: AccessibilityService, x: Float, y: Float): Boolean {
-        val path = Path().apply {
-            moveTo(x, y)
-        }
-        
         // Build the gesture with absolute minimal duration for instant registration
+        // Native bridge bypasses Path allocation for true zero-latency injection
         return com.assistant.input.NativeInputBridge.injectTap(service, x, y)
     }
     
