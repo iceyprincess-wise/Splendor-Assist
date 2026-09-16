@@ -5,7 +5,6 @@ add_library(splendor_native SHARED native_input.cpp)
 add_library(vision_preprocessor SHARED vision_preprocessor.cpp)
 
 # Fix for GWP-ASan IE access model crash
-target_compile_options(vision_preprocessor PRIVATE -ftls-model=global-dynamic)
 
 find_library(log-lib log)
 

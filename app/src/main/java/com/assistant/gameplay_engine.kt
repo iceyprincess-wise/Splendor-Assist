@@ -11149,14 +11149,7 @@ object RuntimeHealthMonitor {
                 )
 
         // ---- booster: cross-process heartbeats, fresh ones only ----
-        val boosterAlive =
-            try {
-                AdapterHealthRegistry.getAllLive().any {
-                    now - it.lastHeartbeat <= BOOSTER_FRESH_MS
-                }
-            } catch (_: Throwable) {
-                false
-            }
+        val boosterAlive = try { com.assistant.BoosterIgnition.isFleetReady() } catch (_: Throwable) { false }
 
         val degraded = mutableListOf<String>()
 
