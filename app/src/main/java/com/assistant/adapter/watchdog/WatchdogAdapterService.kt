@@ -4,6 +4,7 @@ import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
+import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.survival.ProcessSurvivalRegistry
 
 import android.app.Service
@@ -57,7 +58,7 @@ class WatchdogAdapterService : Service() {
         override fun run() {
             var offline = 0; var degraded = 0; var restarted = 0
 
-            AdapterHealthRegistry.getAll().forEach { snapshot ->
+            AdapterHealthRegistry.getAllLive().forEach { snapshot ->
                 val status = AdapterHealthRegistry.effectiveStatus(snapshot.adapterName)
                 ProcessSurvivalRegistry.update(snapshot.adapterName, status)
 
@@ -76,7 +77,7 @@ class WatchdogAdapterService : Service() {
                     }
                 }
             }
-
+            AdapterSignalBus.publishFleet(offline)
             lastScan = "offline=$offline degraded=$degraded restarted=$restarted"
             watchdogHandler.postDelayed(this, 15000)
             // HYPEROS LMK SURVIVAL: Renew WakeLock timeout on every successful scan cycle

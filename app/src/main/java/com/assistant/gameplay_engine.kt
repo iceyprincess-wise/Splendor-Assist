@@ -10495,6 +10495,7 @@ object VisionPreprocessor {
     
     init {
         try {
+            System.loadLibrary("c++_shared")
             System.loadLibrary("vision_preprocessor")
             nativeAvailable = true
             RuntimeLogger.log("Native VisionPreprocessor loaded", TAG)
