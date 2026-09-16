@@ -18,27 +18,27 @@ class PerformanceEngineService : Service() {
         NodeNotificationHub.attach(this, "performance_engine")
 
         // IGNITE CONSOLIDATED PERFORMANCE ENGINES
-        try { PerformanceTelemetryRegistry.initialize(this) } catch (_: Throwable) {}
-        try { DisplayProfileEngine.detect(this) } catch (_: Throwable) {}
-        try { FramePacingEngine.start() } catch (_: Throwable) {}
-        try { MainThreadStallEngine.start() } catch (_: Throwable) {}
-        try { LagVerdictEngine.start() } catch (_: Throwable) {}
-        try { LoadShedGovernor.start() } catch (_: Throwable) {}
-        try { LoadShedCaptureBrakeEngine.start() } catch (_: Throwable) {}
-        try { ThermalPeekEngine.init(this) } catch (_: Throwable) {}
-        try { CpuGovernorEngine.start() } catch (_: Throwable) {}
-        try { GcStallEngine.start() } catch (_: Throwable) {}
-        try { RenderThreadStallEngine.start() } catch (_: Throwable) {}
-        try { NetJitterEngine.start() } catch (_: Throwable) {}
-        try { NetProbeEngine.start(this) } catch (_: Throwable) {}
-        try { InputLatencyEngine.start() } catch (_: Throwable) {}
-        try { StutterPulseEngine.start() } catch (_: Throwable) {}
-        try { ActionWindowEngine.start() } catch (_: Throwable) {}
-        try { BurstForensicsEngine.startDecay() } catch (_: Throwable) {}
-        try { MemoryMonitorEngine.start(this) } catch (_: Throwable) {}
+        try { PerformanceTelemetryRegistry.initialize(this) } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { DisplayProfileEngine.detect(this) } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { FramePacingEngine.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { MainThreadStallEngine.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { LagVerdictEngine.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { LoadShedGovernor.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { LoadShedCaptureBrakeEngine.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { ThermalPeekEngine.init(this) } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { CpuGovernorEngine.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { GcStallEngine.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { RenderThreadStallEngine.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { NetJitterEngine.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { NetProbeEngine.start(this) } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { InputLatencyEngine.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { StutterPulseEngine.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { ActionWindowEngine.start() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { BurstForensicsEngine.startDecay() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { MemoryMonitorEngine.start(this) } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
         
         // Start consolidated scheduler for adapter telemetry
-        try { PerformanceScheduler.start(this) } catch (_: Throwable) {}
+        try { PerformanceScheduler.start(this) } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
         
         RuntimeLogger.log("Performance engine stack ignited: 15 engines + scheduler", "ENGINE")
     }
@@ -47,22 +47,22 @@ class PerformanceEngineService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        try { PerformanceScheduler.stop() } catch (_: Throwable) {}
-        try { NetProbeEngine.stop() } catch (_: Throwable) {}
-        try { InputLatencyEngine.stop() } catch (_: Throwable) {}
-        try { StutterPulseEngine.stop() } catch (_: Throwable) {}
-        try { ActionWindowEngine.stop() } catch (_: Throwable) {}
-        try { BurstForensicsEngine.stopDecay() } catch (_: Throwable) {}
-        try { MemoryMonitorEngine.stop() } catch (_: Throwable) {}
-        try { FramePacingEngine.stop() } catch (_: Throwable) {}
-        try { MainThreadStallEngine.stop() } catch (_: Throwable) {}
-        try { LagVerdictEngine.stop() } catch (_: Throwable) {}
-        try { LoadShedGovernor.stop() } catch (_: Throwable) {}
-        try { LoadShedCaptureBrakeEngine.stop() } catch (_: Throwable) {}
-        try { CpuGovernorEngine.stop() } catch (_: Throwable) {}
-        try { GcStallEngine.stop() } catch (_: Throwable) {}
-        try { RenderThreadStallEngine.stop() } catch (_: Throwable) {}
-        try { NetJitterEngine.stop() } catch (_: Throwable) {}
+        try { PerformanceScheduler.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { NetProbeEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { InputLatencyEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { StutterPulseEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { ActionWindowEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { BurstForensicsEngine.stopDecay() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { MemoryMonitorEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { FramePacingEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { MainThreadStallEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { LagVerdictEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { LoadShedGovernor.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { LoadShedCaptureBrakeEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { CpuGovernorEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { GcStallEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { RenderThreadStallEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { NetJitterEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
         
         NodeNotificationHub.detach(this, "performance_engine")
         RuntimeLogger.log("PerformanceEngineService destroyed", "ENGINE")
