@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-17 11:35:01 WAT
+Started: 2026-09-17 12:14:51 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -10,7 +10,14 @@ PROJECT ROOT: cd ~/projects/Splendor-Assist:
 ================================================================
 >>> OPTIONAL CLEAN
 ================================================================
-NO — clean skipped; preserving incremental build state.
+YES — running clean
+
+================================================================
+>>> CLEAN
+================================================================
+BUILD SUCCESSFUL in 5s
+
+CLEAN EXIT: 0
 
 ================================================================
 >>> OPTIONAL LINT
@@ -35,20 +42,17 @@ versionCode: 135 -> 136
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
-	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-FAILURE: Build failed with an exception.
-* What went wrong:
-BUILD FAILED in 49s
+BUILD SUCCESSFUL in 18s
 
-ASSEMBLE DEBUG APK EXIT: 1
+ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-SKIPPED — build exit=1, apk_exists=YES
-VERSION TRANSACTION: ROLLED BACK
-Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
+Exported: /storage/emulated/0/Download/Splendor-Assist-v136-20260917_121600.apk
+-rw-rw----. 1 u0_a262 media_rw 30M Sep 17 12:16 /storage/emulated/0/Download/Splendor-Assist-v136-20260917_121600.apk
+VERSION TRANSACTION: COMMITTED
+
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
@@ -67,15 +71,17 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  1
-APK EXPORT:                      1
+ASSEMBLE DEBUG:                  0
+APK EXPORT:                      0
 GRADLE DAEMON STOP:              0
 
-FINAL STATUS: FAILED — check items above
+FINAL STATUS: ALL PASSED
 
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
+ M app/build.gradle.kts
+ M app/src/main/cpp/CMakeLists.txt
 
-Finished: 2026-09-17 11:36:24 WAT
-Report size: 3450 bytes
+Finished: 2026-09-17 12:16:21 WAT
+Report size: 3110 bytes
 ================================================================
