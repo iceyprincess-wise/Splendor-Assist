@@ -10496,7 +10496,7 @@ object VisionPreprocessor {
     init {
         try {
             System.loadLibrary("c++_shared")
-            // System.loadLibrary("vision_preprocessor") // DISABLED: NDK r25b TLS bug
+            // // System.loadLibrary("vision_preprocessor") // DELETED: NDK r25b TLS bug // DISABLED: NDK r25b TLS bug
             nativeAvailable = false // FORCED: Native disabled, using Kotlin fallback
             RuntimeLogger.log("Native VisionPreprocessor loaded", TAG)
         } catch (t: Throwable) {
