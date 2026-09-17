@@ -30,6 +30,7 @@ android {
             cmake {
                 cppFlags += "-std=c++17"
                 arguments += "-DANDROID_STL=c++_shared"
+                arguments += "-DANDROID_ALLOW_GWP_ASAN=OFF"
             }
         }
         ndk {
