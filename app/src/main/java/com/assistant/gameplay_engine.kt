@@ -10493,6 +10493,10 @@ object VisionPreprocessor {
     @Volatile private var nativeAvailable = false
     private var outBlobs = FloatArray(1024 * 8)
     
+    // THROTTLE: Kotlin fallback is too heavy for Helio G81-Ultra. Run every 2nd frame to prevent dispatch latch.
+    private var frameCounter = 0
+    private var lastBlobs: List<ConnectedComponentEngine.Blob> = emptyList()
+    
     init {
         try {
             System.loadLibrary("c++_shared")
@@ -10511,6 +10515,10 @@ object VisionPreprocessor {
         val height = frame.height
 
         if (!nativeAvailable || !buffer.isDirect) {
+            frameCounter++
+            if (frameCounter % 2 != 0) return lastBlobs
+            lastBlobs = fallback(frame)
+            return lastBlobs
             return fallback(frame)
         }
 

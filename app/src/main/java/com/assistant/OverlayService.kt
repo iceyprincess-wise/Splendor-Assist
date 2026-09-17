@@ -223,9 +223,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
 
         // OMEGA FIX: SYNCHRONOUS EXTRACTION prevents "Image is already closed" race conditions
-        val width = image.width
-        val height = image.height
-        val plane = try { image.planes[0] } catch (t: Throwable) { image.close(); return@OnImageAvailableListener }
+        val width = try { image.width } catch (_: Throwable) { try { image.close() } catch (_: Throwable) {}; return@OnImageAvailableListener }
+        val height = try { image.height } catch (_: Throwable) { try { image.close() } catch (_: Throwable) {}; return@OnImageAvailableListener }
+        val plane = try { image.planes[0] } catch (_: Throwable) { try { image.close() } catch (_: Throwable) {}; return@OnImageAvailableListener }
         val rowStride = plane.rowStride
         val pixelStride = plane.pixelStride
         val originalBuffer = plane.buffer
