@@ -10348,7 +10348,7 @@ object VisionPreprocessor {
     
     init {
         try {
-            System.loadLibrary("vision_core")
+            System.loadLibrary("splendor_native")
             nativeAvailable = true
             RuntimeLogger.log("Pure C Native VisionCore loaded successfully", TAG)
         } catch (t: Throwable) {
