@@ -10346,16 +10346,14 @@ object VisionPreprocessor {
     @Volatile private var nativeAvailable = false
     private var outBlobs = FloatArray(1024 * 8)
     
-    
     init {
         try {
             System.loadLibrary("vision_core")
-            System.loadLibrary("vision_core")
             nativeAvailable = true
-            RuntimeLogger.log("Native VisionPreprocessor loaded", TAG)
+            RuntimeLogger.log("Pure C Native VisionCore loaded successfully", TAG)
         } catch (t: Throwable) {
             nativeAvailable = false
-            RuntimeLogger.log("Native VisionPreprocessor FAILED to load: ${t.message}. Fallback active.", TAG)
+            RuntimeLogger.log("Native VisionCore FAILED to load: ${t.message}. Fallback active.", TAG)
         }
     }
 
@@ -10365,31 +10363,29 @@ object VisionPreprocessor {
         val height = frame.height
 
         if (!nativeAvailable || !buffer.isDirect) {
-            frameCounter++
-            if (frameCounter % 2 != 0) return lastBlobs
-            lastBlobs = fallback(frame)
-            return lastBlobs
             return fallback(frame)
         }
 
         val thresholdInt = (0.50f * 255.0f).toInt().coerceIn(0, 255)
+        val capacity = outBlobs.size / 8
         
-        while (true) {
-            val capacity = outBlobs.size / 8
-            val result = processFrameNative(
+        val result = nativeScanAndExtract(
+            buffer, width, height, frame.rowStride, frame.pixelStride,
+            thresholdInt, outBlobs, capacity
+        )
+        
+        return if (result >= 0) {
+            decodeBlobs(result)
+        } else if (result == -1) {
+            fallback(frame)
+        } else {
+            val required = -result
+            outBlobs = FloatArray(required * 8)
+            val retryResult = nativeScanAndExtract(
                 buffer, width, height, frame.rowStride, frame.pixelStride,
-                thresholdInt, 0, 1.0f,
-                outBlobs, capacity
+                thresholdInt, outBlobs, outBlobs.size / 8
             )
-            
-            if (result >= 0) {
-                return decodeBlobs(result)
-            } else if (result == -1) {
-                return fallback(frame)
-            } else {
-                val required = -result
-                outBlobs = FloatArray(required * 8)
-            }
+            if (retryResult >= 0) decodeBlobs(retryResult) else fallback(frame)
         }
     }
 
