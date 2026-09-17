@@ -10496,8 +10496,8 @@ object VisionPreprocessor {
     init {
         try {
             System.loadLibrary("c++_shared")
-            // System.loadLibrary("vision_preprocessor") // DISABLED: NDK r25b TLS bug
-            nativeAvailable = false // FORCED: Native disabled, using Kotlin fallback
+            System.loadLibrary("vision_preprocessor")
+            nativeAvailable = true
             RuntimeLogger.log("Native VisionPreprocessor loaded", TAG)
         } catch (t: Throwable) {
             nativeAvailable = false
@@ -14113,7 +14113,7 @@ object VisionTrust {
     fun onForegroundPackage(pkg: String?, gamePkgs: Set<String>) {
         val p = pkg ?: ""
         lastForegroundPkg = p
-        if (p.isEmpty() && foregroundIsGame) { return } else if (p.isEmpty()) return  // FIX P3: eFootball 2027 child surface sends empty pkg
+        if (p.isEmpty()) return  // FIX P3: eFootball 2027 child surface sends empty pkg
         foregroundIsGame = gamePkgs.any { p.contains(it, true) }
     }
 
