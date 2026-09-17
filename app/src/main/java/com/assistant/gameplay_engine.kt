@@ -10343,81 +10343,18 @@ VisionPreprocessor
 object VisionPreprocessor {
     private const val TAG = "VisionPreprocessor"
     
-    @Volatile private var nativeAvailable = false
-    private var outBlobs = FloatArray(1024 * 8)
-    
     init {
-        try {
-            System.loadLibrary("splendor_native")
-            nativeAvailable = true
-            RuntimeLogger.log("Pure C Native VisionCore loaded successfully", TAG)
-        } catch (t: Throwable) {
-            nativeAvailable = false
-            RuntimeLogger.log("Native VisionCore FAILED to load: ${t.message}. Fallback active.", TAG)
-        }
+        RuntimeLogger.log("Pure Kotlin VisionPreprocessor active (NDK TLS bypass)", TAG)
     }
 
     fun process(frame: FrameNormalizer.NormalizedFrame): List<ConnectedComponentEngine.Blob> {
-        val buffer = frame.buffer
-        val width = frame.width
-        val height = frame.height
-
-        if (!nativeAvailable || !buffer.isDirect) {
-            return fallback(frame)
-        }
-
-        val thresholdInt = (0.50f * 255.0f).toInt().coerceIn(0, 255)
-        val capacity = outBlobs.size / 8
-        
-        val result = nativeScanAndExtract(
-            buffer, width, height, frame.rowStride, frame.pixelStride,
-            thresholdInt, outBlobs, capacity
-        )
-        
-        return if (result >= 0) {
-            decodeBlobs(result)
-        } else if (result == -1) {
-            fallback(frame)
-        } else {
-            val required = -result
-            outBlobs = FloatArray(required * 8)
-            val retryResult = nativeScanAndExtract(
-                buffer, width, height, frame.rowStride, frame.pixelStride,
-                thresholdInt, outBlobs, outBlobs.size / 8
-            )
-            if (retryResult >= 0) decodeBlobs(retryResult) else fallback(frame)
-        }
-    }
-
-    private fun decodeBlobs(count: Int): List<ConnectedComponentEngine.Blob> {
-        val list = ArrayList<ConnectedComponentEngine.Blob>(count)
-        for (i in 0 until count) {
-            val base = i * 8
-            list.add(
-                ConnectedComponentEngine.Blob(
-                    minX = outBlobs[base].toInt(),
-                    minY = outBlobs[base + 1].toInt(),
-                    maxX = outBlobs[base + 2].toInt(),
-                    maxY = outBlobs[base + 3].toInt(),
-                    pixelCount = outBlobs[base + 4].toInt(),
-                    averageRed = outBlobs[base + 5],
-                    averageGreen = outBlobs[base + 6],
-                    averageBlue = outBlobs[base + 7]
-                )
-            )
-        }
-        return list
+        return fallback(frame)
     }
 
     private fun fallback(frame: FrameNormalizer.NormalizedFrame): List<ConnectedComponentEngine.Blob> {
         val samples = FrameScanner.scan(frame)
         return ConnectedComponentEngine.extract(samples)
     }
-
-    private external fun nativeScanAndExtract(
-        buffer: ByteBuffer, width: Int, height: Int, rowStride: Int, pixelStride: Int,
-        thresholdInt: Int, outBlobs: FloatArray, outCapacity: Int
-    ): Int
 }
 /* ======
 VisionPreprocessor Anchor
