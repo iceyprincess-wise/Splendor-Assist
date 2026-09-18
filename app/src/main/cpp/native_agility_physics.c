@@ -31,7 +31,7 @@ static inline int32_t next_int(int32_t min, int32_t max) {
     return min + (int32_t)(xorshift32() % range);
 }
 
-extern "C" JNIEXPORT void JNICALL
+JNIEXPORT void JNICALL
 Java_com_assistant_gameplay_AgilityEngine_nativeComputeAgility(
         JNIEnv* env, jobject thiz,
         jfloat playerVelocity, jfloat opponentDistance,
@@ -150,5 +150,5 @@ Java_com_assistant_gameplay_AgilityEngine_nativeComputeAgility(
     result[4] = shieldDuration;
     result[5] = shieldActive ? 1.0f : 0.0f;
 
-    env->SetFloatArrayRegion(outBuffer, 0, 6, result);
+    (*env)->SetFloatArrayRegion(env, outBuffer, 0, 6, result);
 }

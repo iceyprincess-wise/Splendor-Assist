@@ -9,7 +9,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-extern "C" JNIEXPORT void JNICALL
+JNIEXPORT void JNICALL
 Java_com_assistant_gameplay_KickingPostureEngine_nativeEvaluateAndCorrect(
         JNIEnv* env, jobject thiz,
         jfloat carrierX, jfloat carrierY,
@@ -69,5 +69,5 @@ Java_com_assistant_gameplay_KickingPostureEngine_nativeEvaluateAndCorrect(
     result[2] = balanceScore;
     result[3] = requiresAdjustTouch ? 1.0f : 0.0f;
 
-    env->SetFloatArrayRegion(outBuffer, 0, 4, result);
+    (*env)->SetFloatArrayRegion(env, outBuffer, 0, 4, result);
 }
