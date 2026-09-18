@@ -575,7 +575,19 @@ data class AgilityResult(
 )
 
 object AgilityEngine {
-    private const val EXPECTED_MAX_VELOCITY = 15.0f
+    private val nativeBuffer = FloatArray(6)
+
+    init {
+        try { System.loadLibrary("splendor_native") } catch (_: Throwable) {}
+    }
+
+    @JvmStatic
+    external fun nativeComputeAgility(
+        playerVelocity: Float, opponentDistance: Float,
+        movementAngleDegrees: Float, possessionConfidence: Float,
+        turnIntensity: Float, playerX: Float, playerY: Float,
+        oppX: Float, oppY: Float, outBuffer: FloatArray
+    )
 
     fun computeAgility(
         playerVelocity: Float,
@@ -588,53 +600,23 @@ object AgilityEngine {
         oppX: Float? = null,
         oppY: Float? = null
     ): AgilityResult {
-        val proximity = (1.0f - (opponentDistance / 220.0f)).coerceIn(0.0f, 1.0f)
-        val speed = (playerVelocity / EXPECTED_MAX_VELOCITY).coerceIn(0.0f, 1.0f)
-        val confidence = possessionConfidence.coerceIn(0.0f, 1.0f)
-
-        val shieldActive = ShieldAssistEngine.shouldEngageShield(playerVelocity, opponentDistance)
-
-        val stabilityBoost: Float = when {
-            shieldActive -> (4.0f + proximity * 6.0f + speed * 3.0f + confidence * 2.0f).coerceIn(4.0f, 15.0f)
-            opponentDistance in 1f..500f -> {
-                val softP = (1.0f - opponentDistance / 500f).coerceIn(0.0f, 1.0f)
-                (3.0f + softP * 4.0f * confidence).coerceIn(3.0f, 15.0f)
-            }
-            confidence > 0f -> 3.0f
-            else -> 1.5f
-        }
-
-        val controlRetentionBoost = if (confidence > 0.05f) {
-            (confidence * 0.6f + proximity * 0.4f).coerceIn(0.0f, 1.0f)
-        } else {
-            (proximity * 0.5f).coerceIn(0.0f, 1.0f)
-        }
-
-        val turnAssist = if (turnIntensity > 0.05f) {
-            (turnIntensity * 0.7f + proximity * 0.3f) * confidence.coerceAtLeast(0.3f)
-        } else {
-            0.0f
-        }
-
-        val shieldAngle = if (playerX != null && playerY != null && oppX != null && oppY != null) {
-            ShieldAssistEngine.shieldAngle(playerX, playerY, oppX, oppY)
-        } else {
-            ShieldAssistEngine.shieldAngle(movementAngleDegrees)
-        }
-
-        val shieldDuration = if (opponentDistance > 0f) {
-            ShieldAssistEngine.shieldHoldDuration(playerVelocity, opponentDistance)
-        } else {
-            ShieldAssistEngine.shieldHoldDuration()
-        }
-
+        val px = playerX ?: Float.NaN
+        val py = playerY ?: Float.NaN
+        val ox = oppX ?: Float.NaN
+        val oy = oppY ?: Float.NaN
+        
+        nativeComputeAgility(
+            playerVelocity, opponentDistance, movementAngleDegrees,
+            possessionConfidence, turnIntensity, px, py, ox, oy, nativeBuffer
+        )
+        
         return AgilityResult(
-            shieldActive = shieldActive,
-            stabilityBoost = stabilityBoost,
-            controlRetentionBoost = controlRetentionBoost,
-            turnAssist = turnAssist.coerceIn(0.0f, 1.0f),
-            shieldAngleDegrees = shieldAngle,
-            shieldDurationMs = shieldDuration
+            shieldActive = nativeBuffer[5] > 0.5f,
+            stabilityBoost = nativeBuffer[0],
+            controlRetentionBoost = nativeBuffer[1],
+            turnAssist = nativeBuffer[2],
+            shieldAngleDegrees = nativeBuffer[3],
+            shieldDurationMs = nativeBuffer[4].toLong()
         )
     }
 }
@@ -14063,56 +14045,31 @@ data class PostureCorrectionResult(
 )
 
 object KickingPostureEngine {
+    private val nativeBuffer = FloatArray(4)
 
-    private const val RAD_TO_DEG = 57.29577951308232f
-    private const val DEG_TO_RAD = 0.017453292519943295f
+    init {
+        try { System.loadLibrary("splendor_native") } catch (_: Throwable) {}
+    }
+
+    @JvmStatic
+    external fun nativeEvaluateAndCorrect(
+        carrierX: Float, carrierY: Float,
+        carrierVx: Float, carrierVy: Float,
+        targetX: Float, targetY: Float,
+        outBuffer: FloatArray
+    )
 
     fun evaluateAndCorrect(
         carrierX: Float, carrierY: Float,
         carrierVx: Float, carrierVy: Float,
         targetX: Float, targetY: Float
     ): PostureCorrectionResult {
-        val dx = targetX - carrierX
-        val dy = targetY - carrierY
-
-        val targetAngleRad = atan2(dy.toDouble(), dx.toDouble()).toFloat()
-
-        val vMagSq = carrierVx * carrierVx + carrierVy * carrierVy
-        val facingAngleRad = if (vMagSq > 0.01f) {
-            atan2(carrierVy.toDouble(), carrierVx.toDouble()).toFloat()
-        } else {
-            targetAngleRad
-        }
-
-        var diffRad = targetAngleRad - facingAngleRad
-        while (diffRad > Math.PI.toFloat()) diffRad -= (2f * Math.PI.toFloat())
-        while (diffRad < -Math.PI.toFloat()) diffRad += (2f * Math.PI.toFloat())
-
-        val absDiffDeg = abs(diffRad) * RAD_TO_DEG
-        val balanceScore = (1f - ((absDiffDeg - 45f).coerceAtLeast(0f) / 135f)).coerceIn(0f, 1f)
-
-        if (absDiffDeg > 60f) {
-            val maxCorrectionRad = 25f * DEG_TO_RAD
-            val sign = if (diffRad > 0f) 1f else -1f
-            val correctedAngleRad = targetAngleRad - (sign * maxCorrectionRad)
-
-            val dist = hypot(dx.toDouble(), dy.toDouble()).toFloat()
-            val newX = (carrierX + cos(correctedAngleRad.toDouble()).toFloat() * dist).coerceIn(0f, 1650f)
-            val newY = (carrierY + sin(correctedAngleRad.toDouble()).toFloat() * dist).coerceIn(0f, 720f)
-
-            return PostureCorrectionResult(
-                correctedX = newX,
-                correctedY = newY,
-                balanceScore = balanceScore,
-                requiresAdjustTouch = absDiffDeg > 110f
-            )
-        }
-
+        nativeEvaluateAndCorrect(carrierX, carrierY, carrierVx, carrierVy, targetX, targetY, nativeBuffer)
         return PostureCorrectionResult(
-            correctedX = targetX,
-            correctedY = targetY,
-            balanceScore = balanceScore,
-            requiresAdjustTouch = false
+            correctedX = nativeBuffer[0],
+            correctedY = nativeBuffer[1],
+            balanceScore = nativeBuffer[2],
+            requiresAdjustTouch = nativeBuffer[3] > 0.5f
         )
     }
 }
