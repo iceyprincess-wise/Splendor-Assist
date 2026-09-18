@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-18 21:21:19 WAT
+Started: 2026-09-18 21:30:02 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -15,7 +15,7 @@ YES — running clean
 ================================================================
 >>> CLEAN
 ================================================================
-BUILD SUCCESSFUL in 51s
+BUILD SUCCESSFUL in 4s
 
 CLEAN EXIT: 0
 
@@ -42,20 +42,17 @@ versionCode: 141 -> 142
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
-	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-FAILURE: Build failed with an exception.
-* What went wrong:
-BUILD FAILED in 1m 5s
+BUILD SUCCESSFUL in 5m 19s
 
-ASSEMBLE DEBUG APK EXIT: 1
+ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-SKIPPED — build exit=1, apk_exists=NO
-VERSION TRANSACTION: ROLLED BACK
-Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
+Exported: /storage/emulated/0/Download/Splendor-Assist-v142-20260918_213541.apk
+-rw-rw----. 1 u0_a262 media_rw 29M Sep 18 21:35 /storage/emulated/0/Download/Splendor-Assist-v142-20260918_213541.apk
+VERSION TRANSACTION: COMMITTED
+
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
@@ -75,15 +72,16 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  1
-APK EXPORT:                      1
+ASSEMBLE DEBUG:                  0
+APK EXPORT:                      0
 GRADLE DAEMON STOP:              0
 
-FINAL STATUS: FAILED — check items above
+FINAL STATUS: ALL PASSED
 
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
+ M app/build.gradle.kts
 
-Finished: 2026-09-18 21:24:03 WAT
-Report size: 3641 bytes
+Finished: 2026-09-18 21:35:55 WAT
+Report size: 3124 bytes
 ================================================================
