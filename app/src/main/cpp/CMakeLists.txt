@@ -6,49 +6,75 @@ add_library(splendor_native SHARED native_input.cpp native_kicking_posture.c nat
 find_library(log-lib log)
 target_link_libraries(splendor_native ${log-lib})
 
-# SPLENDOR_NATIVE_TLS_FIX_BEGIN
-set_target_properties(splendor_native PROPERTIES POSITION_INDEPENDENT_CODE ON)
+# SPLENDOR_NATIVE_DYNAMIC_LIBC_BEGIN
+set(SPLENDOR_ANDROID_API_LEVEL "26")
 
-target_compile_options(splendor_native PRIVATE
-  -fPIC
-  -ftls-model=global-dynamic
-)
+if(DEFINED CMAKE_SYSTEM_VERSION AND NOT CMAKE_SYSTEM_VERSION STREQUAL "")
+  set(SPLENDOR_ANDROID_API_LEVEL "${CMAKE_SYSTEM_VERSION}")
+endif()
 
-set(_splendor_san_flags
-  "-fsanitize=gwp-asan"
-  "-fsanitize=address"
-  "-fsanitize=hwaddress"
-  "-fsanitize=thread"
-  "-fsanitize=undefined"
-)
+if(DEFINED ANDROID_PLATFORM)
+  string(REGEX REPLACE "^android-([0-9]+).*$" "\1" SPLENDOR_PLATFORM_API "${ANDROID_PLATFORM}")
+  if(SPLENDOR_PLATFORM_API MATCHES "^[0-9]+$")
+    set(SPLENDOR_ANDROID_API_LEVEL "${SPLENDOR_PLATFORM_API}")
+  endif()
+endif()
 
-set(_splendor_vars
-  CMAKE_C_FLAGS
-  CMAKE_C_FLAGS_DEBUG
-  CMAKE_C_FLAGS_RELEASE
-  CMAKE_C_FLAGS_RELWITHDEBINFO
-  CMAKE_C_FLAGS_MINSIZEREL
-  CMAKE_CXX_FLAGS
-  CMAKE_CXX_FLAGS_DEBUG
-  CMAKE_CXX_FLAGS_RELEASE
-  CMAKE_CXX_FLAGS_RELWITHDEBINFO
-  CMAKE_CXX_FLAGS_MINSIZEREL
-  CMAKE_SHARED_LINKER_FLAGS
-  CMAKE_SHARED_LINKER_FLAGS_DEBUG
-  CMAKE_SHARED_LINKER_FLAGS_RELEASE
-  CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO
-  CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL
-)
+set(SPLENDOR_SYSROOT "${CMAKE_SYSROOT}")
 
-foreach(_var IN LISTS _splendor_vars)
-  if(DEFINED ${_var})
-    set(_val "${${_var}}")
-    foreach(_flag IN LISTS _splendor_san_flags)
-      string(REPLACE "${_flag}" "" _val "${_val}")
-    endforeach()
-    string(REGEX REPLACE "  +" " " _val "${_val}")
-    string(STRIP "${_val}" _val)
-    set(${_var} "${_val}")
+if(NOT SPLENDOR_SYSROOT)
+  if(DEFINED CMAKE_ANDROID_NDK)
+    get_filename_component(SPLENDOR_NDK "${CMAKE_ANDROID_NDK}" ABSOLUTE)
+    file(TO_CMAKE_PATH "${SPLENDOR_NDK}/toolchains/llvm/prebuilt/linux-x86_64/sysroot" SPLENDOR_SYSROOT)
+  elseif(DEFINED ANDROID_NDK)
+    get_filename_component(SPLENDOR_NDK "${ANDROID_NDK}" ABSOLUTE)
+    file(TO_CMAKE_PATH "${SPLENDOR_NDK}/toolchains/llvm/prebuilt/linux-x86_64/sysroot" SPLENDOR_SYSROOT)
+  endif()
+endif()
+
+if(NOT SPLENDOR_SYSROOT OR NOT IS_DIRECTORY "${SPLENDOR_SYSROOT}")
+  message(FATAL_ERROR "SPLENDOR_DYNAMIC_LIBC: sysroot not resolved. CMAKE_SYSROOT='${CMAKE_SYSROOT}'")
+endif()
+
+set(SPLENDOR_ARCH_DIR "${SPLENDOR_SYSROOT}/usr/lib/aarch64-linux-android")
+set(SPLENDOR_LIBDIR_API "${SPLENDOR_ARCH_DIR}/${SPLENDOR_ANDROID_API_LEVEL}")
+set(SPLENDOR_LIBDIR "")
+
+foreach(_dir "${SPLENDOR_LIBDIR_API}" "${SPLENDOR_ARCH_DIR}")
+  if(EXISTS "${_dir}/libc.so")
+    set(SPLENDOR_LIBDIR "${_dir}")
+    break()
   endif()
 endforeach()
-# SPLENDOR_NATIVE_TLS_FIX_END
+
+if(NOT SPLENDOR_LIBDIR)
+  message(FATAL_ERROR "SPLENDOR_DYNAMIC_LIBC: libc.so not found under '${SPLENDOR_ARCH_DIR}'")
+endif()
+
+set(SPLENDOR_DYNAMIC_LIBS "")
+
+foreach(_name c m dl)
+  if(EXISTS "${SPLENDOR_LIBDIR}/${_name}.so")
+    list(APPEND SPLENDOR_DYNAMIC_LIBS "${SPLENDOR_LIBDIR}/${_name}.so")
+  else()
+    message(FATAL_ERROR "SPLENDOR_DYNAMIC_LIBC: missing ${_name}.so in ${SPLENDOR_LIBDIR}")
+  endif()
+endforeach()
+
+foreach(_candidate "${SPLENDOR_LIBDIR}/libc++_shared.so" "${SPLENDOR_ARCH_DIR}/libc++_shared.so")
+  if(EXISTS "${_candidate}")
+    list(APPEND SPLENDOR_DYNAMIC_LIBS "${_candidate}")
+    break()
+  endif()
+endforeach()
+
+target_link_options(splendor_native PRIVATE
+  "-L${SPLENDOR_LIBDIR}"
+  "-Wl,-Bdynamic"
+  "-Wl,--no-as-needed"
+)
+
+target_link_libraries(splendor_native PRIVATE
+  ${SPLENDOR_DYNAMIC_LIBS}
+)
+# SPLENDOR_NATIVE_DYNAMIC_LIBC_END
