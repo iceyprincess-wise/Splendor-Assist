@@ -1,0 +1,237 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+SELF="$(readlink -f "$0" 2>/dev/null || printf '%s\n' "$0")"
+
+REAL_LD="${SPLENDOR_REAL_LD:-}"
+if [ -z "$REAL_LD" ]; then
+  for c in \
+    /data/data/com.termux/files/usr/bin/ld.lld \
+    /data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/bin/ld.lld
+  do
+    if [ -x "$c" ]; then
+      rc="$(readlink -f "$c" 2>/dev/null || printf '%s\n' "$c")"
+      if [ "$rc" != "$SELF" ]; then
+        REAL_LD="$c"
+        break
+      fi
+    fi
+  done
+fi
+
+if [ -z "$REAL_LD" ] || [ ! -x "$REAL_LD" ]; then
+  echo "splendor-ld-wrapper: real ld.lld not found" >&2
+  exit 127
+fi
+
+NDK_ROOT="${SPLENDOR_NDK_ROOT:-/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393}"
+TERMUX_CLANG_LIB_PREFIX="/data/data/com.termux/files/usr/lib/clang"
+
+SYSROOT=""
+API=""
+
+declare -a ARGS=()
+
+for a in "$@"; do
+  case "$a" in
+    --sysroot=*)
+      SYSROOT="${a#--sysroot=}"
+      ;;
+    -L*)
+      dir="${a#-L}"
+      dir="${dir%/}"
+      if [[ "$dir" == */aarch64-linux-android/* ]]; then
+        base="${dir##*/}"
+        if [[ "$base" =~ ^[0-9]+$ ]]; then
+          API="$base"
+        fi
+      fi
+      ;;
+  esac
+
+  ARGS+=("$a")
+done
+
+if [ -z "$SYSROOT" ] && [ -n "$NDK_ROOT" ] && [ -d "$NDK_ROOT" ]; then
+  shopt -s nullglob
+  sys_cands=("$NDK_ROOT"/toolchains/llvm/prebuilt/*/sysroot)
+  shopt -u nullglob
+  if [ "${#sys_cands[@]}" -gt 0 ]; then
+    SYSROOT="${sys_cands[0]}"
+  fi
+fi
+
+ARCH_DIR=""
+if [ -n "$SYSROOT" ]; then
+  ARCH_DIR="$SYSROOT/usr/lib/aarch64-linux-android"
+fi
+
+find_lib() {
+  local name="$1"
+  local d
+  local -a dirs=()
+
+  if [ -n "$API" ] && [ -n "$ARCH_DIR" ]; then
+    dirs+=("$ARCH_DIR/$API")
+  fi
+
+  if [ -n "$ARCH_DIR" ]; then
+    dirs+=("$ARCH_DIR")
+  fi
+
+  if [ -n "$SYSROOT" ]; then
+    dirs+=("$SYSROOT/usr/lib")
+  fi
+
+  for d in "${dirs[@]}"; do
+    if [ -f "$d/$name" ]; then
+      printf '%s\n' "$d/$name"
+      return 0
+    fi
+  done
+
+  if [ -n "$SYSROOT" ] && [ -d "$SYSROOT/usr/lib" ]; then
+    local f
+    f="$(find "$SYSROOT/usr/lib" -maxdepth 5 -type f -name "$name" 2>/dev/null | head -n 1 || true)"
+    if [ -n "$f" ]; then
+      printf '%s\n' "$f"
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+LIBC_SO="$(find_lib libc.so || true)"
+LIBM_SO="$(find_lib libm.so || true)"
+LIBDL_SO="$(find_lib libdl.so || true)"
+LIBCXX_SO="$(find_lib libc++_shared.so || true)"
+LIBLOG_SO="$(find_lib liblog.so || true)"
+
+if [ -z "$LIBC_SO" ]; then
+  echo "splendor-ld-wrapper: libc.so not found; SYSROOT=$SYSROOT ARCH_DIR=$ARCH_DIR API=$API" >&2
+  exit 2
+fi
+
+declare -a OUT=()
+
+for a in "${ARGS[@]}"; do
+  # Remove Termux clang runtime archives.
+  if [[ "$a" == "$TERMUX_CLANG_LIB_PREFIX"/* && "$a" == *.a ]]; then
+    continue
+  fi
+
+  # Remove explicit compiler-rt linker forms.
+  if [[ "$a" == -l:*clang_rt* ]]; then
+    continue
+  fi
+
+  if [[ "$a" == *.a ]]; then
+    bn="${a##*/}"
+    case "$bn" in
+      libc.a)
+        continue
+        ;;
+      libclang_rt.gwp_asan*.a|\
+      libclang_rt.asan*.a|\
+      libclang_rt.hwasan*.a|\
+      libclang_rt.tsan*.a|\
+      libclang_rt.ubsan*.a|\
+      libclang_rt.scudo*.a)
+        continue
+        ;;
+    esac
+  fi
+
+  case "$a" in
+    -lc)
+      OUT+=("-Wl,-Bdynamic" "$LIBC_SO")
+      continue
+      ;;
+    -lm)
+      if [ -n "$LIBM_SO" ]; then
+        OUT+=("-Wl,-Bdynamic" "$LIBM_SO")
+      else
+        OUT+=("$a")
+      fi
+      continue
+      ;;
+    -ldl)
+      if [ -n "$LIBDL_SO" ]; then
+        OUT+=("-Wl,-Bdynamic" "$LIBDL_SO")
+      else
+        OUT+=("$a")
+      fi
+      continue
+      ;;
+    -lc++_shared)
+      if [ -n "$LIBCXX_SO" ]; then
+        OUT+=("-Wl,-Bdynamic" "$LIBCXX_SO")
+      else
+        OUT+=("$a")
+      fi
+      continue
+      ;;
+    -llog)
+      if [ -n "$LIBLOG_SO" ]; then
+        OUT+=("-Wl,-Bdynamic" "$LIBLOG_SO")
+      else
+        OUT+=("$a")
+      fi
+      continue
+      ;;
+  esac
+
+  OUT+=("$a")
+done
+
+append_if_missing() {
+  local lib="$1"
+  [ -z "$lib" ] && return 0
+
+  local x
+  for x in "${OUT[@]}"; do
+    if [ "$x" = "$lib" ]; then
+      return 0
+    fi
+  done
+
+  OUT+=("-Wl,-Bdynamic" "$lib")
+}
+
+append_if_missing "$LIBC_SO"
+append_if_missing "$LIBM_SO"
+append_if_missing "$LIBDL_SO"
+append_if_missing "$LIBCXX_SO"
+append_if_missing "$LIBLOG_SO"
+
+NDK_BUILTINS=""
+if [ -n "$NDK_ROOT" ] && [ -d "$NDK_ROOT" ]; then
+  shopt -s nullglob
+  cand=("$NDK_ROOT"/toolchains/llvm/prebuilt/*/lib64/clang/*/lib/linux/aarch64/libclang_rt.builtins-aarch64-android.a)
+  shopt -u nullglob
+
+  if [ "${#cand[@]}" -gt 0 ]; then
+    NDK_BUILTINS="${cand[0]}"
+  fi
+fi
+
+if [ -n "$NDK_BUILTINS" ] && [ -f "$NDK_BUILTINS" ]; then
+  NM_BIN="${SPLENDOR_NM:-}"
+  if [ -z "$NM_BIN" ]; then
+    NM_BIN="$(command -v llvm-nm || command -v nm || true)"
+  fi
+
+  bad=0
+  if [ -n "$NM_BIN" ]; then
+    if "$NM_BIN" -g "$NDK_BUILTINS" 2>/dev/null | grep -Eq 'gwp_asan|getThreadLocals|StaticTlsLayout'; then
+      bad=1
+    fi
+  fi
+
+  if [ "$bad" -eq 0 ]; then
+    OUT+=("$NDK_BUILTINS")
+  fi
+fi
+
+exec "$REAL_LD" "${OUT[@]}"
