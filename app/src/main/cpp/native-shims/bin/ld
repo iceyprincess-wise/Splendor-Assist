@@ -1,35 +1,105 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-SELF="$(readlink -f "$0" 2>/dev/null || printf '%s\n' "$0")"
+canon_path() {
+  local p="$1"
+
+  if command -v readlink >/dev/null 2>&1; then
+    readlink -f "$p" 2>/dev/null && return 0
+  fi
+
+  local d b
+  d="$(dirname "$p")"
+  b="$(basename "$p")"
+
+  if cd "$d" 2>/dev/null; then
+    printf '%s/%s\n' "$PWD" "$b"
+    return 0
+  fi
+
+  printf '%s\n' "$p"
+}
+
+SELF="$(canon_path "$0")"
 
 NDK_ROOT="${SPLENDOR_NDK_ROOT:-/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393}"
 TERMUX_CLANG_LIB_PREFIX="/data/data/com.termux/files/usr/lib/clang"
 
-REAL_LD=""
+find_runnable_ld() {
+  local c rc
+  local -a candidates=()
+  local -a glob_candidates=()
 
-shopt -s nullglob
-ld_cands=(
-  "$NDK_ROOT/toolchains/llvm/prebuilt/bin/ld.lld"
-  "$NDK_ROOT"/toolchains/llvm/prebuilt/*/bin/ld.lld
-  /data/data/com.termux/files/usr/bin/ld.lld
-)
-shopt -u nullglob
+  if [ -n "${SPLENDOR_REAL_LD:-}" ]; then
+    candidates+=("$SPLENDOR_REAL_LD")
+  fi
 
-if [ "${#ld_cands[@]}" -gt 0 ]; then
-  for c in "${ld_cands[@]}"; do
-    if [ -x "$c" ]; then
-      rc="$(readlink -f "$c" 2>/dev/null || printf '%s\n' "$c")"
-      if [ "$rc" != "$SELF" ]; then
-        REAL_LD="$c"
-        break
-      fi
+  c="$(command -v ld.lld 2>/dev/null || true)"
+  if [ -n "$c" ]; then
+    candidates+=("$c")
+  fi
+
+  candidates+=("/data/data/com.termux/files/usr/bin/ld.lld")
+
+  shopt -s nullglob
+  glob_candidates=("$NDK_ROOT"/toolchains/llvm/prebuilt/*/bin/ld.lld)
+  shopt -u nullglob
+  if [ "${#glob_candidates[@]}" -gt 0 ]; then
+    candidates+=("${glob_candidates[@]}")
+  fi
+
+  candidates+=("$NDK_ROOT/toolchains/llvm/prebuilt/bin/ld.lld")
+
+  for c in "${candidates[@]}"; do
+    [ -n "$c" ] || continue
+    [ -x "$c" ] || continue
+
+    rc="$(canon_path "$c")"
+    [ "$rc" = "$SELF" ] && continue
+
+    if "$c" --version >/dev/null 2>&1; then
+      printf '%s\n' "$c"
+      return 0
     fi
   done
-fi
 
+  local -a alias_candidates=()
+
+  c="$(command -v ld 2>/dev/null || true)"
+  if [ -n "$c" ]; then
+    alias_candidates+=("$c")
+  fi
+
+  alias_candidates+=("/data/data/com.termux/files/usr/bin/ld")
+
+  shopt -s nullglob
+  glob_candidates=("$NDK_ROOT"/toolchains/llvm/prebuilt/*/bin/ld)
+  shopt -u nullglob
+  if [ "${#glob_candidates[@]}" -gt 0 ]; then
+    alias_candidates+=("${glob_candidates[@]}")
+  fi
+
+  alias_candidates+=("$NDK_ROOT/toolchains/llvm/prebuilt/bin/ld")
+
+  for c in "${alias_candidates[@]}"; do
+    [ -n "$c" ] || continue
+    [ -x "$c" ] || continue
+
+    rc="$(canon_path "$c")"
+    [ "$rc" = "$SELF" ] && continue
+
+    if "$c" --version 2>&1 | grep -qi 'LLD'; then
+      printf '%s\n' "$c"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+REAL_LD="$(find_runnable_ld)"
 if [ -z "$REAL_LD" ] || [ ! -x "$REAL_LD" ]; then
-  echo "splendor-ld-wrapper-v6: real ld.lld not found" >&2
+  echo "splendor-ld-wrapper-v9: no runnable ld.lld found" >&2
   exit 127
 fi
 
@@ -115,82 +185,98 @@ find_lib() {
 LIBC_SO="$(find_lib libc.so || true)"
 LIBM_SO="$(find_lib libm.so || true)"
 LIBDL_SO="$(find_lib libdl.so || true)"
+LIBATOMIC_SO="$(find_lib libatomic.so || true)"
 LIBCXX_SO="$(find_lib libc++_shared.so || true)"
 LIBLOG_SO="$(find_lib liblog.so || true)"
 
 if [ -z "$LIBC_SO" ]; then
-  echo "splendor-ld-wrapper-v6: libc.so not found; SYSROOT=$SYSROOT ARCH_DIR=$ARCH_DIR API=$API" >&2
+  echo "splendor-ld-wrapper-v9: libc.so not found; SYSROOT=$SYSROOT ARCH_DIR=$ARCH_DIR API=$API" >&2
   exit 2
 fi
 
 declare -a OUT=()
 
+add_dyn() {
+  local lib="$1"
+  [ -z "$lib" ] && return 0
+  OUT+=("-Bdynamic" "$lib")
+}
+
 for a in "${ARGS[@]}"; do
-  if [[ "$a" == "$TERMUX_CLANG_LIB_PREFIX"/* && "$a" == *.a ]]; then
+  if [[ "$a" == -Wl,* ]]; then
+    rest="${a#-Wl,}"
+    IFS=',' read -r -a parts <<< "$rest"
+    for part in "${parts[@]}"; do
+      [ -n "$part" ] && OUT+=("$part")
+    done
     continue
   fi
 
-  if [[ "$a" == -l:*clang_rt* ]]; then
+  if [[ "$a" == "$TERMUX_CLANG_LIB_PREFIX"/*.a ]]; then
     continue
   fi
 
-  if [[ "$a" == *.a ]]; then
-    bn="${a##*/}"
-    case "$bn" in
-      libc.a)
-        continue
-        ;;
-      libclang_rt.gwp_asan*.a|\
-      libclang_rt.asan*.a|\
-      libclang_rt.hwasan*.a|\
-      libclang_rt.tsan*.a|\
-      libclang_rt.ubsan*.a|\
-      libclang_rt.scudo*.a)
-        continue
-        ;;
-    esac
+  if [[ "$a" == *"libc.a("* ]]; then
+    continue
+  fi
+
+  if [[ "$a" == *"/libc.a" || "$a" == "libc.a" ]]; then
+    continue
+  fi
+
+  if [[ "$a" == *libclang_rt.*.a ]]; then
+    continue
   fi
 
   case "$a" in
-    -lc)
-      OUT+=("-Wl,-Bdynamic" "$LIBC_SO")
-      continue
-      ;;
-    -lm)
-      if [ -n "$LIBM_SO" ]; then
-        OUT+=("-Wl,-Bdynamic" "$LIBM_SO")
-      else
-        OUT+=("$a")
-      fi
-      continue
-      ;;
-    -ldl)
-      if [ -n "$LIBDL_SO" ]; then
-        OUT+=("-Wl,-Bdynamic" "$LIBDL_SO")
-      else
-        OUT+=("$a")
-      fi
-      continue
-      ;;
-    -lc++_shared|-l:c++_shared)
-      if [ -n "$LIBCXX_SO" ]; then
-        OUT+=("-Wl,-Bdynamic" "$LIBCXX_SO")
-      else
-        OUT+=("$a")
-      fi
-      continue
-      ;;
-    -llog)
-      if [ -n "$LIBLOG_SO" ]; then
-        OUT+=("-Wl,-Bdynamic" "$LIBLOG_SO")
-      else
-        OUT+=("$a")
-      fi
+    -lclang_rt*|-l:*clang_rt*|-lgwp_asan|-lasan|-lhwaddress|-ltsan|-lubsan|-lscudo)
       continue
       ;;
   esac
 
-  OUT+=("$a")
+  case "$a" in
+    -lc|-l:c)
+      add_dyn "$LIBC_SO"
+      ;;
+    -lm|-l:m)
+      if [ -n "$LIBM_SO" ]; then
+        add_dyn "$LIBM_SO"
+      else
+        OUT+=("$a")
+      fi
+      ;;
+    -ldl|-l:dl)
+      if [ -n "$LIBDL_SO" ]; then
+        add_dyn "$LIBDL_SO"
+      else
+        OUT+=("$a")
+      fi
+      ;;
+    -latomic|-l:atomic)
+      if [ -n "$LIBATOMIC_SO" ]; then
+        add_dyn "$LIBATOMIC_SO"
+      else
+        OUT+=("$a")
+      fi
+      ;;
+    -lc++_shared|-l:c++_shared)
+      if [ -n "$LIBCXX_SO" ]; then
+        add_dyn "$LIBCXX_SO"
+      else
+        OUT+=("$a")
+      fi
+      ;;
+    -llog|-l:log)
+      if [ -n "$LIBLOG_SO" ]; then
+        add_dyn "$LIBLOG_SO"
+      else
+        OUT+=("$a")
+      fi
+      ;;
+    *)
+      OUT+=("$a")
+      ;;
+  esac
 done
 
 append_if_missing() {
@@ -206,12 +292,13 @@ append_if_missing() {
     done
   fi
 
-  OUT+=("-Wl,-Bdynamic" "$lib")
+  add_dyn "$lib"
 }
 
 append_if_missing "$LIBC_SO"
 append_if_missing "$LIBM_SO"
 append_if_missing "$LIBDL_SO"
+append_if_missing "$LIBATOMIC_SO"
 append_if_missing "$LIBCXX_SO"
 append_if_missing "$LIBLOG_SO"
 
@@ -236,7 +323,7 @@ if [ -n "$NDK_BUILTINS" ] && [ -f "$NDK_BUILTINS" ]; then
 
   bad=0
   if [ -n "$NM_BIN" ]; then
-    if "$NM_BIN" -g "$NDK_BUILTINS" 2>/dev/null | grep -Eq 'gwp_asan|getThreadLocals|StaticTlsLayout|__tls'; then
+    if "$NM_BIN" -g "$NDK_BUILTINS" 2>/dev/null | grep -Eq 'gwp_asan|getThreadLocals|StaticTlsLayout|__gwp_asan'; then
       bad=1
     fi
   fi
