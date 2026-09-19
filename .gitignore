@@ -17,3 +17,4 @@ jdk17.tar.gz
 build/
 **/build/
 
+elf-verify/
