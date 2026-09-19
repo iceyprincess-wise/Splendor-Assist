@@ -10,7 +10,7 @@
 #endif
 
 JNIEXPORT void JNICALL
-Java_com_assistant_gameplay_KickingPostureEngine_nativeEvaluateAndCorrect(
+Java_com_assistant_KickingPostureEngine_nativeEvaluateAndCorrect(
         JNIEnv* env, jobject thiz,
         jfloat carrierX, jfloat carrierY,
         jfloat carrierVx, jfloat carrierVy,

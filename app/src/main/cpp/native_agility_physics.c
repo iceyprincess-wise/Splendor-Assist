@@ -32,7 +32,7 @@ static inline int32_t next_int(int32_t min, int32_t max) {
 }
 
 JNIEXPORT void JNICALL
-Java_com_assistant_gameplay_AgilityEngine_nativeComputeAgility(
+Java_com_assistant_AgilityEngine_nativeComputeAgility(
         JNIEnv* env, jobject thiz,
         jfloat playerVelocity, jfloat opponentDistance,
         jfloat movementAngleDegrees, jfloat possessionConfidence,
