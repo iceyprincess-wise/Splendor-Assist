@@ -3,19 +3,48 @@
 #include <stdint.h>
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846f
 #endif
 
-static uint32_t xorshift_state = 2463534242U;
-static inline uint32_t xorshift32() {
-    uint32_t x = xorshift_state;
-    x ^= x << 13; x ^= x >> 17; x ^= x << 5;
-    xorshift_state = x; return x;
+// Fast inline atan2f approximation using a minimax polynomial for sub-millisecond execution
+static inline float fast_atan2f(float y, float x) {
+    if (x == 0.0f && y == 0.0f) return 0.0f;
+    float abs_y = fabsf(y);
+    float abs_x = fabsf(x);
+    float min_val = (abs_x < abs_y) ? abs_x : abs_y;
+    float max_val = (abs_x > abs_y) ? abs_x : abs_y;
+    if (max_val == 0.0f) return 0.0f;
+    
+    float r = min_val / max_val;
+    float r2 = r * r;
+    float angle = (((-0.04649647f * r2 + 0.15931422f) * r2 - 0.32762281f) * r2 + 0.9998660f) * r;
+    
+    if (abs_y > abs_x) angle = (M_PI / 2.0f) - angle;
+    if (x < 0.0f) angle = M_PI - angle;
+    if (y < 0.0f) angle = -angle;
+    return angle;
 }
-static inline float next_float() { return (float)(xorshift32() & 0xFFFFFF) / (float)0x1000000; }
-static inline int32_t next_int(int32_t min, int32_t max) {
-    if (min >= max) return min;
-    return min + (int32_t)(xorshift32() % (uint32_t)(max - min));
+
+// Fast inline degree wrapping without using heavy arithmetic fmodf loops
+static inline float fast_wrap_360(float angle) {
+    if (angle >= 360.0f) {
+        angle -= ((int)(angle * 0.002777778f)) * 360.0f;
+    } else if (angle < 0.0f) {
+        angle += ((int)(-angle * 0.002777778f) + 1) * 360.0f;
+    }
+    return (angle >= 360.0f) ? angle - 360.0f : angle;
+}
+
+// Thread-safe fast PRNG container using localized parameters
+static inline uint32_t local_xorshift32(uint32_t* state) {
+    uint32_t x = *state;
+    x ^= x << 13; x ^= x >> 17; x ^= x << 5;
+    *state = x;
+    return x;
+}
+
+static inline float local_next_float(uint32_t* state) {
+    return (float)(local_xorshift32(state) & 0xFFFFFF) / (float)0x1000000;
 }
 
 JNIEXPORT void JNICALL
@@ -24,63 +53,102 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysics(
         jfloat playerVelocity, jfloat opponentDistance,
         jfloat movementAngleDegrees, jfloat possessionConfidence,
         jfloat turnIntensity, jfloat playerX, jfloat playerY,
-        jfloat oppX, jfloat oppY, jfloatArray outBuffer) {
+        jfloat oppX, jfloat oppY, jint threadSeed, jfloatArray outBuffer) {
 
-    jfloat result[6];
-    jboolean shieldActive = JNI_FALSE;
+    // 1. Core Direct Primitive Memory Lock (Bypasses JNI Boundary Latency)
+    jfloat* result = (*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
+    if (!result) return;
+
+    // Isolate thread state using an environmental runtime seed to prevent collisions
+    uint32_t rng_state = (uint32_t)threadSeed ^ 2463534242U;
+
+    float r_fuzz1 = local_next_float(&rng_state);
+    float r_fuzz2 = local_next_float(&rng_state);
+    float r_fuzz3 = local_next_float(&rng_state);
+
+    // 2. Shield Detection Normalization Loop
+    float shieldActive = 0.0f;
     if (opponentDistance > 0.0f) {
-        float normDist = opponentDistance / 100.0f;
-        float upperFuzz = 2.2f + (next_float() * 0.04f - 0.02f);
-        float lowerFuzz = 1.0f + (next_float() * 0.02f - 0.01f);
-        if (normDist < upperFuzz && (playerVelocity > 0.15f || normDist < lowerFuzz)) shieldActive = JNI_TRUE;
+        float normDist = opponentDistance * 0.01f; // Avoid division
+        float upperFuzz = 2.2f + (r_fuzz1 * 0.04f - 0.02f);
+        float lowerFuzz = 1.0f + (r_fuzz2 * 0.02f - 0.01f);
+        if (normDist < upperFuzz && (playerVelocity > 0.15f || normDist < lowerFuzz)) {
+            shieldActive = 1.0f;
+        }
     }
 
-    float proximity = 1.0f - (opponentDistance / 220.0f);
-    if (proximity < 0.0f) proximity = 0.0f; if (proximity > 1.0f) proximity = 1.0f;
-    float speed = playerVelocity / 15.0f;
-    if (speed < 0.0f) speed = 0.0f; if (speed > 1.0f) speed = 1.0f;
-    float conf = possessionConfidence;
-    if (conf < 0.0f) conf = 0.0f; if (conf > 1.0f) conf = 1.0f;
+    // Proximity and scale clipping optimized through inline conditions
+    float proximity = 1.0f - (opponentDistance * 0.004545455f);
+    proximity = (proximity < 0.0f) ? 0.0f : ((proximity > 1.0f) ? 1.0f : proximity);
 
+    float speed = playerVelocity * 0.06666667f;
+    speed = (speed < 0.0f) ? 0.0f : ((speed > 1.0f) ? 1.0f : speed);
+
+    float conf = (possessionConfidence < 0.0f) ? 0.0f : ((possessionConfidence > 1.0f) ? 1.0f : possessionConfidence);
+
+    // 3. Flattened Branchless-style Calculation for Stability Boost
     float stabilityBoost;
-    if (shieldActive) {
+    if (shieldActive > 0.5f) {
         stabilityBoost = 4.0f + proximity * 6.0f + speed * 3.0f + conf * 2.0f;
-        if (stabilityBoost < 4.0f) stabilityBoost = 4.0f; if (stabilityBoost > 15.0f) stabilityBoost = 15.0f;
     } else if (opponentDistance >= 1.0f && opponentDistance <= 500.0f) {
-        float softP = 1.0f - opponentDistance / 500.0f;
-        if (softP < 0.0f) softP = 0.0f; if (softP > 1.0f) softP = 1.0f;
+        float softP = 1.0f - opponentDistance * 0.002f;
+        softP = (softP < 0.0f) ? 0.0f : ((softP > 1.0f) ? 1.0f : softP);
         stabilityBoost = 3.0f + softP * 4.0f * conf;
-        if (stabilityBoost < 3.0f) stabilityBoost = 3.0f; if (stabilityBoost > 15.0f) stabilityBoost = 15.0f;
-    } else { stabilityBoost = (conf > 0.0f) ? 3.0f : 1.5f; }
-
-    float controlRetentionBoost = (conf > 0.05f) ? (conf * 0.6f + proximity * 0.4f) : (proximity * 0.5f);
-    if (controlRetentionBoost < 0.0f) controlRetentionBoost = 0.0f; if (controlRetentionBoost > 1.0f) controlRetentionBoost = 1.0f;
-
-    float turnAssist = (turnIntensity > 0.05f) ? ((turnIntensity * 0.7f + proximity * 0.3f) * (conf > 0.3f ? conf : 0.3f)) : 0.0f;
-    if (turnAssist < 0.0f) turnAssist = 0.0f; if (turnAssist > 1.0f) turnAssist = 1.0f;
-
-    float shieldAngle;
-    if (!isnan(playerX) && !isnan(playerY) && !isnan(oppX) && !isnan(oppY)) {
-        float angleDeg = atan2f(oppY - playerY, oppX - playerX) * 57.29577951308232f;
-        shieldAngle = fmodf(fmodf(angleDeg + 180.0f + (next_float() * 1.2f - 0.6f), 360.0f) + 360.0f, 360.0f);
     } else {
-        float bounded = fmodf(movementAngleDegrees, 360.0f);
-        float angle = (bounded < -180.0f) ? bounded + 360.0f : ((bounded > 180.0f) ? bounded - 360.0f : bounded);
-        shieldAngle = fmodf(fmodf(((angle >= 0.0f) ? angle + 90.0f : angle - 90.0f) + (next_float() * 1.3f - 0.65f), 360.0f) + 360.0f, 360.0f);
+        stabilityBoost = (conf > 0.0f) ? 3.0f : 1.5f;
+    }
+    stabilityBoost = (stabilityBoost < 1.5f) ? 1.5f : ((stabilityBoost > 15.0f) ? 15.0f : stabilityBoost);
+
+    // Turn Assist and Control Metrics
+    float controlRetentionBoost = (conf > 0.05f) ? (conf * 0.6f + proximity * 0.4f) : (proximity * 0.5f);
+    controlRetentionBoost = (controlRetentionBoost < 0.0f) ? 0.0f : ((controlRetentionBoost > 1.0f) ? 1.0f : controlRetentionBoost);
+
+    float turnAssist = (turnIntensity > 0.05f) ? ((turnIntensity * 0.7f + proximity * 0.3f) * ((conf > 0.3f) ? conf : 0.3f)) : 0.0f;
+    turnAssist = (turnAssist < 0.0f) ? 0.0f : ((turnAssist > 1.0f) ? 1.0f : turnAssist);
+
+    // 4. Optimization of Shield Angle Geometry
+    float shieldAngle;
+    // Faster checking against invalid metrics without calling full isnan validation routines
+    if (playerX == playerX && playerY == playerY && oppX == oppX && oppY == oppY) {
+        float angleDeg = fast_atan2f(oppY - playerY, oppX - playerX) * 57.29578f;
+        shieldAngle = fast_wrap_360(angleDeg + 180.0f + (r_fuzz3 * 1.2f - 0.6f));
+    } else {
+        // Safe inline normalization boundaries
+        float angle = movementAngleDegrees;
+        if (angle > 180.0f || angle < -180.0f) {
+            float q = floorf((angle + 180.0f) * 0.002777778f);
+            angle = angle - q * 360.0f;
+        }
+        float offsetBase = (angle >= 0.0f) ? angle + 90.0f : angle - 90.0f;
+        shieldAngle = fast_wrap_360(offsetBase + (r_fuzz3 * 1.3f - 0.65f));
     }
 
+    // 5. Shield Duration Pipeline Optimization
     float shieldDuration;
     if (opponentDistance <= 0.0f) {
-        shieldDuration = 45.0f + (float)next_int(-2, 3);
+        int32_t rand_mod = ((int32_t)(local_xorshift32(&rng_state) % 5)) - 2; // Matches -2 to 2 range safely
+        shieldDuration = 45.0f + (float)rand_mod;
     } else {
-        float normDist = opponentDistance / 100.0f; if (normDist < 0.5f) normDist = 0.5f;
-        float pBonus = (float)(int32_t)(100.0f / normDist); if (pBonus > 60.0f) pBonus = 60.0f;
-        float vBonus = (playerVelocity > 0.0f ? playerVelocity * 10.0f : 0.0f); if (vBonus > 15.0f) vBonus = 15.0f;
-        shieldDuration = 45.0f + pBonus + vBonus + (float)next_int(-3, 4);
+        float normDist = opponentDistance * 0.01f;
+        if (normDist < 0.5f) normDist = 0.5f;
+        float pBonus = 100.0f / normDist;
+        if (pBonus > 60.0f) pBonus = 60.0f;
+        float vBonus = playerVelocity * 10.0f;
+        if (vBonus > 15.0f) vBonus = 15.0f;
+        
+        int32_t rand_mod = ((int32_t)(local_xorshift32(&rng_state) % 7)) - 3; // Matches -3 to 3 range safely
+        shieldDuration = 45.0f + pBonus + vBonus + (float)rand_mod;
     }
-    if (shieldDuration < 40.0f) shieldDuration = 40.0f; if (shieldDuration > 124.0f) shieldDuration = 124.0f;
+    shieldDuration = (shieldDuration < 40.0f) ? 40.0f : ((shieldDuration > 124.0f) ? 124.0f : shieldDuration);
 
-    result[0] = stabilityBoost; result[1] = controlRetentionBoost; result[2] = turnAssist;
-    result[3] = shieldAngle; result[4] = shieldDuration; result[5] = shieldActive ? 1.0f : 0.0f;
-    (*env)->SetFloatArrayRegion(env, outBuffer, 0, 6, result);
+    // Directly alter the native memory elements without standard array mapping passes
+    result[0] = stabilityBoost;
+    result[1] = controlRetentionBoost;
+    result[2] = turnAssist;
+    result[3] = shieldAngle;
+    result[4] = shieldDuration;
+    result[5] = shieldActive;
+
+    // Release pointer lock instantly
+    (*env)->ReleasePrimitiveArrayCritical(env, outBuffer, result, 0);
 }
