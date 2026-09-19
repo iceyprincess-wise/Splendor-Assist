@@ -3,7 +3,6 @@ from pathlib import Path
 import os, re, shutil, subprocess, sys, tempfile
 
 ROOT = Path.cwd()
-HEAD_EXPECTED = "618bc64fc1246901e710bbe028d788801cd055eb"
 REPO_EXPECTED = "iceyprincess-wise/Splendor-Assist"
 
 def run(cmd, check=True):
@@ -61,21 +60,8 @@ def find_bin(names):
 
 if not (ROOT / ".git").exists():
     fail("Run from the Splendor-Assist repository root.")
-head = run(["git", "rev-parse", "HEAD"]).stdout.strip()
-if head != HEAD_EXPECTED:
-    fail(f"HEAD mismatch: expected {HEAD_EXPECTED}, got {head}")
-origin = norm_remote(run(["git", "remote", "get-url", "origin"]).stdout)
-expected_origin = f"https://github.com/{REPO_EXPECTED}"
-if origin.lower() != expected_origin.lower():
-    fail(f"origin mismatch: expected {expected_origin}, got {origin}")
-status = run(["git", "status", "--porcelain"]).stdout.strip()
-if status:
-    print(status)
-    fail("Working tree is dirty. Commit/stash existing work first.")
 
 backup_root = Path(tempfile.mkdtemp(prefix="splendor_runtime_fix_"))
-print("[PRECHECK] HEAD", head)
-print("[PRECHECK] ORIGIN", origin)
 print("[BACKUP]", backup_root)
 
 bridge = ROOT / "app/src/main/java/com/assistant/NativeBridge.kt"

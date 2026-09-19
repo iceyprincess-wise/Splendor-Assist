@@ -36,8 +36,8 @@ static inline float fast_atan2f(float y, float x) {
 }
 
 JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeKickingPosture(
-        JNIEnv* env, jobject thiz,
+Java_com_assistant_NativeBridge_nativeKickingPostureImpl(
+        JNIEnv* env, jclass /*clazz*/,
         jfloat carrierX, jfloat carrierY,
         jfloat carrierVx, jfloat carrierVy,
         jfloat targetX, jfloat targetY,

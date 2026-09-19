@@ -48,8 +48,8 @@ static inline float local_next_float(uint32_t* state) {
 }
 
 JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeAgilityPhysics(
-        JNIEnv* env, jobject thiz,
+Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
+        JNIEnv* env, jclass /*clazz*/,
         jfloat playerVelocity, jfloat opponentDistance,
         jfloat movementAngleDegrees, jfloat possessionConfidence,
         jfloat turnIntensity, jfloat playerX, jfloat playerY,
