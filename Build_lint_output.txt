@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-19 09:51:18 WAT
+Started: 2026-09-19 10:02:18 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -15,7 +15,7 @@ YES — running clean
 ================================================================
 >>> CLEAN
 ================================================================
-BUILD SUCCESSFUL in 21s
+BUILD SUCCESSFUL in 4s
 
 CLEAN EXIT: 0
 
@@ -42,20 +42,17 @@ versionCode: 143 -> 144
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:14040:60 Type mismatch: inferred type is Float? but Float was expected
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:14040:66 Type mismatch: inferred type is Float? but Float was expected
-FAILURE: Build failed with an exception.
-* What went wrong:
-BUILD FAILED in 3m 1s
+BUILD SUCCESSFUL in 3m 35s
 
-ASSEMBLE DEBUG APK EXIT: 1
+ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-SKIPPED — build exit=1, apk_exists=NO
-VERSION TRANSACTION: ROLLED BACK
-Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
+Exported: /storage/emulated/0/Download/Splendor-Assist-v144-20260919_100610.apk
+-rw-rw----. 1 u0_a262 media_rw 29M Sep 19 10:06 /storage/emulated/0/Download/Splendor-Assist-v144-20260919_100610.apk
+VERSION TRANSACTION: COMMITTED
+
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
@@ -74,15 +71,16 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  1
-APK EXPORT:                      1
+ASSEMBLE DEBUG:                  0
+APK EXPORT:                      0
 GRADLE DAEMON STOP:              0
 
-FINAL STATUS: FAILED — check items above
+FINAL STATUS: ALL PASSED
 
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
+ M app/build.gradle.kts
 
-Finished: 2026-09-19 09:55:57 WAT
-Report size: 3442 bytes
+Finished: 2026-09-19 10:06:35 WAT
+Report size: 3078 bytes
 ================================================================
