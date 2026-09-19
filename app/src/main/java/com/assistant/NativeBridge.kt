@@ -18,7 +18,7 @@ object NativeBridge {
         try {
             System.loadLibrary(LIBRARY)
             nativeReady.set(true)
-            RuntimeLogger.log("NativeBridge: splendor_native loaded; explicit JNI registration available.")
+            RuntimeLogger.log("splendor_native loaded; explicit JNI registration available.", "NativeBridge")
         } catch (e: Throwable) {
             nativeFailure = e.message ?: "Unknown load error"
             nativeReady.set(false)
@@ -32,7 +32,7 @@ object NativeBridge {
     private fun logFailureOnce() {
         if (!failureLogged) {
             failureLogged = true
-            RuntimeLogger.log("NativeBridge: Native library unavailable - $nativeFailure")
+            RuntimeLogger.log("Native library unavailable - $nativeFailure", "NativeBridge")
         }
     }
 
