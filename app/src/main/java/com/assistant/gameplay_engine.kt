@@ -562,67 +562,7 @@ object AgentDecisionPolicy {
 AgentDecision Anchor
 ====== */
 
-/* ========
-AgilityEngine
-======== */
-data class AgilityResult(
-    val shieldActive: Boolean,
-    val stabilityBoost: Float,
-    val controlRetentionBoost: Float,
-    val turnAssist: Float,
-    val shieldAngleDegrees: Float,
-    val shieldDurationMs: Long
-)
-
-object AgilityEngine {
-    private val nativeBuffer = FloatArray(6)
-
-    init {
-        try { System.loadLibrary("splendor_native") } catch (_: Throwable) {}
-    }
-
-    @JvmStatic
-    external fun nativeComputeAgility(
-        playerVelocity: Float, opponentDistance: Float,
-        movementAngleDegrees: Float, possessionConfidence: Float,
-        turnIntensity: Float, playerX: Float, playerY: Float,
-        oppX: Float, oppY: Float, outBuffer: FloatArray
-    )
-
-    fun computeAgility(
-        playerVelocity: Float,
-        opponentDistance: Float,
-        movementAngleDegrees: Float,
-        possessionConfidence: Float,
-        turnIntensity: Float,
-        playerX: Float? = null,
-        playerY: Float? = null,
-        oppX: Float? = null,
-        oppY: Float? = null
-    ): AgilityResult {
-        val px = playerX ?: Float.NaN
-        val py = playerY ?: Float.NaN
-        val ox = oppX ?: Float.NaN
-        val oy = oppY ?: Float.NaN
-        
-        nativeComputeAgility(
-            playerVelocity, opponentDistance, movementAngleDegrees,
-            possessionConfidence, turnIntensity, px, py, ox, oy, nativeBuffer
-        )
-        
-        return AgilityResult(
-            shieldActive = nativeBuffer[5] > 0.5f,
-            stabilityBoost = nativeBuffer[0],
-            controlRetentionBoost = nativeBuffer[1],
-            turnAssist = nativeBuffer[2],
-            shieldAngleDegrees = nativeBuffer[3],
-            shieldDurationMs = nativeBuffer[4].toLong()
-        )
-    }
-}
-/* ======
-AgilityEngine Anchor
-====== */
+/* AgilityEngine moved to NativeBridge */
 
 /* ========
 AntiCutbackSubEngine
@@ -14034,48 +13974,7 @@ object VisionTrust {
 VisionTrust Anchor
 ====== */
 
-/* ========
-KickingPostureEngine
-======== */
-data class PostureCorrectionResult(
-    val correctedX: Float,
-    val correctedY: Float,
-    val balanceScore: Float,
-    val requiresAdjustTouch: Boolean
-)
-
-object KickingPostureEngine {
-    private val nativeBuffer = FloatArray(4)
-
-    init {
-        try { System.loadLibrary("splendor_native") } catch (_: Throwable) {}
-    }
-
-    @JvmStatic
-    external fun nativeEvaluateAndCorrect(
-        carrierX: Float, carrierY: Float,
-        carrierVx: Float, carrierVy: Float,
-        targetX: Float, targetY: Float,
-        outBuffer: FloatArray
-    )
-
-    fun evaluateAndCorrect(
-        carrierX: Float, carrierY: Float,
-        carrierVx: Float, carrierVy: Float,
-        targetX: Float, targetY: Float
-    ): PostureCorrectionResult {
-        nativeEvaluateAndCorrect(carrierX, carrierY, carrierVx, carrierVy, targetX, targetY, nativeBuffer)
-        return PostureCorrectionResult(
-            correctedX = nativeBuffer[0],
-            correctedY = nativeBuffer[1],
-            balanceScore = nativeBuffer[2],
-            requiresAdjustTouch = nativeBuffer[3] > 0.5f
-        )
-    }
-}
-/* ======
-KickingPostureEngine Anchor
-====== */
+/* KickingPostureEngine moved to NativeBridge */
 
 /* ========
 AgilityContributor
@@ -14119,16 +14018,18 @@ object AgilityContributor : GameplayContributor {
         val estimatedVelocity = (frame.bestLaneConfidence * 10.0f + frame.confidence * 5.0f).coerceIn(0f, 15f)
         val turnIntensity = frame.defenderDensity.coerceIn(0f, 1f)
 
-        val result = AgilityEngine.computeAgility(
-            playerVelocity = estimatedVelocity,
-            opponentDistance = opponentDistance,
-            movementAngleDegrees = movementAngle,
-            possessionConfidence = frame.confidence,
-            turnIntensity = turnIntensity,
-            playerX = ballX,
-            playerY = ballY,
-            oppX = oppX,
-            oppY = oppY
+        val agilityBuffer = FloatArray(6)
+        NativeBridge.nativeAgilityPhysics(
+            estimatedVelocity, opponentDistance, movementAngle,
+            frame.confidence, turnIntensity, ballX, ballY, oppX, oppY, agilityBuffer
+        )
+        val result = AgilityResult(
+            shieldActive = agilityBuffer[5] > 0.5f,
+            stabilityBoost = agilityBuffer[0],
+            controlRetentionBoost = agilityBuffer[1],
+            turnAssist = agilityBuffer[2],
+            shieldAngleDegrees = agilityBuffer[3],
+            shieldDurationMs = agilityBuffer[4].toLong()
         )
 
         val baseAuthority = (result.stabilityBoost / 10f) + (result.controlRetentionBoost * 0.2f)
@@ -15220,13 +15121,13 @@ object KickingPostureContributor : GameplayContributor {
         val targetX = if (frame.passTargetX > 0f) frame.passTargetX else frame.ballX
         val targetY = if (frame.passTargetY > 0f) frame.passTargetY else frame.ballY
 
-        val result = KickingPostureEngine.evaluateAndCorrect(
-            carrierX = userX,
-            carrierY = userY,
-            carrierVx = userVx,
-            carrierVy = userVy,
-            targetX = targetX,
-            targetY = targetY
+        val kickingBuffer = FloatArray(4)
+        NativeBridge.nativeKickingPosture(userX, userY, userVx, userVy, targetX, targetY, kickingBuffer)
+        val result = PostureCorrectionResult(
+            correctedX = kickingBuffer[0],
+            correctedY = kickingBuffer[1],
+            balanceScore = kickingBuffer[2],
+            requiresAdjustTouch = kickingBuffer[3] > 0.5f
         )
 
         if (result.balanceScore >= 0.95f && !result.requiresAdjustTouch) {
