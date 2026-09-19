@@ -4,27 +4,28 @@ project("splendor_native" C CXX)
 add_library(splendor_native SHARED native_input.cpp native_kicking_posture.c native_agility_physics.c native_registration.c)
 
 find_library(log-lib log)
-target_link_libraries(splendor_native ${log-lib})
+target_link_libraries(splendor_native PRIVATE ${log-lib}
 
-# SPLENDOR_NATIVE_LINK_SHIM_BEGIN
-set(SPLENDOR_SHIM_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../.termux-shims/bin")
+# SPLENDOR_NATIVE_LINK_SHIM_V6_BEGIN
+set(SPLENDOR_SHIM_DIR "${CMAKE_CURRENT_SOURCE_DIR}/native-shims/bin")
 get_filename_component(SPLENDOR_SHIM_DIR "${SPLENDOR_SHIM_DIR}" ABSOLUTE)
 
 if(NOT EXISTS "${SPLENDOR_SHIM_DIR}/ld.lld")
-  message(FATAL_ERROR "SPLENDOR_LINK_SHIM_V5: missing ${SPLENDOR_SHIM_DIR}/ld.lld")
+  message(FATAL_ERROR "SPLENDOR_LINK_SHIM_V6: missing ${SPLENDOR_SHIM_DIR}/ld.lld")
 endif()
+
+if(NOT EXISTS "${SPLENDOR_SHIM_DIR}/ld")
+  message(FATAL_ERROR "SPLENDOR_LINK_SHIM_V6: missing ${SPLENDOR_SHIM_DIR}/ld")
+endif()
+
+set(CMAKE_C_COMPILER_LINKER "${SPLENDOR_SHIM_DIR}/ld.lld" CACHE FILEPATH "Splendor native linker shim" FORCE)
+set(CMAKE_CXX_COMPILER_LINKER "${SPLENDOR_SHIM_DIR}/ld.lld" CACHE FILEPATH "Splendor native linker shim" FORCE)
 
 set(SPLENDOR_ANDROID_API_LEVEL "26")
 
 if(DEFINED CMAKE_SYSTEM_VERSION)
   if(CMAKE_SYSTEM_VERSION MATCHES "^[0-9]+$")
     set(SPLENDOR_ANDROID_API_LEVEL "${CMAKE_SYSTEM_VERSION}")
-  endif()
-endif()
-
-if(DEFINED ANDROID_PLATFORM)
-  if(ANDROID_PLATFORM MATCHES "^android-([0-9]+)$")
-    set(SPLENDOR_ANDROID_API_LEVEL "${CMAKE_MATCH_1}")
   endif()
 endif()
 
@@ -43,7 +44,10 @@ if(NOT SPLENDOR_SYSROOT OR NOT IS_DIRECTORY "${SPLENDOR_SYSROOT}")
   endif()
 
   if(SPLENDOR_NDK)
-    file(GLOB SPLENDOR_SYSROOT_GLOB "${SPLENDOR_NDK}/toolchains/llvm/prebuilt/*/sysroot")
+    file(GLOB SPLENDOR_SYSROOT_GLOB
+      "${SPLENDOR_NDK}/toolchains/llvm/prebuilt/*/sysroot"
+      "${SPLENDOR_NDK}/toolchains/llvm/prebuilt/sysroot"
+    )
     list(LENGTH SPLENDOR_SYSROOT_GLOB SPLENDOR_SYSROOT_COUNT)
 
     if(SPLENDOR_SYSROOT_COUNT GREATER 0)
@@ -54,7 +58,7 @@ if(NOT SPLENDOR_SYSROOT OR NOT IS_DIRECTORY "${SPLENDOR_SYSROOT}")
 endif()
 
 if(NOT SPLENDOR_SYSROOT OR NOT IS_DIRECTORY "${SPLENDOR_SYSROOT}")
-  message(FATAL_ERROR "SPLENDOR_LINK_SHIM_V5: sysroot not resolved. CMAKE_SYSROOT='${CMAKE_SYSROOT}' CMAKE_ANDROID_NDK='${CMAKE_ANDROID_NDK}' ANDROID_NDK='${ANDROID_NDK}'")
+  message(FATAL_ERROR "SPLENDOR_LINK_SHIM_V6: sysroot not resolved. CMAKE_SYSROOT='${CMAKE_SYSROOT}' CMAKE_ANDROID_NDK='${CMAKE_ANDROID_NDK}' ANDROID_NDK='${ANDROID_NDK}'")
 endif()
 
 set(SPLENDOR_ARCH_DIR "${SPLENDOR_SYSROOT}/usr/lib/aarch64-linux-android")
@@ -68,7 +72,7 @@ foreach(_dir "${SPLENDOR_ARCH_DIR}/${SPLENDOR_ANDROID_API_LEVEL}" "${SPLENDOR_AR
 endforeach()
 
 if(NOT SPLENDOR_LIBDIR)
-  message(FATAL_ERROR "SPLENDOR_LINK_SHIM_V5: libc.so not found under '${SPLENDOR_ARCH_DIR}'")
+  message(FATAL_ERROR "SPLENDOR_LINK_SHIM_V6: libc.so not found under '${SPLENDOR_ARCH_DIR}'")
 endif()
 
 set(SPLENDOR_DYNAMIC_LIBS "")
@@ -85,7 +89,7 @@ foreach(_lib libc libm libdl)
   endforeach()
 
   if(NOT _found)
-    message(FATAL_ERROR "SPLENDOR_LINK_SHIM_V5: missing ${_lib}.so under '${SPLENDOR_SYSROOT}/usr/lib'")
+    message(FATAL_ERROR "SPLENDOR_LINK_SHIM_V6: missing ${_lib}.so under '${SPLENDOR_SYSROOT}/usr/lib'")
   endif()
 endforeach()
 
@@ -110,4 +114,4 @@ target_link_options(splendor_native PRIVATE
 target_link_libraries(splendor_native PRIVATE
   ${SPLENDOR_DYNAMIC_LIBS}
 )
-# SPLENDOR_NATIVE_LINK_SHIM_END
+# SPLENDOR_NATIVE_LINK_SHIM_V6_END

@@ -33,11 +33,11 @@ android {
                 // DISABLED_SPLENDOR_UNUSED_GWP_ASAN_ARG arguments += "-DANDROID_ALLOW_GWP_ASAN=OFF"
 
             
-                // SPLENDOR_NATIVE_LINK_SHIM_BEGIN
+                // SPLENDOR_NATIVE_LINK_SHIM_V6_BEGIN
                 arguments += "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
                 arguments += "-Wno-deprecated"
                 arguments += "-Wno-author"
-                // SPLENDOR_NATIVE_LINK_SHIM_END
+                // SPLENDOR_NATIVE_LINK_SHIM_V6_END
 }
         }
         ndk {
