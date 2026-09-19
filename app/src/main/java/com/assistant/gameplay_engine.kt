@@ -14037,7 +14037,7 @@ object AgilityContributor : GameplayContributor {
         val agilityBuffer = FloatArray(6)
         NativeBridge.nativeAgilityPhysics(
             estimatedVelocity, opponentDistance, movementAngle,
-            frame.confidence, turnIntensity, ballX, ballY, oppX, oppY, NativeBridge.nextThreadSeed(), agilityBuffer
+            frame.confidence, turnIntensity, ballX, ballY, oppX ?: Float.NaN, oppY ?: Float.NaN, NativeBridge.nextThreadSeed(), agilityBuffer
         )
         val result = AgilityResult(
             shieldActive = agilityBuffer[5] > 0.5f,
