@@ -562,6 +562,15 @@ object AgentDecisionPolicy {
 AgentDecision Anchor
 ====== */
 
+data class AgilityResult(
+    val shieldActive: Boolean,
+    val stabilityBoost: Float,
+    val controlRetentionBoost: Float,
+    val turnAssist: Float,
+    val shieldAngleDegrees: Float,
+    val shieldDurationMs: Long
+)
+
 /* AgilityEngine moved to NativeBridge */
 
 /* ========
@@ -13974,6 +13983,13 @@ object VisionTrust {
 VisionTrust Anchor
 ====== */
 
+data class PostureCorrectionResult(
+    val correctedX: Float,
+    val correctedY: Float,
+    val balanceScore: Float,
+    val requiresAdjustTouch: Boolean
+)
+
 /* KickingPostureEngine moved to NativeBridge */
 
 /* ========
@@ -14021,7 +14037,7 @@ object AgilityContributor : GameplayContributor {
         val agilityBuffer = FloatArray(6)
         NativeBridge.nativeAgilityPhysics(
             estimatedVelocity, opponentDistance, movementAngle,
-            frame.confidence, turnIntensity, ballX, ballY, oppX, oppY, agilityBuffer
+            frame.confidence, turnIntensity, ballX, ballY, oppX, oppY, NativeBridge.nextThreadSeed(), agilityBuffer
         )
         val result = AgilityResult(
             shieldActive = agilityBuffer[5] > 0.5f,
@@ -15122,7 +15138,7 @@ object KickingPostureContributor : GameplayContributor {
         val targetY = if (frame.passTargetY > 0f) frame.passTargetY else frame.ballY
 
         val kickingBuffer = FloatArray(4)
-        NativeBridge.nativeKickingPosture(userX, userY, userVx, userVy, targetX, targetY, kickingBuffer)
+        NativeBridge.nativeKickingPosture(userX, userY, userVx, userVy, targetX, targetY, 1650f, 1080f, kickingBuffer)
         val result = PostureCorrectionResult(
             correctedX = kickingBuffer[0],
             correctedY = kickingBuffer[1],

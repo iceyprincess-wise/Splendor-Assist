@@ -401,14 +401,21 @@ class ActiveGestureController(
                 )
             ).toFloat()
 
-        val agility =
-            AgilityEngine.computeAgility(
-                playerVelocity = speedComp.executionBoost,
-                opponentDistance = distance,
-                movementAngleDegrees = movementAngleDegrees,
-                possessionConfidence = telemetry.confidence,
-                turnIntensity = kotlin.math.abs(angle) / 180f
-            )
+        val agilityBuffer = FloatArray(6)
+        NativeBridge.nativeAgilityPhysics(
+            speedComp.executionBoost, distance, movementAngleDegrees,
+            telemetry.confidence, kotlin.math.abs(angle) / 180f,
+            Float.NaN, Float.NaN, Float.NaN, Float.NaN,
+            NativeBridge.nextThreadSeed(), agilityBuffer
+        )
+        val agility = AgilityResult(
+            shieldActive = agilityBuffer[5] > 0.5f,
+            stabilityBoost = agilityBuffer[0],
+            controlRetentionBoost = agilityBuffer[1],
+            turnAssist = agilityBuffer[2],
+            shieldAngleDegrees = agilityBuffer[3],
+            shieldDurationMs = agilityBuffer[4].toLong()
+        )
 
         val shieldAuthority =
             agility.stabilityBoost
