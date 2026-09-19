@@ -30,8 +30,15 @@ android {
             cmake {
                 cppFlags += "-std=c++17"
                 arguments += "-DANDROID_STL=c++_shared"
-                arguments += "-DANDROID_ALLOW_GWP_ASAN=OFF"
-            }
+                // DISABLED_SPLENDOR_UNUSED_GWP_ASAN_ARG arguments += "-DANDROID_ALLOW_GWP_ASAN=OFF"
+
+            
+                // SPLENDOR_NATIVE_TLS_FIX_BEGIN
+                arguments += "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+                arguments += "-Wno-deprecated"
+                arguments += "-Wno-author"
+                // SPLENDOR_NATIVE_TLS_FIX_END
+}
         }
         ndk {
             abiFilters += listOf("arm64-v8a")
