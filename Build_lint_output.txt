@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-19 02:54:09 WAT
+Started: 2026-09-19 03:07:04 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -15,10 +15,88 @@ YES — running clean
 ================================================================
 >>> CLEAN
 ================================================================
-BUILD SUCCESSFUL in 1m 6s
+BUILD SUCCESSFUL in 22s
 
 CLEAN EXIT: 0
 
 ================================================================
 >>> OPTIONAL LINT
+================================================================
+NO — lint skipped by user.
+
+================================================================
+>>> LINT ISSUE EXTRACTION
+================================================================
+SKIPPED — lint was not run.
+
+================================================================
+>>> CONNECTED ANDROID TESTS
+================================================================
+SKIPPED — no ADB device connected (not a failure)
+
+================================================================
+>>> VERSION BUMP
+================================================================
+versionCode: 143 -> 144
+
+================================================================
+>>> ASSEMBLE DEBUG APK
+================================================================
+[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
+	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/ActiveGestureController.kt:405:13 Unresolved reference: AgilityEngine
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/ActiveGestureController.kt:756:40 Overload resolution ambiguity: 
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/execution/DomainBackupGenerator.kt:45:9 Unresolved reference: AgilityEngine
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/execution/DomainBackupGenerator.kt:176:9 Unresolved reference: KickingPostureEngine
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:14024:60 Type mismatch: inferred type is Float? but Float was expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:14024:66 Type mismatch: inferred type is Float? but Float was expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:14024:72 Type mismatch: inferred type is FloatArray but Int was expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:14024:72 No value passed for parameter 'outBuffer'
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:14026:22 Unresolved reference: AgilityResult
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:14048:61 Overload resolution ambiguity: 
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:14049:61 Overload resolution ambiguity: 
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:15125:91 Type mismatch: inferred type is FloatArray but Float was expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:15125:91 No value passed for parameter 'pitchHeight'
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:15125:91 No value passed for parameter 'outBuffer'
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:15126:22 Unresolved reference: PostureCorrectionResult
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 4m 2s
+
+ASSEMBLE DEBUG APK EXIT: 1
+
+================================================================
+>>> APK EXPORT
+================================================================
+SKIPPED — build exit=1, apk_exists=NO
+VERSION TRANSACTION: ROLLED BACK
+Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
+================================================================
+>>> OPTIONAL GRADLE DAEMON STOP
+================================================================
+NO — Gradle daemon remains running for warm builds.
+
+Current Gradle daemon status:
+No Gradle daemons are running.
+
+Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
+
+================================================================
+>>> BUILD RESULT SUMMARY
+================================================================
+CLEAN:                           0
+LINT:                            SKIPPED — OPTIONAL
+CONNECTED TESTS:                 0
+VERSION BUMP:                    0
+ASSEMBLE DEBUG:                  1
+APK EXPORT:                      1
+GRADLE DAEMON STOP:              0
+
+FINAL STATUS: FAILED — check items above
+
+GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
+ M Build_lint_output.txt
+
+Finished: 2026-09-19 07:16:45 WAT
+Report size: 6217 bytes
 ================================================================
