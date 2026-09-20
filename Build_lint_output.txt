@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-19 23:47:58 WAT
+Started: 2026-09-20 11:25:34 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -15,7 +15,7 @@ YES — running clean
 ================================================================
 >>> CLEAN
 ================================================================
-BUILD SUCCESSFUL in 54s
+BUILD SUCCESSFUL in 46s
 
 CLEAN EXIT: 0
 
@@ -37,7 +37,7 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 145 -> 146
+versionCode: 146 -> 147
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
@@ -71,8 +71,8 @@ Transforming tensorflow-lite-2.14.0.aar (org.tensorflow:tensorflow-lite:2.14.0) 
 Transforming tensorflow-lite-api-2.14.0.aar (org.tensorflow:tensorflow-lite-api:2.14.0) with ExtractAarTransform
 Transforming tensorflow-lite-api-2.14.0.aar (org.tensorflow:tensorflow-lite-api:2.14.0) with LibrarySymbolTableTransform
 Build cache key for LibrarySymbolTableTransform: /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0 is 99fde437a2ca0396a77c3f29a23a2936
-Skipping LibrarySymbolTableTransform: /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0 as it is up-to-date.
 Build cache key for LibrarySymbolTableTransform: /data/data/com.termux/files/home/.gradle/caches/transforms-3/f5b89b2a6ba504157628b78b926c5532/transformed/tensorflow-lite-api-2.14.0 is ab623816db180d853f41756cec8a396d
+Skipping LibrarySymbolTableTransform: /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0 as it is up-to-date.
 Skipping LibrarySymbolTableTransform: /data/data/com.termux/files/home/.gradle/caches/transforms-3/f5b89b2a6ba504157628b78b926c5532/transformed/tensorflow-lite-api-2.14.0 as it is up-to-date.
 Transforming tensorflow-lite-2.14.0.aar (org.tensorflow:tensorflow-lite:2.14.0) with ExtractAarTransform
 Transforming tensorflow-lite-2.14.0.aar (org.tensorflow:tensorflow-lite:2.14.0) with AarTransform
@@ -1027,15 +1027,15 @@ Caching disabled for AarTransform: /data/data/com.termux/files/home/.gradle/cach
 Skipping AarTransform: /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0 as it is up-to-date.
 Caching disabled for AarTransform: /data/data/com.termux/files/home/.gradle/caches/transforms-3/f5b89b2a6ba504157628b78b926c5532/transformed/tensorflow-lite-api-2.14.0 because:
 Skipping AarTransform: /data/data/com.termux/files/home/.gradle/caches/transforms-3/f5b89b2a6ba504157628b78b926c5532/transformed/tensorflow-lite-api-2.14.0 as it is up-to-date.
-BUILD SUCCESSFUL in 1m 30s
+BUILD SUCCESSFUL in 1m 7s
 
 ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v146-20260919_235039.apk
--rw-rw----. 1 u0_a262 media_rw 28M Sep 19 23:50 /storage/emulated/0/Download/Splendor-Assist-v146-20260919_235039.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v147-20260920_112740.apk
+-rw-rw----. 1 u0_a262 media_rw 28M Sep 20 11:27 /storage/emulated/0/Download/Splendor-Assist-v147-20260920_112740.apk
 VERSION TRANSACTION: COMMITTED
 
 ================================================================
@@ -1045,8 +1045,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 21975 IDLE     8.5
-  9608 STOPPED  (by user or operating system)
+ 27640 IDLE     8.5
+ 24431 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -1066,7 +1066,8 @@ FINAL STATUS: ALL PASSED
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
  M app/build.gradle.kts
+?? "app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
 
-Finished: 2026-09-19 23:50:57 WAT
-Report size: 163360 bytes
+Finished: 2026-09-20 11:28:01 WAT
+Report size: 163418 bytes
 ================================================================
