@@ -113,6 +113,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     @Volatile private var isRunning = false
     private var processingThread: Thread? = null
+    @Volatile private var reusableVisionBuffer: java.nio.ByteBuffer? = null
+    private val emptyVisionBuffer: java.nio.ByteBuffer = java.nio.ByteBuffer.allocateDirect(0)
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: View
     private lateinit var txtEngineStatus: TextView
@@ -230,11 +232,25 @@ class OverlayService : Service(), ComponentCallbacks2 {
         val pixelStride = plane.pixelStride
         val originalBuffer = plane.buffer
         
-        // Deep copy for Vision Pipeline (async safe)
-        val visionBuffer = ByteBuffer.allocateDirect(originalBuffer.remaining())
-        visionBuffer.put(originalBuffer)
-        visionBuffer.flip()
+        // SPLENDOR_V23B_VISION_BUFFER_REUSE_BEGIN
         val startVision = visionInFlight.compareAndSet(false, true)
+        val visionBuffer: java.nio.ByteBuffer = if (startVision) {
+            val required = originalBuffer.remaining()
+            var buf = reusableVisionBuffer
+            if (buf == null || buf.capacity() < required) {
+                buf = java.nio.ByteBuffer.allocateDirect(if (required > 0) required else 1)
+                reusableVisionBuffer = buf
+            }
+            buf.clear()
+            buf.limit(required)
+            buf.put(originalBuffer)
+            originalBuffer.rewind()
+            buf.flip()
+            buf
+        } else {
+            emptyVisionBuffer
+        }
+        // SPLENDOR_V23B_VISION_BUFFER_REUSE_END
         
         // Deep copy for OCR (sync safe via reusableBitmap)
         val ocrReady = try {
