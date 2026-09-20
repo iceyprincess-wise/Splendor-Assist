@@ -6,6 +6,7 @@ add_library(splendor_native SHARED
   native_kicking_posture.c
   native_agility_physics.c
   native_registration.c
+  native_vision_preprocessor.c
 )
 
 find_library(log-lib log)

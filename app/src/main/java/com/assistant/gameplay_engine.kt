@@ -13632,22 +13632,51 @@ object TrainedDetectionEngine {
         return try {
             // Nearest-neighbor resample straight from the source buffer -
             // absolute get() so the shared buffer's position is untouched.
-            inputBuffer.rewind()
-            var y = 0
-            while (y < INPUT_SIZE) {
-                val srcY = y * h / INPUT_SIZE
-                var x = 0
-                while (x < INPUT_SIZE) {
-                    val srcX = x * w / INPUT_SIZE
-                    val idx = srcY * frame.rowStride + srcX * 4
-                    inputBuffer.putFloat((src.get(idx).toInt() and 0xFF) / 255f)
-                    inputBuffer.putFloat((src.get(idx + 1).toInt() and 0xFF) / 255f)
-                    inputBuffer.putFloat((src.get(idx + 2).toInt() and 0xFF) / 255f)
-                    x++
+            // SPLENDOR_V14A_NATIVE_VISION_PREPROCESS_BEGIN
+            val nativePreprocessOk: Boolean = if (com.assistant.NativeBridge.nativePreprocessAvailable) {
+                try {
+                    com.assistant.NativeBridge.nativePreprocessFrame(
+                        src,
+                        inputBuffer,
+                        w,
+                        h,
+                        frame.rowStride,
+                        INPUT_SIZE,
+                        com.assistant.vision.CameraProfile.activeProfileId()
+                    ) == 0
+                } catch (_: Throwable) {
+                    com.assistant.NativeBridge.markNativePreprocessUnavailable()
+                    false
                 }
-                y++
+            } else {
+                false
             }
-            inputBuffer.rewind()
+            
+            if (nativePreprocessOk) {
+                com.assistant.NativeBridge.logNativePreprocessProofOnce()
+            }
+            
+            if (!nativePreprocessOk) {
+                inputBuffer.rewind()
+                var y = 0
+                while (y < INPUT_SIZE) {
+                    val srcY = y * h / INPUT_SIZE
+                    var x = 0
+                    while (x < INPUT_SIZE) {
+                        val srcX = x * w / INPUT_SIZE
+                        val idx = srcY * frame.rowStride + srcX * 4
+                        inputBuffer.putFloat((src.get(idx).toInt() and 0xFF) / 255f)
+                        inputBuffer.putFloat((src.get(idx + 1).toInt() and 0xFF) / 255f)
+                        inputBuffer.putFloat((src.get(idx + 2).toInt() and 0xFF) / 255f)
+                        x++
+                    }
+                    y++
+                }
+                inputBuffer.rewind()
+            } else {
+                inputBuffer.rewind()
+            }
+            // SPLENDOR_V14A_NATIVE_VISION_PREPROCESS_END
 
             tflite.run(inputBuffer, output)
 

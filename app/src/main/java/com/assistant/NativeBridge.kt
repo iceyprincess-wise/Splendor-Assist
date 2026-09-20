@@ -1,4 +1,5 @@
 package com.assistant
+import java.nio.ByteBuffer
 
 import com.assistant.diagnostic.RuntimeLogger
 import java.util.concurrent.ThreadLocalRandom
@@ -92,4 +93,40 @@ object NativeBridge {
     fun nextThreadSeed(): Int {
         return ThreadLocalRandom.current().nextInt()
     }
+
+    // SPLENDOR_V14A_NATIVE_VISION_BEGIN
+    @Volatile
+    var nativePreprocessAvailable: Boolean = true
+        private set
+
+    @Volatile
+    private var nativePreprocessProofLogged: Boolean = false
+
+    @JvmStatic
+    fun markNativePreprocessUnavailable() {
+        nativePreprocessAvailable = false
+    }
+
+    @JvmStatic
+    fun logNativePreprocessProofOnce() {
+        if (!nativePreprocessProofLogged) {
+            nativePreprocessProofLogged = true
+            try {
+                com.assistant.diagnostic.RuntimeLogger.log("NATIVE_VISION_PREPROCESS_ACTIVE", "NATIVE_VISION")
+            } catch (_: Throwable) {
+            }
+        }
+    }
+
+    @JvmStatic
+    external fun nativePreprocessFrame(
+        src: ByteBuffer,
+        dst: ByteBuffer,
+        width: Int,
+        height: Int,
+        rowStride: Int,
+        inputSize: Int,
+        cameraProfileId: Int
+    ): Int
+    // SPLENDOR_V14A_NATIVE_VISION_END
 }

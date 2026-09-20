@@ -59,4 +59,13 @@ object CameraProfile {
         "profile=" + activeProfile +
             " capture=" + captureWidth + "x" + captureHeight +
             " source=" + sourceWidth + "x" + sourceHeight
+
+    // SPLENDOR_V14A_CAMERA_PROFILE_ID_BEGIN
+    const val PROFILE_ID_NORMAL: Int = 0
+    const val PROFILE_ID_DYNAMIC_WIDE: Int = 1
+
+    @JvmStatic
+    fun activeProfileId(): Int =
+        if (activeProfile == PROFILE_DYNAMIC_WIDE) PROFILE_ID_DYNAMIC_WIDE else PROFILE_ID_NORMAL
+    // SPLENDOR_V14A_CAMERA_PROFILE_ID_END
 }
