@@ -551,7 +551,7 @@ object AgentDecisionPolicy {
             priority = 10,
             reason =
                 if (health.degradedReasons.isEmpty()) {
-                    "Runtime healthy; observation only."
+                    "Runtime healthy; gameplay contributors own execution; agent supervisory observation only."
                 } else {
                     "Runtime degraded without a safe automated recovery action."
                 }
