@@ -20,3 +20,15 @@ build/
 elf-verify/
 
 .termux-tmp/
+.backups/
+.probe_native_shim_v*/
+.verify_native_link_shim_v*/
+.verify_v14a_final/
+.trace_v13_collector_frame_camera_native/
+.trace_v18b_collect_caller/
+.trace_v19b_collect_caller_chain/
+.extract_native_vision_wiring_v10/
+.audit_native_live_migration_v1/
+patch_*.py
+fix_native_v*.sh
+verify_v14a_native_symbol.sh
