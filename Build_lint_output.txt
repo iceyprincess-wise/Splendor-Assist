@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-20 13:39:21 WAT
+Started: 2026-09-20 13:41:11 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -26,19 +26,18 @@ SKIPPED — lint was not run.
 >>> CONNECTED ANDROID TESTS
 ================================================================
 SKIPPED — no ADB device connected (not a failure)
-ERROR: could not create version backup: /data/data/com.termux/files/home/projects/Splendor-Assist/.termux-tmp/splendor-build-version.16771.bak
+ERROR: could not create version backup: /data/data/com.termux/files/home/projects/Splendor-Assist/.termux-tmp/splendor-build-version.17228.bak
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 
-ASSEMBLE DEBUG APK EXIT: 0
+ASSEMBLE DEBUG APK EXIT: 130
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v148-20260920_134039.apk
--rw-rw----. 1 u0_a262 media_rw 28M Sep 20 13:40 /storage/emulated/0/Download/Splendor-Assist-v148-20260920_134039.apk
+SKIPPED — build exit=130, apk_exists=YES
 VERSION TRANSACTION ERROR: backup missing; version file was not restored.\n
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
@@ -59,8 +58,8 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    1
-ASSEMBLE DEBUG:                  0
-APK EXPORT:                      0
+ASSEMBLE DEBUG:                  130
+APK EXPORT:                      1
 GRADLE DAEMON STOP:              0
 
 FINAL STATUS: FAILED — check items above
@@ -68,6 +67,6 @@ FINAL STATUS: FAILED — check items above
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
 
-Finished: 2026-09-20 13:40:51 WAT
-Report size: 2963 bytes
+Finished: 2026-09-20 13:41:31 WAT
+Report size: 2812 bytes
 ================================================================
