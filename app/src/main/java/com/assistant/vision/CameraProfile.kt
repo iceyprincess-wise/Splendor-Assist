@@ -54,6 +54,16 @@ object CameraProfile {
     @JvmStatic
     fun isDynamicWide(): Boolean = activeProfile == PROFILE_DYNAMIC_WIDE
 
+    // SPLENDOR_V23A_CAMERA_HELPERS_BEGIN
+    @JvmStatic
+    fun captureWidthOrFallback(fallback: Float = 1650f): Float =
+        if (captureWidth > 0) captureWidth.toFloat() else fallback
+
+    @JvmStatic
+    fun captureHeightOrFallback(fallback: Float = 720f): Float =
+        if (captureHeight > 0) captureHeight.toFloat() else fallback
+    // SPLENDOR_V23A_CAMERA_HELPERS_END
+
     @JvmStatic
     fun diagnostics(): String =
         "profile=" + activeProfile +
