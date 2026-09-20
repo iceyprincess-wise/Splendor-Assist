@@ -32,3 +32,11 @@ elf-verify/
 patch_*.py
 fix_native_v*.sh
 verify_v14a_native_symbol.sh
+.verify_v23a_native/
+.verify_v14a_native_symbol/
+.trace_v*/
+.extract_*/
+.audit_*/
+build_*.sh
+verify_*.sh
+trace_*.sh
