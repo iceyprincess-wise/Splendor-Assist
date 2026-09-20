@@ -1,0 +1,10 @@
+--- adb starting (pid 14292) ---
+09-20 12:16:58.024 14292 14292 I adb     : main.cpp:63 Android Debug Bridge version 1.0.41
+09-20 12:16:58.024 14292 14292 I adb     : main.cpp:63 Version 35.0.2-android-tools
+09-20 12:16:58.024 14292 14292 I adb     : main.cpp:63 Installed as /data/data/com.termux/files/usr/bin/adb
+09-20 12:16:58.024 14292 14292 I adb     : main.cpp:63 Running on Linux 6.6.89-android15-8-g5a0ffb447c1d-ab13771415-4k (aarch64)
+09-20 12:16:58.024 14292 14292 I adb     : main.cpp:63 
+09-20 12:16:58.026 14292 14292 W adb     : usb_libusb.cpp:1063 failed to initialize libusb: LIBUSB_ERROR_IO
+09-20 12:16:58.026 14292 14292 I adb     : auth.cpp:416 adb_auth_init...
+09-20 12:16:58.032 14292 14292 I adb     : auth.cpp:152 loaded new key from '/data/data/com.termux/files/home/.android/adbkey' with fingerprint 70DD1A7DDD693BBC4F69469C342828D814205E6E333F70577FB2EAB16B3FA717
+09-20 12:16:58.032 14292 14292 I adb     : auth.cpp:391 adb_auth_inotify_init...
