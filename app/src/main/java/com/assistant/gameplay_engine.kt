@@ -11477,15 +11477,38 @@ object RuntimeSelfHealEngine {
     private fun checkContributors(warmed: Boolean) {
         if (!warmed) return
         try {
-            val cls = Class.forName("com.assistant.runtime.GameplayEngineRegistry")
-            @Suppress("UNCHECKED_CAST")
-            val snap = cls.getMethod("registryRuntimeSnapshot").invoke(null) as? Map<String, Any> ?: return
-            val engines = (snap["engines"] as? Int) ?: return
-            val cycles = (snap["collectCycles"] as? Long) ?: return
+            // SPLENDOR_V18_CONTRIB_HEALTH_BEGIN
+            val engines = GameplayEngineRegistry.contributorCount()
+            val cycles = GameplayEngineRegistry.collectCycleCount()
             val delta = cycles - prevCollectCycles
             prevCollectCycles = cycles
+            val expected = com.assistant.AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT
+            val ageMs = agentAgeMs()
 
-            // PHASE4B: COLLECT_STALL — delta==0 while engine has run = collector frozen
+            if (engines == 0 && ageMs > 5_000L && shouldLog("REGISTRY_EMPTY", "engines=0 age=${ageMs / 1000}s")) {
+                record(HealEvent(
+                    timestamp = fmt.format(Date()),
+                    category = "REGISTRY_EMPTY",
+                    detected = "RuntimeSelfHealAgent observed 0 registered contributors after warm grace. collectCycles=$cycles. Registry drift or reset without re-registration.",
+                    fix = "Forcing AppContributorRegistration.reset()+ensureRegistered() and capture health check.",
+                    severity = "CRITICAL"
+                ))
+                try { com.assistant.AppContributorRegistration.reset() } catch (_: Throwable) {}
+                try { com.assistant.AppContributorRegistration.ensureRegistered() } catch (_: Throwable) {}
+                checkCaptureThread()
+            }
+
+            if (engines >= 29 && cycles == 0L && ageMs > 10_000L && shouldLog("COLLECT_ZERO", "engines=$engines cycles=0 age=${ageMs / 1000}s")) {
+                record(HealEvent(
+                    timestamp = fmt.format(Date()),
+                    category = "COLLECT_ZERO",
+                    detected = "GameplayEngineRegistry has $engines contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.",
+                    fix = "Trigger capture restart check. Root caller trace required for permanent fix.",
+                    severity = "CRITICAL"
+                ))
+                checkCaptureThread()
+            }
+
             if (delta == 0L && cycles > 100L && engines >= 1 &&
                 shouldLog("COLLECT_STALL", "stall_at=$cycles")) {
                 record(HealEvent(
@@ -11514,6 +11537,7 @@ object RuntimeSelfHealEngine {
                     severity = "CRITICAL"
                 ))
             }
+            // SPLENDOR_V18_CONTRIB_HEALTH_END
         } catch (_: Throwable) {}
     }
 

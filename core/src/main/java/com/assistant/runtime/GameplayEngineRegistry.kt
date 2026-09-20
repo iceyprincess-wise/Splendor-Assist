@@ -94,6 +94,14 @@ object GameplayEngineRegistry {
         }
     }
 
+    // SPLENDOR_V18_REGISTRY_HEALTH_BEGIN
+    fun contributorCount(): Int = contributors.size
+
+    fun collectCycleCount(): Long = collectCycles.get()
+
+    fun isExpectedRegistered(expected: Int): Boolean = contributors.size == expected
+    // SPLENDOR_V18_REGISTRY_HEALTH_END
+
     fun registryRuntimeSnapshot(): Map<String, Any> = mapOf(
         "engines" to contributors.size,
         "collectCycles" to collectCycles.get(),
