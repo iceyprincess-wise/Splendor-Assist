@@ -236,17 +236,20 @@ class OverlayService : Service(), ComponentCallbacks2 {
         val startVision = visionInFlight.compareAndSet(false, true)
         val visionBuffer: java.nio.ByteBuffer = if (startVision) {
             val required = originalBuffer.remaining()
-            var buf = reusableVisionBuffer
-            if (buf == null || buf.capacity() < required) {
-                buf = java.nio.ByteBuffer.allocateDirect(if (required > 0) required else 1)
-                reusableVisionBuffer = buf
+            val existing = reusableVisionBuffer
+            val buffer: java.nio.ByteBuffer = if (existing == null || existing.capacity() < required) {
+                val allocated = java.nio.ByteBuffer.allocateDirect(if (required > 0) required else 1)
+                reusableVisionBuffer = allocated
+                allocated
+            } else {
+                existing
             }
-            buf.clear()
-            buf.limit(required)
-            buf.put(originalBuffer)
+            buffer.clear()
+            buffer.limit(required)
+            buffer.put(originalBuffer)
             originalBuffer.rewind()
-            buf.flip()
-            buf
+            buffer.flip()
+            buffer
         } else {
             emptyVisionBuffer
         }
