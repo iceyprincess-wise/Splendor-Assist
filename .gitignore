@@ -19,7 +19,6 @@ build/
 
 elf-verify/
 
-.termux-tmp/
 .backups/
 .probe_native_shim_v*/
 .verify_native_link_shim_v*/
