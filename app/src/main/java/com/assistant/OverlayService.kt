@@ -604,6 +604,14 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
 
         com.assistant.vision.OverlaySelfMask.setCaptureScale(finalWidth, finalHeight, if (scale > 0f) (finalWidth / scale).toInt() else finalWidth, if (scale > 0f) (finalHeight / scale).toInt() else finalHeight)
+        // SPLENDOR_V12A_CAMERA_PROFILE_BEGIN
+        com.assistant.vision.CameraProfile.setCaptureScale(
+            finalWidth,
+            finalHeight,
+            if (scale > 0f) (finalWidth / scale).toInt() else finalWidth,
+            if (scale > 0f) (finalHeight / scale).toInt() else finalHeight
+        )
+        // SPLENDOR_V12A_CAMERA_PROFILE_END
 
         val isInitial = virtualDisplay == null
         val dimensionsChanged = finalWidth != currentWidth || finalHeight != currentHeight || metrics.densityDpi != currentDpi
