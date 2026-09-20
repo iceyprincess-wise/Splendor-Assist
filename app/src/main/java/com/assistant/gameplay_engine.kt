@@ -11482,7 +11482,6 @@ object RuntimeSelfHealEngine {
             val cycles = GameplayEngineRegistry.collectCycleCount()
             val delta = cycles - prevCollectCycles
             prevCollectCycles = cycles
-            val expected = com.assistant.AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT
             val ageMs = agentAgeMs()
 
             if (engines == 0 && ageMs > 5_000L && shouldLog("REGISTRY_EMPTY", "engines=0 age=${ageMs / 1000}s")) {
