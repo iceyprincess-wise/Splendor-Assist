@@ -41,3 +41,7 @@ target_link_libraries(splendor_native PRIVATE
   ${log-lib}
 )
 # SPLENDOR_NATIVE_LINK_SHIM_V9_END
+
+# SPLENDOR_V31A_SUPPRESS_UNUSED_LINK_PATH_WARNING_BEGIN
+target_compile_options(splendor_native PRIVATE -Wno-unused-command-line-argument)
+# SPLENDOR_V31A_SUPPRESS_UNUSED_LINK_PATH_WARNING_END

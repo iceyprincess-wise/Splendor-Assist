@@ -613,8 +613,11 @@ data class ArbitrationResult(
     val finalY: Float
 )
 
-// SPLENDOR_V24A_AUTHORITY_NATIVE_BEGIN
+// SPLENDOR_V31A_AUTHORITY_NO_FALLBACK_BEGIN
 object AuthorityArbitrationEngine {
+    @Volatile
+    private var proofLogged: Boolean = false
+
     fun arbitrate(
         mode: Int,
         passX: Float,
@@ -629,33 +632,33 @@ object AuthorityArbitrationEngine {
         shot: Float,
         stability: Float
     ): ArbitrationResult {
-        return try {
-            val packed = com.assistant.NativeBridge.nativeAuthorityArbitrate(
-                mode,
-                passX,
-                passY,
-                crossX,
-                crossY,
-                predictiveX,
-                predictiveY,
-                receiver,
-                forward,
-                recovery,
-                shot,
-                stability
-            )
-            com.assistant.NativeBridge.logNativeAuthorityProofOnce()
-            ArbitrationResult(
-                Float.fromBits((packed ushr 32).toInt()),
-                Float.fromBits(packed.toInt())
-            )
-        } catch (t: Throwable) {
-            com.assistant.NativeBridge.markNativeAuthorityUnavailable(t)
-            ArbitrationResult(0f, 0f)
+        val packed = com.assistant.NativeBridge.nativeAuthorityArbitrate(
+            mode,
+            passX,
+            passY,
+            crossX,
+            crossY,
+            predictiveX,
+            predictiveY,
+            receiver,
+            forward,
+            recovery,
+            shot,
+            stability
+        )
+
+        if (!proofLogged) {
+            proofLogged = true
+            RuntimeLogger.log("AUTHORITY_NATIVE_ACTIVE", "NATIVE_ARBITRATION")
         }
+
+        return ArbitrationResult(
+            Float.fromBits((packed ushr 32).toInt()),
+            Float.fromBits(packed.toInt())
+        )
     }
 }
-// SPLENDOR_V24A_AUTHORITY_NATIVE_END
+// SPLENDOR_V31A_AUTHORITY_NO_FALLBACK_END
 /* ======
 AuthorityArbitrationEngine Anchor
 ====== */
@@ -10282,7 +10285,7 @@ object VisionPreprocessor {
     private const val TAG = "VisionPreprocessor"
     
     init {
-        RuntimeLogger.log("Pure Kotlin VisionPreprocessor active (NDK TLS bypass)", TAG)
+        RuntimeLogger.log("VisionPreprocessor Kotlin blob path active; native pixel preprocessor is separate and may be active", TAG)
     }
 
     fun process(frame: FrameNormalizer.NormalizedFrame): List<ConnectedComponentEngine.Blob> {
