@@ -2766,9 +2766,9 @@ DefensiveCompactnessEngine
 ======== */
 object DefensiveCompactnessEngine {
 
-    private const val SCREEN_W = 1650f
-    private const val SCREEN_H = 720f
-    private val MAX_SPREAD = sqrt(SCREEN_W*SCREEN_W + SCREEN_H*SCREEN_H)
+    private val SCREEN_W: Float get() = com.assistant.vision.CameraProfile.captureWidthOrFallback()
+    private val SCREEN_H: Float get() = com.assistant.vision.CameraProfile.captureHeightOrFallback()
+    private val MAX_SPREAD: Float get() = sqrt(SCREEN_W * SCREEN_W + SCREEN_H * SCREEN_H)
 
     fun compute(
         scene: SceneSnapshot,
@@ -9613,13 +9613,13 @@ object SmartAssistUltimateCorrectorEngine {
         val travelS = (dist / BALL_SPEED_PX_S + PASS_LOOKAHEAD_S).coerceIn(0f, 0.55f)
         
         val fps = 60f
-        val predX = (intendedX + receiverVx * fps * travelS).coerceIn(0f, 1650f)
-        val predY = (intendedY + receiverVy * fps * travelS).coerceIn(0f, 720f)
+        val predX = (intendedX + receiverVx * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
+        val predY = (intendedY + receiverVy * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
         
         val saDx = nearestOpponentX - intendedX
         val saDy = nearestOpponentY - intendedY
-        val correctedX = (predX - saDx * SA_PASS_ANTI_DRIFT).coerceIn(0f, 1650f)
-        val correctedY = (predY - saDy * SA_PASS_ANTI_DRIFT).coerceIn(0f, 720f)
+        val correctedX = (predX - saDx * SA_PASS_ANTI_DRIFT).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
+        val correctedY = (predY - saDy * SA_PASS_ANTI_DRIFT).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
         
         val strength = (0.55f + pressure * 0.45f).coerceIn(0f, 1f)
         return SmartAssistCorrectionResult(correctedX, correctedY, strength, CorrectionType.PASS, true)
@@ -13818,7 +13818,7 @@ object TrueCrossEngine {
         val dPred=hypot((predX-goalCenterX).toDouble(),(predY-goalCenterY).toDouble()).toFloat()
         val tx:Float; val ty:Float
         if(dPred<BOX_PROXIMITY_PX){tx=predX;ty=predY}
-        else{val fpx=(goalCenterX-170f).coerceIn(0f,1650f);tx=(predX*0.58f+fpx*0.42f).coerceIn(0f,1650f);ty=(predY*0.58f+goalCenterY*0.42f).coerceIn(0f,720f)}
+        else{val sw=com.assistant.vision.CameraProfile.captureWidthOrFallback();val sh=com.assistant.vision.CameraProfile.captureHeightOrFallback();val fpx=(goalCenterX-170f).coerceIn(0f,sw);tx=(predX*0.58f+fpx*0.42f).coerceIn(0f,sw);ty=(predY*0.58f+goalCenterY*0.42f).coerceIn(0f,sh)}
         return TrueCrossResult(tx,ty,predX,predY,(laneScore*0.78f+(1f-dist/MAX_CROSS_DIST)*0.22f).coerceIn(0f,1f))
     }
 }
