@@ -144,3 +144,62 @@ Output only tight, production-ready, highly defensive native C standard code cap
   - Parse V33 into V34 contributor migration queue.
   - Select first pure/native-backed contributor.
   - Generate exact native ABI patch.
+
+## V34 Storage Symlink Correction
+- Root cause of V33/V31A find failure:
+  - $HOME/storage/downloads is a symlink.
+  - Plain find does not reliably descend it.
+  - Required command form:
+      find -L "$HOME/storage/downloads" ...
+- Locked contributor architecture:
+  - Kotlin contributor remains as thin native adapter.
+  - Native C owns engine computation/state.
+  - Kotlin engine implementation deleted only after native live proof.
+  - Kotlin fallback forbidden for migrated engines.
+- VisionPreprocessor Kotlin blob fallback remains blocked until native_vision_blob.c replaces FrameScanner + ConnectedComponentEngine and is live-proven.
+- Next gate:
+  - Parse V33 with robust locator.
+  - Parse V31A live proof with robust locator.
+  - Issue V34A only from proven contributor migration queue.
+
+## V35 Status Lock — Sep 21 2026
+- V31A live proof confirms:
+  - Gameplay dispatch is active.
+  - Agent ObserveOnly is supervisory.
+  - Native bridge loads.
+  - TLS/GWP contamination absent.
+  - VisionPreprocessor false NDK TLS log corrected.
+- V31A live proof exposes unresolved defects:
+  1. NATIVE_TRUTH nativeLoaded=false despite library loaded.
+  2. AUTHORITY_NATIVE_ACTIVE absent; Authority native path not live-proven.
+  3. LOOP_FROZEN and COLLECT_STALL still occur after capture restart.
+- V34 contributor queue confirms:
+  - 39 contributors parsed.
+  - 8 pure native-compute candidates.
+  - 4 near-pure native-compute candidates.
+  - 27 unknown classifier misses, not proven dead.
+- Next gates:
+  1. V35A trace NativeBridge load/truth, Authority callers, RuntimeDecisionLoop/ImageReader/collect stall root path.
+  2. V35B extract exact bodies for top 12 contributor/engine candidates.
+  3. V36A patch nativeLoaded truth defect only after root cause proven.
+  4. V36B patch Authority live wiring or remove false migration claim only after caller trace proven.
+  5. V36C patch LOOP_FROZEN/COLLECT_STALL root cause only after execution path proven.
+  6. V36D first native contributor adapter migration only after exact engine body proven.
+
+## V36 Status Lock — Sep 21 2026
+- V35A/V35B received.
+- PROVEN:
+  - Native library loads.
+  - nativeLoaded remains false in NATIVE_TRUTH.
+  - Authority native proof absent.
+  - Gameplay dispatch active.
+  - Agent ObserveOnly is supervisory.
+  - VisionPreprocessor false NDK TLS log removed.
+  - LOOP_FROZEN/COLLECT_STALL still real runtime hazard.
+- NEXT GATES:
+  1. V36A NativeBridge load-success truth mutation.
+  2. V36B exact Authority caller micro-trace.
+  3. V36C exact BallRetentionShield contributor/engine body micro-trace.
+  4. V37 first native contributor C migration only after V36C proves exact body.
+  5. V38 LOOP_FROZEN/COLLECT_STALL root patch only after exact frame pump path proven.
+  6. VisionPreprocessor Kotlin fallback deletion remains blocked until native_vision_blob.c live-proven.

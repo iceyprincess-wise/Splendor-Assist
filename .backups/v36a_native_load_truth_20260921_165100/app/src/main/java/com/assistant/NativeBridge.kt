@@ -18,16 +18,9 @@ object NativeBridge {
     init {
         try {
             System.loadLibrary(LIBRARY)
-            // SPLENDOR_V36A_NATIVE_LOAD_TRUTH_BEGIN
-            markNativeLoaded()
-            // SPLENDOR_V36A_NATIVE_LOAD_TRUTH_END
             nativeReady.set(true)
             RuntimeLogger.log("splendor_native loaded; explicit JNI registration available.", "NativeBridge")
         } catch (e: Throwable) {
-            nativeLoaded = false
-            nativePreprocessAvailable = false
-            nativeAuthorityAvailable = false
-            nativeLastError = e.toString()
             nativeFailure = e.message ?: "Unknown load error"
             nativeReady.set(false)
             android.util.Log.e("NativeBridge", "CRITICAL: Failed to load $LIBRARY", e)
