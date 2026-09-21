@@ -39,3 +39,13 @@ verify_v14a_native_symbol.sh
 build_*.sh
 verify_*.sh
 trace_*.sh
+.termux-tmp/
+.verify_v27a_closure/
+.verify_v25a_native/
+.verify_v24c_native/
+.verify_v23b_fix_native/
+.v27a_closure_ok
+copy_*.sh
+push_*.sh
+audit_*.py
+extract_*.py
