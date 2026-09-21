@@ -130,3 +130,17 @@ Output only tight, production-ready, highly defensive native C standard code cap
    - Always copy APK to:
        /data/data/com.termux/files/home/storage/downloads/
    - Install manually from Downloads.
+
+## V33 Status Update
+- V33 contributor contract trace received.
+- Contributor architecture ruling locked:
+  - Kotlin contributor remains as thin native adapter.
+  - Native C owns engine computation/state.
+  - Kotlin engine implementation must be deleted after native live proof.
+  - Kotlin fallback is forbidden for migrated engines.
+- VisionPreprocessor Kotlin blob fallback remains blocked until native_vision_blob.c replaces FrameScanner + ConnectedComponentEngine and is live-proven.
+- Authority Kotlin fallback removal is pending V31A live proof.
+- Next gate:
+  - Parse V33 into V34 contributor migration queue.
+  - Select first pure/native-backed contributor.
+  - Generate exact native ABI patch.
