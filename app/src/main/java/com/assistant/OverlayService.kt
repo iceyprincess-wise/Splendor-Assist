@@ -630,6 +630,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
             if (scale > 0f) (finalWidth / scale).toInt() else finalWidth,
             if (scale > 0f) (finalHeight / scale).toInt() else finalHeight
         )
+        com.assistant.vision.CameraProfile.logDiagnosticsOnce()
         // SPLENDOR_V12A_CAMERA_PROFILE_END
 
         val isInitial = virtualDisplay == null

@@ -198,7 +198,7 @@ object ActiveAttackerEngine{
         val bestLane=worldState?.passingGraph?.lanes?.filter{!it.blocked}?.maxByOrNull{it.score}
         val goalX:Float;val goalY:Float
         if(scene.goalDetected&&scene.goalRightX>scene.goalLeftX){goalX=(scene.goalLeftX+scene.goalRightX)*0.5f;goalY=(scene.goalTopY+scene.goalBottomY)*0.5f}
-        else{goalX=if(player.x>=825f)1620f else 30f;goalY=360f}
+        else{val sw=com.assistant.vision.CameraProfile.captureWidthOrFallback();val sh=com.assistant.vision.CameraProfile.captureHeightOrFallback();goalX=if(player.x>=sw*0.5f)sw-30f else 30f;goalY=sh*0.5f}
         val targetX:Float;val targetY:Float
         if(bestLane!=null){targetX=bestLane.receiver.x;targetY=bestLane.receiver.y}
         else{targetX=goalX;targetY=goalY}
@@ -578,7 +578,7 @@ AntiCutbackSubEngine
 ======== */
 class AntiCutbackSubEngine(private val inputEngine:LatencyDefeatingInputEngine){
   companion object{@Volatile private var lastExecutionTimestamp=0L;private const val DEBOUNCE_COOLDOWN_MS=20L}
-  fun blockCutbackPassingLanes(wingerX:Float,wingerY:Float,myNearestDefenderX:Float,myNearestDefenderY:Float,penaltyBoxCenterX:Float,penaltyBoxCenterY:Float,joystickX:Float,joystickY:Float,screenWidth:Float=1650f,screenHeight:Float=720f):Boolean{
+  fun blockCutbackPassingLanes(wingerX:Float,wingerY:Float,myNearestDefenderX:Float,myNearestDefenderY:Float,penaltyBoxCenterX:Float,penaltyBoxCenterY:Float,joystickX:Float,joystickY:Float,screenWidth:Float=com.assistant.vision.CameraProfile.captureWidthOrFallback(),screenHeight:Float=com.assistant.vision.CameraProfile.captureHeightOrFallback()):Boolean{
     val now=System.currentTimeMillis()
     if(now-lastExecutionTimestamp<DEBOUNCE_COOLDOWN_MS)return false
     val baselineThreshold=screenHeight*0.55f
@@ -629,24 +629,30 @@ object AuthorityArbitrationEngine {
         shot: Float,
         stability: Float
     ): ArbitrationResult {
-        val packed = com.assistant.NativeBridge.nativeAuthorityArbitrate(
-            mode,
-            passX,
-            passY,
-            crossX,
-            crossY,
-            predictiveX,
-            predictiveY,
-            receiver,
-            forward,
-            recovery,
-            shot,
-            stability
-        )
-        return ArbitrationResult(
-            Float.fromBits((packed ushr 32).toInt()),
-            Float.fromBits(packed.toInt())
-        )
+        return try {
+            val packed = com.assistant.NativeBridge.nativeAuthorityArbitrate(
+                mode,
+                passX,
+                passY,
+                crossX,
+                crossY,
+                predictiveX,
+                predictiveY,
+                receiver,
+                forward,
+                recovery,
+                shot,
+                stability
+            )
+            com.assistant.NativeBridge.logNativeAuthorityProofOnce()
+            ArbitrationResult(
+                Float.fromBits((packed ushr 32).toInt()),
+                Float.fromBits(packed.toInt())
+            )
+        } catch (t: Throwable) {
+            com.assistant.NativeBridge.markNativeAuthorityUnavailable(t)
+            ArbitrationResult(0f, 0f)
+        }
     }
 }
 // SPLENDOR_V24A_AUTHORITY_NATIVE_END
@@ -689,8 +695,8 @@ class AutoEvadeEngine(
         joystickX: Float, joystickY: Float,
         nearestOpponentX: Float, nearestOpponentY: Float,
         oppVx: Float, oppVy: Float,
-        screenWidth: Float = 1650f,
-        screenHeight: Float = 720f
+        screenWidth: Float = com.assistant.vision.CameraProfile.captureWidthOrFallback(),
+        screenHeight: Float = com.assistant.vision.CameraProfile.captureHeightOrFallback()
     ): Boolean {
         val now = System.currentTimeMillis()
         val random = ThreadLocalRandom.current()
@@ -2262,8 +2268,8 @@ object CriticalAttackingVectorEngine {
         activeStrikerX: Float, activeStrikerY: Float,
         strikerVx: Float, strikerVy: Float,
         isLoftedContext: Boolean,
-        screenWidth: Float = 1650f,
-        screenHeight: Float = 720f
+        screenWidth: Float = com.assistant.vision.CameraProfile.captureWidthOrFallback(),
+        screenHeight: Float = com.assistant.vision.CameraProfile.captureHeightOrFallback()
     ): PointF {
         val velocityMagnitude = hypot(strikerVx.toDouble(), strikerVy.toDouble()).toFloat()
         val normalizedLead = if (velocityMagnitude > 1f) 18f else 180f
@@ -6764,8 +6770,8 @@ object OmnipotentDashPressureMatrix {
         isPlayerHoldingPressure: Boolean,
         joystickX: Float = 250f,
         joystickY: Float = 550f,
-        screenWidth: Float = 1650f,
-        screenHeight: Float = 720f
+        screenWidth: Float = com.assistant.vision.CameraProfile.captureWidthOrFallback(),
+        screenHeight: Float = com.assistant.vision.CameraProfile.captureHeightOrFallback()
     ): Long {
         val safeWidth = screenWidth.coerceAtLeast(1f)
         val safeHeight = screenHeight.coerceAtLeast(1f)
@@ -11483,6 +11489,7 @@ object RuntimeSelfHealEngine {
             val cycles = GameplayEngineRegistry.collectCycleCount()
             val delta = cycles - prevCollectCycles
             prevCollectCycles = cycles
+            com.assistant.NativeBridge.logNativeTruthOnce()
             val ageMs = agentAgeMs()
 
             if (engines == 0 && ageMs > 5_000L && shouldLog("REGISTRY_EMPTY", "engines=0 age=${ageMs / 1000}s")) {

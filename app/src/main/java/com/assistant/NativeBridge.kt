@@ -94,25 +94,106 @@ object NativeBridge {
         return ThreadLocalRandom.current().nextInt()
     }
 
-    // SPLENDOR_V14A_NATIVE_VISION_BEGIN
+
+
+
+    // SPLENDOR_V25_NATIVE_TRUTH_BEGIN
+    @Volatile
+    var nativeLoaded: Boolean = false
+        private set
+
     @Volatile
     var nativePreprocessAvailable: Boolean = true
         private set
 
     @Volatile
+    var nativeAuthorityAvailable: Boolean = true
+        private set
+
+    @Volatile
+    private var nativeLastError: String? = null
+
+    @Volatile
     private var nativePreprocessProofLogged: Boolean = false
 
+    @Volatile
+    private var nativeAuthorityProofLogged: Boolean = false
+
+    @Volatile
+    private var nativeTruthLogged: Boolean = false
+
     @JvmStatic
-    fun markNativePreprocessUnavailable() {
+    fun markNativeLoaded() {
+        nativeLoaded = true
+    }
+
+    @JvmStatic
+    fun markNativePreprocessUnavailable(t: Throwable? = null) {
         nativePreprocessAvailable = false
+        nativeLoaded = false
+        nativeLastError = t?.toString()
+        try {
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "NATIVE_VISION_PREPROCESS_UNAVAILABLE " + (t?.toString() ?: "unknown"),
+                "NATIVE_VISION"
+            )
+        } catch (_: Throwable) {
+        }
+    }
+
+    @JvmStatic
+    fun markNativeAuthorityUnavailable(t: Throwable? = null) {
+        nativeAuthorityAvailable = false
+        nativeLoaded = false
+        nativeLastError = t?.toString()
+        try {
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "AUTHORITY_NATIVE_UNAVAILABLE " + (t?.toString() ?: "unknown"),
+                "NATIVE_ARBITRATION"
+            )
+        } catch (_: Throwable) {
+        }
     }
 
     @JvmStatic
     fun logNativePreprocessProofOnce() {
         if (!nativePreprocessProofLogged) {
             nativePreprocessProofLogged = true
+            nativeLoaded = true
             try {
                 com.assistant.diagnostic.RuntimeLogger.log("NATIVE_VISION_PREPROCESS_ACTIVE", "NATIVE_VISION")
+            } catch (_: Throwable) {
+            }
+        }
+    }
+
+    @JvmStatic
+    fun logNativeAuthorityProofOnce() {
+        if (!nativeAuthorityProofLogged) {
+            nativeAuthorityProofLogged = true
+            nativeLoaded = true
+            try {
+                com.assistant.diagnostic.RuntimeLogger.log("AUTHORITY_NATIVE_ACTIVE", "NATIVE_ARBITRATION")
+            } catch (_: Throwable) {
+            }
+        }
+    }
+
+    @JvmStatic
+    fun nativeTruthSnapshot(): String {
+        return "nativeLoaded=" + nativeLoaded +
+            " preprocessAvailable=" + nativePreprocessAvailable +
+            " authorityAvailable=" + nativeAuthorityAvailable +
+            " lastError=" + (nativeLastError ?: "none") +
+            " camera=" + com.assistant.vision.CameraProfile.diagnostics()
+    }
+
+    @JvmStatic
+    fun logNativeTruthOnce() {
+        if (!nativeTruthLogged) {
+            nativeTruthLogged = true
+            try {
+                com.assistant.diagnostic.RuntimeLogger.log("NATIVE_TRUTH " + nativeTruthSnapshot(), "NATIVE_TRUTH")
             } catch (_: Throwable) {
             }
         }
@@ -128,9 +209,7 @@ object NativeBridge {
         inputSize: Int,
         cameraProfileId: Int
     ): Int
-    // SPLENDOR_V14A_NATIVE_VISION_END
 
-    // SPLENDOR_V24A_NATIVE_BRIDGE_BEGIN
     @JvmStatic
     external fun nativeAuthorityArbitrate(
         mode: Int,
@@ -146,5 +225,5 @@ object NativeBridge {
         shot: Float,
         stability: Float
     ): Long
-    // SPLENDOR_V24A_NATIVE_BRIDGE_END
+    // SPLENDOR_V25_NATIVE_TRUTH_END
 }

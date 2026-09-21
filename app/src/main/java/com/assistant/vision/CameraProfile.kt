@@ -64,6 +64,22 @@ object CameraProfile {
         if (captureHeight > 0) captureHeight.toFloat() else fallback
     // SPLENDOR_V23A_CAMERA_HELPERS_END
 
+    // SPLENDOR_V25_CAMERA_PROOF_BEGIN
+    @Volatile
+    private var proofLogged: Boolean = false
+
+    @JvmStatic
+    fun logDiagnosticsOnce() {
+        if (!proofLogged) {
+            proofLogged = true
+            try {
+                com.assistant.diagnostic.RuntimeLogger.log("CAMERA_PROFILE " + diagnostics(), "CAMERA")
+            } catch (_: Throwable) {
+            }
+        }
+    }
+    // SPLENDOR_V25_CAMERA_PROOF_END
+
     @JvmStatic
     fun diagnostics(): String =
         "profile=" + activeProfile +
