@@ -203,3 +203,132 @@ Output only tight, production-ready, highly defensive native C standard code cap
   4. V37 first native contributor C migration only after V36C proves exact body.
   5. V38 LOOP_FROZEN/COLLECT_STALL root patch only after exact frame pump path proven.
   6. VisionPreprocessor Kotlin fallback deletion remains blocked until native_vision_blob.c live-proven.
+
+## V36B Status Lock — Sep 21 2026
+
+### PROVEN current defect fixed by V36B
+- NativeBridge.kt init block executed before V25 truth property declarations.
+- Catch block assigned nativeLoaded/nativePreprocessAvailable/nativeAuthorityAvailable/nativeLastError before declaration.
+- Kotlin compile failed with:
+  - Variable cannot be initialized before declaration
+- Required fix:
+  - Move SPLENDOR_V25_NATIVE_TRUTH_BEGIN block above init.
+  - Keep markNativeLoaded() call after System.loadLibrary success.
+  - Keep catch mutations.
+  - Do not restore Kotlin fallback.
+  - Do not remove native truth variables.
+
+### Locked architecture
+- Kotlin contributor remains required.
+- Native C does not need contributor.
+- Migrated engine architecture:
+  - Kotlin contributor = thin JNI adapter.
+  - Native C = real engine computation/state.
+  - Kotlin engine implementation = deleted after native live proof.
+  - Kotlin fallback = forbidden for migrated engines.
+  - Android gesture/accessibility submission remains Kotlin boundary.
+- Do not implement contributor registry in C.
+- Do not create native_contributor.c as a replacement for GameplayContributor.
+
+### Locked native migration roster
+- AutoEvadeEngine / AutoEvade
+- AntiCutbackSubEngine
+- ActiveAttackerEngine
+- CounterattackDetectionEngine
+- CriticalAttackingVectorEngine
+- CrossPrecisionEngine
+- TrueCrossEngine / True Target cross engine
+- OffsideRiskEstimationEngine
+- OmnipotentDashPressureMatrix
+- DefenderInterceptionPredictionEngine
+- DefensiveCompactnessEngine
+- SmartAssistUltimateCorrection / SmartAssistUltimateCorrector / SAUltimateCorrector
+
+### Locked contributor migration queue from V34
+Pure native compute candidates:
+1. BallRetentionShieldContributor
+2. BuildUpPressContributor
+3. CrossClaimContributor
+4. InstantInterceptContributor
+5. KeeperBiasContributor
+6. PanicSaveContributor
+7. ThreatPriorityContributor
+8. TrueShotContributor
+
+Near-pure candidates requiring allocation/camera cleanup:
+9. DefenseAuthorityContributor
+10. ForwardRunContributor
+11. ReceiverEngagementContributor
+12. TrueCrossContributor
+
+Unknown classifier misses, not proven dead:
+- Remaining 27 contributors must be exact-body traced before deletion or migration.
+
+### Pending gates after V36B
+1. V36B build/verify/copy/push/live proof.
+2. V36C Authority exact caller micro-trace.
+   - Prove whether AuthorityArbitrationEngine.arbitrate() has live caller.
+   - Prove whether AUTHORITY_NATIVE_ACTIVE can ever fire.
+   - If no live caller, wire Authority into real arbitration path or mark migration inert.
+3. V36D BallRetention exact contributor/engine body micro-trace.
+   - Required before first native contributor C migration.
+4. V37 first native contributor adapter migration.
+   - Candidate likely BallRetentionShieldContributor + BallRetentionShieldEngine.
+   - Add native C compute.
+   - Add NativeBridge external fun.
+   - Rewrite contributor as thin adapter.
+   - Delete Kotlin engine implementation.
+   - No fallback.
+   - Build/verify/copy/manual install/live proof/push.
+5. V38 LOOP_FROZEN / COLLECT_STALL root patch.
+   - Exact chain required:
+     ImageReader.onImageAvailable
+     -> OverlayService frame pump
+     -> RuntimeDecisionLoop.onFrame/processFrame
+     -> GameplayEngineRegistry.collect
+     -> collectCycles increment
+   - Known live hazard:
+     LOOP_FROZEN counter frozen at 456
+     COLLECT_STALL 0 new collect cycles in last 5s
+     capture restart replaced ImageReader but collect still stalled.
+6. V39 VisionPreprocessor native blob migration.
+   - Current nativePreprocessFrame only accelerates RGBA -> float TFLite input conversion.
+   - It does NOT replace FrameScanner + ConnectedComponentEngine blob extraction.
+   - VisionPreprocessor Kotlin blob fallback must remain until native_vision_blob.c is live-proven.
+7. V40 remaining Dynamic-Wide literal cleanup.
+   - V27A reported remaining:
+     1650f count = 28
+     720f count = 20
+   - Must classify each as:
+     coordinate hazard vs legitimate gameplay metric constant.
+8. V41 expanded engine C migration.
+   - Each engine requires:
+     exact body
+     exact caller
+     exact state
+     exact allocation hazard
+     exact Android dependency
+     native ABI
+     build
+     ELF clean
+     live proof
+     regression proof
+     push
+
+### Install protocol
+- Never use pm install in this workflow.
+- Always copy APK to:
+  /data/data/com.termux/files/home/storage/downloads/
+- Install manually from Downloads.
+
+### Reporting protocol
+- Every claimed fix must include:
+  - patch output
+  - build output
+  - native verify output
+  - copied APK path/hash
+  - push output
+  - live proof export
+- No task is complete without runtime proof.
+- No native claim is complete without ELF symbol proof.
+- No migration is complete without Kotlin implementation deletion proof and live gameplay dispatch proof.
