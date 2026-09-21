@@ -615,79 +615,38 @@ data class ArbitrationResult(
 
 // SPLENDOR_V24A_AUTHORITY_NATIVE_BEGIN
 object AuthorityArbitrationEngine {
-    @Volatile
-    private var nativeAuthorityAvailable: Boolean = true
-
-    @Volatile
-    private var nativeAuthorityProofLogged: Boolean = false
-
     fun arbitrate(
-        mode:Int,
-        passX:Float,
-        passY:Float,
-        crossX:Float,
-        crossY:Float,
-        predictiveX:Float,
-        predictiveY:Float,
-        receiver:Float,
-        forward:Float,
-        recovery:Float,
-        shot:Float,
-        stability:Float
+        mode: Int,
+        passX: Float,
+        passY: Float,
+        crossX: Float,
+        crossY: Float,
+        predictiveX: Float,
+        predictiveY: Float,
+        receiver: Float,
+        forward: Float,
+        recovery: Float,
+        shot: Float,
+        stability: Float
     ): ArbitrationResult {
-        if (nativeAuthorityAvailable) {
-            try {
-                val packed = com.assistant.NativeBridge.nativeAuthorityArbitrate(
-                    mode,
-                    passX,
-                    passY,
-                    crossX,
-                    crossY,
-                    predictiveX,
-                    predictiveY,
-                    receiver,
-                    forward,
-                    recovery,
-                    shot,
-                    stability
-                )
-
-                if (!nativeAuthorityProofLogged) {
-                    nativeAuthorityProofLogged = true
-                    try {
-                        com.assistant.diagnostic.RuntimeLogger.log(
-                            "AUTHORITY_NATIVE_ACTIVE",
-                            "NATIVE_ARBITRATION"
-                        )
-                    } catch (_: Throwable) {
-                    }
-                }
-
-                return ArbitrationResult(
-                    Float.fromBits((packed ushr 32).toInt()),
-                    Float.fromBits(packed.toInt())
-                )
-            } catch (_: Throwable) {
-                nativeAuthorityAvailable = false
-            }
-        }
-
-        return when(mode){
-            1 -> ArbitrationResult(
-                passX + ((receiver * 64f) + (shot * 36f)).coerceIn(-120f,120f),
-                passY + ((forward * 48f) + (stability * 8f)).coerceIn(-180f,180f)
-            )
-
-            2 -> ArbitrationResult(
-                predictiveX + ((shot * 50f) + (receiver * 64f)).coerceIn(-120f,120f),
-                predictiveY + ((recovery * 60f) + (stability * 8f)).coerceIn(-180f,180f)
-            )
-
-            else -> ArbitrationResult(
-                crossX + (receiver * 64f).coerceIn(-120f,120f),
-                crossY + ((forward * 36f) + (stability * 8f)).coerceIn(-180f,180f)
-            )
-        }
+        val packed = com.assistant.NativeBridge.nativeAuthorityArbitrate(
+            mode,
+            passX,
+            passY,
+            crossX,
+            crossY,
+            predictiveX,
+            predictiveY,
+            receiver,
+            forward,
+            recovery,
+            shot,
+            stability
+        )
+        return ArbitrationResult(
+            Float.fromBits((packed ushr 32).toInt()),
+            Float.fromBits(packed.toInt())
+        )
     }
 }
 // SPLENDOR_V24A_AUTHORITY_NATIVE_END
