@@ -129,4 +129,22 @@ object NativeBridge {
         cameraProfileId: Int
     ): Int
     // SPLENDOR_V14A_NATIVE_VISION_END
+
+    // SPLENDOR_V24A_NATIVE_BRIDGE_BEGIN
+    @JvmStatic
+    external fun nativeAuthorityArbitrate(
+        mode: Int,
+        passX: Float,
+        passY: Float,
+        crossX: Float,
+        crossY: Float,
+        predictiveX: Float,
+        predictiveY: Float,
+        receiver: Float,
+        forward: Float,
+        recovery: Float,
+        shot: Float,
+        stability: Float
+    ): Long
+    // SPLENDOR_V24A_NATIVE_BRIDGE_END
 }

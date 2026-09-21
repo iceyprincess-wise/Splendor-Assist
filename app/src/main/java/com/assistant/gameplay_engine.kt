@@ -613,7 +613,13 @@ data class ArbitrationResult(
     val finalY: Float
 )
 
+// SPLENDOR_V24A_AUTHORITY_NATIVE_BEGIN
 object AuthorityArbitrationEngine {
+    @Volatile
+    private var nativeAuthorityAvailable: Boolean = true
+
+    @Volatile
+    private var nativeAuthorityProofLogged: Boolean = false
 
     fun arbitrate(
         mode:Int,
@@ -629,9 +635,44 @@ object AuthorityArbitrationEngine {
         shot:Float,
         stability:Float
     ): ArbitrationResult {
+        if (nativeAuthorityAvailable) {
+            try {
+                val packed = com.assistant.NativeBridge.nativeAuthorityArbitrate(
+                    mode,
+                    passX,
+                    passY,
+                    crossX,
+                    crossY,
+                    predictiveX,
+                    predictiveY,
+                    receiver,
+                    forward,
+                    recovery,
+                    shot,
+                    stability
+                )
+
+                if (!nativeAuthorityProofLogged) {
+                    nativeAuthorityProofLogged = true
+                    try {
+                        com.assistant.diagnostic.RuntimeLogger.log(
+                            "AUTHORITY_NATIVE_ACTIVE",
+                            "NATIVE_ARBITRATION"
+                        )
+                    } catch (_: Throwable) {
+                    }
+                }
+
+                return ArbitrationResult(
+                    Float.fromBits((packed ushr 32).toInt()),
+                    Float.fromBits(packed.toInt())
+                )
+            } catch (_: Throwable) {
+                nativeAuthorityAvailable = false
+            }
+        }
 
         return when(mode){
-
             1 -> ArbitrationResult(
                 passX + ((receiver * 64f) + (shot * 36f)).coerceIn(-120f,120f),
                 passY + ((forward * 48f) + (stability * 8f)).coerceIn(-180f,180f)
@@ -649,6 +690,7 @@ object AuthorityArbitrationEngine {
         }
     }
 }
+// SPLENDOR_V24A_AUTHORITY_NATIVE_END
 /* ======
 AuthorityArbitrationEngine Anchor
 ====== */
