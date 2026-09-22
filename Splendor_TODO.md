@@ -72,7 +72,7 @@ Output only tight, production-ready, highly defensive native C standard code cap
    - PROVEN locally patched and built successful.
    - Pending: verify .so, copy APK to Downloads, push, manual install, live proof.
 
-3. V31A Authority native-only no-fallback:
+3. V31A Authority native-only no-fallback:✅
    - Pending patch/build/verify/copy/push/live proof.
    - Requirement: remove Kotlin fallback completely.
 
@@ -87,7 +87,7 @@ Output only tight, production-ready, highly defensive native C standard code cap
    - Requirement: no clang unused-command-line-argument warnings.
 
 6. V32 FrameScanner / ConnectedComponentEngine exact trace:
-   - Required before native_vision_blob.c.
+   - Required before native_vision_blob.c.✅
    - Required before deleting VisionPreprocessor Kotlin fallback.
 
 7. V33 native_vision_blob.c:
