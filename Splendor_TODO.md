@@ -64,9 +64,9 @@ Output only tight, production-ready, highly defensive native C standard code cap
 - Objective: raw C-standard engine migration, zero avoidable delay, no Kotlin fallback for migrated engines, no fake gains, no dead shells.
 
 ## Completed / Pending Gates
-1. V9/V14A native linker TLS/GWP contamination fix:
+1. V9/V14A native linker TLS/GWP contamination fix:(completed) ✅
    - PROVEN built .so clean in prior verification.
-   - Pending: keep verifying every native build.
+   - Pending: ⚠️ ALWAYS ⚠  keep verifying every native build.
 
 2. V27A Dynamic-Wide safe normalization:
    - PROVEN locally patched and built successful.
