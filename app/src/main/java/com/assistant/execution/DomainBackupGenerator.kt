@@ -48,7 +48,6 @@ object DomainBackupGenerator {
         BallOverlay.hashCode()
         BallOwnershipEngine.hashCode()
         BallPossessionEngine.hashCode()
-        BallRetentionShieldEngine.hashCode()
         BallTelemetryBridge.hashCode()
         BallTrajectoryPredictor.hashCode()
         BlockedLanePredictionEngine.hashCode()

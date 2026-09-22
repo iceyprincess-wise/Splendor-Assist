@@ -7,6 +7,7 @@ add_library(splendor_native SHARED
   native_agility_physics.c
   native_registration.c
   native_arbitration.c
+  native_gameplay_compute.c
   native_vision_preprocessor.c
 )
 

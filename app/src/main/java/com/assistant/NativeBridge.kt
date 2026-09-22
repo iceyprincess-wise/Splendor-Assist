@@ -143,6 +143,24 @@ object NativeBridge {
         shot: Float,
         stability: Float
     ): Long
+
+    @JvmStatic
+    external fun nativeBallRetentionShieldCompute(
+        hasBall: Boolean,
+        trusted: Boolean,
+        confidence: Float,
+        ballX: Float,
+        ballY: Float,
+        viableLaneCount: Int,
+        passTargetX: Float,
+        passTargetY: Float,
+        zonesLeftTheirs: Int,
+        zonesMidTheirs: Int,
+        zonesRightTheirs: Int,
+        defenderDensity: Float,
+        laneCount: Int,
+        resultBuffer: FloatArray
+    )
     // SPLENDOR_V25_NATIVE_TRUTH_END
 
 
