@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancelChildren
 import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
@@ -654,7 +655,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
             virtualDisplay?.setSurface(newReader.surface)
             
             try { oldReader?.close() } catch (_: Throwable) {}
-            RuntimeLogger.log("recreateCaptureSurfaces: ImageReader replaced via setSurface (resize=$dimensionsChanged)", "OVERLAY")
+            
+            // V38 LOOP_FROZEN FIX: Force-kill stuck vision coroutines and unblock visionInFlight
+            visionScope.coroutineContext.cancelChildren()
+            visionInFlight.set(false)
+            
+            RuntimeLogger.log("recreateCaptureSurfaces: ImageReader replaced via setSurface (resize=$dimensionsChanged). Vision pipeline force-reset.", "OVERLAY")
         }
         
         currentWidth = finalWidth
