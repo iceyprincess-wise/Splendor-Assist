@@ -10235,11 +10235,40 @@ VisionPreprocessor
 object VisionPreprocessor {
     private const val TAG = "VisionPreprocessor"
     
-    init {
-        RuntimeLogger.log("VisionPreprocessor Kotlin blob path active; native pixel preprocessor is separate and may be active", TAG)
-    }
+    // Pre-allocate output buffer for zero-alloc JNI crossing: 8 ints per blob, max 10000 blobs
+    private val nativeBlobBuffer = IntArray(80000)
 
     fun process(frame: FrameNormalizer.NormalizedFrame): List<ConnectedComponentEngine.Blob> {
+        val blobCount = try {
+            com.assistant.NativeBridge.nativeExtractBlobs(
+                frame.buffer, frame.width, frame.height, frame.rowStride, frame.pixelStride, 0.50f, nativeBlobBuffer
+            )
+        } catch (_: Throwable) {
+            -1
+        }
+
+        if (blobCount > 0) {
+            val result = ArrayList<ConnectedComponentEngine.Blob>(blobCount)
+            for (i in 0 until blobCount) {
+                val offset = i * 8
+                val count = nativeBlobBuffer[offset + 4]
+                if (count > 0) {
+                    result.add(ConnectedComponentEngine.Blob(
+                        minX = nativeBlobBuffer[offset],
+                        minY = nativeBlobBuffer[offset + 1],
+                        maxX = nativeBlobBuffer[offset + 2],
+                        maxY = nativeBlobBuffer[offset + 3],
+                        pixelCount = count,
+                        averageRed = nativeBlobBuffer[offset + 5].toFloat() / count,
+                        averageGreen = nativeBlobBuffer[offset + 6].toFloat() / count,
+                        averageBlue = nativeBlobBuffer[offset + 7].toFloat() / count
+                    ))
+                }
+            }
+            return result
+        }
+
+        // Fallback retained until native path is 100% live-proven across all device states
         return fallback(frame)
     }
 

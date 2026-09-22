@@ -161,6 +161,17 @@ object NativeBridge {
         laneCount: Int,
         resultBuffer: FloatArray
     )
+
+    @JvmStatic
+    external fun nativeExtractBlobs(
+        byteBuffer: java.nio.ByteBuffer,
+        width: Int,
+        height: Int,
+        rowStride: Int,
+        pixelStride: Int,
+        threshold: Float,
+        outputBlobs: IntArray
+    ): Int
     // SPLENDOR_V25_NATIVE_TRUTH_END
 
 
