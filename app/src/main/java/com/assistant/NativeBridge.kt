@@ -163,6 +163,22 @@ object NativeBridge {
     )
 
     @JvmStatic
+    external fun nativeInstantInterceptCompute(
+        hasBall: Boolean,
+        trusted: Boolean,
+        confidence: Float,
+        ownerHasOwner: Boolean,
+        ownerX: Float,
+        ownerY: Float,
+        ownerVx: Float,
+        ownerVy: Float,
+        ownerIsUserTeam: Boolean,
+        ballX: Float,
+        ballY: Float,
+        resultBuffer: FloatArray
+    )
+
+    @JvmStatic
     external fun nativeExtractBlobs(
         byteBuffer: java.nio.ByteBuffer,
         width: Int,
