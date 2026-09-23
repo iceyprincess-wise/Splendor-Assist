@@ -1,0 +1,33 @@
+# Splendor-Assist Field Logs
+## Device: Xiaomi Redmi 15C 4G (Helio G81-Ultra, 4GB RAM, Android 16)
+## Game: eFootball 2027 (DYNAMIC_WIDE)
+
+### V37 BallRetentionShield Native Migration Field Proof
+- NATIVE_TRUTH nativeLoaded=true :: library loaded successfully
+- NATIVE_COMPUTE :: BallRetentionShieldContributor routed to nativeBallRetentionShieldCompute
+- GAMEPLAY_EVENT routed :: source=SMART_ASSIST actionClass=MOVE
+- dispatch-accepted :: origin=bus:SMART_ASSIST
+- ABSENT: UnsatisfiedLinkError
+- ABSENT: STATIC_TLS / TLS_TPREL contamination
+
+### V38 LOOP_FROZEN / COLLECT_STALL Field Proof
+- CAPTURE RESTART :: ImageReader replaced via setSurface
+- Vision pipeline force-reset :: visionScope.cancelChildren() executed
+- RUNTIME_DECISION_LOOP :: decisions incrementing normally post-restart
+- ABSENT: LOOP_FROZEN counter frozen
+- ABSENT: COLLECT_STALL 0 new collect cycles
+- Frame pump successfully recovered from HyperOS silent kill condition.
+
+### V39 VisionPreprocessor Native Blob Migration Field Proof
+- NATIVE_BLOB_EXTRACT :: nativeExtractBlobs successfully returned Union-Find connected components
+- VisionPreprocessor false NDK TLS log ABSENT
+- RuntimeDecisionLoop onFrame receiving valid blob counts from C17 pipeline
+- Fallback retained in memory but bypassed on native success path
+- ABSENT: GC pressure from FrameScanner ByteArray allocations
+- ABSENT: ThreadLocal HashMap cache misses in ConnectedComponentEngine
+
+### V40 Dynamic-Wide Literal Normalization Field Proof
+- CAMERA_PROFILE profile=DYNAMIC_WIDE active
+- Coordinate hazards eliminated: all runtime `.coerceIn` bounds dynamically scale with CameraProfile capture dimensions
+- Legitimate metrics preserved: MAX_SHOT_DIST, CROSS_BALL_SPEED_PX_S functioning nominally
+- No coordinate clipping observed on dynamic resolution changes

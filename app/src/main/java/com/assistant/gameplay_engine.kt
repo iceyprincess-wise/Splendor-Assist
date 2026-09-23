@@ -5147,10 +5147,10 @@ object HybridResponseCompensationEngine {
             )/6f
 
         val compensatedX =
-            (endX + dx * predictiveFactor).coerceIn(0f, 1650f)
+            (endX + dx * predictiveFactor).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
 
         val compensatedY =
-            (endY + dy * predictiveFactor).coerceIn(0f, 720f)
+            (endY + dy * predictiveFactor).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
 
         val durationScale=
             (1f-(predictiveFactor*temporal.temporalConfidence))
@@ -8646,8 +8646,8 @@ object TrueTargetPassingEngine {
         val dx = endX - startX
         val dy = endY - startY
         return PassingAssistResult(
-            correctedX       = (startX + dx * r).coerceIn(0f, 1650f),
-            correctedY       = (startY + dy * r).coerceIn(0f, 720f),
+            correctedX       = (startX + dx * r).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),
+            correctedY       = (startY + dy * r).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),
             interceptionRisk = (1f - r).coerceIn(0f, 1f)
         )
     }
@@ -8666,8 +8666,8 @@ object TrueTargetPassingEngine {
         ).toFloat()
         val travelS = (dist / 750f + 0.14f).coerceIn(0f, 0.55f)
         val fps = 60f
-        val predX = (receiverX + receiverVx * fps * travelS).coerceIn(0f, 1650f)
-        val predY = (receiverY + receiverVy * fps * travelS).coerceIn(0f, 720f)
+        val predX = (receiverX + receiverVx * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
+        val predY = (receiverY + receiverVy * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
         return optimize(ballX, ballY, predX, predY, 1.0f)
     }
 
@@ -8684,8 +8684,8 @@ object TrueTargetPassingEngine {
         val travelS = (dist / 750f + 0.14f).coerceIn(0f, 0.55f)
         val fps = 60f
         
-        var predX = (receiverX + receiverVx * fps * travelS).coerceIn(0f, 1650f)
-        var predY = (receiverY + receiverVy * fps * travelS).coerceIn(0f, 720f)
+        var predX = (receiverX + receiverVx * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
+        var predY = (receiverY + receiverVy * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
 
         // Match-Up / Defender Shadow Offset
         if (defenderDensity > 0.5f) {
@@ -8698,8 +8698,8 @@ object TrueTargetPassingEngine {
         val risk = (defenderDensity * 0.7f).coerceIn(0f, 1f)
 
         return PassingAssistResult(
-            correctedX = predX.coerceIn(0f, 1650f),
-            correctedY = predY.coerceIn(0f, 720f),
+            correctedX = predX.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),
+            correctedY = predY.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),
             interceptionRisk = risk,
             requiresEscapeVector = defenderDensity > 0.8f
         )
@@ -9591,7 +9591,7 @@ object SmartAssistUltimateCorrectorEngine {
         val minY = if (goalTopY <= goalBottomY) goalTopY else goalBottomY
         val maxY = if (goalTopY <= goalBottomY) goalBottomY else goalTopY
 
-        val goalCX = if (goalDetected) (minX + maxX) * 0.5f else 1650f
+        val goalCX = if (goalDetected) (minX + maxX) * 0.5f com.assistant.vision.CameraProfile.captureWidthOrFallback()
         val goalCY = if (goalDetected) (minY + maxY) * 0.5f else ballY
         
         val dist = hypot((ballX - goalCX).toDouble(), (ballY - goalCY).toDouble()).toFloat()
@@ -9612,7 +9612,7 @@ object SmartAssistUltimateCorrectorEngine {
         val proximity = 1f - (dist / MAX_SHOT_DIST)
         val strength = (0.70f + proximity * 0.30f).coerceIn(0f, 1f)
         return SmartAssistCorrectionResult(
-            openX.coerceIn(0f, 1650f), openY.coerceIn(0f, 720f),
+            openX.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()), openY.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),
             strength, CorrectionType.SHOT, true
         )
     }
@@ -9629,8 +9629,8 @@ object SmartAssistUltimateCorrectorEngine {
 
         val travelS = (dist / CROSS_SPEED_PX_S + 0.06f).coerceIn(0f, 0.55f)
         val fps = 60f
-        val predX = (receiverX + receiverVx * fps * travelS).coerceIn(0f, 1650f)
-        val predY = (receiverY + receiverVy * fps * travelS).coerceIn(0f, 720f)
+        val predX = (receiverX + receiverVx * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
+        val predY = (receiverY + receiverVy * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
 
         val distPredToGoal = hypot(
             (predX - goalCenterX).toDouble(), (predY - goalCenterY).toDouble()
@@ -9642,9 +9642,9 @@ object SmartAssistUltimateCorrectorEngine {
             targetX = predX
             targetY = predY
         } else {
-            val penX = (goalCenterX - 160f).coerceIn(0f, 1650f)
-            targetX = (predX * 0.55f + penX * 0.45f).coerceIn(0f, 1650f)
-            targetY = (predY * 0.55f + goalCenterY * 0.45f).coerceIn(0f, 720f)
+            val penX = (goalCenterX - 160f).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
+            targetX = (predX * 0.55f + penX * 0.45f).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
+            targetY = (predY * 0.55f + goalCenterY * 0.45f).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
         }
 
         val strength = (laneScore * 0.75f + 0.25f * (1f - dist / 900f)).coerceIn(0f, 1f)
@@ -9662,7 +9662,7 @@ object SmartAssistUltimateCorrectorEngine {
 
         val gl = if (goalLeftX <= goalRightX) goalLeftX else goalRightX
         val gr = if (goalLeftX <= goalRightX) goalRightX else goalLeftX
-        val interceptX = ballX.coerceIn(gl.coerceAtLeast(0f), gr.coerceAtMost(1650f))
+        val interceptX = ballX.coerceIn(gl.coerceAtLeast(0f), gr..coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()))
 
         return SmartAssistCorrectionResult(interceptX, goalMidY, 0.92f, CorrectionType.KEEPER, true)
     }
@@ -13796,8 +13796,8 @@ object TrueCrossEngine {
         val dist=hypot((receiverX-ballX).toDouble(),(receiverY-ballY).toDouble()).toFloat()
         if(dist>MAX_CROSS_DIST||laneScore<0.04f) return null
         val travelS=(dist/CROSS_BALL_SPEED_PX_S+ARRIVAL_BUFFER_S).coerceIn(0f,0.60f); val fps=60f
-        val predX=(receiverX+receiverVx*fps*travelS).coerceIn(0f,1650f)
-        val predY=(receiverY+receiverVy*fps*travelS).coerceIn(0f,720f)
+        val predX=(receiverX+receiverVx*fps*travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
+        val predY=(receiverY+receiverVy*fps*travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
         val dPred=hypot((predX-goalCenterX).toDouble(),(predY-goalCenterY).toDouble()).toFloat()
         val tx:Float; val ty:Float
         if(dPred<BOX_PROXIMITY_PX){tx=predX;ty=predY}
@@ -13816,7 +13816,7 @@ data class TrueShotResult(val targetX:Float,val targetY:Float,val authority:Floa
 object TrueShotEngine {
     private const val MAX_SHOT_DIST=700f; private const val MIN_SHOT_DIST=25f
     fun compute(ballX:Float,ballY:Float,goalLeftX:Float,goalRightX:Float,goalTopY:Float,goalBottomY:Float,goalkeeperX:Float,goalkeeperVisible:Boolean,defenderDensity:Float,goalDetected:Boolean):TrueShotResult?{
-        val goalCX=if(goalDetected)(goalLeftX+goalRightX)*0.5f else 1650f
+        val goalCX=if(goalDetected)(goalLeftX+goalRightX)*0.5f com.assistant.vision.CameraProfile.captureWidthOrFallback()
         val goalCY=if(goalDetected)(goalTopY+goalBottomY)*0.5f else ballY
         val dist=hypot((ballX-goalCX).toDouble(),(ballY-goalCY).toDouble()).toFloat()
         if(dist>MAX_SHOT_DIST||dist<MIN_SHOT_DIST) return null
@@ -13827,7 +13827,7 @@ object TrueShotEngine {
                   else (goalCX-(goalCX-goalLeftX)*0.72f).coerceIn(goalLeftX,goalRightX)
         } else { openX=goalCX }
         val proximity=1f-(dist/MAX_SHOT_DIST)
-        return TrueShotResult(openX.coerceIn(0f,1650f),openY.coerceIn(0f,720f),(proximity*0.70f+(1f-defenderDensity*0.35f).coerceIn(0f,1f)*0.30f).coerceIn(0f,1f),goalDetected)
+        return TrueShotResult(openX.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),openY.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),(proximity*0.70f+(1f-defenderDensity*0.35f).coerceIn(0f,1f)*0.30f).coerceIn(0f,1f),goalDetected)
     }
 }
 /* ======
@@ -14104,7 +14104,7 @@ object AgilityContributor : GameplayContributor {
             if (oppX != null && oppY != null && opponentDistance < 250f) {
                 val shieldRad = Math.toRadians(result.shieldAngleDegrees.toDouble())
                 val pushDist = 75f + (result.turnAssist * 45f)
-                targetX = (ballX + cos(shieldRad).toFloat() * pushDist).coerceIn(0f, 1650f)
+                targetX = (ballX + cos(shieldRad).toFloat() * pushDist).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
                 targetY = (ballY + sin(shieldRad).toFloat() * pushDist).coerceIn(0f, 1080f)
             } else {
                 val yOffset = if (result.turnAssist > 0.2f) {
@@ -14112,7 +14112,7 @@ object AgilityContributor : GameplayContributor {
                 } else {
                     0f
                 }
-                targetX = (ballX + 85f).coerceIn(0f, 1650f)
+                targetX = (ballX + 85f).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
                 targetY = (ballY + yOffset).coerceIn(0f, 1080f)
             }
         }
@@ -14155,7 +14155,7 @@ object AttackingVectorContributor:GameplayContributor{
     val proximity=(1f-dist/MAX_SHOT_RANGE).coerceIn(0f,1f)
     val clearance=(1f-frame.defenderDensity*0.4f).coerceIn(0f,1f)
     val authority=(MIN_AUTHORITY+proximity*0.35f+clearance*0.10f).coerceIn(MIN_AUTHORITY,0.95f)
-    return EngineContribution(engineName,ActionClass.SHOT,point.x.coerceIn(0f,1650f),point.y.coerceIn(0f,720f),authority,frame.confidence,35L)
+    return EngineContribution(engineName,ActionClass.SHOT,point.x.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),point.y.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),authority,frame.confidence,35L)
   }
 }
 /* ======
@@ -14410,7 +14410,7 @@ object DefenseAuthorityContributor : GameplayContributor {
             val angle = atan2(dy, dx)
             val containOffset = 60f + ((1f - (distance / 1200f)) * 40f)
 
-            targetX = (refX + cos(angle).toFloat() * containOffset).coerceIn(0f, 1650f)
+            targetX = (refX + cos(angle).toFloat() * containOffset).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
             targetY = (refY + sin(angle).toFloat() * containOffset).coerceIn(0f, 1080f)
         } else {
             // Direct press / interception targeting
@@ -15241,7 +15241,7 @@ object ShotOpportunityContributor : GameplayContributor {
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
         val r = ShotOpportunityAnalysisEngine.analyze(
-            (1650f - frame.ballX).coerceAtLeast(0f), frame.defenderDensity)
+            (com.assistant.vision.CameraProfile.captureWidthOrFallback() - frame.ballX).coerceAtLeast(0f), frame.defenderDensity)
         if (r.openSideScore <= 0f) return null
         return EngineContribution(engineName, ActionClass.SHOT,
             frame.ballX, frame.ballY,
@@ -15371,7 +15371,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                 }
             }
 
-            val goalCX = if (frame.goalDetected) (frame.goalLeftX + frame.goalRightX) * 0.5f else 1650f
+            val goalCX = if (frame.goalDetected) (frame.goalLeftX + frame.goalRightX) * 0.5f com.assistant.vision.CameraProfile.captureWidthOrFallback()
             val goalCY = if (frame.goalDetected) (frame.goalTopY + frame.goalBottomY) * 0.5f else frame.ballY
 
             val c = SmartAssistUltimateCorrectorEngine.correctCross(
@@ -15593,7 +15593,7 @@ object TrueCrossContributor : GameplayContributor {
             }
 
         val goalCX = if (frame.goalDetected)
-            (frame.goalLeftX + frame.goalRightX) * 0.5f else 1650f
+            (frame.goalLeftX + frame.goalRightX) * 0.5f com.assistant.vision.CameraProfile.captureWidthOrFallback()
         val goalCY = if (frame.goalDetected)
             (frame.goalTopY + frame.goalBottomY) * 0.5f else frame.ballY
 

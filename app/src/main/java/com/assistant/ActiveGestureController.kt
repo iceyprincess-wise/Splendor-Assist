@@ -170,13 +170,13 @@ class ActiveGestureController(
 
         val pressureCellX =
             (
-                (telemetry.ballX.coerceIn(0f, 1650f) / 1650f) *
+                (telemetry.ballX.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()) / com.assistant.vision.CameraProfile.captureWidthOrFallback()) *
                 pressureMap.columns
             ).toInt().coerceIn(0, pressureMap.columns - 1)
 
         val pressureCellY =
             (
-                (telemetry.ballY.coerceIn(0f, 720f) / 720f) *
+                (telemetry.ballY.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()) / com.assistant.vision.CameraProfile.captureHeightOrFallback()) *
                 pressureMap.rows
             ).toInt().coerceIn(0, pressureMap.rows - 1)
 
