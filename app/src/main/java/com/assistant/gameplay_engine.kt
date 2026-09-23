@@ -9591,7 +9591,7 @@ object SmartAssistUltimateCorrectorEngine {
         val minY = if (goalTopY <= goalBottomY) goalTopY else goalBottomY
         val maxY = if (goalTopY <= goalBottomY) goalBottomY else goalTopY
 
-        val goalCX = if (goalDetected) (minX + maxX) * 0.5f com.assistant.vision.CameraProfile.captureWidthOrFallback()
+        val goalCX = if (goalDetected) (minX + maxX) * 0.5f else com.assistant.vision.CameraProfile.captureWidthOrFallback()
         val goalCY = if (goalDetected) (minY + maxY) * 0.5f else ballY
         
         val dist = hypot((ballX - goalCX).toDouble(), (ballY - goalCY).toDouble()).toFloat()
@@ -9662,7 +9662,7 @@ object SmartAssistUltimateCorrectorEngine {
 
         val gl = if (goalLeftX <= goalRightX) goalLeftX else goalRightX
         val gr = if (goalLeftX <= goalRightX) goalRightX else goalLeftX
-        val interceptX = ballX.coerceIn(gl.coerceAtLeast(0f), gr..coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()))
+        val interceptX = ballX.coerceIn(gl.coerceAtLeast(0f), gr.coerceAtMost(com.assistant.vision.CameraProfile.captureWidthOrFallback()))
 
         return SmartAssistCorrectionResult(interceptX, goalMidY, 0.92f, CorrectionType.KEEPER, true)
     }
@@ -13816,7 +13816,7 @@ data class TrueShotResult(val targetX:Float,val targetY:Float,val authority:Floa
 object TrueShotEngine {
     private const val MAX_SHOT_DIST=700f; private const val MIN_SHOT_DIST=25f
     fun compute(ballX:Float,ballY:Float,goalLeftX:Float,goalRightX:Float,goalTopY:Float,goalBottomY:Float,goalkeeperX:Float,goalkeeperVisible:Boolean,defenderDensity:Float,goalDetected:Boolean):TrueShotResult?{
-        val goalCX=if(goalDetected)(goalLeftX+goalRightX)*0.5f com.assistant.vision.CameraProfile.captureWidthOrFallback()
+        val goalCX=if(goalDetected)(goalLeftX+goalRightX)*0.5f else com.assistant.vision.CameraProfile.captureWidthOrFallback()
         val goalCY=if(goalDetected)(goalTopY+goalBottomY)*0.5f else ballY
         val dist=hypot((ballX-goalCX).toDouble(),(ballY-goalCY).toDouble()).toFloat()
         if(dist>MAX_SHOT_DIST||dist<MIN_SHOT_DIST) return null
@@ -15371,7 +15371,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                 }
             }
 
-            val goalCX = if (frame.goalDetected) (frame.goalLeftX + frame.goalRightX) * 0.5f com.assistant.vision.CameraProfile.captureWidthOrFallback()
+            val goalCX = if (frame.goalDetected) (frame.goalLeftX + frame.goalRightX) * 0.5f else com.assistant.vision.CameraProfile.captureWidthOrFallback()
             val goalCY = if (frame.goalDetected) (frame.goalTopY + frame.goalBottomY) * 0.5f else frame.ballY
 
             val c = SmartAssistUltimateCorrectorEngine.correctCross(
@@ -15593,7 +15593,7 @@ object TrueCrossContributor : GameplayContributor {
             }
 
         val goalCX = if (frame.goalDetected)
-            (frame.goalLeftX + frame.goalRightX) * 0.5f com.assistant.vision.CameraProfile.captureWidthOrFallback()
+            (frame.goalLeftX + frame.goalRightX) * 0.5f else com.assistant.vision.CameraProfile.captureWidthOrFallback()
         val goalCY = if (frame.goalDetected)
             (frame.goalTopY + frame.goalBottomY) * 0.5f else frame.ballY
 
