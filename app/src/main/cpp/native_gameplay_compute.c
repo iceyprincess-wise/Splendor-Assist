@@ -142,3 +142,60 @@ Java_com_assistant_NativeBridge_nativeInstantInterceptCompute(
 
     (*env)->ReleasePrimitiveArrayCritical(env, resultBuffer, res, 0);
 }
+
+
+JNIEXPORT void JNICALL
+Java_com_assistant_NativeBridge_nativeBuildUpPressCompute(
+    JNIEnv *env,
+    jclass clazz,
+    jboolean hasBall,
+    jboolean trusted,
+    jfloat confidence,
+    jboolean ownerHasOwner,
+    jfloat ownerX,
+    jfloat ownerY,
+    jboolean ownerIsUserTeam,
+    jfloat ballX,
+    jfloat ballY,
+    jfloatArray resultBuffer
+) {
+    (void)clazz;
+
+    jfloat *res = (*env)->GetPrimitiveArrayCritical(env, resultBuffer, NULL);
+    if (!res) return;
+
+    if (hasBall || !trusted || confidence <= 0.0f) {
+        res[0] = 0.0f;
+        (*env)->ReleasePrimitiveArrayCritical(env, resultBuffer, res, 0);
+        return;
+    }
+
+    if (!ownerHasOwner || ownerIsUserTeam) {
+        if (ballX <= 0.0f && ballY <= 0.0f) {
+            res[0] = 0.0f;
+        } else {
+            res[0] = 1.0f;
+            res[1] = ballX;
+            res[2] = ballY;
+            res[3] = 1.0f;
+        }
+        (*env)->ReleasePrimitiveArrayCritical(env, resultBuffer, res, 0);
+        return;
+    }
+
+    const float SCREEN_W = 1650.0f;
+    const float SCREEN_H = 720.0f;
+
+    float px = ownerX;
+    if (px < 0.0f) px = 0.0f; else if (px > SCREEN_W) px = SCREEN_W;
+    
+    float py = ownerY;
+    if (py < 0.0f) py = 0.0f; else if (py > SCREEN_H) py = SCREEN_H;
+
+    res[0] = 1.0f;
+    res[1] = px;
+    res[2] = py;
+    res[3] = 1.0f;
+
+    (*env)->ReleasePrimitiveArrayCritical(env, resultBuffer, res, 0);
+}

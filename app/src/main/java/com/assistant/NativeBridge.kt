@@ -280,4 +280,18 @@ object NativeBridge {
 
 
 
+
+    external fun nativeBuildUpPressCompute(
+        hasBall: Boolean,
+        trusted: Boolean,
+        confidence: Float,
+        ownerHasOwner: Boolean,
+        ownerX: Float,
+        ownerY: Float,
+        ownerIsUserTeam: Boolean,
+        ballX: Float,
+        ballY: Float,
+        resultBuffer: FloatArray
+    )
+
 }

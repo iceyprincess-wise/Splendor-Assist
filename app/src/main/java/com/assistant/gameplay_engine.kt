@@ -1553,37 +1553,6 @@ BoundingBoxOverlay Anchor
 BuildUpPressEngine
 ======== */
 /** Presses carrier's CURRENT position — arrive NOW before they play the pass. Authority=1.0. */
-object BuildUpPressEngine {
-
-    private const val SCREEN_W = 1650f
-    private const val SCREEN_H = 720f
-
-    data class PressResult(
-        val found: Boolean, val targetX: Float=0f,
-        val targetY: Float=0f, val authority: Float=0f)
-
-    fun compute(frame: RuntimeFrame): PressResult {
-        if (frame.hasBall || !frame.trusted || frame.confidence<=0f) return PressResult(false)
-
-        val ownership = try { Phase3WorldStateStore.current().ownership }
-                        catch(_:Throwable) { return ballFallback(frame) }
-
-        if (!ownership.hasOwner || ownership.owner==null) return ballFallback(frame)
-        val c = ownership.owner
-        if (c.isUserTeam) return ballFallback(frame)
-
-        return PressResult(true, c.x.coerceIn(0f,SCREEN_W), c.y.coerceIn(0f,SCREEN_H), 1.0f)
-    }
-
-    private fun ballFallback(f: RuntimeFrame): PressResult {
-        if (f.ballX<=0f && f.ballY<=0f) return PressResult(false)
-        return PressResult(true, f.ballX, f.ballY, 1.0f)
-    }
-}
-/* ======
-BuildUpPressEngine Anchor
-====== */
-
 /* ========
 BuildUpRecognitionEngine
 ======== */
@@ -5677,41 +5646,6 @@ InputResponsivenessCoordinator Anchor
 InstantInterceptEngine
 ======== */
 /** Zero-delay every-frame intercept. Leads carrier by 2 frames. Authority=1.0. */
-object InstantInterceptEngine {
-
-    private const val SCREEN_W          = 1650f
-    private const val SCREEN_H          = 720f
-    private const val LOOK_AHEAD_FRAMES = 2f
-
-    data class InterceptResult(
-        val found: Boolean, val targetX: Float=0f, val targetY: Float=0f,
-        val authority: Float=0f, val distanceToTarget: Float=Float.MAX_VALUE)
-
-    fun compute(frame: RuntimeFrame): InterceptResult {
-        if (frame.hasBall || !frame.trusted || frame.confidence<=0f) return InterceptResult(false)
-
-        val ownership = try { Phase3WorldStateStore.current().ownership }
-                        catch(_:Throwable) { return ballFallback(frame) }
-
-        if (!ownership.hasOwner || ownership.owner==null) return ballFallback(frame)
-        val c = ownership.owner
-        if (c.isUserTeam) return ballFallback(frame)
-
-        val px = (c.x + c.velocityX*LOOK_AHEAD_FRAMES).coerceIn(0f,SCREEN_W)
-        val py = (c.y + c.velocityY*LOOK_AHEAD_FRAMES).coerceIn(0f,SCREEN_H)
-        return InterceptResult(true, px, py, 1.0f,
-            hypot((px-frame.ballX).toDouble(),(py-frame.ballY).toDouble()).toFloat())
-    }
-
-    private fun ballFallback(f: RuntimeFrame): InterceptResult {
-        if (f.ballX<=0f && f.ballY<=0f) return InterceptResult(false)
-        return InterceptResult(true, f.ballX, f.ballY, 1.0f, 0f)
-    }
-}
-/* ======
-InstantInterceptEngine Anchor
-====== */
-
 /* ========
 JerseyColorSegmentation
 ======== */
@@ -14206,11 +14140,32 @@ BuildUpPressContributor
 object BuildUpPressContributor : GameplayContributor {
     override val engineName   = "BuildUpPress"
     override val capabilities = setOf(EngineCapability.DEFENSE)
+    
+    private val nativeBuffer = FloatArray(4)
+
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        val r = BuildUpPressEngine.compute(frame)
-        if (!r.found) return null
+        if (!NativeBridge.nativeLoaded) return null
+        
+        val ownership = try { Phase3WorldStateStore.current().ownership } catch(_:Throwable) { com.assistant.BallOwnershipResult(false) }
+        val owner = ownership.owner
+        
+        NativeBridge.nativeBuildUpPressCompute(
+            frame.hasBall,
+            frame.trusted,
+            frame.confidence,
+            ownership.hasOwner,
+            owner?.x ?: 0f,
+            owner?.y ?: 0f,
+            owner?.isUserTeam ?: false,
+            frame.ballX,
+            frame.ballY,
+            nativeBuffer
+        )
+        
+        if (nativeBuffer[0] <= 0.5f) return null
+        
         return EngineContribution(engineName, ActionClass.DEFEND,
-            r.targetX, r.targetY, r.authority, frame.confidence, 20L)
+            nativeBuffer[1], nativeBuffer[2], nativeBuffer[3], frame.confidence, 20L)
     }
 }
 /* ======
@@ -14528,11 +14483,34 @@ InstantInterceptContributor
 object InstantInterceptContributor : GameplayContributor {
     override val engineName   = "InstantIntercept"
     override val capabilities = setOf(EngineCapability.DEFENSE)
+    
+    private val nativeBuffer = FloatArray(5)
+
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        val r = InstantInterceptEngine.compute(frame)
-        if (!r.found) return null
+        if (!NativeBridge.nativeLoaded) return null
+        
+        val ownership = try { Phase3WorldStateStore.current().ownership } catch(_:Throwable) { com.assistant.BallOwnershipResult(false) }
+        val owner = ownership.owner
+        
+        NativeBridge.nativeInstantInterceptCompute(
+            frame.hasBall,
+            frame.trusted,
+            frame.confidence,
+            ownership.hasOwner,
+            owner?.x ?: 0f,
+            owner?.y ?: 0f,
+            owner?.velocityX ?: 0f,
+            owner?.velocityY ?: 0f,
+            owner?.isUserTeam ?: false,
+            frame.ballX,
+            frame.ballY,
+            nativeBuffer
+        )
+        
+        if (nativeBuffer[0] <= 0.5f) return null
+        
         return EngineContribution(engineName, ActionClass.DEFEND,
-            r.targetX, r.targetY, r.authority, frame.confidence, 16L)
+            nativeBuffer[1], nativeBuffer[2], nativeBuffer[3], frame.confidence, 16L)
     }
 }
 /* ======

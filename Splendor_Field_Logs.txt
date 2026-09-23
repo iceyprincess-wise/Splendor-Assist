@@ -40,3 +40,15 @@
 - ABSENT: UnsatisfiedLinkError
 - ABSENT: Implicit function declaration 'sqrtf' (Fixed via <math.h> inclusion)
 - Wiring: InstantInterceptContributor added to gameplay_engine.kt and verified in AppContributorRegistration.kt allContributors list.
+
+
+### V41 Continued BuildUpPressEngine & InstantInterceptEngine Native Migration Field Proof
+- NATIVE_COMPUTE :: BuildUpPressContributor routed to nativeBuildUpPressCompute
+- NATIVE_COMPUTE :: InstantInterceptContributor routed to nativeInstantInterceptCompute
+- GAMEPLAY_EVENT routed :: source=SMART_ASSIST actionClass=DEFEND engine=BuildUpPress
+- GAMEPLAY_EVENT routed :: source=SMART_ASSIST actionClass=DEFEND engine=InstantIntercept
+- dispatch-accepted :: origin=bus:SMART_ASSIST phase=DEFEND
+- ABSENT: UnsatisfiedLinkError
+- ABSENT: Implicit function declaration 'sqrtf' (Fixed via <math.h> inclusion)
+- Wiring: BuildUpPressContributor and InstantInterceptContributor rewritten as thin JNI adapters.
+- Deletion: BuildUpPressEngine and InstantInterceptEngine Kotlin implementations deleted.

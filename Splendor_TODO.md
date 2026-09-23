@@ -301,7 +301,7 @@ Unknown classifier misses, not proven dead:
      720f count = 20
    - Must classify each as:
      coordinate hazard vs legitimate gameplay metric constant.
-8. V41 expanded engine C migration.
+8. ~~V41 expanded engine C migration.~~ ✅
    - Each engine requires:
      exact body
      exact caller
@@ -499,3 +499,24 @@ game coordinates in 1.8ms └─────────────────
 ┌───────────────────────────────────────────────────┐ │ native_state_gater.c │ ◄── Updates 
 global state matrix instantly
 └─────────
+
+
+## V41 Continued Status Lock — Sep 23 2026
+
+### PROVEN completed gates:
+- V41 InstantInterceptEngine native C migration ✅ (native_gameplay_compute.c, Kotlin engine deleted, contributor rewritten as thin JNI adapter)
+- V41 BuildUpPressEngine native C migration ✅ (native_gameplay_compute.c, Kotlin engine deleted, contributor rewritten as thin JNI adapter)
+- V41 Hotfix: <math.h> inclusion for sqrtf in nativeInstantInterceptCompute ✅
+
+### Locked contributor migration queue from V34 (Remaining Pure Native Compute Candidates):
+3. CrossClaimContributor
+5. KeeperBiasContributor
+6. PanicSaveContributor
+7. ThreatPriorityContributor
+8. TrueShotContributor
+
+### NEXT GATES:
+1. V42 System glue layers (native_frame_analyzer.c, native_vector_smoother.c, native_state_gater.c, VisionHardwareBridge.kt, AsynchronousGestureQueue.kt, RadarScaleCalibrator.kt).
+2. V43 Final Critical Core Additions (native_direct_input_hook.c, native_thermal_throttling_spoofer.c, native_predictive_frame_interp.c).
+3. V44 Continue through the locked contributor migration queue (CrossClaimContributor).
+
