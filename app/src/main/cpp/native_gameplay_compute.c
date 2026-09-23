@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <stdint.h>
+#include <math.h>
 
 static inline float splendor_coerce_in(float v, float lo, float hi) {
     return v < lo ? lo : (v > hi ? hi : v);

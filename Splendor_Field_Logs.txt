@@ -31,3 +31,12 @@
 - Coordinate hazards eliminated: all runtime `.coerceIn` bounds dynamically scale with CameraProfile capture dimensions
 - Legitimate metrics preserved: MAX_SHOT_DIST, CROSS_BALL_SPEED_PX_S functioning nominally
 - No coordinate clipping observed on dynamic resolution changes
+
+
+### V41 InstantInterceptEngine Native Migration & Wiring Field Proof
+- NATIVE_COMPUTE :: InstantInterceptContributor routed to nativeInstantInterceptCompute
+- GAMEPLAY_EVENT routed :: source=SMART_ASSIST actionClass=DEFEND engine=InstantIntercept
+- dispatch-accepted :: origin=bus:SMART_ASSIST phase=DEFEND
+- ABSENT: UnsatisfiedLinkError
+- ABSENT: Implicit function declaration 'sqrtf' (Fixed via <math.h> inclusion)
+- Wiring: InstantInterceptContributor added to gameplay_engine.kt and verified in AppContributorRegistration.kt allContributors list.
