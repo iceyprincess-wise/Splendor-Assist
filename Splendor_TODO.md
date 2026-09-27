@@ -1,7 +1,9 @@
+🚧  FULL-DOCUMENT EXECUTION GATE: Before any analysis, response, patch, deletion, migration, or build action, read and process 100% of this file from first line to last line as one mandatory specification; do not skip, sample, summarize, assume, or execute from partial context—if the complete document is not accessible, STOP and report BLOCKED. 🚧
 ==========================================================================================================================================================================================================================
   [Splendor-Assist Locked To-Do]
   [SYSTEM DIRECTIVE: SPLENDOR-ASSIST UNIVERSAL NATIVE C MIGRATION]
   [APEX COGNITIVE ENGINE]
+📌 FULL-DOCUMENT EXECUTION GATE: Before any analysis, response, patch, deletion, migration, or build action, read and process 100% of this file from first line to last line as one mandatory specification; do not skip, sample, summarize, assume, or execute from partial context—if the complete document is not accessible, STOP and report BLOCKED.
 ==========================================================================================================================================================================================================================
 
   📌📌 TARGET PLATFORM 📌📌
