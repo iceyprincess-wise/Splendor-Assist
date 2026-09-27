@@ -191,6 +191,32 @@ object NativeBridge {
     // SPLENDOR_V25_NATIVE_TRUTH_END
 
 
+    @JvmStatic
+    external fun nativeAnalyzeFrame(
+        byteBuffer: java.nio.ByteBuffer,
+        width: Int,
+        height: Int,
+        rowStride: Int,
+        pixelStride: Int,
+        outBuffer: FloatArray
+    )
+
+    @JvmStatic
+    external fun nativeSmoothVector(
+        startX: Float, startY: Float,
+        endX: Float, endY: Float,
+        durationMs: Float,
+        outBuffer: FloatArray
+    )
+
+    @JvmStatic
+    external fun nativeUpdateMatchState(
+        isCounter: Int, carrierIsUser: Int,
+        threat: Int, ballX: Float, ballY: Float
+    )
+
+    @JvmStatic
+    external fun nativeReadMatchState(outBuffer: IntArray)
     init {
         try {
             System.loadLibrary(LIBRARY)

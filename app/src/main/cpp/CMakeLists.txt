@@ -10,6 +10,9 @@ add_library(splendor_native SHARED
   native_gameplay_compute.c
   native_vision_blob.c
   native_vision_preprocessor.c
+  native_frame_analyzer.c
+  native_vector_smoother.c
+  native_state_gater.c
 )
 
 find_library(log-lib log)
