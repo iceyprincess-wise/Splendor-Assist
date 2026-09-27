@@ -18,7 +18,7 @@ object VisionHardwareBridge {
     var isRunning = false
         private set
 
-    fun startCapture(width: Int, height: Int, density: Int) {
+    fun startCapture(width: Int, height: Int, @Suppress("UNUSED_PARAMETER") density: Int) {
         if (isRunning) return
         
         processingThread = HandlerThread("VisionHardwareThread").apply { start() }
