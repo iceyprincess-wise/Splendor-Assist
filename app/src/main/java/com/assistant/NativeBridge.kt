@@ -320,4 +320,54 @@ object NativeBridge {
         resultBuffer: FloatArray
     )
 
+
+    // --- V43: Final Critical Core Additions ---
+
+    @JvmStatic
+    fun nativeDirectInputHookPrepare(
+        xCoords: FloatArray, yCoords: FloatArray, eventTimes: FloatArray,
+        pointCount: Int, screenW: Float, screenH: Float, outFlat: FloatArray
+    ) {
+        if (!nativeReady.get()) { logFailureOnce(); return }
+        nativeDirectInputHookImpl(xCoords, yCoords, eventTimes, pointCount, screenW, screenH, outFlat)
+    }
+    @JvmStatic
+    private external fun nativeDirectInputHookImpl(
+        xCoords: FloatArray, yCoords: FloatArray, eventTimes: FloatArray,
+        pointCount: Int, screenW: Float, screenH: Float, outFlat: FloatArray
+    )
+
+    @JvmStatic
+    fun startThermalSpoofer() {
+        if (!nativeReady.get()) { logFailureOnce(); return }
+        nativeStartThermalSpooferImpl()
+    }
+    @JvmStatic
+    fun stopThermalSpoofer() {
+        if (!nativeReady.get()) { logFailureOnce(); return }
+        nativeStopThermalSpooferImpl()
+    }
+    @JvmStatic
+    private external fun nativeStartThermalSpooferImpl()
+    @JvmStatic
+    private external fun nativeStopThermalSpooferImpl()
+
+    @JvmStatic
+    fun nativePredictiveFrameInterp(
+        prevX: FloatArray, prevY: FloatArray,
+        currX: FloatArray, currY: FloatArray,
+        dt: Float, playerCount: Int,
+        outX: FloatArray, outY: FloatArray
+    ) {
+        if (!nativeReady.get()) { logFailureOnce(); return }
+        nativePredictiveFrameInterpImpl(prevX, prevY, currX, currY, dt, playerCount, outX, outY)
+    }
+    @JvmStatic
+    private external fun nativePredictiveFrameInterpImpl(
+        prevX: FloatArray, prevY: FloatArray,
+        currX: FloatArray, currY: FloatArray,
+        dt: Float, playerCount: Int,
+        outX: FloatArray, outY: FloatArray
+    )
+
 }

@@ -13,9 +13,14 @@ add_library(splendor_native SHARED
   native_frame_analyzer.c
   native_vector_smoother.c
   native_state_gater.c
+  native_direct_input_hook.c
+  native_thermal_throttling_spoofer.c
+  native_predictive_frame_interp.c
 )
 
 find_library(log-lib log)
+find_library(android-lib android)
+
 
 set_target_properties(splendor_native PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
@@ -44,6 +49,8 @@ target_link_options(splendor_native PRIVATE
 
 target_link_libraries(splendor_native PRIVATE
   ${log-lib}
+  ${android-lib}
+
 )
 # SPLENDOR_NATIVE_LINK_SHIM_V9_END
 
