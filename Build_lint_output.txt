@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-21 18:53:00 WAT
+Started: 2026-09-27 12:41:15 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -10,7 +10,14 @@ PROJECT ROOT: cd ~/projects/Splendor-Assist:
 ================================================================
 >>> OPTIONAL CLEAN
 ================================================================
-NO — clean skipped; preserving incremental build state.
+YES — running clean
+
+================================================================
+>>> CLEAN
+================================================================
+BUILD SUCCESSFUL in 52s
+
+CLEAN EXIT: 0
 
 ================================================================
 >>> OPTIONAL LINT
@@ -26,20 +33,27 @@ SKIPPED — lint was not run.
 >>> CONNECTED ANDROID TESTS
 ================================================================
 SKIPPED — no ADB device connected (not a failure)
-ERROR: could not create version backup: /data/data/com.termux/files/home/projects/Splendor-Assist/.termux-tmp/splendor-build-version.5929.bak
+
+================================================================
+>>> VERSION BUMP
+================================================================
+versionCode: 150 -> 151
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 36s
 
-ASSEMBLE DEBUG APK EXIT: 0
+ASSEMBLE DEBUG APK EXIT: 1
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v150-20260921_185506.apk
--rw-rw----. 1 u0_a262 media_rw 28M Sep 21 18:55 /storage/emulated/0/Download/Splendor-Assist-v150-20260921_185506.apk
-VERSION TRANSACTION ERROR: backup missing; version file was not restored.\n
+SKIPPED — build exit=1, apk_exists=NO
+VERSION TRANSACTION: ROLLED BACK
+Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
@@ -47,8 +61,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
-  6118 IDLE     8.5
- 15530 STOPPED  (by user or operating system)
+ 18168 IDLE     8.5
+ 28855 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -58,17 +72,16 @@ Only Daemons for the current Gradle version are displayed. For more on this, ple
 CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
-VERSION BUMP:                    1
-ASSEMBLE DEBUG:                  0
-APK EXPORT:                      0
+VERSION BUMP:                    0
+ASSEMBLE DEBUG:                  1
+APK EXPORT:                      1
 GRADLE DAEMON STOP:              0
 
 FINAL STATUS: FAILED — check items above
 
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
-?? "app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
 
-Finished: 2026-09-21 18:55:33 WAT
-Report size: 3021 bytes
+Finished: 2026-09-27 12:43:20 WAT
+Report size: 3106 bytes
 ================================================================
