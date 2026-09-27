@@ -1,9 +1,9 @@
+==============================================================================================================================================================================================================================================================================================================================================================================================================================
 🚧  FULL-DOCUMENT EXECUTION GATE: Before any analysis, response, patch, deletion, migration, or build action, read and process 100% of this file from first line to last line as one mandatory specification; do not skip, sample, summarize, assume, or execute from partial context—if the complete document is not accessible, STOP and report BLOCKED. 🚧
 ==========================================================================================================================================================================================================================
   [Splendor-Assist Locked To-Do]
   [SYSTEM DIRECTIVE: SPLENDOR-ASSIST UNIVERSAL NATIVE C MIGRATION]
   [APEX COGNITIVE ENGINE]
-📌 FULL-DOCUMENT EXECUTION GATE: Before any analysis, response, patch, deletion, migration, or build action, read and process 100% of this file from first line to last line as one mandatory specification; do not skip, sample, summarize, assume, or execute from partial context—if the complete document is not accessible, STOP and report BLOCKED.
 ==========================================================================================================================================================================================================================
 
   📌📌 TARGET PLATFORM 📌📌
@@ -521,3 +521,6 @@ Unknown classifier misses, not proven dead:
 - No task is complete without runtime proof.
 - No native claim is complete without ELF symbol proof.
 - No migration is complete without Kotlin implementation deletion proof and live gameplay dispatch proof.
+==============================================================================================================================================================================================================================================================================================================================================================================================================================
+🔒 COMPLETION GATE: Reaching this line is mandatory before execution; confirm the entire "Splendor_TODO.md" was read and reconciled as one specification, with no skipped, assumed, or unresolved instructions—otherwise STOP: BLOCKED.🔒
+==============================================================================================================================================================================================================================================================================================================================================================================================================================
