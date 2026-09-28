@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-28 07:36:07 WAT
+Started: 2026-09-28 07:47:27 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -15,8 +15,7 @@ YES — running clean
 ================================================================
 >>> CLEAN
 ================================================================
-w: Detected multiple Kotlin daemon sessions at kotlin/sessions
-BUILD SUCCESSFUL in 26s
+BUILD SUCCESSFUL in 8s
 
 CLEAN EXIT: 0
 
@@ -43,27 +42,17 @@ versionCode: 151 -> 152
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
-	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/contributors/CrossClaimContributor.kt:18:23 Unresolved reference: CrossAction
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/diagnostic/TruthLogcatEngine.kt:31:29 Variable 'line' must be initialized
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/overlay/interceptor/CrossClaimEngine.kt:6:45 Unresolved reference: CrossAction
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/overlay/interceptor/CrossClaimEngine.kt:11:16 Unresolved reference: CrossAction
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperActionRouter.kt:103:22 Unresolved reference: CrossAction
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperActionRouter.kt:111:22 Unresolved reference: CrossAction
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/overlay/interceptor/GoalkeeperActionRouter.kt:190:22 Unresolved reference: CrossAction
-FAILURE: Build failed with an exception.
-* What went wrong:
-BUILD FAILED in 3m 38s
+BUILD SUCCESSFUL in 3m 47s
 
-ASSEMBLE DEBUG APK EXIT: 1
+ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-SKIPPED — build exit=1, apk_exists=NO
-VERSION TRANSACTION: ROLLED BACK
-Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
+Exported: /storage/emulated/0/Download/Splendor-Assist-v152-20260928_075133.apk
+-rw-rw----. 1 u0_a262 media_rw 28M Sep 28 07:51 /storage/emulated/0/Download/Splendor-Assist-v152-20260928_075133.apk
+VERSION TRANSACTION: COMMITTED
+
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
@@ -83,16 +72,17 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  1
-APK EXPORT:                      1
+ASSEMBLE DEBUG:                  0
+APK EXPORT:                      0
 GRADLE DAEMON STOP:              0
 
-FINAL STATUS: FAILED — check items above
+FINAL STATUS: ALL PASSED
 
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
+ M app/build.gradle.kts
 ?? "app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
 
-Finished: 2026-09-28 07:40:47 WAT
-Report size: 5036 bytes
+Finished: 2026-09-28 07:51:46 WAT
+Report size: 3183 bytes
 ================================================================
