@@ -20,6 +20,8 @@ add_library(splendor_native SHARED
   native_system_core.c
   native_dominance_matrix.c
   native_stopper_matrix.c
+
+  native_cross_claim.c
 )
 
 find_library(log-lib log)

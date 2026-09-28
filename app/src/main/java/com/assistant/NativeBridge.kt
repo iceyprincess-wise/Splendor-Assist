@@ -380,4 +380,9 @@ object NativeBridge {
     // --- V47: Active Aggressive Stopper Matrix ---
     @JvmStatic external fun nativeExecuteStopperMatrix(playerX: Float, playerY: Float, playerVx: Float, playerVy: Float, homeAnchorX: Float, homeAnchorY: Float, oppX: Float, oppY: Float, oppVx: Float, oppVy: Float, isHoldingPressure: Boolean, screenWidth: Float, screenHeight: Float, outBuffer: FloatArray)
 
+
+    // --- V48: CrossClaim Native Migration ---
+    @JvmStatic external fun nativeCrossClaimEvaluate(directionOrdinal: Int, priority: Int): Int
+    @JvmStatic external fun nativeCrossClaimVector(width: Float, height: Float, outBuffer: FloatArray)
+
 }

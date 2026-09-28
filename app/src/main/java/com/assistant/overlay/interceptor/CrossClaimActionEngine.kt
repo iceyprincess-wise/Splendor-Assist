@@ -1,17 +1,11 @@
 package com.assistant.overlay.interceptor
 
+import com.assistant.NativeBridge
+
 object CrossClaimActionEngine {
-
-    fun vector(
-        width: Float,
-        height: Float
-    ): FloatArray {
-
-        return floatArrayOf(
-            width * 0.50f,
-            height * 0.82f,
-            width * 0.50f,
-            height * 0.35f
-        )
+    fun vector(width: Float, height: Float): FloatArray {
+        val out = FloatArray(4)
+        NativeBridge.nativeCrossClaimVector(width, height, out)
+        return out
     }
 }

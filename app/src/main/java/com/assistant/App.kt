@@ -55,6 +55,7 @@ class App : Application() {
         }
 
         RuntimeLogger.initialize(this)
+        com.assistant.diagnostic.TruthLogcatEngine.start()
         com.assistant.memory.MmapStateEngine.initialize(cacheDir)
 
         // Domain Backup Generator: Forces class loading for all 216+ engine objects

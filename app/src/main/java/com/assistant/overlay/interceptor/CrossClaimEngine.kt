@@ -1,34 +1,13 @@
 package com.assistant.overlay.interceptor
 
-enum class CrossAction {
-    HOLD,
-    CLAIM,
-    PUNCH
-}
+import com.assistant.NativeBridge
 
 object CrossClaimEngine {
-
-    fun evaluate(
-        decision: ThreatDecision
-    ): CrossAction {
-
-        if (
-            decision.direction !=
-            ShotDirection.CROSS
-        ) {
-            return CrossAction.HOLD
-        }
-
-        return when {
-
-            decision.priority >= 140 ->
-                CrossAction.PUNCH
-
-            decision.priority >= 100 ->
-                CrossAction.CLAIM
-
-            else ->
-                CrossAction.HOLD
-        }
+    fun evaluate(decision: ThreatDecision): CrossAction {
+        val actionOrdinal = NativeBridge.nativeCrossClaimEvaluate(
+            decision.direction.ordinal,
+            decision.priority
+        )
+        return CrossAction.values()[actionOrdinal]
     }
 }
