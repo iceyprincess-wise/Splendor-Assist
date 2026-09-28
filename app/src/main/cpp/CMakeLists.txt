@@ -22,6 +22,8 @@ add_library(splendor_native SHARED
   native_stopper_matrix.c
 
   native_cross_claim.c
+
+  native_keeper_bias.c
 )
 
 find_library(log-lib log)

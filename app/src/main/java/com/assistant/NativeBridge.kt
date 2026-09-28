@@ -385,4 +385,8 @@ object NativeBridge {
     @JvmStatic external fun nativeCrossClaimEvaluate(directionOrdinal: Int, priority: Int): Int
     @JvmStatic external fun nativeCrossClaimVector(width: Float, height: Float, outBuffer: FloatArray)
 
+
+    // --- V49: KeeperBias Native Migration ---
+    @JvmStatic external fun nativeKeeperBiasCompute(zoneOrdinal: Int, directionOrdinal: Int, priority: Int, ballX: Float, ballY: Float, outBuffer: FloatArray)
+
 }

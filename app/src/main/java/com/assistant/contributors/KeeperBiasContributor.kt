@@ -1,37 +1,36 @@
 package com.assistant.contributors
 
+import com.assistant.NativeBridge
 import com.assistant.overlay.interceptor.*
 import com.assistant.runtime.*
 
-/* Keeper positional bias. Reads the bias by name so it stays valid regardless
-   of how the KeeperBias enum evolves. */
 object KeeperBiasContributor : GameplayContributor {
     override val engineName = "KeeperBias"
     override val capabilities = setOf(EngineCapability.KEEPER)
+
+    private val outBuffer = FloatArray(4)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || frame.hasBall) return null
         val decision = ThreatPriorityContributor.decisionOf(frame) ?: return null
 
-        val bias = try { KeeperPositionBiasEngine.evaluate(decision) } catch (_: Throwable) { null }
-            ?: return null
+        NativeBridge.nativeKeeperBiasCompute(
+            decision.zone.ordinal,
+            decision.direction.ordinal,
+            decision.priority,
+            frame.ballX.coerceAtLeast(0f),
+            frame.ballY.coerceAtLeast(0f),
+            outBuffer
+        )
 
-        val name = bias.name.uppercase()
-        val offsetY = when {
-            name.contains("NEAR") -> -55f
-            name.contains("FAR")  ->  55f
-            name.contains("LEFT") -> -40f
-            name.contains("RIGHT")->  40f
-            else -> 0f
-        }
-        if (offsetY == 0f && !name.contains("CENTER")) return null
+        if (outBuffer[0] < 0.5f) return null // Invalid gate
 
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.KEEPER,
-            targetX = frame.ballX.coerceAtLeast(0f),
-            targetY = (frame.ballY + offsetY).coerceAtLeast(0f),
-            authority = (decision.priority / 150f).coerceIn(0f, 1f),
+            targetX = outBuffer[1],
+            targetY = outBuffer[2],
+            authority = outBuffer[3],
             confidence = frame.confidence,
             durationHintMs = 28L
         )
