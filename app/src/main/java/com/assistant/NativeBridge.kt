@@ -370,4 +370,14 @@ object NativeBridge {
         outX: FloatArray, outY: FloatArray
     )
 
+
+    // --- V44/V45: System Core & Dynamic Jitter ---
+    @JvmStatic external fun nativeUpdateStateMatrix(isCounterAttack: Boolean, threatLevel: Int, ballX: Float, ballY: Float, carrierVx: Float, carrierVy: Float, lastServerTickTimestamp: Int)
+    @JvmStatic external fun nativeAnalyzeFrameBuffer(buffer: java.nio.ByteBuffer, width: Int, height: Int, stride: Int, outCoordinates: FloatArray)
+    @JvmStatic external fun nativeCompileMotionEvent(startX: Float, startY: Float, endX: Float, endY: Float, durationMs: Long, pitchWidth: Float, pitchHeight: Float, detectedLagSpike: Boolean): Long
+    // --- V46: Defensive Dominance Matrix ---
+    @JvmStatic external fun nativeComputeDominanceVectors(defX: Float, defY: Float, defVx: Float, defVy: Float, targetX: Float, targetY: Float, targetVx: Float, targetVy: Float, isHoldingPressure: Boolean, screenWidth: Float, screenHeight: Float, outBuffer: FloatArray)
+    // --- V47: Active Aggressive Stopper Matrix ---
+    @JvmStatic external fun nativeExecuteStopperMatrix(playerX: Float, playerY: Float, playerVx: Float, playerVy: Float, homeAnchorX: Float, homeAnchorY: Float, oppX: Float, oppY: Float, oppVx: Float, oppVy: Float, isHoldingPressure: Boolean, screenWidth: Float, screenHeight: Float, outBuffer: FloatArray)
+
 }

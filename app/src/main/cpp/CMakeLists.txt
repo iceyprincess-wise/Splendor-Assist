@@ -16,6 +16,10 @@ add_library(splendor_native SHARED
   native_direct_input_hook.c
   native_thermal_throttling_spoofer.c
   native_predictive_frame_interp.c
+
+  native_system_core.c
+  native_dominance_matrix.c
+  native_stopper_matrix.c
 )
 
 find_library(log-lib log)
