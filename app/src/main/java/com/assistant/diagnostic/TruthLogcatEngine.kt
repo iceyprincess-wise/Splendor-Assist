@@ -26,7 +26,7 @@ object TruthLogcatEngine {
             try {
                 val process = ProcessBuilder("logcat", "--pid=" + Process.myPid(), "-v", "threadtime").start()
                 val reader = BufferedReader(InputStreamReader(process.inputStream))
-                var line: String?
+                var line: String? = null
                 while (running.get() && reader.readLine().also { line = it } != null) {
                     val l = line ?: continue
                     if (l.contains("NativeBridge") || 
