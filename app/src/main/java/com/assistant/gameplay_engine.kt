@@ -2119,31 +2119,11 @@ data class CounterattackDetectionResult(
 )
 
 object CounterattackDetectionEngine{
-
-    fun analyze(
-        scene:SceneSnapshot,
-        teamShape:TeamShapeResult,
-        offensiveLine:OffensiveLineResult
-    ):CounterattackDetectionResult{
-
-        val attackers=
-            scene.trackedPlayers.count{
-                it.isUserTeam
-            }
-
-        val confidence =
-            (
-                (attackers / 11f) +
-                (if (teamShape.found) 0.15f else 0f) +
-                (if (offensiveLine.found) 0.15f else 0f) +
-                (teamShape.confidence * 0.05f) +
-                (offensiveLine.confidence * 0.05f)
-            ).coerceIn(0f,1f)
-
-        return CounterattackDetectionResult(
-            detected=confidence>=0.60f,
-            confidence=confidence
-        )
+    private val outBuffer = FloatArray(2)
+    fun analyze(scene:SceneSnapshot, teamShape:TeamShapeResult, offensiveLine:OffensiveLineResult):CounterattackDetectionResult{
+        val attackers = scene.trackedPlayers.count{ it.isUserTeam }
+        com.assistant.NativeBridge.nativeCounterattackAnalyze(attackers, teamShape.found, teamShape.confidence, offensiveLine.found, offensiveLine.confidence, outBuffer)
+        return CounterattackDetectionResult(detected = outBuffer[0] > 0.5f, confidence = outBuffer[1])
     }
 }
 /* ======
@@ -9389,21 +9369,10 @@ data class ShotOpportunityResult(
 )
 
 object ShotOpportunityAnalysisEngine {
-
-    fun analyze(
-        distance:Float,
-        pressure:Float
-    ):ShotOpportunityResult {
-
-        val confidence=
-            (1f-(distance/1000f))
-                .coerceIn(0f,1f)
-
-        return ShotOpportunityResult(
-            confidence=confidence,
-            openSideScore=((1f-pressure)*4.00f).coerceIn(0f,4f),
-            pressureScore=pressure.coerceIn(0f,1f)
-        )
+    private val outBuffer = FloatArray(3)
+    fun analyze(distance:Float, pressure:Float):ShotOpportunityResult {
+        com.assistant.NativeBridge.nativeShotOpportunityAnalyze(distance, pressure, outBuffer)
+        return ShotOpportunityResult(outBuffer[0], outBuffer[1], outBuffer[2])
     }
 }
 /* ======
@@ -9484,46 +9453,15 @@ data class SpeedCompensationResult(
  * under peak conditions to eliminate delay and shut down opponent build-up play instantly.
  */
 object SpeedCompensationEngine {
-
-    /**
-     * Compensates speed and positioning based on proximity and interception angle.
-     * Upscales execution and protection forces to guarantee ultra-fast reactions.
-     */
-    fun compensate(
-        distance: Float,
-        angle: Float,
-        strength: Int
-    ): SpeedCompensationResult {
-        // Normalize factors to safe unit ranges
-        val factor = (strength.coerceIn(0, 100) / 100.0f)
-        val distanceNormalized = (distance.coerceIn(0f, 1000f) / 1000.0f)
-
-        // Add micro-dithering angle noise to break up absolute binary 15.0f/-15.0f pattern footprints
-        val angleJitter = Random.nextFloat() * 0.8f - 0.4f // +/- 0.4 degree variance
-        val containment = if (abs(angle) > 45.0f) 15.0f + angleJitter else -15.0f + angleJitter
-
-        // High-performance upscaling up to 100.0f under peak tactical situations.
-        // As distance decreases (closer threat), speed compensation and protection scale to maximum.
-        val proximityFactor = 1.0f - distanceNormalized
-
-        // Continuous mathematical curve noise injection for anti-telemetric mapping
-        val executionNoise = Random.nextFloat() * 0.24f - 0.12f // Subtle decimal wobble
-        val protectionNoise = Random.nextFloat() * 0.18f - 0.09f
-        val pressureNoise = Random.nextFloat() * 0.18f - 0.09f
+    private val outBuffer = FloatArray(5)
+    fun compensate(distance: Float, angle: Float, strength: Int): SpeedCompensationResult {
+        val angleJitter = Random.nextFloat() * 0.8f - 0.4f
+        val execNoise = Random.nextFloat() * 0.24f - 0.12f
+        val protNoise = Random.nextFloat() * 0.18f - 0.09f
+        val pressNoise = Random.nextFloat() * 0.18f - 0.09f
         val laneNoise = Random.nextFloat() * 0.20f - 0.10f
-
-        val executionBoost = ((10.0f + (factor * 15.0f) + (proximityFactor * 9.0f)) + executionNoise).coerceIn(10.0f, 35.0f)
-        val interceptionProtection = ((factor * 15.0f + proximityFactor * 7.0f) + protectionNoise).coerceIn(0.0f, 20.0f)
-        val pressureCompensation = ((factor * 15.0f + proximityFactor * 7.0f) + pressureNoise).coerceIn(0.0f, 20.0f)
-        val laneCompensation = ((factor * 14.0f + proximityFactor * 8.0f) + laneNoise).coerceIn(0.0f, 20.0f)
-
-        return SpeedCompensationResult(
-            containmentAngle = containment,
-            executionBoost = executionBoost,
-            interceptionProtection = interceptionProtection,
-            pressureCompensation = pressureCompensation,
-            laneCompensation = laneCompensation
-        )
+        com.assistant.NativeBridge.nativeSpeedCompensate(distance, angle, strength, angleJitter, execNoise, protNoise, pressNoise, laneNoise, outBuffer)
+        return SpeedCompensationResult(outBuffer[0], outBuffer[1], outBuffer[2], outBuffer[3], outBuffer[4])
     }
 }
 /* ======

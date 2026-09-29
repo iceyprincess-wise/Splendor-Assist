@@ -35,6 +35,10 @@ add_library(splendor_native SHARED
 
   native_critical_vector.c
   native_cross_precision.c
+
+  native_counterattack.c
+  native_speed_compensation.c
+  native_shot_opportunity.c
 )
 
 find_library(log-lib log)

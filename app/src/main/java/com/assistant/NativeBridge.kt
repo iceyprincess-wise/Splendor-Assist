@@ -416,4 +416,10 @@ object NativeBridge {
     @JvmStatic external fun nativeCrossStunningSwipeDistance(): Float
     @JvmStatic external fun nativeCrossStunningDuration(): Long
 
+
+    // --- V58: Pure Math Engines Native Migration ---
+    @JvmStatic external fun nativeCounterattackAnalyze(attackers: Int, teamShapeFound: Boolean, teamShapeConf: Float, offensiveLineFound: Boolean, offensiveLineConf: Float, outBuffer: FloatArray)
+    @JvmStatic external fun nativeSpeedCompensate(distance: Float, angle: Float, strength: Int, angleJitter: Float, execNoise: Float, protNoise: Float, pressNoise: Float, laneNoise: Float, outBuffer: FloatArray)
+    @JvmStatic external fun nativeShotOpportunityAnalyze(distance: Float, pressure: Float, outBuffer: FloatArray)
+
 }
