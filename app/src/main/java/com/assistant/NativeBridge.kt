@@ -407,4 +407,13 @@ object NativeBridge {
     @JvmStatic external fun nativeSACorrectCross(ballX: Float, ballY: Float, rx: Float, ry: Float, rvx: Float, rvy: Float, gcx: Float, gcy: Float, laneScore: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
     @JvmStatic external fun nativeSACorrectKeeper(ballX: Float, ballY: Float, glX: Float, grX: Float, gtY: Float, gbY: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
 
+
+    // --- V57: CriticalAttackingVector & CrossPrecision Native Migration ---
+    @JvmStatic external fun nativeCriticalScoringVector(strikerX: Float, strikerY: Float, gkX: Float, gkY: Float, goalLeftPostX: Float, goalLeftPostY: Float, goalRightPostX: Float, goalRightPostY: Float, controlOriginX: Float, controlOriginY: Float, controlRadius: Float, outBuffer: FloatArray)
+    @JvmStatic external fun nativeCriticalTrueTargetPass(passButtonX: Float, passButtonY: Float, activeStrikerX: Float, activeStrikerY: Float, strikerVx: Float, strikerVy: Float, isLoftedContext: Boolean, screenWidth: Float, screenHeight: Float, outBuffer: FloatArray)
+    @JvmStatic external fun nativeCrossPrecisionCalculate(x: Float, y: Float, strength: Int, outBuffer: FloatArray)
+    @JvmStatic external fun nativeCrossStunningLeadDistance(strikerVelocity: Float): Float
+    @JvmStatic external fun nativeCrossStunningSwipeDistance(): Float
+    @JvmStatic external fun nativeCrossStunningDuration(): Long
+
 }

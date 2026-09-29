@@ -32,6 +32,9 @@ add_library(splendor_native SHARED
   native_optical_variance.c
 
   native_sa_corrector.c
+
+  native_critical_vector.c
+  native_cross_precision.c
 )
 
 find_library(log-lib log)
