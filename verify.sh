@@ -14,16 +14,3 @@ if [ -f "$VERIFY_DIR/lib/arm64-v8a/libsplendor_native.so" ]; then
 else
     echo "FATAL: libsplendor_native.so is MISSING from the APK."
 fi
-
-echo ""
-echo "=== FIXING APK COPY TO DOWNLOADS ==="
-if [ ! -d "$HOME/storage/downloads" ]; then
-    echo "Termux storage symlink not found. Run 'termux-setup-storage' and grant permission."
-    echo "Falling back to copying APK to Termux Home Directory..."
-    cp app/build/outputs/apk/debug/app-debug.apk "$HOME/Splendor-Assist-V43.apk"
-    ls -lh "$HOME/Splendor-Assist-V43.apk"
-else
-    cp app/build/outputs/apk/debug/app-debug.apk "$HOME/storage/downloads/Splendor-Assist-V43.apk"
-    echo "APK copied to Internal Storage Downloads."
-    ls -lh "$HOME/storage/downloads/Splendor-Assist-V43.apk"
-fi
