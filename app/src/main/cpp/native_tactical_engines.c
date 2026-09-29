@@ -1,3 +1,4 @@
+#include <math.h>
 #include <jni.h>
 #include <stdint.h>
 

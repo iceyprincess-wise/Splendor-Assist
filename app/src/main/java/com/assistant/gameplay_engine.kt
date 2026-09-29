@@ -1557,25 +1557,10 @@ BuildUpPressEngine
 BuildUpRecognitionEngine
 ======== */
 object BuildUpRecognitionEngine {
-
-    fun analyze(
-        formation: FormationResult,
-        teamShape: TeamShapeResult,
-        graph: PassingLaneGraph
-    ): BuildUpRecognitionResult {
-
-        val detected = formation.found && graph.lanes.isNotEmpty()
-
-        val confidence = (
-            formation.confidence +
-            teamShape.confidence +
-            if (graph.lanes.isNotEmpty()) 1f else 0f
-        ) / 3f
-
-        return BuildUpRecognitionResult(
-            detected = detected,
-            confidence = confidence.coerceIn(0f,1f)
-        )
+    private val outBuffer = FloatArray(2)
+    fun analyze(formation: FormationResult, teamShape: TeamShapeResult, graph: PassingLaneGraph): BuildUpRecognitionResult {
+        com.assistant.NativeBridge.nativeBuildUpRecognitionCompute(formation.found, formation.confidence, teamShape.confidence, graph.lanes.isNotEmpty(), outBuffer)
+        return BuildUpRecognitionResult(outBuffer[0] > 0.5f, outBuffer[1])
     }
 }
 /* ======
@@ -1810,21 +1795,10 @@ CaptaincySkillEngine Anchor
 CentralOverloadDetectionEngine
 ======== */
 object CentralOverloadDetectionEngine {
-
-    fun compute(
-        scene: SceneSnapshot,
-        occupancy: SpaceOccupancyResult,
-        pressure: PressureFieldResult
-    ): CentralOverloadDetectionResult {
-
-        occupancy.hashCode()
-        pressure.hashCode()
-
-        return CentralOverloadDetectionResult(
-            centralControl = scene.fieldConfidence.coerceIn(0f,1f),
-            overloaded = scene.playerCount >= 8,
-            confidence = scene.confidence.coerceIn(0f,1f)
-        )
+    private val outBuffer = FloatArray(3)
+    fun compute(scene: SceneSnapshot, occupancy: SpaceOccupancyResult, pressure: PressureFieldResult): CentralOverloadDetectionResult {
+        com.assistant.NativeBridge.nativeCentralOverloadCompute(scene.playerCount, scene.confidence, scene.fieldConfidence, outBuffer)
+        return CentralOverloadDetectionResult(outBuffer[0], outBuffer[1] > 0.5f, outBuffer[2])
     }
 }
 /* ======
@@ -2069,30 +2043,10 @@ ConnectedComponentEngine Anchor
 CounterPressRecognitionEngine
 ======== */
 object CounterPressRecognitionEngine {
-
-    fun analyze(
-        scene: SceneSnapshot,
-        possession: BallPossessionResult,
-        pressure: PressureFieldResult
-    ): CounterPressRecognitionResult {
-
-        val detected =
-            possession.hasPossession &&
-            possession.possessionChanged
-
-        val pressureFactor =
-            if (pressure.rows>0 && pressure.columns>0) 1f else 0f
-
-        val confidence = (
-            scene.confidence +
-            possession.confidence +
-            pressureFactor
-        ) / 3f
-
-        return CounterPressRecognitionResult(
-            detected = detected,
-            confidence = confidence.coerceIn(0f,1f)
-        )
+    private val outBuffer = FloatArray(2)
+    fun analyze(scene: SceneSnapshot, possession: BallPossessionResult, pressure: PressureFieldResult): CounterPressRecognitionResult {
+        com.assistant.NativeBridge.nativeCounterPressCompute(scene.confidence, possession.hasPossession, possession.possessionChanged, possession.confidence, pressure.rows, pressure.columns, outBuffer)
+        return CounterPressRecognitionResult(outBuffer[0] > 0.5f, outBuffer[1])
     }
 }
 /* ======
@@ -7272,30 +7226,10 @@ PreferredPassingLaneLearningEngine Anchor
 PressingRecognitionEngine
 ======== */
 object PressingRecognitionEngine {
-
-    fun analyze(
-        pressure: PressureFieldResult,
-        compactness: DefensiveCompactnessResult,
-        formation: FormationResult
-    ): PressingRecognitionResult {
-
-        val pressureFactor =
-            if (pressure.rows>0 && pressure.columns>0) 1f else 0f
-
-        val detected =
-            formation.found &&
-            compactness.compactness > 0.55f
-
-        val confidence = (
-            formation.confidence +
-            compactness.confidence +
-            pressureFactor
-        ) / 3f
-
-        return PressingRecognitionResult(
-            detected = detected,
-            confidence = confidence.coerceIn(0f,1f)
-        )
+    private val outBuffer = FloatArray(2)
+    fun analyze(pressure: PressureFieldResult, compactness: DefensiveCompactnessResult, formation: FormationResult): PressingRecognitionResult {
+        com.assistant.NativeBridge.nativePressingRecognitionCompute(pressure.rows, pressure.columns, formation.found, formation.confidence, compactness.compactness, compactness.confidence, outBuffer)
+        return PressingRecognitionResult(outBuffer[0] > 0.5f, outBuffer[1])
     }
 }
 /* ======
@@ -9769,27 +9703,10 @@ TrackedPlayer Anchor
 WingOverloadDetectionEngine
 ======== */
 object WingOverloadDetectionEngine {
-
-    fun compute(
-        scene: SceneSnapshot,
-        occupancy: SpaceOccupancyResult,
-        pressure: PressureFieldResult
-    ): WingOverloadDetectionResult {
-
-        val overloaded = scene.playerCount >= 8
-
-        val confidence = (
-            scene.confidence +
-            scene.fieldConfidence +
-            if (pressure.rows>0 && occupancy.rows>0) 1f else 0f
-        ) / 3f
-
-        return WingOverloadDetectionResult(
-            leftWingAdvantage = 0.5f,
-            rightWingAdvantage = 0.5f,
-            overloaded = overloaded,
-            confidence = confidence.coerceIn(0f,1f)
-        )
+    private val outBuffer = FloatArray(4)
+    fun compute(scene: SceneSnapshot, occupancy: SpaceOccupancyResult, pressure: PressureFieldResult): WingOverloadDetectionResult {
+        com.assistant.NativeBridge.nativeWingOverloadCompute(scene.playerCount, scene.confidence, scene.fieldConfidence, pressure.rows, pressure.columns, occupancy.rows, occupancy.cols, outBuffer)
+        return WingOverloadDetectionResult(outBuffer[0], outBuffer[1], outBuffer[2] > 0.5f, outBuffer[3])
     }
 }
 /* ======
@@ -12716,33 +12633,10 @@ PlayerOverlay Anchor
 PossessionStyleRecognitionEngine
 ======== */
 object PossessionStyleRecognitionEngine {
-
-    fun analyze(
-        possession: BallPossessionResult,
-        graph: PassingLaneGraph,
-        pressure: PressureFieldResult
-    ): PossessionStyleRecognitionResult {
-
-        val detected =
-            possession.hasPossession &&
-            possession.possessionFrames > 30L
-
-        val pressureFactor =
-            if (pressure.rows>0 && pressure.columns>0) 1f else 0f
-
-        val laneFactor =
-            if (graph.lanes.isNotEmpty()) 1f else 0f
-
-        val confidence = (
-            possession.confidence +
-            laneFactor +
-            pressureFactor
-        ) / 3f
-
-        return PossessionStyleRecognitionResult(
-            detected = detected,
-            confidence = confidence.coerceIn(0f,1f)
-        )
+    private val outBuffer = FloatArray(2)
+    fun analyze(possession: BallPossessionResult, graph: PassingLaneGraph, pressure: PressureFieldResult): PossessionStyleRecognitionResult {
+        com.assistant.NativeBridge.nativePossessionStyleCompute(possession.hasPossession, possession.possessionFrames, possession.confidence, graph.lanes.isNotEmpty(), pressure.rows, pressure.columns, outBuffer)
+        return PossessionStyleRecognitionResult(outBuffer[0] > 0.5f, outBuffer[1])
     }
 }
 /* ======
