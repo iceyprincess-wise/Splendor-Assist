@@ -26,6 +26,10 @@ add_library(splendor_native SHARED
   native_keeper_bias.c
 
   native_panic_save.c
+
+  native_true_shot.c
+  native_thread_priority.c
+  native_optical_variance.c
 )
 
 find_library(log-lib log)

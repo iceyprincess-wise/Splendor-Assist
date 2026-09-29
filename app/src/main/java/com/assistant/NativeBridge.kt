@@ -393,4 +393,11 @@ object NativeBridge {
     // --- V50: PanicSave Native Migration ---
     @JvmStatic external fun nativePanicSaveCompute(directionOrdinal: Int, priority: Int, outBuffer: FloatArray)
 
+
+    // --- V54: TrueShot Native Migration ---
+    @JvmStatic external fun nativeTrueShotCompute(ballX: Float, ballY: Float, goalLeftX: Float, goalRightX: Float, goalTopY: Float, goalBottomY: Float, goalkeeperX: Float, goalkeeperVisible: Boolean, goalDetected: Boolean, defenderDensity: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
+    // --- V55: Heavy Mutation Engines ---
+    @JvmStatic external fun nativeEscalateThreadPriority(): Int
+    @JvmStatic external fun nativeComputeOpticalVariance(currentBuffer: java.nio.ByteBuffer, previousBuffer: java.nio.ByteBuffer, width: Int, height: Int, stride: Int, roiX: Int, roiY: Int, roiW: Int, roiH: Int): Float
+
 }

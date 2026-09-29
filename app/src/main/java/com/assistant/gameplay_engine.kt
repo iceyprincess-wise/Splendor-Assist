@@ -13748,23 +13748,7 @@ TrueCrossEngine Anchor
 TrueShotEngine
 ======== */
 data class TrueShotResult(val targetX:Float,val targetY:Float,val authority:Float,val onTarget:Boolean)
-object TrueShotEngine {
-    private const val MAX_SHOT_DIST=700f; private const val MIN_SHOT_DIST=25f
-    fun compute(ballX:Float,ballY:Float,goalLeftX:Float,goalRightX:Float,goalTopY:Float,goalBottomY:Float,goalkeeperX:Float,goalkeeperVisible:Boolean,defenderDensity:Float,goalDetected:Boolean):TrueShotResult?{
-        val goalCX=if(goalDetected)(goalLeftX+goalRightX)*0.5f else com.assistant.vision.CameraProfile.captureWidthOrFallback()
-        val goalCY=if(goalDetected)(goalTopY+goalBottomY)*0.5f else ballY
-        val dist=hypot((ballX-goalCX).toDouble(),(ballY-goalCY).toDouble()).toFloat()
-        if(dist>MAX_SHOT_DIST||dist<MIN_SHOT_DIST) return null
-        val openX:Float; val openY:Float=goalCY
-        if(goalDetected&&goalkeeperVisible&&goalkeeperX>0f){
-            val mid=(goalLeftX+goalRightX)*0.5f
-            openX=if(goalkeeperX<=mid)(goalCX+(goalRightX-goalCX)*0.72f).coerceIn(goalLeftX,goalRightX)
-                  else (goalCX-(goalCX-goalLeftX)*0.72f).coerceIn(goalLeftX,goalRightX)
-        } else { openX=goalCX }
-        val proximity=1f-(dist/MAX_SHOT_DIST)
-        return TrueShotResult(openX.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),openY.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),(proximity*0.70f+(1f-defenderDensity*0.35f).coerceIn(0f,1f)*0.30f).coerceIn(0f,1f),goalDetected)
-    }
-}
+// TrueShotEngine migrated to native_true_shot.c (V54)
 /* ======
 TrueShotEngine Anchor
 ====== */
@@ -15686,24 +15670,31 @@ TrueShotContributor
 object TrueShotContributor : GameplayContributor {
     override val engineName = "TrueShot"
     override val capabilities = setOf(EngineCapability.ATTACK)
+    private val outBuffer = FloatArray(5)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
-        val result = TrueShotEngine.compute(
+        
+        com.assistant.NativeBridge.nativeTrueShotCompute(
             frame.ballX, frame.ballY,
             frame.goalLeftX, frame.goalRightX,
             frame.goalTopY, frame.goalBottomY,
-            frame.goalkeeperX, frame.goalkeeperVisible,
+            frame.goalkeeperX, frame.goalkeeperVisible, frame.goalDetected,
             frame.defenderDensity,
-            frame.goalDetected
-        ) ?: return null
+            com.assistant.vision.CameraProfile.captureWidthOrFallback(),
+            com.assistant.vision.CameraProfile.captureHeightOrFallback(),
+            outBuffer
+        )
+        
+        if (outBuffer[0] < 0.5f) return null // Invalid gate
+        
         val boost = if (frame.enabled) 0.18f else 0f
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.SHOT,
-            targetX = result.targetX,
-            targetY = result.targetY,
-            authority = (result.authority + boost).coerceIn(0f, 1f),
+            targetX = outBuffer[1],
+            targetY = outBuffer[2],
+            authority = (outBuffer[3] + boost).coerceIn(0f, 1f),
             confidence = frame.confidence,
             durationHintMs = 30L
         )
