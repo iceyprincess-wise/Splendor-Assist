@@ -160,6 +160,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     @Volatile private var lastFrameProcessedMs = 0L
     private val visionInFlight = java.util.concurrent.atomic.AtomicBoolean(false)
+
+    // V53: Hardware-level locks to prevent HyperOS CPU/Network suspension
+    private var wakeLock: android.os.PowerManager.WakeLock? = null
+    private var wifiLock: android.net.wifi.WifiManager.WifiLock? = null
+
     // V51: Vision Watchdog to prevent LOOP_FROZEN from coroutine death
     private var visionStartTimeMs = 0L
     private val visionWatchdogJob = kotlinx.coroutines.Job()
@@ -372,6 +377,22 @@ class OverlayService : Service(), ComponentCallbacks2 {
         runtimeInitialized = true
 
         super.onCreate()
+
+        // V53: Prevent HyperOS CPU suspension and Network interface sleep
+        try {
+            val pm = getSystemService(android.content.Context.POWER_SERVICE) as android.os.PowerManager
+            wakeLock = pm.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "SplendorAssist:VisionPipelineLock")
+            wakeLock?.setReferenceCounted(false)
+            wakeLock?.acquire(4 * 60 * 60 * 1000L) // 4 hours max safety limit
+            
+            val wm = applicationContext.getSystemService(android.content.Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+            wifiLock = wm.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "SplendorAssist:NetPipelineLock")
+            wifiLock?.setReferenceCounted(false)
+            wifiLock?.acquire()
+            
+            com.assistant.diagnostic.RuntimeLogger.log("V53 WAKE_LOCK & WIFI_LOCK acquired: Preventing HyperOS pipeline suspension.", "PERFORMANCE")
+        } catch (_: Throwable) {}
+
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         com.assistant.vision.ForegroundGate.install(application)
 
@@ -890,6 +911,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
         MmapStateEngine.release()
         ocrIoThread?.quitSafely()
         ocrIoThread = null
+
+        
+        // V53: Release hardware locks
+        try {
+            wakeLock?.let { if (it.isHeld) it.release() }
+            wifiLock?.let { if (it.isHeld) it.release() }
+        } catch (_: Throwable) {}
 
         super.onDestroy()
     }
