@@ -438,7 +438,6 @@ object NativeBridge {
     @JvmStatic external fun nativeBuildUpRecognitionCompute(formationFound: Boolean, formationConf: Float, teamShapeConf: Float, lanesNotEmpty: Boolean, outBuffer: FloatArray)
     @JvmStatic external fun nativePossessionStyleCompute(hasPossession: Boolean, possessionFrames: Long, possessionConf: Float, lanesNotEmpty: Boolean, pressureRows: Int, pressureCols: Int, outBuffer: FloatArray)
 
-}
 
     @JvmStatic
     fun nativeThreatPriorityCompute(
@@ -459,3 +458,5 @@ object NativeBridge {
         x: Int, y: Int, width: Int, height: Int,
         outBuffer: FloatArray
     )
+
+}
