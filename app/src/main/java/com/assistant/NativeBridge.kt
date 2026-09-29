@@ -400,4 +400,11 @@ object NativeBridge {
     @JvmStatic external fun nativeEscalateThreadPriority(): Int
     @JvmStatic external fun nativeComputeOpticalVariance(currentBuffer: java.nio.ByteBuffer, previousBuffer: java.nio.ByteBuffer, width: Int, height: Int, stride: Int, roiX: Int, roiY: Int, roiW: Int, roiH: Int): Float
 
+
+    // --- V56: SmartAssistUltimateCorrector Native Migration ---
+    @JvmStatic external fun nativeSACorrectPass(ballX: Float, ballY: Float, intendedX: Float, intendedY: Float, receiverVx: Float, receiverVy: Float, nearestOppX: Float, nearestOppY: Float, pressure: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
+    @JvmStatic external fun nativeSACorrectShot(ballX: Float, ballY: Float, glX: Float, grX: Float, gtY: Float, gbY: Float, gkX: Float, gkVis: Boolean, goalDet: Boolean, screenW: Float, screenH: Float, outBuffer: FloatArray)
+    @JvmStatic external fun nativeSACorrectCross(ballX: Float, ballY: Float, rx: Float, ry: Float, rvx: Float, rvy: Float, gcx: Float, gcy: Float, laneScore: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
+    @JvmStatic external fun nativeSACorrectKeeper(ballX: Float, ballY: Float, glX: Float, grX: Float, gtY: Float, gbY: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
+
 }

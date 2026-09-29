@@ -386,7 +386,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
             wakeLock?.acquire(4 * 60 * 60 * 1000L) // 4 hours max safety limit
             
             val wm = applicationContext.getSystemService(android.content.Context.WIFI_SERVICE) as android.net.wifi.WifiManager
-            wifiLock = wm.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "SplendorAssist:NetPipelineLock")
+            wifiLock = wm.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "SplendorAssist:NetPipelineLock")
             wifiLock?.setReferenceCounted(false)
             wifiLock?.acquire()
             
