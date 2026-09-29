@@ -11422,7 +11422,8 @@ object RuntimeSelfHealEngine {
                 checkCaptureThread()
             }
 
-            if (engines >= 29 && cycles == 0L && ageMs > 10_000L && shouldLog("COLLECT_ZERO", "engines=$engines cycles=0 age=${ageMs / 1000}s")) {
+            val assistEnabled = try { com.assistant.SmartAssistRepository.enabled() } catch (_: Throwable) { false }
+            if (assistEnabled && engines >= 29 && cycles == 0L && ageMs > 10_000L && shouldLog("COLLECT_ZERO", "engines=$engines cycles=0 age=${ageMs / 1000}s")) {
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
                     category = "COLLECT_ZERO",
