@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-29 22:06:01 WAT
+Started: 2026-09-29 22:18:50 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -15,7 +15,7 @@ YES — running clean
 ================================================================
 >>> CLEAN
 ================================================================
-BUILD SUCCESSFUL in 9s
+BUILD SUCCESSFUL in 53s
 
 CLEAN EXIT: 0
 
@@ -42,11 +42,10 @@ versionCode: 160 -> 161
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
-	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:9708:181 Unresolved reference: cols
 FAILURE: Build failed with an exception.
 * What went wrong:
-BUILD FAILED in 4m 9s
+BUILD FAILED in 3m 55s
 
 ASSEMBLE DEBUG APK EXIT: 1
 
@@ -63,7 +62,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
- 18693 IDLE     8.5
+ 14959 IDLE     8.5
+ 18693 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -84,6 +84,6 @@ GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
 ?? "app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
 
-Finished: 2026-09-29 22:10:46 WAT
-Report size: 3653 bytes
+Finished: 2026-09-29 22:24:34 WAT
+Report size: 3323 bytes
 ================================================================
