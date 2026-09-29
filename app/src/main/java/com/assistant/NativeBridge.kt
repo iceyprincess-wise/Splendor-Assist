@@ -439,3 +439,23 @@ object NativeBridge {
     @JvmStatic external fun nativePossessionStyleCompute(hasPossession: Boolean, possessionFrames: Long, possessionConf: Float, lanesNotEmpty: Boolean, pressureRows: Int, pressureCols: Int, outBuffer: FloatArray)
 
 }
+
+    @JvmStatic
+    fun nativeThreatPriorityCompute(
+        threatScore: Int, zone: Int, direction: Int,
+        awareness: Int, prediction: Int,
+        interceptionBonus: Int, recoveryBonus: Int,
+        x: Int, y: Int, width: Int, height: Int,
+        outBuffer: FloatArray
+    ) {
+        if (!nativeReady.get()) { logFailureOnce(); return }
+        nativeThreatPriorityComputeImpl(threatScore, zone, direction, awareness, prediction, interceptionBonus, recoveryBonus, x, y, width, height, outBuffer)
+    }
+    @JvmStatic
+    private external fun nativeThreatPriorityComputeImpl(
+        threatScore: Int, zone: Int, direction: Int,
+        awareness: Int, prediction: Int,
+        interceptionBonus: Int, recoveryBonus: Int,
+        x: Int, y: Int, width: Int, height: Int,
+        outBuffer: FloatArray
+    )

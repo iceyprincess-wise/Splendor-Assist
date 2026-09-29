@@ -12,6 +12,7 @@ data class ThreatDecision(
 )
 
 object ThreatPriorityEngine {
+    private val outBuffer = FloatArray(3)
 
     fun evaluate(
         threat: ThreatType,
@@ -21,70 +22,32 @@ object ThreatPriorityEngine {
         width: Int = 1,
         height: Int = 1
     ): ThreatDecision {
+        val direction = ShotDirectionEngine.detect(zone, threat)
+        
+        // Delegate heavy compute to bare-metal C standard
+        com.assistant.NativeBridge.nativeThreatPriorityCompute(
+            threat.score, zone.ordinal, direction.ordinal,
+            InterceptionRuntimeRegistry.awareness, InterceptionRuntimeRegistry.prediction,
+            GoalkeeperAdaptiveFeedbackEngine.interceptionBonus(),
+            GoalkeeperAdaptiveFeedbackEngine.recoveryBonus(),
+            x, y, width, height, outBuffer
+        )
 
-        val direction =
-            ShotDirectionEngine.detect(
-                zone,
-                threat
-            )
-
-        var priority = threat.score
-
-        // INTERCEPTION AUTHORITY BOOST
-        when (direction) {
-
-            ShotDirection.CROSS ->
-                priority += 35
-
-            ShotDirection.LONG_BALL ->
-                priority += 30
-
-            else -> {}
-        }
-
-        priority +=
-            (InterceptionRuntimeRegistry.awareness / 2)
-
-        priority +=
-            (InterceptionRuntimeRegistry.prediction / 2)
-
-        priority +=
-            GoalkeeperAdaptiveFeedbackEngine
-                .interceptionBonus()
-
-        priority +=
-            GoalkeeperAdaptiveFeedbackEngine
-                .recoveryBonus()
-
-        when (zone) {
-
-            ThreatZone.GOAL_AREA ->
-                priority += 40
-
-            ThreatZone.BOX ->
-                priority += 25
-
-            ThreatZone.CENTER ->
-                priority += 10
-
-            else -> {}
-        }
-
-        val ny = if (height > 0) y.toFloat() / height.toFloat() else 0.5f
-        val nx = if (width > 0) x.toFloat() / width.toFloat() else 0.5f
-        val band = when {
-            ny > 0.80f -> HeightBand.BOTTOM
-            ny < 0.40f -> HeightBand.TOP
+        val priority = outBuffer[0].toInt()
+        val heightBand = when (outBuffer[1].toInt()) {
+            0 -> HeightBand.TOP
+            2 -> HeightBand.BOTTOM
             else -> HeightBand.MID
         }
+        val normX = outBuffer[2]
 
         return ThreatDecision(
             threat = threat,
             zone = zone,
             direction = direction,
             priority = priority,
-            heightBand = band,
-            normX = nx
+            heightBand = heightBand,
+            normX = normX
         )
     }
 }
