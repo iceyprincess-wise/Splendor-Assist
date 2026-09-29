@@ -39,6 +39,8 @@ add_library(splendor_native SHARED
   native_counterattack.c
   native_speed_compensation.c
   native_shot_opportunity.c
+
+  native_tactical_engines.c
 )
 
 find_library(log-lib log)

@@ -422,4 +422,11 @@ object NativeBridge {
     @JvmStatic external fun nativeSpeedCompensate(distance: Float, angle: Float, strength: Int, angleJitter: Float, execNoise: Float, protNoise: Float, pressNoise: Float, laneNoise: Float, outBuffer: FloatArray)
     @JvmStatic external fun nativeShotOpportunityAnalyze(distance: Float, pressure: Float, outBuffer: FloatArray)
 
+
+    // --- V59: Tactical & Compactness Pure Math Native Migration ---
+    @JvmStatic external fun nativeTacticalAnalytics(tacticalMapConf: Float, compactnessConf: Float, compactnessVal: Float, wingConf: Float, wingOverloaded: Boolean, centralConf: Float, centralOverloaded: Boolean, pressingConf: Float, pressingDetected: Boolean, counterPressConf: Float, counterPressDetected: Boolean, buildUpConf: Float, buildUpDetected: Boolean, possessionConf: Float, possessionDetected: Boolean, outBuffer: FloatArray)
+    @JvmStatic external fun nativeTacticalBehavior(analyticsConf: Float, formationConf: Float, formationFound: Boolean, teamShapeConf: Float, teamShapeCompactness: Float, outBuffer: FloatArray)
+    @JvmStatic external fun nativeRuntimeConfidenceCalibration(tacticalConf: Float, formationConf: Float, passingConf: Float, shootingConf: Float, ema: Float, rollingMean: Float, temporalConf: Float, outBuffer: FloatArray)
+    @JvmStatic external fun nativeDefensiveCompactness(fieldConf: Float, defLineConf: Float, teamShapeConf: Float, teamShapeWidth: Float, teamShapeDepth: Float, teamShapeCompactness: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
+
 }

@@ -2617,25 +2617,10 @@ DefenseAuthorityEngine Anchor
 DefensiveCompactnessEngine
 ======== */
 object DefensiveCompactnessEngine {
-
-    private val SCREEN_W: Float get() = com.assistant.vision.CameraProfile.captureWidthOrFallback()
-    private val SCREEN_H: Float get() = com.assistant.vision.CameraProfile.captureHeightOrFallback()
-    private val MAX_SPREAD: Float get() = sqrt(SCREEN_W * SCREEN_W + SCREEN_H * SCREEN_H)
-
-    fun compute(
-        scene: SceneSnapshot,
-        defensiveLine: DefensiveLineResult,
-        teamShape: TeamShapeResult
-    ): DefensiveCompactnessResult {
-        val confidence = (scene.fieldConfidence + defensiveLine.confidence + teamShape.confidence) / 3f
-        // FIX: raw pixel values normalized against screen dims before coerceIn.
-        // Old code: coerceIn(0f,1f) on e.g. 800f -> always 1.0.
-        return DefensiveCompactnessResult(
-            horizontalCompactness = (teamShape.width      / SCREEN_W  ).coerceIn(0f,1f),
-            verticalCompactness   = (teamShape.depth      / SCREEN_H  ).coerceIn(0f,1f),
-            compactness           = (teamShape.compactness / MAX_SPREAD).coerceIn(0f,1f),
-            confidence            = confidence.coerceIn(0f,1f)
-        )
+    private val outBuffer = FloatArray(4)
+    fun compute(scene: SceneSnapshot, defensiveLine: DefensiveLineResult, teamShape: TeamShapeResult): DefensiveCompactnessResult {
+        com.assistant.NativeBridge.nativeDefensiveCompactness(scene.fieldConfidence, defensiveLine.confidence, teamShape.confidence, teamShape.width, teamShape.depth, teamShape.compactness, com.assistant.vision.CameraProfile.captureWidthOrFallback(), com.assistant.vision.CameraProfile.captureHeightOrFallback(), outBuffer)
+        return DefensiveCompactnessResult(outBuffer[0], outBuffer[1], outBuffer[2], outBuffer[3])
     }
 }
 /* ======
@@ -7413,33 +7398,11 @@ RunPredictionEngine Anchor
 RuntimeConfidenceCalibrationEngine
 ======== */
 object RuntimeConfidenceCalibrationEngine {
-
-    fun analyze(
-        tactical:TacticalIntelligenceResult,
-        formation:FormationAdaptationResult,
-        passing:PreferredPassingLaneLearningResult,
-        shooting:ShootingHabitLearningResult
-    ,
-        temporal:TemporalMemoryState
-    ):RuntimeConfidenceCalibrationResult {
-
-        val calibrated=(
-            tactical.confidence*0.25f+
-            formation.confidence*0.20f+
-            passing.confidence*0.20f+
-            shooting.confidence*0.15f+
-            temporal.exponentialMovingAverage*0.10f+
-            temporal.rollingMean*0.05f+
-            temporal.temporalConfidence*0.05f
-        ).coerceIn(0f,1f)
-
-        return RuntimeConfidenceCalibrationResult(
-            calibratedConfidence=calibrated
-        )
+    private val outBuffer = FloatArray(1)
+    fun analyze(tactical:TacticalIntelligenceResult, formation:FormationAdaptationResult, passing:PreferredPassingLaneLearningResult, shooting:ShootingHabitLearningResult, temporal:TemporalMemoryState):RuntimeConfidenceCalibrationResult {
+        com.assistant.NativeBridge.nativeRuntimeConfidenceCalibration(tactical.confidence, formation.confidence, passing.confidence, shooting.confidence, temporal.exponentialMovingAverage, temporal.rollingMean, temporal.temporalConfidence, outBuffer)
+        return RuntimeConfidenceCalibrationResult(calibratedConfidence = outBuffer[0])
     }
-
-    // PHASE8 CLOSED-LOOP TEMPORAL HOOK
-    // Wired for ClosedLoopTemporalFeedbackEngine integration.
 }
 /* ======
 RuntimeConfidenceCalibrationEngine Anchor
@@ -9472,43 +9435,10 @@ SpeedCompensationEngine Anchor
 TacticalAnalyticsEngine
 ======== */
 object TacticalAnalyticsEngine{
-
-    private fun clamp(v:Float)=v.coerceIn(0f,1f)
-
-    fun analyze(
-        tacticalMap:TacticalMapResult,
-        compactness:DefensiveCompactnessResult,
-        wing:WingOverloadDetectionResult,
-        central:CentralOverloadDetectionResult,
-        pressing:PressingRecognitionResult,
-        counterPress:CounterPressRecognitionResult,
-        buildUp:BuildUpRecognitionResult,
-        possession:PossessionStyleRecognitionResult
-    ):TacticalAnalyticsResult{
-
-        var score=0f
-
-        score+=tacticalMap.confidence
-        score+=compactness.confidence
-        score+=compactness.compactness
-        score+=wing.confidence
-        score+=if(wing.overloaded)0.05f else 0f
-        score+=central.confidence
-        score+=if(central.overloaded)0.05f else 0f
-        score+=pressing.confidence
-        score+=if(pressing.detected)0.05f else 0f
-        score+=counterPress.confidence
-        score+=if(counterPress.detected)0.05f else 0f
-        score+=buildUp.confidence
-        score+=if(buildUp.detected)0.05f else 0f
-        score+=possession.confidence
-        score+=if(possession.detected)0.05f else 0f
-
-        val confidence=clamp(score/8.4f)
-
-        return TacticalAnalyticsResult(
-            confidence=confidence
-        )
+    private val outBuffer = FloatArray(1)
+    fun analyze(tacticalMap:TacticalMapResult, compactness:DefensiveCompactnessResult, wing:WingOverloadDetectionResult, central:CentralOverloadDetectionResult, pressing:PressingRecognitionResult, counterPress:CounterPressRecognitionResult, buildUp:BuildUpRecognitionResult, possession:PossessionStyleRecognitionResult):TacticalAnalyticsResult {
+        com.assistant.NativeBridge.nativeTacticalAnalytics(tacticalMap.confidence, compactness.confidence, compactness.compactness, wing.confidence, wing.overloaded, central.confidence, central.overloaded, pressing.confidence, pressing.detected, counterPress.confidence, counterPress.detected, buildUp.confidence, buildUp.detected, possession.confidence, possession.detected, outBuffer)
+        return TacticalAnalyticsResult(confidence = outBuffer[0])
     }
 }
 /* ======
@@ -9519,28 +9449,10 @@ TacticalAnalyticsEngine Anchor
 TacticalBehaviorRecognitionEngine
 ======== */
 object TacticalBehaviorRecognitionEngine{
-
-    private fun clamp(v:Float)=v.coerceIn(0f,1f)
-
-    fun analyze(
-        analytics:TacticalAnalyticsResult,
-        formation:FormationResult,
-        teamShape:TeamShapeResult
-    ):TacticalBehaviorRecognitionResult{
-
-        var score=0f
-
-        score+=analytics.confidence
-        score+=formation.confidence
-        score+=if(formation.found)0.20f else 0f
-        score+=teamShape.confidence
-        score+=teamShape.compactness
-
-        val confidence=clamp(score/3.2f)
-
-        return TacticalBehaviorRecognitionResult(
-            confidence=confidence
-        )
+    private val outBuffer = FloatArray(1)
+    fun analyze(analytics:TacticalAnalyticsResult, formation:FormationResult, teamShape:TeamShapeResult):TacticalBehaviorRecognitionResult {
+        com.assistant.NativeBridge.nativeTacticalBehavior(analytics.confidence, formation.confidence, formation.found, teamShape.confidence, teamShape.compactness, outBuffer)
+        return TacticalBehaviorRecognitionResult(confidence = outBuffer[0])
     }
 }
 /* ======
