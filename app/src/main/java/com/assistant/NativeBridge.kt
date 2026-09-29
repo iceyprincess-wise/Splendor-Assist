@@ -389,4 +389,8 @@ object NativeBridge {
     // --- V49: KeeperBias Native Migration ---
     @JvmStatic external fun nativeKeeperBiasCompute(zoneOrdinal: Int, directionOrdinal: Int, priority: Int, ballX: Float, ballY: Float, outBuffer: FloatArray)
 
+
+    // --- V50: PanicSave Native Migration ---
+    @JvmStatic external fun nativePanicSaveCompute(directionOrdinal: Int, priority: Int, outBuffer: FloatArray)
+
 }

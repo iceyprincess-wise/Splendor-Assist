@@ -24,6 +24,8 @@ add_library(splendor_native SHARED
   native_cross_claim.c
 
   native_keeper_bias.c
+
+  native_panic_save.c
 )
 
 find_library(log-lib log)

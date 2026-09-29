@@ -160,6 +160,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     @Volatile private var lastFrameProcessedMs = 0L
     private val visionInFlight = java.util.concurrent.atomic.AtomicBoolean(false)
+    // V51: Vision Watchdog to prevent LOOP_FROZEN from coroutine death
+    private var visionStartTimeMs = 0L
+    private val visionWatchdogJob = kotlinx.coroutines.Job()
+
     private val captureFrameIntervalBase = 33L
     private val captureFrameIntervalMs: Long
         get() = com.assistant.MemoryCaptureGateEngine.recommendedIntervalMs()
@@ -235,6 +239,18 @@ class OverlayService : Service(), ComponentCallbacks2 {
         
         // SPLENDOR_V23B_VISION_BUFFER_REUSE_BEGIN
         val startVision = visionInFlight.compareAndSet(false, true)
+
+            if (startVision) {
+                visionStartTimeMs = System.currentTimeMillis()
+                visionScope.launch {
+                    kotlinx.coroutines.delay(500)
+                    if (visionInFlight.get() && System.currentTimeMillis() - visionStartTimeMs > 500L) {
+                        visionInFlight.set(false)
+                        try { com.assistant.diagnostic.RuntimeLogger.log("VISION_WATCHDOG_RESET: Coroutine death detected, force-unblocking frame pump.", "FAULT") } catch (_: Throwable) {}
+                    }
+                }
+            }
+
         val visionBuffer: java.nio.ByteBuffer = if (startVision) {
             val required = originalBuffer.remaining()
             val existing = reusableVisionBuffer
