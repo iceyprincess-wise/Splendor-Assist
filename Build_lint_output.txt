@@ -1,6 +1,6 @@
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-29 22:18:50 WAT
+Started: 2026-09-29 22:32:45 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -15,7 +15,7 @@ YES — running clean
 ================================================================
 >>> CLEAN
 ================================================================
-BUILD SUCCESSFUL in 53s
+BUILD SUCCESSFUL in 10s
 
 CLEAN EXIT: 0
 
@@ -42,19 +42,19 @@ versionCode: 160 -> 161
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
-e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:9708:181 Unresolved reference: cols
-FAILURE: Build failed with an exception.
-* What went wrong:
-BUILD FAILED in 3m 55s
+w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:1799:39 Parameter 'occupancy' is never used
+w: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:1799:72 Parameter 'pressure' is never used
+BUILD SUCCESSFUL in 4m 33s
 
-ASSEMBLE DEBUG APK EXIT: 1
+ASSEMBLE DEBUG APK EXIT: 0
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-SKIPPED — build exit=1, apk_exists=NO
-VERSION TRANSACTION: ROLLED BACK
-Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
+Exported: /storage/emulated/0/Download/Splendor-Assist-v161-20260929_223745.apk
+-rw-rw----. 1 u0_a262 media_rw 28M Sep 29 22:37 /storage/emulated/0/Download/Splendor-Assist-v161-20260929_223745.apk
+VERSION TRANSACTION: COMMITTED
+
 ================================================================
 >>> OPTIONAL GRADLE DAEMON STOP
 ================================================================
@@ -74,16 +74,17 @@ CLEAN:                           0
 LINT:                            SKIPPED — OPTIONAL
 CONNECTED TESTS:                 0
 VERSION BUMP:                    0
-ASSEMBLE DEBUG:                  1
-APK EXPORT:                      1
+ASSEMBLE DEBUG:                  0
+APK EXPORT:                      0
 GRADLE DAEMON STOP:              0
 
-FINAL STATUS: FAILED — check items above
+FINAL STATUS: ALL PASSED
 
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
+ M app/build.gradle.kts
 ?? "app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
 
-Finished: 2026-09-29 22:24:34 WAT
-Report size: 3323 bytes
+Finished: 2026-09-29 22:37:56 WAT
+Report size: 3509 bytes
 ================================================================
