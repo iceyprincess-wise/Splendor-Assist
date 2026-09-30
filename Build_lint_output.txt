@@ -1,23 +1,38 @@
+
+[  0%] BUILD START
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-30 06:30:01 WAT
+Started: 2026-09-30 09:28:29 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
 PROJECT ROOT: cd ~/projects/Splendor-Assist:
 
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   Build_lint_output.txt
+	modified:   app/build.gradle.kts
+	modified:   verify.sh
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	"app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+
+[  5%] BUILD STATE
 
 ================================================================
 >>> OPTIONAL CLEAN
 ================================================================
-YES — running clean
+NO — clean skipped; preserving incremental build state.
 
-================================================================
->>> CLEAN
-================================================================
-BUILD SUCCESSFUL in 48s
-
-CLEAN EXIT: 0
+[ 15%] LINT
 
 ================================================================
 >>> OPTIONAL LINT
@@ -29,30 +44,38 @@ NO — lint skipped by user.
 ================================================================
 SKIPPED — lint was not run.
 
+[ 30%] CONNECTED TESTS
+
 ================================================================
 >>> CONNECTED ANDROID TESTS
 ================================================================
 SKIPPED — no ADB device connected (not a failure)
 
+[ 45%] VERSION BUMP
+
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 162 -> 163
+versionCode: 164 -> 165
+
+[ 50%] ASSEMBLE DEBUG APK
 
 ================================================================
 >>> ASSEMBLE DEBUG APK
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 6m 19s
+BUILD SUCCESSFUL in 7m 42s
 
 ASSEMBLE DEBUG APK EXIT: 0
+
+[ 90%] APK EXPORT
 
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v163-20260930_063739.apk
--rw-rw----. 1 u0_a262 media_rw 28M Sep 30 06:37 /storage/emulated/0/Download/Splendor-Assist-v163-20260930_063739.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v165-20260930_093620.apk
+-rw-rw----. 1 u0_a262 media_rw 28M Sep 30 09:36 /storage/emulated/0/Download/Splendor-Assist-v165-20260930_093620.apk
 VERSION TRANSACTION: COMMITTED
 
 ================================================================
@@ -62,8 +85,8 @@ NO — Gradle daemon remains running for warm builds.
 
 Current Gradle daemon status:
    PID STATUS   INFO
-  7474 IDLE     8.5
- 30305 STOPPED  (by user or operating system)
+ 24179 IDLE     8.5
+ 30394 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -83,8 +106,128 @@ FINAL STATUS: ALL PASSED
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
  M Build_lint_output.txt
  M app/build.gradle.kts
+ M verify.sh
 ?? "app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
 
-Finished: 2026-09-30 06:38:09 WAT
-Report size: 3717 bytes
+[ 97%] GIT CLEANUP / APK VERIFICATION
+
+[ 97%] GIT CLEANUP / APK VERIFICATION
+=== REMOVED TERMUX BUILD ENVIRONMENT /APP/ CORRUPT FILE & VERIFY AS WELL VERIFY APK WHICH WILL BE SENT TO REPOSITORY ===
+rm 'app/@�@0�b@8@@@'
+=== EXTRACTING AND VERIFYING .SO DIRECTLY FROM APK ===
+SUCCESS: libsplendor_native.so is packaged inside the APK.
+=== FINAL SYMBOL VERIFICATION (PROOF OF NATIVE BINDING IN APK) ===
+    21: 0000000000005d48   876 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativePreprocessFrame
+    22: 0000000000006108   920 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeAnalyzeFrame
+    23: 0000000000007410   128 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeUpdateStateMatrix
+    25: 0000000000005160  2736 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeExtractBlobs
+    26: 0000000000006a54   892 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeDirectInputHookPrepare
+    27: 0000000000008440   220 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossClaimVector
+    28: 000000000000b1fc   288 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeBuildUpRecognitionCompute
+    29: 0000000000007490   512 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeAnalyzeFrameBuffer
+    30: 00000000000078e4  1032 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeComputeDominanceVectors
+    31: 0000000000008fd8   552 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSACorrectPass
+    32: 000000000000ac90   332 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeWingOverloadCompute
+    33: 00000000000035f0  2612 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl
+    34: 00000000000067bc   292 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeUpdateMatchState
+    35: 00000000000068e0   372 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeReadMatchState
+    36: 000000000000851c   636 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeKeeperBiasCompute
+    37: 000000000000a104    24 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossStunningDuration
+    38: 0000000000004be4   764 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeInstantInterceptCompute
+    39: 0000000000009f44   268 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossPrecisionCalculate
+    40: 000000000000a2d4   564 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSpeedCompensate
+    41: 0000000000004ee0   640 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeBuildUpPressCompute
+    42: 0000000000008c98    76 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeEscalateThreadPriority
+    43: 0000000000009638   844 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSACorrectCross
+    44: 0000000000009b90   488 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCriticalScoringVector
+    45: 000000000000a11c   324 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCounterattackAnalyze
+    46: 000000000000ab20   368 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeDefensiveCompactness
+    47: 000000000000af38   364 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativePressingRecognitionCompute
+    48: 000000000000b484   692 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeThreatPriorityCompute
+    50: 0000000000004780  1008 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeBallRetentionShieldCompute
+    51: 00000000000064a0   736 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSmoothVector
+    52: 000000000000709c   884 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativePredictiveFrameInterp
+    53: 0000000000007690   392 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCompileMotionEvent
+    54: 00000000000083c8   120 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossClaimEvaluate
+    55: 0000000000008884  1044 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeTrueShotCompute
+    56: 0000000000009984   524 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSACorrectKeeper
+    58: 000000000000a0c4    36 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossStunningLeadDistance
+    59: 000000000000a57c   264 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeShotOpportunityAnalyze
+    60: 000000000000aa04   284 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeRuntimeConfidenceCalibration
+    61: 00000000000044a4   588 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeAuthorityArbitrate
+    62: 0000000000006dd0   264 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeStartThermalSpoofer
+    63: 0000000000007044    88 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeStopThermalSpoofer
+    64: 0000000000008798   236 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativePanicSaveCompute
+    65: 0000000000009274   964 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSACorrectShot
+    66: 000000000000b31c   360 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativePossessionStyleCompute
+    67: 0000000000002f30  1140 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeKickingPostureImpl
+    68: 0000000000007dc4  1324 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeExecuteStopperMatrix
+    69: 000000000000a0e8    28 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossStunningSwipeDistance
+    70: 000000000000a90c   248 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeTacticalBehavior
+    71: 000000000000a6f8   416 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeTacticalAnalytics
+    72: 000000000000b0a4   344 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCounterPressCompute
+    73: 000000000000ae50   232 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCentralOverloadCompute
+    74: 0000000000008ce4   756 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeComputeOpticalVariance
+    75: 0000000000009d78   460 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCriticalTrueTargetPass
+PROVEN: NativeBridge JNI symbols found in APK .so: 52
+=== APK VERSION VERIFICATION ===
+APK package: com.assistant.overlay
+APK versionCode: 165
+APK versionName: 1.0-SECURE-LOCKED
+SUCCESS: APK versionCode matches app/build.gradle.kts.
+SUCCESS: APK versionName matches app/build.gradle.kts.
+=== KOTLIN / DEX VERIFICATION ===
+=== KOTLIN / DEX FULL SOURCE COVERAGE ===
+SOURCE KOTLIN DECLARATIONS: 567
+APK KOTLIN CLASSES FOUND: 526
+APK KOTLIN CLASSES MISSING: 41
+FATAL: Kotlin declarations missing from APK DEX:
+com/assistant/AttackerActivationDiagnostics
+com/assistant/Blob
+com/assistant/BusExecutionDiagnostics
+com/assistant/CaptaincyResult
+com/assistant/CaptureResult
+com/assistant/CaptureState
+com/assistant/ClassificationResult
+com/assistant/CrossingLaneAnalysisEngineAmplifiedState
+com/assistant/DashboardRefreshRunnable
+com/assistant/DefenseEvaluationDiagnostics
+com/assistant/EngineEntry
+com/assistant/FightingSpiritResult
+com/assistant/FrameMetadata
+com/assistant/GameplayActivationDiagnostics
+com/assistant/GameplayDownstreamEvent
+com/assistant/GestureRequest
+com/assistant/GoalkeeperShadowDiagnostics
+com/assistant/HealEvent
+com/assistant/HealthState
+com/assistant/LiveVector
+com/assistant/MagneticFeetDiagnostics
+com/assistant/MagneticFeetResult
+com/assistant/MagneticFeetState
+com/assistant/MemoryStateListener
+com/assistant/NormalizedFrame
+com/assistant/ObserveOnly
+com/assistant/PermissionStage
+com/assistant/PixelSampleBuffer
+com/assistant/Prediction
+com/assistant/RefreshPerformance
+com/assistant/ReigniteFleet
+com/assistant/RunSelfHealCheck
+com/assistant/SlotDef
+com/assistant/Status
+com/assistant/Team
+com/assistant/UiMode
+com/assistant/controlroom/ui/Screen
+com/assistant/diagnostic/HourBucket
+com/assistant/diagnostic/registry/NetTelemetry
+com/assistant/execution/LockFreeRing
+com/assistant/input/PackedGesture
+
+Finished: 2026-09-30 09:39:28 WAT
+Report size: 12630 bytes
 ================================================================
+
+[100%] BUILD / APK STAGING COMPLETE
+
+[100%] BUILD / APK STAGING COMPLETE
