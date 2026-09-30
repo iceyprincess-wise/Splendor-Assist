@@ -2,7 +2,7 @@
 [  0%] BUILD START
 ================================================================
 SPLENDOR-ASSIST BUILD REPORT v2
-Started: 2026-09-30 10:26:30 WAT
+Started: 2026-09-30 10:52:49 WAT
 Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
 ================================================================
 
@@ -11,12 +11,18 @@ PROJECT ROOT: cd ~/projects/Splendor-Assist:
 On branch main
 Your branch is up to date with 'origin/main'.
 
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   Build_lint_output.txt
+	new file:   app/src/main/cpp/mutation/native_input_strobe_amplifier.c
+	new file:   app/src/main/cpp/mutation/native_optical_variance_latch.c
+	new file:   app/src/main/cpp/mutation/native_syscall_priority.c
+
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
 	modified:   Build_lint_output.txt
 
-no changes added to commit (use "git add" and/or "git commit -a")
 
 
 [  5%] BUILD STATE
@@ -50,7 +56,7 @@ SKIPPED — no ADB device connected (not a failure)
 ================================================================
 >>> VERSION BUMP
 ================================================================
-versionCode: 165 -> 166
+versionCode: 166 -> 167
 
 [ 50%] ASSEMBLE DEBUG APK
 
@@ -59,7 +65,7 @@ versionCode: 165 -> 166
 ================================================================
 [org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
 	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
-BUILD SUCCESSFUL in 1m 8s
+BUILD SUCCESSFUL in 44s
 
 ASSEMBLE DEBUG APK EXIT: 0
 
@@ -68,8 +74,8 @@ ASSEMBLE DEBUG APK EXIT: 0
 ================================================================
 >>> APK EXPORT
 ================================================================
-Exported: /storage/emulated/0/Download/Splendor-Assist-v166-20260930_102748.apk
--rw-rw----. 1 u0_a262 media_rw 28M Sep 30 10:27 /storage/emulated/0/Download/Splendor-Assist-v166-20260930_102748.apk
+Exported: /storage/emulated/0/Download/Splendor-Assist-v167-20260930_105343.apk
+-rw-rw----. 1 u0_a262 media_rw 28M Sep 30 10:53 /storage/emulated/0/Download/Splendor-Assist-v167-20260930_105343.apk
 VERSION TRANSACTION: COMMITTED
 
 ================================================================
@@ -80,7 +86,6 @@ NO — Gradle daemon remains running for warm builds.
 Current Gradle daemon status:
    PID STATUS   INFO
  24179 IDLE     8.5
- 30394 STOPPED  (by user or operating system)
 
 Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
 
@@ -98,8 +103,11 @@ GRADLE DAEMON STOP:              0
 FINAL STATUS: ALL PASSED
 
 GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
- M Build_lint_output.txt
+MM Build_lint_output.txt
  M app/build.gradle.kts
+A  app/src/main/cpp/mutation/native_input_strobe_amplifier.c
+A  app/src/main/cpp/mutation/native_optical_variance_latch.c
+A  app/src/main/cpp/mutation/native_syscall_priority.c
 ?? "app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
 
 [ 97%] GIT CLEANUP / APK VERIFICATION
@@ -224,9 +232,9 @@ JNI SYMBOL LIST SAVED: /data/data/com.termux/files/usr/tmp/apk_verify/native_jni
 INFO: Source declarations vs packaged JNI symbols: 54/52
 === APK VERSION VERIFICATION ===
 APK package: com.assistant.overlay
-APK versionCode: 166
+APK versionCode: 167
 APK versionName: 1.0-SECURE-LOCKED
-SOURCE versionCode: 166
+SOURCE versionCode: 167
 SOURCE versionName: 1.0-SECURE-LOCKED
 SUCCESS: APK version matches source.
 === KOTLIN COMPILER OUTPUT / DEX FULL COVERAGE ===
@@ -938,11 +946,11 @@ DEX FILES VERIFIED: 21
 KOTLIN CLASSES CONFIRMED PRESENT: 692
 SUCCESS: Kotlin/Dex full coverage verification passed.
 === APK BINARY IDENTITY ===
-68cde3926b8d3abede41452e91335c7dd13a6de887a7af71f9874819d93897f1  app/build/outputs/apk/debug/app-debug.apk
--rw-------. 1 u0_a406 u0_a406 28M Sep 30 10:27 app/build/outputs/apk/debug/app-debug.apk
+912c8511217d8f46700992d0b75d76ab358ea2c5092e5a5357a74410173bdf18  app/build/outputs/apk/debug/app-debug.apk
+-rw-------. 1 u0_a406 u0_a406 28M Sep 30 10:53 app/build/outputs/apk/debug/app-debug.apk
 === VERIFICATION ARTIFACTS ===
 total 15M
--rw-------. 1 u0_a406 u0_a406 625K Sep 30 10:28 all_dex_defined_classes.txt
+-rw-------. 1 u0_a406 u0_a406 625K Sep 30 10:53 all_dex_defined_classes.txt
 -rw-r--r--. 1 u0_a406 u0_a406 9.6M Jan  1  1981 classes.dex
 -rw-r--r--. 1 u0_a406 u0_a406 2.8K Jan  1  1981 classes10.dex
 -rw-r--r--. 1 u0_a406 u0_a406  21K Jan  1  1981 classes11.dex
@@ -964,19 +972,39 @@ total 15M
 -rw-r--r--. 1 u0_a406 u0_a406 4.1K Jan  1  1981 classes7.dex
 -rw-r--r--. 1 u0_a406 u0_a406  14K Jan  1  1981 classes8.dex
 -rw-r--r--. 1 u0_a406 u0_a406  34K Jan  1  1981 classes9.dex
--rw-------. 1 u0_a406 u0_a406  30K Sep 30 10:28 expected_kotlin_compiler_classes.txt
-drwx------. 3 u0_a406 u0_a406 3.4K Sep 30 10:28 lib
--rw-------. 1 u0_a406 u0_a406  30K Sep 30 10:28 matched_kotlin_compiler_classes.txt
--rw-------. 1 u0_a406 u0_a406    0 Sep 30 10:28 missing_kotlin_compiler_classes.txt
--rw-------. 1 u0_a406 u0_a406 6.0K Sep 30 10:28 native_jni_symbols.txt
--rw-------. 1 u0_a406 u0_a406  11K Sep 30 10:28 source_native_declarations.txt
-============================================================
-SPLENDOR-ASSIST GIT PUSH
-============================================================
-===================================================
-PROJECT TERMUX ROOT - cd ~/projects/Splendor-Assist
-===================================================
+-rw-------. 1 u0_a406 u0_a406  30K Sep 30 10:53 expected_kotlin_compiler_classes.txt
+drwx------. 3 u0_a406 u0_a406 3.4K Sep 30 10:53 lib
+-rw-------. 1 u0_a406 u0_a406  30K Sep 30 10:53 matched_kotlin_compiler_classes.txt
+-rw-------. 1 u0_a406 u0_a406    0 Sep 30 10:53 missing_kotlin_compiler_classes.txt
+-rw-------. 1 u0_a406 u0_a406 6.0K Sep 30 10:53 native_jni_symbols.txt
+-rw-------. 1 u0_a406 u0_a406  11K Sep 30 10:53 source_native_declarations.txt
+On branch main
+Your branch is up to date with 'origin/main'.
 
->>> FILES TO BE COMMITTED
-MM Build_lint_output.txt
-M  app/build.gradle.kts
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   Build_lint_output.txt
+	modified:   app/build.gradle.kts
+	new file:   app/src/main/cpp/mutation/native_input_strobe_amplifier.c
+	new file:   app/src/main/cpp/mutation/native_optical_variance_latch.c
+	new file:   app/src/main/cpp/mutation/native_syscall_priority.c
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   Build_lint_output.txt
+
+=== CONFIRMATION OF HEAD & MAIN ===
+=== HEAD ===
+befc253f (HEAD -> main, origin/main, origin/HEAD) Update: Build_lint_output.txt,app/build.gradle.kts
+
+=== MAIN ===
+befc253f (HEAD -> main, origin/main, origin/HEAD) Update: Build_lint_output.txt,app/build.gradle.kts
+
+Finished: 2026-09-30 10:53:57 WAT
+Report size: 60540 bytes
+================================================================
+
+[100%] BUILD / APK STAGING COMPLETE
+
+[100%] BUILD / APK STAGING COMPLETE
