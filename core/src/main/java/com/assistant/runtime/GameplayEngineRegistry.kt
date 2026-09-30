@@ -5,6 +5,17 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
 
+object ContributionResult : java.util.AbstractList<EngineContribution>() {
+    private var pool = Array<EngineContribution?>(64) { null }
+    override var size: Int = 0
+    fun reset() { size = 0 }
+    fun addContribution(c: EngineContribution) {
+        if (size >= pool.size) pool = pool.copyOf(pool.size * 2)
+        pool[size++] = c
+    }
+    override fun get(index: Int): EngineContribution = pool[index]!!
+}
+
 object GameplayEngineRegistry {
     private val contributors = CopyOnWriteArrayList<GameplayContributor>()
     private val registeredNames = ConcurrentHashMap<String, Boolean>()
@@ -61,14 +72,14 @@ object GameplayEngineRegistry {
 
     fun collect(frame: RuntimeFrame): List<EngineContribution> {
         collectCycles.incrementAndGet()
-        val out = ArrayList<EngineContribution>(contributors.size)
+        ContributionResult.reset()
         for (c in contributors) {
             try {
                 c.update(frame)
                 val contribution = c.contribute(frame) ?: continue
                 lastContribution[c.engineName] = contribution
                 contributed[c.engineName] = (contributed[c.engineName] ?: 0L) + 1L
-                out.add(contribution)
+                ContributionResult.addContribution(contribution)
             } catch (t: Throwable) {
                 val n = (failures[c.engineName] ?: 0L) + 1L
                 failures[c.engineName] = n
@@ -77,7 +88,7 @@ object GameplayEngineRegistry {
                 }
             }
         }
-        return out
+        return ContributionResult
     }
 
     fun resetAll() {

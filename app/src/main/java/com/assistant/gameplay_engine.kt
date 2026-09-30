@@ -3431,6 +3431,10 @@ FrameAssembler
  * possession has no data yet (cold start). Admin-tunable floor:
  *   assist.possession.min_conf (default 0.20)
  */
+object FrameAssemblerPool {
+    val list = java.util.ArrayList<com.assistant.TrackedPlayer>(22)
+}
+
 object FrameAssembler {
 
     private val frameCounter = AtomicLong(0L)
@@ -3481,12 +3485,19 @@ object FrameAssembler {
         // V6 VISION GUARD (field-proven over-count: players=30/opponents=30):
         // cap each side to 11 before zones/density/trust so downstream engines
         // never consume impossible head-counts.
-        val ours = rawPlayers.filter { it.isUserTeam }
-        val theirs = rawPlayers.filter { !it.isUserTeam }
-        val players =
-            if (ours.size > 11 || theirs.size > 11) ours.take(11) + theirs.take(11)
-            else rawPlayers
-        val opponents = players.count { !it.isUserTeam }
+        val assemblerPool = FrameAssemblerPool.list
+        assemblerPool.clear()
+        var oursCount = 0
+        var theirsCount = 0
+        for (p in rawPlayers) {
+            if (p.isUserTeam) {
+                if (oursCount < 11) { assemblerPool.add(p); oursCount++ }
+            } else {
+                if (theirsCount < 11) { assemblerPool.add(p); theirsCount++ }
+            }
+        }
+        val players = assemblerPool
+        val opponents = theirsCount
 
         // Real per-zone counts from tracked player positions (landscape thirds).
         val pitchH = 720f
@@ -6330,7 +6341,7 @@ object NoiseFilter {
             return emptyList()
         }
 
-        if (blobs is BlobList) {
+        if (blobs is BlobListResult) {
             val pool = blobs.pool
             var writeIdx = 0
             for (i in 0 until blobs.size) {
@@ -6350,7 +6361,8 @@ object NoiseFilter {
                     writeIdx++
                 }
             }
-            return BlobList(pool, writeIdx)
+            BlobListResult.bind(pool, writeIdx)
+            return BlobListResult
         }
 
         return blobs.filter {
@@ -8706,15 +8718,11 @@ PassingLaneGraph Anchor
 /* ========
 PlayerDetection
 ======== */
-data class PlayerDetection(
-
-    val x: Float,
-
-    val y: Float,
-
-    val confidence: Float,
-
-    val isUserTeam: Boolean
+class PlayerDetection(
+    var x: Float,
+    var y: Float,
+    var confidence: Float,
+    var isUserTeam: Boolean
 )
 /* ======
 PlayerDetection Anchor
@@ -8729,6 +8737,16 @@ object PlayerDetector {
     private const val MIN_ASPECT_RATIO = 0.15f
     private const val MIN_CANDIDATE_CONFIDENCE = 0.30f
     private const val NMS_OVERLAP_THRESHOLD = 0.40f
+    
+    private val rawPool = Array(1000) { PlayerDetection(0f, 0f, 0f, false) }
+    private val keptPool = Array(1000) { PlayerDetection(0f, 0f, 0f, false) }
+    private val suppressed = BooleanArray(1000)
+    private val resultList = object : java.util.AbstractList<PlayerDetection>() {
+        var count = 0
+        override val size get() = count
+        override fun get(index: Int) = keptPool[index]
+        fun bind(c: Int) { count = c }
+    }
 
     fun detect(
         blobs: List<ConnectedComponentEngine.Blob>
@@ -8742,7 +8760,7 @@ object PlayerDetector {
             )
         }
 
-        val raw = ArrayList<PlayerDetection>(blobs.size)
+        var rawCount = 0
 
         for (blob in blobs) {
             if (blob.pixelCount < MIN_PIXEL_COUNT) continue
@@ -8785,44 +8803,57 @@ object PlayerDetector {
 
             if (confidence < MIN_CANDIDATE_CONFIDENCE) continue
 
-            raw.add(
-                PlayerDetection(
-                    x = centerX,
-                    y = centerY,
-                    confidence = confidence,
-                    isUserTeam = jersey.team == JerseyColorSegmentation.Team.USER
-                )
-            )
+            if (rawCount < rawPool.size) {
+                val pd = rawPool[rawCount]
+                pd.x = centerX
+                pd.y = centerY
+                pd.confidence = confidence
+                pd.isUserTeam = jersey.team == JerseyColorSegmentation.Team.USER
+                rawCount++
+            }
         }
 
-        raw.sortByDescending { it.confidence }
+        // In-place sort rawPool by confidence descending
+        for (i in 0 until rawCount) {
+            for (j in i + 1 until rawCount) {
+                if (rawPool[j].confidence > rawPool[i].confidence) {
+                    val tempX = rawPool[i].x; val tempY = rawPool[i].y; val tempC = rawPool[i].confidence; val tempT = rawPool[i].isUserTeam
+                    rawPool[i].x = rawPool[j].x; rawPool[i].y = rawPool[j].y; rawPool[i].confidence = rawPool[j].confidence; rawPool[i].isUserTeam = rawPool[j].isUserTeam
+                    rawPool[j].x = tempX; rawPool[j].y = tempY; rawPool[j].confidence = tempC; rawPool[j].isUserTeam = tempT
+                }
+            }
+        }
 
         // NMS: suppress lower-confidence detection if it overlaps a better one
-        val kept = ArrayList<PlayerDetection>(raw.size)
-        val suppressed = BooleanArray(raw.size)
+        var keptCount = 0
         var sumConf = 0f
-        for (i in raw.indices) {
+        java.util.Arrays.fill(suppressed, 0, rawCount, false)
+        for (i in 0 until rawCount) {
             if (suppressed[i]) continue
-            val pi = raw[i]
-            kept.add(pi)
+            val pi = rawPool[i]
+            if (keptCount < keptPool.size) {
+                val kd = keptPool[keptCount]
+                kd.x = pi.x; kd.y = pi.y; kd.confidence = pi.confidence; kd.isUserTeam = pi.isUserTeam
+                keptCount++
+            }
             sumConf += pi.confidence
-            for (j in i + 1 until raw.size) {
+            for (j in i + 1 until rawCount) {
                 if (suppressed[j]) continue
-                val dx = abs(pi.x - raw[j].x)
-                val dy = abs(pi.y - raw[j].y)
+                val dx = abs(pi.x - rawPool[j].x)
+                val dy = abs(pi.y - rawPool[j].y)
                 val distSq = dx * dx + dy * dy
-                // suppress j if within ~40px of a better detection (40^2 = 1600)
                 if (distSq < 1600f) suppressed[j] = true
             }
         }
 
-        val aggregateConfidence = if (kept.isEmpty()) 0f else (sumConf / kept.size).coerceIn(0f, 1f)
+        val aggregateConfidence = if (keptCount == 0) 0f else (sumConf / keptCount).coerceIn(0f, 1f)
+        resultList.bind(keptCount)
 
         return PlayerDetectionResult(
-            detected = kept.isNotEmpty(),
-            playerCount = kept.size,
+            detected = keptCount > 0,
+            playerCount = keptCount,
             confidence = aggregateConfidence,
-            detections = kept
+            detections = resultList
         )
     }
 }
@@ -9813,8 +9844,11 @@ ZeroFramePressEngine Anchor
 /* ========
 VisionPreprocessor
 ======== */
-class BlobList(internal val pool: Array<ConnectedComponentEngine.Blob>, override val size: Int) : java.util.AbstractList<ConnectedComponentEngine.Blob>() {
+object BlobListResult : java.util.AbstractList<ConnectedComponentEngine.Blob>() {
+    internal var pool: Array<ConnectedComponentEngine.Blob> = emptyArray()
+    override var size: Int = 0
     override fun get(index: Int): ConnectedComponentEngine.Blob = pool[index]
+    fun bind(p: Array<ConnectedComponentEngine.Blob>, s: Int) { pool = p; size = s }
 }
 
 object VisionPreprocessor {
@@ -9833,7 +9867,7 @@ object VisionPreprocessor {
             -1
         }
 
-        if (blobCount > 0) {
+        if (blobCount >= 0) {
             var actualCount = 0
             for (i in 0 until blobCount) {
                 val offset = i * 8
@@ -9851,7 +9885,8 @@ object VisionPreprocessor {
                     actualCount++
                 }
             }
-            return BlobList(blobPool, actualCount)
+            BlobListResult.bind(blobPool, actualCount)
+            return BlobListResult
         }
 
         // Fallback retained until native path is 100% live-proven across all device states

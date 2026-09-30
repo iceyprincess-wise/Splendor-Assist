@@ -528,7 +528,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val prompt = TextView(this).apply {
                     text = "⚠️ CAPTURE STOPPED - TAP TO RESTORE"
                     setTextColor(Color.WHITE)
-                    setBackgroundColor(Color.argb(230, 180, 30, 30))
+                    setBackgroundColor(Color.TRANSPARENT)
                     textSize = 14f
                     setPadding(24, 18, 24, 18)
                     gravity = Gravity.CENTER
@@ -884,6 +884,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     override fun onDestroy() {
+        SmartAssistRepository.clearPanic()
         com.assistant.vision.OverlaySelfMask.clearPrefix("hud")
         com.assistant.RuntimeCoordinator.shutdown()
         OverlaySurvivalEngine.destroyed()

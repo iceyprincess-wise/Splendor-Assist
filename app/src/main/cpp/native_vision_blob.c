@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <stdint.h>
 #include <string.h>
+#include <pthread.h>
 
 #define MAX_PIXELS 1048576
 #define MAX_LABELS 200000
@@ -15,6 +16,8 @@ static int g_sumR[MAX_LABELS];
 static int g_sumG[MAX_LABELS];
 static int g_sumB[MAX_LABELS];
 static int g_labels[MAX_PIXELS];
+
+static pthread_mutex_t g_vision_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static inline int find_root(int i) {
     int root = i;
@@ -55,21 +58,30 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
     jintArray outputBlobs
 ) {
     (void)clazz;
+    
+    // Defensive input validation
+    if (width <= 0 || height <= 0 || pixelStride < 3 || rowStride < width * pixelStride) {
+        return -1;
+    }
+    
     uint8_t* pixels = (uint8_t*) (*env)->GetDirectBufferAddress(env, byteBuffer);
     if (!pixels) return -1;
 
     jint* out = (*env)->GetPrimitiveArrayCritical(env, outputBlobs, NULL);
     if (!out) return -1;
 
+    pthread_mutex_lock(&g_vision_mutex);
+
     int thresholdInt = (int)(threshold * 255.0f);
     int nextLabel = 1;
     
     if (width * height > MAX_PIXELS) {
+        pthread_mutex_unlock(&g_vision_mutex);
         (*env)->ReleasePrimitiveArrayCritical(env, outputBlobs, out, 0);
         return -1;
     }
 
-    // Pass 1: Assign labels
+    // Pass 1: Assign labels (8-connectivity)
     for (int y = 0; y < height; y++) {
         const uint8_t* row = pixels + y * rowStride;
         for (int x = 0; x < width; x++) {
@@ -83,13 +95,20 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
             
             if (lum >= thresholdInt) {
                 int label = 0;
-                int leftLabel = 0;
-                int topLabel = 0;
+                int leftLabel = 0, topLabel = 0, topLeftLabel = 0, topRightLabel = 0;
                 
                 if (x > 0) leftLabel = g_labels[idx - 1];
                 if (y > 0) topLabel = g_labels[idx - width];
+                if (x > 0 && y > 0) topLeftLabel = g_labels[idx - width - 1];
+                if (x < width - 1 && y > 0) topRightLabel = g_labels[idx - width + 1];
                 
-                if (leftLabel == 0 && topLabel == 0) {
+                int minLabel = 0;
+                if (leftLabel > 0 && (minLabel == 0 || leftLabel < minLabel)) minLabel = leftLabel;
+                if (topLabel > 0 && (minLabel == 0 || topLabel < minLabel)) minLabel = topLabel;
+                if (topLeftLabel > 0 && (minLabel == 0 || topLeftLabel < minLabel)) minLabel = topLeftLabel;
+                if (topRightLabel > 0 && (minLabel == 0 || topRightLabel < minLabel)) minLabel = topRightLabel;
+                
+                if (minLabel == 0) {
                     if (nextLabel < MAX_LABELS) {
                         label = nextLabel++;
                         g_parent[label] = label;
@@ -98,15 +117,12 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
                         g_count[label] = 0;
                         g_sumR[label] = 0; g_sumG[label] = 0; g_sumB[label] = 0;
                     }
-                } else if (leftLabel != 0 && topLabel == 0) {
-                    label = leftLabel;
-                } else if (leftLabel == 0 && topLabel != 0) {
-                    label = topLabel;
                 } else {
-                    label = leftLabel < topLabel ? leftLabel : topLabel;
-                    if (leftLabel != topLabel) {
-                        union_labels(leftLabel, topLabel);
-                    }
+                    label = minLabel;
+                    if (leftLabel > 0 && leftLabel != minLabel) union_labels(leftLabel, minLabel);
+                    if (topLabel > 0 && topLabel != minLabel) union_labels(topLabel, minLabel);
+                    if (topLeftLabel > 0 && topLeftLabel != minLabel) union_labels(topLeftLabel, minLabel);
+                    if (topRightLabel > 0 && topRightLabel != minLabel) union_labels(topRightLabel, minLabel);
                 }
                 g_labels[idx] = label;
             } else {
@@ -160,6 +176,7 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
         }
     }
     
+    pthread_mutex_unlock(&g_vision_mutex);
     (*env)->ReleasePrimitiveArrayCritical(env, outputBlobs, out, 0);
     return blobCount;
 }
