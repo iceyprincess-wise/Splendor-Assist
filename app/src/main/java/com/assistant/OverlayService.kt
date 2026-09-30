@@ -522,6 +522,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     private fun updateOverlayVisuals(text: String, color: Int) {
+        // Prevent app-painted HUD pixels from contaminating MediaProjection vision buffer
+        if (captureState == CaptureState.ACTIVE || captureState == CaptureState.AUTHORIZED) return
+        
         ChoreographerRenderLoop.postUpdate {
             txtEngineStatus.text = if (CallOverlayRepository.incomingCallVisible) "[CALL PROTECTED] " + text else text
             txtEngineStatus.setTextColor(color)
@@ -610,6 +613,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private fun setupMediaProjectionInternal(code: Int, intent: Intent) {
         // Clear transient panic state on fresh capture start to prevent stale contamination
         SmartAssistRepository.clearPanic()
+        
+        // Guarantee zero app-painted pixels enter MediaProjection capture surface
+        try { txtEngineStatus.visibility = View.GONE } catch (_: Throwable) {}
+        try { panicIndicator?.visibility = View.GONE } catch (_: Throwable) {}
         
         if (captureState == CaptureState.ACTIVE || captureState == CaptureState.AUTHORIZED) {
             teardownCaptureResourcesInternal()
@@ -862,13 +869,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 if (lastPanicState != panicActive) {
                     lastPanicState = panicActive
                     // overlayView MUST remain fully transparent to prevent MediaProjection pixel contamination.
-                    // Panic state is now indicated by a small bounded indicator, not a full-screen tint.
                     overlayView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                    if (panicActive) {
-                        panicIndicator?.visibility = View.VISIBLE
-                    } else {
-                        panicIndicator?.visibility = View.GONE
-                    }
+                    // Never paint app-owned pixels (red indicator) into the capture surface
+                    panicIndicator?.visibility = View.GONE
                 }
                 trajectoryHandler.postDelayed(this, 250L)
             }
