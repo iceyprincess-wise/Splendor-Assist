@@ -496,18 +496,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         )
         windowManager.addView(overlayView, layoutParams)
         
-        // Add small bounded panic indicator to prevent full-screen pixel contamination
-        panicIndicator = View(this).apply {
-            setBackgroundColor(android.graphics.Color.RED)
-            visibility = View.GONE
-        }
-        val indicatorParams = android.widget.FrameLayout.LayoutParams(24, 24).apply {
-            gravity = android.view.Gravity.TOP or android.view.Gravity.END
-            topMargin = 32
-            rightMargin = 32
-        }
-        (overlayView as? android.view.ViewGroup)?.addView(panicIndicator, indicatorParams)
-        com.assistant.vision.OverlaySelfMask.publishView("panic_indicator", panicIndicator)
+        // REMOVED: Panic indicator painting to guarantee zero app-owned pixels in MediaProjection capture surface
         
         overlayView.post {
             com.assistant.vision.OverlaySelfMask.publishHierarchy("hud", overlayView)
@@ -810,6 +799,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             ) &&
                             System.currentTimeMillis() - lastMatchDetectionTime >= 5000L
                         ) {
+                            lastMatchDetectionTime = System.currentTimeMillis()
                             SmartAssistRepository.activatePanic()
                             val lv = com.assistant.LiveVectorResolver.resolve(
                                 reusableBitmap?.width?.toFloat() ?: 1080f,

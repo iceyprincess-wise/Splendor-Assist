@@ -1916,15 +1916,15 @@ ConnectedComponentEngine
 ======== */
 object ConnectedComponentEngine {
 
-    data class Blob(
-        val minX: Int,
-        val minY: Int,
-        val maxX: Int,
-        val maxY: Int,
-        val pixelCount: Int,
-        val averageRed: Float,
-        val averageGreen: Float,
-        val averageBlue: Float
+    class Blob(
+        var minX: Int,
+        var minY: Int,
+        var maxX: Int,
+        var maxY: Int,
+        var pixelCount: Int,
+        var averageRed: Float,
+        var averageGreen: Float,
+        var averageBlue: Float
     )
 
     private val OFFSETS = arrayOf(
@@ -6330,6 +6330,29 @@ object NoiseFilter {
             return emptyList()
         }
 
+        if (blobs is BlobList) {
+            val pool = blobs.pool
+            var writeIdx = 0
+            for (i in 0 until blobs.size) {
+                val b = blobs[i]
+                if (b.pixelCount >= minimumPixels && (b.maxX - b.minX) >= 1 && (b.maxY - b.minY) >= 1) {
+                    if (writeIdx != i) {
+                        val target = pool[writeIdx]
+                        target.minX = b.minX
+                        target.minY = b.minY
+                        target.maxX = b.maxX
+                        target.maxY = b.maxY
+                        target.pixelCount = b.pixelCount
+                        target.averageRed = b.averageRed
+                        target.averageGreen = b.averageGreen
+                        target.averageBlue = b.averageBlue
+                    }
+                    writeIdx++
+                }
+            }
+            return BlobList(pool, writeIdx)
+        }
+
         return blobs.filter {
 
             it.pixelCount >= minimumPixels &&
@@ -9790,11 +9813,16 @@ ZeroFramePressEngine Anchor
 /* ========
 VisionPreprocessor
 ======== */
+class BlobList(internal val pool: Array<ConnectedComponentEngine.Blob>, override val size: Int) : java.util.AbstractList<ConnectedComponentEngine.Blob>() {
+    override fun get(index: Int): ConnectedComponentEngine.Blob = pool[index]
+}
+
 object VisionPreprocessor {
     private const val TAG = "VisionPreprocessor"
     
     // Pre-allocate output buffer for zero-alloc JNI crossing: 8 ints per blob, max 10000 blobs
     private val nativeBlobBuffer = IntArray(80000)
+    private val blobPool = Array(10000) { ConnectedComponentEngine.Blob(0, 0, 0, 0, 0, 0f, 0f, 0f) }
 
     fun process(frame: FrameNormalizer.NormalizedFrame): List<ConnectedComponentEngine.Blob> {
         val blobCount = try {
@@ -9806,24 +9834,24 @@ object VisionPreprocessor {
         }
 
         if (blobCount > 0) {
-            val result = ArrayList<ConnectedComponentEngine.Blob>(blobCount)
+            var actualCount = 0
             for (i in 0 until blobCount) {
                 val offset = i * 8
                 val count = nativeBlobBuffer[offset + 4]
                 if (count > 0) {
-                    result.add(ConnectedComponentEngine.Blob(
-                        minX = nativeBlobBuffer[offset],
-                        minY = nativeBlobBuffer[offset + 1],
-                        maxX = nativeBlobBuffer[offset + 2],
-                        maxY = nativeBlobBuffer[offset + 3],
-                        pixelCount = count,
-                        averageRed = nativeBlobBuffer[offset + 5].toFloat() / count,
-                        averageGreen = nativeBlobBuffer[offset + 6].toFloat() / count,
-                        averageBlue = nativeBlobBuffer[offset + 7].toFloat() / count
-                    ))
+                    val b = blobPool[actualCount]
+                    b.minX = nativeBlobBuffer[offset]
+                    b.minY = nativeBlobBuffer[offset + 1]
+                    b.maxX = nativeBlobBuffer[offset + 2]
+                    b.maxY = nativeBlobBuffer[offset + 3]
+                    b.pixelCount = count
+                    b.averageRed = nativeBlobBuffer[offset + 5].toFloat() / count
+                    b.averageGreen = nativeBlobBuffer[offset + 6].toFloat() / count
+                    b.averageBlue = nativeBlobBuffer[offset + 7].toFloat() / count
+                    actualCount++
                 }
             }
-            return result
+            return BlobList(blobPool, actualCount)
         }
 
         // Fallback retained until native path is 100% live-proven across all device states
