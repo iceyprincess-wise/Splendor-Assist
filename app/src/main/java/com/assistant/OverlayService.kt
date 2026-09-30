@@ -120,6 +120,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private lateinit var overlayView: View
     private lateinit var txtEngineStatus: TextView
     private lateinit var notificationManager: NotificationManager
+    private var panicIndicator: View? = null
 
     private var mediaProjection: MediaProjection? = null
     private var virtualDisplay: VirtualDisplay? = null
@@ -494,6 +495,20 @@ class OverlayService : Service(), ComponentCallbacks2 {
             PixelFormat.TRANSLUCENT
         )
         windowManager.addView(overlayView, layoutParams)
+        
+        // Add small bounded panic indicator to prevent full-screen pixel contamination
+        panicIndicator = View(this).apply {
+            setBackgroundColor(android.graphics.Color.RED)
+            visibility = View.GONE
+        }
+        val indicatorParams = android.widget.FrameLayout.LayoutParams(24, 24).apply {
+            gravity = android.view.Gravity.TOP or android.view.Gravity.END
+            topMargin = 32
+            rightMargin = 32
+        }
+        (overlayView as? android.view.ViewGroup)?.addView(panicIndicator, indicatorParams)
+        com.assistant.vision.OverlaySelfMask.publishView("panic_indicator", panicIndicator)
+        
         overlayView.post {
             com.assistant.vision.OverlaySelfMask.publishHierarchy("hud", overlayView)
         }
@@ -593,6 +608,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     private fun setupMediaProjectionInternal(code: Int, intent: Intent) {
+        // Clear transient panic state on fresh capture start to prevent stale contamination
+        SmartAssistRepository.clearPanic()
+        
         if (captureState == CaptureState.ACTIVE || captureState == CaptureState.AUTHORIZED) {
             teardownCaptureResourcesInternal()
         }
@@ -843,10 +861,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 }
                 if (lastPanicState != panicActive) {
                     lastPanicState = panicActive
+                    // overlayView MUST remain fully transparent to prevent MediaProjection pixel contamination.
+                    // Panic state is now indicated by a small bounded indicator, not a full-screen tint.
+                    overlayView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
                     if (panicActive) {
-                        overlayView.setBackgroundColor(android.graphics.Color.argb(50, 255, 0, 0))
+                        panicIndicator?.visibility = View.VISIBLE
                     } else {
-                        overlayView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                        panicIndicator?.visibility = View.GONE
                     }
                 }
                 trajectoryHandler.postDelayed(this, 250L)

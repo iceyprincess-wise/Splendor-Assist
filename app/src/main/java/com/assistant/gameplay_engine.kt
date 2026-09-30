@@ -11665,7 +11665,7 @@ class SmartAssistRepository(context: Context) {
     private fun loadState(): SmartAssistState {
         return SmartAssistState(
             enabled = prefs.getBoolean(KEY_ENABLED, true),
-            panicMode = prefs.getBoolean(KEY_PANIC, false),
+            panicMode = false, // Never restore stale panic state across sessions
             configuration = SmartAssistConfiguration(
                 passThreshold = prefs.getInt(KEY_PASS, 50),
                 shotThreshold = prefs.getInt(KEY_SHOT, 50),
@@ -11679,7 +11679,7 @@ class SmartAssistRepository(context: Context) {
     fun saveState(newState: SmartAssistState) {
         prefs.edit().apply {
             putBoolean(KEY_ENABLED, newState.enabled)
-            putBoolean(KEY_PANIC, newState.panicMode)
+            // putBoolean(KEY_PANIC, newState.panicMode) // Panic is transient, do not persist
             putInt(KEY_PASS, newState.configuration.passThreshold)
             putInt(KEY_SHOT, newState.configuration.shotThreshold)
             putInt(KEY_CROSS, newState.configuration.crossThreshold)
