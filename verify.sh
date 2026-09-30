@@ -30,7 +30,7 @@ set +o pipefail
 grep -RnE 'external fun native[A-Za-z0-9_]+' app/src core/src 2>/dev/null | tee "$SOURCE_DECL_FILE" || true
 set -o pipefail
 SOURCE_DECL_COUNT="$(grep -c 'external fun native' "$SOURCE_DECL_FILE" 2>/dev/null || true)"
-echo "PROVEN: Source NativeBridge external declarations found: ${SOURCE_DECL_COUNT:-0}"
+echo "PROVEN: Source assistant external declarations found: ${SOURCE_DECL_COUNT:-0}"
 echo "SOURCE DECLARATION LIST SAVED: $SOURCE_DECL_FILE"
 
 echo "=== FULL NATIVE JNI SYMBOL LIST FROM APK .SO ==="
@@ -42,11 +42,11 @@ if ! command -v "$READELF_BIN" >/dev/null 2>&1; then
 fi
 
 set +o pipefail
-"$READELF_BIN" -Ws "$SO" | grep -E 'Java_com_assistant_NativeBridge(_|$)' | tee "$SYMBOL_FILE" || true
+"$READELF_BIN" -Ws "$SO" | grep -E 'FUNC[[:space:]]+GLOBAL[[:space:]]+DEFAULT.*Java_com_assistant_' | tee "$SYMBOL_FILE" || true
 set -o pipefail
 
-NATIVE_JNI_COUNT="$(grep -c "Java_com_assistant_NativeBridge" "$SYMBOL_FILE" 2>/dev/null || true)"
-echo "PROVEN: NativeBridge JNI symbols found in APK .so: ${NATIVE_JNI_COUNT:-0}"
+NATIVE_JNI_COUNT="$(grep -c "Java_com_assistant_" "$SYMBOL_FILE" 2>/dev/null || true)"
+echo "PROVEN: All assistant JNI symbols found in APK .so: ${NATIVE_JNI_COUNT:-0}"
 echo "JNI SYMBOL LIST SAVED: $SYMBOL_FILE"
 echo "INFO: Source declarations vs packaged JNI symbols: ${SOURCE_DECL_COUNT:-0}/${NATIVE_JNI_COUNT:-0}"
 
