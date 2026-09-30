@@ -45,7 +45,7 @@ set +o pipefail
 "$READELF_BIN" -Ws "$SO" | grep -E 'FUNC[[:space:]]+GLOBAL[[:space:]]+DEFAULT.*Java_com_assistant_' | tee "$SYMBOL_FILE" || true
 set -o pipefail
 
-NATIVE_JNI_COUNT="$(grep -c "Java_com_assistant_" "$SYMBOL_FILE" 2>/dev/null || true)"
+NATIVE_JNI_COUNT="$(grep -Ec "Java_com_assistant_" "Native" "NativeBridge" "native" "nativeBridge" "$SYMBOL_FILE" 2>/dev/null || true)"
 echo "PROVEN: All assistant JNI symbols found in APK .so: ${NATIVE_JNI_COUNT:-0}"
 echo "JNI SYMBOL LIST SAVED: $SYMBOL_FILE"
 echo "INFO: Source declarations vs packaged JNI symbols: ${SOURCE_DECL_COUNT:-0}/${NATIVE_JNI_COUNT:-0}"
