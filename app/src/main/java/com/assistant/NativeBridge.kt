@@ -399,6 +399,7 @@ object NativeBridge {
     // --- V55: Heavy Mutation Engines ---
     @JvmStatic external fun nativeEscalateThreadPriority(): Int
     @JvmStatic external fun nativeComputeOpticalVariance(currentBuffer: java.nio.ByteBuffer, previousBuffer: java.nio.ByteBuffer, width: Int, height: Int, stride: Int, roiX: Int, roiY: Int, roiW: Int, roiH: Int): Float
+    @JvmStatic external fun nativeInjectStrobePackets(startX: Float, startY: Float, endX: Float, endY: Float, durationMs: Int, pointerCount: Int, outPackets: FloatArray)
 
 
     // --- V56: SmartAssistUltimateCorrector Native Migration ---
