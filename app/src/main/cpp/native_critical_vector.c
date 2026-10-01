@@ -2,6 +2,13 @@
 #include <math.h>
 #include <stdint.h>
 
+static inline float branchless_coerce(float value, float min_val, float max_val) {
+    float r = value;
+    r = 0.5f * (r + min_val + fabsf(r - min_val));
+    r = 0.5f * (r + max_val - fabsf(max_val - r));
+    return r;
+}
+
 JNIEXPORT void JNICALL
 Java_com_assistant_NativeBridge_nativeCriticalScoringVector(
         JNIEnv* env, jobject thiz,
@@ -17,8 +24,12 @@ Java_com_assistant_NativeBridge_nativeCriticalScoringVector(
     float gkDistToLeft = hypotf(goalLeftPostX - gkX, goalLeftPostY - gkY);
     float gkDistToRight = hypotf(goalRightPostX - gkX, goalRightPostY - gkY);
 
-    float targetPostX = (gkDistToLeft > gkDistToRight) ? goalLeftPostX + 35.0f : goalRightPostX - 35.0f;
-    float targetPostY = (gkDistToLeft > gkDistToRight) ? goalLeftPostY + 15.0f : goalRightPostY + 15.0f;
+    // BRANCHLESS TARGET SELECTION
+    float leftBias = branchless_coerce((gkDistToRight - gkDistToLeft) * 0.01f, 0.0f, 1.0f);
+    float rightBias = 1.0f - leftBias;
+
+    float targetPostX = (goalLeftPostX + 35.0f) * leftBias + (goalRightPostX - 35.0f) * rightBias;
+    float targetPostY = (goalLeftPostY + 15.0f) * leftBias + (goalRightPostY + 15.0f) * rightBias;
 
     float firingAngle = atan2f(targetPostY - strikerY, targetPostX - strikerX);
 
@@ -41,18 +52,20 @@ Java_com_assistant_NativeBridge_nativeCriticalTrueTargetPass(
     if (!r) return;
 
     float velocityMagnitude = hypotf(strikerVx, strikerVy);
-    float normalizedLead = (velocityMagnitude > 1.0f) ? 18.0f : 180.0f;
+    
+    // BRANCHLESS LEAD SCALING: Continuous interpolation instead of hard > 1.0f gate
+    float velFactor = branchless_coerce(velocityMagnitude * 0.5f, 0.0f, 1.0f);
+    float normalizedLead = 180.0f - (velFactor * 162.0f); // Smoothly transitions from 180.0 down to 18.0
 
     float destX = activeStrikerX + (strikerVx * normalizedLead);
     float destY = activeStrikerY + (strikerVy * normalizedLead);
 
-    if (destX < 100.0f) destX = 100.0f;
-    if (destX > screenWidth - 100.0f) destX = screenWidth - 100.0f;
-    if (destY < 100.0f) destY = 100.0f;
-    if (destY > screenHeight - 100.0f) destY = screenHeight - 100.0f;
-
-    r[0] = destX;
-    r[1] = destY;
+    // BRANCHLESS CLAMPING
+    float safeW = screenWidth > 200.0f ? screenWidth - 100.0f : 100.0f;
+    float safeH = screenHeight > 200.0f ? screenHeight - 100.0f : 100.0f;
+    
+    r[0] = branchless_coerce(destX, 100.0f, safeW);
+    r[1] = branchless_coerce(destY, 100.0f, safeH);
 
     (*env)->ReleasePrimitiveArrayCritical(env, outBuffer, r, 0);
 }

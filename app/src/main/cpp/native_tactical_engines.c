@@ -2,8 +2,11 @@
 #include <jni.h>
 #include <stdint.h>
 
-static inline float coerce(float v, float min, float max) {
-    return v < min ? min : (v > max ? max : v);
+static inline float branchless_coerce(float value, float min_val, float max_val) {
+    float r = value;
+    r = 0.5f * (r + min_val + fabsf(r - min_val));
+    r = 0.5f * (r + max_val - fabsf(max_val - r));
+    return r;
 }
 
 JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeTacticalAnalytics(
@@ -18,14 +21,16 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeTacticalAnalytics(
     jfloatArray out) {
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
+    
+    // BRANCHLESS BOOLEAN MULTIPLICATION
     float score = tacticalMapConf + compactnessConf + compactnessVal + wingConf +
-                  (wingOverloaded ? 0.05f : 0.0f) + centralConf +
-                  (centralOverloaded ? 0.05f : 0.0f) + pressingConf +
-                  (pressingDetected ? 0.05f : 0.0f) + counterPressConf +
-                  (counterPressDetected ? 0.05f : 0.0f) + buildUpConf +
-                  (buildUpDetected ? 0.05f : 0.0f) + possessionConf +
-                  (possessionDetected ? 0.05f : 0.0f);
-    r[0] = coerce(score / 8.4f, 0.0f, 1.0f);
+                  ((float)wingOverloaded * 0.05f) + centralConf +
+                  ((float)centralOverloaded * 0.05f) + pressingConf +
+                  ((float)pressingDetected * 0.05f) + counterPressConf +
+                  ((float)counterPressDetected * 0.05f) + buildUpConf +
+                  ((float)buildUpDetected * 0.05f) + possessionConf +
+                  ((float)possessionDetected * 0.05f);
+    r[0] = branchless_coerce(score / 8.4f, 0.0f, 1.0f);
     (*env)->ReleasePrimitiveArrayCritical(env, out, r, 0);
 }
 
@@ -37,9 +42,9 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeTacticalBehavior(
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     float score = analyticsConf + formationConf +
-                  (formationFound ? 0.20f : 0.0f) +
+                  ((float)formationFound * 0.20f) +
                   teamShapeConf + teamShapeCompactness;
-    r[0] = coerce(score / 3.2f, 0.0f, 1.0f);
+    r[0] = branchless_coerce(score / 3.2f, 0.0f, 1.0f);
     (*env)->ReleasePrimitiveArrayCritical(env, out, r, 0);
 }
 
@@ -55,7 +60,7 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeRuntimeConfidenceCa
                 (passingConf * 0.20f) + (shootingConf * 0.15f) +
                 (ema * 0.10f) + (rollingMean * 0.05f) +
                 (temporalConf * 0.05f);
-    r[0] = coerce(cal, 0.0f, 1.0f);
+    r[0] = branchless_coerce(cal, 0.0f, 1.0f);
     (*env)->ReleasePrimitiveArrayCritical(env, out, r, 0);
 }
 
@@ -67,11 +72,11 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeDefensiveCompactnes
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     float maxSpread = sqrtf((screenW * screenW) + (screenH * screenH));
-    if (maxSpread < 1.0f) maxSpread = 1.0f;
+    float safeSpread = (maxSpread > 1.0f) ? maxSpread : 1.0f;
     
-    r[0] = coerce(teamShapeWidth / screenW, 0.0f, 1.0f);
-    r[1] = coerce(teamShapeDepth / screenH, 0.0f, 1.0f);
-    r[2] = coerce(teamShapeCompactness / maxSpread, 0.0f, 1.0f);
-    r[3] = coerce((fieldConf + defLineConf + teamShapeConf) / 3.0f, 0.0f, 1.0f);
+    r[0] = branchless_coerce(teamShapeWidth / screenW, 0.0f, 1.0f);
+    r[1] = branchless_coerce(teamShapeDepth / screenH, 0.0f, 1.0f);
+    r[2] = branchless_coerce(teamShapeCompactness / safeSpread, 0.0f, 1.0f);
+    r[3] = branchless_coerce((fieldConf + defLineConf + teamShapeConf) / 3.0f, 0.0f, 1.0f);
     (*env)->ReleasePrimitiveArrayCritical(env, out, r, 0);
 }

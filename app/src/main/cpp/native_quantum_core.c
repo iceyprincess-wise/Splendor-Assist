@@ -8,7 +8,6 @@
 #define M_PI 3.14159265358979323846f
 #endif
 
-// Thread-isolated state storage to eliminate memory allocations
 typedef struct {
     float predPlayerX; float predPlayerY;
     float predOppX;    float predOppY;
@@ -27,13 +26,15 @@ static inline float fast_inv_sqrt(float x) {
     return u.f;
 }
 
-/* ==========================================================================
-   THE QUANTUM ACCELERATOR CORE (Bypasses 20FPS Device Bottlenecks)
-   ========================================================================= */
+static inline float branchless_coerce(float value, float min_val, float max_val) {
+    float r = value;
+    r = 0.5f * (r + min_val + fabsf(r - min_val));
+    r = 0.5f * (r + max_val - fabsf(max_val - r));
+    return r;
+}
 
 JNIEXPORT void JNICALL
 Java_com_assistant_NativeBridge_nativeBoostThreadPriority(JNIEnv* env, jobject thiz) {
-    // Forcibly set Linux process thread priority to MAX (-10) to bypass CPU throttling
     setpriority(PRIO_PROCESS, 0, -10); 
 }
 
@@ -47,63 +48,55 @@ Java_com_assistant_NativeBridge_nativeExecuteQuantumSimulation(
         jfloat screenWidth, jfloat screenHeight,
         jfloatArray outBuffer) {
 
-    // Direct Primitive Critical memory locking to bypass extreme Java RAM pressure
     jfloat* result = (jfloat*)(*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
     if (!result) return;
 
     g_QuantumLoop.internalTickCounter++;
-
-    // 1. ADVANCED OPTICAL FLOW SUB-FRAME VELOCITY PREDICTION
-    float timeDeltaStep = 0.00833f; // 120Hz fractional time step
+    float timeDeltaStep = 0.00833f;
     
-    if (rawOppX != g_QuantumLoop.lastRawOppX || rawOppY != g_QuantumLoop.lastRawOppY) {
-        g_QuantumLoop.predOppX = rawOppX;
-        g_QuantumLoop.predOppY = rawOppY;
-        g_QuantumLoop.predPlayerX = rawPlayerX;
-        g_QuantumLoop.predPlayerY = rawPlayerY;
-        g_QuantumLoop.lastRawOppX = rawOppX;
-        g_QuantumLoop.lastRawOppY = rawOppY;
-    } else {
-        g_QuantumLoop.predOppX += (rawOppVx * timeDeltaStep * 2.5f); 
-        g_QuantumLoop.predOppY += (rawOppVy * timeDeltaStep * 2.5f);
-        g_QuantumLoop.predPlayerX += (rawPlayerVx * timeDeltaStep * 2.5f);
-        g_QuantumLoop.predPlayerY += (rawPlayerVy * timeDeltaStep * 2.5f);
-    }
+    // BRANCHLESS STATE UPDATE: Continuous prediction without hard gates
+    float diffMaskX = fabsf(rawOppX - g_QuantumLoop.lastRawOppX);
+    float diffMaskY = fabsf(rawOppY - g_QuantumLoop.lastRawOppY);
+    float updateMask = branchless_coerce((diffMaskX + diffMaskY - 0.01f) * 100.0f, 0.0f, 1.0f);
+    
+    g_QuantumLoop.predOppX = rawOppX * updateMask + (g_QuantumLoop.predOppX + rawOppVx * timeDeltaStep * 2.5f) * (1.0f - updateMask);
+    g_QuantumLoop.predOppY = rawOppY * updateMask + (g_QuantumLoop.predOppY + rawOppVy * timeDeltaStep * 2.5f) * (1.0f - updateMask);
+    g_QuantumLoop.predPlayerX = rawPlayerX * updateMask + (g_QuantumLoop.predPlayerX + rawPlayerVx * timeDeltaStep * 2.5f) * (1.0f - updateMask);
+    g_QuantumLoop.predPlayerY = rawPlayerY * updateMask + (g_QuantumLoop.predPlayerY + rawPlayerVy * timeDeltaStep * 2.5f) * (1.0f - updateMask);
+    
+    g_QuantumLoop.lastRawOppX = rawOppX;
+    g_QuantumLoop.lastRawOppY = rawOppY;
 
-    // 2. ULTRA-AGGRESSIVE INTERCEPT TARGET GENERATION
     float dx = g_QuantumLoop.predOppX - g_QuantumLoop.predPlayerX;
     float dy = g_QuantumLoop.predOppY - g_QuantumLoop.predPlayerY;
     float distSq = dx * dx + dy * dy;
     float invDist = fast_inv_sqrt(distSq);
     float distance = (distSq > 0.0f) ? (1.0f / invDist) : 0.0f;
 
+    float dirX = dx * invDist;
+    float dirY = dy * invDist;
+
     float targetStickX = 250.0f;
     float targetStickY = 550.0f;
     float strobeActionFlag = 0.0f;
     float touchHoldWindow = 33.33f; 
 
-    if (distance > 0.1f) {
-        float dirX = dx * invDist;
-        float dirY = dy * invDist;
+    // 🚨 OVERDRIVE INJECTION: Branchless Micro-Strobe Alternation
+    float strobeMask = (float)(g_QuantumLoop.internalTickCounter & 1);
+    float pulseMag = 85.0f + (strobeMask * 45.0f); // Alternates 85.0f / 130.0f
 
-        // 3. BRAINLESS OVERDRIVE STROBE ALTERNATION
-        if (g_QuantumLoop.internalTickCounter & 1) {
-            targetStickX = 250.0f + (dirX * 130.0f); 
-            targetStickY = 550.0f + (dirY * 130.0f);
-        } else {
-            targetStickX = 250.0f + (dirX * 85.0f);
-            targetStickY = 550.0f + (dirY * 85.0f);
-        }
+    float activeX = 250.0f + (dirX * pulseMag);
+    float activeY = 550.0f + (dirY * pulseMag);
+    
+    // Continuous scaling based on distance - NO HARD GATES
+    float closeFactor = branchless_coerce(1.0f - (distance / (screenHeight * 0.08f)), 0.0f, 1.0f);
+    
+    strobeActionFlag = (1.0f - strobeMask) * closeFactor;
+    touchHoldWindow = 33.33f - (25.0f * closeFactor); // Drops to 8.33f continuously
+    
+    targetStickX = activeX + (dirX * 40.0f * closeFactor);
+    targetStickY = activeY + (dirY * 40.0f * closeFactor);
 
-        if (distance < (screenHeight * 0.08f)) {
-            strobeActionFlag = (g_QuantumLoop.internalTickCounter % 2 == 0) ? 1.0f : 0.0f;
-            touchHoldWindow = 8.33f; 
-            targetStickX += (dirX * 40.0f);
-            targetStickY += (dirY * 40.0f);
-        }
-    }
-
-    // Branchless Range Clipping using hardware-level fmaxf/fminf (ARM64 fmn/fmx)
     result[0] = fmaxf(0.0f, fminf(targetStickX, screenWidth));
     result[1] = fmaxf(0.0f, fminf(targetStickY, screenHeight));
     result[2] = strobeActionFlag;
