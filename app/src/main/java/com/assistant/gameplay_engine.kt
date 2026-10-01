@@ -9361,15 +9361,13 @@ object SmartAssistUltimateCorrectorEngine {
         return SmartAssistCorrectionResult(outPass[0], outPass[1], outPass[2], CorrectionType.PASS, true)
     }
 
-    fun correctShot(ballX: Float, ballY: Float, goalLeftX: Float, goalRightX: Float, goalTopY: Float, goalBottomY: Float, goalkeeperX: Float, goalkeeperVisible: Boolean, goalDetected: Boolean): SmartAssistCorrectionResult? {
+    fun correctShot(ballX: Float, ballY: Float, goalLeftX: Float, goalRightX: Float, goalTopY: Float, goalBottomY: Float, goalkeeperX: Float, goalkeeperVisible: Boolean, goalDetected: Boolean): SmartAssistCorrectionResult {
         com.assistant.NativeBridge.nativeSACorrectShot(ballX, ballY, goalLeftX, goalRightX, goalTopY, goalBottomY, goalkeeperX, goalkeeperVisible, goalDetected, com.assistant.vision.CameraProfile.captureWidthOrFallback(), com.assistant.vision.CameraProfile.captureHeightOrFallback(), outShot)
-        if (outShot[3] < 0.5f) return null
         return SmartAssistCorrectionResult(outShot[0], outShot[1], outShot[2], CorrectionType.SHOT, true)
     }
 
-    fun correctCross(ballX: Float, ballY: Float, receiverX: Float, receiverY: Float, receiverVx: Float, receiverVy: Float, goalCenterX: Float, goalCenterY: Float, laneScore: Float): SmartAssistCorrectionResult? {
+    fun correctCross(ballX: Float, ballY: Float, receiverX: Float, receiverY: Float, receiverVx: Float, receiverVy: Float, goalCenterX: Float, goalCenterY: Float, laneScore: Float): SmartAssistCorrectionResult {
         com.assistant.NativeBridge.nativeSACorrectCross(ballX, ballY, receiverX, receiverY, receiverVx, receiverVy, goalCenterX, goalCenterY, laneScore, com.assistant.vision.CameraProfile.captureWidthOrFallback(), com.assistant.vision.CameraProfile.captureHeightOrFallback(), outCross)
-        if (outCross[3] < 0.5f) return null
         return SmartAssistCorrectionResult(outCross[0], outCross[1], outCross[2], CorrectionType.CROSS, true)
     }
 
@@ -14043,15 +14041,40 @@ DefenseContributor
 object DefenseContributor : GameplayContributor {
     override val engineName = "Defense"
     override val capabilities = setOf(EngineCapability.DEFENSE)
+    private val outDominance = FloatArray(4)
+    private val outStopper = FloatArray(4)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        if (!frame.trusted || frame.hasBall) return null
-        if (frame.defenderDensity <= 0f) return null
+        // UNCONDITIONAL AGGRESSIVE EXECUTION - NO GATES
+        
+        val defX = frame.ballX - 50.0f
+        val defY = frame.ballY
+        val screenW = com.assistant.vision.CameraProfile.captureWidthOrFallback()
+        val screenH = com.assistant.vision.CameraProfile.captureHeightOrFallback()
+        
+        com.assistant.NativeBridge.nativeComputeDominanceVectors(
+            defX, defY, 0f, 0f,
+            frame.ballX, frame.ballY, 0f, 0f,
+            frame.hasBall, screenW, screenH,
+            android.os.SystemClock.uptimeMillis().toInt(), outDominance
+        )
+        
+        com.assistant.NativeBridge.nativeExecuteStopperMatrix(
+            defX, defY, 0f, 0f,
+            screenW * 0.5f, screenH * 0.5f,
+            frame.ballX, frame.ballY, 0f, 0f,
+            frame.hasBall, screenW, screenH,
+            outStopper
+        )
+        
+        val finalX = outStopper[0].coerceAtLeast(0f)
+        val finalY = outStopper[1].coerceAtLeast(0f)
+        
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.DEFEND,
-            targetX = frame.ballX,
-            targetY = frame.ballY,
+            targetX = finalX,
+            targetY = finalY,
             authority = frame.defenderDensity.coerceIn(0f, 1f),
             confidence = frame.confidence,
             durationHintMs = 30L

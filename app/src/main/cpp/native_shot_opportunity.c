@@ -1,8 +1,12 @@
 #include <jni.h>
 #include <stdint.h>
+#include <math.h>
 
-static inline float coerce(float v, float min, float max) {
-    return v < min ? min : (v > max ? max : v);
+static inline float branchless_coerce(float value, float min_val, float max_val) {
+    float r = value;
+    r = 0.5f * (r + min_val + fabsf(r - min_val));
+    r = 0.5f * (r + max_val - fabsf(max_val - r));
+    return r;
 }
 
 JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeShotOpportunityAnalyze(
@@ -10,9 +14,9 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeShotOpportunityAnal
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     
-    float conf = coerce(1.0f - (distance / 1000.0f), 0.0f, 1.0f);
-    float openSide = coerce((1.0f - pressure) * 4.00f, 0.0f, 4.0f);
-    float pressScore = coerce(pressure, 0.0f, 1.0f);
+    float conf = branchless_coerce(1.0f - (distance * 0.001f), 0.0f, 1.0f);
+    float openSide = branchless_coerce((1.0f - pressure) * 4.00f, 0.0f, 4.0f);
+    float pressScore = branchless_coerce(pressure, 0.0f, 1.0f);
     
     r[0] = conf;
     r[1] = openSide;

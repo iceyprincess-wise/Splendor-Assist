@@ -1,8 +1,12 @@
 #include <jni.h>
 #include <stdint.h>
+#include <math.h>
 
-static inline float coerce(float v, float min, float max) {
-    return v < min ? min : (v > max ? max : v);
+static inline float branchless_coerce(float value, float min_val, float max_val) {
+    float r = value;
+    r = 0.5f * (r + min_val + fabsf(r - min_val));
+    r = 0.5f * (r + max_val - fabsf(max_val - r));
+    return r;
 }
 
 JNIEXPORT void JNICALL
@@ -12,10 +16,10 @@ Java_com_assistant_NativeBridge_nativeCrossPrecisionCalculate(
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
     if (!r) return;
 
-    float boost = coerce((float)strength, 0.0f, 100.0f) / 100.0f;
+    float boost = branchless_coerce((float)strength, 0.0f, 100.0f) * 0.01f;
     r[0] = x;
     r[1] = y - (40.0f * boost);
-    r[2] = coerce(0.60f + (boost * 0.40f), 0.0f, 1.0f);
+    r[2] = branchless_coerce(0.60f + (boost * 0.40f), 0.0f, 1.0f);
 
     (*env)->ReleasePrimitiveArrayCritical(env, outBuffer, r, 0);
 }
