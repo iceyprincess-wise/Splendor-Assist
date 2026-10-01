@@ -7,30 +7,35 @@
 #endif
 
 static inline float fast_atan2f(float y, float x) {
-    if (x == 0.0f && y == 0.0f) return 0.0f;
     float abs_y = fabsf(y);
     float abs_x = fabsf(x);
     float min_val = (abs_x < abs_y) ? abs_x : abs_y;
     float max_val = (abs_x > abs_y) ? abs_x : abs_y;
-    if (max_val == 0.0f) return 0.0f;
+    float safe_max = (max_val > 0.0001f) ? max_val : 0.0001f;
     
-    float r = min_val / max_val;
+    float r = min_val / safe_max;
     float r2 = r * r;
     float angle = (((-0.04649647f * r2 + 0.15931422f) * r2 - 0.32762281f) * r2 + 0.9998660f) * r;
     
-    if (abs_y > abs_x) angle = (M_PI / 2.0f) - angle;
-    if (x < 0.0f) angle = M_PI - angle;
-    if (y < 0.0f) angle = -angle;
+    float crossMask = (abs_y > abs_x) ? 1.0f : 0.0f;
+    angle = angle * (1.0f - crossMask) + ((M_PI / 2.0f) - angle) * crossMask;
+    
+    float negXMask = (x < 0.0f) ? 1.0f : 0.0f;
+    angle = angle * (1.0f - negXMask) + (M_PI - angle) * negXMask;
+    
+    float negYMask = (y < 0.0f) ? 1.0f : 0.0f;
+    angle = angle * (1.0f - negYMask) + (-angle) * negYMask;
+    
     return angle;
 }
 
 static inline float fast_wrap_360(float angle) {
-    if (angle >= 360.0f) {
-        angle -= ((int)(angle * 0.002777778f)) * 360.0f;
-    } else if (angle < 0.0f) {
-        angle += ((int)(-angle * 0.002777778f) + 1) * 360.0f;
-    }
-    return (angle >= 360.0f) ? angle - 360.0f : angle;
+    float q = floorf(angle * 0.002777778f);
+    angle = angle - q * 360.0f;
+    float overMask = (angle >= 360.0f) ? 1.0f : 0.0f;
+    float underMask = (angle < 0.0f) ? 1.0f : 0.0f;
+    angle = angle - (overMask * 360.0f) + (underMask * 360.0f);
+    return angle;
 }
 
 static inline uint32_t local_xorshift32(uint32_t* state) {
@@ -41,7 +46,14 @@ static inline uint32_t local_xorshift32(uint32_t* state) {
 }
 
 static inline float local_next_float(uint32_t* state) {
-    return (float)(local_xorshift32(state) & 0xFFFFFF) / (float)0x1000000;
+    return (float)(local_xorshift32(state) & 0xFFFFFF) * 5.960464477539063e-8f;
+}
+
+static inline float branchless_coerce(float value, float min_val, float max_val) {
+    float r = value;
+    r = 0.5f * (r + min_val + fabsf(r - min_val));
+    r = 0.5f * (r + max_val - fabsf(max_val - r));
+    return r;
 }
 
 JNIEXPORT void JNICALL
@@ -61,72 +73,53 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
     float r_fuzz2 = local_next_float(&rng_state);
     float r_fuzz3 = local_next_float(&rng_state);
 
-    float shieldActive = 0.0f;
-    if (opponentDistance > 0.0f) {
-        float normDist = opponentDistance * 0.01f;
-        float upperFuzz = 2.2f + (r_fuzz1 * 0.04f - 0.02f);
-        float lowerFuzz = 1.0f + (r_fuzz2 * 0.02f - 0.01f);
-        if (normDist < upperFuzz && (playerVelocity > 0.15f || normDist < lowerFuzz)) {
-            shieldActive = 1.0f;
-        }
-    }
+    float normDist = opponentDistance * 0.01f;
+    float upperFuzz = 2.2f + (r_fuzz1 * 0.04f - 0.02f);
+    float lowerFuzz = 1.0f + (r_fuzz2 * 0.02f - 0.01f);
+    
+    float velMask = branchless_coerce(playerVelocity * 10.0f, 0.0f, 1.0f);
+    float closeProxMask = branchless_coerce((lowerFuzz - normDist) * 2.0f, 0.0f, 1.0f);
+    float medProxMask = branchless_coerce((upperFuzz - normDist) * 2.0f, 0.0f, 1.0f);
+    
+    float shieldActive = medProxMask * (velMask + closeProxMask - velMask * closeProxMask);
+    shieldActive = branchless_coerce(shieldActive, 0.0f, 1.0f);
 
     float proximity = 1.0f - (opponentDistance * 0.004545455f);
-    proximity = (proximity < 0.0f) ? 0.0f : ((proximity > 1.0f) ? 1.0f : proximity);
+    proximity = branchless_coerce(proximity, 0.0f, 1.0f);
 
     float speed = playerVelocity * 0.06666667f;
-    speed = (speed < 0.0f) ? 0.0f : ((speed > 1.0f) ? 1.0f : speed);
+    speed = branchless_coerce(speed, 0.0f, 1.0f);
 
-    float conf = (possessionConfidence < 0.0f) ? 0.0f : ((possessionConfidence > 1.0f) ? 1.0f : possessionConfidence);
+    float conf = branchless_coerce(possessionConfidence, 0.0f, 1.0f);
 
-    float stabilityBoost;
-    if (shieldActive > 0.5f) {
-        stabilityBoost = 4.0f + proximity * 6.0f + speed * 3.0f + conf * 2.0f;
-    } else if (opponentDistance >= 1.0f && opponentDistance <= 500.0f) {
-        float softP = 1.0f - opponentDistance * 0.002f;
-        softP = (softP < 0.0f) ? 0.0f : ((softP > 1.0f) ? 1.0f : softP);
-        stabilityBoost = 3.0f + softP * 4.0f * conf;
-    } else {
-        stabilityBoost = (conf > 0.0f) ? 3.0f : 1.5f;
-    }
-    stabilityBoost = (stabilityBoost < 1.5f) ? 1.5f : ((stabilityBoost > 15.0f) ? 15.0f : stabilityBoost);
+    float shieldBoost = 4.0f + proximity * 6.0f + speed * 3.0f + conf * 2.0f;
+    float softP = 1.0f - opponentDistance * 0.002f;
+    softP = branchless_coerce(softP, 0.0f, 1.0f);
+    float distBoost = 3.0f + softP * 4.0f * conf;
+    float baseBoost = 1.5f + conf * 1.5f;
+    
+    float stabilityBoost = shieldBoost * shieldActive + distBoost * (1.0f - shieldActive) * medProxMask + baseBoost * (1.0f - medProxMask);
+    stabilityBoost = branchless_coerce(stabilityBoost, 1.5f, 15.0f);
 
-    float controlRetentionBoost = (conf > 0.05f) ? (conf * 0.6f + proximity * 0.4f) : (proximity * 0.5f);
-    controlRetentionBoost = (controlRetentionBoost < 0.0f) ? 0.0f : ((controlRetentionBoost > 1.0f) ? 1.0f : controlRetentionBoost);
+    float controlRetentionBoost = conf * 0.6f + proximity * 0.4f;
+    controlRetentionBoost = branchless_coerce(controlRetentionBoost, 0.0f, 1.0f);
 
-    float turnAssist = (turnIntensity > 0.05f) ? ((turnIntensity * 0.7f + proximity * 0.3f) * ((conf > 0.3f) ? conf : 0.3f)) : 0.0f;
-    turnAssist = (turnAssist < 0.0f) ? 0.0f : ((turnAssist > 1.0f) ? 1.0f : turnAssist);
+    float turnBase = turnIntensity * 0.7f + proximity * 0.3f;
+    float turnConf = (conf > 0.3f) ? conf : 0.3f;
+    float turnAssist = turnBase * turnConf;
+    turnAssist = branchless_coerce(turnAssist, 0.0f, 1.0f);
 
-    float shieldAngle;
-    if (playerX == playerX && playerY == playerY && oppX == oppX && oppY == oppY) {
-        float angleDeg = fast_atan2f(oppY - playerY, oppX - playerX) * 57.29578f;
-        shieldAngle = fast_wrap_360(angleDeg + 180.0f + (r_fuzz3 * 1.2f - 0.6f));
-    } else {
-        float angle = movementAngleDegrees;
-        if (angle > 180.0f || angle < -180.0f) {
-            float q = floorf((angle + 180.0f) * 0.002777778f);
-            angle = angle - q * 360.0f;
-        }
-        float offsetBase = (angle >= 0.0f) ? angle + 90.0f : angle - 90.0f;
-        shieldAngle = fast_wrap_360(offsetBase + (r_fuzz3 * 1.3f - 0.65f));
-    }
+    float angleDeg = fast_atan2f(oppY - playerY, oppX - playerX) * 57.29578f;
+    float shieldAngle = fast_wrap_360(angleDeg + 180.0f + (r_fuzz3 * 1.2f - 0.6f));
 
-    float shieldDuration;
-    if (opponentDistance <= 0.0f) {
-        int32_t rand_mod = ((int32_t)(local_xorshift32(&rng_state) % 5)) - 2;
-        shieldDuration = 45.0f + (float)rand_mod;
-    } else {
-        float normDist = opponentDistance * 0.01f;
-        if (normDist < 0.5f) normDist = 0.5f;
-        float pBonus = 100.0f / normDist;
-        if (pBonus > 60.0f) pBonus = 60.0f;
-        float vBonus = playerVelocity * 10.0f;
-        if (vBonus > 15.0f) vBonus = 15.0f;
-        
-        int32_t rand_mod = ((int32_t)(local_xorshift32(&rng_state) % 7)) - 3;
-        shieldDuration = 45.0f + pBonus + vBonus + (float)rand_mod;
-    }
-    shieldDuration = (shieldDuration < 40.0f) ? 40.0f : ((shieldDuration > 124.0f) ? 124.0f : shieldDuration);
+    float pBonus = 100.0f / (normDist > 0.5f ? normDist : 0.5f);
+    pBonus = branchless_coerce(pBonus, 0.0f, 60.0f);
+    float vBonus = playerVelocity * 10.0f;
+    vBonus = branchless_coerce(vBonus, 0.0f, 15.0f);
+    
+    int32_t rand_mod = ((int32_t)(local_xorshift32(&rng_state) % 7)) - 3;
+    float shieldDuration = 45.0f + pBonus + vBonus + (float)rand_mod;
+    shieldDuration = branchless_coerce(shieldDuration, 40.0f, 124.0f);
 
     result[0] = stabilityBoost;
     result[1] = controlRetentionBoost;

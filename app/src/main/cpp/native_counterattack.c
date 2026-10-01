@@ -1,8 +1,12 @@
 #include <jni.h>
 #include <stdint.h>
+#include <math.h>
 
-static inline float coerce(float v, float min, float max) {
-    return v < min ? min : (v > max ? max : v);
+static inline float branchless_coerce(float value, float min_val, float max_val) {
+    float r = value;
+    r = 0.5f * (r + min_val + fabsf(r - min_val));
+    r = 0.5f * (r + max_val - fabsf(max_val - r));
+    return r;
 }
 
 JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeCounterattackAnalyze(
@@ -10,13 +14,22 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeCounterattackAnalyz
     jboolean offensiveLineFound, jfloat offensiveLineConf, jfloatArray out) {
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
-    float conf = (attackers / 11.0f) +
-                 (teamShapeFound ? 0.15f : 0.0f) +
-                 (offensiveLineFound ? 0.15f : 0.0f) +
-                 (teamShapeConf * 0.05f) +
+    
+    float shapeMask = (float)teamShapeFound;
+    float lineMask = (float)offensiveLineFound;
+    
+    float conf = (attackers * 0.090909f) + 
+                 (shapeMask * 0.15f) + 
+                 (lineMask * 0.15f) + 
+                 (teamShapeConf * 0.05f) + 
                  (offensiveLineConf * 0.05f);
-    conf = coerce(conf, 0.0f, 1.0f);
-    r[0] = (conf >= 0.60f) ? 1.0f : 0.0f;
+                 
+    conf = branchless_coerce(conf, 0.0f, 1.0f);
+    
+    // NO HARD GATES. Unconditional aggressive output via smoothstep amplification
+    float amplifiedConf = conf * conf * (3.0f - 2.0f * conf); 
+    
+    r[0] = amplifiedConf; 
     r[1] = conf;
     (*env)->ReleasePrimitiveArrayCritical(env, out, r, 0);
 }

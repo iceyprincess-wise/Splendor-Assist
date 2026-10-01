@@ -28,7 +28,8 @@ Java_com_assistant_NativeBridge_nativeComputeDominanceVectors(
         jfloat defX, jfloat defY, jfloat defVx, jfloat defVy,
         jfloat targetX, jfloat targetY, jfloat targetVx, jfloat targetVy,
         jboolean isHoldingPressure, jfloat screenWidth, jfloat screenHeight,
-        jfloatArray outBuffer) {
+        jint globalMatchTick, jfloatArray outBuffer) {
+
     jfloat* result = (jfloat*)(*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
     if (!result) return;
 
@@ -43,38 +44,47 @@ Java_com_assistant_NativeBridge_nativeComputeDominanceVectors(
     float invDist = fast_inv_sqrt(dMagSq);
     float distance = (dMagSq > 0.0f) ? (1.0f / invDist) : 0.0f;
 
-    if (isHoldingPressure && distance > 0.1f) {
-        float leadScale = 0.099f; 
-        float predictedTargetX = targetX + (targetVx * leadScale);
-        float predictedTargetY = targetY + (targetVy * leadScale);
-        float pdx = predictedTargetX - defX;
-        float pdy = predictedTargetY - defY;
-        float pMagSq = pdx * pdx + pdy * pdy;
-        float invPDist = fast_inv_sqrt(pMagSq);
-        float dirX = (pMagSq > 0.0f) ? (pdx * invPDist) : 0.0f;
-        float dirY = (pMagSq > 0.0f) ? (pdy * invPDist) : 0.0f;
+    float holdMask = (float)isHoldingPressure;
+    float distMask = (distance > 0.1f) ? 1.0f : 0.0f;
+    float activeMask = holdMask * distMask;
 
-        overrideJoystickX = 250.0f + (dirX * 100.0f);
-        overrideJoystickY = 550.0f + (dirY * 100.0f);
+    float leadScale = 0.12f; 
+    float predictedTargetX = targetX + (targetVx * leadScale);
+    float predictedTargetY = targetY + (targetVy * leadScale);
 
-        float targetSpeedSq = targetVx * targetVx + targetVy * targetVy;
-        float accelerationDiff = fabsf(targetSpeedSq - (defVx * defVx + defVy * defVy));
+    float pdx = predictedTargetX - defX;
+    float pdy = predictedTargetY - defY;
+    float pMagSq = pdx * pdx + pdy * pdy;
+    float invPDist = fast_inv_sqrt(pMagSq);
 
-        if (distance < (screenHeight * 0.065f)) {
-            executeTackleTap = 1.0f;
-            gestureDuration = 18.0f;
-            overrideJoystickX += (dirX * 25.0f);
-            overrideJoystickY += (dirY * 25.0f);
-        } else if (accelerationDiff > 450.0f && distance < (screenHeight * 0.15f)) {
-            overrideJoystickX += (dirX * 40.0f);
-            overrideJoystickY += (dirY * 40.0f);
-            gestureDuration = 30.0f;
-        }
-    }
+    float dirX = (pMagSq > 0.0f) ? (pdx * invPDist) : 0.0f;
+    float dirY = (pMagSq > 0.0f) ? (pdy * invPDist) : 0.0f;
+
+    // 🚨 OVERDRIVE INJECTION: Micro-Strobe Target Pulsing
+    float strobeMask = (float)(globalMatchTick & 1);
+    float pulseMag = 90.0f + (strobeMask * 35.0f); // Alternates 90.0f / 125.0f
+
+    float strobeX = 250.0f + (dirX * pulseMag);
+    float strobeY = 550.0f + (dirY * pulseMag);
+
+    overrideJoystickX = overrideJoystickX * (1.0f - activeMask) + strobeX * activeMask;
+    overrideJoystickY = overrideJoystickY * (1.0f - activeMask) + strobeY * activeMask;
+
+    // Close-quarter combat automation triggers
+    float closeThreshold = screenHeight * 0.075f;
+    float closeMask = (distance < closeThreshold && distance > 0.0f) ? 1.0f : 0.0f;
+    
+    float tacklePulse = (float)((globalMatchTick & 1) == 0); 
+    executeTackleTap = executeTackleTap * (1.0f - closeMask) + tacklePulse * closeMask;
+    gestureDuration = gestureDuration * (1.0f - closeMask) + 10.0f * closeMask;
+    
+    overrideJoystickX += (dirX * 35.0f * closeMask);
+    overrideJoystickY += (dirY * 35.0f * closeMask);
 
     result[0] = branchless_coerce(overrideJoystickX, 0.0f, screenWidth);
     result[1] = branchless_coerce(overrideJoystickY, 0.0f, screenHeight);
     result[2] = executeTackleTap;
     result[3] = gestureDuration;
+
     (*env)->ReleasePrimitiveArrayCritical(env, outBuffer, result, 0);
 }

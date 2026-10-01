@@ -52,42 +52,34 @@ Java_com_assistant_NativeBridge_nativeExecuteStopperMatrix(
 
     float closeCombatThreshold = screenHeight * 0.065f;
     float intermediateThreatZone = screenHeight * 0.18f;
+    
+    float dirAnchorX = (anchorDistSq > 0.0f) ? (dxAnchor * invAnchorDist) : 0.0f;
+    float dirAnchorY = (anchorDistSq > 0.0f) ? (dyAnchor * invAnchorDist) : 0.0f;
+    
+    float anchorWeight = branchless_coerce((distanceToAnchor - (screenWidth * 0.22f)) * 0.01f, 0.0f, 1.0f);
+    targetStickX += dirAnchorX * 100.0f * anchorWeight;
+    targetStickY += dirAnchorY * 100.0f * anchorWeight;
+    
+    float holdMask = (float)isHoldingPressure;
+    float oppLeadScale = 0.050f;
+    float predOppX = oppX + (oppVx * oppLeadScale);
+    float predOppY = oppY + (oppVy * oppLeadScale);
+    float pdx = predOppX - playerX;
+    float pdy = predOppY - playerY;
+    float pDistSq = pdx * pdx + pdy * pdy;
+    float invPDist = fast_inv_sqrt(pDistSq);
+    float dirOppX = (pDistSq > 0.0f) ? (pdx * invPDist) : 0.0f;
+    float dirOppY = (pDistSq > 0.0f) ? (pdy * invPDist) : 0.0f;
 
-    if (distanceToAnchor > (screenWidth * 0.22f) && distanceToOpponent > intermediateThreatZone) {
-        float dirAnchorX = dxAnchor * invAnchorDist;
-        float dirAnchorY = dyAnchor * invAnchorDist;
-        targetStickX = 250.0f + (dirAnchorX * 100.0f);
-        targetStickY = 550.0f + (dirAnchorY * 100.0f);
-        trackingPacingDuration = 33.33f;
-    } 
-    else if (isHoldingPressure && distanceToOpponent > 0.1f) {
-        float oppLeadScale = 0.050f;
-        float predOppX = oppX + (oppVx * oppLeadScale);
-        float predOppY = oppY + (oppVy * oppLeadScale);
-        float pdx = predOppX - playerX;
-        float pdy = predOppY - playerY;
-        float pDistSq = pdx * pdx + pdy * pdy;
-        float invPDist = fast_inv_sqrt(pDistSq);
-        float dirOppX = (pDistSq > 0.0f) ? (pdx * invPDist) : 0.0f;
-        float dirOppY = (pDistSq > 0.0f) ? (pdy * invPDist) : 0.0f;
+    float oppWeight = holdMask * branchless_coerce((intermediateThreatZone - distanceToOpponent) * 0.01f, 0.0f, 1.0f);
+    targetStickX += dirOppX * 100.0f * oppWeight;
+    targetStickY += dirOppY * 100.0f * oppWeight;
 
-        targetStickX = 250.0f + (dirOppX * 100.0f);
-        targetStickY = 550.0f + (dirOppY * 100.0f);
-
-        if (distanceToOpponent <= closeCombatThreshold) {
-            forcePhysicalBarge = 1.0f;
-            trackingPacingDuration = 12.0f;
-            targetStickX += (dirOppX * 30.0f);
-            targetStickY += (dirOppY * 30.0f);
-        } else if (distanceToOpponent <= intermediateThreatZone) {
-            float speedFactor = oppVx * oppVx + oppVy * oppVy;
-            if (speedFactor < 2.0f) {
-                trackingPacingDuration = 20.0f;
-                targetStickX += (dirOppX * 15.0f);
-                targetStickY += (dirOppY * 15.0f);
-            }
-        }
-    }
+    float closeMask = branchless_coerce((closeCombatThreshold - distanceToOpponent) * 0.05f, 0.0f, 1.0f) * holdMask;
+    forcePhysicalBarge = closeMask;
+    trackingPacingDuration = 40.0f - (28.0f * closeMask); 
+    targetStickX += dirOppX * 30.0f * closeMask;
+    targetStickY += dirOppY * 30.0f * closeMask;
 
     result[0] = branchless_coerce(targetStickX, 0.0f, screenWidth);
     result[1] = branchless_coerce(targetStickY, 0.0f, screenHeight);
