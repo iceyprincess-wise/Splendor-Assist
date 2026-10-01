@@ -460,4 +460,18 @@ object NativeBridge {
         outBuffer: FloatArray
     )
 
+
+    @JvmStatic
+    external fun nativeBoostThreadPriority()
+
+    @JvmStatic
+    external fun nativeExecuteQuantumSimulation(
+        rawPlayerX: Float, rawPlayerY: Float,
+        rawPlayerVx: Float, rawPlayerVy: Float,
+        rawOppX: Float, rawOppY: Float,
+        rawOppVx: Float, rawOppVy: Float,
+        screenWidth: Float, screenHeight: Float,
+        outBuffer: FloatArray
+    )
+
 }

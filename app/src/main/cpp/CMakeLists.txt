@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.18.1)
 project("splendor_native" C CXX)
 
 add_library(splendor_native SHARED
+  native_quantum_core.c
   native_input.cpp
   native_kicking_posture.c
   native_agility_physics.c
