@@ -11151,7 +11151,7 @@ object RuntimeSelfHealEngine {
             }
 
             val assistEnabled = try { com.assistant.SmartAssistRepository.enabled() } catch (_: Throwable) { false }
-            if (assistEnabled && engines >= 39 && cycles == 0L && ageMs > 10_000L && shouldLog("COLLECT_ZERO", "engines=\$engines cycles=0 age=\${ageMs / 1000}s")) {
+            if (assistEnabled && engines >= 39 && cycles == 0L && ageMs > 10_000L && shouldLog("COLLECT_ZERO", "engines=$engines cycles=0 age=${ageMs / 1000}s")) {
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
                     category = "COLLECT_ZERO",
@@ -11178,11 +11178,11 @@ object RuntimeSelfHealEngine {
                 checkCaptureThread()
             }
 
-            if (engines < 39 && warmed && shouldLog("REGISTRY_GAP", "engines=\$engines")) {
+            if (engines < 39 && warmed && shouldLog("REGISTRY_GAP", "engines=$engines")) {
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
                     category = "REGISTRY_GAP",
-                    detected = "Only \$engines/39 contributors registered. Missing \${39 - engines}. " +
+                    detected = "Only $engines/39 contributors registered. Missing ${39 - engines}. " +
                         "Collect cycles this check: $delta (0 = collector frozen). " +
                         "warmUpEngines() may not have completed (G4 gate may not have fired).",
                     fix = "NONE in-memory — warmUpEngines() runs only once at G4. " +
