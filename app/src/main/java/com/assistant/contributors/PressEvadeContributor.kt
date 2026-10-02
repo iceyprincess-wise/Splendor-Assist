@@ -40,18 +40,20 @@ object PressEvadeContributor : GameplayContributor {
         }
         if (bestBalance <= 0f) return null // nowhere is actually better
 
-        val offsetX = when (bestZone) {
-            0 -> -LATERAL_STEP_PX
-            2 -> LATERAL_STEP_PX
+        // Zone 0 = top-wing strip (low Y), Zone 2 = bottom-wing strip (high Y).
+        // Escape LATERALLY toward the clear wing, i.e. adjust Y not X.
+        val offsetY = when (bestZone) {
+            0 -> -LATERAL_STEP_PX  // clear top wing → move ball toward top wing
+            2 -> LATERAL_STEP_PX   // clear bottom wing → move ball toward bottom wing
             else -> 0f
         }
-        if (offsetX == 0f) return null // no lateral escape worth taking
+        if (offsetY == 0f) return null // mid-strip balance – no clear wing to escape to
 
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.EVADE,
-            targetX = (frame.ballX + offsetX).coerceAtLeast(0f),
-            targetY = frame.ballY.coerceAtLeast(0f),
+            targetX = frame.ballX.coerceAtLeast(0f),
+            targetY = (frame.ballY + offsetY).coerceAtLeast(0f),
             authority = (0.3f + 0.4f * frame.defenderDensity.coerceIn(0f, 1f))
                 .coerceIn(0f, 1f),
             confidence = (frame.confidence * (0.5f + 0.5f * bestBalance))

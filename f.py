@@ -1,38 +1,91 @@
 #!/usr/bin/env python3
 """
-fix_clash.py — V42.1 JVM-signature clash fix
-=============================================
-Renames the @JvmStatic companion method from autoHealCapture() to
-requestAutoHeal() so it no longer collides with the instance method
-of the same name at the class level.
+f1.py — Engine-logic bug fixes (Splendor-Assist)
+=================================================
+Covers G1/G8 items from SPLENDOR_ENGINE_EFFECTIVENESS_QUEUE.md
 
-Run from your repo root:
-    python3 fix_clash.py
+PATCH A — PressEvadeContributor: lateral-axis mismatch
+  Zone 0 = top-wing area (low Y), Zone 2 = bottom-wing (high Y).
+  The escape target was computed with offsetX (depth movement) instead
+  of offsetY (lateral/wing movement).  A contributor named "PressEvade"
+  that evades pressure by moving depth-wise is incoherent; the fix
+  makes it actually move the player TOWARD the clear wing.
+
+PATCH B — RuntimeSelfHealEngine contributor-count thresholds
+  EXPECTED_CONTRIBUTOR_COUNT was raised from 29 to 39 when nine new
+  contributors were onboarded, but the COLLECT_ZERO and REGISTRY_GAP
+  health checks inside gameplay_engine.kt still reference 29.  The
+  self-heal engine was therefore silent about a 30–38 contributor gap
+  and could never trigger re-registration for partial-onboarding faults.
+
+Run from repo root:
+    python3 f1.py
 """
-import sys, re
 
-FILES = {
-    "app/src/main/java/com/assistant/OverlayService.kt": [
-        (
-            # Old companion block – plain @JvmStatic with the colliding name
-            "@JvmStatic\n        fun autoHealCapture(): Boolean =\n            instance?.autoHealCapture() ?: false",
-            # New companion block – renamed + explanatory comment
-            "// Named requestAutoHeal() (not autoHealCapture()) to avoid JVM signature\n        // which would collide with the instance fun autoHealCapture() at class level.\n        @JvmStatic\n        fun requestAutoHeal(): Boolean =\n            instance?.autoHealCapture() ?: false",
-        ),
-    ],
-    "app/src/main/java/com/assistant/gameplay_engine.kt": [
-        (
-            "com.assistant.OverlayService.autoHealCapture()",
-            "com.assistant.OverlayService.requestAutoHeal()",
-        ),
-    ],
-    "app/src/main/java/com/assistant/SplendorCaptureRecovery.kt": [
-        (
-            "com.assistant.OverlayService.autoHealCapture()",
-            "com.assistant.OverlayService.requestAutoHeal()",
-        ),
-    ],
-}
+import sys
+
+PATCHES = [
+    # ── PATCH A: PressEvadeContributor lateral-axis fix ─────────────────
+    (
+        "app/src/main/java/com/assistant/contributors/PressEvadeContributor.kt",
+        [
+            (
+                # OLD: depth-axis escape using offsetX
+                """\
+        val offsetX = when (bestZone) {
+            0 -> -LATERAL_STEP_PX
+            2 -> LATERAL_STEP_PX
+            else -> 0f
+        }
+        if (offsetX == 0f) return null // no lateral escape worth taking
+
+        return EngineContribution(
+            engine = engineName,
+            actionClass = ActionClass.EVADE,
+            targetX = (frame.ballX + offsetX).coerceAtLeast(0f),
+            targetY = frame.ballY.coerceAtLeast(0f),""",
+                # NEW: lateral-axis escape using offsetY (toward the clear wing)
+                """\
+        // Zone 0 = top-wing strip (low Y), Zone 2 = bottom-wing strip (high Y).
+        // Escape LATERALLY toward the clear wing, i.e. adjust Y not X.
+        val offsetY = when (bestZone) {
+            0 -> -LATERAL_STEP_PX  // clear top wing → move ball toward top wing
+            2 -> LATERAL_STEP_PX   // clear bottom wing → move ball toward bottom wing
+            else -> 0f
+        }
+        if (offsetY == 0f) return null // mid-strip balance – no clear wing to escape to
+
+        return EngineContribution(
+            engine = engineName,
+            actionClass = ActionClass.EVADE,
+            targetX = frame.ballX.coerceAtLeast(0f),
+            targetY = (frame.ballY + offsetY).coerceAtLeast(0f),""",
+            ),
+        ],
+    ),
+
+    # ── PATCH B: self-heal count thresholds 29 → 39 ─────────────────────
+    (
+        "app/src/main/java/com/assistant/gameplay_engine.kt",
+        [
+            # B-1: COLLECT_ZERO gate — "engines >= 29" fires when 29+ registered;
+            #       must be >= 39 so we only fire after all contributors loaded.
+            (
+                "if (assistEnabled && engines >= 29 && cycles == 0L && ageMs > 10_000L && shouldLog(\"COLLECT_ZERO\", \"engines=$engines cycles=0 age=${ageMs / 1000}s\")) {",
+                "if (assistEnabled && engines >= 39 && cycles == 0L && ageMs > 10_000L && shouldLog(\"COLLECT_ZERO\", \"engines=\$engines cycles=0 age=\${ageMs / 1000}s\")) {",
+            ),
+            # B-2: REGISTRY_GAP gate — threshold and messages
+            (
+                "if (engines < 29 && warmed && shouldLog(\"REGISTRY_GAP\", \"engines=$engines\")) {",
+                "if (engines < 39 && warmed && shouldLog(\"REGISTRY_GAP\", \"engines=\$engines\")) {",
+            ),
+            (
+                'detected = "Only $engines/29 contributors registered. Missing ${29 - engines}. " +',
+                'detected = "Only \$engines/39 contributors registered. Missing \${39 - engines}. " +',
+            ),
+        ],
+    ),
+]
 
 
 def patch(path: str, replacements):
@@ -40,30 +93,26 @@ def patch(path: str, replacements):
         with open(path, "r", encoding="utf-8") as f:
             src = f.read()
     except FileNotFoundError:
-        print(f"  SKIP  {path}  (not found)")
-        return False
+        print(f"  SKIP    {path}  (not found)")
+        return
 
-    changed = False
     for old, new in replacements:
         if old in src:
             src = src.replace(old, new, 1)
-            changed = True
-            print(f"  PATCHED  {path}")
+            print(f"  PATCHED {path}")
         elif new in src:
-            print(f"  ALREADY  {path}  (already patched)")
+            print(f"  ALREADY {path}  (already patched)")
         else:
-            print(f"  WARN     {path}  — old text not found, not patched")
-    if changed:
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(src)
-    return changed
+            print(f"  WARN    {path}  — old text not found; inspect manually")
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(src)
 
 
 def main():
-    ok = True
-    for path, reps in FILES.items():
-        ok = patch(path, reps) or ok
-    print("\nDone. Build with: ./gradlew assembleRelease")
+    for path, reps in PATCHES:
+        patch(path, reps)
+    print("\nf1.py done.")
 
 
 if __name__ == "__main__":
