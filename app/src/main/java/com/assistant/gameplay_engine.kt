@@ -10868,7 +10868,7 @@ object RuntimeSelfHealEngine {
                     //    is still alive; 2) otherwise auto-launch the system
                     //    consent dialog (one tap — Android 14 requires one
                     //    consent per capture session; no app can bypass it).
-                    try { com.assistant.OverlayService.autoHealCapture() } catch (_: Throwable) {}
+                    try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
                     // SPLENDOR_V42_AUTOHEAL_FIX_END
                     if (shouldLog("CAPTURE_REVOKED", "revoked")) {
                         record(HealEvent(

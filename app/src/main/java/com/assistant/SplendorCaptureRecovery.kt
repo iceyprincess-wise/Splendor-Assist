@@ -61,7 +61,7 @@ object SplendorCaptureRecovery {
         // v2: automatic recovery — token reuse first (zero tap), then the
         // system consent dialog (one tap). No overlay prompt / notification spam.
         try {
-            com.assistant.OverlayService.autoHealCapture()
+            com.assistant.OverlayService.requestAutoHeal()
         } catch (_: Throwable) {}
         // SPLENDOR_V42_AUTOHEAL_REVOKED_END
     }

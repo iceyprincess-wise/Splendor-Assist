@@ -112,8 +112,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
 
         // SPLENDOR_V42_AUTOHEAL_STATIC_BEGIN
+        // Named requestAutoHeal() (not autoHealCapture()) to avoid JVM signature
+        // which would collide with the instance fun autoHealCapture() at class level.
         @JvmStatic
-        fun autoHealCapture(): Boolean =
+        fun requestAutoHeal(): Boolean =
             instance?.autoHealCapture() ?: false
         // SPLENDOR_V42_AUTOHEAL_STATIC_END
     }
