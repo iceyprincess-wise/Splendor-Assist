@@ -14793,7 +14793,8 @@ object PassingContributor : GameplayContributor {
     override val capabilities = setOf(EngineCapability.PASSING, EngineCapability.ATTACK)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        if (!frame.trusted || !frame.hasBall || frame.viableLaneCount <= 0) return null
+        // UNCONDITIONAL AGGRESSIVE EXECUTION: Remove unnecessary waiting gates
+        if (!frame.trusted || !frame.hasBall) return null
         val rx = frame.passTargetX
         val ry = frame.passTargetY
         if (rx <= 0f && ry <= 0f) return null

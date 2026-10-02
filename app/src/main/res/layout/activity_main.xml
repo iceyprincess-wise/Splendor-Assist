@@ -22,11 +22,15 @@
 
         <TextView android:id="@+id/tvTitle"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_3" android:textColor="#FFFFFF"
-            android:textStyle="bold" android:textSize="28sp"/>
+            android:text="SPLENDOR ASSIST 2027"
+            android:textColor="#00E5FF"
+            android:textStyle="bold" android:textSize="32sp"
+            android:shadowColor="#00E5FF" android:shadowRadius="8.0"/>
         <TextView android:id="@+id/tvSubtitle"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_4" android:textColor="#B8CCE6"
+            android:text="NATIVE C MUTATION ENGINE ACTIVE"
+            android:textColor="#40E36A"
+            android:textStyle="bold"
             android:layout_marginBottom="20dp"/>
 
         <com.google.android.material.button.MaterialButton android:id="@+id/btnStartEngine"

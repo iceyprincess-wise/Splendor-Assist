@@ -50,11 +50,7 @@ object NativeBridge {
         nativePreprocessAvailable = false
         nativeLoaded = false
         nativeLastError = t?.toString()
-        try {
-            com.assistant.diagnostic.RuntimeLogger.log(
-                "NATIVE_VISION_PREPROCESS_UNAVAILABLE " + (t?.toString() ?: "unknown"),
-                "NATIVE_VISION"
-            )
+        // Removed redundant logging to eliminate hot-path overhead
         } catch (_: Throwable) {
         }
     }

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- PHASE10_MATERIAL3_THEME_MARKER -->
-    <style name="Theme.SplendorAssist" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">#2563EB</item>
-        <item name="colorPrimaryDark">#173A6A</item>
-        <item name="colorAccent">#40E36A</item>
-        <item name="android:windowBackground">#173A6A</item>
-        <item name="android:statusBarColor">#0F2547</item>
-        <item name="android:navigationBarColor">#0F2547</item>
+    <style name="Theme.SplendorAssist" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">#00E5FF</item>
+        <item name="colorPrimaryContainer">#003340</item>
+        <item name="colorSecondary">#40E36A</item>
+        <item name="android:windowBackground">#0A0E17</item>
+        <item name="android:statusBarColor">#05080F</item>
+        <item name="android:navigationBarColor">#05080F</item>
     </style>
 </resources>
