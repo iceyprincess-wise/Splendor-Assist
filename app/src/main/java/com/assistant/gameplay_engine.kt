@@ -10797,8 +10797,44 @@ object RuntimeSelfHealEngine {
 
     private fun checkCaptureThread() {
         try {
-            val f = FrameAssembler.current() ?: return
+            val f = FrameAssembler.current()
             val now = System.currentTimeMillis()
+
+            // SPLENDOR_V42_NULL_FRAME_FIX_BEGIN
+            // Field log 2026-10-02 15:47: capture=0x0 -> FrameAssembler.current()
+            // stays null -> old `?: return` made COLLECT_ZERO unhealable.
+            if (f == null) {
+                val state = com.assistant.OverlayService.captureState()
+                if (state == com.assistant.OverlayService.CaptureState.ACTIVE ||
+                    state == com.assistant.OverlayService.CaptureState.AUTHORIZED) {
+                    val canRetry = captureRestartAttempts < 3 &&
+                        (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L)
+                    if (canRetry) {
+                        captureRestartAttempts++
+                        lastRestartAttemptMs = now
+                        totalHeals++
+                        val restarted = try {
+                            val cls = Class.forName("com.assistant.OverlayService")
+                            val method = cls.getDeclaredMethod("restartCaptureIfAlive")
+                            (method.invoke(null) as? Boolean) ?: false
+                        } catch (e: Throwable) {
+                            RuntimeLogger.log("AGENT: restartCaptureIfAlive failed: ${e.message}", "AGENT")
+                            false
+                        }
+                        record(HealEvent(
+                            timestamp = fmt.format(Date()),
+                            category = "CAPTURE_RESTART",
+                            detected = "No frame ever assembled (capture=" + com.assistant.vision.CameraProfile.diagnostics() + "). " +
+                                "Attempt #$captureRestartAttempts of 3.",
+                            fix = if (restarted) "RESTART SENT to OverlayService.restartCapture()." else
+                                "CAPTURE RESTART FAILED — capture state " + com.assistant.OverlayService.captureState() + ".",
+                            severity = if (restarted) "FIXED" else "CRITICAL"
+                        ))
+                    }
+                }
+                return
+            }
+            // SPLENDOR_V42_NULL_FRAME_FIX_END
 
             if (f.frameId != lastKnownFrameId) {
                 lastKnownFrameId = f.frameId
@@ -10826,13 +10862,19 @@ object RuntimeSelfHealEngine {
             if (state == com.assistant.OverlayService.CaptureState.REVOKED) {
                 if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
                     lastRestartAttemptMs = now
-                    // MASSIVE POWER: AI Agent handles projection revoke autonomously and silently.
+                    // SPLENDOR_V42_REVOKE_PROMPT_FIX_BEGIN
+                    // Field log 2026-10-02 11:16: SILENT KILL after 1592s.
+                    // A revoked MediaProjection can ONLY be restored with a fresh
+                    // user authorization. Logging silently left the app dead.
+                    // Surface the tap-to-restore prompt so recovery is possible.
+                    try { com.assistant.OverlayService.requestRecoveryPrompt() } catch (_: Throwable) {}
+                    // SPLENDOR_V42_REVOKE_PROMPT_FIX_END
                     if (shouldLog("CAPTURE_REVOKED", "revoked")) {
                         record(HealEvent(
                             timestamp = fmt.format(Date()),
                             category = "CAPTURE_REVOKED",
-                            detected = "MediaProjection revoked; AI Agent handling autonomously without interrupting gameplay.",
-                            fix = "Capture resources invalidated. AI Agent operates silently in background.",
+                            detected = "MediaProjection revoked; recovery prompt surfaced for fresh authorization.",
+                            fix = "User tap on prompt restores capture with a fresh MediaProjection token.",
                             severity = "CRITICAL"
                         ))
                     }

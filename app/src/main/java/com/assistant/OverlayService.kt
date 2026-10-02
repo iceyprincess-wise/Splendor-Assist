@@ -674,6 +674,26 @@ class OverlayService : Service(), ComponentCallbacks2 {
             finalHeight = (metrics.heightPixels * scale).toInt() and 0xFFFFFFFE.toInt()
         }
 
+        // SPLENDOR_V42_ZERO_CAPTURE_GUARD_BEGIN
+        // Field log 2026-10-02 15:47: capture=0x0 source=0x0 -> ImageReader
+        // created with 0x0 dimensions -> no frame ever delivered -> COLLECT_ZERO
+        // spam + EARLY DEATH. windowManager.currentWindowMetrics.bounds can
+        // return 0x0 when the service starts before the display is ready.
+        if (finalWidth <= 0 || finalHeight <= 0) {
+            @Suppress("DEPRECATION")
+            windowManager.defaultDisplay.getRealMetrics(metrics)
+            finalWidth = (metrics.widthPixels * scale).toInt() and 0xFFFFFFFE.toInt()
+            finalHeight = (metrics.heightPixels * scale).toInt() and 0xFFFFFFFE.toInt()
+            RuntimeLogger.log("ZERO_CAPTURE_GUARD: window metrics 0x0, fell back to display " + finalWidth + "x" + finalHeight, "OVERLAY")
+        }
+        if (finalWidth <= 0 || finalHeight <= 0) {
+            // Last resort: fixed 288x640 (0.4x of 720x1600) so capture can never be 0x0.
+            finalWidth = 288
+            finalHeight = 640
+            RuntimeLogger.log("ZERO_CAPTURE_GUARD: display metrics also 0x0, forced 288x640", "OVERLAY")
+        }
+        // SPLENDOR_V42_ZERO_CAPTURE_GUARD_END
+
         com.assistant.vision.OverlaySelfMask.setCaptureScale(finalWidth, finalHeight, if (scale > 0f) (finalWidth / scale).toInt() else finalWidth, if (scale > 0f) (finalHeight / scale).toInt() else finalHeight)
         // SPLENDOR_V12A_CAMERA_PROFILE_BEGIN
         com.assistant.vision.CameraProfile.setCaptureScale(
