@@ -275,6 +275,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
         dispatcher = ActiveGestureController(this)
         globalInstance = this
+        // Wire AsynchronousGestureQueue so its fallback dispatch path is live.
+        AsynchronousGestureQueue.bindService(this)
         AccessibilitySurvivalEngine.connected()
 
         RuntimeCoordinator.attachExecutionLoop(

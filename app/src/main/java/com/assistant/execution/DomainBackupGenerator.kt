@@ -242,24 +242,11 @@ object DomainBackupGenerator {
     }
 
     private fun verifyExecutionSources() {
-        // Submit dummy requests to ensure SMART_ASSIST (90) and STUTTER (80) sources are active
-        // in HybridExecutionTerminal and CentralExecutionBus
-        val gameplayRequest = ExecutionRequest(
-            source = ExecutionSource.SMART_ASSIST,
-            phase = 0,
-            startX = 0f, startY = 0f, endX = 0f, endY = 0f,
-            duration = 1L
-        )
-        val performanceRequest = ExecutionRequest(
-            source = ExecutionSource.STUTTER,
-            phase = 0,
-            startX = 0f, startY = 0f, endX = 0f, endY = 0f,
-            duration = 1L
-        )
-
-        HybridExecutionTerminal.route(gameplayRequest)
-        HybridExecutionTerminal.route(performanceRequest)
-        
-        RuntimeLogger.execution("DOMAIN_BACKUP", "Execution sources SMART_ASSIST and STUTTER verified via HybridExecutionTerminal")
+        // Class-loading verification: the hashCode() calls in touchGameplayEngines() and
+        // touchPerformanceEngines() already guarantee HybridExecutionTerminal and
+        // CentralExecutionBus are loaded.  Sending live dummy gestures here is wrong —
+        // they are valid ExecutionRequests that the bus loop will dispatch as real (0,0)
+        // screen touches at startup.
+        RuntimeLogger.execution("DOMAIN_BACKUP", "Execution sources SMART_ASSIST and STUTTER class-verified (no live dispatch)")
     }
 }
