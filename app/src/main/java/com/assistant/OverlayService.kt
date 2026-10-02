@@ -110,6 +110,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
         fun requestRecoveryPrompt() {
             instance?.showCaptureRecoveryPrompt()
         }
+
+        // SPLENDOR_V42_AUTOHEAL_STATIC_BEGIN
+        @JvmStatic
+        fun autoHealCapture(): Boolean =
+            instance?.autoHealCapture() ?: false
+        // SPLENDOR_V42_AUTOHEAL_STATIC_END
     }
 
     @Volatile private var isRunning = false
@@ -126,6 +132,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var virtualDisplay: VirtualDisplay? = null
     private var imageReader: ImageReader? = null
     private var projectionCallback: MediaProjection.Callback? = null
+
+    // SPLENDOR_V42_AUTOHEAL_FIELDS_BEGIN
+    // Auto-heal capture: keep the granted token so recovery can be attempted
+    // without user interaction (token reuse) before falling back to the
+    // system consent dialog (one tap — Android 14 requires one consent per
+    // capture session).
+    @Volatile private var savedProjectionCode = 0
+    @Volatile private var savedProjectionData: Intent? = null
+    @Volatile private var lastAutoHealAttemptMs = 0L
+    // SPLENDOR_V42_AUTOHEAL_FIELDS_END
 
     private var captureState: CaptureState = CaptureState.IDLE
     private val captureLock = ReentrantLock()
@@ -338,6 +354,63 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
     }
 
+    // SPLENDOR_V42_AUTOHEAL_METHOD_BEGIN
+    // Automatic capture recovery — no manual tap required.
+    //  - Capture alive but stale: restart the ImageReader (no token, no tap).
+    //  - Revoked/failed/idle: token reuse (zero interaction) when the session
+    //    is still alive; otherwise auto-launch the system consent dialog
+    //    (one tap — Android 14 requires one consent per capture session; no
+    //    app can bypass that, but the app handles everything else itself).
+    fun autoHealCapture(): Boolean {
+        val now = System.currentTimeMillis()
+        if (now - lastAutoHealAttemptMs < 15_000L) return false  // anti-spam cooldown
+        lastAutoHealAttemptMs = now
+        val st = readCaptureState()
+        if (st == CaptureState.ACTIVE || st == CaptureState.AUTHORIZED) {
+            val ok = try { restartCapture() } catch (_: Throwable) { false }
+            RuntimeLogger.log("AUTO_HEAL: capture alive but stale -> restartCapture() = " + ok, "OVERLAY")
+            return ok
+        }
+        val code = savedProjectionCode
+        val data = savedProjectionData
+        if (code == 0 || data == null) {
+            RuntimeLogger.log("AUTO_HEAL: no saved token; requesting fresh authorization", "OVERLAY")
+            launchReauthActivity()
+            return false
+        }
+        // Attempt 1: token reuse — zero user interaction.
+        try {
+            val pm = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+            val mp = pm.getMediaProjection(code, data)
+            if (mp != null) {
+                captureLock.lock()
+                try {
+                    setupMediaProjectionInternal(code, data)
+                    RuntimeLogger.log("AUTO_HEAL: token reuse succeeded — capture restored without user interaction", "OVERLAY")
+                    return true
+                } finally {
+                    captureLock.unlock()
+                }
+            }
+        } catch (t: Throwable) {
+            RuntimeLogger.log("AUTO_HEAL: token reuse failed (" + t.javaClass.simpleName + ": " + t.message + ")", "OVERLAY")
+        }
+        // Attempt 2: auto re-prompt — one system consent tap (Android 14 rule).
+        RuntimeLogger.log("AUTO_HEAL: token dead; auto-launching system consent (single tap)", "OVERLAY")
+        launchReauthActivity()
+        return false
+    }
+
+    private fun launchReauthActivity() {
+        try {
+            val i = Intent(this, SplendorReauthActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(i)
+        } catch (t: Throwable) {
+            RuntimeLogger.log("AUTO_HEAL: reauth activity launch failed (" + t.javaClass.simpleName + ": " + t.message + ")", "OVERLAY")
+        }
+    }
+    // SPLENDOR_V42_AUTOHEAL_METHOD_END
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     fun restartCapture(): Boolean {
@@ -422,6 +495,22 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // SPLENDOR_V42_FG_FIRST_WAIT_BEGIN
+        // Android 14 service-first ordering: the service may be started in
+        // WAITING_FOR_TOKEN mode (before the consent dialog) or told to stop
+        // itself if the user cancelled consent.
+        if (intent?.getBooleanExtra("WAITING_FOR_TOKEN", false) == true) {
+            startForegroundSafely()
+            RuntimeLogger.log("OverlayService started in WAITING_FOR_TOKEN mode (Android 14 service-first ordering)", "OVERLAY")
+            return START_NOT_STICKY
+        }
+        if (intent?.getBooleanExtra("CANCEL_TOKEN", false) == true) {
+            if (mediaProjection == null && readCaptureState() == CaptureState.IDLE) {
+                stopSelf()
+            }
+            return START_NOT_STICKY
+        }
+        // SPLENDOR_V42_FG_FIRST_WAIT_END
         val resultCode = intent?.getIntExtra("CROSS_PROCESS_CODE", EngineData.code) ?: EngineData.code
         val data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent?.getParcelableExtra("CROSS_PROCESS_DATA", Intent::class.java) ?: EngineData.intent
@@ -491,7 +580,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         val layoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
             PixelFormat.TRANSLUCENT
         )
         windowManager.addView(overlayView, layoutParams)
@@ -622,12 +711,30 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         mediaProjection = mp
 
+        // SPLENDOR_V42_AUTOHEAL_TOKENSAVE_BEGIN
+        savedProjectionCode = code
+        savedProjectionData = intent
+        // SPLENDOR_V42_AUTOHEAL_TOKENSAVE_END
+
         val cb = object : MediaProjection.Callback() {
             override fun onStop() {
                 super.onStop()
+                val stoppedMp = mediaProjection
                 Handler(Looper.getMainLooper()).post {
+                    // SPLENDOR_V42_AUTOHEAL_ONSTOP_BEGIN
+                    // Ignore transient stops during re-setup (a newer projection
+                    // already replaced this one) — prevents a heal loop.
+                    if (stoppedMp != null && stoppedMp !== mediaProjection) return@post
+                    // SPLENDOR_V42_AUTOHEAL_ONSTOP_END
                     teardownCaptureResources(CaptureState.REVOKED)
-                    RuntimeLogger.log("MediaProjection.onStop(): projection revoked; capture resources invalidated. AI Agent handling silently.", "OVERLAY")
+                    RuntimeLogger.log("MediaProjection.onStop(): projection revoked; auto-healing capture.", "OVERLAY")
+                    // SPLENDOR_V42_AUTOHEAL_ONSTOP_BEGIN
+                    // Auto-recover instead of waiting for a manual tap. Small
+                    // delay lets the system settle after the revoke.
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        try { autoHealCapture() } catch (_: Throwable) {}
+                    }, 2000L)
+                    // SPLENDOR_V42_AUTOHEAL_ONSTOP_END
                 }
             }
         }
@@ -659,8 +766,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         val scale = 0.4f
         val metrics = DisplayMetrics()
-        val finalWidth: Int
-        val finalHeight: Int
+        var finalWidth: Int
+        var finalHeight: Int
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val bounds = windowManager.currentWindowMetrics.bounds

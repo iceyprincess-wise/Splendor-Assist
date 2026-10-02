@@ -10862,19 +10862,20 @@ object RuntimeSelfHealEngine {
             if (state == com.assistant.OverlayService.CaptureState.REVOKED) {
                 if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
                     lastRestartAttemptMs = now
-                    // SPLENDOR_V42_REVOKE_PROMPT_FIX_BEGIN
-                    // Field log 2026-10-02 11:16: SILENT KILL after 1592s.
-                    // A revoked MediaProjection can ONLY be restored with a fresh
-                    // user authorization. Logging silently left the app dead.
-                    // Surface the tap-to-restore prompt so recovery is possible.
-                    try { com.assistant.OverlayService.requestRecoveryPrompt() } catch (_: Throwable) {}
-                    // SPLENDOR_V42_REVOKE_PROMPT_FIX_END
+                    // SPLENDOR_V42_AUTOHEAL_FIX_BEGIN
+                    // v2 (2026-10-02): automatic recovery — no manual tap.
+                    // 1) token reuse (zero interaction) if the projection session
+                    //    is still alive; 2) otherwise auto-launch the system
+                    //    consent dialog (one tap — Android 14 requires one
+                    //    consent per capture session; no app can bypass it).
+                    try { com.assistant.OverlayService.autoHealCapture() } catch (_: Throwable) {}
+                    // SPLENDOR_V42_AUTOHEAL_FIX_END
                     if (shouldLog("CAPTURE_REVOKED", "revoked")) {
                         record(HealEvent(
                             timestamp = fmt.format(Date()),
                             category = "CAPTURE_REVOKED",
-                            detected = "MediaProjection revoked; recovery prompt surfaced for fresh authorization.",
-                            fix = "User tap on prompt restores capture with a fresh MediaProjection token.",
+                            detected = "MediaProjection revoked; auto-heal triggered (token reuse or system consent).",
+                            fix = "Auto-heal: token reuse if session alive, else system consent dialog (single tap).",
                             severity = "CRITICAL"
                         ))
                     }

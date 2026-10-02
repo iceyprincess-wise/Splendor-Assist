@@ -42,6 +42,7 @@
             </intent-filter>
         </activity>
         
+        <activity android:name="com.assistant.SplendorReauthActivity" android:exported="false" android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity android:name="com.assistant.DiagnosisDetailActivity" android:exported="false" />
         <activity android:name="com.assistant.DiagnosisRoomActivity" android:exported="false" />
         

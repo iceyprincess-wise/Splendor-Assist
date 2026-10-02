@@ -32,7 +32,7 @@ object SplendorCaptureRecovery {
         svcRef = WeakReference(svc); ensureChannel(svc)
         handler.removeCallbacks(checker); handler.post(checker)
     }
-    fun markFrame() { lastFrame = System.currentTimeMillis(); armed = true }
+    fun markFrame() { lastFrame = System.currentTimeMillis(); armed = true; dead = false }
     fun statusText(default: String): String =
         if (!dead) default else "ENGINE DEAD - tap to re-authorize capture"
     
@@ -52,25 +52,18 @@ object SplendorCaptureRecovery {
 
     private fun check() {
         if (!armed || lastFrame == 0L || dead) return
-        if (System.currentTimeMillis() - lastFrame > 8000) { dead = true; onRevoked() }
+        if (System.currentTimeMillis() - lastFrame > 30000) { dead = true; onRevoked() }
     }
     private fun onRevoked() {
-        val svc = svcRef?.get() ?: return
-        Log.w(TAG, "capture stale -> requesting fresh user authorization and forcing overlay prompt")
-        
-        // EMPOWERED: Force the overlay prompt immediately so user cannot miss it
+        if (svcRef?.get() == null) return
+        Log.w(TAG, "capture stale -> auto-healing capture (no manual tap required)")
+        // SPLENDOR_V42_AUTOHEAL_REVOKED_BEGIN
+        // v2: automatic recovery — token reuse first (zero tap), then the
+        // system consent dialog (one tap). No overlay prompt / notification spam.
         try {
-            com.assistant.OverlayService.requestRecoveryPrompt()
+            com.assistant.OverlayService.autoHealCapture()
         } catch (_: Throwable) {}
-
-        val i = Intent(svc, SplendorReauthActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        val pi = PendingIntent.getActivity(svc, 4242, i, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        val nb = Notification.Builder(svc, CH)
-            .setContentTitle("Splendor capture dead")
-            .setContentText("Tap to re-authorize screen capture")
-            .setSmallIcon(android.R.drawable.ic_menu_camera)
-            .setContentIntent(pi).setOngoing(true)
-        svc.getSystemService(NotificationManager::class.java).notify(777, nb.build())
+        // SPLENDOR_V42_AUTOHEAL_REVOKED_END
     }
     fun deliver(rc: Int, data: Intent) {
         dead = false; armed = false; lastFrame = 0L
