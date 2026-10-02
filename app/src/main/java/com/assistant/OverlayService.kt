@@ -318,6 +318,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val state = com.assistant.VisionCore.process(normalized)
                 com.assistant.BoosterIgnition.ensureIgnited(this@OverlayService)
                 com.assistant.AppContributorRegistration.ensureRegistered()
+                // MUTATION TOOL 1: Escalate thread priority to MAX (-19) for zero-delay execution
+                com.assistant.NativeBridge.nativeEscalateThreadPriority()
                 com.assistant.RuntimeCoordinator.reportCaptureReady()
                 val frame = com.assistant.FrameAssembler.assemble()
                 com.assistant.RuntimeDecisionLoop.onFrame(frame)

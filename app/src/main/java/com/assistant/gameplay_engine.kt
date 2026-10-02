@@ -13774,7 +13774,7 @@ object AttackingVectorContributor:GameplayContributor{
     else if(frame.ballX>=825f){gkX=1620f;gkY=360f;lpX=1620f;lpY=280f;rpX=1620f;rpY=440f}
     else{gkX=30f;gkY=360f;lpX=30f;lpY=280f;rpX=30f;rpY=440f}
     val dist=hypot((frame.ballX-gkX).toDouble(),(frame.ballY-gkY).toDouble()).toFloat()
-    if(dist>MAX_SHOT_RANGE)return null
+    // UNCONDITIONAL AGGRESSIVE EXECUTION: Allow shot calculation at all ranges for recovery
     val point=CriticalAttackingVectorEngine.computeAbsoluteScoringVector(frame.ballX,frame.ballY,gkX,gkY,lpX,lpY,rpX,rpY)
     val proximity=(1f-dist/MAX_SHOT_RANGE).coerceIn(0f,1f)
     val clearance=(1f-frame.defenderDensity*0.4f).coerceIn(0f,1f)
