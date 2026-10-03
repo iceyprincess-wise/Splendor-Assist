@@ -123,6 +123,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     @Volatile private var isRunning = false
     private var processingThread: Thread? = null
     @Volatile private var reusableVisionBuffer: java.nio.ByteBuffer? = null
+    @Volatile private var previousVisionBuffer: java.nio.ByteBuffer? = null
     private val emptyVisionBuffer: java.nio.ByteBuffer = java.nio.ByteBuffer.allocateDirect(0)
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: View
@@ -315,6 +316,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride)
                 // MUTATION TOOL 2: Compute optical variance for 0.1ms pixel-delta quantization
                 com.assistant.NativeBridge.nativeComputeOpticalVariance(visionBuffer, previousVisionBuffer ?: visionBuffer, width, height, rowStride, 0, 0, width, height)
+            previousVisionBuffer = visionBuffer
                 val state = com.assistant.VisionCore.process(normalized)
                 com.assistant.BoosterIgnition.ensureIgnited(this@OverlayService)
                 com.assistant.AppContributorRegistration.ensureRegistered()
