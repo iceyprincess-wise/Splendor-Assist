@@ -9846,7 +9846,7 @@ object BlobListResult : java.util.AbstractList<ConnectedComponentEngine.Blob>() 
     internal var pool: Array<ConnectedComponentEngine.Blob> = emptyArray()
     override var size: Int = 0
     override fun get(index: Int): ConnectedComponentEngine.Blob = pool[index]
-    fun bind(p: Array<ConnectedComponentEngine.Blob>, s: Int) { pool = p; size = s }
+    fun bind(p: Array<ConnectedComponentEngine.Blob>, s: Int) { pool = p; size = minOf(s, p.size) }
 }
 
 object VisionPreprocessor {
@@ -9867,7 +9867,9 @@ object VisionPreprocessor {
 
         if (blobCount >= 0) {
             var actualCount = 0
-            for (i in 0 until blobCount) {
+            val limit = minOf(blobCount, blobPool.size)
+            for (i in 0 until limit) {
+                if (actualCount >= blobPool.size) break
                 val offset = i * 8
                 val count = nativeBlobBuffer[offset + 4]
                 if (count > 0) {
