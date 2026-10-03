@@ -323,6 +323,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 com.assistant.RuntimeCoordinator.reportCaptureReady()
                 val frame = com.assistant.FrameAssembler.assemble()
                 com.assistant.RuntimeDecisionLoop.onFrame(frame)
+                // WIRE SILOED GK ENGINES: Activate Dive, Claim, Rush, and Block action engines
+                com.assistant.overlay.interceptor.GoalkeeperExecutionEngine.processFrame(visionBuffer, width, height, rowStride)
                 com.assistant.GameStateBuilder.update(state)
                 com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(visionBuffer, width, height, rowStride)
                 com.assistant.ControlMappingTrainer.observe(visionBuffer, width, height, rowStride)

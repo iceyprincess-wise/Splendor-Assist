@@ -13667,7 +13667,8 @@ object AgilityContributor : GameplayContributor {
     override val capabilities = setOf(EngineCapability.MOVEMENT, EngineCapability.SUPPORT)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        if (!frame.trusted || !frame.hasBall) return null
+        // UNCONDITIONAL: Support positioning must happen even without the ball
+        if (!frame.trusted) return null
 
         var oppX: Float? = null
         var oppY: Float? = null
@@ -13870,7 +13871,8 @@ object CrossContributor : GameplayContributor {
     override val capabilities = setOf(EngineCapability.ATTACK, EngineCapability.PASSING)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        if (!frame.trusted || !frame.hasBall) return null
+        // UNCONDITIONAL: Defensive positioning is critical when opponent has the ball
+        if (!frame.trusted) return null
         if (frame.viableLaneCount <= 0) return null
 
         val strength = (frame.bestLaneConfidence * 100f).toInt().coerceIn(0, 100)
