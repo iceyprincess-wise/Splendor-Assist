@@ -474,4 +474,41 @@ object NativeBridge {
         outBuffer: FloatArray
     )
 
+
+    @JvmStatic
+    fun nativeComputeAgilityPhysics(
+        ballX: Float, ballY: Float,
+        passTargetX: Float, passTargetY: Float,
+        defenderDensity: Float,
+        outBuffer: FloatArray
+    ): Boolean {
+        // Map to existing native implementation with safe telemetry defaults
+        nativeAgilityPhysicsImpl(
+            playerVelocity = 5.0f, opponentDistance = 100.0f,
+            movementAngleDegrees = 0.0f, possessionConfidence = 1.0f,
+            turnIntensity = 0.5f, playerX = ballX, playerY = ballY,
+            oppX = passTargetX, oppY = passTargetY, threadSeed = nextThreadSeed(),
+            outBuffer = outBuffer
+        )
+        return true
+    }
+
+    @JvmStatic
+    fun nativeComputeBallRetention(
+        ballX: Float, ballY: Float,
+        defenderDensity: Float,
+        resultBuffer: FloatArray
+    ): Boolean {
+        // Map to existing native implementation with safe telemetry defaults
+        nativeBallRetentionShieldCompute(
+            hasBall = true, trusted = true, confidence = 1.0f,
+            ballX = ballX, ballY = ballY, viableLaneCount = 3,
+            passTargetX = ballX, passTargetY = ballY,
+            zonesLeftTheirs = 0, zonesMidTheirs = 0, zonesRightTheirs = 0,
+            defenderDensity = defenderDensity, laneCount = 3,
+            resultBuffer = resultBuffer
+        )
+        return true
+    }
+
 }

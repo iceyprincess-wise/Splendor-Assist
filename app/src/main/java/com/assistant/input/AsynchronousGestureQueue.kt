@@ -34,7 +34,7 @@ object AsynchronousGestureQueue {
         }
         // MUTATION TOOL 3: High-frequency gesture splitting for zero-delay input
         val strobePackets = FloatArray(16)
-        com.assistant.NativeBridge.nativeInjectStrobePackets(startX, startY, endX, endY, duration.toInt(), 4, strobePackets)
+        com.assistant.NativeBridge.nativeInjectStrobePackets(element.startX, element.startY, endX, endY, duration.toInt(), 4, strobePackets)
         
         val gesture = GestureDescription.Builder()
             .addStroke(GestureDescription.StrokeDescription(path, 0, duration.coerceAtLeast(10L)))
