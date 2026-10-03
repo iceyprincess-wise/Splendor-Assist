@@ -1,0 +1,252 @@
+
+============================================================
+SPLENDOR SELF-HEAL AGENT SESSION: 2026-10-03 15:23:05
+Read: cat /sdcard/Splendor-Assist/SplendorHealLog.txt
+============================================================
+
+[15:23:06.189] [FIXED] [CAPTURE_RESTART]
+  DETECTED: No frame ever assembled (capture=profile=DYNAMIC_WIDE capture=288x640 source=720x1600). Attempt #1 of 3.
+  FIX:      RESTART SENT to OverlayService.restartCapture().
+
+[15:23:08.259] [CRITICAL] [REGISTRY_EMPTY]
+  DETECTED: RuntimeSelfHealAgent observed 0 registered contributors after warm grace. collectCycles=0. Registry drift or reset without re-registration.
+  FIX:      Forcing AppContributorRegistration.reset()+ensureRegistered() and capture health check.
+
+[15:23:08.279] [CRITICAL] [REGISTRY_GAP]
+  DETECTED: Only 0/39 contributors registered. Missing 39. Collect cycles this check: 0 (0 = collector frozen). warmUpEngines() may not have completed (G4 gate may not have fired).
+  FIX:      NONE in-memory — warmUpEngines() runs only once at G4. Check if G2 (capture) + G1 (accessibility) gates both reached.
+
+
+============================================================
+SPLENDOR SELF-HEAL AGENT SESSION: 2026-10-03 15:23:18
+Read: cat /sdcard/Splendor-Assist/SplendorHealLog.txt
+============================================================
+
+[15:23:21.418] [CRITICAL] [REGISTRY_EMPTY]
+  DETECTED: RuntimeSelfHealAgent observed 0 registered contributors after warm grace. collectCycles=0. Registry drift or reset without re-registration.
+  FIX:      Forcing AppContributorRegistration.reset()+ensureRegistered() and capture health check.
+
+[15:23:21.437] [CRITICAL] [REGISTRY_GAP]
+  DETECTED: Only 0/39 contributors registered. Missing 39. Collect cycles this check: 0 (0 = collector frozen). warmUpEngines() may not have completed (G4 gate may not have fired).
+  FIX:      NONE in-memory — warmUpEngines() runs only once at G4. Check if G2 (capture) + G1 (accessibility) gates both reached.
+
+[15:23:25.471] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:27.500] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:28.306] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:29.524] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:31.553] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:33.330] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:35.574] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:37.595] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:38.344] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:39.629] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:41.658] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:43.365] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:45.697] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:47.726] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:48.382] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:49.764] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:51.792] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:53.398] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:55.846] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:57.881] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:58.423] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:23:59.919] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:01.939] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:03.437] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:05.993] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:08.025] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:08.451] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:10.061] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:12.097] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:13.475] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:16.136] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:18.174] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:18.491] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:20.210] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:22.245] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:23.504] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:26.285] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:28.302] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:30.326] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:32.343] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:33.519] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:34.371] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:36.406] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:38.430] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:40.457] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:42.487] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:43.543] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:44.522] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:46.535] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:48.550] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:50.577] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:52.597] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:53.556] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:54.628] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
+[15:24:56.666] [CRITICAL] [COLLECT_ZERO]
+  DETECTED: GameplayEngineRegistry has 39 contributors but collect() has never incremented collectCycles. RuntimeDecisionLoop/onFrame is not reaching contributor collection.
+  FIX:      Trigger capture restart check. Root caller trace required for permanent fix.
+
