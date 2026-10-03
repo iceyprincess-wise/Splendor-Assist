@@ -389,6 +389,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
         // Attempt 1: token reuse — zero user interaction.
         try {
+            startForegroundSafely()
             val pm = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             val mp = pm.getMediaProjection(code, data)
             if (mp != null) {
@@ -504,6 +505,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForegroundSafely()
 
         val resultCode = intent?.getIntExtra("CROSS_PROCESS_CODE", EngineData.code) ?: EngineData.code
         val data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -516,7 +518,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
         if (resultCode == Activity.RESULT_OK && data != null) {
             try {
                 setupMediaProjection(resultCode, data)
-                startForegroundSafely()
                 if (!isRunning) {
                     initializeProcessingEngine()
                 }
@@ -694,6 +695,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
             teardownCaptureResourcesInternal()
         }
 
+        startForegroundSafely()
         val projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         val mp = projectionManager.getMediaProjection(code, intent)
 
