@@ -1,0 +1,39 @@
+
+===== ABNORMAL PROCESS DEATH =====
+Detected at   : 2026-10-03 16:39:52
+Dead process  : com.assistant.overlay  (pid 4915)
+Session began : 2026-10-03 16:39:27
+Last heartbeat: 2026-10-03 16:39:42
+Survived      : 15s
+Undetected for: 9s before this restart
+Memory then   : avail=1013MB threshold=216MB lowMemory=false
+Java crash    : NO
+VERDICT       : SILENT KILL - no Java exception. LMK, native crash (SIGSEGV), ANR, or force-stop
+Marker state  : ALIVE
+==================================
+
+===== ABNORMAL PROCESS DEATH =====
+Detected at   : 2026-10-03 16:43:15
+Dead process  : com.assistant.overlay  (pid 5553)
+Session began : 2026-10-03 16:39:52
+Last heartbeat: 2026-10-03 16:39:52
+Survived      : 0s
+Undetected for: 202s before this restart
+Memory then   : avail=1139MB threshold=216MB lowMemory=false
+Java crash    : NO
+VERDICT       : EARLY DEATH - died 0s after start; startup fault or force-stop
+Marker state  : START
+==================================
+
+===== ABNORMAL PROCESS DEATH =====
+Detected at   : 2026-10-03 16:43:40
+Dead process  : com.assistant.overlay  (pid 7935)
+Session began : 2026-10-03 16:43:15
+Last heartbeat: 2026-10-03 16:43:30
+Survived      : 15s
+Undetected for: 9s before this restart
+Memory then   : avail=908MB threshold=216MB lowMemory=false
+Java crash    : NO
+VERDICT       : SILENT KILL - no Java exception. LMK, native crash (SIGSEGV), ANR, or force-stop
+Marker state  : ALIVE
+==================================
