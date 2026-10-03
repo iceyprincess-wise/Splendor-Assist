@@ -504,22 +504,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // SPLENDOR_V42_FG_FIRST_WAIT_BEGIN
-        // Android 14 service-first ordering: the service may be started in
-        // WAITING_FOR_TOKEN mode (before the consent dialog) or told to stop
-        // itself if the user cancelled consent.
-        if (intent?.getBooleanExtra("WAITING_FOR_TOKEN", false) == true) {
-            startForegroundSafely()
-            RuntimeLogger.log("OverlayService started in WAITING_FOR_TOKEN mode (Android 14 service-first ordering)", "OVERLAY")
-            return START_NOT_STICKY
-        }
-        if (intent?.getBooleanExtra("CANCEL_TOKEN", false) == true) {
-            if (mediaProjection == null && readCaptureState() == CaptureState.IDLE) {
-                stopSelf()
-            }
-            return START_NOT_STICKY
-        }
-        // SPLENDOR_V42_FG_FIRST_WAIT_END
+
         val resultCode = intent?.getIntExtra("CROSS_PROCESS_CODE", EngineData.code) ?: EngineData.code
         val data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent?.getParcelableExtra("CROSS_PROCESS_DATA", Intent::class.java) ?: EngineData.intent
@@ -529,9 +514,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
 
         if (resultCode == Activity.RESULT_OK && data != null) {
-            startForegroundSafely()
             try {
                 setupMediaProjection(resultCode, data)
+                startForegroundSafely()
                 if (!isRunning) {
                     initializeProcessingEngine()
                 }

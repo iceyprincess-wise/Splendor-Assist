@@ -66,12 +66,7 @@ class MainActivity : AppCompatActivity() {
     private var permissionPipelineStarted = false
     private var permissionPipelineActive = false
     private var projectionRecoveryFlow = false
-    // SPLENDOR_V42_FG_FIRST_FIELD_BEGIN
-    // Android 14 (targetSdk 34): the mediaProjection-type foreground service
-    // must be running BEFORE createScreenCaptureIntent(), otherwise the
-    // projection is revoked as soon as the app goes to background.
-    private var serviceStartedInWaitingMode = false
-    // SPLENDOR_V42_FG_FIRST_FIELD_END
+
 
     private lateinit var projectionManager: MediaProjectionManager
 
@@ -82,9 +77,7 @@ class MainActivity : AppCompatActivity() {
 
             if (result.resultCode == Activity.RESULT_OK && result.data != null) {
                 permissionPipelineActive = false
-                // SPLENDOR_V42_FG_FIRST_RESET_BEGIN
-                serviceStartedInWaitingMode = false
-                // SPLENDOR_V42_FG_FIRST_RESET_END
+
 
                 // EngineData now safely handles WeakReferences to prevent Context leaks
                 EngineData.code = result.resultCode
@@ -112,14 +105,7 @@ class MainActivity : AppCompatActivity() {
                 permissionPipelineActive = false
                 permissionStage = PermissionStage.COMPLETE
                 Toast.makeText(this, "MediaProjection permission cancelled", Toast.LENGTH_SHORT).show()
-                // SPLENDOR_V42_FG_FIRST_CANCEL_BEGIN
-                // Stop the waiting-mode service if this was a fresh start
-                // (never touch an already-active capture).
-                if (serviceStartedInWaitingMode && !projectionRecoveryFlow) {
-                    serviceStartedInWaitingMode = false
-                    try { stopService(Intent(this, OverlayService::class.java)) } catch (_: Throwable) {}
-                }
-                // SPLENDOR_V42_FG_FIRST_CANCEL_END
+
             }
         }
 
@@ -449,21 +435,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkMediaProjectionAndProceed() {
         permissionStage = PermissionStage.MEDIA_PROJECTION
-        // SPLENDOR_V42_FG_FIRST_START_BEGIN
-        // Start the mediaProjection-type foreground service BEFORE the consent
-        // dialog (Android 14 requirement). The service waits for the token.
-        try {
-            val waitIntent = Intent(this, OverlayService::class.java).apply {
-                putExtra("WAITING_FOR_TOKEN", true)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(waitIntent)
-            } else {
-                startService(waitIntent)
-            }
-            serviceStartedInWaitingMode = true
-        } catch (_: Throwable) {}
-        // SPLENDOR_V42_FG_FIRST_START_END
+
         screenCaptureLauncher.launch(projectionManager.createScreenCaptureIntent())
     }
 

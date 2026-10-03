@@ -14923,7 +14923,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                     frame.goalTopY, frame.goalBottomY,
                     frame.goalkeeperX, frame.goalkeeperVisible,
                     frame.goalDetected
-                ) ?: return null
+                )
 
                 return EngineContribution(
                     engine = engineName,
@@ -15015,7 +15015,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                 receiver?.velocityY ?: 0f,
                 goalCX, goalCY,
                 frame.bestLaneConfidence
-            ) ?: return null
+            )
 
             return EngineContribution(
                 engine = engineName,
