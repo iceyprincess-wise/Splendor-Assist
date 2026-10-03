@@ -10,7 +10,7 @@ static inline float branchless_coerce(float value, float min_val, float max_val)
 }
 
 JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeThreatPriorityCompute(
+Java_com_assistant_NativeBridge_nativeThreatPriorityComputeImpl(
     JNIEnv *env, jclass clazz, jint threatScore, jint zone, jint direction,
     jint awareness, jint prediction, jint interceptionBonus, jint recoveryBonus,
     jint x, jint y, jint width, jint height, jfloatArray resultBuffer
@@ -47,4 +47,13 @@ Java_com_assistant_NativeBridge_nativeThreatPriorityCompute(
     res[2] = branchless_coerce(nx, 0.0f, 1.0f);
 
     (*env)->ReleasePrimitiveArrayCritical(env, resultBuffer, res, 0);
+}
+
+JNIEXPORT void JNICALL
+Java_com_assistant_NativeBridge_nativeThreatPriorityCompute(
+    JNIEnv *env, jclass clazz, jint threatScore, jint zone, jint direction,
+    jint awareness, jint prediction, jint interceptionBonus, jint recoveryBonus,
+    jint x, jint y, jint width, jint height, jfloatArray resultBuffer
+) {
+    Java_com_assistant_NativeBridge_nativeThreatPriorityComputeImpl(env, clazz, threatScore, zone, direction, awareness, prediction, interceptionBonus, recoveryBonus, x, y, width, height, resultBuffer);
 }

@@ -15,7 +15,7 @@ typedef struct {
 static NativeStrokePoint g_stroke_buffer[MAX_STROKE_POINTS];
 
 JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeDirectInputHookPrepare(
+Java_com_assistant_NativeBridge_nativeDirectInputHookImpl(
     JNIEnv *env, jobject thiz,
     jfloatArray j_x_coords, jfloatArray j_y_coords, 
     jfloatArray j_event_times, jint point_count,
@@ -55,4 +55,14 @@ Java_com_assistant_NativeBridge_nativeDirectInputHookPrepare(
         out[i * 3 + 2] = (float)g_stroke_buffer[i].event_time_ms;
     }
     (*env)->ReleaseFloatArrayElements(env, j_out_flat, out, 0);
+}
+
+JNIEXPORT void JNICALL
+Java_com_assistant_NativeBridge_nativeDirectInputHookPrepare(
+    JNIEnv *env, jobject thiz,
+    jfloatArray j_x_coords, jfloatArray j_y_coords, 
+    jfloatArray j_event_times, jint point_count,
+    jfloat screen_w, jfloat screen_h,
+    jfloatArray j_out_flat) {
+    Java_com_assistant_NativeBridge_nativeDirectInputHookImpl(env, thiz, j_x_coords, j_y_coords, j_event_times, point_count, screen_w, screen_h, j_out_flat);
 }

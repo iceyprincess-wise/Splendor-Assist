@@ -16,7 +16,7 @@ typedef struct {
 static PlayerState g_states[MAX_PLAYERS];
 
 JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativePredictiveFrameInterp(
+Java_com_assistant_NativeBridge_nativePredictiveFrameInterpImpl(
     JNIEnv *env, jobject thiz,
     jfloatArray j_prev_x, jfloatArray j_prev_y,
     jfloatArray j_curr_x, jfloatArray j_curr_y,
@@ -57,4 +57,14 @@ Java_com_assistant_NativeBridge_nativePredictiveFrameInterp(
     
     (*env)->ReleaseFloatArrayElements(env, j_out_x, out_x, 0);
     (*env)->ReleaseFloatArrayElements(env, j_out_y, out_y, 0);
+}
+
+JNIEXPORT void JNICALL
+Java_com_assistant_NativeBridge_nativePredictiveFrameInterp(
+    JNIEnv *env, jobject thiz,
+    jfloatArray j_prev_x, jfloatArray j_prev_y,
+    jfloatArray j_curr_x, jfloatArray j_curr_y,
+    jfloat dt, jint player_count,
+    jfloatArray j_out_x, jfloatArray j_out_y) {
+    Java_com_assistant_NativeBridge_nativePredictiveFrameInterpImpl(env, thiz, j_prev_x, j_prev_y, j_curr_x, j_curr_y, dt, player_count, j_out_x, j_out_y);
 }

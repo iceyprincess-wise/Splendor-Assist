@@ -58,7 +58,7 @@ static void* spoofer_thread_func(void* arg) {
 }
 
 JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeStartThermalSpoofer(JNIEnv *env, jobject thiz) {
+Java_com_assistant_NativeBridge_nativeStartThermalSpooferImpl(JNIEnv *env, jobject thiz) {
     if (!fn_getInstance) {
         void* handle = dlopen("libandroid.so", RTLD_NOW);
         if (handle) {
@@ -77,10 +77,20 @@ Java_com_assistant_NativeBridge_nativeStartThermalSpoofer(JNIEnv *env, jobject t
 }
 
 JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeStopThermalSpoofer(JNIEnv *env, jobject thiz) {
+Java_com_assistant_NativeBridge_nativeStopThermalSpooferImpl(JNIEnv *env, jobject thiz) {
     g_running = 0;
     if (g_worker_thread) {
         pthread_join(g_worker_thread, NULL);
         g_worker_thread = 0;
     }
+}
+
+JNIEXPORT void JNICALL
+Java_com_assistant_NativeBridge_nativeStartThermalSpoofer(JNIEnv *env, jobject thiz) {
+    Java_com_assistant_NativeBridge_nativeStartThermalSpooferImpl(env, thiz);
+}
+
+JNIEXPORT void JNICALL
+Java_com_assistant_NativeBridge_nativeStopThermalSpoofer(JNIEnv *env, jobject thiz) {
+    Java_com_assistant_NativeBridge_nativeStopThermalSpooferImpl(env, thiz);
 }
