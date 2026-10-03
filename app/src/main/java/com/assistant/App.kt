@@ -55,7 +55,6 @@ class App : Application() {
         }
 
         RuntimeLogger.initialize(this)
-        com.assistant.diagnostic.TruthLogcatEngine.start()
         com.assistant.memory.MmapStateEngine.initialize(cacheDir)
 
         // Domain Backup Generator: Forces class loading for all 216+ engine objects
@@ -68,6 +67,7 @@ class App : Application() {
 
         if (isMainProcess) {
             DeathWatch.install(this)
+            com.assistant.diagnostic.TruthLogcatEngine.start()
             com.assistant.controlroom.ControlRoomBootstrap.initialize()
 
             if (!storageReady) {

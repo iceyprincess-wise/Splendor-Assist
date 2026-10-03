@@ -25,7 +25,7 @@ object TruthLogcatEngine {
                 val sourceFile = File("/sdcard/Splendor-Assist", "Splendor_Field_Logs.txt")
                 if (!sourceFile.exists()) sourceFile.createNewFile()
                 
-                var filePointer = 0L
+                var filePointer = sourceFile.length()
                 while (running.get()) {
                     val raf = RandomAccessFile(sourceFile, "r")
                     val fileLength = raf.length()
