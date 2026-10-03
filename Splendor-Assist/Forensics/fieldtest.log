@@ -1,0 +1,221 @@
+2026-10-03 14:02:34.399 [FORENSIC] SESSION_START 2026-10-03 14:02:34
+2026-10-03 14:02:34.443 [BOOT] Application started
+2026-10-03 14:02:34.641 [DEATHWATCH] DeathWatch armed proc=com.assistant.overlay pid=4750
+2026-10-03 14:02:34.652 [AGENT] InAppAgentCore started — observation/decision/action/verifier pipeline online
+2026-10-03 14:02:34.661 [BOOT] App.onCreate: InAppAgentCore bootstrap verified running
+2026-10-03 14:02:35.201 [AGENT] Agent cycle=1 action=ObserveOnly priority=0 verified=true reason=Accessibility runtime is not ready; agent must not attempt gameplay recovery.
+2026-10-03 14:02:37.218 [AGENT] Agent cycle=2 action=ObserveOnly priority=0 verified=true reason=Accessibility runtime is not ready; agent must not attempt gameplay recovery.
+2026-10-03 14:02:38.295 [RUNTIME_EVENT] gate :: G0 PERMISSIONS_VERIFIED
+2026-10-03 14:02:39.233 [AGENT] Agent cycle=3 action=ObserveOnly priority=0 verified=true reason=Accessibility runtime is not ready; agent must not attempt gameplay recovery.
+2026-10-03 14:02:41.242 [AGENT] Agent cycle=4 action=ObserveOnly priority=0 verified=true reason=Accessibility runtime is not ready; agent must not attempt gameplay recovery.
+2026-10-03 14:02:43.251 [AGENT] Agent cycle=5 action=ObserveOnly priority=0 verified=true reason=Accessibility runtime is not ready; agent must not attempt gameplay recovery.
+2026-10-03 14:02:43.406 [RUNTIME_EVENT] gate :: G1 ACCESSIBILITY_READY
+2026-10-03 14:02:43.418 [SYSTEM_EVENT] accessibility-connected
+2026-10-03 14:02:43.428 [SMART_ASSIST] SmartAssistAccessibilityEngine [OMEGA BUILD] connected BUILD_MARKER=TASKC-PREEMPTIVE-DISPATCH
+2026-10-03 14:02:45.260 [AGENT] RuntimeSelfHealEngine started — AI agent daemon online
+2026-10-03 14:02:45.267 [AGENT] Agent cycle=6 action=RunSelfHealCheck priority=100 verified=true reason=Capture/overlay path is not healthy.
+2026-10-03 14:02:47.005 [PERFORMANCE] V53 WAKE_LOCK & WIFI_LOCK acquired: Preventing HyperOS pipeline suspension.
+2026-10-03 14:02:47.016 [OVERLAY] OverlayService started
+2026-10-03 14:02:47.028 [FGGATE] ForegroundGate installed
+2026-10-03 14:02:47.175 [CAMERA] CAMERA_PROFILE profile=DYNAMIC_WIDE capture=288x640 source=720x1600
+2026-10-03 14:02:47.384 [AGENT] AGENT CAPTURE RESTART: attempting ImageReader replacement
+2026-10-03 14:02:47.438 [OVERLAY] recreateCaptureSurfaces: ImageReader replaced via setSurface (resize=false). Vision pipeline force-reset.
+2026-10-03 14:02:47.468 [AGENT] AGENT CAPTURE RESTART: ImageReader replaced successfully
+2026-10-03 14:02:47.582 [NativeBridge] splendor_native loaded; explicit JNI registration available.
+2026-10-03 14:02:47.601 [AGENT] [FIXED] CAPTURE_RESTART: No frame ever assembled (capture=profile=DYNAMIC_WIDE capture=288x640 source=720x1600). Attempt #1 of 3.
+2026-10-03 14:02:47.622 [AGENT] Agent cycle=7 action=RunSelfHealCheck priority=100 verified=true reason=Capture/overlay path is not healthy.
+2026-10-03 14:02:47.869 [RUNTIME] BoosterIgnition: adapter services ignited from runtime start path
+2026-10-03 14:02:47.904 [RUNTIME_EVENT] gate :: G2 CAPTURE_READY
+2026-10-03 14:02:47.916 [RUNTIME_EVENT] gate :: G3 BOOSTER_READY [fleet-quorum confirmed by BoosterIgnition]
+2026-10-03 14:02:47.931 [RUNTIME_EVENT] gate :: G4 ENGINES_WARM
+2026-10-03 14:02:47.950 [RUNTIME] REGISTRY WARM COMPLETE: 39 engines. Failures: 0
+2026-10-03 14:02:47.965 [RUNTIME_EVENT] gate :: G5 BUS_ENABLED
+2026-10-03 14:02:47.979 [RUNTIME_EVENT] gate :: G6 RUNTIME_READY
+2026-10-03 14:02:47.993 [RUNTIME] === REGISTRATION RUNTIME PROOF [Gen 1] ===
+State: READY
+Expected Count: 39 | Actual Count: 39
+Init Failures: 0 
+Warm Failures: 0 
+Omitted/Missing: 0 
+Registry Snapshot: {engines=39, collectCycles=0, names=ThreatPriority,CrossClaim,KeeperBias,PanicSave,PassLane,BallPress,PressEvade,Shot,CrossDelivery,MagneticFeet,Passing,Support,Defense,Evade,AttackingVector,Cross,Agility,WingBlock,DashPressure,InterceptMatrix,TouchRecovery,OverloadPlaystyle,TruePass,ReceiverEngagement,ForwardRun,ShotOpportunity,DefenseAuthority,ShotAnticipation,KeeperFeedback,DashAnchor,SpeedCompensation,InstantIntercept,BuildUpPress,BallRetentionShield,TrueShot,TrueCross,SAUltimateCorrector,SharpTouchTiming,KickingPosture, generation=39, collisions=0, warmUpTimestamp=1791032567882, sessionEpoch=0}
+=============================================
+2026-10-03 14:02:48.025 [FIGHTING_SPIRIT] FIGHTING_SPIRIT ACTIVE: pressure=1.00 retention=1.200 panic=false activation=#1
+2026-10-03 14:02:48.041 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=6
+2026-10-03 14:02:48.072 [FAULT] VISION_WATCHDOG_RESET: Coroutine death detected, force-unblocking frame pump.
+2026-10-03 14:02:48.098 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:48.117 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:48.186 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:48.278 [IGNITION] Adapter launch requested: com.assistant.PerformanceEngineService
+2026-10-03 14:02:48.468 [AGENT] AI Self-Heal Agent: MONITORING ACTIVE (5s cycle, immediate start)
+2026-10-03 14:02:48.490 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=6
+2026-10-03 14:02:48.517 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=6
+2026-10-03 14:02:48.543 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:48.577 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:48.649 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:48.691 [IGNITION] Adapter launch requested: com.assistant.GameplayEngineService
+2026-10-03 14:02:48.773 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:48.851 [FIGHTING_SPIRIT] FIGHTING_SPIRIT ACTIVE: pressure=1.00 retention=1.200 panic=false activation=#2
+2026-10-03 14:02:48.881 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:48.898 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:48.915 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:48.943 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:48.965 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:49.063 [IGNITION] Adapter launch requested: com.assistant.adapter.watchdog.WatchdogAdapterService
+2026-10-03 14:02:49.124 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:49.197 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:49.211 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:49.247 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:49.268 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:49.314 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:49.344 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:49.390 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:49.412 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:49.485 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:49.531 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:49.553 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:49.574 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:49.721 [AGENT] Agent cycle=8 action=ObserveOnly priority=10 verified=true reason=Runtime healthy; gameplay contributors own execution; agent supervisory observation only.
+2026-10-03 14:02:49.743 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:49.758 [FIGHTING_SPIRIT] FIGHTING_SPIRIT ACTIVE: pressure=1.00 retention=1.200 panic=false activation=#3
+2026-10-03 14:02:49.772 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:49.784 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:49.820 [FAULT] CAPTURE FAULT UnsatisfiedLinkError: No implementation found for void com.assistant.NativeBridge.nativeThreatPriorityComputeImpl(int, int, int, int, int, int, int, int, int, int, int, float[]) (tried Java_com_assistant_NativeBridge_nativeThreatPriorityComputeImpl and Java_com_assistant_NativeBridge_nativeThreatPriorityComputeImpl__IIIIIIIIIII_3F) - is the library loaded, e.g. System.loadLibrary?
+2026-10-03 14:02:49.886 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:49.924 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:50.437 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:50.450 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:50.479 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:50.515 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:50.821 [FIGHTING_SPIRIT] FIGHTING_SPIRIT ACTIVE: pressure=1.00 retention=1.200 panic=false activation=#4
+2026-10-03 14:02:50.834 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:50.852 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:50.884 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:50.927 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:51.142 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:51.193 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:51.223 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:51.416 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:51.436 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:51.460 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:51.514 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:51.625 [OCR] OCR: 14:02 OSPLENDOR ASSIST2027NATIVE C MUTATION ENGINE ACTIVEz=: RUNTIME ===permissionsVer ified = trueaccessibilityReady = 
+2026-10-03 14:02:51.672 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:51.706 [FIGHTING_SPIRIT] FIGHTING_SPIRIT ACTIVE: pressure=1.00 retention=1.200 panic=false activation=#5
+2026-10-03 14:02:51.763 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:51.822 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:51.877 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:52.252 [AGENT] Agent cycle=9 action=ObserveOnly priority=10 verified=true reason=Runtime healthy; gameplay contributors own execution; agent supervisory observation only.
+2026-10-03 14:02:52.458 [FIGHTING_SPIRIT] FIGHTING_SPIRIT ACTIVE: pressure=1.00 retention=1.200 panic=false activation=#6
+2026-10-03 14:02:52.471 [FAULT] VISION_WATCHDOG_RESET: Coroutine death detected, force-unblocking frame pump.
+2026-10-03 14:02:52.487 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=6
+2026-10-03 14:02:52.530 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:52.547 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:52.632 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:52.872 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:52.919 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:52.968 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:53.074 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:53.090 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:53.180 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:53.413 [VISIONTRUST] fg=true pkg= gated=0 ballTrust=1.000 lane=0.400 stability=0.000 spread=0.000 latency=0.0 insaneRejects=0
+2026-10-03 14:02:53.439 [FIGHTING_SPIRIT] FIGHTING_SPIRIT ACTIVE: pressure=1.00 retention=1.200 panic=false activation=#7
+2026-10-03 14:02:53.479 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:53.491 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:53.505 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:53.531 [NATIVE_TRUTH] NATIVE_TRUTH nativeLoaded=true preprocessAvailable=true authorityAvailable=true lastError=none camera=profile=DYNAMIC_WIDE capture=288x640 source=720x1600
+2026-10-03 14:02:53.537 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:53.553 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:53.640 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:53.656 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:53.710 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:53.834 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:53.931 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:53.968 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:53.991 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:54.121 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:54.138 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:54.200 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:54.255 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:54.275 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:54.307 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:54.373 [AGENT] Agent cycle=10 action=ObserveOnly priority=10 verified=true reason=Runtime healthy; gameplay contributors own execution; agent supervisory observation only.
+2026-10-03 14:02:54.622 [OCR] OCR: 14:02 aNATIVE C MUTATION ENGINE ACTIVE=== RUNTIUE ===pernis3ionsVerified = trụeaccessibility Ready = trUecaptureReady = 
+2026-10-03 14:02:54.792 [FIGHTING_SPIRIT] FIGHTING_SPIRIT ACTIVE: pressure=1.00 retention=1.200 panic=false activation=#8
+2026-10-03 14:02:54.808 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:54.827 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:54.842 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:54.874 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:55.293 [OCR] OCR: 14:02 Oruntine (channel=RUNT IME, enitted=7,lastNane=gate, las tUpda tedŃ s=1 791032567971,history=7}ganeplayenitted=47,
+2026-10-03 14:02:55.720 [OCR] OCR: 14:02 JSmart Assist Control RoomEnable Smart AssistPanic ModePass ThresholdShot ThresholdCross ThresholdRuntime Autharit
+2026-10-03 14:02:55.735 [FIGHTING_SPIRIT] FIGHTING_SPIRIT ACTIVE: pressure=1.00 retention=1.200 panic=false activation=#9
+2026-10-03 14:02:55.745 [SMART_ASSIST] SMART_ASSIST_GATE real=true distance=257 duration=80 action=SHOT shouldAct=true submitted=true
+2026-10-03 14:02:55.757 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:55.774 [SMART_ASSIST] 🕶️
+2026-10-03 14:02:55.790 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:55.801 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:55.868 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:55.986 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:56.023 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:56.042 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:56.095 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:56.186 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:56.207 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:56.267 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:56.361 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:56.372 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:56.390 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:56.403 [AGENT] Agent cycle=11 action=ObserveOnly priority=10 verified=true reason=Runtime healthy; gameplay contributors own execution; agent supervisory observation only.
+2026-10-03 14:02:56.422 [OCR] OCR: 14:02 JSmart Assist Control RoomEnable Smart AssistPanic ModePass ThresholdShot ThresholdCross ThresholdRuntime Autharit
+2026-10-03 14:02:56.433 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:56.501 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:56.698 [FIGHTING_SPIRIT] FIGHTING_SPIRIT ACTIVE: pressure=1.00 retention=1.200 panic=true activation=#10
+2026-10-03 14:02:56.713 [CAPTAINCY] CAPTAINCY ACTIVE: fatigue=0.80 lift=1.200 composure=+6ms inspired=true #30
+2026-10-03 14:02:56.734 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:56.770 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:56.782 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:56.814 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:57.013 [GAMEPLAY_EVENT] routed :: source=SMART_ASSIST phase=3
+2026-10-03 14:02:57.023 [GOALKEEPER] GK_LAYER 1v1 rush triggered dist=128
+2026-10-03 14:02:57.040 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:SMART_ASSIST
+2026-10-03 14:02:57.069 [GAMEPLAY_EVENT] dispatch-accepted :: origin=bus:GOALKEEPER
+2026-10-03 14:02:58.053 [FORENSIC] SESSION_START 2026-10-03 14:02:58
+2026-10-03 14:02:58.066 [BOOT] Application started
+2026-10-03 14:02:58.191 [DEATHWATCH] ABNORMAL DEATH proc=com.assistant.overlay lived=15s avail=1098MB lowMemory=false verdict=SILENT KILL - no Java exception. LMK, native crash (SIGSEGV), ANR, or force-stop
+2026-10-03 14:02:58.208 [DEATHWATCH] DeathWatch armed proc=com.assistant.overlay pid=5388
+2026-10-03 14:02:58.220 [AGENT] InAppAgentCore started — observation/decision/action/verifier pipeline online
+2026-10-03 14:02:58.230 [BOOT] App.onCreate: InAppAgentCore bootstrap verified running
+2026-10-03 14:02:58.746 [AGENT] Agent cycle=1 action=ObserveOnly priority=0 verified=true reason=Accessibility runtime is not ready; agent must not attempt gameplay recovery.
+2026-10-03 14:02:59.339 [RUNTIME_EVENT] gate :: G0 PERMISSIONS_VERIFIED
+2026-10-03 14:02:59.349 [RUNTIME_EVENT] gate :: G1 ACCESSIBILITY_READY
+2026-10-03 14:02:59.359 [SYSTEM_EVENT] accessibility-connected
+2026-10-03 14:02:59.367 [SMART_ASSIST] SmartAssistAccessibilityEngine [OMEGA BUILD] connected BUILD_MARKER=TASKC-PREEMPTIVE-DISPATCH
+2026-10-03 14:03:00.762 [AGENT] RuntimeSelfHealEngine started — AI agent daemon online
+2026-10-03 14:03:00.780 [AGENT] Agent cycle=2 action=RunSelfHealCheck priority=100 verified=true reason=Capture/overlay path is not healthy.
+2026-10-03 14:03:02.798 [AGENT] Agent cycle=3 action=RunSelfHealCheck priority=100 verified=true reason=Capture/overlay path is not healthy.
+2026-10-03 14:03:03.760 [AGENT] AI Self-Heal Agent: MONITORING ACTIVE (5s cycle, immediate start)
+2026-10-03 14:03:04.819 [AGENT] Agent cycle=4 action=RunSelfHealCheck priority=100 verified=true reason=Capture/overlay path is not healthy.
+2026-10-03 14:03:06.836 [NativeBridge] splendor_native loaded; explicit JNI registration available.
+2026-10-03 14:03:06.842 [NATIVE_TRUTH] NATIVE_TRUTH nativeLoaded=true preprocessAvailable=true authorityAvailable=true lastError=none camera=profile=DYNAMIC_WIDE capture=0x0 source=0x0
+2026-10-03 14:03:06.853 [AGENT] [CRITICAL] REGISTRY_EMPTY: RuntimeSelfHealAgent observed 0 registered contributors after warm grace. collectCycles=0. Registry drift or reset witho
+2026-10-03 14:03:06.863 [RUNTIME] REGISTRY WARM COMPLETE: 39 engines. Failures: 0
+2026-10-03 14:03:06.872 [AGENT] [CRITICAL] REGISTRY_GAP: Only 0/39 contributors registered. Missing 39. Collect cycles this check: 0 (0 = collector frozen). warmUpEngines() may 
+2026-10-03 14:03:06.879 [AGENT] Agent cycle=5 action=RunSelfHealCheck priority=100 verified=true reason=Capture/overlay path is not healthy.
+2026-10-03 14:03:06.885 [RUNTIME] === REGISTRATION RUNTIME PROOF [Gen 2] ===
+State: READY
+Expected Count: 39 | Actual Count: 39
+Init Failures: 0 
+Warm Failures: 0 
+Omitted/Missing: 0 
+Registry Snapshot: {engines=39, collectCycles=0, names=ThreatPriority,CrossClaim,KeeperBias,PanicSave,PassLane,BallPress,PressEvade,Shot,CrossDelivery,MagneticFeet,Passing,Support,Defense,Evade,AttackingVector,Cross,Agility,WingBlock,DashPressure,InterceptMatrix,TouchRecovery,OverloadPlaystyle,TruePass,ReceiverEngagement,ForwardRun,ShotOpportunity,DefenseAuthority,ShotAnticipation,KeeperFeedback,DashAnchor,SpeedCompensation,InstantIntercept,BuildUpPress,BallRetentionShield,TrueShot,TrueCross,SAUltimateCorrector,SharpTouchTiming,KickingPosture, generation=39, collisions=0, warmUpTimestamp=1791032586859, sessionEpoch=1}
+=============================================
+2026-10-03 14:04:23.429 [FORENSIC] SESSION_START 2026-10-03 14:04:23
+2026-10-03 14:04:23.447 [BOOT] Application started
+2026-10-03 14:04:23.578 [DEATHWATCH] ABNORMAL DEATH proc=com.assistant.overlay lived=0s avail=1182MB lowMemory=false verdict=EARLY DEATH - died 0s after start; startup fault or force-stop
+2026-10-03 14:04:23.594 [DEATHWATCH] DeathWatch armed proc=com.assistant.overlay pid=6636
+2026-10-03 14:04:23.606 [AGENT] InAppAgentCore started — observation/decision/action/verifier pipeline online
+2026-10-03 14:04:23.616 [BOOT] App.onCreate: InAppAgentCore bootstrap verified running
+2026-10-03 14:04:24.135 [AGENT] Agent cycle=1 action=ObserveOnly priority=0 verified=true reason=Accessibility runtime is not ready; agent must not attempt gameplay recovery.
+2026-10-03 14:04:26.150 [AGENT] Agent cycle=2 action=ObserveOnly priority=0 verified=true reason=Accessibility runtime is not ready; agent must not attempt gameplay recovery.
+2026-10-03 14:04:28.165 [AGENT] Agent cycle=3 action=ObserveOnly priority=0 verified=true reason=Accessibility runtime is not ready; agent must not attempt gameplay recovery.
+2026-10-03 14:04:30.185 [AGENT] Agent cycle=4 action=ObserveOnly priority=0 verified=true reason=Accessibility runtime is not ready; agent must not attempt gameplay recovery.
+2026-10-03 14:04:32.202 [AGENT] Agent cycle=5 action=ObserveOnly priority=0 verified=true reason=Accessibility runtime is not ready; agent must not attempt gameplay recovery.

@@ -1,0 +1,2 @@
+[14:04:30.397] dec=0 routed=0(—) act=none | fs=off(ret=1.0 pres=0.0) | cap=noDesig | crowd=clear | lag=UNKNOWN stutter=CALM | capture(frameId=-1 frames=0) decisionLoop(decisions=0 routed=0)
+[14:04:32.430] dec=0 routed=0(—) act=none | fs=off(ret=1.0 pres=0.0) | cap=noDesig | crowd=clear | lag=UNKNOWN stutter=CALM | capture(frameId=-1 frames=0) decisionLoop(decisions=0 routed=0)
