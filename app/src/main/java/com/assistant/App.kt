@@ -42,6 +42,7 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        GlobalCrashHandler.install(this)
 
         val currentProcess = getCurrentProcessName()
         val isMainProcess = currentProcess == packageName
@@ -63,7 +64,6 @@ class App : Application() {
         // FIX #1: Removed duplicate RuntimeLogger.reconcileExpired() since initialize() already calls it
 
         // GlobalCrashHandler must be installed everywhere to catch process-wide crashes
-        GlobalCrashHandler.install(this)
 
         if (isMainProcess) {
             DeathWatch.install(this)

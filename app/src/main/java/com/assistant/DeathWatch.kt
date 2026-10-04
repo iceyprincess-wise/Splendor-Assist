@@ -6,6 +6,7 @@ import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.os.Build
+import android.app.ApplicationExitInfo
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -41,6 +42,7 @@ object DeathWatch {
     private const val HEARTBEAT_MS = 15000L
 
     @Volatile private var installed = false
+    @Volatile private var appContext: Context? = null
     @Volatile private var marker: File? = null
     @Volatile private var procName = "?"
     @Volatile private var startedMs = 0L
@@ -60,6 +62,7 @@ object DeathWatch {
         }
 
         installed = true
+        appContext = c
         procName = resolveProcessName(c)
         startedMs = System.currentTimeMillis()
         
@@ -151,17 +154,18 @@ object DeathWatch {
         val avail = availMb.toIntOrNull() ?: -1
         val thresh = threshMb.toIntOrNull() ?: 0
 
+        val osExitReason = getHistoricalExitReason(deadPid.toIntOrNull() ?: 0, deadProc)
         val verdict = when {
             javaCrash ->
-                "JAVA EXCEPTION - a crash report exists for this session"
+                "JAVA EXCEPTION - a crash report exists for this session ($osExitReason)"
             lowMem == "true" ->
-                "LOW MEMORY KILL - system reported lowMemory at " + availMb + "MB (threshold " + threshMb + "MB)"
+                "LOW MEMORY KILL - system reported lowMemory at " + availMb + "MB (threshold " + threshMb + "MB) ($osExitReason)"
             thresh > 0 && avail in 0..(thresh * 2) ->
-                "LIKELY LMK - " + availMb + "MB free vs " + threshMb + "MB threshold; system reclaiming"
+                "LIKELY LMK - " + availMb + "MB free vs " + threshMb + "MB threshold ($osExitReason)"
             lived in 0..10 ->
-                "EARLY DEATH - died " + lived + "s after start; startup fault or force-stop"
+                "EARLY DEATH - died " + lived + "s after start ($osExitReason)"
             else ->
-                "SILENT KILL - no Java exception. LMK, native crash (SIGSEGV), ANR, or force-stop"
+                "TERMINATED: $osExitReason"
         }
 
         val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
@@ -258,5 +262,40 @@ object DeathWatch {
 
     private fun log(m: String) {
         try { com.assistant.diagnostic.RuntimeLogger.log(m, "DEATHWATCH") } catch (_: Throwable) { }
+    }
+
+    private fun getHistoricalExitReason(deadPid: Int, deadProc: String): String {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return "SDK_LESS_THAN_30"
+        val ctx = appContext ?: return "NO_CONTEXT"
+        return try {
+            val am = ctx.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val exitInfos = am.getHistoricalProcessExitReasons(ctx.packageName, deadPid, 5)
+            val info = exitInfos.firstOrNull { deadPid != 0 && it.pid == deadPid }
+                ?: exitInfos.firstOrNull { deadProc.isNotBlank() && it.processName == deadProc }
+                ?: exitInfos.firstOrNull()
+
+            if (info != null) {
+                val reasonStr = when (info.reason) {
+                    ApplicationExitInfo.REASON_ANR -> "REASON_ANR (Application Not Responding)"
+                    ApplicationExitInfo.REASON_CRASH -> "REASON_CRASH (Java/Kotlin uncaught exception)"
+                    ApplicationExitInfo.REASON_CRASH_NATIVE -> "REASON_CRASH_NATIVE (Native C/C++ SIGSEGV/SIGABRT)"
+                    ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE -> "REASON_EXCESSIVE_RESOURCE_USAGE (Excessive CPU/RAM/Battery)"
+                    ApplicationExitInfo.REASON_EXIT_SELF -> "REASON_EXIT_SELF (Clean stopSelf or System.exit)"
+                    ApplicationExitInfo.REASON_INITIALIZATION_FAILURE -> "REASON_INITIALIZATION_FAILURE (Process init failed)"
+                    ApplicationExitInfo.REASON_LOW_MEMORY -> "REASON_LOW_MEMORY (OS Low Memory Killer / LMK)"
+                    ApplicationExitInfo.REASON_OTHER -> "REASON_OTHER (Vendor/HyperOS background eviction or kill)"
+                    ApplicationExitInfo.REASON_PERMISSION_CHANGE -> "REASON_PERMISSION_CHANGE (Permission revoked)"
+                    ApplicationExitInfo.REASON_SIGNALED -> "REASON_SIGNALED (Killed by OS signal ${info.status})"
+                    ApplicationExitInfo.REASON_USER_REQUESTED -> "REASON_USER_REQUESTED (User force-stop or task swipe)"
+                    ApplicationExitInfo.REASON_USER_STOPPED -> "REASON_USER_STOPPED (User stopped application)"
+                    else -> "REASON_CODE_${info.reason}"
+                }
+                "OS_REPORTED: $reasonStr [status=${info.status} importance=${info.importance}]"
+            } else {
+                "NO_OS_RECORD_FOUND"
+            }
+        } catch (t: Throwable) {
+            "QUERY_FAILED: ${t.javaClass.simpleName}: ${t.message}"
+        }
     }
 }

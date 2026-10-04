@@ -43,6 +43,10 @@ class PerformanceEngineService : Service() {
         RuntimeLogger.log("Performance engine stack ignited: 15 engines + scheduler", "ENGINE")
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_STICKY
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
