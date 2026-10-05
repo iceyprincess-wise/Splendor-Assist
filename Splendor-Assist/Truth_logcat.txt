@@ -1,2 +1,6 @@
-2026-10-05 06:49:02.771 [NativeBridge] splendor_native loaded; explicit JNI registration available.
-2026-10-05 06:49:08.033 [NATIVE_TRUTH] NATIVE_TRUTH nativeLoaded=true preprocessAvailable=true authorityAvailable=true lastError=none camera=profile=DYNAMIC_WIDE capture=288x640 source=720x1600
+2026-10-05 07:21:33.757 [NativeBridge] splendor_native loaded; explicit JNI registration available.
+2026-10-05 07:21:37.994 [NATIVE_TRUTH] NATIVE_TRUTH nativeLoaded=true preprocessAvailable=true authorityAvailable=true lastError=none camera=profile=DYNAMIC_WIDE capture=288x640 source=720x1600
+2026-10-05 07:21:49.308 [NativeBridge] splendor_native loaded; explicit JNI registration available.
+2026-10-05 07:21:49.318 [NATIVE_TRUTH] NATIVE_TRUTH nativeLoaded=true preprocessAvailable=true authorityAvailable=true lastError=none camera=profile=DYNAMIC_WIDE capture=0x0 source=0x0
+2026-10-05 07:21:49.335 [AGENT] [CRITICAL] REGISTRY_EMPTY: RuntimeSelfHealAgent observed 0 registered contributors after warm grace. collectCycles=0. Registry drift or reset witho
+2026-10-05 07:21:49.351 [AGENT] [CRITICAL] REGISTRY_GAP: Only 0/39 contributors registered. Missing 39. Collect cycles this check: 0 (0 = collector frozen). warmUpEngines() may 

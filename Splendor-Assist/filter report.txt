@@ -1,4 +1,4 @@
-[2026-10-05 06:49:03] FILTER ENGINE REPORT
+[2026-10-05 07:21:34] FILTER ENGINE REPORT
 -----------------------------------
 EFFECTIVENESS SCORE: 40/100
 AGGRESSION MULTIPLIER: 1.45x
@@ -15,7 +15,41 @@ DEVICE STATE (Helio G81-Ultra / 4GB RAM):
 FILTER ACTION:
   Nominal operation.
 -----------------------------------
-[2026-10-05 06:49:08] FILTER ENGINE REPORT
+[2026-10-05 07:21:39] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.32x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 07:21:49] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 1.45x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-10-05 07:21:54] FILTER ENGINE REPORT
 -----------------------------------
 EFFECTIVENESS SCORE: 40/100
 AGGRESSION MULTIPLIER: 2.32x
