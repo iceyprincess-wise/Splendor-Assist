@@ -17,3 +17,433 @@ Changes not staged for commit:
 	modified:   Build_lint_output.txt
 
 no changes added to commit (use "git add" and/or "git commit -a")
+[main 9a4624f2] updates
+ 1 file changed, 1 insertion(+), 1042 deletions(-)
+
+
+[  5%] BUILD STATE
+
+================================================================
+>>> OPTIONAL CLEAN
+================================================================
+NO — clean skipped; preserving incremental build state.
+
+[ 15%] LINT
+
+================================================================
+>>> OPTIONAL LINT
+================================================================
+NO — lint skipped by user.
+
+================================================================
+>>> LINT ISSUE EXTRACTION
+================================================================
+SKIPPED — lint was not run.
+
+[ 30%] CONNECTED TESTS
+
+================================================================
+>>> CONNECTED ANDROID TESTS
+================================================================
+SKIPPED — no ADB device connected (not a failure)
+
+[ 45%] VERSION BUMP
+
+================================================================
+>>> VERSION BUMP
+================================================================
+versionCode: 184 -> 185
+
+[ 50%] ASSEMBLE DEBUG APK
+
+================================================================
+>>> ASSEMBLE DEBUG APK
+================================================================
+[org.tensorflow:tensorflow-lite:2.14.0] /data/data/com.termux/files/home/.gradle/caches/transforms-3/3f26ac000940266bd1feda3a3ced86d8/transformed/tensorflow-lite-2.14.0/AndroidManifest.xml Warning:
+	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.14.0, org.tensorflow:tensorflow-lite-api:2.14.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:306:9 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:306:14 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:306:15 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:306:20 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:306:21 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:309:9 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:309:12 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:309:13 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:309:24 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:309:26 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:309:37 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:309:38 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:309:45 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:9 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:12 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:13 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:22 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:25 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:31 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:32 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:49 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:50 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:52 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:54 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:66 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:69 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:85 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:87 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:97 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:99 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:964:10 Expecting 'catch' or 'finally'
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:65:1 Class 'OverlayService' is not abstract and does not implement abstract base class member public abstract fun onBind(p0: Intent!): IBinder? defined in android.app.Service
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:91:23 Unresolved reference: restartCapture
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:111:23 Unresolved reference: showCaptureRecoveryPrompt
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:119:23 Unresolved reference: autoHealCapture
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:274:53 Unresolved reference: startVision
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:275:28 Unresolved reference: originalBuffer
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:277:91 Overload resolution ambiguity: 
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:286:24 Unresolved reference: originalBuffer
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:287:13 Unresolved reference: originalBuffer
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:297:69 Unresolved reference: width
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:297:105 Unresolved reference: height
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:299:54 Unresolved reference: width
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:299:61 Unresolved reference: height
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:301:51 Unresolved reference: originalBuffer
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:309:45 Conflicting overloads: public final fun `<no name provided>`(): Unit defined in com.assistant.OverlayService, public final fun `<no name provided>`(): Unit defined in com.assistant.OverlayService
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:309:45 Function declaration must have a name
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:311:88 Unresolved reference: width
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:311:95 Unresolved reference: height
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:311:103 Unresolved reference: rowStride
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:311:114 Unresolved reference: pixelStride
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:313:125 Unresolved reference: width
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:313:132 Unresolved reference: height
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:313:140 Unresolved reference: rowStride
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:313:157 Unresolved reference: width
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:313:164 Unresolved reference: height
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:325:122 Unresolved reference: width
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:325:129 Unresolved reference: height
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:325:137 Unresolved reference: rowStride
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:326:75 Unresolved reference: width
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:326:82 Unresolved reference: height
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:326:90 Unresolved reference: rowStride
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:99 Conflicting overloads: public final fun `<no name provided>`(): Unit defined in com.assistant.OverlayService, public final fun `<no name provided>`(): Unit defined in com.assistant.OverlayService
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:345:99 Function declaration must have a name
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:352:9 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:357:13 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:370:19 Unresolved reference: lastAutoHealAttemptMs
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:371:9 Unresolved reference: lastAutoHealAttemptMs
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:372:18 Unresolved reference: readCaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:373:19 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:373:48 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:378:20 Unresolved reference: savedProjectionCode
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:379:20 Unresolved reference: savedProjectionData
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:388:22 Unresolved reference: getSystemService
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:391:17 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:397:21 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:411:28 'this' is not defined in this context
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:412:13 Unresolved reference: startActivity
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:419:5 Modifier 'override' is not applicable to 'top level function'
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:422:9 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:424:17 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:424:33 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:428:17 Unresolved reference: mediaProjection
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:435:31 Unresolved reference: CaptureResult
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:439:17 Unresolved reference: lastFrameProcessedMs
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:440:17 Unresolved reference: captureFrameCount
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:448:13 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:452:5 Modifier 'override' is not applicable to 'top level function'
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:453:54 'this' is not defined in this context
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:455:12 Unresolved reference: runtimeInitialized
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:456:9 Unresolved reference: runtimeInitialized
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:458:9 No supertypes are accessible in this context
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:462:22 Unresolved reference: getSystemService
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:463:13 Unresolved reference: wakeLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:464:13 Unresolved reference: wakeLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:465:13 Unresolved reference: wakeLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:467:22 Unresolved reference: applicationContext
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:468:13 Unresolved reference: wifiLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:469:13 Unresolved reference: wifiLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:470:13 Unresolved reference: wifiLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:476:53 Unresolved reference: application
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:478:56 Unresolved reference: applicationContext
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:480:55 Unresolved reference: applicationContext
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:481:55 Unresolved reference: applicationContext
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:483:9 Unresolved reference: instance
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:483:20 'this' is not defined in this context
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:484:9 Unresolved reference: notificationManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:484:31 Unresolved reference: getSystemService
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:486:36 Unresolved reference: cacheDir
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:488:9 Unresolved reference: ocrIoThread
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:489:9 Unresolved reference: ocrIoHandler
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:489:43 Unresolved reference: ocrIoThread
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:496:35 Unresolved reference: getSystemService
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:497:17 Unresolved reference: perfHintSession
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:502:5 Modifier 'override' is not applicable to 'top level function'
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:516:22 Unresolved reference: isRunning
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:517:21 Unresolved reference: initializeProcessingEngine
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:521:17 Unresolved reference: stopSelf
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:525:13 Unresolved reference: stopSelf
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:527:16 Unresolved reference: START_NOT_STICKY
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:546:47 Unresolved reference: CHANNEL_ID
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:547:13 Unresolved reference: notificationManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:549:69 'this' is not defined in this context
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:549:75 Unresolved reference: CHANNEL_ID
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:556:13 Unresolved reference: startForeground
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:556:29 Unresolved reference: NOTIFICATION_ID
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:558:13 Unresolved reference: startForeground
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:558:29 Unresolved reference: NOTIFICATION_ID
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:565:9 Unresolved reference: windowManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:565:25 Unresolved reference: getSystemService
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:566:24 Unresolved reference: getSystemService
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:567:9 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:568:9 Unresolved reference: txtEngineStatus
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:568:27 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:576:9 Unresolved reference: windowManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:576:31 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:580:9 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:581:74 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:583:9 Unresolved reference: globalLayoutListener
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:584:74 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:586:9 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:586:64 Unresolved reference: globalLayoutListener
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:589:9 Unresolved reference: startTrajectoryWatchdog
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:594:13 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:594:29 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:594:52 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:594:68 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:597:13 Unresolved reference: txtEngineStatus
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:597:29 Variable expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:598:13 Unresolved reference: txtEngineStatus
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:605:21 Unresolved reference: recoveryPromptShown
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:606:17 Unresolved reference: recoveryPromptShown
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:607:39 'this' is not defined in this context
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:619:17 Unresolved reference: recoveryPromptView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:629:17 Unresolved reference: windowManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:633:17 Unresolved reference: recoveryPromptShown
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:640:9 Unresolved reference: recoveryPromptView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:641:19 Unresolved reference: windowManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:641:44 Unresolved reference: it
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:643:9 Unresolved reference: recoveryPromptView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:644:9 Unresolved reference: recoveryPromptShown
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:645:15 Unresolved reference: notificationManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:650:80 Unresolved reference: packageName
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:651:13 Unresolved reference: sendBroadcast
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:661:13 Unresolved reference: notificationManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:662:59 'this' is not defined in this context
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:667:13 Unresolved reference: notificationManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:672:9 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:676:13 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:686:15 Unresolved reference: txtEngineStatus
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:686:31 Variable expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:687:15 Unresolved reference: panicIndicator
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:687:31 Variable expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:689:13 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:689:29 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:689:52 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:689:68 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:690:13 Unresolved reference: teardownCaptureResourcesInternal
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:694:33 Unresolved reference: getSystemService
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:698:13 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:698:28 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:703:9 Unresolved reference: mediaProjection
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:706:9 Unresolved reference: savedProjectionCode
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:707:9 Unresolved reference: savedProjectionData
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:713:33 Unresolved reference: mediaProjection
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:718:60 Unresolved reference: mediaProjection
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:720:21 Unresolved reference: teardownCaptureResources
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:720:46 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:732:9 Unresolved reference: projectionCallback
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:733:9 Unresolved reference: mediaProjection
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:735:9 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:735:24 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:740:9 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:744:13 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:748:52 Unresolved reference: CaptureResult
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:749:13 Unresolved reference: mediaProjection
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:751:20 Unresolved reference: CaptureResult
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:753:13 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:753:29 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:753:56 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:753:72 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:754:72 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:755:20 Unresolved reference: CaptureResult
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:764:26 Unresolved reference: windowManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:767:34 Unresolved reference: resources
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:770:13 Unresolved reference: windowManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:782:13 Unresolved reference: windowManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:806:25 Unresolved reference: virtualDisplay
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:807:47 Unresolved reference: currentWidth
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:807:78 Unresolved reference: currentHeight
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:807:117 Unresolved reference: currentDpi
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:811:48 Unresolved reference: imageAvailableListener
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:811:72 Unresolved reference: ocrIoHandler
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:812:13 Unresolved reference: imageReader
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:813:13 Unresolved reference: virtualDisplay
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:813:30 Unresolved reference: mediaProjection
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:815:29 Unresolved reference: imageReader
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:817:51 Unresolved reference: imageAvailableListener
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:817:75 Unresolved reference: ocrIoHandler
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:819:13 Unresolved reference: imageReader
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:822:17 Unresolved reference: virtualDisplay
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:824:13 Unresolved reference: virtualDisplay
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:829:13 Unresolved reference: visionScope
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:830:13 Unresolved reference: visionInFlight
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:835:9 Unresolved reference: currentWidth
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:836:9 Unresolved reference: currentHeight
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:837:9 Unresolved reference: currentDpi
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:839:9 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:839:24 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:841:22 Unresolved reference: imageReader
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:842:18 Unresolved reference: virtualDisplay
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:844:84 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:844:100 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:845:13 Unresolved reference: CaptureResult
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:847:13 Unresolved reference: CaptureResult
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:852:9 Unresolved reference: keepAliveRunnable
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:852:34 Unresolved reference: keepAliveHandler
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:852:67 Unresolved reference: it
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:853:9 Unresolved reference: keepAliveRunnable
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:856:21 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:857:21 Unresolved reference: mediaProjection
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:857:48 Unresolved reference: captureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:857:64 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:859:21 Unresolved reference: captureLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:864:31 Unresolved reference: lastFrameProcessedMs
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:864:64 Unresolved reference: lastFrameProcessedMs
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:868:29 Unresolved reference: lastFrameProcessedMs
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:874:17 Unresolved reference: keepAliveHandler
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:877:9 Unresolved reference: keepAliveHandler
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:877:38 Unresolved reference: keepAliveRunnable
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:881:13 Unresolved reference: reusableBitmap
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:881:39 Unresolved reference: reusableBitmap
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:882:13 Unresolved reference: taskExecutionLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:885:28 Unresolved reference: reusableBitmap
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:885:50 Unresolved reference: reusableBitmap
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:888:17 Unresolved reference: recognizer
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:889:46 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:895:98 Unresolved reference: it
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:896:49 Unresolved reference: it
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:926:58 Unresolved reference: lastMatchDetectionTime
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:928:29 Unresolved reference: lastMatchDetectionTime
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:931:33 Unresolved reference: reusableBitmap
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:932:33 Unresolved reference: reusableBitmap
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:950:43 Unresolved reference: applicationContext
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:962:17 Unresolved reference: taskExecutionLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:967:5 Modifier 'private' is not applicable to 'local function'
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:968:9 Unresolved reference: isRunning
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:969:9 Unresolved reference: processingThread
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:971:20 Unresolved reference: isRunning
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:977:5 Modifier 'private' is not applicable to 'local function'
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:978:9 Unresolved reference: trajectoryRunnable
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:980:24 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:985:21 Unresolved reference: lastPanicState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:986:21 Unresolved reference: lastPanicState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:988:21 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:990:21 Unresolved reference: panicIndicator
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:990:37 Variable expected
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:992:17 Unresolved reference: trajectoryHandler
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:995:9 Unresolved reference: trajectoryHandler
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:995:32 Unresolved reference: trajectoryRunnable
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:998:5 Modifier 'override' is not applicable to 'local function'
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:999:9 No supertypes are accessible in this context
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1001:17 Unresolved reference: taskExecutionLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1003:21 Unresolved reference: reusableBitmap
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1004:21 Unresolved reference: reusableBitmap
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1006:21 Unresolved reference: taskExecutionLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1012:5 Modifier 'override' is not applicable to 'local function'
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1018:9 Unresolved reference: isRunning
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1019:15 Unresolved reference: notificationManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1020:15 Unresolved reference: notificationManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1022:9 Unresolved reference: trajectoryRunnable
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1022:35 Unresolved reference: trajectoryHandler
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1022:69 Unresolved reference: it
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1023:9 Unresolved reference: trajectoryRunnable
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1024:9 Unresolved reference: keepAliveRunnable
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1024:34 Unresolved reference: keepAliveHandler
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1024:67 Unresolved reference: it
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1025:9 Unresolved reference: keepAliveRunnable
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1027:15 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1028:13 Unresolved reference: globalLayoutListener
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1029:23 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1029:81 Unresolved reference: it
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1031:19 Unresolved reference: windowManager
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1031:53 Unresolved reference: overlayView
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1035:9 Unresolved reference: globalLayoutListener
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1037:9 Unresolved reference: processingThread
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1038:9 Unresolved reference: processingThread
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1039:9 Unresolved reference: visionScope
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1041:9 Unresolved reference: teardownCaptureResources
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1041:34 Unresolved reference: CaptureState
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1043:15 Unresolved reference: recognizer
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1044:9 Unresolved reference: reusableBitmap
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1045:9 Unresolved reference: reusableBitmap
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1048:19 Unresolved reference: perfHintSession
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1050:9 Unresolved reference: perfHintSession
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1053:9 Unresolved reference: ocrIoThread
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1054:9 Unresolved reference: ocrIoThread
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1059:13 Unresolved reference: wakeLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1059:33 Unresolved reference: it
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1059:44 Unresolved reference: it
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1060:13 Unresolved reference: wifiLock
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1060:33 Unresolved reference: it
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1060:44 Unresolved reference: it
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/OverlayService.kt:1063:9 No supertypes are accessible in this context
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/SplendorCaptureRecovery.kt:73:21 Unresolved reference: applyFreshProjection
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 7m 19s
+
+ASSEMBLE DEBUG APK EXIT: 1
+
+[ 90%] APK EXPORT
+
+================================================================
+>>> APK EXPORT
+================================================================
+SKIPPED — build exit=1, apk_exists=NO
+VERSION TRANSACTION: ROLLED BACK
+Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
+================================================================
+>>> OPTIONAL GRADLE DAEMON STOP
+================================================================
+NO — Gradle daemon remains running for warm builds.
+
+Current Gradle daemon status:
+   PID STATUS   INFO
+ 21647 IDLE     8.5
+ 23624 STOPPED  (by user or operating system)
+
+Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
+
+================================================================
+>>> BUILD RESULT SUMMARY
+================================================================
+CLEAN:                           0
+LINT:                            SKIPPED — OPTIONAL
+CONNECTED TESTS:                 0
+VERSION BUMP:                    0
+ASSEMBLE DEBUG:                  1
+APK EXPORT:                      1
+GRADLE DAEMON STOP:              0
+
+FINAL STATUS: FAILED — check items above
+
+GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
+ M Build_lint_output.txt
+?? "app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
+
+[ 97%] GIT CLEANUP / APK VERIFICATION
+
+[ 97%] GIT CLEANUP / APK VERIFICATION
+=== REMOVED TERMUX BUILD ENVIRONMENT /APP/ CORRUPT FILE & VERIFY AS WELL VERIFY APK WHICH WILL BE SENT TO REPOSITORY ===
+rm 'app/@�@0�b@8@@@'
+FATAL: APK not found: app/build/outputs/apk/debug/app-debug.apk
+=== CONFIRMATION OF HEAD & MAIN ===
+=== HEAD ===
+9a4624f2 (HEAD -> main) updates
+
+=== MAIN ===
+9a4624f2 (HEAD -> main) updates
+
+Finished: 2026-10-05 10:38:22 WAT
+Report size: 57319 bytes
+================================================================
+
+=== PUSHED ===
