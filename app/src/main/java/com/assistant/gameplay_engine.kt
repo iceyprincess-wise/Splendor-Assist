@@ -8827,7 +8827,8 @@ object PlayerDetector {
         // NMS: suppress lower-confidence detection if it overlaps a better one
         var keptCount = 0
         var sumConf = 0f
-        java.util.Arrays.fill(suppressed, 0, rawCount, false)
+        val safeRawCount = minOf(rawCount, rawPool.size)
+        java.util.Arrays.fill(suppressed, 0, safeRawCount, false)
         for (i in 0 until rawCount) {
             if (suppressed[i]) continue
             val pi = rawPool[i]
