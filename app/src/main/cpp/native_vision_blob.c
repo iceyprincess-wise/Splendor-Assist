@@ -16,6 +16,7 @@ static int g_sumR[MAX_LABELS];
 static int g_sumG[MAX_LABELS];
 static int g_sumB[MAX_LABELS];
 static int g_labels[MAX_PIXELS];
+static int g_temp_blobs[10000 * 8]; // Static temp buffer for critical section decoupling
 
 static pthread_mutex_t g_vision_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -67,13 +68,16 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
     uint8_t* pixels = (uint8_t*) (*env)->GetDirectBufferAddress(env, byteBuffer);
     if (!pixels) return -1;
 
-    // FIX: Get array length BEFORE entering JNI critical section to prevent SIGABRT
+    // FIX 1: Validate direct buffer capacity to prevent SIGSEGV OOB read
+    jlong capacity = (*env)->GetDirectBufferCapacity(env, byteBuffer);
+    jlong requiredBytes = (jlong)(height - 1) * rowStride + (jlong)(width - 1) * pixelStride + 3;
+    if (capacity >= 0 && capacity < requiredBytes) return -1;
+
     int maxBlobs = (*env)->GetArrayLength(env, outputBlobs) / 8;
     if (maxBlobs <= 0) return -1;
+    if (maxBlobs > 10000) maxBlobs = 10000;
 
-    jint* out = (*env)->GetPrimitiveArrayCritical(env, outputBlobs, NULL);
-    if (!out) return -1;
-
+    // FIX 2: Lock mutex and compute OUTSIDE JNI critical section
     pthread_mutex_lock(&g_vision_mutex);
 
     int thresholdInt = (int)(threshold * 255.0f);
@@ -81,7 +85,6 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
     
     if (width * height > MAX_PIXELS) {
         pthread_mutex_unlock(&g_vision_mutex);
-        (*env)->ReleasePrimitiveArrayCritical(env, outputBlobs, out, 0);
         return -1;
     }
 
@@ -157,21 +160,21 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
         }
     }
     
-    // Pass 3: Extract unique roots to output buffer
+    // Pass 3: Extract unique roots to local temp buffer
     int blobCount = 0;
     
     for (int i = 1; i < nextLabel; i++) {
         if (g_parent[i] == i && g_count[i] > 0) {
             if (blobCount < maxBlobs) {
                 int offset = blobCount * 8;
-                out[offset + 0] = g_minX[i];
-                out[offset + 1] = g_minY[i];
-                out[offset + 2] = g_maxX[i];
-                out[offset + 3] = g_maxY[i];
-                out[offset + 4] = g_count[i];
-                out[offset + 5] = g_sumR[i];
-                out[offset + 6] = g_sumG[i];
-                out[offset + 7] = g_sumB[i];
+                g_temp_blobs[offset + 0] = g_minX[i];
+                g_temp_blobs[offset + 1] = g_minY[i];
+                g_temp_blobs[offset + 2] = g_maxX[i];
+                g_temp_blobs[offset + 3] = g_maxY[i];
+                g_temp_blobs[offset + 4] = g_count[i];
+                g_temp_blobs[offset + 5] = g_sumR[i];
+                g_temp_blobs[offset + 6] = g_sumG[i];
+                g_temp_blobs[offset + 7] = g_sumB[i];
                 blobCount++;
             } else {
                 break;
@@ -180,6 +183,12 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
     }
     
     pthread_mutex_unlock(&g_vision_mutex);
-    (*env)->ReleasePrimitiveArrayCritical(env, outputBlobs, out, 0);
+
+    // FIX 3: Briefly enter critical section ONLY for fast memcpy
+    jint* out = (*env)->GetPrimitiveArrayCritical(env, outputBlobs, NULL);
+    if (out) {
+        memcpy(out, g_temp_blobs, blobCount * 8 * sizeof(jint));
+        (*env)->ReleasePrimitiveArrayCritical(env, outputBlobs, out, 0);
+    }
     return blobCount;
 }

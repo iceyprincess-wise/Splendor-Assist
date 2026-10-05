@@ -275,6 +275,19 @@ object DeathWatch {
                 ?: exitInfos.firstOrNull()
 
             if (info != null) {
+                var traceNote = ""
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && info.reason == ApplicationExitInfo.REASON_CRASH_NATIVE) {
+                    try {
+                        info.traceInputStream?.use { inputStream ->
+                            val traceBytes = inputStream.readBytes()
+                            val traceStr = String(traceBytes, Charsets.UTF_8)
+                            val crashFile = java.io.File(ctx.filesDir, "Splendor_Native_Crash.txt")
+                            crashFile.writeText(traceStr)
+                            traceNote = " [Tombstone saved to ${crashFile.absolutePath}]"
+                        }
+                    } catch (_: Throwable) {}
+                }
+
                 val reasonStr = when (info.reason) {
                     ApplicationExitInfo.REASON_ANR -> "REASON_ANR (Application Not Responding)"
                     ApplicationExitInfo.REASON_CRASH -> "REASON_CRASH (Java/Kotlin uncaught exception)"
@@ -290,7 +303,7 @@ object DeathWatch {
                     ApplicationExitInfo.REASON_USER_STOPPED -> "REASON_USER_STOPPED (User stopped application)"
                     else -> "REASON_CODE_${info.reason}"
                 }
-                "OS_REPORTED: $reasonStr [status=${info.status} importance=${info.importance}]"
+                "OS_REPORTED: $reasonStr [status=${info.status} importance=${info.importance}]$traceNote"
             } else {
                 "NO_OS_RECORD_FOUND"
             }

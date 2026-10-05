@@ -8744,7 +8744,14 @@ object PlayerDetector {
     private val resultList = object : java.util.AbstractList<PlayerDetection>() {
         var count = 0
         override val size get() = count
-        override fun get(index: Int) = keptPool[index]
+        override fun get(index: Int): PlayerDetection {
+            if (index < 0 || index >= count) {
+                val trace = Thread.currentThread().stackTrace.joinToString("\n") { "  at $it" }
+                try { com.assistant.diagnostic.RuntimeLogger.log("FATAL OOB: index=$index, count=$count\n$trace", "PLAYER_DETECTOR") } catch (_: Throwable) {}
+                throw IndexOutOfBoundsException("length=${keptPool.size}; index=$index\nCaller:\n$trace")
+            }
+            return keptPool[index]
+        }
         fun bind(c: Int) { count = c }
     }
 
