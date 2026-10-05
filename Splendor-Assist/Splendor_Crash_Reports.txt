@@ -1,0 +1,13 @@
+
+===== ABNORMAL PROCESS DEATH =====
+Detected at   : 2026-10-05 14:15:34
+Dead process  : com.assistant.overlay  (pid 20128)
+Session began : 2026-10-05 14:15:14
+Last heartbeat: 2026-10-05 14:15:29
+Survived      : 15s
+Undetected for: 4s before this restart
+Memory then   : avail=996MB threshold=216MB lowMemory=false
+Java crash    : NO
+VERDICT       : TERMINATED: OS_REPORTED: REASON_CRASH_NATIVE (Native C/C++ SIGSEGV/SIGABRT) [status=11 importance=100] [Tombstone saved to /sdcard/Splendor-Assist/Splendor_Native_Crash.pb]
+Marker state  : ALIVE
+==================================
