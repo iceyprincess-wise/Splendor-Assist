@@ -280,23 +280,53 @@ object DeathWatch {
                     try {
                         info.traceInputStream?.use { inputStream ->
                             val traceBytes = inputStream.readBytes()
-                            val traceStr = String(traceBytes, Charsets.UTF_8)
                             
-                            // 1. Save to private internal storage (always works)
-                            val crashFile = java.io.File(ctx.filesDir, "Splendor_Native_Crash.txt")
-                            crashFile.writeText(traceStr)
+                            // Helper to extract printable strings from binary protobuf tombstone
+                            fun extractStrings(bytes: ByteArray): String {
+                                val sb = StringBuilder()
+                                val current = StringBuilder()
+                                for (b in bytes) {
+                                    val c = b.toInt() and 0xFF
+                                    if (c in 32..126) {
+                                        current.append(c.toChar())
+                                    } else {
+                                        if (current.length >= 4) {
+                                            sb.appendLine(current.toString())
+                                        }
+                                        current.clear()
+                                    }
+                                }
+                                if (current.length >= 4) sb.appendLine(current.toString())
+                                return sb.toString()
+                            }
+
+                            val readableStr = extractStrings(traceBytes)
+                            val header = "=== NATIVE TOMBSTONE (Raw Binary Saved as .pb) ===\n" +
+                                         "Extracted Printable Strings (Libraries, Symbols, Paths):\n\n"
+                            val readableReport = header + readableStr
+
+                            // 1. Save RAW BYTES to internal storage (Crucial for protoc --decode_raw)
+                            val rawFileInt = java.io.File(ctx.filesDir, "Splendor_Native_Crash.pb")
+                            rawFileInt.writeBytes(traceBytes)
                             
-                            // 2. Save to external forensic storage (SplendorStorageRoot)
+                            // 2. Save READABLE REPORT to internal storage
+                            val txtFileInt = java.io.File(ctx.filesDir, "Splendor_Native_Crash_Readable.txt")
+                            txtFileInt.writeText(readableReport)
+                            
+                            // 3. Save to external forensic storage (SplendorStorageRoot)
                             var extPath = ""
                             try {
                                 if (SplendorStorageRoot.isReady()) {
-                                    val extFile = SplendorStorageRoot.file("Splendor_Native_Crash.txt")
-                                    extFile.writeText(traceStr)
-                                    extPath = extFile.absolutePath
+                                    val rawFileExt = SplendorStorageRoot.file("Splendor_Native_Crash.pb")
+                                    rawFileExt.writeBytes(traceBytes)
+                                    
+                                    val txtFileExt = SplendorStorageRoot.file("Splendor_Native_Crash_Readable.txt")
+                                    txtFileExt.writeText(readableReport)
+                                    extPath = rawFileExt.absolutePath
                                 }
                             } catch (_: Throwable) {}
                             
-                            traceNote = " [Tombstone saved to ${if(extPath.isNotEmpty()) extPath else crashFile.absolutePath}]"
+                            traceNote = " [Tombstone saved to ${if(extPath.isNotEmpty()) extPath else rawFileInt.absolutePath}]"
                         }
                     } catch (_: Throwable) {}
                 }
