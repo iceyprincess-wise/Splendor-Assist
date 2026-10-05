@@ -268,7 +268,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
             if (startVision) {
                 visionStartTimeMs = System.currentTimeMillis()
                 // REMOVED: 500ms Watchdog caused data-race by unblocking frame pump while coroutine was still reading reusableVisionBuffer
-                }
             }
 
         val visionBuffer: java.nio.ByteBuffer = if (startVision) {
@@ -958,6 +957,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             Handler(Looper.getMainLooper()).postDelayed({}, 3000)
                         }
                     }
+                }
             } finally {
                 taskExecutionLock.unlock()
             }
