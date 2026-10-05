@@ -267,12 +267,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
             if (startVision) {
                 visionStartTimeMs = System.currentTimeMillis()
-                visionScope.launch {
-                    kotlinx.coroutines.delay(500)
-                    if (visionInFlight.get() && System.currentTimeMillis() - visionStartTimeMs > 500L) {
-                        visionInFlight.set(false)
-                        try { com.assistant.diagnostic.RuntimeLogger.log("VISION_WATCHDOG_RESET: Coroutine death detected, force-unblocking frame pump.", "FAULT") } catch (_: Throwable) {}
-                    }
+                // REMOVED: 500ms Watchdog caused data-race by unblocking frame pump while coroutine was still reading reusableVisionBuffer
                 }
             }
 
@@ -886,8 +881,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
         if (reusableBitmap == null || reusableBitmap!!.isRecycled) return
         if (taskExecutionLock.tryLock()) {
             try {
-                recognizer.process(InputImage.fromBitmap(reusableBitmap!!, 0))
-                    .addOnSuccessListener { visionText ->
+                var snapshot: Bitmap? = null
+                snapshot = reusableBitmap!!.copy(reusableBitmap!!.config, false)
+                val snapshotForClosure = snapshot
+                
+                recognizer.process(InputImage.fromBitmap(snapshot, 0))
+                    .addOnCompleteListener { task ->
+                        try { snapshotForClosure.recycle() } catch (_: Throwable) {}
+                        
+                        if (task.isSuccessful) {
+                            val visionText = task.result
                         val detectedText = visionText.textBlocks.asSequence()
                             .filterNot { com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(it.boundingBox) }
                             .joinToString("") { it.text }
