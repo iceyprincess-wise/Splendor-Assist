@@ -1,26 +1,13 @@
 
 ===== ABNORMAL PROCESS DEATH =====
-Detected at   : 2026-10-05 03:12:54
-Dead process  : com.assistant.overlay  (pid 16319)
-Session began : 2026-10-05 03:12:16
-Last heartbeat: 2026-10-05 03:12:46
-Survived      : 30s
-Undetected for: 8s before this restart
-Memory then   : avail=1030MB threshold=216MB lowMemory=false
+Detected at   : 2026-10-05 06:49:11
+Dead process  : com.assistant.overlay  (pid 11816)
+Session began : 2026-10-05 06:48:49
+Last heartbeat: 2026-10-05 06:49:04
+Survived      : 15s
+Undetected for: 6s before this restart
+Memory then   : avail=1110MB threshold=216MB lowMemory=false
 Java crash    : NO
-VERDICT       : TERMINATED: OS_REPORTED: REASON_CRASH_NATIVE (Native C/C++ SIGSEGV/SIGABRT) [status=11 importance=100] [Tombstone saved to /data/user/0/com.assistant.overlay/files/Splendor_Native_Crash.txt]
+VERDICT       : TERMINATED: OS_REPORTED: REASON_CRASH_NATIVE (Native C/C++ SIGSEGV/SIGABRT) [status=11 importance=100] [Tombstone saved to /sdcard/Splendor-Assist/Splendor_Native_Crash.txt]
 Marker state  : ALIVE
-==================================
-
-===== ABNORMAL PROCESS DEATH =====
-Detected at   : 2026-10-05 03:16:43
-Dead process  : com.assistant.overlay  (pid 17346)
-Session began : 2026-10-05 03:12:54
-Last heartbeat: 2026-10-05 03:12:54
-Survived      : 0s
-Undetected for: 228s before this restart
-Memory then   : avail=1031MB threshold=216MB lowMemory=false
-Java crash    : NO
-VERDICT       : EARLY DEATH - died 0s after start (OS_REPORTED: REASON_USER_REQUESTED (User force-stop or task swipe) [status=0 importance=100])
-Marker state  : START
 ==================================

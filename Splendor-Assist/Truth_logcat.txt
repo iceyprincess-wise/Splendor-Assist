@@ -1,2 +1,2 @@
-2026-10-05 03:12:45.510 [NativeBridge] splendor_native loaded; explicit JNI registration available.
-2026-10-05 03:12:51.098 [NATIVE_TRUTH] NATIVE_TRUTH nativeLoaded=true preprocessAvailable=true authorityAvailable=true lastError=none camera=profile=DYNAMIC_WIDE capture=288x640 source=720x1600
+2026-10-05 06:49:02.771 [NativeBridge] splendor_native loaded; explicit JNI registration available.
+2026-10-05 06:49:08.033 [NATIVE_TRUTH] NATIVE_TRUTH nativeLoaded=true preprocessAvailable=true authorityAvailable=true lastError=none camera=profile=DYNAMIC_WIDE capture=288x640 source=720x1600
