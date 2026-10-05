@@ -13676,13 +13676,12 @@ object AgilityContributor : GameplayContributor {
     override val engineName = "Agility"
     override val capabilities = setOf(EngineCapability.MOVEMENT, EngineCapability.SUPPORT)
     
-    // ZERO-ALLOCATION JNI BUFFER
-    private val nativeAgilityOut = FloatArray(4) // [targetX, targetY, authority, confidence]
+    // ZERO-ALLOCATION JNI BUFFER: 6 floats produced by native C ABI
+    // [0]=stabilityBoost, [1]=controlRetentionBoost, [2]=turnAssist, [3]=shieldAngle, [4]=shieldDuration, [5]=shieldActive
+    private val nativeAgilityOut = FloatArray(6)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        // UNCONDITIONAL AGGRESSIVE EXECUTION: Removed all Kotlin math/state extraction
-        
-        // JNI TINY ADAPTER: Delegate heavy physics to native C ABI
+        // UNCONDITIONAL AGGRESSIVE EXECUTION: Delegate heavy physics to native C ABI
         val success = com.assistant.NativeBridge.nativeComputeAgilityPhysics(
             frame.ballX, frame.ballY,
             frame.passTargetX, frame.passTargetY,
@@ -13690,15 +13689,22 @@ object AgilityContributor : GameplayContributor {
             nativeAgilityOut
         )
         
-        if (!success || nativeAgilityOut[2] < 0.1f) return null // Native layer determined no viable agile move
+        if (!success || nativeAgilityOut[5] < 0.1f) return null // Native layer determined no active shield/agile move
         
+        val angleRad = Math.toRadians(nativeAgilityOut[3].toDouble())
+        val dist = nativeAgilityOut[0] * 10.0f
+        val calculatedTargetX = (frame.ballX + kotlin.math.cos(angleRad) * dist).toFloat().coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
+        val calculatedTargetY = (frame.ballY + kotlin.math.sin(angleRad) * dist).toFloat().coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
+        val authority = (nativeAgilityOut[0] / 15.0f).coerceIn(0.1f, 0.95f)
+        val confidence = nativeAgilityOut[1].coerceIn(0.1f, 1.0f)
+
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.MOVE,
-            targetX = nativeAgilityOut[0].coerceAtLeast(0f),
-            targetY = nativeAgilityOut[1].coerceAtLeast(0f),
-            authority = nativeAgilityOut[2],
-            confidence = nativeAgilityOut[3],
+            targetX = calculatedTargetX,
+            targetY = calculatedTargetY,
+            authority = authority,
+            confidence = confidence,
             durationHintMs = 20L // Ultra-fast transition
         )
     }
@@ -13742,28 +13748,30 @@ object BallRetentionShieldContributor : GameplayContributor {
     override val engineName   = "BallRetentionShield"
     override val capabilities = setOf(EngineCapability.MOVEMENT, EngineCapability.DEFENSE)
     
-    // ZERO-ALLOCATION JNI BUFFER
-    private val nativeBuffer = FloatArray(4) // [targetX, targetY, authority, confidence]
+    // ZERO-ALLOCATION JNI BUFFER: 5 floats produced by native C ABI
+    // [0]=active, [1]=shieldX, [2]=shieldY, [3]=authority, [4]=risk
+    private val nativeBuffer = FloatArray(5)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         // UNCONDITIONAL AGGRESSIVE EXECUTION: Always evaluate shield positioning
-        
-        // JNI TINY ADAPTER: Direct C ABI call, zero JVM allocation overhead
         val success = com.assistant.NativeBridge.nativeComputeBallRetention(
             frame.ballX, frame.ballY,
             frame.defenderDensity,
             nativeBuffer
         )
         
-        if (!success || nativeBuffer[2] < 0.1f) return null 
+        if (!success || nativeBuffer[0] < 0.1f) return null // Active flag check
         
+        val authority = nativeBuffer[3].coerceIn(0.1f, 1.0f)
+        val confidence = (1.0f - nativeBuffer[4]).coerceIn(0.1f, 1.0f)
+
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.MOVE,
-            targetX = nativeBuffer[0].coerceAtLeast(0f),
-            targetY = nativeBuffer[1].coerceAtLeast(0f),
-            authority = nativeBuffer[2],
-            confidence = nativeBuffer[3],
+            targetX = nativeBuffer[1].coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),
+            targetY = nativeBuffer[2].coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),
+            authority = authority,
+            confidence = confidence,
             durationHintMs = 15L // Maximum reaction speed
         )
     }
