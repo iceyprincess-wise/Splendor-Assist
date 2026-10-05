@@ -64,6 +64,8 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
         jfloat turnIntensity, jfloat playerX, jfloat playerY,
         jfloat oppX, jfloat oppY, jint threadSeed, jfloatArray outBuffer) {
 
+    if (!outBuffer || (*env)->GetArrayLength(env, outBuffer) < 6) return;
+
     jfloat* result = (*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
     if (!result) return;
 

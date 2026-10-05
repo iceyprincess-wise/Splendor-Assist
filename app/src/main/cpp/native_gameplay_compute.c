@@ -27,6 +27,8 @@ Java_com_assistant_NativeBridge_nativeBallRetentionShieldCompute(
 ) {
     (void)clazz;
 
+    if (!resultBuffer || (*env)->GetArrayLength(env, resultBuffer) < 5) return;
+
     jfloat *res = (*env)->GetPrimitiveArrayCritical(env, resultBuffer, NULL);
     if (!res) return;
 
@@ -97,6 +99,8 @@ Java_com_assistant_NativeBridge_nativeInstantInterceptCompute(
 ) {
     (void)clazz;
 
+    if (!resultBuffer || (*env)->GetArrayLength(env, resultBuffer) < 5) return;
+
     jfloat *res = (*env)->GetPrimitiveArrayCritical(env, resultBuffer, NULL);
     if (!res) return;
 
@@ -160,6 +164,8 @@ Java_com_assistant_NativeBridge_nativeBuildUpPressCompute(
     jfloatArray resultBuffer
 ) {
     (void)clazz;
+
+    if (!resultBuffer || (*env)->GetArrayLength(env, resultBuffer) < 4) return;
 
     jfloat *res = (*env)->GetPrimitiveArrayCritical(env, resultBuffer, NULL);
     if (!res) return;
