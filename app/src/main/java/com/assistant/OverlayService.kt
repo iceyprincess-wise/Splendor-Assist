@@ -880,8 +880,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         if (reusableBitmap == null || reusableBitmap!!.isRecycled) return
         if (taskExecutionLock.tryLock()) {
             try {
-                var snapshot: Bitmap? = null
-                snapshot = reusableBitmap!!.copy(reusableBitmap!!.config, false)
+                val snapshot = reusableBitmap!!.copy(reusableBitmap!!.config, false)
                 val snapshotForClosure = snapshot
                 
                 recognizer.process(InputImage.fromBitmap(snapshot, 0))

@@ -1,277 +1,158 @@
-package com.assistant
+#!/usr/bin/env python3
+import sys
+import os
 
-import com.assistant.storage.SplendorStorageRoot
+print("=== SPLENDOR-ASSIST PYTHON3 PATCH SCRIPT ===")
 
-import android.app.ActivityManager
-import android.app.Application
-import android.content.Context
-import android.os.Build
-import android.app.ApplicationExitInfo
-import java.io.File
-import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+# Target 1: app/src/main/java/com/assistant/OverlayService.kt
+overlay_path = os.path.join("app", "src", "main", "java", "com", "assistant", "OverlayService.kt")
+if not os.path.exists(overlay_path):
+    print(f"FAIL: File not found: {overlay_path}")
+    sys.exit(1)
 
-/**
- * DEATH WATCH
- *
- * An UncaughtExceptionHandler only sees thrown Java/Kotlin exceptions. It is
- * structurally blind to the deaths that actually kill this app:
- *
- *   - low-memory kill (SIGKILL from LMK)
- *   - native crash (SIGSEGV)
- *   - ANR kill
- *   - user force-stop
- *
- * In all of those the process vanishes before any Kotlin code can run.
- *
- * DeathWatch works the other way round: while a process is alive it holds a
- * marker file and refreshes it with a heartbeat. A clean exit deletes it.
- * If the marker is still there on the next start, the previous session was
- * KILLED, and the last heartbeat tells us when and under what memory pressure.
- */
-object DeathWatch {
+with open(overlay_path, "r", encoding="utf-8") as f:
+    overlay_content = f.read()
 
-    private const val REPORT_NAME = "Splendor_Crash_Reports.txt"
-    
-    // UPGRADE: 5000L -> 15000L. On the Helio G81-Ultra (4GB RAM), 5s heartbeats 
-    // cause excessive Binder IPC to ActivityManager and Disk I/O. 15s is plenty 
-    // accurate to detect LMK/ANR/SIGSEGV while drastically reducing CPU wakeups 
-    // and GC pressure during eFootball 2027 15fps/30fps gameplay.
-    private const val HEARTBEAT_MS = 15000L
+target1_old = """                var snapshot: Bitmap? = null
+                snapshot = reusableBitmap!!.copy(reusableBitmap!!.config, false)"""
 
-    @Volatile private var installed = false
-    @Volatile private var appContext: Context? = null
-    @Volatile private var marker: File? = null
-    @Volatile private var procName = "?"
-    @Volatile private var startedMs = 0L
-    
-    // UPGRADE: Cache the static parts of the heartbeat string to prevent garbage collection.
-    @Volatile private var beatPrefix = ""
+target1_new = """                val snapshot = reusableBitmap!!.copy(reusableBitmap!!.config, false)"""
 
-    @JvmStatic
-    fun install(ctx: Context) {
-        if (installed) return
+if target1_new in overlay_content:
+    print("OverlayService.kt: Already patched.")
+elif target1_old in overlay_content:
+    overlay_content = overlay_content.replace(target1_old, target1_new)
+    with open(overlay_path, "w", encoding="utf-8") as f:
+        f.write(overlay_content)
+    print("OverlayService.kt: Successfully patched.")
+else:
+    print("FAIL: Expected pattern not found in OverlayService.kt")
+    sys.exit(1)
 
-        val c = ctx.applicationContext
+# Verify OverlayService.kt
+with open(overlay_path, "r", encoding="utf-8") as f:
+    if target1_new not in f.read():
+        print("FAIL: Verification failed for OverlayService.kt")
+        sys.exit(1)
 
-        if (!SplendorStorageRoot.isReady()) {
-            log("DeathWatch not armed: canonical storage is not ready")
-            return
-        }
+# Target 2: app/src/main/java/com/assistant/DeathWatch.kt
+deathwatch_path = os.path.join("app", "src", "main", "java", "com", "assistant", "DeathWatch.kt")
+if not os.path.exists(deathwatch_path):
+    print(f"FAIL: File not found: {deathwatch_path}")
+    sys.exit(1)
 
-        installed = true
-        appContext = c
-        procName = resolveProcessName(c)
-        startedMs = System.currentTimeMillis()
-        
-        val pidStr = android.os.Process.myPid().toString()
-        beatPrefix = "$procName|$pidStr|$startedMs|"
+with open(deathwatch_path, "r", encoding="utf-8") as f:
+    deathwatch_content = f.read()
 
-        val dir = SplendorStorageRoot.subdirectory("deathwatch")
-        val m = File(dir, safeName(procName) + ".marker")
+dw_search_1 = """        val osExitReason = getHistoricalExitReason(deadPid.toIntOrNull() ?: 0, deadProc)"""
 
-        // previous session never removed its marker -> it was killed
-        if (m.exists()) {
-            try { reportDeath(m.readText()) } catch (_: Throwable) { }
-        }
-
-        marker = m
-        beat(c, "START")
-
-        // orderly VM exit removes the marker; SIGKILL cannot
-        try {
-            Runtime.getRuntime().addShutdownHook(Thread {
-                try { m.delete() } catch (_: Throwable) { }
-            })
-        } catch (_: Throwable) { }
-
-        val t = Thread {
-            while (true) {
-                try {
-                    Thread.sleep(HEARTBEAT_MS)
-                    beat(c, "ALIVE")
-                } catch (_: Throwable) { return@Thread }
-            }
-        }
-        t.isDaemon = true
-        t.name = "deathwatch"
-        try { t.start() } catch (_: Throwable) { }
-
-        log("DeathWatch armed proc=" + procName + " pid=" + pidStr)
-    }
-
-    /** call on an intentional shutdown so it is not reported as a kill */
-    @JvmStatic
-    fun markCleanExit() {
-        try { marker?.delete() } catch (_: Throwable) { }
-    }
-
-    // ---------------- heartbeat ----------------
-
-    private fun beat(c: Context, state: String) {
-        val m = marker ?: return
-        try {
-            val memStr = memory(c)
-            // UPGRADE: Use cached prefix and US_ASCII to skip UTF-8 encoding overhead.
-            val text = "$state|$beatPrefix${System.currentTimeMillis()}|$memStr"
-            
-            FileOutputStream(m, false).use { fos ->
-                fos.write(text.toByteArray(Charsets.US_ASCII))
-            }
-        } catch (_: Throwable) { }
-    }
-
-    /** returns "availMB|lowMemory|thresholdMB" */
-    private fun memory(c: Context): String = try {
-        val am = c.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val info = ActivityManager.MemoryInfo()
-        am.getMemoryInfo(info)
-        val avail = (info.availMem / 1048576L).toString()
-        val thresh = (info.threshold / 1048576L).toString()
-        "$avail|${info.lowMemory}|$thresh"
-    } catch (_: Throwable) { "?|?|?" }
-
-    // ---------------- reporting ----------------
-
-    private fun reportDeath(raw: String) {
-        val p = raw.split("|")
-        fun at(i: Int): String = if (i < p.size) p[i] else "?"
-
-        val deadProc  = at(1)
-        val deadPid   = at(2)
-        val began     = at(3).toLongOrNull() ?: 0L
-        val lastBeat  = at(4).toLongOrNull() ?: 0L
-        val availMb   = at(5)
-        val lowMem    = at(6)
-        val threshMb  = at(7)
-
-        val lived = if (began > 0 && lastBeat > began) (lastBeat - began) / 1000L else -1L
-        val gap   = if (lastBeat > 0) (System.currentTimeMillis() - lastBeat) / 1000L else -1L
-
-        val javaCrash = javaCrashMarkerPresent(began)
-        val avail = availMb.toIntOrNull() ?: -1
-        val thresh = threshMb.toIntOrNull() ?: 0
-
-        val (osExitReason, nativeCrashDetails) = getHistoricalExitReasonDetails(
+dw_replace_1 = """        val (osExitReason, nativeCrashDetails) = getHistoricalExitReasonDetails(
             deadPid.toIntOrNull() ?: 0, deadProc, began, lastBeat, availMb, threshMb, lowMem
-        )
-        val verdict = when {
-            javaCrash ->
-                "JAVA EXCEPTION - a crash report exists for this session ($osExitReason)"
-            lowMem == "true" ->
-                "LOW MEMORY KILL - system reported lowMemory at " + availMb + "MB (threshold " + threshMb + "MB) ($osExitReason)"
-            thresh > 0 && avail in 0..(thresh * 2) ->
-                "LIKELY LMK - " + availMb + "MB free vs " + threshMb + "MB threshold ($osExitReason)"
-            lived in 0..10 ->
-                "EARLY DEATH - died " + lived + "s after start ($osExitReason)"
-            else ->
-                "TERMINATED: $osExitReason"
-        }
+        )"""
 
-        val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
-        val sb = StringBuilder()
-        sb.appendLine("")
-        sb.appendLine("===== ABNORMAL PROCESS DEATH =====")
-        sb.appendLine("Detected at   : " + ts.format(Date()))
-        sb.appendLine("Dead process  : " + deadProc + "  (pid " + deadPid + ")")
-        sb.appendLine("Session began : " + (if (began > 0) ts.format(Date(began)) else "?"))
-        sb.appendLine("Last heartbeat: " + (if (lastBeat > 0) ts.format(Date(lastBeat)) else "?"))
-        sb.appendLine("Survived      : " + lived + "s")
-        sb.appendLine("Undetected for: " + gap + "s before this restart")
-        sb.appendLine("Memory then   : avail=" + availMb + "MB threshold=" + threshMb + "MB lowMemory=" + lowMem)
-        sb.appendLine("Java crash    : " + (if (javaCrash) "YES" else "NO"))
-        sb.appendLine("VERDICT       : " + verdict)
-        sb.appendLine("Marker state  : " + at(0))
+dw_search_2 = """        sb.appendLine("Marker state  : " + at(0))
+        sb.appendLine("==================================")"""
+
+dw_replace_2 = """        sb.appendLine("Marker state  : " + at(0))
         if (nativeCrashDetails.isNotBlank()) {
             sb.appendLine()
             sb.appendLine("--- NATIVE CRASH DETAILED FORENSICS ---")
             sb.appendLine(nativeCrashDetails)
         }
-        sb.appendLine("==================================")
+        sb.appendLine("==================================")"""
 
-        val text = sb.toString()
-
-        try { reportFile()?.appendText(text) } catch (_: Throwable) { }
-
-        if (javaCrash) {
-            try { javaCrashMarkerFile()?.delete() } catch (_: Throwable) { }
-        }
-
-        log("ABNORMAL DEATH proc=" + deadProc + " lived=" + lived + "s avail=" +
-            availMb + "MB lowMemory=" + lowMem + " verdict=" + verdict)
-    }
-
-    private fun javaCrashMarkerFile(): File? {
+dw_old_func = """    private fun getHistoricalExitReason(deadPid: Int, deadProc: String): String {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return "SDK_LESS_THAN_30"
+        val ctx = appContext ?: return "NO_CONTEXT"
         return try {
-            val processName = resolveProcessName(null)
-            val safeProcess = safeName(processName)
-            File(
-                SplendorStorageRoot.subdirectory("deathwatch"),
-                "$safeProcess.java-crash.marker"
-            )
-        } catch (_: Throwable) {
-            null
-        }
-    }
+            val am = ctx.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val exitInfos = am.getHistoricalProcessExitReasons(ctx.packageName, deadPid, 5)
+            val info = exitInfos.firstOrNull { deadPid != 0 && it.pid == deadPid }
+                ?: exitInfos.firstOrNull { deadProc.isNotBlank() && it.processName == deadProc }
+                ?: exitInfos.firstOrNull()
 
-    private fun javaCrashMarkerPresent(since: Long): Boolean {
-        return try {
-            val f = javaCrashMarkerFile()
+            if (info != null) {
+                var traceNote = ""
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && info.reason == ApplicationExitInfo.REASON_CRASH_NATIVE) {
+                    try {
+                        info.traceInputStream?.use { inputStream ->
+                            val traceBytes = inputStream.readBytes()
 
-            if (f == null || !f.exists()) {
-                false
+                            // Helper to extract printable strings from binary protobuf tombstone
+                            fun extractStrings(bytes: ByteArray): String {
+                                val sb = StringBuilder()
+                                val current = StringBuilder()
+                                for (b in bytes) {
+                                    val c = b.toInt() and 0xFF
+                                    if (c in 32..126) {
+                                        current.append(c.toChar())
+                                    } else {
+                                        if (current.length >= 4) {
+                                            sb.appendLine(current.toString())
+                                        }
+                                        current.clear()
+                                    }
+                                }
+                                if (current.length >= 4) sb.appendLine(current.toString())
+                                return sb.toString()
+                            }
+
+                            val readableStr = extractStrings(traceBytes)
+                            val header = "=== NATIVE TOMBSTONE (Raw Binary Saved as .pb) ===\\n" +
+                                         "Extracted Printable Strings (Libraries, Symbols, Paths):\\n\\n"
+                            val readableReport = header + readableStr
+
+                            // 1. Save RAW BYTES to internal storage (Crucial for protoc --decode_raw)
+                            val rawFileInt = java.io.File(ctx.filesDir, "Splendor_Native_Crash.pb")
+                            rawFileInt.writeBytes(traceBytes)
+
+                            // 2. Save READABLE REPORT to internal storage
+                            val txtFileInt = java.io.File(ctx.filesDir, "Splendor_Native_Crash_Readable.txt")
+                            txtFileInt.writeText(readableReport)
+
+                            // 3. Save to external forensic storage (SplendorStorageRoot)
+                            var extPath = ""
+                            try {
+                                if (SplendorStorageRoot.isReady()) {
+                                    val rawFileExt = SplendorStorageRoot.file("Splendor_Native_Crash.pb")
+                                    rawFileExt.writeBytes(traceBytes)
+
+                                    val txtFileExt = SplendorStorageRoot.file("Splendor_Native_Crash_Readable.txt")
+                                    txtFileExt.writeText(readableReport)
+                                    extPath = rawFileExt.absolutePath
+                                }
+                            } catch (_: Throwable) {}
+
+                            traceNote = " [Tombstone saved to ${if(extPath.isNotEmpty()) extPath else rawFileInt.absolutePath}]"
+                        }
+                    } catch (_: Throwable) {}
+                }
+
+                val reasonStr = when (info.reason) {
+                    ApplicationExitInfo.REASON_ANR -> "REASON_ANR (Application Not Responding)"
+                    ApplicationExitInfo.REASON_CRASH -> "REASON_CRASH (Java/Kotlin uncaught exception)"
+                    ApplicationExitInfo.REASON_CRASH_NATIVE -> "REASON_CRASH_NATIVE (Native C/C++ SIGSEGV/SIGABRT)"
+                    ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE -> "REASON_EXCESSIVE_RESOURCE_USAGE (Excessive CPU/RAM/Battery)"
+                    ApplicationExitInfo.REASON_EXIT_SELF -> "REASON_EXIT_SELF (Clean stopSelf or System.exit)"
+                    ApplicationExitInfo.REASON_INITIALIZATION_FAILURE -> "REASON_INITIALIZATION_FAILURE (Process init failed)"
+                    ApplicationExitInfo.REASON_LOW_MEMORY -> "REASON_LOW_MEMORY (OS Low Memory Killer / LMK)"
+                    ApplicationExitInfo.REASON_OTHER -> "REASON_OTHER (Vendor/HyperOS background eviction or kill)"
+                    ApplicationExitInfo.REASON_PERMISSION_CHANGE -> "REASON_PERMISSION_CHANGE (Permission revoked)"
+                    ApplicationExitInfo.REASON_SIGNALED -> "REASON_SIGNALED (Killed by OS signal ${info.status})"
+                    ApplicationExitInfo.REASON_USER_REQUESTED -> "REASON_USER_REQUESTED (User force-stop or task swipe)"
+                    ApplicationExitInfo.REASON_USER_STOPPED -> "REASON_USER_STOPPED (User stopped application)"
+                    else -> "REASON_CODE_${info.reason}"
+                }
+                "OS_REPORTED: $reasonStr [status=${info.status} importance=${info.importance}]$traceNote"
             } else {
-                val timestamp = f.readText()
-                    .substringAfter("timestamp=", "")
-                    .substringBefore("|")
-                    .toLongOrNull()
-
-                timestamp != null && timestamp >= since
+                "NO_OS_RECORD_FOUND"
             }
-        } catch (_: Throwable) {
-            false
+        } catch (t: Throwable) {
+            "QUERY_FAILED: ${t.javaClass.simpleName}: ${t.message}"
         }
-    }
+    }"""
 
-    private fun reportFile(): File? {
-        return try {
-            SplendorStorageRoot.file(REPORT_NAME)
-        } catch (_: Throwable) {
-            null
-        }
-    }
-
-    // ---------------- helpers ----------------
-
-    private fun resolveProcessName(c: Context?): String = try {
-        if (Build.VERSION.SDK_INT >= 28) {
-            Application.getProcessName()
-        } else {
-            val pid = android.os.Process.myPid()
-            if (c == null) {
-                "pid$pid"
-            } else {
-                val am = c.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                am.runningAppProcesses
-                    ?.firstOrNull { it.pid == pid }
-                    ?.processName
-                    ?: "pid$pid"
-            }
-        }
-    } catch (_: Throwable) {
-        "pid" + android.os.Process.myPid()
-    }
-
-    private fun safeName(s: String): String =
-        s.replace(':', '_').replace('.', '_').replace('/', '_')
-
-    private fun log(m: String) {
-        try { com.assistant.diagnostic.RuntimeLogger.log(m, "DEATHWATCH") } catch (_: Throwable) { }
-    }
-
-    private fun getHistoricalExitReasonDetails(
+dw_new_func = """    private fun getHistoricalExitReasonDetails(
         deadPid: Int, deadProc: String,
         beganMs: Long, lastBeatMs: Long, availMb: String, threshMb: String, lowMem: String
     ): Pair<String, String> {
@@ -310,24 +191,24 @@ object DeathWatch {
                             // 1. Save RAW BYTES to internal storage
                             val rawFileInt = java.io.File(ctx.filesDir, "Splendor_Native_Crash.pb")
                             rawFileInt.writeBytes(traceBytes)
-                            
+
                             // 2. Save READABLE FORENSIC REPORT to internal storage
                             val txtFileInt = java.io.File(ctx.filesDir, "Splendor_Native_Crash_Readable.txt")
                             txtFileInt.writeText(parsedForensics.fullReport)
-                            
+
                             // 3. Save to external forensic storage
                             var extPath = ""
                             try {
                                 if (SplendorStorageRoot.isReady()) {
                                     val rawFileExt = SplendorStorageRoot.file("Splendor_Native_Crash.pb")
                                     rawFileExt.writeBytes(traceBytes)
-                                    
+
                                     val txtFileExt = SplendorStorageRoot.file("Splendor_Native_Crash_Readable.txt")
                                     txtFileExt.writeText(parsedForensics.fullReport)
                                     extPath = rawFileExt.absolutePath
                                 }
                             } catch (_: Throwable) {}
-                            
+
                             traceNote = " [Tombstone saved to ${if(extPath.isNotEmpty()) extPath else rawFileInt.absolutePath}]"
                         }
                     } catch (_: Throwable) {}
@@ -531,5 +412,27 @@ object DeathWatch {
         embSb.appendLine("  This indicates invalid memory/reference state encountered during GC scanning caused by prior JNI/native write boundaries.")
 
         return ParsedTombstone(fullSb.toString(), embSb.toString())
-    }
-}
+    }"""
+
+if "parseTombstoneBytes" in deathwatch_content and "--- NATIVE CRASH DETAILED FORENSICS ---" in deathwatch_content:
+    print("DeathWatch.kt: Already patched.")
+else:
+    if dw_search_1 in deathwatch_content and dw_search_2 in deathwatch_content and dw_old_func in deathwatch_content:
+        deathwatch_content = deathwatch_content.replace(dw_search_1, dw_replace_1)
+        deathwatch_content = deathwatch_content.replace(dw_search_2, dw_replace_2)
+        deathwatch_content = deathwatch_content.replace(dw_old_func, dw_new_func)
+        with open(deathwatch_path, "w", encoding="utf-8") as f:
+            f.write(deathwatch_content)
+        print("DeathWatch.kt: Successfully patched.")
+    else:
+        print("FAIL: Expected pattern not found in DeathWatch.kt")
+        sys.exit(1)
+
+# Verify DeathWatch.kt
+with open(deathwatch_path, "r", encoding="utf-8") as f:
+    dw_check = f.read()
+    if "parseTombstoneBytes" not in dw_check or "--- NATIVE CRASH DETAILED FORENSICS ---" not in dw_check:
+        print("FAIL: Verification failed for DeathWatch.kt")
+        sys.exit(1)
+
+print("PASS: All mutations verified successfully.")
