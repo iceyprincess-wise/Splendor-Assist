@@ -67,6 +67,10 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
     uint8_t* pixels = (uint8_t*) (*env)->GetDirectBufferAddress(env, byteBuffer);
     if (!pixels) return -1;
 
+    // FIX: Get array length BEFORE entering JNI critical section to prevent SIGABRT
+    int maxBlobs = (*env)->GetArrayLength(env, outputBlobs) / 8;
+    if (maxBlobs <= 0) return -1;
+
     jint* out = (*env)->GetPrimitiveArrayCritical(env, outputBlobs, NULL);
     if (!out) return -1;
 
@@ -155,7 +159,6 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
     
     // Pass 3: Extract unique roots to output buffer
     int blobCount = 0;
-    int maxBlobs = (*env)->GetArrayLength(env, outputBlobs) / 8;
     
     for (int i = 1; i < nextLabel; i++) {
         if (g_parent[i] == i && g_count[i] > 0) {
