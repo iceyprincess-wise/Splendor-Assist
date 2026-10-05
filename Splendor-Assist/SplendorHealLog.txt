@@ -1,0 +1,16 @@
+
+============================================================
+SPLENDOR SELF-HEAL AGENT SESSION: 2026-10-05 01:04:34
+Read: cat /sdcard/Splendor-Assist/SplendorHealLog.txt
+============================================================
+
+[01:04:34.395] [FIXED] [CAPTURE_RESTART]
+  DETECTED: No frame ever assembled (capture=profile=DYNAMIC_WIDE capture=288x640 source=720x1600). Attempt #1 of 3.
+  FIX:      RESTART SENT to OverlayService.restartCapture().
+
+
+============================================================
+SPLENDOR SELF-HEAL AGENT SESSION: 2026-10-05 01:04:47
+Read: cat /sdcard/Splendor-Assist/SplendorHealLog.txt
+============================================================
+

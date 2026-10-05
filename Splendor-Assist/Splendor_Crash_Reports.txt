@@ -1,0 +1,26 @@
+
+===== ABNORMAL PROCESS DEATH =====
+Detected at   : 2026-10-05 01:04:43
+Dead process  : com.assistant.overlay  (pid 9652)
+Session began : 2026-10-05 01:04:22
+Last heartbeat: 2026-10-05 01:04:37
+Survived      : 15s
+Undetected for: 5s before this restart
+Memory then   : avail=1054MB threshold=216MB lowMemory=false
+Java crash    : NO
+VERDICT       : TERMINATED: OS_REPORTED: REASON_CRASH_NATIVE (Native C/C++ SIGSEGV/SIGABRT) [status=11 importance=125]
+Marker state  : ALIVE
+==================================
+
+===== ABNORMAL PROCESS DEATH =====
+Detected at   : 2026-10-05 01:08:58
+Dead process  : com.assistant.overlay  (pid 10208)
+Session began : 2026-10-05 01:04:43
+Last heartbeat: 2026-10-05 01:04:43
+Survived      : 0s
+Undetected for: 254s before this restart
+Memory then   : avail=1193MB threshold=216MB lowMemory=false
+Java crash    : NO
+VERDICT       : EARLY DEATH - died 0s after start (OS_REPORTED: REASON_USER_REQUESTED (User force-stop or task swipe) [status=0 importance=100])
+Marker state  : START
+==================================
