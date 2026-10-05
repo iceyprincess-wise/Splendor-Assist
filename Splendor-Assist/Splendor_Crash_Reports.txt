@@ -1,0 +1,26 @@
+
+===== ABNORMAL PROCESS DEATH =====
+Detected at   : 2026-10-05 22:43:19
+Dead process  : com.assistant.overlay  (pid 30986)
+Session began : 2026-10-05 22:41:48
+Last heartbeat: 2026-10-05 22:42:19
+Survived      : 30s
+Undetected for: 60s before this restart
+Memory then   : avail=933MB threshold=216MB lowMemory=false
+Java crash    : NO
+VERDICT       : TERMINATED: OS_REPORTED: REASON_USER_REQUESTED (User force-stop or task swipe) [status=0 importance=100]
+Marker state  : ALIVE
+==================================
+
+===== ABNORMAL PROCESS DEATH =====
+Detected at   : 2026-10-05 23:07:17
+Dead process  : com.assistant.overlay  (pid 2695)
+Session began : 2026-10-05 22:43:19
+Last heartbeat: 2026-10-05 22:43:19
+Survived      : 0s
+Undetected for: 1437s before this restart
+Memory then   : avail=1166MB threshold=216MB lowMemory=false
+Java crash    : NO
+VERDICT       : EARLY DEATH - died 0s after start (OS_REPORTED: REASON_USER_REQUESTED (User force-stop or task swipe) [status=0 importance=100])
+Marker state  : START
+==================================
