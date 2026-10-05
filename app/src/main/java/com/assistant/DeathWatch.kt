@@ -281,9 +281,22 @@ object DeathWatch {
                         info.traceInputStream?.use { inputStream ->
                             val traceBytes = inputStream.readBytes()
                             val traceStr = String(traceBytes, Charsets.UTF_8)
+                            
+                            // 1. Save to private internal storage (always works)
                             val crashFile = java.io.File(ctx.filesDir, "Splendor_Native_Crash.txt")
                             crashFile.writeText(traceStr)
-                            traceNote = " [Tombstone saved to ${crashFile.absolutePath}]"
+                            
+                            // 2. Save to external forensic storage (SplendorStorageRoot)
+                            var extPath = ""
+                            try {
+                                if (SplendorStorageRoot.isReady()) {
+                                    val extFile = SplendorStorageRoot.file("Splendor_Native_Crash.txt")
+                                    extFile.writeText(traceStr)
+                                    extPath = extFile.absolutePath
+                                }
+                            } catch (_: Throwable) {}
+                            
+                            traceNote = " [Tombstone saved to ${if(extPath.isNotEmpty()) extPath else crashFile.absolutePath}]"
                         }
                     } catch (_: Throwable) {}
                 }
