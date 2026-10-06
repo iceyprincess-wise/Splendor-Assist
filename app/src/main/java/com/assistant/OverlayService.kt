@@ -824,9 +824,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
             
             try { oldReader?.close() } catch (_: Throwable) {}
             
-            // V38 LOOP_FROZEN FIX: Force-kill stuck vision coroutines and unblock visionInFlight
+            // V38 LOOP_FROZEN FIX: Force-kill stuck vision coroutines safely without race condition
             visionScope.coroutineContext.cancelChildren()
-            visionInFlight.set(false)
+            // Do NOT prematurely force visionInFlight = false while background coroutine is still reading/assembling
+            // visionInFlight resets cleanly in the coroutine finally block
             
             RuntimeLogger.log("recreateCaptureSurfaces: ImageReader replaced via setSurface (resize=$dimensionsChanged). Vision pipeline force-reset.", "OVERLAY")
         }
