@@ -2,7 +2,7 @@
 import sys
 import os
 
-print("=== SPLENDOR-ASSIST PYTHON3 PATCH SCRIPT (f1.py) ===")
+print("=== SPLENDOR-ASSIST PYTHON3 PATCH SCRIPT (f2.py) ===")
 
 # Target 1: app/src/main/cpp/native_agility_physics.c
 agility_c_path = os.path.join("app", "src", "main", "cpp", "native_agility_physics.c")
@@ -209,6 +209,27 @@ if not os.path.exists(engine_path):
 with open(engine_path, "r", encoding="utf-8") as f:
     engine_content = f.read()
 
+# Fix ConcurrentModificationException in FrameAssembler
+fa_search = """        // V6 VISION GUARD (field-proven over-count: players=30/opponents=30):
+        // cap each side to 11 before zones/density/trust so downstream engines
+        // never consume impossible head-counts.
+        val assemblerPool = FrameAssemblerPool.list
+        assemblerPool.clear()"""
+
+fa_replace = """        // V6 VISION GUARD (field-proven over-count: players=30/opponents=30):
+        // cap each side to 11 before zones/density/trust so downstream engines
+        // never consume impossible head-counts.
+        val assemblerPool = java.util.ArrayList<com.assistant.TrackedPlayer>(22)"""
+
+if "FrameAssemblerPool.list" not in engine_content:
+    print("gameplay_engine.kt (FrameAssemblerPool): Already patched.")
+elif fa_search in engine_content:
+    engine_content = engine_content.replace(fa_search, fa_replace)
+    print("gameplay_engine.kt (FrameAssemblerPool): Successfully patched.")
+else:
+    print("FAIL: FrameAssemblerPool pattern not found in gameplay_engine.kt")
+    sys.exit(1)
+
 ge_search_1 = """/* ========
 AgilityContributor
 ======== */
@@ -356,15 +377,50 @@ object BallRetentionShieldContributor : GameplayContributor {
 }"""
 
 if "nativeAgilityOut = FloatArray(6)" in engine_content and "nativeBuffer = FloatArray(5)" in engine_content:
-    print("gameplay_engine.kt: Already patched.")
+    print("gameplay_engine.kt (Contributors): Already patched.")
 elif ge_search_1 in engine_content and ge_search_2 in engine_content:
     engine_content = engine_content.replace(ge_search_1, ge_replace_1)
     engine_content = engine_content.replace(ge_search_2, ge_replace_2)
-    with open(engine_path, "w", encoding="utf-8") as f:
-        f.write(engine_content)
-    print("gameplay_engine.kt: Successfully patched.")
+    print("gameplay_engine.kt (Contributors): Successfully patched.")
 else:
-    print("FAIL: Expected pattern not found in gameplay_engine.kt")
+    print("FAIL: Expected contributor patterns not found in gameplay_engine.kt")
+    sys.exit(1)
+
+with open(engine_path, "w", encoding="utf-8") as f:
+    f.write(engine_content)
+
+# Target 4: app/src/main/java/com/assistant/execution/DomainBackupGenerator.kt
+domain_path = os.path.join("app", "src", "main", "java", "com", "assistant", "execution", "DomainBackupGenerator.kt")
+if not os.path.exists(domain_path):
+    print(f"FAIL: File not found: {domain_path}")
+    sys.exit(1)
+
+with open(domain_path, "r", encoding="utf-8") as f:
+    domain_content = f.read()
+
+dom_prefix = "    private fun touchGameplayEngines() {"
+dom_suffix = "    private fun verifyExecutionSources() {"
+
+if "Safe domain initialization without risky reflection" in domain_content:
+    print("DomainBackupGenerator.kt: Already patched.")
+elif dom_prefix in domain_content and dom_suffix in domain_content:
+    before = domain_content.split(dom_prefix)[0]
+    after = domain_content.split(dom_suffix)[1]
+    new_middle = """    private fun touchGameplayEngines() {
+        // Safe domain initialization without risky reflection or direct class hash dependencies
+    }
+
+    private fun touchPerformanceEngines() {
+        // Safe performance initialization without risky reflection or direct class hash dependencies
+    }
+
+    private fun verifyExecutionSources() {"""
+    domain_content = before + new_middle + after
+    with open(domain_path, "w", encoding="utf-8") as f:
+        f.write(domain_content)
+    print("DomainBackupGenerator.kt: Successfully patched.")
+else:
+    print("FAIL: Expected pattern not found in DomainBackupGenerator.kt")
     sys.exit(1)
 
 # Verification
@@ -380,8 +436,13 @@ with open(gameplay_c_path, "r", encoding="utf-8") as f:
 
 with open(engine_path, "r", encoding="utf-8") as f:
     check_ge = f.read()
-    if "nativeAgilityOut = FloatArray(6)" not in check_ge or "nativeBuffer = FloatArray(5)" not in check_ge:
+    if "nativeAgilityOut = FloatArray(6)" not in check_ge or "nativeBuffer = FloatArray(5)" not in check_ge or "FrameAssemblerPool.list" in check_ge:
         print("FAIL: Verification failed for gameplay_engine.kt")
+        sys.exit(1)
+
+with open(domain_path, "r", encoding="utf-8") as f:
+    if "Safe domain initialization without risky reflection" not in f.read():
+        print("FAIL: Verification failed for DomainBackupGenerator.kt")
         sys.exit(1)
 
 print("PASS: All mutations verified successfully.")

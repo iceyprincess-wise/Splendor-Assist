@@ -1,44 +1,26 @@
 
 ===== ABNORMAL PROCESS DEATH =====
-Detected at   : 2026-10-05 20:23:01
-Dead process  : com.assistant.overlay  (pid 25288)
-Session began : 2026-10-05 20:22:30
-Last heartbeat: 2026-10-05 20:22:45
-Survived      : 15s
-Undetected for: 14s before this restart
-Memory then   : avail=1158MB threshold=216MB lowMemory=false
+Detected at   : 2026-10-05 22:43:19
+Dead process  : com.assistant.overlay  (pid 30986)
+Session began : 2026-10-05 22:41:48
+Last heartbeat: 2026-10-05 22:42:19
+Survived      : 30s
+Undetected for: 60s before this restart
+Memory then   : avail=933MB threshold=216MB lowMemory=false
 Java crash    : NO
-VERDICT       : TERMINATED: OS_REPORTED: REASON_CRASH_NATIVE (Native C/C++ SIGSEGV/SIGABRT) [status=11 importance=100] [Tombstone saved to /sdcard/Splendor-Assist/Splendor_Native_Crash.pb]
+VERDICT       : TERMINATED: OS_REPORTED: REASON_USER_REQUESTED (User force-stop or task swipe) [status=0 importance=100]
 Marker state  : ALIVE
+==================================
 
---- NATIVE CRASH DETAILED FORENSICS ---
-Signal         : SIGSEGV (SEGV_MAPERR@) [status=11]
-Fault Address  : 0x0
-Crashing Thread: [anon:stack_and_tls:main]
-Crash Location : art::Thread::Park(bool, long)(
-
-Native Backtrace:
-  #00: art::Thread::Park(bool, long)(
-  #01: 2%/apex/com.android.art/lib64/libart.soB cecb684d19b4f44ee3cbd66142c315f4"
-  #02: "lart::Unsafe_park(_JNIEnv*, _jobject*, unsigned char, long) (.__uniq.319429422067363160645159987129209045680)(
-  #03: 2%/apex/com.android.art/lib64/libart.soB cecb684d19b4f44ee3cbd66142c315f4"R
-  #04: 2%/apex/com.android.art/lib64/libart.soB cecb684d19b4f44ee3cbd66142c315f4"
-  #05: bool art::interpreter::DoCall<false>(art::ArtMethod*, art::Thread*, art::ShadowFrame&, art::Instruction const*, unsigned short, bool, art::JValue*)(
-  #06: 2%/apex/com.android.art/lib64/libart.soB cecb684d19b4f44ee3cbd66142c315f4"
-  #07: "Xvoid art::interpreter::ExecuteSwitchImplCpp<false>(art::interpreter::SwitchImplContext*)(
-  #08: 2%/apex/com.android.art/lib64/libart.soB cecb684d19b4f44ee3cbd66142c315f4"t
-  #09: 2%/apex/com.android.art/lib64/libart.soB cecb684d19b4f44ee3cbd66142c315f4"
-  #10: bool art::interpreter::DoCall<false>(art::ArtMethod*, art::Thread*, art::ShadowFrame&, art::Instruction const*, unsigned short, bool, art::JValue*)(
-  #11: 2%/apex/com.android.art/lib64/libart.soB cecb684d19b4f44ee3cbd66142c315f4"
-  #12: "Xvoid art::interpreter::ExecuteSwitchImplCpp<false>(art::interpreter::SwitchImplContext*)(
-  #13: 2%/apex/com.android.art/lib64/libart.soB cecb684d19b4f44ee3cbd66142c315f4"t
-  #14: 2%/apex/com.android.art/lib64/libart.soB cecb684d19b4f44ee3cbd66142c315f4"
-
-Application Native Frames:
-  [None observed in top frames; crash occurred inside system library / ART GC root scan]
-
-Diagnostic Verdict:
-  Native SIGSEGV occurred while ART's [anon:stack_and_tls:main] was running art::Thread::Park(bool, long)(.
-  This indicates invalid memory/reference state encountered during GC scanning caused by prior JNI/native write boundaries.
-
+===== ABNORMAL PROCESS DEATH =====
+Detected at   : 2026-10-05 23:07:17
+Dead process  : com.assistant.overlay  (pid 2695)
+Session began : 2026-10-05 22:43:19
+Last heartbeat: 2026-10-05 22:43:19
+Survived      : 0s
+Undetected for: 1437s before this restart
+Memory then   : avail=1166MB threshold=216MB lowMemory=false
+Java crash    : NO
+VERDICT       : EARLY DEATH - died 0s after start (OS_REPORTED: REASON_USER_REQUESTED (User force-stop or task swipe) [status=0 importance=100])
+Marker state  : START
 ==================================

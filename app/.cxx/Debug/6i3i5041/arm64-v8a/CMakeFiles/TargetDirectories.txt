@@ -1,3 +1,0 @@
-/app/app/.cxx/Debug/6i3i5041/arm64-v8a/CMakeFiles/splendor_native.dir
-/app/app/.cxx/Debug/6i3i5041/arm64-v8a/CMakeFiles/edit_cache.dir
-/app/app/.cxx/Debug/6i3i5041/arm64-v8a/CMakeFiles/rebuild_cache.dir

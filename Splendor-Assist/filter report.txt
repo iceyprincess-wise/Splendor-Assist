@@ -1,4 +1,4 @@
-[2026-10-05 20:22:46] FILTER ENGINE REPORT
+[2026-10-05 22:42:00] FILTER ENGINE REPORT
 -----------------------------------
 EFFECTIVENESS SCORE: 40/100
 AGGRESSION MULTIPLIER: 1.45x
@@ -15,7 +15,7 @@ DEVICE STATE (Helio G81-Ultra / 4GB RAM):
 FILTER ACTION:
   Nominal operation.
 -----------------------------------
-[2026-10-05 20:22:51] FILTER ENGINE REPORT
+[2026-10-05 22:42:06] FILTER ENGINE REPORT
 -----------------------------------
 EFFECTIVENESS SCORE: 40/100
 AGGRESSION MULTIPLIER: 2.32x
@@ -32,10 +32,5807 @@ DEVICE STATE (Helio G81-Ultra / 4GB RAM):
 FILTER ACTION:
   EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
 -----------------------------------
-[2026-10-05 20:22:56] FILTER ENGINE REPORT
+[2026-10-05 22:42:11] FILTER ENGINE REPORT
 -----------------------------------
 EFFECTIVENESS SCORE: 40/100
 AGGRESSION MULTIPLIER: 2.47x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 22:42:16] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 22:42:21] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 22:42:26] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:07:28] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 1.45x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-10-05 23:07:33] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.32x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:07:38] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.47x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:07:43] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:07:48] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:07:53] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:07:58] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:03] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:09] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:14] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:19] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:24] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:29] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:34] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:39] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:44] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:49] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:54] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:08:59] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:04] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:09] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:14] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:19] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:24] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:29] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:34] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:39] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:44] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:49] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:54] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:09:59] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:04] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:09] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:14] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:19] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:24] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:29] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:34] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:39] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:44] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:49] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:54] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:10:59] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:04] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:09] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:14] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:19] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:24] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:29] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:34] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:39] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:44] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:49] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:54] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:11:59] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:12:05] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:12:10] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:12:15] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:12:20] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:12:25] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:12:30] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:12:35] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:12:40] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:12:45] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:12:50] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:12:55] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:00] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:05] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:10] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:15] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:20] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:25] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:30] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:35] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:40] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:45] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:50] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:13:55] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:00] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:05] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:10] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:15] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:20] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:25] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:30] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:35] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:40] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:45] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:50] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:14:55] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:00] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:05] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:10] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:15] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:20] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:25] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:30] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:35] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:40] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:45] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:50] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:15:55] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:00] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:05] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:10] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:15] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:20] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:25] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:30] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:35] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:40] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:45] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:50] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:16:55] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:01] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:06] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:11] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:16] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:21] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:26] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:31] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:36] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:41] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:46] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:51] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:17:56] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:01] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:06] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:11] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:16] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:21] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:26] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:31] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:36] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:41] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:46] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:51] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:18:56] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:01] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:06] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:11] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:16] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:21] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:26] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:31] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:36] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:41] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:46] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:51] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:19:56] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:01] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:06] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:11] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:16] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:21] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:26] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:31] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:36] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:41] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:46] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:51] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:20:56] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:01] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:06] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:11] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:16] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:21] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:26] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:31] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:36] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:41] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:46] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:51] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:21:56] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:01] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:06] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:11] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:16] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:21] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:26] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:31] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:36] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:41] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:46] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:51] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:22:56] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:02] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:07] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:12] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:17] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:22] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:27] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:32] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:37] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:42] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:47] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:52] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:23:57] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:02] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:07] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:12] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:17] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:22] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:27] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:32] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:37] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:42] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:47] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:52] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:24:57] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:02] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:07] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:12] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:17] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:22] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:27] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:32] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:37] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:42] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:47] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:52] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:25:57] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:02] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:07] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:12] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:17] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:22] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:27] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:32] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:37] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:42] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:47] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:52] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:26:57] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:02] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:07] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:12] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:17] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:22] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:28] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:33] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:38] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:43] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:48] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:53] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:27:58] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:03] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:08] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:13] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:18] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:23] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:28] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:33] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:38] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:43] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:48] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:53] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:28:58] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:03] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:08] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:13] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:18] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:23] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:28] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:33] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:38] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:43] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:48] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:53] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:29:58] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:03] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:08] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:13] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:18] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:23] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:28] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:33] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:38] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:43] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:48] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:53] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:30:58] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:03] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:08] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:13] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:18] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:23] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:28] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:33] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:38] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:43] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:48] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:53] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:31:58] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:03] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:08] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:13] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:19] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:24] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:29] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:34] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:39] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:44] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:49] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:54] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:32:59] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:04] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:09] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:14] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:19] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:24] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:29] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:34] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:39] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:44] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:49] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:54] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:33:59] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:04] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:09] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:14] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:19] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:24] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:29] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:34] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:39] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:44] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:49] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:54] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:34:59] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:35:04] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:35:09] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:35:14] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:35:19] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:35:24] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:35:29] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:35:34] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : UNKNOWN (-1MB)
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+
+FILTER ACTION:
+  EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins.
+-----------------------------------
+[2026-10-05 23:35:39] FILTER ENGINE REPORT
+-----------------------------------
+EFFECTIVENESS SCORE: 40/100
+AGGRESSION MULTIPLIER: 2.50x
 
 DEVICE STATE (Helio G81-Ultra / 4GB RAM):
   Lag Verdict    : UNKNOWN
