@@ -3485,8 +3485,7 @@ object FrameAssembler {
         // V6 VISION GUARD (field-proven over-count: players=30/opponents=30):
         // cap each side to 11 before zones/density/trust so downstream engines
         // never consume impossible head-counts.
-        val assemblerPool = FrameAssemblerPool.list
-        assemblerPool.clear()
+        val assemblerPool = java.util.ArrayList<com.assistant.TrackedPlayer>(22)
         var oursCount = 0
         var theirsCount = 0
         for (p in rawPlayers) {
