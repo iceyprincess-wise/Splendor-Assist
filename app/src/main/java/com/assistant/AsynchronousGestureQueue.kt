@@ -67,19 +67,18 @@ object AsynchronousGestureQueue {
             )
             
             val gesture = GestureDescription.Builder().addStroke(stroke).build()
-            accessibilityService!!.dispatchGesture(
-                gesture,
-                object : AccessibilityService.GestureResultCallback() {
-                    override fun onCompleted(gestureDescription: GestureDescription?) {
-                        isProcessing.set(false)
-                        processNext()
-                    }
-                    override fun onCancelled(gestureDescription: GestureDescription?) {
-                        isProcessing.set(false)
-                        processNext()
-                    }
-                },
-                null
+            val callback = object : AccessibilityService.GestureResultCallback() {
+                override fun onCompleted(gestureDescription: GestureDescription?) {
+                    isProcessing.set(false)
+                    processNext()
+                }
+                override fun onCancelled(gestureDescription: GestureDescription?) {
+                    isProcessing.set(false)
+                    processNext()
+                }
+            }
+            GestureExecutionAuthority.execute(
+                accessibilityService!!, gesture, callback, null, origin = "AsynchronousGestureQueue"
             )
         } catch (e: Exception) {
             Log.e(TAG, "Gesture dispatch failed", e)

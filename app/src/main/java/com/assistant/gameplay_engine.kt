@@ -4559,10 +4559,33 @@ object GestureExecutionAuthority {
     private val accepted = AtomicLong(0L)
     private val rejected = AtomicLong(0L)
     private val failed = AtomicLong(0L)
+    private val correlationCounter = AtomicLong(1000L)
 
     @Volatile private var lastOrigin: String = "none"
     @Volatile private var lastAccepted: Boolean = false
     @Volatile private var lastUpdatedMs: Long = 0L
+    @Volatile private var lastActionTelemetry: Map<String, Any>? = null
+
+    data class ActionTelemetry(
+        val actionId: String,
+        val engine: String,
+        val contributor: String,
+        val actionClass: String,
+        val intent: String,
+        val requestCreated: Long,
+        val busAccepted: Boolean,
+        val busConsumed: Boolean,
+        val backendSelected: String,
+        val backendInvoked: Boolean,
+        val osDispatchAccepted: Boolean,
+        val gestureCompleted: Boolean = false,
+        val gestureCancelled: Boolean = false,
+        val gestureFailed: Boolean = false,
+        val effectObserved: Boolean = false,
+        val effectNotObserved: Boolean = false
+    )
+
+    fun createCorrelationId(): String = "ACT-${System.currentTimeMillis()}-${correlationCounter.incrementAndGet()}"
 
     fun execute(
         service: AccessibilityService,
@@ -4575,13 +4598,66 @@ object GestureExecutionAuthority {
         lastOrigin = origin
         lastUpdatedMs = System.currentTimeMillis()
 
+        val actionId = createCorrelationId()
+        var completed = false
+        var cancelled = false
+
+        val wrappedCallback = object : AccessibilityService.GestureResultCallback() {
+            override fun onCompleted(gestureDescription: GestureDescription?) {
+                completed = true
+                callback?.onCompleted(gestureDescription)
+            }
+            override fun onCancelled(gestureDescription: GestureDescription?) {
+                cancelled = true
+                callback?.onCancelled(gestureDescription)
+            }
+        }
+
         return try {
-            val result = service.dispatchGesture(gesture, callback, handler)
+            val result = service.dispatchGesture(gesture, wrappedCallback, handler)
             if (result) accepted.incrementAndGet() else rejected.incrementAndGet()
+
+            val telemetry = ActionTelemetry(
+                actionId = actionId,
+                engine = origin,
+                contributor = origin,
+                actionClass = "TOUCH_GESTURE",
+                intent = "DYNAMIC_STROBE_INJECTION",
+                requestCreated = lastUpdatedMs,
+                busAccepted = true,
+                busConsumed = true,
+                backendSelected = "ACCESSIBILITY_DISPATCH",
+                backendInvoked = true,
+                osDispatchAccepted = result,
+                gestureCompleted = completed,
+                gestureCancelled = cancelled,
+                gestureFailed = !result,
+                effectObserved = result,
+                effectNotObserved = !result
+            )
+            lastActionTelemetry = mapOf(
+                "ACTION_ID" to telemetry.actionId,
+                "ENGINE" to telemetry.engine,
+                "CONTRIBUTOR" to telemetry.contributor,
+                "ACTION_CLASS" to telemetry.actionClass,
+                "INTENT" to telemetry.intent,
+                "REQUEST_CREATED" to telemetry.requestCreated,
+                "BUS_ACCEPTED" to telemetry.busAccepted,
+                "BUS_CONSUMED" to telemetry.busConsumed,
+                "BACKEND_SELECTED" to telemetry.backendSelected,
+                "BACKEND_INVOKED" to telemetry.backendInvoked,
+                "OS_DISPATCH_ACCEPTED" to telemetry.osDispatchAccepted,
+                "GESTURE_COMPLETED" to telemetry.gestureCompleted,
+                "GESTURE_CANCELLED" to telemetry.gestureCancelled,
+                "GESTURE_FAILED" to telemetry.gestureFailed,
+                "EFFECT_OBSERVED" to telemetry.effectObserved,
+                "EFFECT_NOT_OBSERVED" to telemetry.effectNotObserved
+            )
+
             try {
                 com.assistant.events.GameplayEventHub.emit(
                     if (result) "dispatch-accepted" else "dispatch-rejected",
-                    "origin=$origin"
+                    "origin=$origin,actionId=$actionId"
                 )
             } catch (_: Throwable) {
             }
@@ -4591,7 +4667,7 @@ object GestureExecutionAuthority {
             failed.incrementAndGet()
             lastAccepted = false
             RuntimeLogger.log(
-                "Gesture execution failed origin=$origin: ${e.message}",
+                "Gesture execution failed origin=$origin, actionId=$actionId: ${e.message}",
                 "SMART_ASSIST"
             )
             false
@@ -4605,7 +4681,8 @@ object GestureExecutionAuthority {
         "failed" to failed.get(),
         "lastOrigin" to lastOrigin,
         "lastAccepted" to lastAccepted,
-        "lastUpdatedMs" to lastUpdatedMs
+        "lastUpdatedMs" to lastUpdatedMs,
+        "lastActionTelemetry" to (lastActionTelemetry ?: emptyMap<String, Any>())
     )
 
     fun reset() {
