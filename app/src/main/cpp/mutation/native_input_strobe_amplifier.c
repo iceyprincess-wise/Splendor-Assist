@@ -1,8 +1,12 @@
 #include <jni.h>
 #include <stdint.h>
 
+/*
+ * Single Authoritative Strobe JNI implementation is in app/src/main/cpp/native_input_strobe.c.
+ * This file is retained for reference and to prevent duplicate symbol linkage error.
+ */
 JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeInjectStrobePackets(
+Java_com_assistant_NativeBridge_nativeInjectStrobePacketsAmplifierRef(
     JNIEnv* env, jclass clazz,
     jfloat startX, jfloat startY, jfloat endX, jfloat endY,
     jint durationMs, jint pointerCount, jfloatArray outPackets) {

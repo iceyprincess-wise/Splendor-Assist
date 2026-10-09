@@ -28,17 +28,25 @@ object AsynchronousGestureQueue {
         val endY = ((element.packedData shr 16) and 0xFFFF).toFloat()
         val duration = (element.packedData and 0xFFFF)
 
-        val path = Path().apply {
-            moveTo(element.startX, element.startY)
-            lineTo(endX, endY)
-        }
         // MUTATION TOOL 3: High-frequency gesture splitting for zero-delay input
         val strobePackets = FloatArray(16)
         com.assistant.NativeBridge.nativeInjectStrobePackets(element.startX, element.startY, endX, endY, duration.toInt(), 4, strobePackets)
         
-        val gesture = GestureDescription.Builder()
-            .addStroke(GestureDescription.StrokeDescription(path, 0, duration.coerceAtLeast(10L)))
-            .build()
-        GestureExecutionAuthority.execute(element.service, gesture, null, null)
+        val builder = GestureDescription.Builder()
+        // Consume strobePackets (4 packets x 4 floats: [ptr, px, py, t]) to construct multi-stroke gesture
+        for (i in 0 until 4) {
+            val idx = i * 4
+            val px = strobePackets[idx + 1]
+            val py = strobePackets[idx + 2]
+            val timeOffset = strobePackets[idx + 3].toLong()
+            val strokePath = Path().apply {
+                moveTo(element.startX, element.startY)
+                lineTo(px, py)
+            }
+            val strokeDuration = (duration - timeOffset).coerceAtLeast(2L)
+            builder.addStroke(GestureDescription.StrokeDescription(strokePath, timeOffset, strokeDuration))
+        }
+        val gesture = builder.build()
+        GestureExecutionAuthority.execute(element.service, gesture, null, null, origin = "AsynchronousGestureQueue")
     }
 }
