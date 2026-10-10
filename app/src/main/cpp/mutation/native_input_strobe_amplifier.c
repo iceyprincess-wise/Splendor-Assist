@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeInjectStrobePacketsAmplifierRef(
+Java_com_assistant_NativeBridge_nativeInjectStrobePackets(
     JNIEnv* env, jclass clazz,
     jfloat startX, jfloat startY, jfloat endX, jfloat endY,
     jint durationMs, jint pointerCount, jfloatArray outPackets) {

@@ -32,20 +32,18 @@ object AsynchronousGestureQueue {
         val strobePackets = FloatArray(16)
         com.assistant.NativeBridge.nativeInjectStrobePackets(element.startX, element.startY, endX, endY, duration.toInt(), 4, strobePackets)
         
-        val builder = GestureDescription.Builder()
-        // Consume strobePackets (4 packets x 4 floats: [ptr, px, py, t]) to construct multi-stroke gesture
-        for (i in 0 until 4) {
-            val idx = i * 4
-            val px = strobePackets[idx + 1]
-            val py = strobePackets[idx + 2]
-            val timeOffset = strobePackets[idx + 3].toLong()
-            val strokePath = Path().apply {
-                moveTo(element.startX, element.startY)
+        val strobePath = Path().apply {
+            moveTo(element.startX, element.startY)
+            for (i in 0 until 4) {
+                val idx = i * 4
+                val px = strobePackets[idx + 1]
+                val py = strobePackets[idx + 2]
                 lineTo(px, py)
             }
-            val strokeDuration = (duration - timeOffset).coerceAtLeast(2L)
-            builder.addStroke(GestureDescription.StrokeDescription(strokePath, timeOffset, strokeDuration))
+            lineTo(endX, endY)
         }
+        val builder = GestureDescription.Builder()
+        builder.addStroke(GestureDescription.StrokeDescription(strobePath, 0L, duration.coerceAtLeast(2L)))
         val gesture = builder.build()
         GestureExecutionAuthority.execute(element.service, gesture, null, null, origin = "AsynchronousGestureQueue")
     }
