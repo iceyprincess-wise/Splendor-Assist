@@ -17,3 +17,998 @@ Changes not staged for commit:
 	modified:   Build_lint_output.txt
 
 no changes added to commit (use "git add" and/or "git commit -a")
+[main 9d8fdf1a] updates
+ 1 file changed, 1 insertion(+), 154 deletions(-)
+
+
+[  5%] BUILD STATE
+
+================================================================
+>>> OPTIONAL CLEAN
+================================================================
+NO — clean skipped; preserving incremental build state.
+
+[ 15%] LINT
+
+================================================================
+>>> OPTIONAL LINT
+================================================================
+NO — lint skipped by user.
+
+================================================================
+>>> LINT ISSUE EXTRACTION
+================================================================
+SKIPPED — lint was not run.
+
+[ 30%] CONNECTED TESTS
+
+================================================================
+>>> CONNECTED ANDROID TESTS
+================================================================
+SKIPPED — no ADB device connected (not a failure)
+
+[ 45%] VERSION BUMP
+
+================================================================
+>>> VERSION BUMP
+================================================================
+versionCode: 190 -> 191
+
+[ 50%] ASSEMBLE DEBUG APK
+
+================================================================
+>>> ASSEMBLE DEBUG APK
+================================================================
+BUILD SUCCESSFUL in 5m
+
+ASSEMBLE DEBUG APK EXIT: 0
+
+[ 90%] APK EXPORT
+
+================================================================
+>>> APK EXPORT
+================================================================
+Exported: /storage/emulated/0/Download/Splendor-Assist-v191-20261010_191010.apk
+-rw-rw----. 1 u0_a262 media_rw 28M Oct 10 19:10 /storage/emulated/0/Download/Splendor-Assist-v191-20261010_191010.apk
+VERSION TRANSACTION: COMMITTED
+
+================================================================
+>>> OPTIONAL GRADLE DAEMON STOP
+================================================================
+NO — Gradle daemon remains running for warm builds.
+
+Current Gradle daemon status:
+   PID STATUS   INFO
+ 25031 IDLE     8.5
+
+Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
+
+================================================================
+>>> BUILD RESULT SUMMARY
+================================================================
+CLEAN:                           0
+LINT:                            SKIPPED — OPTIONAL
+CONNECTED TESTS:                 0
+VERSION BUMP:                    0
+ASSEMBLE DEBUG:                  0
+APK EXPORT:                      0
+GRADLE DAEMON STOP:              0
+
+FINAL STATUS: ALL PASSED
+
+GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
+ M Build_lint_output.txt
+ M app/build.gradle.kts
+?? "app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
+
+[ 97%] GIT CLEANUP / APK VERIFICATION
+
+[ 97%] GIT CLEANUP / APK VERIFICATION
+=== REMOVED TERMUX BUILD ENVIRONMENT /APP/ CORRUPT FILE & VERIFY AS WELL VERIFY APK WHICH WILL BE SENT TO REPOSITORY ===
+rm 'app/@�@0�b@8@@@'
+=== EXTRACTING AND VERIFYING .SO DIRECTLY FROM APK ===
+SUCCESS: libsplendor_native.so is packaged inside the APK.
+=== FULL SOURCE NATIVE BRIDGE DECLARATIONS ===
+app/src/main/java/com/assistant/NativeBridge.kt:121:    external fun nativePreprocessFrame(
+app/src/main/java/com/assistant/NativeBridge.kt:132:    external fun nativeAuthorityArbitrate(
+app/src/main/java/com/assistant/NativeBridge.kt:148:    external fun nativeBallRetentionShieldCompute(
+app/src/main/java/com/assistant/NativeBridge.kt:166:    external fun nativeInstantInterceptCompute(
+app/src/main/java/com/assistant/NativeBridge.kt:182:    external fun nativeExtractBlobs(
+app/src/main/java/com/assistant/NativeBridge.kt:195:    external fun nativeAnalyzeFrame(
+app/src/main/java/com/assistant/NativeBridge.kt:205:    external fun nativeSmoothVector(
+app/src/main/java/com/assistant/NativeBridge.kt:213:    external fun nativeUpdateMatchState(
+app/src/main/java/com/assistant/NativeBridge.kt:219:    external fun nativeReadMatchState(outBuffer: IntArray)
+app/src/main/java/com/assistant/NativeBridge.kt:285:    private external fun nativeKickingPostureImpl(
+app/src/main/java/com/assistant/NativeBridge.kt:294:    private external fun nativeAgilityPhysicsImpl(
+app/src/main/java/com/assistant/NativeBridge.kt:310:    external fun nativeBuildUpPressCompute(
+app/src/main/java/com/assistant/NativeBridge.kt:335:    private external fun nativeDirectInputHookImpl(
+app/src/main/java/com/assistant/NativeBridge.kt:351:    private external fun nativeStartThermalSpooferImpl()
+app/src/main/java/com/assistant/NativeBridge.kt:353:    private external fun nativeStopThermalSpooferImpl()
+app/src/main/java/com/assistant/NativeBridge.kt:366:    private external fun nativePredictiveFrameInterpImpl(
+app/src/main/java/com/assistant/NativeBridge.kt:375:    @JvmStatic external fun nativeUpdateStateMatrix(isCounterAttack: Boolean, threatLevel: Int, ballX: Float, ballY: Float, carrierVx: Float, carrierVy: Float, lastServerTickTimestamp: Int)
+app/src/main/java/com/assistant/NativeBridge.kt:376:    @JvmStatic external fun nativeAnalyzeFrameBuffer(buffer: java.nio.ByteBuffer, width: Int, height: Int, stride: Int, outCoordinates: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:377:    @JvmStatic external fun nativeCompileMotionEvent(startX: Float, startY: Float, endX: Float, endY: Float, durationMs: Long, pitchWidth: Float, pitchHeight: Float, detectedLagSpike: Boolean): Long
+app/src/main/java/com/assistant/NativeBridge.kt:379:    @JvmStatic external fun nativeComputeDominanceVectors(defX: Float, defY: Float, defVx: Float, defVy: Float, targetX: Float, targetY: Float, targetVx: Float, targetVy: Float, isHoldingPressure: Boolean, screenWidth: Float, screenHeight: Float, globalMatchTick: Int, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:381:    @JvmStatic external fun nativeExecuteStopperMatrix(playerX: Float, playerY: Float, playerVx: Float, playerVy: Float, homeAnchorX: Float, homeAnchorY: Float, oppX: Float, oppY: Float, oppVx: Float, oppVy: Float, isHoldingPressure: Boolean, screenWidth: Float, screenHeight: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:385:    @JvmStatic external fun nativeCrossClaimEvaluate(directionOrdinal: Int, priority: Int): Int
+app/src/main/java/com/assistant/NativeBridge.kt:386:    @JvmStatic external fun nativeCrossClaimVector(width: Float, height: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:390:    @JvmStatic external fun nativeKeeperBiasCompute(zoneOrdinal: Int, directionOrdinal: Int, priority: Int, ballX: Float, ballY: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:394:    @JvmStatic external fun nativePanicSaveCompute(directionOrdinal: Int, priority: Int, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:398:    @JvmStatic external fun nativeTrueShotCompute(ballX: Float, ballY: Float, goalLeftX: Float, goalRightX: Float, goalTopY: Float, goalBottomY: Float, goalkeeperX: Float, goalkeeperVisible: Boolean, goalDetected: Boolean, defenderDensity: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:400:    @JvmStatic external fun nativeEscalateThreadPriority(): Int
+app/src/main/java/com/assistant/NativeBridge.kt:401:    @JvmStatic external fun nativeComputeOpticalVariance(currentBuffer: java.nio.ByteBuffer, previousBuffer: java.nio.ByteBuffer, width: Int, height: Int, stride: Int, roiX: Int, roiY: Int, roiW: Int, roiH: Int): Float
+app/src/main/java/com/assistant/NativeBridge.kt:402:    @JvmStatic external fun nativeInjectStrobePackets(startX: Float, startY: Float, endX: Float, endY: Float, durationMs: Int, pointerCount: Int, outPackets: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:406:    @JvmStatic external fun nativeSACorrectPass(ballX: Float, ballY: Float, intendedX: Float, intendedY: Float, receiverVx: Float, receiverVy: Float, nearestOppX: Float, nearestOppY: Float, pressure: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:407:    @JvmStatic external fun nativeSACorrectShot(ballX: Float, ballY: Float, glX: Float, grX: Float, gtY: Float, gbY: Float, gkX: Float, gkVis: Boolean, goalDet: Boolean, screenW: Float, screenH: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:408:    @JvmStatic external fun nativeSACorrectCross(ballX: Float, ballY: Float, rx: Float, ry: Float, rvx: Float, rvy: Float, gcx: Float, gcy: Float, laneScore: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:409:    @JvmStatic external fun nativeSACorrectKeeper(ballX: Float, ballY: Float, glX: Float, grX: Float, gtY: Float, gbY: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:413:    @JvmStatic external fun nativeCriticalScoringVector(strikerX: Float, strikerY: Float, gkX: Float, gkY: Float, goalLeftPostX: Float, goalLeftPostY: Float, goalRightPostX: Float, goalRightPostY: Float, controlOriginX: Float, controlOriginY: Float, controlRadius: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:414:    @JvmStatic external fun nativeCriticalTrueTargetPass(passButtonX: Float, passButtonY: Float, activeStrikerX: Float, activeStrikerY: Float, strikerVx: Float, strikerVy: Float, isLoftedContext: Boolean, screenWidth: Float, screenHeight: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:415:    @JvmStatic external fun nativeCrossPrecisionCalculate(x: Float, y: Float, strength: Int, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:416:    @JvmStatic external fun nativeCrossStunningLeadDistance(strikerVelocity: Float): Float
+app/src/main/java/com/assistant/NativeBridge.kt:417:    @JvmStatic external fun nativeCrossStunningSwipeDistance(): Float
+app/src/main/java/com/assistant/NativeBridge.kt:418:    @JvmStatic external fun nativeCrossStunningDuration(): Long
+app/src/main/java/com/assistant/NativeBridge.kt:422:    @JvmStatic external fun nativeCounterattackAnalyze(attackers: Int, teamShapeFound: Boolean, teamShapeConf: Float, offensiveLineFound: Boolean, offensiveLineConf: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:423:    @JvmStatic external fun nativeSpeedCompensate(distance: Float, angle: Float, strength: Int, angleJitter: Float, execNoise: Float, protNoise: Float, pressNoise: Float, laneNoise: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:424:    @JvmStatic external fun nativeShotOpportunityAnalyze(distance: Float, pressure: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:428:    @JvmStatic external fun nativeTacticalAnalytics(tacticalMapConf: Float, compactnessConf: Float, compactnessVal: Float, wingConf: Float, wingOverloaded: Boolean, centralConf: Float, centralOverloaded: Boolean, pressingConf: Float, pressingDetected: Boolean, counterPressConf: Float, counterPressDetected: Boolean, buildUpConf: Float, buildUpDetected: Boolean, possessionConf: Float, possessionDetected: Boolean, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:429:    @JvmStatic external fun nativeTacticalBehavior(analyticsConf: Float, formationConf: Float, formationFound: Boolean, teamShapeConf: Float, teamShapeCompactness: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:430:    @JvmStatic external fun nativeRuntimeConfidenceCalibration(tacticalConf: Float, formationConf: Float, passingConf: Float, shootingConf: Float, ema: Float, rollingMean: Float, temporalConf: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:431:    @JvmStatic external fun nativeDefensiveCompactness(fieldConf: Float, defLineConf: Float, teamShapeConf: Float, teamShapeWidth: Float, teamShapeDepth: Float, teamShapeCompactness: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:435:    @JvmStatic external fun nativeWingOverloadCompute(playerCount: Int, sceneConf: Float, fieldConf: Float, pressureRows: Int, pressureCols: Int, occupancyRows: Int, occupancyCols: Int, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:436:    @JvmStatic external fun nativeCentralOverloadCompute(playerCount: Int, sceneConf: Float, fieldConf: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:437:    @JvmStatic external fun nativePressingRecognitionCompute(pressureRows: Int, pressureCols: Int, formationFound: Boolean, formationConf: Float, compactnessCompactness: Float, compactnessConf: Float, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:438:    @JvmStatic external fun nativeCounterPressCompute(sceneConf: Float, hasPossession: Boolean, possessionChanged: Boolean, possessionConf: Float, pressureRows: Int, pressureCols: Int, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:439:    @JvmStatic external fun nativeBuildUpRecognitionCompute(formationFound: Boolean, formationConf: Float, teamShapeConf: Float, lanesNotEmpty: Boolean, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:440:    @JvmStatic external fun nativePossessionStyleCompute(hasPossession: Boolean, possessionFrames: Long, possessionConf: Float, lanesNotEmpty: Boolean, pressureRows: Int, pressureCols: Int, outBuffer: FloatArray)
+app/src/main/java/com/assistant/NativeBridge.kt:455:    private external fun nativeThreatPriorityComputeImpl(
+app/src/main/java/com/assistant/NativeBridge.kt:465:    external fun nativeBoostThreadPriority()
+app/src/main/java/com/assistant/NativeBridge.kt:468:    external fun nativeExecuteQuantumSimulation(
+app/src/main/java/com/assistant/input/NativeInputBridge.kt:13:    external fun nativeInjectTap(x: Float, y: Float): Boolean
+app/src/main/java/com/assistant/input/NativeInputBridge.kt:14:    external fun nativeInjectSwipe(startX: Float, startY: Float, endX: Float, endY: Float, duration: Long): Boolean
+PROVEN: Source assistant external declarations found: 57
+SOURCE DECLARATION LIST SAVED: /data/data/com.termux/files/usr/tmp/apk_verify/source_native_declarations.txt
+=== FULL NATIVE JNI SYMBOL LIST FROM APK .SO ===
+    21: 000000000000b788   384 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeTacticalAnalytics
+    22: 000000000000c390   360 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativePossessionStyleCompute
+    23: 00000000000039d4    84 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_input_NativeInputBridge_nativeInjectTap
+    24: 0000000000003a98  1140 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeKickingPostureImpl
+    25: 0000000000007090   292 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeUpdateMatchState
+    26: 00000000000076a4   100 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeDirectInputHookPrepare
+    27: 0000000000009328   912 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeTrueShotCompute
+    28: 000000000000a144  1068 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSACorrectShot
+    29: 000000000000af64   272 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossPrecisionCalculate
+    30: 000000000000b2f4   628 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSpeedCompensate
+    31: 000000000000b978   236 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeTacticalBehavior
+    32: 0000000000007328   892 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeDirectInputHookImpl
+    33: 0000000000007a00    44 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeStopThermalSpoofer
+    34: 000000000000a924   524 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSACorrectKeeper
+    35: 000000000000ab30   496 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCriticalScoringVector
+    36: 000000000000b108    28 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossStunningSwipeDistance
+    37: 000000000000ba64   284 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeRuntimeConfidenceCalibration
+    38: 00000000000082ec  1140 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeComputeDominanceVectors
+    39: 0000000000009d2c   832 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSACorrectPass
+    40: 0000000000007e98   512 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeAnalyzeFrameBuffer
+    41: 000000000000a570   948 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSACorrectCross
+    42: 00000000000056ac   692 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeBuildUpPressCompute
+    43: 0000000000007da0   120 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativePredictiveFrameInterp
+    44: 000000000000bd04   332 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeWingOverloadCompute
+    45: 000000000000537c   816 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeInstantInterceptCompute
+    46: 0000000000006d74   736 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeSmoothVector
+    47: 000000000000c4f8   792 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeThreatPriorityComputeImpl
+    48: 00000000000034a4    48 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeBoostThreadPriority
+    49: 0000000000005960  2948 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeExtractBlobs
+    50: 000000000000797c    88 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeStopThermalSpooferImpl
+    51: 000000000000b0e4    36 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossStunningLeadDistance
+    52: 000000000000b124    24 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossStunningDuration
+    53: 000000000000bec4   232 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCentralOverloadCompute
+    54: 0000000000004158  1504 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl
+    56: 00000000000071b4   372 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeReadMatchState
+    57: 000000000000923c   236 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativePanicSaveCompute
+    58: 000000000000b610   264 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeShotOpportunityAnalyze
+    59: 000000000000c118   344 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCounterPressCompute
+    60: 00000000000034d4  1064 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeExecuteQuantumSimulation
+    61: 0000000000009774   756 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeComputeOpticalVariance
+    62: 000000000000ad90   468 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCriticalTrueTargetPass
+    63: 000000000000661c   876 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativePreprocessFrame
+    64: 0000000000007708   264 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeStartThermalSpooferImpl
+    65: 0000000000007a2c   884 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativePredictiveFrameInterpImpl
+    66: 0000000000008e6c   120 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossClaimEvaluate
+    67: 000000000000bfac   364 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativePressingRecognitionCompute
+    68: 0000000000004c08   588 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeAuthorityArbitrate
+    69: 0000000000004ee4  1060 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeBallRetentionShieldCompute
+    70: 0000000000009a68   596 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeInjectStrobePackets
+    71: 000000000000b13c   328 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCounterattackAnalyze
+    72: 000000000000c880   192 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeThreatPriorityCompute
+    73: 00000000000079d4    44 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeStartThermalSpoofer
+    74: 0000000000007e18   128 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeUpdateStateMatrix
+    75: 0000000000008838  1372 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeExecuteStopperMatrix
+    76: 0000000000008fc0   636 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeKeeperBiasCompute
+    77: 0000000000009728    76 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeEscalateThreadPriority
+    78: 0000000000003a28   112 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_input_NativeInputBridge_nativeInjectSwipe
+    79: 0000000000008ee4   220 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCrossClaimVector
+    80: 00000000000069dc   920 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeAnalyzeFrame
+    81: 0000000000008098   392 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeCompileMotionEvent
+    82: 000000000000bb80   388 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeDefensiveCompactness
+    83: 000000000000c270   288 FUNC    GLOBAL DEFAULT    13 Java_com_assistant_NativeBridge_nativeBuildUpRecognitionCompute
+PROVEN: All assistant JNI symbols found in APK .so: /data/data/com.termux/files/usr/tmp/apk_verify/native_jni_symbols.txt:62
+JNI SYMBOL LIST SAVED: /data/data/com.termux/files/usr/tmp/apk_verify/native_jni_symbols.txt
+INFO: Source declarations vs packaged JNI symbols: 57//data/data/com.termux/files/usr/tmp/apk_verify/native_jni_symbols.txt:62
+=== APK VERSION VERIFICATION ===
+APK package: com.assistant.overlay
+APK versionCode: 191
+APK versionName: 1.0-SECURE-LOCKED
+SOURCE versionCode: 191
+SOURCE versionName: 1.0-SECURE-LOCKED
+SUCCESS: APK version matches source.
+=== KOTLIN COMPILER OUTPUT / DEX FULL COVERAGE ===
+============================================================
+KOTLIN COMPILER CLASSFILES: 696
+APK DEX DEFINED CLASSES INDEXED: 11591
+MATCHED KOTLIN COMPILER CLASSES: 696
+MISSING KOTLIN COMPILER CLASSES: 0
+============================================================
+=== FULL MATCHED KOTLIN COMPILER CLASSES PRESENT IN APK DEX ===
+0001: com/assistant/AccessibilitySurvivalEngine
+0002: com/assistant/AccessibilitySurvivalEngine$Companion
+0003: com/assistant/AccessibilitySurvivalEngine$watchdogTask$1
+0004: com/assistant/ActionOutcomeVerifier
+0005: com/assistant/ActionOutcomeVerifier$PendingRecord
+0006: com/assistant/ActionType
+0007: com/assistant/ActionVerification
+0008: com/assistant/ActionVerifier
+0009: com/assistant/ActionWindowEngine
+0010: com/assistant/ActiveAttackerEngine
+0011: com/assistant/ActiveAttackerEngine$AttackerActivationDiagnostics
+0012: com/assistant/ActiveAttackerResult
+0013: com/assistant/ActiveDefenderEngine
+0014: com/assistant/ActiveDefenderResult
+0015: com/assistant/ActiveGestureController
+0016: com/assistant/ActiveGestureController$vsyncAnchor$1
+0017: com/assistant/ActiveGestureControllerDiagnostics
+0018: com/assistant/AdaptiveLoftedThroughEngine
+0019: com/assistant/AdaptiveModeAuthority
+0020: com/assistant/AgentAction
+0021: com/assistant/AgentAction$ObserveOnly
+0022: com/assistant/AgentAction$RefreshPerformance
+0023: com/assistant/AgentAction$ReigniteFleet
+0024: com/assistant/AgentAction$RunSelfHealCheck
+0025: com/assistant/AgentDecision
+0026: com/assistant/AgentDecisionPolicy
+0027: com/assistant/AggressiveMemoryHoarding
+0028: com/assistant/AgilityContributor
+0029: com/assistant/AgilityResult
+0030: com/assistant/AntiCutbackSubEngine
+0031: com/assistant/AntiCutbackSubEngine$Companion
+0032: com/assistant/App
+0033: com/assistant/App$Companion
+0034: com/assistant/AppContributorRegistration
+0035: com/assistant/ArbitrationResult
+0036: com/assistant/AsynchronousGestureQueue
+0037: com/assistant/AsynchronousGestureQueue$GestureRequest
+0038: com/assistant/AsynchronousGestureQueue$processNext$callback$1
+0039: com/assistant/AttackingVectorContributor
+0040: com/assistant/AuthorityArbitrationEngine
+0041: com/assistant/AutoEvadeEngine
+0042: com/assistant/AutoEvadeEngine$Companion
+0043: com/assistant/BallCandidate
+0044: com/assistant/BallCandidateEngine
+0045: com/assistant/BallDetectionResult
+0046: com/assistant/BallDetector
+0047: com/assistant/BallOverlay
+0048: com/assistant/BallOverlay$disable$1
+0049: com/assistant/BallOverlay$enable$1
+0050: com/assistant/BallOverlayState
+0051: com/assistant/BallOwnershipEngine
+0052: com/assistant/BallOwnershipResult
+0053: com/assistant/BallPossessionEngine
+0054: com/assistant/BallPossessionResult
+0055: com/assistant/BallRetentionShieldContributor
+0056: com/assistant/BallTelemetryBridge
+0057: com/assistant/BallTrajectoryPredictor
+0058: com/assistant/BallTrajectoryPredictor$Prediction
+0059: com/assistant/BlobListResult
+0060: com/assistant/BlockedLanePrediction
+0061: com/assistant/BlockedLanePredictionAnalysis
+0062: com/assistant/BlockedLanePredictionEngine
+0063: com/assistant/BlockedLanePredictionEngine$analyze$$inlined$sortedByDescending$1
+0064: com/assistant/BoosterIgnition
+0065: com/assistant/BoundingBoxOverlay
+0066: com/assistant/BoundingBoxOverlay$disable$1
+0067: com/assistant/BoundingBoxOverlay$enable$1
+0068: com/assistant/BoundingBoxOverlayState
+0069: com/assistant/BuildUpPressContributor
+0070: com/assistant/BuildUpRecognitionEngine
+0071: com/assistant/BuildUpRecognitionResult
+0072: com/assistant/BurstForensicsEngine
+0073: com/assistant/CallOverlayRepository
+0074: com/assistant/CaptaincySkillEngine
+0075: com/assistant/CaptaincySkillEngine$CaptaincyResult
+0076: com/assistant/CarrierProfile
+0077: com/assistant/CarrierProfileEngine
+0078: com/assistant/CentralOverloadDetectionEngine
+0079: com/assistant/CentralOverloadDetectionResult
+0080: com/assistant/ClosestPlayerEngine
+0081: com/assistant/ClosestPlayerResult
+0082: com/assistant/CompensationResult
+0083: com/assistant/CompressedSnapshot
+0084: com/assistant/CompressedSnapshotRepository
+0085: com/assistant/ConAIEngine
+0086: com/assistant/ConfidenceHeatmap
+0087: com/assistant/ConfidenceHeatmapState
+0088: com/assistant/CongestionSentinelEngine
+0089: com/assistant/ConnectedComponentEngine
+0090: com/assistant/ConnectedComponentEngine$Blob
+0091: com/assistant/ConnectionHealEngine
+0092: com/assistant/ConnectionHealEngine$start$1
+0093: com/assistant/ControlMappingTrainer
+0094: com/assistant/ControlMappingTrainer$SlotDef
+0095: com/assistant/ControlMappingTrainer$UiMode
+0096: com/assistant/ControllerEntryDiagnostics
+0097: com/assistant/CorrectionType
+0098: com/assistant/CounterPressRecognitionEngine
+0099: com/assistant/CounterPressRecognitionResult
+0100: com/assistant/CounterattackDetectionEngine
+0101: com/assistant/CounterattackDetectionResult
+0102: com/assistant/CpuGovernorEngine
+0103: com/assistant/CriticalAttackingVectorEngine
+0104: com/assistant/CrossContributor
+0105: com/assistant/CrossPrecisionEngine
+0106: com/assistant/CrossPrecisionResult
+0107: com/assistant/CrossingLane
+0108: com/assistant/CrossingLaneAnalysis
+0109: com/assistant/CrossingLaneAnalysisEngine
+0110: com/assistant/CrossingLaneAnalysisEngine$CrossingLaneAnalysisEngineAmplifiedState
+0111: com/assistant/CrossingLaneAnalysisEngine$analyze$$inlined$sortedByDescending$1
+0112: com/assistant/CrowdingZoneDetector
+0113: com/assistant/DashAnchorContributor
+0114: com/assistant/DashAnchorResult
+0115: com/assistant/DashPressureContributor
+0116: com/assistant/DashboardInjector
+0117: com/assistant/DashboardInjector$DashboardRefreshRunnable
+0118: com/assistant/DeathWatch
+0119: com/assistant/DeathWatch$ParsedTombstone
+0120: com/assistant/DecisionResult
+0121: com/assistant/DefenderInterceptionPrediction
+0122: com/assistant/DefenderInterceptionPredictionAnalysis
+0123: com/assistant/DefenderInterceptionPredictionEngine
+0124: com/assistant/DefenderInterceptionPredictionEngine$analyze$$inlined$sortByDescending$1
+0125: com/assistant/DefenseAuthorityContributor
+0126: com/assistant/DefenseAuthorityEngine
+0127: com/assistant/DefenseAuthorityEngine$DefenseEvaluationDiagnostics
+0128: com/assistant/DefenseAuthorityResult
+0129: com/assistant/DefenseContributor
+0130: com/assistant/DefensiveCompactnessEngine
+0131: com/assistant/DefensiveCompactnessResult
+0132: com/assistant/DefensiveContainmentResult
+0133: com/assistant/DefensiveLineEngine
+0134: com/assistant/DefensiveLineEngine$computeUserLine$$inlined$sortedByDescending$1
+0135: com/assistant/DefensiveLineResult
+0136: com/assistant/DiagnosisDetailActivity
+0137: com/assistant/DiagnosisDetailActivity$Companion
+0138: com/assistant/DiagnosisDetailActivity$filteredLogs$$inlined$sortedByDescending$1
+0139: com/assistant/DiagnosisRoomActivity
+0140: com/assistant/DisplayProfileEngine
+0141: com/assistant/DnsWarmupEngine
+0142: com/assistant/EngineData
+0143: com/assistant/EntityAssociationEngine
+0144: com/assistant/EvadeContributor
+0145: com/assistant/FPSMonitor
+0146: com/assistant/FPSMonitorState
+0147: com/assistant/FalseRunSequenceEngine
+0148: com/assistant/FastBreakDetectionEngine
+0149: com/assistant/FastBreakDetectionResult
+0150: com/assistant/FieldLineDetectionResult
+0151: com/assistant/FieldLineDetector
+0152: com/assistant/FightingSpiritEngine
+0153: com/assistant/FightingSpiritEngine$FightingSpiritResult
+0154: com/assistant/FleetLifecycleState
+0155: com/assistant/FormationAdaptationEngine
+0156: com/assistant/FormationAdaptationResult
+0157: com/assistant/FormationEngine
+0158: com/assistant/FormationEngine$estimate$$inlined$sortedBy$1
+0159: com/assistant/FormationResult
+0160: com/assistant/ForwardRunContributor
+0161: com/assistant/ForwardRunOpportunityEngine
+0162: com/assistant/ForwardRunResult
+0163: com/assistant/FrameAssembler
+0164: com/assistant/FrameDropCompensationEngine
+0165: com/assistant/FrameDropStabilizer
+0166: com/assistant/FrameDropStabilizer$Companion
+0167: com/assistant/FrameNormalizer
+0168: com/assistant/FrameNormalizer$FrameMetadata
+0169: com/assistant/FrameNormalizer$NormalizedFrame
+0170: com/assistant/FramePacingEngine
+0171: com/assistant/FramePacingEngine$callback$1
+0172: com/assistant/FramePacingEngine$start$t$1$mix$1
+0173: com/assistant/FrameScanner
+0174: com/assistant/FrameScanner$PixelSampleBuffer
+0175: com/assistant/GameStateBuilder
+0176: com/assistant/GameStateFusion
+0177: com/assistant/GameStateSnapshot
+0178: com/assistant/GameplayDecisionEngine
+0179: com/assistant/GameplayDecisionEngine$GameplayActivationDiagnostics
+0180: com/assistant/GameplayDecisionEngine$GameplayDownstreamEvent
+0181: com/assistant/GameplayEngineService
+0182: com/assistant/Gameplay_engineKt
+0183: com/assistant/GcStallEngine
+0184: com/assistant/GestureExecutionAuthority
+0185: com/assistant/GestureExecutionAuthority$ActionTelemetry
+0186: com/assistant/GestureExecutionAuthority$execute$wrappedCallback$1
+0187: com/assistant/GestureTimingFeedbackEngine
+0188: com/assistant/GlobalCrashHandler
+0189: com/assistant/GlobalCrashHandler$Companion
+0190: com/assistant/GlobalCrashHandler$Companion$probeFeatures$$inlined$sortedBy$1
+0191: com/assistant/GlobalCrashHandler$Companion$probeFeatures$EngineEntry
+0192: com/assistant/GoalDetectionResult
+0193: com/assistant/GoalDetector
+0194: com/assistant/GoalOverlay
+0195: com/assistant/GoalOverlay$disable$1
+0196: com/assistant/GoalOverlay$enable$1
+0197: com/assistant/GoalOverlayState
+0198: com/assistant/GoalkeeperDetectionResult
+0199: com/assistant/GoalkeeperDetector
+0200: com/assistant/GoalkeeperTrajectoryPredictor
+0201: com/assistant/GoalkeeperTrajectoryPredictor$Prediction
+0202: com/assistant/GodTierExecutionEngine
+0203: com/assistant/HighPerformanceRuntimeLogger
+0204: com/assistant/HybridOmnipotentMatrixEngine
+0205: com/assistant/HybridResponseCompensationEngine
+0206: com/assistant/IgnitionEngine
+0207: com/assistant/InAppAgentCore
+0208: com/assistant/InAppAgentSnapshot
+0209: com/assistant/InputAccumulationDiagnosticsEngine
+0210: com/assistant/InputDiagnosticsResult
+0211: com/assistant/InputLatencyEngine
+0212: com/assistant/InputPriorityEngine
+0213: com/assistant/InputThermalEliminatorEngine
+0214: com/assistant/InputVsyncEliminatorEngine
+0215: com/assistant/InputVsyncEliminatorEngine$start$checkRunnable$1
+0216: com/assistant/InstantInterceptContributor
+0217: com/assistant/InterceptMatrixContributor
+0218: com/assistant/JerseyColorSegmentation
+0219: com/assistant/JerseyColorSegmentation$ClassificationResult
+0220: com/assistant/JerseyColorSegmentation$Team
+0221: com/assistant/JerseySegmentationResult
+0222: com/assistant/KeeperFeedbackContributor
+0223: com/assistant/KickingPostureContributor
+0224: com/assistant/LagVerdictEngine
+0225: com/assistant/LatencyDefeatingInputEngine
+0226: com/assistant/LatencyDefeatingInputEngine$Companion
+0227: com/assistant/LifecycleSerializationEngine
+0228: com/assistant/LifecycleSnapshotRepository
+0229: com/assistant/LiveVectorResolver
+0230: com/assistant/LiveVectorResolver$LiveVector
+0231: com/assistant/LoadShedCaptureBrakeEngine
+0232: com/assistant/LoadShedGovernor
+0233: com/assistant/LowBlockContainmentEngine
+0234: com/assistant/LowLatencyNetworkThread
+0235: com/assistant/MagneticDashAnchor
+0236: com/assistant/MagneticDashAnchor$Companion
+0237: com/assistant/MagneticFeetContributor
+0238: com/assistant/MagneticFeetEngine
+0239: com/assistant/MagneticFeetEngine$MagneticFeetDiagnostics
+0240: com/assistant/MagneticFeetEngine$MagneticFeetResult
+0241: com/assistant/MagneticFeetEngine$MagneticFeetState
+0242: com/assistant/MainActivity
+0243: com/assistant/MainActivity$PermissionStage
+0244: com/assistant/MainActivity$WhenMappings
+0245: com/assistant/MainActivity$hubRefreshTick$1
+0246: com/assistant/MainThreadStallEngine
+0247: com/assistant/MainThreadStallEngine$probe$1
+0248: com/assistant/MemoryCaptureGateEngine
+0249: com/assistant/MemoryMonitorEngine
+0250: com/assistant/MemoryPressureBusEngine
+0251: com/assistant/MemoryStabilityOptimizer
+0252: com/assistant/MemoryStabilityOptimizer$MemoryStateListener
+0253: com/assistant/MemoryStabilityOptimizer$executeAggressiveCleanup$1
+0254: com/assistant/MemoryStabilityOptimizer$onTrimMemory$1
+0255: com/assistant/MemoryStabilityOptimizer$startActiveMonitoring$1
+0256: com/assistant/MotionResult
+0257: com/assistant/MotionTracker
+0258: com/assistant/NativeBridge
+0259: com/assistant/NativePipelineCache
+0260: com/assistant/NetJitterEngine
+0261: com/assistant/NetProbeEngine
+0262: com/assistant/NetworkStateEngine
+0263: com/assistant/NetworkStateEngine$start$cb$1
+0264: com/assistant/NoiseFilter
+0265: com/assistant/OffensiveLineEngine
+0266: com/assistant/OffensiveLineResult
+0267: com/assistant/OffsideRisk
+0268: com/assistant/OffsideRiskEstimationEngine
+0269: com/assistant/OffsideRiskEstimationEngine$analyze$$inlined$sortBy$1
+0270: com/assistant/OffsideRiskEstimationResult
+0271: com/assistant/OmnipotentDashPressureMatrix
+0272: com/assistant/OnlineParameterAdaptationEngine
+0273: com/assistant/OnlineParameterAdaptationResult
+0274: com/assistant/OomAdaptiveThrottleEngine
+0275: com/assistant/OpenSpaceCell
+0276: com/assistant/OpenSpaceDetectionEngine
+0277: com/assistant/OpenSpaceDetectionEngine$analyze$$inlined$sortedByDescending$1
+0278: com/assistant/OpenSpaceDetectionResult
+0279: com/assistant/OpponentBehaviourLearningEngine
+0280: com/assistant/OpponentBehaviourLearningResult
+0281: com/assistant/OverlapDetectionEngine
+0282: com/assistant/OverlapDetectionEngine$analyze$$inlined$sortedByDescending$1
+0283: com/assistant/OverlapDetectionResult
+0284: com/assistant/OverlapRun
+0285: com/assistant/OverlayService
+0286: com/assistant/OverlayService$CaptureResult
+0287: com/assistant/OverlayService$CaptureState
+0288: com/assistant/OverlayService$Companion
+0289: com/assistant/OverlayService$imageAvailableListener$1$1
+0290: com/assistant/OverlayService$processBitmapForOCR$1$detectedText$1
+0291: com/assistant/OverlayService$processBitmapForOCR$1$detectedText$2
+0292: com/assistant/OverlayService$setupMediaProjectionInternal$cb$1
+0293: com/assistant/OverlayService$startCaptureKeepAlive$2
+0294: com/assistant/OverlayService$startTrajectoryWatchdog$1
+0295: com/assistant/OverlayService$updateOverlayVisuals$1
+0296: com/assistant/OverloadMode
+0297: com/assistant/OverloadPlaystyleContributor
+0298: com/assistant/OverloadPlaystyleEngine
+0299: com/assistant/OverloadPlaystyleEngine$WhenMappings
+0300: com/assistant/OverloadPlaystyleResult
+0301: com/assistant/OverloadZone
+0302: com/assistant/PacketLossProbeEngine
+0303: com/assistant/PanelWatchEngine
+0304: com/assistant/PanelWatchEngine$start$l$1
+0305: com/assistant/PassingAssistResult
+0306: com/assistant/PassingContributor
+0307: com/assistant/PassingLane
+0308: com/assistant/PassingLaneGraph
+0309: com/assistant/PassingLaneGraphEngine
+0310: com/assistant/PassingLaneGraphEngine$build$$inlined$sortedByDescending$1
+0311: com/assistant/PerformanceEngineService
+0312: com/assistant/PerformanceHintEngine
+0313: com/assistant/PerformanceScheduler
+0314: com/assistant/PerformanceScheduler$start$2
+0315: com/assistant/PerformanceScheduler$start$3
+0316: com/assistant/Phase3WorldState
+0317: com/assistant/Phase3WorldStateStore
+0318: com/assistant/PingEliminatorVpnService
+0319: com/assistant/PingEliminatorVpnService$Companion
+0320: com/assistant/PlayerDetection
+0321: com/assistant/PlayerDetectionResult
+0322: com/assistant/PlayerDetector
+0323: com/assistant/PlayerDetector$resultList$1
+0324: com/assistant/PlayerDetector$resultList$1$get$trace$1
+0325: com/assistant/PlayerOverlay
+0326: com/assistant/PlayerOverlay$disable$1
+0327: com/assistant/PlayerOverlay$enable$1
+0328: com/assistant/PlayerOverlayState
+0329: com/assistant/PlayerTendencyLearningEngine
+0330: com/assistant/PlayerTendencyLearningResult
+0331: com/assistant/PossessionStyleRecognitionEngine
+0332: com/assistant/PossessionStyleRecognitionResult
+0333: com/assistant/PostureCorrectionResult
+0334: com/assistant/PredictedRun
+0335: com/assistant/PreferredPassingLaneLearningEngine
+0336: com/assistant/PreferredPassingLaneLearningResult
+0337: com/assistant/PressingRecognitionEngine
+0338: com/assistant/PressingRecognitionResult
+0339: com/assistant/PressureFieldEngine
+0340: com/assistant/PressureFieldResult
+0341: com/assistant/RadarScaleCalibrator
+0342: com/assistant/RadioKeepAliveEngine
+0343: com/assistant/RankedReceiver
+0344: com/assistant/ReboundCollector
+0345: com/assistant/ReceiverEngagementContributor
+0346: com/assistant/ReceiverEngagementEngine
+0347: com/assistant/ReceiverEngagementResult
+0348: com/assistant/ReceiverRankingEngine
+0349: com/assistant/ReceiverRankingEngine$analyze$$inlined$sortedByDescending$1
+0350: com/assistant/ReceiverRankingResult
+0351: com/assistant/RegistrationState
+0352: com/assistant/RehydratedStateSnapshot
+0353: com/assistant/RehydrationEngine
+0354: com/assistant/RehydrationRepository
+0355: com/assistant/RenderThreadStallEngine
+0356: com/assistant/RenderThreadStallEngine$callback$1
+0357: com/assistant/RunPredictionEngine
+0358: com/assistant/RunPredictionEngine$analyze$$inlined$sortedByDescending$1
+0359: com/assistant/RunPredictionResult
+0360: com/assistant/RuntimeConfidenceCalibrationEngine
+0361: com/assistant/RuntimeConfidenceCalibrationResult
+0362: com/assistant/RuntimeCoordinator
+0363: com/assistant/RuntimeDecisionLoop
+0364: com/assistant/RuntimeDecisionLoop$WhenMappings
+0365: com/assistant/RuntimeDiagnosticsRegistry
+0366: com/assistant/RuntimeDiagnosticsState
+0367: com/assistant/RuntimeHealthMonitor
+0368: com/assistant/RuntimeHealthMonitor$HealthState
+0369: com/assistant/RuntimeObservation
+0370: com/assistant/RuntimeObservation$Companion
+0371: com/assistant/RuntimeOverlayHub
+0372: com/assistant/RuntimeOverlayHubState
+0373: com/assistant/RuntimePerformanceCoordinator
+0374: com/assistant/RuntimePerformanceState
+0375: com/assistant/RuntimeSelfHealEngine
+0376: com/assistant/RuntimeSelfHealEngine$HealEvent
+0377: com/assistant/RuntimeTuningPanel
+0378: com/assistant/RuntimeTuningState
+0379: com/assistant/RuntimeVisualizationRegistry
+0380: com/assistant/RuntimeVisualizationState
+0381: com/assistant/SceneSnapshot
+0382: com/assistant/SceneTracker
+0383: com/assistant/SceneTracker$update$1$2
+0384: com/assistant/SceneTracker$update$lambda$3$$inlined$compareByDescending$1
+0385: com/assistant/SceneTracker$update$lambda$3$$inlined$thenByDescending$1
+0386: com/assistant/SecurityExecutionDecoupler
+0387: com/assistant/SharpTouchTimingContributor
+0388: com/assistant/SharpTouchTimingEngine
+0389: com/assistant/SharpTouchTimingResult
+0390: com/assistant/ShieldAssistEngine
+0391: com/assistant/ShootingHabitLearningEngine
+0392: com/assistant/ShootingHabitLearningResult
+0393: com/assistant/ShootingLane
+0394: com/assistant/ShootingLaneAnalysis
+0395: com/assistant/ShootingLaneAnalysisEngine
+0396: com/assistant/ShootingLaneAnalysisEngine$analyze$$inlined$sortedByDescending$1
+0397: com/assistant/ShotAnticipationContributor
+0398: com/assistant/ShotOpportunityAnalysisEngine
+0399: com/assistant/ShotOpportunityContributor
+0400: com/assistant/ShotOpportunityResult
+0401: com/assistant/SmartAssistAccessibilityEngine
+0402: com/assistant/SmartAssistAccessibilityEngine$Companion
+0403: com/assistant/SmartAssistAccessibilityEngine$busRunnable$1
+0404: com/assistant/SmartAssistAccessibilityEngine$executeDirectRequest$accepted$1
+0405: com/assistant/SmartAssistAccessibilityEngine$onServiceConnected$2
+0406: com/assistant/SmartAssistAccessibilityEngine$onServiceConnected$3
+0407: com/assistant/SmartAssistConfiguration
+0408: com/assistant/SmartAssistControlRoomBridge
+0409: com/assistant/SmartAssistCorrectionResult
+0410: com/assistant/SmartAssistMetrics
+0411: com/assistant/SmartAssistMetrics$BusExecutionDiagnostics
+0412: com/assistant/SmartAssistMetrics$GoalkeeperShadowDiagnostics
+0413: com/assistant/SmartAssistPipeline
+0414: com/assistant/SmartAssistPipeline$WhenMappings
+0415: com/assistant/SmartAssistRepository
+0416: com/assistant/SmartAssistRepository$Companion
+0417: com/assistant/SmartAssistState
+0418: com/assistant/SmartAssistUltimateCorrector
+0419: com/assistant/SmartAssistUltimateCorrector$mainThreadHandler$2
+0420: com/assistant/SmartAssistUltimateCorrectorContributor
+0421: com/assistant/SmartAssistUltimateCorrectorEngine
+0422: com/assistant/SnapshotCompressionEngine
+0423: com/assistant/SpaceOccupancyEngine
+0424: com/assistant/SpaceOccupancyResult
+0425: com/assistant/SpeedCompensationContributor
+0426: com/assistant/SpeedCompensationEngine
+0427: com/assistant/SpeedCompensationResult
+0428: com/assistant/SpikeBurstEngine
+0429: com/assistant/SplendorCaptureRecovery
+0430: com/assistant/SplendorCaptureRecovery$checker$1
+0431: com/assistant/SplendorReauthActivity
+0432: com/assistant/StateSnapshot
+0433: com/assistant/StutterPulseEngine
+0434: com/assistant/StutterPulseEngine$callback$1
+0435: com/assistant/SupportContributor
+0436: com/assistant/TacticalAnalyticsEngine
+0437: com/assistant/TacticalAnalyticsResult
+0438: com/assistant/TacticalBehaviorRecognitionEngine
+0439: com/assistant/TacticalBehaviorRecognitionResult
+0440: com/assistant/TacticalIntelligenceEngine
+0441: com/assistant/TacticalIntelligenceResult
+0442: com/assistant/TacticalMapGenerationEngine
+0443: com/assistant/TacticalMapResult
+0444: com/assistant/TeamClassificationResult
+0445: com/assistant/TeamClassifier
+0446: com/assistant/TeamShapeEngine
+0447: com/assistant/TeamShapeResult
+0448: com/assistant/TelemetryCoordinator
+0449: com/assistant/TelemetryRepository
+0450: com/assistant/TelemetrySnapshot
+0451: com/assistant/TemporalMemoryEngine
+0452: com/assistant/TemporalMemoryState
+0453: com/assistant/ThermalPeekEngine
+0454: com/assistant/ThroughBallLane
+0455: com/assistant/ThroughBallLaneAnalysis
+0456: com/assistant/ThroughBallLaneAnalysisEngine
+0457: com/assistant/ThroughBallLaneAnalysisEngine$analyze$$inlined$sortedByDescending$1
+0458: com/assistant/ThroughPassSanitizer
+0459: com/assistant/TouchQualityEngine
+0460: com/assistant/TouchRecoveryContributor
+0461: com/assistant/TouchRecoveryEngine
+0462: com/assistant/TouchRecoveryResult
+0463: com/assistant/TouchStabilizationEngine
+0464: com/assistant/TrackedPlayer
+0465: com/assistant/TrackingConfiguration
+0466: com/assistant/TrackingConfigurationEngine
+0467: com/assistant/TrainedDetectionEngine
+0468: com/assistant/TrainedDetectionEngine$Status
+0469: com/assistant/TrueCrossContributor
+0470: com/assistant/TrueCrossEngine
+0471: com/assistant/TrueCrossResult
+0472: com/assistant/TruePassContributor
+0473: com/assistant/TrueShotContributor
+0474: com/assistant/TrueShotResult
+0475: com/assistant/TrueTargetPassingEngine
+0476: com/assistant/VectorDecision
+0477: com/assistant/ViewInvalidationEvent
+0478: com/assistant/ViewInvalidationFilter
+0479: com/assistant/ViewInvalidationRepository
+0480: com/assistant/VisionConfiguration
+0481: com/assistant/VisionConfigurationEngine
+0482: com/assistant/VisionCore
+0483: com/assistant/VisionDebugOverlay
+0484: com/assistant/VisionDebugOverlay$disable$1
+0485: com/assistant/VisionDebugOverlay$enable$1
+0486: com/assistant/VisionDebugOverlayState
+0487: com/assistant/VisionHardwareBridge
+0488: com/assistant/VisionLatencyMonitor
+0489: com/assistant/VisionLatencyMonitorState
+0490: com/assistant/VisionOverlayRegistry
+0491: com/assistant/VisionOverlayRegistry$disableAll$1
+0492: com/assistant/VisionOverlayRegistry$enableAll$1
+0493: com/assistant/VisionOverlayRegistryState
+0494: com/assistant/VisionPreprocessor
+0495: com/assistant/VisionTrust
+0496: com/assistant/VsyncInputAnchor
+0497: com/assistant/WingBlockContributor
+0498: com/assistant/WingBlockEngine
+0499: com/assistant/WingBlockResult
+0500: com/assistant/WingOverloadDetectionEngine
+0501: com/assistant/WingOverloadDetectionResult
+0502: com/assistant/ZeroFramePressEngine
+0503: com/assistant/ZeroFramePressEngine$Companion
+0504: com/assistant/adapter/watchdog/WatchdogAdapterService
+0505: com/assistant/adapter/watchdog/WatchdogAdapterService$heartbeatRunnable$1
+0506: com/assistant/adapter/watchdog/WatchdogAdapterService$watchdogRunnable$1
+0507: com/assistant/audit/SelfAuditRegistry
+0508: com/assistant/compliance/ComplianceMonitor
+0509: com/assistant/compliance/ComplianceMonitor$runnable$1
+0510: com/assistant/compliance/ComplianceState
+0511: com/assistant/contributors/BallPressContributor
+0512: com/assistant/contributors/CrossClaimContributor
+0513: com/assistant/contributors/CrossDeliveryContributor
+0514: com/assistant/contributors/KeeperBiasContributor
+0515: com/assistant/contributors/PanicSaveContributor
+0516: com/assistant/contributors/PassLaneContributor
+0517: com/assistant/contributors/PressEvadeContributor
+0518: com/assistant/contributors/ShotContributor
+0519: com/assistant/contributors/ThreatPriorityContributor
+0520: com/assistant/controlroom/AdapterCategory
+0521: com/assistant/controlroom/AdapterControlRoom
+0522: com/assistant/controlroom/AdapterControlRoomRegistry
+0523: com/assistant/controlroom/AdapterControlRoomRegistry$getAll$$inlined$sortedBy$1
+0524: com/assistant/controlroom/ControlRoomBootstrap
+0525: com/assistant/controlroom/ui/AgentHubActivity
+0526: com/assistant/controlroom/ui/AgentHubActivity$buildUi$1
+0527: com/assistant/controlroom/ui/AgentHubActivity$buildUi$2
+0528: com/assistant/controlroom/ui/AgentHubActivity$startRefresh$r$1
+0529: com/assistant/controlroom/ui/AgentHubActivity$startRefresh$r$1$run$1
+0530: com/assistant/controlroom/ui/FutureRoomsActivity
+0531: com/assistant/controlroom/ui/FutureRoomsActivity$Screen
+0532: com/assistant/controlroom/ui/FutureRoomsActivity$WhenMappings
+0533: com/assistant/controlroom/ui/FutureRoomsActivity$showAgent$1
+0534: com/assistant/controlroom/ui/FutureRoomsActivity$showAgent$2
+0535: com/assistant/controlroom/ui/FutureRoomsActivity$showAgent$refreshRunnable$1
+0536: com/assistant/controlroom/ui/FutureRoomsActivity$showAgent$refreshRunnable$1$run$1
+0537: com/assistant/controlroom/ui/FutureRoomsActivity$showHome$1
+0538: com/assistant/controlroom/ui/FutureRoomsActivity$showHome$2
+0539: com/assistant/controlroom/ui/GameplayRoomActivity
+0540: com/assistant/controlroom/ui/GameplayRoomActivity$buildUi$1
+0541: com/assistant/controlroom/ui/GameplayRoomActivity$buildUi$2
+0542: com/assistant/controlroom/ui/GameplayRoomActivity$buildUi$3
+0543: com/assistant/controlroom/ui/GameplayRoomActivity$startRefresh$r$1
+0544: com/assistant/controlroom/ui/GoalkeeperControlRoomActivity
+0545: com/assistant/controlroom/ui/GoalkeeperControlRoomActivity$onCreate$1
+0546: com/assistant/controlroom/ui/GoalkeeperControlRoomActivity$onCreate$1$1
+0547: com/assistant/controlroom/ui/InterceptionControlRoomActivity
+0548: com/assistant/controlroom/ui/InterceptionControlRoomActivity$onCreate$1
+0549: com/assistant/controlroom/ui/InterceptionControlRoomActivity$onCreate$1$1
+0550: com/assistant/controlroom/ui/SmartAssistControlRoomActivity
+0551: com/assistant/diagnostic/AdapterSignalBus
+0552: com/assistant/diagnostic/AnalyticsTheaterActivity
+0553: com/assistant/diagnostic/CrashInspector
+0554: com/assistant/diagnostic/CrashInspectorActivity
+0555: com/assistant/diagnostic/FilterEngine
+0556: com/assistant/diagnostic/MachineLedger
+0557: com/assistant/diagnostic/MachineLedger$startMonitoring$1
+0558: com/assistant/diagnostic/RuntimeLogger
+0559: com/assistant/diagnostic/RuntimeLogger$HourBucket
+0560: com/assistant/diagnostic/RuntimeLogger$hourBuckets$$inlined$sortedByDescending$1
+0561: com/assistant/diagnostic/RuntimeMetricsRegistry
+0562: com/assistant/diagnostic/TruthLogcatEngine
+0563: com/assistant/diagnostic/TruthLogcatEngine$truthFile$2
+0564: com/assistant/diagnostic/notification/NodeNotificationHub
+0565: com/assistant/diagnostic/persistence/HealthPersistenceStore
+0566: com/assistant/diagnostic/registry/AdapterHealthRegistry
+0567: com/assistant/diagnostic/registry/AdapterHealthSnapshot
+0568: com/assistant/diagnostic/registry/PerformanceTelemetryRegistry
+0569: com/assistant/diagnostic/registry/PerformanceTelemetryRegistry$NetTelemetry
+0570: com/assistant/events/EventChannel
+0571: com/assistant/events/EventHub
+0572: com/assistant/events/EventHubs
+0573: com/assistant/events/GameplayEventHub
+0574: com/assistant/events/RuntimeEvent
+0575: com/assistant/events/RuntimeEventHub
+0576: com/assistant/events/RuntimeEventsKt
+0577: com/assistant/events/SystemEventHub
+0578: com/assistant/execution/BusStatistics
+0579: com/assistant/execution/CentralExecutionBus
+0580: com/assistant/execution/CentralExecutionBus$LockFreeRing
+0581: com/assistant/execution/CentralExecutionBus$WhenMappings
+0582: com/assistant/execution/ContributionRegistry
+0583: com/assistant/execution/DomainBackupGenerator
+0584: com/assistant/execution/ExecutionRequest
+0585: com/assistant/execution/ExecutionSource
+0586: com/assistant/execution/HybridExecutionTerminal
+0587: com/assistant/execution/HybridExecutionTerminal$WhenMappings
+0588: com/assistant/input/AsynchronousGestureQueue
+0589: com/assistant/input/AsynchronousGestureQueue$PackedGesture
+0590: com/assistant/input/NativeInputBridge
+0591: com/assistant/memory/MmapStateEngine
+0592: com/assistant/overlay/bridge/InterceptionControlRoomBridge
+0593: com/assistant/overlay/bridge/InterceptionControlRoomBridge$start$1
+0594: com/assistant/overlay/bridge/InterceptionControlRoomBridge$start$1$1
+0595: com/assistant/overlay/bridge/SmartAssistControlRoomBridge
+0596: com/assistant/overlay/interceptor/AerialClaimActionEngine
+0597: com/assistant/overlay/interceptor/AnticipationResult
+0598: com/assistant/overlay/interceptor/BlockLeftActionEngine
+0599: com/assistant/overlay/interceptor/BlockRightActionEngine
+0600: com/assistant/overlay/interceptor/BottomLeftActionEngine
+0601: com/assistant/overlay/interceptor/BottomRightActionEngine
+0602: com/assistant/overlay/interceptor/CatchCenterActionEngine
+0603: com/assistant/overlay/interceptor/CollisionAvoidanceEngine
+0604: com/assistant/overlay/interceptor/CollisionRisk
+0605: com/assistant/overlay/interceptor/CrossAction
+0606: com/assistant/overlay/interceptor/CrossClaimActionEngine
+0607: com/assistant/overlay/interceptor/CrossClaimEngine
+0608: com/assistant/overlay/interceptor/CrossInterceptionEngine
+0609: com/assistant/overlay/interceptor/CrossPunchActionEngine
+0610: com/assistant/overlay/interceptor/DiveLeftActionEngine
+0611: com/assistant/overlay/interceptor/DiveRightActionEngine
+0612: com/assistant/overlay/interceptor/FarPostCoverageEngine
+0613: com/assistant/overlay/interceptor/GoalkeeperAction
+0614: com/assistant/overlay/interceptor/GoalkeeperActionRouter
+0615: com/assistant/overlay/interceptor/GoalkeeperAdaptiveFeedbackEngine
+0616: com/assistant/overlay/interceptor/GoalkeeperBiasRegistry
+0617: com/assistant/overlay/interceptor/GoalkeeperDecisionRegistry
+0618: com/assistant/overlay/interceptor/GoalkeeperExecutionEngine
+0619: com/assistant/overlay/interceptor/GoalkeeperExecutionEngine$WhenMappings
+0620: com/assistant/overlay/interceptor/GoalkeeperMetricsRegistry
+0621: com/assistant/overlay/interceptor/GoalkeeperState
+0622: com/assistant/overlay/interceptor/GoalkeeperStateMachine
+0623: com/assistant/overlay/interceptor/GodTierExecutionEngine
+0624: com/assistant/overlay/interceptor/HeightBand
+0625: com/assistant/overlay/interceptor/HoldPositionActionEngine
+0626: com/assistant/overlay/interceptor/InterceptionRuntimeRegistry
+0627: com/assistant/overlay/interceptor/JumpTopCenterActionEngine
+0628: com/assistant/overlay/interceptor/JumpTopLeftActionEngine
+0629: com/assistant/overlay/interceptor/JumpTopRightActionEngine
+0630: com/assistant/overlay/interceptor/KeeperBias
+0631: com/assistant/overlay/interceptor/KeeperPositionBiasEngine
+0632: com/assistant/overlay/interceptor/LongBallCounterEngine
+0633: com/assistant/overlay/interceptor/NearPostCoverageEngine
+0634: com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine
+0635: com/assistant/overlay/interceptor/OmnipotentGoalkeeperEngine$WhenMappings
+0636: com/assistant/overlay/interceptor/OneVsOnePanicEngine
+0637: com/assistant/overlay/interceptor/OneVsOnePanicEngine$WhenMappings
+0638: com/assistant/overlay/interceptor/OwnGoalAvoidanceEngine
+0639: com/assistant/overlay/interceptor/OwnGoalSafety
+0640: com/assistant/overlay/interceptor/PanicAction
+0641: com/assistant/overlay/interceptor/PanicSaveEngine
+0642: com/assistant/overlay/interceptor/ParryBottomCenterActionEngine
+0643: com/assistant/overlay/interceptor/ReachLeftCenterActionEngine
+0644: com/assistant/overlay/interceptor/ReachRightCenterActionEngine
+0645: com/assistant/overlay/interceptor/ReboundSaveActionEngine
+0646: com/assistant/overlay/interceptor/RecoveryAuthorityRegistry
+0647: com/assistant/overlay/interceptor/RecoveryPositionEngine
+0648: com/assistant/overlay/interceptor/RecoveryPredictionEngine
+0649: com/assistant/overlay/interceptor/RecoveryPredictionEngine$WhenMappings
+0650: com/assistant/overlay/interceptor/RecoveryTarget
+0651: com/assistant/overlay/interceptor/ReflexCenterActionEngine
+0652: com/assistant/overlay/interceptor/RushOutActionEngine
+0653: com/assistant/overlay/interceptor/RushOutActionEngine$WhenMappings
+0654: com/assistant/overlay/interceptor/ShotAnticipationEngine
+0655: com/assistant/overlay/interceptor/ShotDirection
+0656: com/assistant/overlay/interceptor/ShotDirectionEngine
+0657: com/assistant/overlay/interceptor/ThreatClassifierEngine
+0658: com/assistant/overlay/interceptor/ThreatDecision
+0659: com/assistant/overlay/interceptor/ThreatPriorityEngine
+0660: com/assistant/overlay/interceptor/ThreatType
+0661: com/assistant/overlay/interceptor/ThreatZone
+0662: com/assistant/overlay/interceptor/ThreatZoneEngine
+0663: com/assistant/overlay/metrics/SmartAssistMetrics
+0664: com/assistant/overlay/metrics/SmartAssistMetricsState
+0665: com/assistant/overlay/notification/RuntimeNotificationCoordinator
+0666: com/assistant/overlay/repository/GoalkeeperRepository
+0667: com/assistant/overlay/repository/GoalkeeperRuntimeState
+0668: com/assistant/overlay/repository/GoalkeeperState
+0669: com/assistant/overlay/repository/InterceptionRepository
+0670: com/assistant/overlay/repository/InterceptionState
+0671: com/assistant/overlay/runtime/PerformanceGovernor
+0672: com/assistant/recovery/AdapterRecoveryEngine
+0673: com/assistant/recovery/AdapterRecoveryEngine$runnable$1
+0674: com/assistant/recovery/RecoveryMetricsRegistry
+0675: com/assistant/render/ChoreographerRenderLoop
+0676: com/assistant/runtime/ActionClass
+0677: com/assistant/runtime/ContributionResult
+0678: com/assistant/runtime/EngineCapability
+0679: com/assistant/runtime/EngineContribution
+0680: com/assistant/runtime/GameplayContributor
+0681: com/assistant/runtime/GameplayContributor$DefaultImpls
+0682: com/assistant/runtime/GameplayEngineRegistry
+0683: com/assistant/runtime/GameplayEngineRegistry$registryRuntimeSnapshot$1
+0684: com/assistant/runtime/RuntimeFrame
+0685: com/assistant/runtime/ZoneDistribution
+0686: com/assistant/storage/SplendorStorageRoot
+0687: com/assistant/survival/AccessibilitySurvivalEngine
+0688: com/assistant/survival/AccessibilitySurvivalRegistry
+0689: com/assistant/survival/OverlaySurvivalEngine
+0690: com/assistant/survival/OverlaySurvivalRegistry
+0691: com/assistant/survival/ProcessSurvivalRegistry
+0692: com/assistant/survival/ResourceBudgetRegistry
+0693: com/assistant/vision/CameraProfile
+0694: com/assistant/vision/ForegroundGate
+0695: com/assistant/vision/ForegroundGate$install$1
+0696: com/assistant/vision/OverlaySelfMask
+============================================================
+MATCHED CLASS LIST SAVED: /data/data/com.termux/files/usr/tmp/apk_verify/matched_kotlin_compiler_classes.txt
+ALL DEX CLASS LIST SAVED: /data/data/com.termux/files/usr/tmp/apk_verify/all_dex_defined_classes.txt
+============================================================
+PROVEN: Every Kotlin compiler-generated class is defined in APK DEX.
+DEX FILES VERIFIED: 21
+KOTLIN CLASSES CONFIRMED PRESENT: 696
+SUCCESS: Kotlin/Dex full coverage verification passed.
+=== APK BINARY IDENTITY ===
+af63a8108c19476134886f23649af692a5d30bd5e2bc87864dddd8713f67657b  app/build/outputs/apk/debug/app-debug.apk
+-rw-------. 1 u0_a406 u0_a406 28M Oct 10 19:10 app/build/outputs/apk/debug/app-debug.apk
+=== VERIFICATION ARTIFACTS ===
+total 15M
+-rw-------. 1 u0_a406 u0_a406 625K Oct 10 19:10 all_dex_defined_classes.txt
+-rw-r--r--. 1 u0_a406 u0_a406 9.6M Jan  1  1981 classes.dex
+-rw-r--r--. 1 u0_a406 u0_a406 2.8K Jan  1  1981 classes10.dex
+-rw-r--r--. 1 u0_a406 u0_a406  22K Jan  1  1981 classes11.dex
+-rw-r--r--. 1 u0_a406 u0_a406 506K Jan  1  1981 classes12.dex
+-rw-r--r--. 1 u0_a406 u0_a406 4.7K Jan  1  1981 classes13.dex
+-rw-r--r--. 1 u0_a406 u0_a406  12K Jan  1  1981 classes14.dex
+-rw-r--r--. 1 u0_a406 u0_a406  97K Jan  1  1981 classes15.dex
+-rw-r--r--. 1 u0_a406 u0_a406 1.2M Jan  1  1981 classes16.dex
+-rw-r--r--. 1 u0_a406 u0_a406  24K Jan  1  1981 classes17.dex
+-rw-r--r--. 1 u0_a406 u0_a406  93K Jan  1  1981 classes18.dex
+-rw-r--r--. 1 u0_a406 u0_a406  15K Jan  1  1981 classes19.dex
+-rw-r--r--. 1 u0_a406 u0_a406 9.3K Jan  1  1981 classes2.dex
+-rw-r--r--. 1 u0_a406 u0_a406  20K Jan  1  1981 classes20.dex
+-rw-r--r--. 1 u0_a406 u0_a406 2.6M Jan  1  1981 classes21.dex
+-rw-r--r--. 1 u0_a406 u0_a406 4.4K Jan  1  1981 classes3.dex
+-rw-r--r--. 1 u0_a406 u0_a406  22K Jan  1  1981 classes4.dex
+-rw-r--r--. 1 u0_a406 u0_a406  38K Jan  1  1981 classes5.dex
+-rw-r--r--. 1 u0_a406 u0_a406 4.4K Jan  1  1981 classes6.dex
+-rw-r--r--. 1 u0_a406 u0_a406 4.1K Jan  1  1981 classes7.dex
+-rw-r--r--. 1 u0_a406 u0_a406  14K Jan  1  1981 classes8.dex
+-rw-r--r--. 1 u0_a406 u0_a406  34K Jan  1  1981 classes9.dex
+-rw-------. 1 u0_a406 u0_a406  30K Oct 10 19:10 expected_kotlin_compiler_classes.txt
+drwx------. 3 u0_a406 u0_a406 3.4K Oct 10 19:10 lib
+-rw-------. 1 u0_a406 u0_a406  30K Oct 10 19:10 matched_kotlin_compiler_classes.txt
+-rw-------. 1 u0_a406 u0_a406    0 Oct 10 19:10 missing_kotlin_compiler_classes.txt
+-rw-------. 1 u0_a406 u0_a406 7.2K Oct 10 19:10 native_jni_symbols.txt
+-rw-------. 1 u0_a406 u0_a406  11K Oct 10 19:10 source_native_declarations.txt
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   Build_lint_output.txt
+	modified:   app/build.gradle.kts
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   Build_lint_output.txt
+
+=== CONFIRMATION OF HEAD & MAIN ===
+=== HEAD ===
+9d8fdf1a (HEAD -> main) updates
+
+=== MAIN ===
+9d8fdf1a (HEAD -> main) updates
+
+Finished: 2026-10-10 19:10:25 WAT
+Report size: 61368 bytes
+================================================================
+
+=== PUSHED ===
