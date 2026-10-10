@@ -73,7 +73,9 @@ object OmnipotentGoalkeeperEngine {
         pressureButtonX: Float, pressureButtonY: Float,
         joystickX: Float = 250f, joystickY: Float = 550f,
         screenWidth: Float = 1650f,
-        screenHeight: Float = 720f
+        screenHeight: Float = 720f,
+        isAttackerDetected: Boolean = true,
+        isGkDetected: Boolean = true
     ): Boolean {
         val now = System.currentTimeMillis()
         if (now - lastGkLayerTimestamp < 8L) return false // BEAST MODE: 120Hz reaction throttle for 0.00ms threat response
@@ -83,6 +85,9 @@ object OmnipotentGoalkeeperEngine {
         ballTrajectory[BALL_CY] = ballY
         ballTrajectory[BALL_VX] = ballVx
         ballTrajectory[BALL_VY] = ballVy
+
+        // FABRICATED-THREAT GATE: Require valid detected positions
+        if (!isAttackerDetected || !isGkDetected) return false
 
         // 1. MITIGATING SCENARIOS 1 & 5: Through-Balls and Composed 1v1 Breakaways
         // UNCONDITIONAL: Distance-based activation bypasses velocity/position gates
@@ -230,7 +235,9 @@ object OmnipotentGoalkeeperEngine {
                 pressureButtonX = width * 0.9f,
                 pressureButtonY = height * 0.7f,
                 screenWidth = width.toFloat(),
-                screenHeight = height.toFloat()
+                screenHeight = height.toFloat(),
+                isAttackerDetected = false, // Telemetry does not track attacker, prevent fabricated rush
+                isGkDetected = (t.goalkeeperX != 0f && t.goalkeeperY != 0f)
             )
         }
 

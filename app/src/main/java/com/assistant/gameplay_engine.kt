@@ -101,62 +101,83 @@ import org.tensorflow.lite.Interpreter
 ActionOutcomeVerifier
 ======== */
 object ActionOutcomeVerifier {
-    @Volatile private var pendingDispatch: ExecutionRequest? = null
-    @Volatile private var pendingFrame: RuntimeFrame? = null
-    @Volatile private var dispatchTimestamp: Long = 0L
+    private data class PendingRecord(
+        val request: ExecutionRequest,
+        val frame: RuntimeFrame,
+        var dispatchTimestamp: Long = 0L,
+        var confirmed: Boolean = false
+    )
+
+    private val pendingRecords = java.util.concurrent.ConcurrentHashMap<String, PendingRecord>()
 
     private val totalDispatched = AtomicLong(0L)
     private val effectObservedCount = AtomicLong(0L)
     private val effectNotObservedCount = AtomicLong(0L)
 
     fun recordDispatch(request: ExecutionRequest, frame: RuntimeFrame) {
-        pendingDispatch = request
-        pendingFrame = frame
-        dispatchTimestamp = System.currentTimeMillis()
+        pendingRecords[request.actionId] = PendingRecord(request, frame)
         totalDispatched.incrementAndGet()
     }
 
+    fun confirmDispatch(actionId: String) {
+        pendingRecords[actionId]?.let {
+            it.dispatchTimestamp = System.currentTimeMillis()
+            it.confirmed = true
+        }
+    }
+
     fun verify(currentFrame: RuntimeFrame) {
-        val req = pendingDispatch ?: return
-        val prevFrame = pendingFrame ?: return
-        val age = currentFrame.timestampMs - dispatchTimestamp
+        val iterator = pendingRecords.entries.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            val record = entry.value
+            
+            if (!record.confirmed) {
+                if (System.currentTimeMillis() - record.request.timestamp > 500L) {
+                    iterator.remove()
+                }
+                continue
+            }
 
-        if (age < 30L) return
-        if (age > 350L) {
-            effectNotObservedCount.incrementAndGet()
-            GestureExecutionAuthority.recordEffectObserved(actionId = req.actionId, observed = false)
-            pendingDispatch = null
-            pendingFrame = null
-            return
-        }
+            val age = currentFrame.timestampMs - record.dispatchTimestamp
 
-        val observed = when (req.phase) {
-            ActionClass.PASS.ordinal -> {
-                val dx = currentFrame.ballX - prevFrame.ballX
-                val dy = currentFrame.ballY - prevFrame.ballY
-                kotlin.math.hypot(dx, dy) > 10f
+            if (age < 30L) continue
+            if (age > 350L) {
+                effectNotObservedCount.incrementAndGet()
+                GestureExecutionAuthority.recordEffectObserved(actionId = record.request.actionId, observed = false)
+                iterator.remove()
+                continue
             }
-            ActionClass.SHOT.ordinal -> {
-                currentFrame.goalDetected || kotlin.math.hypot(currentFrame.ballVelocityX, currentFrame.ballVelocityY) > 15f
-            }
-            ActionClass.CROSS.ordinal -> {
-                kotlin.math.hypot(currentFrame.ballX - prevFrame.ballX, currentFrame.ballY - prevFrame.ballY) > 20f
-            }
-            ActionClass.DEFEND.ordinal, ActionClass.KEEPER.ordinal -> {
-                currentFrame.defenderDensity <= prevFrame.defenderDensity || !currentFrame.panic
-            }
-            ActionClass.MOVE.ordinal, ActionClass.EVADE.ordinal -> {
-                kotlin.math.hypot(currentFrame.ballX - prevFrame.ballX, currentFrame.ballY - prevFrame.ballY) > 3f
-            }
-            else -> true
-        }
 
-        if (observed) {
-            effectObservedCount.incrementAndGet()
-            GestureExecutionAuthority.recordEffectObserved(actionId = req.actionId, observed = true)
-        } else {
-            effectNotObservedCount.incrementAndGet()
-            GestureExecutionAuthority.recordEffectObserved(actionId = req.actionId, observed = false)
+            val observed = when (record.request.phase) {
+                ActionClass.PASS.ordinal -> {
+                    val dx = currentFrame.ballX - record.frame.ballX
+                    val dy = currentFrame.ballY - record.frame.ballY
+                    kotlin.math.hypot(dx, dy) > 10f
+                }
+                ActionClass.SHOT.ordinal -> {
+                    currentFrame.goalDetected || kotlin.math.hypot(currentFrame.ballVelocityX, currentFrame.ballVelocityY) > 15f
+                }
+                ActionClass.CROSS.ordinal -> {
+                    kotlin.math.hypot(currentFrame.ballX - record.frame.ballX, currentFrame.ballY - record.frame.ballY) > 20f
+                }
+                ActionClass.DEFEND.ordinal, ActionClass.KEEPER.ordinal -> {
+                    currentFrame.defenderDensity <= record.frame.defenderDensity || !currentFrame.panic
+                }
+                ActionClass.MOVE.ordinal, ActionClass.EVADE.ordinal -> {
+                    kotlin.math.hypot(currentFrame.ballX - record.frame.ballX, currentFrame.ballY - record.frame.ballY) > 3f
+                }
+                else -> true
+            }
+
+            if (observed) {
+                effectObservedCount.incrementAndGet()
+                GestureExecutionAuthority.recordEffectObserved(actionId = record.request.actionId, observed = true)
+            } else {
+                effectNotObservedCount.incrementAndGet()
+                GestureExecutionAuthority.recordEffectObserved(actionId = record.request.actionId, observed = false)
+            }
+            iterator.remove()
         }
 
         pendingDispatch = null
@@ -4634,6 +4655,12 @@ object GestureExecutionAuthority {
         busAcceptedParam: Boolean = false,
         busConsumedParam: Boolean = false
     ): Boolean {
+        // FINAL EXECUTION GATE: Reject if intended game is not foregrounded
+        if (!com.assistant.VisionTrust.isGameForeground()) {
+            com.assistant.diagnostic.RuntimeLogger.log("GestureExecutionAuthority rejected: game not foreground", "SMART_ASSIST")
+            return false
+        }
+
         requested.incrementAndGet()
         lastOrigin = origin
         lastUpdatedMs = System.currentTimeMillis()
@@ -4669,7 +4696,13 @@ object GestureExecutionAuthority {
 
         return try {
             val result = service.dispatchGesture(gesture, wrappedCallback, handler)
-            if (result) accepted.incrementAndGet() else rejected.incrementAndGet()
+            if (result) {
+                accepted.incrementAndGet()
+                // Anchor outcome verification to actual dispatch boundary
+                ActionOutcomeVerifier.confirmDispatch(actionId)
+            } else {
+                rejected.incrementAndGet()
+            }
             
             val telemetry = ActionTelemetry(
                 actionId = actionId,
