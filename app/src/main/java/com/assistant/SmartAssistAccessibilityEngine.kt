@@ -172,7 +172,10 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     }
                 },
                 null,
-                origin = "bus:${request.source}"
+                origin = "bus:${request.source}",
+                actionIdParam = request.actionId,
+                busAcceptedParam = request.busAccepted,
+                busConsumedParam = request.busConsumed
             )
 
             if (!accepted) {

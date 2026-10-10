@@ -124,7 +124,7 @@ object ActionOutcomeVerifier {
         if (age < 30L) return
         if (age > 350L) {
             effectNotObservedCount.incrementAndGet()
-            GestureExecutionAuthority.recordEffectObserved(observed = false)
+            GestureExecutionAuthority.recordEffectObserved(actionId = req.actionId, observed = false)
             pendingDispatch = null
             pendingFrame = null
             return
@@ -153,10 +153,10 @@ object ActionOutcomeVerifier {
 
         if (observed) {
             effectObservedCount.incrementAndGet()
-            GestureExecutionAuthority.recordEffectObserved(observed = true)
+            GestureExecutionAuthority.recordEffectObserved(actionId = req.actionId, observed = true)
         } else {
             effectNotObservedCount.incrementAndGet()
-            GestureExecutionAuthority.recordEffectObserved(observed = false)
+            GestureExecutionAuthority.recordEffectObserved(actionId = req.actionId, observed = false)
         }
 
         pendingDispatch = null
@@ -4629,13 +4629,16 @@ object GestureExecutionAuthority {
         gesture: GestureDescription,
         callback: AccessibilityService.GestureResultCallback? = null,
         handler: Handler? = null,
-        origin: String = "unattributed"
+        origin: String = "unattributed",
+        actionIdParam: String? = null,
+        busAcceptedParam: Boolean = false,
+        busConsumedParam: Boolean = false
     ): Boolean {
         requested.incrementAndGet()
         lastOrigin = origin
         lastUpdatedMs = System.currentTimeMillis()
 
-        val actionId = createCorrelationId()
+        val actionId = actionIdParam ?: createCorrelationId()
 
         val wrappedCallback = object : AccessibilityService.GestureResultCallback() {
             override fun onCompleted(gestureDescription: GestureDescription?) {
@@ -4675,8 +4678,8 @@ object GestureExecutionAuthority {
                 actionClass = "TOUCH_GESTURE",
                 intent = "DYNAMIC_STROBE_INJECTION",
                 requestCreated = lastUpdatedMs,
-                busAccepted = true,
-                busConsumed = true,
+                busAccepted = busAcceptedParam,
+                busConsumed = busConsumedParam,
                 backendSelected = "ACCESSIBILITY_DISPATCH",
                 backendInvoked = true,
                 osDispatchAccepted = result,
