@@ -124,6 +124,7 @@ object ActionOutcomeVerifier {
         if (age < 30L) return
         if (age > 350L) {
             effectNotObservedCount.incrementAndGet()
+            GestureExecutionAuthority.recordEffectObserved(observed = false)
             pendingDispatch = null
             pendingFrame = null
             return
@@ -152,8 +153,10 @@ object ActionOutcomeVerifier {
 
         if (observed) {
             effectObservedCount.incrementAndGet()
+            GestureExecutionAuthority.recordEffectObserved(observed = true)
         } else {
             effectNotObservedCount.incrementAndGet()
+            GestureExecutionAuthority.recordEffectObserved(observed = false)
         }
 
         pendingDispatch = null
@@ -4564,7 +4567,41 @@ object GestureExecutionAuthority {
     @Volatile private var lastOrigin: String = "none"
     @Volatile private var lastAccepted: Boolean = false
     @Volatile private var lastUpdatedMs: Long = 0L
+    @Volatile private var currentActionTelemetry: ActionTelemetry? = null
     @Volatile private var lastActionTelemetry: Map<String, Any>? = null
+
+    private fun updateTelemetryMap(telemetry: ActionTelemetry) {
+        currentActionTelemetry = telemetry
+        lastActionTelemetry = mapOf(
+            "ACTION_ID" to telemetry.actionId,
+            "ENGINE" to telemetry.engine,
+            "CONTRIBUTOR" to telemetry.contributor,
+            "ACTION_CLASS" to telemetry.actionClass,
+            "INTENT" to telemetry.intent,
+            "REQUEST_CREATED" to telemetry.requestCreated,
+            "BUS_ACCEPTED" to telemetry.busAccepted,
+            "BUS_CONSUMED" to telemetry.busConsumed,
+            "BACKEND_SELECTED" to telemetry.backendSelected,
+            "BACKEND_INVOKED" to telemetry.backendInvoked,
+            "OS_DISPATCH_ACCEPTED" to telemetry.osDispatchAccepted,
+            "GESTURE_COMPLETED" to telemetry.gestureCompleted,
+            "GESTURE_CANCELLED" to telemetry.gestureCancelled,
+            "GESTURE_FAILED" to telemetry.gestureFailed,
+            "EFFECT_OBSERVED" to telemetry.effectObserved,
+            "EFFECT_NOT_OBSERVED" to telemetry.effectNotObserved
+        )
+    }
+
+    fun recordEffectObserved(actionId: String? = null, observed: Boolean) {
+        val curr = currentActionTelemetry ?: return
+        if (actionId == null || curr.actionId == actionId) {
+            val updated = curr.copy(
+                effectObserved = observed,
+                effectNotObserved = !observed
+            )
+            updateTelemetryMap(updated)
+        }
+    }
 
     data class ActionTelemetry(
         val actionId: String,
@@ -4599,16 +4636,30 @@ object GestureExecutionAuthority {
         lastUpdatedMs = System.currentTimeMillis()
 
         val actionId = createCorrelationId()
-        var completed = false
-        var cancelled = false
 
         val wrappedCallback = object : AccessibilityService.GestureResultCallback() {
             override fun onCompleted(gestureDescription: GestureDescription?) {
-                completed = true
+                val curr = currentActionTelemetry
+                if (curr != null && curr.actionId == actionId) {
+                    val updated = curr.copy(
+                        gestureCompleted = true,
+                        gestureCancelled = false,
+                        gestureFailed = false
+                    )
+                    updateTelemetryMap(updated)
+                }
                 callback?.onCompleted(gestureDescription)
             }
             override fun onCancelled(gestureDescription: GestureDescription?) {
-                cancelled = true
+                val curr = currentActionTelemetry
+                if (curr != null && curr.actionId == actionId) {
+                    val updated = curr.copy(
+                        gestureCompleted = false,
+                        gestureCancelled = true,
+                        gestureFailed = true
+                    )
+                    updateTelemetryMap(updated)
+                }
                 callback?.onCancelled(gestureDescription)
             }
         }
@@ -4629,30 +4680,13 @@ object GestureExecutionAuthority {
                 backendSelected = "ACCESSIBILITY_DISPATCH",
                 backendInvoked = true,
                 osDispatchAccepted = result,
-                gestureCompleted = completed,
-                gestureCancelled = cancelled,
+                gestureCompleted = false,
+                gestureCancelled = false,
                 gestureFailed = !result,
-                effectObserved = result,
-                effectNotObserved = !result
+                effectObserved = false,
+                effectNotObserved = false
             )
-            lastActionTelemetry = mapOf(
-                "ACTION_ID" to telemetry.actionId,
-                "ENGINE" to telemetry.engine,
-                "CONTRIBUTOR" to telemetry.contributor,
-                "ACTION_CLASS" to telemetry.actionClass,
-                "INTENT" to telemetry.intent,
-                "REQUEST_CREATED" to telemetry.requestCreated,
-                "BUS_ACCEPTED" to telemetry.busAccepted,
-                "BUS_CONSUMED" to telemetry.busConsumed,
-                "BACKEND_SELECTED" to telemetry.backendSelected,
-                "BACKEND_INVOKED" to telemetry.backendInvoked,
-                "OS_DISPATCH_ACCEPTED" to telemetry.osDispatchAccepted,
-                "GESTURE_COMPLETED" to telemetry.gestureCompleted,
-                "GESTURE_CANCELLED" to telemetry.gestureCancelled,
-                "GESTURE_FAILED" to telemetry.gestureFailed,
-                "EFFECT_OBSERVED" to telemetry.effectObserved,
-                "EFFECT_NOT_OBSERVED" to telemetry.effectNotObserved
-            )
+            updateTelemetryMap(telemetry)
 
             try {
                 com.assistant.events.GameplayEventHub.emit(
