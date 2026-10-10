@@ -23,7 +23,10 @@ data class ExecutionRequest(
     val endX: Float,
     val endY: Float,
     val duration: Long,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val actionId: String = "ACT-${System.currentTimeMillis()}-${java.util.concurrent.ThreadLocalRandom.current().nextInt(1000, 9999)}",
+    var busAccepted: Boolean = false,
+    var busConsumed: Boolean = false
 )
 
 data class BusStatistics(
@@ -86,6 +89,7 @@ object CentralExecutionBus {
             return false
         }
 
+        request.busAccepted = true
         ring.buffer.set((writePos and MASK).toInt(), request)
         accepted.incrementAndGet()
         updateStatistics()
@@ -113,6 +117,7 @@ object CentralExecutionBus {
                     continue // Drop stale and try next
                 }
                 consumed.incrementAndGet()
+                request.busConsumed = true
                 return request
             }
         }
