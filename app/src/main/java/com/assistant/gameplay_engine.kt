@@ -179,9 +179,6 @@ object ActionOutcomeVerifier {
             }
             iterator.remove()
         }
-
-        pendingDispatch = null
-        pendingFrame = null
     }
 
     fun diagnostics(): Map<String, Any> = mapOf(
