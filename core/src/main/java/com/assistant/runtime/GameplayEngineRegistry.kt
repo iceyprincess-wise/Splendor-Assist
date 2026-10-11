@@ -5,16 +5,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
 
-object ContributionResult : java.util.AbstractList<EngineContribution>() {
-    private var pool = Array<EngineContribution?>(64) { null }
-    override var size: Int = 0
-    fun reset() { size = 0 }
-    fun addContribution(c: EngineContribution) {
-        if (size >= pool.size) pool = pool.copyOf(pool.size * 2)
-        pool[size++] = c
-    }
-    override fun get(index: Int): EngineContribution = pool[index]!!
-}
+// ContributionResult global singleton replaced with thread-confined ArrayList snapshot return in collect() to eliminate data races and torn reads.
 
 object GameplayEngineRegistry {
     private val contributors = CopyOnWriteArrayList<GameplayContributor>()
@@ -72,23 +63,27 @@ object GameplayEngineRegistry {
 
     fun collect(frame: RuntimeFrame): List<EngineContribution> {
         collectCycles.incrementAndGet()
-        ContributionResult.reset()
+        val results = ArrayList<EngineContribution>(contributors.size)
         for (c in contributors) {
             try {
                 c.update(frame)
                 val contribution = c.contribute(frame) ?: continue
                 lastContribution[c.engineName] = contribution
-                contributed[c.engineName] = (contributed[c.engineName] ?: 0L) + 1L
-                ContributionResult.addContribution(contribution)
+                contributed.compute(c.engineName) { _, v -> (v ?: 0L) + 1L }
+                results.add(contribution)
             } catch (t: Throwable) {
-                val n = (failures[c.engineName] ?: 0L) + 1L
-                failures[c.engineName] = n
-                if (n == 1L || n % 50L == 0L) {
-                    RuntimeLogger.log("ENGINE FAILURE ${c.engineName} x$n: ${t.message ?: t.javaClass.simpleName}", "RUNTIME")
+                var currentFailures = 1L
+                failures.compute(c.engineName) { _, v ->
+                    val next = (v ?: 0L) + 1L
+                    currentFailures = next
+                    next
+                }
+                if (currentFailures == 1L || currentFailures % 50L == 0L) {
+                    RuntimeLogger.log("ENGINE FAILURE ${c.engineName} x$currentFailures: ${t.message ?: t.javaClass.simpleName}", "RUNTIME")
                 }
             }
         }
-        return ContributionResult
+        return results
     }
 
     fun resetAll() {
