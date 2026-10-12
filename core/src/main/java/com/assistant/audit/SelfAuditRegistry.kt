@@ -12,7 +12,7 @@ object SelfAuditRegistry {
     private var totalNodes = 0
 
     private val nodeStates =
-        mutableMapOf<String,String>()
+        java.util.concurrent.ConcurrentHashMap<String, String>()
 
     @Synchronized
     fun update(
