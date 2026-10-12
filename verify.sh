@@ -45,7 +45,7 @@ set +o pipefail
 "$READELF_BIN" -Ws "$SO" | grep -E 'FUNC[[:space:]]+GLOBAL[[:space:]]+DEFAULT.*Java_com_assistant_' | tee "$SYMBOL_FILE" || true
 set -o pipefail
 
-NATIVE_JNI_COUNT="$(grep -Ec "Java_com_assistant_" "Native" "NativeBridge" "native" "nativeBridge" "$SYMBOL_FILE" 2>/dev/null || true)"
+NATIVE_JNI_COUNT="$(grep -Ec "Java_com_assistant_" "$SYMBOL_FILE" 2>/dev/null || true)"
 echo "PROVEN: All assistant JNI symbols found in APK .so: ${NATIVE_JNI_COUNT:-0}"
 echo "JNI SYMBOL LIST SAVED: $SYMBOL_FILE"
 echo "INFO: Source declarations vs packaged JNI symbols: ${SOURCE_DECL_COUNT:-0}/${NATIVE_JNI_COUNT:-0}"
@@ -61,6 +61,10 @@ badging_dump() {
     aapt2 dump badging "$1" 2>/dev/null
   elif command -v aapt >/dev/null 2>&1; then
     aapt dump badging "$1" 2>/dev/null
+  elif [ -f "${ANDROID_HOME:-/opt/android-sdk}/build-tools/34.0.0/aapt2" ]; then
+    "${ANDROID_HOME:-/opt/android-sdk}/build-tools/34.0.0/aapt2" dump badging "$1" 2>/dev/null
+  elif ls /opt/android-sdk/build-tools/*/aapt2 >/dev/null 2>&1; then
+    "$(ls -d /opt/android-sdk/build-tools/*/aapt2 | tail -n 1)" dump badging "$1" 2>/dev/null
   else
     return 1
   fi
