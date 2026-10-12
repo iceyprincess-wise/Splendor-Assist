@@ -174,10 +174,7 @@ class PingEliminatorVpnService : VpnService() {
                         payload.put(readBuffer)
                         payload.flip()
                         
-                        val jitterMs = random.nextLong(MIN_JITTER_MS, MAX_JITTER_MS + 1)
-                        if (jitterMs > 0) {
-                            Thread.sleep(jitterMs)
-                        }
+                        // Latency jitter sleep removed
                         
                         outChannel.write(payload)
                         releaseBuffer(payload)

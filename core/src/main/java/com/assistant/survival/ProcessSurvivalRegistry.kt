@@ -3,7 +3,7 @@ package com.assistant.survival
 object ProcessSurvivalRegistry {
 
     private val processes =
-        mutableMapOf<String,String>()
+        java.util.concurrent.ConcurrentHashMap<String, String>()
 
     @Synchronized
     fun update(

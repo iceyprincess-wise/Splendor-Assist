@@ -405,7 +405,7 @@ class ActiveGestureController(
         NativeBridge.nativeAgilityPhysics(
             speedComp.executionBoost, distance, movementAngleDegrees,
             telemetry.confidence, kotlin.math.abs(angle) / 180f,
-            Float.NaN, Float.NaN, Float.NaN, Float.NaN,
+            0f, 0f, 0f, 0f,
             NativeBridge.nextThreadSeed(), agilityBuffer
         )
         val agility = AgilityResult(
@@ -795,6 +795,9 @@ class ActiveGestureController(
 
         val accepted =
             HybridExecutionTerminal.route(finalRequest)
+        if (accepted) {
+            SmartAssistMetrics.submitRequest()
+        }
 
         RuntimeLogger.log(
             "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()}",
