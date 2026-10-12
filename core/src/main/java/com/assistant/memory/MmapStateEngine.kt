@@ -13,6 +13,7 @@ object MmapStateEngine {
     private var buffer: MappedByteBuffer? = null
     
     fun initialize(cacheDir: File) {
+        if (raf != null && buffer != null) return
         try {
             val file = File(cacheDir, FILE_NAME)
             if (!file.exists()) file.createNewFile()

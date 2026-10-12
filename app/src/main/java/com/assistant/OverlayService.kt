@@ -308,14 +308,14 @@ class OverlayService : Service(), ComponentCallbacks2 {
         if (startVision) visionScope.launch {
             try {
                 val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride)
-                // MUTATION TOOL 2: Compute optical variance for 0.1ms pixel-delta quantization
-                com.assistant.NativeBridge.nativeComputeOpticalVariance(visionBuffer, previousVisionBuffer ?: visionBuffer, width, height, rowStride, 0, 0, width, height)
-            previousVisionBuffer = visionBuffer
+                val prevBuf = previousVisionBuffer
+                if (prevBuf != null && prevBuf !== visionBuffer) {
+                    com.assistant.NativeBridge.nativeComputeOpticalVariance(visionBuffer, prevBuf, width, height, rowStride, 0, 0, width, height)
+                }
+                previousVisionBuffer = visionBuffer
                 val state = com.assistant.VisionCore.process(normalized)
                 com.assistant.BoosterIgnition.ensureIgnited(this@OverlayService)
                 com.assistant.AppContributorRegistration.ensureRegistered()
-                // MUTATION TOOL 1: Escalate thread priority to MAX (-19) for zero-delay execution
-                com.assistant.NativeBridge.nativeEscalateThreadPriority()
                 com.assistant.RuntimeCoordinator.reportCaptureReady()
                 val frame = com.assistant.FrameAssembler.assemble()
                 com.assistant.RuntimeDecisionLoop.onFrame(frame)
@@ -954,7 +954,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             )
                             RuntimeLogger.log("🕶️", "SMART_ASSIST")
                             updateOverlayVisuals("🕶️", Color.GREEN)
-                            Handler(Looper.getMainLooper()).postDelayed({}, 3000)
+                            // Delayed empty runnable removed
                         }
                     }
                 }
@@ -966,12 +966,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     private fun initializeProcessingEngine() {
         isRunning = true
-        processingThread = Thread {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST)
-            while (isRunning) {
-                try { Thread.sleep(33) } catch (e: InterruptedException) { break }
-            }
-        }.apply { start() }
     }
 
     private fun startTrajectoryWatchdog() {

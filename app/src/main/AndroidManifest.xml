@@ -18,7 +18,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
 
-    <application android:gwpAsanMode="never"
+    <application android:gwpAsanMode="always"
         android:name="com.assistant.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -86,7 +86,7 @@
 
         <service
             android:name="com.assistant.adapter.watchdog.WatchdogAdapterService"
-            android:exported="true"
+            android:exported="false"
             android:process=":survival"
             android:foregroundServiceType="specialUse" tools:ignore="ExportedService">
             <property
@@ -120,7 +120,7 @@
     
         <service
             android:name="com.assistant.PerformanceEngineService"
-            android:exported="true"
+            android:exported="false"
             android:process=":survival"
             android:foregroundServiceType="specialUse" tools:ignore="ExportedService">
             <property
@@ -130,7 +130,7 @@
     
         <service
             android:name="com.assistant.GameplayEngineService"
-            android:exported="true"
+            android:exported="false"
             android:process=":survival"
             android:foregroundServiceType="specialUse" tools:ignore="ExportedService">
             <property

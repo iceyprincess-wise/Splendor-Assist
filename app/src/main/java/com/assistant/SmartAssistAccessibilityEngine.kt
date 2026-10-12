@@ -299,13 +299,15 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         }
 
         val syncedDuration = synchronizeToTickRate(50L)
-        dispatcher.injectWinningVector(
-            (x1),
-            (y1),
-            (x2),
-            (y2),
-            syncedDuration
-        )
+        if (::dispatcher.isInitialized) {
+            dispatcher.injectWinningVector(
+                (x1),
+                (y1),
+                (x2),
+                (y2),
+                syncedDuration
+            )
+        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
