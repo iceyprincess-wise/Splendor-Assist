@@ -29,7 +29,7 @@ object CrossClaimContributor : GameplayContributor {
             actionClass = ActionClass.KEEPER,
             targetX = frame.ballX.coerceAtLeast(0f),
             targetY = frame.ballY.coerceAtLeast(0f),
-            authority = (decision.priority / 140f).coerceIn(0f, 1f),
+            authority = (decision.priority / 150f).coerceIn(0f, 1f),
             confidence = frame.confidence,
             durationHintMs = 32L
         )

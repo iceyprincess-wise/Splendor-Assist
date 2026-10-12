@@ -38,7 +38,7 @@ object PanicSaveContributor : GameplayContributor {
             actionClass = ActionClass.KEEPER,
             targetX = frame.ballX.coerceAtLeast(0f),
             targetY = frame.ballY.coerceAtLeast(0f),
-            authority = (((decision.priority / 130f) * 0.95f) * fluidMultiplier).coerceIn(0f, 1f),
+            authority = (((decision.priority / 150f) * 0.95f) * fluidMultiplier).coerceIn(0f, 1f),
             confidence = frame.confidence,
             durationHintMs = 26L
         )
