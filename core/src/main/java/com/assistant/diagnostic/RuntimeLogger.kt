@@ -290,11 +290,11 @@ object RuntimeLogger {
         )
     }
 
-    private fun now(): String =
-        SimpleDateFormat(
-            "yyyy-MM-dd HH:mm:ss.SSS",
-            Locale.US
-        ).format(Date())
+    private fun now(): String {
+        val date = threadLocalDate.get() ?: Date()
+        date.time = System.currentTimeMillis()
+        return dateFormat.get()?.format(date) ?: SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(Date())
+    }
 
     // FIX #4: Inter-process contention prevention.
     // Single atomic write(byteArray) via FileOutputStream with append=true.

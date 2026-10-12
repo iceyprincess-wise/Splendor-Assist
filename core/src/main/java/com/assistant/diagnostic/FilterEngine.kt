@@ -72,7 +72,7 @@ object FilterEngine {
         score -= when (lag) {
             "CHOKING" -> 40
             "JITTERY" -> 15
-            "UNKNOWN" -> 60 // Blind telemetry = device is struggling silently
+            "UNKNOWN" -> 0 // Baseline during startup/warmup
             else -> 0
         }
         
@@ -80,7 +80,7 @@ object FilterEngine {
             "SEIZURE" -> 50
             "OSCILLATION" -> 25
             "HICCUP" -> 10
-            "UNKNOWN" -> 60 // Blind telemetry = device is struggling silently
+            "UNKNOWN" -> 0 // Baseline during startup/warmup
             else -> 0
         }
         

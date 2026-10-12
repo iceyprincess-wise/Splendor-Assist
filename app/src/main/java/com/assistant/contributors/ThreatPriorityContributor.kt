@@ -73,7 +73,7 @@ object ThreatPriorityContributor : GameplayContributor {
             actionClass = ActionClass.DEFEND,
             targetX = frame.ballX.coerceAtLeast(0f),
             targetY = frame.ballY.coerceAtLeast(0f),
-            authority = ((decision.priority / 135f) * fluidMultiplier).coerceIn(0f, 1f),
+            authority = ((decision.priority / 150f) * fluidMultiplier).coerceIn(0f, 1f),
             confidence = frame.confidence,
             durationHintMs = 30L
         )

@@ -77,10 +77,28 @@ object ContributionRegistry {
     }
 
     /*
-     * Returns the highest-priority fresh contribution and clears the rest.
-     * Called once per controller cycle by the single normal submitter.
-     * Emergency-lane requests never appear here - they have already been
-     * routed to the bus at offer() time.
+     * Non-destructive peek at the highest-priority fresh contribution.
+     */
+    fun peekBest(): ExecutionRequest? {
+        if (pending.isEmpty()) return null
+
+        val now = System.currentTimeMillis()
+        var best: ExecutionRequest? = null
+        for (entry in pending.values) {
+            if (now - entry.timestamp > MAX_AGE_MS) continue
+            val current = best
+            if (current == null ||
+                HybridExecutionTerminal.priority(entry.source) >
+                HybridExecutionTerminal.priority(current.source)
+            ) {
+                best = entry
+            }
+        }
+        return best
+    }
+
+    /*
+     * Returns the highest-priority fresh contribution and clears pending requests.
      */
     fun drainBest(): ExecutionRequest? {
         if (pending.isEmpty()) return null

@@ -39,8 +39,10 @@ object BoosterIgnition {
             ignited = true
             fleetState = FleetLifecycleState.WARMING
             try {
+                com.assistant.diagnostic.registry.AdapterHealthRegistry.initialize(context.applicationContext)
                 IgnitionEngine.ignite(context.applicationContext)
                 FilterEngine.start()
+                AdapterSignalBus.publishBootState(true)
                 RuntimeLogger.log(
                     "BoosterIgnition: adapter services ignited from runtime start path",
                     "RUNTIME"
@@ -58,7 +60,7 @@ object BoosterIgnition {
 
     /**
      * P0-A FIX: Async quorum check based on AdapterSignalBus.fleetDegraded.
-     * Since AdapterHealthRegistry was deleted, we rely on the signal bus.
+     * Reads AdapterSignalBus, backed by cross-process AdapterHealthRegistry persistence.
      * If >2 adapters are offline, fleetDegraded is true.
      */
     fun verifyFleetHealth() {
