@@ -1,0 +1,18 @@
+2026-10-12 23:00:26.165 [NativeBridge] splendor_native loaded; explicit JNI registration available.
+2026-10-12 23:00:31.147 [NATIVE_TRUTH] NATIVE_TRUTH nativeLoaded=true preprocessAvailable=true authorityAvailable=true lastError=none camera=profile=DYNAMIC_WIDE capture=288x640 source=720x1600
+2026-10-12 23:01:22.874 [AGENT] [CRITICAL] LOOP_FROZEN: RuntimeDecisionLoop counter frozen at 360. onFrame() not being called â ImageReader has stopped. This is almost always c
+2026-10-12 23:01:22.913 [AGENT] AGENT CRITICAL LOOP_FROZEN at 360 â triggering capture check
+2026-10-12 23:01:23.020 [AGENT] [CRITICAL] COLLECT_STALL: GameplayEngineRegistry.collect() stalled â 0 new collect cycles in last 5s (total cycles so far: 360). 39 contributors r
+2026-10-12 23:01:23.053 [AGENT] AGENT CRITICAL COLLECT_STALL at cycles=360 â triggering capture check
+2026-10-12 23:01:25.133 [AGENT] [CRITICAL] CAPTURE_REVOKED: MediaProjection revoked; auto-heal triggered (token reuse or system consent).
+2026-10-12 23:06:23.881 [AGENT] [CRITICAL] LOOP_FROZEN: RuntimeDecisionLoop counter frozen at 360. onFrame() not being called â ImageReader has stopped. This is almost always c
+2026-10-12 23:06:23.890 [AGENT] AGENT CRITICAL LOOP_FROZEN at 360 â triggering capture check
+2026-10-12 23:06:23.905 [AGENT] [CRITICAL] COLLECT_STALL: GameplayEngineRegistry.collect() stalled â 0 new collect cycles in last 5s (total cycles so far: 360). 39 contributors r
+2026-10-12 23:06:23.929 [AGENT] AGENT CRITICAL COLLECT_STALL at cycles=360 â triggering capture check
+2026-10-12 23:06:29.117 [AGENT] [CRITICAL] CAPTURE_REVOKED: MediaProjection revoked; auto-heal triggered (token reuse or system consent).
+2026-10-12 23:11:25.221 [AGENT] [CRITICAL] LOOP_FROZEN: RuntimeDecisionLoop counter frozen at 360. onFrame() not being called â ImageReader has stopped. This is almost always c
+2026-10-12 23:11:25.236 [AGENT] AGENT CRITICAL LOOP_FROZEN at 360 â triggering capture check
+2026-10-12 23:11:25.265 [AGENT] [CRITICAL] COLLECT_STALL: GameplayEngineRegistry.collect() stalled â 0 new collect cycles in last 5s (total cycles so far: 360). 39 contributors r
+2026-10-12 23:11:25.285 [AGENT] AGENT CRITICAL COLLECT_STALL at cycles=360 â triggering capture check
+2026-10-12 23:11:31.176 [AGENT] [CRITICAL] CAPTURE_REVOKED: MediaProjection revoked; auto-heal triggered (token reuse or system consent).
+2026-10-12 23:16:08.794 [AGENT] [CRITICAL] CAPTURE_STALE: Capture stale 888s. Restart attempts: 0/3.
