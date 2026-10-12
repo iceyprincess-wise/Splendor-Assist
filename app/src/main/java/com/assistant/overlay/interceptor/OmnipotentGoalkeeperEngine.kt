@@ -236,7 +236,7 @@ object OmnipotentGoalkeeperEngine {
                 pressureButtonY = height * 0.7f,
                 screenWidth = width.toFloat(),
                 screenHeight = height.toFloat(),
-                isAttackerDetected = false, // Telemetry does not track attacker, prevent fabricated rush
+                isAttackerDetected = (t.ballY > height * 0.7f), // Active defensive evaluation when ball enters dangerous zone
                 isGkDetected = (t.goalkeeperX != 0f && t.goalkeeperY != 0f)
             )
         }
