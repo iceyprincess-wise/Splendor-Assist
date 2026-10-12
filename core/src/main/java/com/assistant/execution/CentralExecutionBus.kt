@@ -23,7 +23,7 @@ data class ExecutionRequest(
     val endX: Float,
     val endY: Float,
     val duration: Long,
-    val timestamp: Long = System.currentTimeMillis(),
+    var timestamp: Long = System.currentTimeMillis(),
     val actionId: String = "ACT-${System.currentTimeMillis()}-${java.util.concurrent.ThreadLocalRandom.current().nextInt(1000, 9999)}",
     var busAccepted: Boolean = false,
     var busConsumed: Boolean = false
@@ -61,6 +61,9 @@ object CentralExecutionBus {
     private val capacityDrops = AtomicLong(0L)
     private val running = AtomicBoolean(true)
 
+    private const val STATS_UPDATE_INTERVAL_MS = 100L
+    private val lastStatsUpdate = AtomicLong(0L)
+
     private val _statistics = MutableStateFlow(BusStatistics())
     val statistics: StateFlow<BusStatistics> = _statistics.asStateFlow()
 
@@ -80,20 +83,24 @@ object CentralExecutionBus {
             ExecutionSource.STUTTER -> lowRing
         }
 
-        val writePos = ring.writeCursor.getAndIncrement()
-        val readPos = ring.readCursor.get()
+        while (true) {
+            val writePos = ring.writeCursor.get()
+            val readPos = ring.readCursor.get()
 
-        if (writePos - readPos >= RING_CAPACITY) {
-            ring.writeCursor.decrementAndGet() // Rollback
-            capacityDrops.incrementAndGet()
-            return false
+            if (writePos - readPos >= RING_CAPACITY) {
+                capacityDrops.incrementAndGet()
+                return false
+            }
+
+            if (ring.writeCursor.compareAndSet(writePos, writePos + 1)) {
+                request.timestamp = System.currentTimeMillis()
+                request.busAccepted = true
+                ring.buffer.set((writePos and MASK).toInt(), request)
+                accepted.incrementAndGet()
+                updateStatistics()
+                return true
+            }
         }
-
-        request.busAccepted = true
-        ring.buffer.set((writePos and MASK).toInt(), request)
-        accepted.incrementAndGet()
-        updateStatistics()
-        return true
     }
 
     fun consume(): ExecutionRequest? {
@@ -109,9 +116,12 @@ object CentralExecutionBus {
             val writePos = ring.writeCursor.get()
             if (readPos >= writePos) return null // Empty
 
-            val request = ring.buffer.get((readPos and MASK).toInt())
+            val index = (readPos and MASK).toInt()
+            val request = ring.buffer.get(index)
+            if (request == null) return null // In-flight write, do not skip slot
+
             if (ring.readCursor.compareAndSet(readPos, readPos + 1)) {
-                if (request == null) continue // Race condition, slot empty
+                ring.buffer.set(index, null)
                 if (requestIsStale(request, System.currentTimeMillis())) {
                     staleDrops.incrementAndGet()
                     continue // Drop stale and try next
@@ -145,8 +155,8 @@ object CentralExecutionBus {
         return null
     }
 
-    fun start() { running.set(true); updateStatistics() }
-    fun stop() { running.set(false); updateStatistics() }
+    fun start() { running.set(true); updateStatistics(force = true) }
+    fun stop() { running.set(false); updateStatistics(force = true) }
     fun acceptedCount(): Long = accepted.get()
     fun consumedCount(): Long = consumed.get()
     
@@ -163,11 +173,17 @@ object CentralExecutionBus {
         "stale" to staleDrops.get(), "capacity" to capacityDrops.get()
     )
 
-    private fun updateStatistics() {
-        _statistics.value = BusStatistics(
-            acceptedCount = accepted.get(), consumedCount = consumed.get(),
-            pendingCount = pendingCount(), isRunning = running.get()
-        )
+    private fun updateStatistics(force: Boolean = false) {
+        val now = System.currentTimeMillis()
+        val last = lastStatsUpdate.get()
+        if (force || now - last >= STATS_UPDATE_INTERVAL_MS) {
+            if (force || lastStatsUpdate.compareAndSet(last, now)) {
+                _statistics.value = BusStatistics(
+                    acceptedCount = accepted.get(), consumedCount = consumed.get(),
+                    pendingCount = pendingCount(), isRunning = running.get()
+                )
+            }
+        }
     }
 
     private fun requestIsValid(req: ExecutionRequest): Boolean =
