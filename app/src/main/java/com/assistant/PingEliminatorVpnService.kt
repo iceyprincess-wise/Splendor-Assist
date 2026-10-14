@@ -160,7 +160,6 @@ class PingEliminatorVpnService : VpnService() {
         val outChannel = fos.channel
 
         val readBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE)
-        val random = ThreadLocalRandom.current()
 
         while (isRunning.get()) {
             try {
