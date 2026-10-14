@@ -17,7 +17,6 @@ import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.atomic.AtomicBoolean
 
 class PingEliminatorVpnService : VpnService() {
@@ -160,7 +159,6 @@ class PingEliminatorVpnService : VpnService() {
         val outChannel = fos.channel
 
         val readBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE)
-        val random = ThreadLocalRandom.current()
 
         while (isRunning.get()) {
             try {
