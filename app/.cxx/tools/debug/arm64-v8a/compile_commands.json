@@ -1,0 +1,172 @@
+[
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_quantum_core.c.o -c /app/app/src/main/cpp/native_quantum_core.c",
+  "file": "/app/app/src/main/cpp/native_quantum_core.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++17 -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_input.cpp.o -c /app/app/src/main/cpp/native_input.cpp",
+  "file": "/app/app/src/main/cpp/native_input.cpp"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_kicking_posture.c.o -c /app/app/src/main/cpp/native_kicking_posture.c",
+  "file": "/app/app/src/main/cpp/native_kicking_posture.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_agility_physics.c.o -c /app/app/src/main/cpp/native_agility_physics.c",
+  "file": "/app/app/src/main/cpp/native_agility_physics.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_registration.c.o -c /app/app/src/main/cpp/native_registration.c",
+  "file": "/app/app/src/main/cpp/native_registration.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_arbitration.c.o -c /app/app/src/main/cpp/native_arbitration.c",
+  "file": "/app/app/src/main/cpp/native_arbitration.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_gameplay_compute.c.o -c /app/app/src/main/cpp/native_gameplay_compute.c",
+  "file": "/app/app/src/main/cpp/native_gameplay_compute.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_vision_blob.c.o -c /app/app/src/main/cpp/native_vision_blob.c",
+  "file": "/app/app/src/main/cpp/native_vision_blob.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_vision_preprocessor.c.o -c /app/app/src/main/cpp/native_vision_preprocessor.c",
+  "file": "/app/app/src/main/cpp/native_vision_preprocessor.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_frame_analyzer.c.o -c /app/app/src/main/cpp/native_frame_analyzer.c",
+  "file": "/app/app/src/main/cpp/native_frame_analyzer.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_vector_smoother.c.o -c /app/app/src/main/cpp/native_vector_smoother.c",
+  "file": "/app/app/src/main/cpp/native_vector_smoother.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_state_gater.c.o -c /app/app/src/main/cpp/native_state_gater.c",
+  "file": "/app/app/src/main/cpp/native_state_gater.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_direct_input_hook.c.o -c /app/app/src/main/cpp/native_direct_input_hook.c",
+  "file": "/app/app/src/main/cpp/native_direct_input_hook.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_thermal_throttling_spoofer.c.o -c /app/app/src/main/cpp/native_thermal_throttling_spoofer.c",
+  "file": "/app/app/src/main/cpp/native_thermal_throttling_spoofer.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_predictive_frame_interp.c.o -c /app/app/src/main/cpp/native_predictive_frame_interp.c",
+  "file": "/app/app/src/main/cpp/native_predictive_frame_interp.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_system_core.c.o -c /app/app/src/main/cpp/native_system_core.c",
+  "file": "/app/app/src/main/cpp/native_system_core.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_dominance_matrix.c.o -c /app/app/src/main/cpp/native_dominance_matrix.c",
+  "file": "/app/app/src/main/cpp/native_dominance_matrix.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_stopper_matrix.c.o -c /app/app/src/main/cpp/native_stopper_matrix.c",
+  "file": "/app/app/src/main/cpp/native_stopper_matrix.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_cross_claim.c.o -c /app/app/src/main/cpp/native_cross_claim.c",
+  "file": "/app/app/src/main/cpp/native_cross_claim.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_keeper_bias.c.o -c /app/app/src/main/cpp/native_keeper_bias.c",
+  "file": "/app/app/src/main/cpp/native_keeper_bias.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_panic_save.c.o -c /app/app/src/main/cpp/native_panic_save.c",
+  "file": "/app/app/src/main/cpp/native_panic_save.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_true_shot.c.o -c /app/app/src/main/cpp/native_true_shot.c",
+  "file": "/app/app/src/main/cpp/native_true_shot.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_thread_priority.c.o -c /app/app/src/main/cpp/native_thread_priority.c",
+  "file": "/app/app/src/main/cpp/native_thread_priority.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_optical_variance.c.o -c /app/app/src/main/cpp/native_optical_variance.c",
+  "file": "/app/app/src/main/cpp/native_optical_variance.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_input_strobe.c.o -c /app/app/src/main/cpp/native_input_strobe.c",
+  "file": "/app/app/src/main/cpp/native_input_strobe.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_sa_corrector.c.o -c /app/app/src/main/cpp/native_sa_corrector.c",
+  "file": "/app/app/src/main/cpp/native_sa_corrector.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_critical_vector.c.o -c /app/app/src/main/cpp/native_critical_vector.c",
+  "file": "/app/app/src/main/cpp/native_critical_vector.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_cross_precision.c.o -c /app/app/src/main/cpp/native_cross_precision.c",
+  "file": "/app/app/src/main/cpp/native_cross_precision.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_counterattack.c.o -c /app/app/src/main/cpp/native_counterattack.c",
+  "file": "/app/app/src/main/cpp/native_counterattack.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_speed_compensation.c.o -c /app/app/src/main/cpp/native_speed_compensation.c",
+  "file": "/app/app/src/main/cpp/native_speed_compensation.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_shot_opportunity.c.o -c /app/app/src/main/cpp/native_shot_opportunity.c",
+  "file": "/app/app/src/main/cpp/native_shot_opportunity.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_tactical_engines.c.o -c /app/app/src/main/cpp/native_tactical_engines.c",
+  "file": "/app/app/src/main/cpp/native_tactical_engines.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_recognition_overload.c.o -c /app/app/src/main/cpp/native_recognition_overload.c",
+  "file": "/app/app/src/main/cpp/native_recognition_overload.c"
+},
+{
+  "directory": "/app/app/.cxx/Debug/6i3i5041/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android26 --sysroot=/opt/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dsplendor_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -fPIC -ftls-model=global-dynamic -Wno-unused-command-line-argument -o CMakeFiles/splendor_native.dir/native_threat_priority.c.o -c /app/app/src/main/cpp/native_threat_priority.c",
+  "file": "/app/app/src/main/cpp/native_threat_priority.c"
+}
+]
