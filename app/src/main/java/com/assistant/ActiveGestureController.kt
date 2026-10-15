@@ -768,8 +768,6 @@ class ActiveGestureController(
         val finalX = arbitration.finalX
         val finalY = arbitration.finalY
 
-        SmartAssistMetrics.submitRequest()
-
         val request =
             ExecutionRequest(
                 source = ExecutionSource.SMART_ASSIST,
@@ -795,9 +793,6 @@ class ActiveGestureController(
 
         val accepted =
             HybridExecutionTerminal.route(finalRequest)
-        if (accepted) {
-            SmartAssistMetrics.submitRequest()
-        }
 
         RuntimeLogger.log(
             "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()}",

@@ -26,9 +26,6 @@ class PingEliminatorVpnService : VpnService() {
         private const val DEFAULT_MTU = 1500
         private const val BUFFER_SIZE = 16384
         private const val CHANNEL_ID = "SplendorVpnChannel"
-        
-        private const val MIN_JITTER_MS = 2L
-        private const val MAX_JITTER_MS = 8L
     }
 
     private val isRunning = AtomicBoolean(false)

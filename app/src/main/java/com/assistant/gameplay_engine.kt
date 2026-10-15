@@ -11006,7 +11006,7 @@ object RuntimeSelfHealEngine {
 
     private fun runChecks() {
         val warmed = agentAgeMs() > 5_000L  // only 5s grace for flagging
-        enforceForegroundGate()      // EVERY cycle — not just when false
+        // enforceForegroundGate() removed: foreground override disabled
         checkCaptureThread()         // critical — can restart
         checkBusSignals(warmed)
         checkLoadShed()
