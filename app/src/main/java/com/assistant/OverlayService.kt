@@ -309,10 +309,23 @@ class OverlayService : Service(), ComponentCallbacks2 {
             try {
                 val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride)
                 val prevBuf = previousVisionBuffer
-                if (prevBuf != null && prevBuf !== visionBuffer) {
+                if (prevBuf != null && prevBuf.remaining() == visionBuffer.remaining()) {
                     com.assistant.NativeBridge.nativeComputeOpticalVariance(visionBuffer, prevBuf, width, height, rowStride, 0, 0, width, height)
                 }
-                previousVisionBuffer = visionBuffer
+                val cap = visionBuffer.remaining()
+                val prevStore = previousVisionBuffer
+                val targetBuf = if (prevStore == null || prevStore.capacity() < cap) {
+                    val alloc = java.nio.ByteBuffer.allocateDirect(cap)
+                    previousVisionBuffer = alloc
+                    alloc
+                } else {
+                    prevStore
+                }
+                targetBuf.clear()
+                val pos = visionBuffer.position()
+                targetBuf.put(visionBuffer)
+                visionBuffer.position(pos)
+                targetBuf.flip()
                 val state = com.assistant.VisionCore.process(normalized)
                 com.assistant.BoosterIgnition.ensureIgnited(this@OverlayService)
                 com.assistant.AppContributorRegistration.ensureRegistered()
