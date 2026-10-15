@@ -11,7 +11,7 @@ import com.assistant.diagnostic.RuntimeLogger
  * HybridExecutionTerminal. This forces class loading (<clinit>) for all engines without
  * requiring manual edits to the 16000-line consolidated engine files.
  * 
- * Gameplay engines use ExecutionSource.SMART_ASSIST (priority 90).
+ * Gameplay engines use ExecutionSource.SMART_ASSIST (priority 90) or ExecutionSource.INTERCEPTION (priority 100).
  * Performance engines use ExecutionSource.STUTTER (priority 80).
  */
 object DomainBackupGenerator {
