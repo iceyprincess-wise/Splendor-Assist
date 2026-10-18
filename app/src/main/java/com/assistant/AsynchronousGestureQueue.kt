@@ -5,6 +5,7 @@ import android.accessibilityservice.GestureDescription
 import android.graphics.Path
 import android.os.Build
 import android.util.Log
+import com.assistant.vision.ForegroundGate
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -29,13 +30,17 @@ object AsynchronousGestureQueue {
     }
 
     fun enqueue(request: GestureRequest) {
+        // Task 8 Safety Gate: Validate coordinates and game foreground before enqueuing
+        if (request.startX <= 0f && request.startY <= 0f && request.endX <= 0f && request.endY <= 0f) return
+        if (!ForegroundGate.isGameForeground()) return
+
         queue.offer(request)
         processNext()
     }
 
     private fun processNext() {
         if (!isProcessing.compareAndSet(false, true)) return
-        if (accessibilityService == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+        if (accessibilityService == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !ForegroundGate.isGameForeground()) {
             isProcessing.set(false)
             return
         }
@@ -54,11 +59,11 @@ object AsynchronousGestureQueue {
             )
 
             val path = Path()
-            path.moveTo(smoothedPoints[0], smoothedPoints[1])
+            path.moveTo(smoothedPoints[0].coerceAtLeast(0f), smoothedPoints[1].coerceAtLeast(0f))
             for (i in 1 until 11) {
                 val idx = i * 3
                 if (idx + 1 < smoothedPoints.size) {
-                    path.lineTo(smoothedPoints[idx], smoothedPoints[idx + 1])
+                    path.lineTo(smoothedPoints[idx].coerceAtLeast(0f), smoothedPoints[idx + 1].coerceAtLeast(0f))
                 }
             }
 
@@ -81,7 +86,6 @@ object AsynchronousGestureQueue {
                 accessibilityService!!, gesture, callback, null, origin = "AsynchronousGestureQueue"
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Gesture dispatch failed", e)
             isProcessing.set(false)
             processNext()
         }

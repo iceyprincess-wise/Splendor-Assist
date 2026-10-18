@@ -12,6 +12,7 @@ import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionSource
 import com.assistant.execution.HybridExecutionTerminal
 import com.assistant.AccessibilitySurvivalEngine
+import com.assistant.vision.ForegroundGate
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.max
@@ -42,11 +43,16 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         @Volatile
         private var serverTickRateMs = 16.6667f 
         
-        // UNRESTRICTED LETHAL CAP: Raised to 250ms to allow long, authoritative control holds.
         private const val MAX_SAFE_DURATION_MS = 250L     
-        private const val NOISE_AMPLITUDE_PX = 1.0f     // Dropped from 3.85f to prevent trajectory deviations
-        private const val BUS_POLL_RATE_MS = 2L  // Accelerated polling down to 2ms for tighter sub-frame synchronization
+        private const val NOISE_AMPLITUDE_PX = 1.0f
+        private const val BUS_POLL_RATE_MS = 2L
         private const val DISPATCH_RATE_WINDOW_MS = 10_000L
+
+        // Screen dimensions for bounds safety validation
+        @Volatile
+        var displayWidth: Float = 2400f
+        @Volatile
+        var displayHeight: Float = 1080f
     }
 
     private lateinit var dispatcher: ActiveGestureController
@@ -56,33 +62,22 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     private val windowDispatches = AtomicLong(0L)
     @Volatile private var windowStartMs = 0L
 
-    private fun applyHumanizedNoise(value: Float): Float {
-        val noise = (ThreadLocalRandom.current().nextFloat() * 2 - 1) * NOISE_AMPLITUDE_PX
-        return value + noise
-    }
-
-    /**
-     * UNCOMPRESSED TICK SYNC: Ensures synchronization never reduces the necessary execution time
-     * requested by our lethal engines.
-     */
     private fun synchronizeToTickRate(targetDuration: Long): Long {
         if (targetDuration <= 0L) return serverTickRateMs.roundToLong()
-        // Do not force rigid division downscales if target duration is intentionally elongated.
         return max(8L, min(targetDuration, MAX_SAFE_DURATION_MS))
     }
 
     private fun generatePrecisionPath(startX: Float, startY: Float, endX: Float, endY: Float): Path {
         val path = Path()
-        // Direct assignment without compounding noise variations twice.
-        val safeStartX = startX.coerceAtLeast(0f)
-        val safeStartY = startY.coerceAtLeast(0f)
+        val safeStartX = startX.coerceIn(0f, displayWidth)
+        val safeStartY = startY.coerceIn(0f, displayHeight)
         path.moveTo(safeStartX, safeStartY)
 
         if (startX == endX && startY == endY) {
             path.lineTo(safeStartX, safeStartY)
         } else {
-            val safeEndX = endX.coerceAtLeast(0f)
-            val safeEndY = endY.coerceAtLeast(0f)
+            val safeEndX = endX.coerceIn(0f, displayWidth)
+            val safeEndY = endY.coerceIn(0f, displayHeight)
             path.lineTo(safeEndX, safeEndY)
         }
         return path
@@ -104,24 +99,27 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         windowDispatches.incrementAndGet()
         val elapsed = now - windowStartMs
         if (elapsed >= DISPATCH_RATE_WINDOW_MS) {
-            val count = windowDispatches.getAndSet(0L)
+            windowDispatches.set(0L)
             windowStartMs = now
-            val perSecond = count * 1000f / elapsed.coerceAtLeast(1L)
-            RuntimeLogger.execution(
-                "DISPATCH_RATE",
-                "actions=$count window=${elapsed}ms rate=${"%.1f".format(perSecond)}/s"
-            )
         }
     }
 
     fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
+        // Task 8 Safety Gate: Prevent ghost-touches if screen bounds are invalid or coordinates are non-positive
+        if (request.startX <= 0f && request.startY <= 0f && request.endX <= 0f && request.endY <= 0f) {
+            return false
+        }
+        if (!ForegroundGate.isGameForeground()) {
+            return false
+        }
+
         val isMove = request.phase == com.assistant.runtime.ActionClass.MOVE.ordinal
         
         if (isDispatching) {
             if (!isMove && !latchStuck()) {
                 return false
             }
-            isDispatching = false // Allow MOVE requests to preempt and continuously update joystick vector
+            isDispatching = false
         }
 
         isDispatching = true
@@ -147,11 +145,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             val gesture = GestureDescription.Builder()
                 .addStroke(stroke)
                 .build()
-
-            RuntimeLogger.execution(
-                "DIRECT_DISPATCH",
-                "source=${request.source} phase=${request.phase} duration=$syncedDuration"
-            )
 
             val accepted = GestureExecutionAuthority.execute(
                 this,
@@ -190,10 +183,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         } catch (e: Exception) {
             isDispatching = false
             dispatchingSource = null
-            RuntimeLogger.log(
-                "Direct dispatch vector crash: ${e.message}",
-                "SMART_ASSIST"
-            )
             false
         }
     }
@@ -204,13 +193,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 if (latchStuck()) {
                     isDispatching = false
                     dispatchingSource = null
-                    RuntimeLogger.log(
-                        "dispatch latch watchdog: backstop fired (anomaly)",
-                        "SMART_ASSIST"
-                    )
                 }
 
-                if (!SmartAssistRepository.enabled()) {
+                if (!SmartAssistRepository.enabled() || !ForegroundGate.isGameForeground()) {
                     busHandler.postDelayed(this, BUS_POLL_RATE_MS)
                     return
                 }
@@ -228,10 +213,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     }
                     isDispatching = false
                     dispatchingSource = null
-                    RuntimeLogger.execution(
-                        "BUS_PREEMPT",
-                        "head=$headSource overIntPriority=$dispatchingPriority"
-                    )
                 }
 
                 val request = CentralExecutionBus.consume()
@@ -244,14 +225,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     if (accepted) {
                         SmartAssistMetrics.executeRequest()
                     }
-
-                    RuntimeLogger.execution(
-                        "BUS_DISPATCH",
-                        "source=${request.source} phase=${request.phase} accepted=$accepted"
-                    )
                 }
-            } catch (e: Exception) {
-                RuntimeLogger.log("Bus execution constraint violation: ${e.message}", "SMART_ASSIST")
+            } catch (_: Exception) {
             }
 
             busHandler.postDelayed(this, BUS_POLL_RATE_MS)
@@ -265,6 +240,13 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             val display: android.view.Display? = windowManager.defaultDisplay
             val refreshRate = display?.refreshRate ?: 60.0f
             serverTickRateMs = if (refreshRate > 0f) 1000.0f / refreshRate else 16.6667f
+            val metrics = android.util.DisplayMetrics()
+            @Suppress("DEPRECATION")
+            display?.getRealMetrics(metrics)
+            if (metrics.widthPixels > 0 && metrics.heightPixels > 0) {
+                displayWidth = metrics.widthPixels.toFloat()
+                displayHeight = metrics.heightPixels.toFloat()
+            }
         } catch (_: Throwable) {
             serverTickRateMs = 16.6667f
         }
@@ -278,7 +260,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
         dispatcher = ActiveGestureController(this)
         globalInstance = this
-        // Wire AsynchronousGestureQueue so its fallback dispatch path is live.
         AsynchronousGestureQueue.bindService(this)
         AccessibilitySurvivalEngine.connected()
 
@@ -289,12 +270,10 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         RuntimeCoordinator.reportPermissionsVerified()
         RuntimeCoordinator.reportAccessibilityReady()
         try { com.assistant.events.SystemEventHub.emit("accessibility-connected") } catch (_: Throwable) {}
-        RuntimeLogger.log("SmartAssistAccessibilityEngine [OMEGA BUILD] connected BUILD_MARKER=TASKC-PREEMPTIVE-DISPATCH", "SMART_ASSIST")
     }
 
     fun triggerInstantExecution(x1: Float, y1: Float, x2: Float, y2: Float) {
-        if (!SmartAssistRepository.enabled()) {
-            RuntimeLogger.log("SmartAssist disabled, trigger dropped", "SMART_ASSIST")
+        if (!SmartAssistRepository.enabled() || !ForegroundGate.isGameForeground()) {
             return
         }
 
@@ -334,10 +313,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         stopExecutionLoop()
         AccessibilitySurvivalEngine.interrupted()
         AccessibilitySurvivalEngine.getInstance(this).release()
-        RuntimeLogger.log(
-            "SmartAssistAccessibilityEngine interrupted",
-            "SMART_ASSIST"
-        )
     }
 
     override fun onUnbind(intent: android.content.Intent?): Boolean {

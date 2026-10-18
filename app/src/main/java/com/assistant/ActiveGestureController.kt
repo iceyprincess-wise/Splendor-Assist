@@ -94,11 +94,13 @@ class ActiveGestureController(
 
     private val memoryOptimizer = MemoryStabilityOptimizer(service)
 
-    private val vsyncAnchor = VsyncInputAnchor { _ -> RuntimeLogger.log("VSync dispatch synchronized","SMART_ASSIST") }
+    private val vsyncAnchor = VsyncInputAnchor { _ -> }
 
     private val latencyInputEngine = LatencyDefeatingInputEngine(service)
     private val antiCutbackEngine = AntiCutbackSubEngine(latencyInputEngine)
     private val autoEvadeEngine = AutoEvadeEngine(latencyInputEngine)
+    private val throughPassSanitizer = ThroughPassSanitizer(latencyInputEngine)
+    private val adaptiveLoftedThroughEngine = AdaptiveLoftedThroughEngine(latencyInputEngine)
 
 
     fun injectWinningVector(
@@ -112,7 +114,6 @@ class ActiveGestureController(
 
         if (!SmartAssistRepository.enabled()) {
             ActiveGestureControllerDiagnostics.blocked("SmartAssist disabled before controller execution")
-            RuntimeLogger.log("SmartAssist disabled, ignoring vector", "SMART_ASSIST")
             return
         }
 
@@ -435,10 +436,6 @@ class ActiveGestureController(
                 strength
             )
 
-        /*
-         * Magnetic Feet contributes bounded specialist signals. Normalizing
-         * here prevents it from overpowering the other arbitration engines.
-         */
         val magneticTouchAuthority =
             (magneticFeet.touchRetention / 10.0f)
                 .coerceIn(0.0f, 1.0f)
@@ -586,7 +583,7 @@ class ActiveGestureController(
                 magneticFeet.touchRetention
             )
 
-        ThroughPassSanitizer(latencyInputEngine).sanitizeAndInjectThroughPass(
+        throughPassSanitizer.sanitizeAndInjectThroughPass(
             startX,
             startY,
             startX,
@@ -597,7 +594,7 @@ class ActiveGestureController(
             predictiveY + 50f
         )
 
-        AdaptiveLoftedThroughEngine(latencyInputEngine).executeOptimalLoftedThrough(
+        adaptiveLoftedThroughEngine.executeOptimalLoftedThrough(
             startX,
             startY,
             throughReceiverX,
@@ -784,11 +781,6 @@ class ActiveGestureController(
 
         val accepted =
             HybridExecutionTerminal.route(request)
-
-        RuntimeLogger.log(
-            "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()}",
-            "SMART_ASSIST"
-        )
     }
 
     fun emergencyClearanceVector(
@@ -807,7 +799,3 @@ class ActiveGestureController(
     }
 
 }
-
-
-
-
