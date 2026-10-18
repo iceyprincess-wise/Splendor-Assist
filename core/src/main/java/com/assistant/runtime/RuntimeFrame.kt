@@ -75,6 +75,8 @@ data class EngineContribution(
 
 /* Uniform contract. Upgrade an engine's internals freely; this never changes. */
 interface GameplayContributor {
+    // SPLENDOR_V43_FAST_GATE: O(1) early culling to prevent heavy math on discarded frames
+    fun fastGate(frame: RuntimeFrame): Boolean = true
     val engineName: String
     val capabilities: Set<EngineCapability>
     fun initialize() {}

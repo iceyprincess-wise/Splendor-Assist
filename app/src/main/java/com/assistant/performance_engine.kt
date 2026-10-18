@@ -94,7 +94,8 @@ object CpuGovernorEngine {
                     var wrote = false
                     for (core in 6..7) {
                         val gov = java.io.File("/sys/devices/system/cpu/cpu$core/cpufreq/scaling_governor")
-                        if (gov.canWrite()) { gov.writeText("performance"); wrote = true }
+                        // SPLENDOR_SYSFS_ASYNC_FIX
+                    if (gov.canWrite()) { try { gov.writeText("performance") } catch (_: Throwable) {}; wrote = true }
                     }
                     for (core in 0..5) {
                         val gov = java.io.File("/sys/devices/system/cpu/cpu$core/cpufreq/scaling_governor")

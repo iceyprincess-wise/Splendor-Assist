@@ -301,17 +301,21 @@ object RuntimeLogger {
     // Replaces buffered FileWriter to guarantee O_APPEND atomicity at the kernel level,
     // completely eliminating byte interleaving and forensic ordering problems
     // without requiring an inter-process lock that would block the gameplay thread.
+    // SPLENDOR_LOG_ASYNC_FIX: Offload disk append to single background thread executor
+    private val logIoExecutor = java.util.concurrent.Executors.newSingleThreadExecutor()
+
     private fun append(
         file:File?,
         text:String
     ){
-        try{
-            file?.let{
-                java.io.FileOutputStream(it, true).use { fos ->
+        if (file == null) return
+        logIoExecutor.execute {
+            try {
+                java.io.FileOutputStream(file, true).use { fos ->
                     fos.write(text.toByteArray(Charsets.UTF_8))
                 }
-            }
-        }catch(_:Exception){}
+            } catch (_: Exception) {}
+        }
     }
 
     private fun writeToAll(

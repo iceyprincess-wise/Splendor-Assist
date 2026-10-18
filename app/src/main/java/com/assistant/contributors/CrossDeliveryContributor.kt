@@ -28,6 +28,9 @@ object CrossDeliveryContributor : GameplayContributor {
     private const val BOX_REACH_GOAL_WIDTHS = 1.5f
     private const val MIN_CROSS_DISTANCE_PX = 180f
 
+        // SPLENDOR_V43_FAST_GATE
+    override fun fastGate(frame: RuntimeFrame): Boolean = frame.trusted && frame.hasBall && frame.goalDetected && frame.viableLaneCount > 0
+
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
         if (frame.viableLaneCount <= 0) return null

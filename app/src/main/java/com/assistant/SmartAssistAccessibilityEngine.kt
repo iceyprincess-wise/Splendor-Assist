@@ -45,7 +45,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // UNRESTRICTED LETHAL CAP: Raised to 250ms to allow long, authoritative control holds.
         private const val MAX_SAFE_DURATION_MS = 250L     
         private const val NOISE_AMPLITUDE_PX = 1.0f     // Dropped from 3.85f to prevent trajectory deviations
-        private const val BUS_POLL_RATE_MS = 2L  // Accelerated polling down to 2ms for tighter sub-frame synchronization
+        // SPLENDOR_POLL_FIX: Aligned poll rate from aggressive 2ms wakeup to 16ms frame boundary
+        private const val BUS_POLL_RATE_MS = 16L  // Accelerated polling down to 2ms for tighter sub-frame synchronization
         private const val DISPATCH_RATE_WINDOW_MS = 10_000L
     }
 

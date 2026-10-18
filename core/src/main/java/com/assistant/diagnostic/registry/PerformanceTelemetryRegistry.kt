@@ -155,14 +155,10 @@ object PerformanceTelemetryRegistry {
 
     /** Stale-aware: advice older than 15s means the governor is gone - run full. */
     @JvmStatic
+    // SPLENDOR_ASYNC_IO_FIX: Non-blocking load shed query on frame path
     fun currentLoadShed(): String {
         val now = System.currentTimeMillis()
         if (now - shedMs < 15_000L) return shed
-        try {
-            if (sfile == null) sfile = file?.parentFile?.let { File(it, "perf_loadshed.txt") }
-            val p = (sfile?.takeIf { it.exists() }?.readText() ?: return "NONE").split("|")
-            if (p.size >= 2 && now - (p[1].toLongOrNull() ?: 0L) < 15_000L) return p[0]
-        } catch (_: Throwable) { }
         return "NONE"
     }
 

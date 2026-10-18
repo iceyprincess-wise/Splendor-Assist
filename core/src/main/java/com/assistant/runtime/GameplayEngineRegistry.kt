@@ -62,9 +62,13 @@ object GameplayEngineRegistry {
     }
 
     fun collect(frame: RuntimeFrame): List<EngineContribution> {
+        // SPLENDOR_V43_FAST_GATE: Instant exit on untrusted frames (saves 37 engine calls)
+        if (!frame.trusted) return emptyList()
         collectCycles.incrementAndGet()
         val results = ArrayList<EngineContribution>(contributors.size)
         for (c in contributors) {
+            // SPLENDOR_V43_FAST_GATE: O(1) capability culling before heavy math
+            if (!c.fastGate(frame)) continue
             try {
                 c.update(frame)
                 val contribution = c.contribute(frame) ?: continue

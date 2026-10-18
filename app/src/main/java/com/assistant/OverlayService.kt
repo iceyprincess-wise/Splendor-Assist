@@ -820,7 +820,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         if (isInitial) {
             val reader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
-            reader.setOnImageAvailableListener(imageAvailableListener, ocrIoHandler ?: Handler(Looper.getMainLooper()))
+            reader.setOnImageAvailableListener(imageAvailableListener, ocrIoHandler ?: ocrIoThread?.looper?.let { Handler(it) } ?: Handler(Looper.getMainLooper()))
             imageReader = reader
             virtualDisplay = mediaProjection?.createVirtualDisplay("HybridCoachScreen", finalWidth, finalHeight, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY, reader.surface, null, null)
         } else {

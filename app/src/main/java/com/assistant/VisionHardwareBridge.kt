@@ -19,7 +19,8 @@ object VisionHardwareBridge {
         private set
 
     fun startCapture(width: Int, height: Int, @Suppress("UNUSED_PARAMETER") density: Int) {
-        if (isRunning) return
+        // SPLENDOR_DUPLICATE_FRAME_FIX: Gate capture to prevent double ImageReader hardware contention
+        if (isRunning || com.assistant.vision.ForegroundGate.shouldSkipCapture()) return
         
         processingThread = HandlerThread("VisionHardwareThread").apply { start() }
         processingHandler = Handler(processingThread!!.looper)
