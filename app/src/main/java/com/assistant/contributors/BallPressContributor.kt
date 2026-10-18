@@ -14,6 +14,9 @@ object BallPressContributor : GameplayContributor {
     override val engineName = "BallPress"
     override val capabilities = setOf(EngineCapability.DEFENSE)
 
+        // SPLENDOR_V43_FAST_GATE
+    override fun fastGate(frame: RuntimeFrame): Boolean = frame.trusted && !frame.hasBall && !frame.panic
+
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || frame.hasBall) return null
         if (frame.panic) return null // panic family owns this frame

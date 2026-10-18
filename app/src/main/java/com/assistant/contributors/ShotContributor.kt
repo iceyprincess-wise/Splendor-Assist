@@ -26,6 +26,9 @@ object ShotContributor : GameplayContributor {
     private const val MAX_SHOT_RANGE_PX = 620f
     private const val MOUTH_INSET = 0.18f // keep the aim inside the posts
 
+        // SPLENDOR_V43_FAST_GATE
+    override fun fastGate(frame: RuntimeFrame): Boolean = frame.trusted && frame.hasBall && frame.goalDetected
+
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (frame.confidence < 0.05f) return null
         val possessionWeight = if (frame.hasBall) 1.0f else 0.0f // Shots require possession
