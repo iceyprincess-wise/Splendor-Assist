@@ -57,7 +57,7 @@
         <service
             android:name="com.assistant.SmartAssistAccessibilityEngine"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true" tools:ignore="ExportedService">
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
@@ -88,7 +88,7 @@
             android:name="com.assistant.adapter.watchdog.WatchdogAdapterService"
             android:exported="false"
             android:process=":survival"
-            android:foregroundServiceType="specialUse" tools:ignore="ExportedService">
+            android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Supervises adapter health, failures and recovery telemetry." />
@@ -107,7 +107,7 @@
         <service
             android:name="com.assistant.PingEliminatorVpnService"
             android:exported="true"
-            android:permission="android.permission.BIND_VPN_SERVICE" tools:ignore="ExportedService">
+            android:permission="android.permission.BIND_VPN_SERVICE" >
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
@@ -122,7 +122,7 @@
             android:name="com.assistant.PerformanceEngineService"
             android:exported="false"
             android:process=":survival"
-            android:foregroundServiceType="specialUse" tools:ignore="ExportedService">
+            android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Consolidated performance domain (lag, stutter, net, input, lmk, memory, thermal, battery)." />
@@ -132,7 +132,7 @@
             android:name="com.assistant.GameplayEngineService"
             android:exported="false"
             android:process=":survival"
-            android:foregroundServiceType="specialUse" tools:ignore="ExportedService">
+            android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Consolidated gameplay domain (movement, passing, shooting, defending, keeper, tactical)." />
