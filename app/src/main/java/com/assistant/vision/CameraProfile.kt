@@ -57,11 +57,11 @@ object CameraProfile {
     // SPLENDOR_V23A_CAMERA_HELPERS_BEGIN
     @JvmStatic
     fun captureWidthOrFallback(fallback: Float = 1650f): Float =
-        if (isDynamicWide()) fallback else (if (captureWidth > 0) captureWidth.toFloat() else fallback)
+        if (captureWidth > 0) captureWidth.toFloat() else (if (sourceWidth > 0) sourceWidth.toFloat() else fallback)
 
     @JvmStatic
     fun captureHeightOrFallback(fallback: Float = 720f): Float =
-        if (isDynamicWide()) fallback else (if (captureHeight > 0) captureHeight.toFloat() else fallback)
+        if (captureHeight > 0) captureHeight.toFloat() else (if (sourceHeight > 0) sourceHeight.toFloat() else fallback)
     // SPLENDOR_V23A_CAMERA_HELPERS_END
 
     // SPLENDOR_V25_CAMERA_PROOF_BEGIN

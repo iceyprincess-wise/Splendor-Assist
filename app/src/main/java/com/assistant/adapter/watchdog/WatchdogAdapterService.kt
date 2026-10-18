@@ -57,24 +57,36 @@ class WatchdogAdapterService : Service() {
     private val watchdogRunnable = object : Runnable {
         override fun run() {
             var offline = 0; var degraded = 0; var restarted = 0
+            val liveSnapshots = AdapterHealthRegistry.getAllLive().associateBy { it.adapterName }
+            val checked = mutableSetOf<String>()
 
-            AdapterHealthRegistry.getAllLive().forEach { snapshot ->
-                val status = AdapterHealthRegistry.effectiveStatus(snapshot.adapterName)
-                ProcessSurvivalRegistry.update(snapshot.adapterName, status)
+            adapterMap.keys.forEach { name ->
+                checked.add(name)
+                val snapshot = liveSnapshots[name]
+                val status = if (snapshot == null) "OFFLINE" else AdapterHealthRegistry.effectiveStatus(name)
+                ProcessSurvivalRegistry.update(name, status)
 
                 when (status) {
                     "OFFLINE" -> {
                         offline++
-                        RuntimeLogger.log("WATCHDOG OFFLINE: ${snapshot.adapterName}", "WATCHDOG")
-                        // PHASE3: attempt restart — this is the actual guardian action
-                        restartOffline(snapshot.adapterName)
+                        RuntimeLogger.log("WATCHDOG OFFLINE: $name", "WATCHDOG")
+                        restartOffline(name)
                         restarted++
                         totalRestarts++
                     }
                     "DEGRADED" -> {
                         degraded++
-                        RuntimeLogger.log("WATCHDOG DEGRADED: ${snapshot.adapterName}", "WATCHDOG")
+                        RuntimeLogger.log("WATCHDOG DEGRADED: $name", "WATCHDOG")
                     }
+                }
+            }
+
+            liveSnapshots.values.forEach { snapshot ->
+                if (!checked.contains(snapshot.adapterName)) {
+                    val status = AdapterHealthRegistry.effectiveStatus(snapshot.adapterName)
+                    ProcessSurvivalRegistry.update(snapshot.adapterName, status)
+                    if (status == "OFFLINE") offline++
+                    else if (status == "DEGRADED") degraded++
                 }
             }
             AdapterSignalBus.publishFleet(offline)
@@ -102,6 +114,7 @@ class WatchdogAdapterService : Service() {
     override fun onCreate() {
         super.onCreate()
         RuntimeLogger.log("WatchdogAdapterService started - ACTIVE GUARDIAN", "ADAPTER")
+        AdapterHealthRegistry.initialize(this)
         NodeNotificationHub.attach(this, "adapter_watchdog")
         // HYPEROS LMK SURVIVAL: Acquire PARTIAL_WAKE_LOCK to prevent CPU dozing during 15s watchdog scans
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager

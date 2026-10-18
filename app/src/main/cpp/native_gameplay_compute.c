@@ -125,8 +125,10 @@ Java_com_assistant_NativeBridge_nativeInstantInterceptCompute(
     }
 
     const float LOOK_AHEAD_FRAMES = 2.0f;
-    const float SCREEN_W = 1650.0f;
-    const float SCREEN_H = 720.0f;
+    float max_x = ownerX > ballX ? ownerX : ballX;
+    float max_y = ownerY > ballY ? ownerY : ballY;
+    float SCREEN_W = max_x > 320.0f ? 1650.0f : (max_x > 0.0f ? 288.0f : 1650.0f);
+    float SCREEN_H = max_y > 320.0f ? 720.0f : (max_y > 0.0f ? 640.0f : 720.0f);
 
     float px = ownerX + (ownerVx * LOOK_AHEAD_FRAMES);
     if (px < 0.0f) px = 0.0f; else if (px > SCREEN_W) px = SCREEN_W;
