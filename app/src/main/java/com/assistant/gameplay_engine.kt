@@ -3641,7 +3641,7 @@ object FrameAssembler {
         val opponents = theirsCount
 
         // Real per-zone counts from tracked player positions (landscape thirds).
-        val pitchH = 720f
+        val pitchH = com.assistant.vision.CameraProfile.captureHeightOrFallback()
         var lo = 0; var lt = 0; var mo = 0; var mt = 0; var ro = 0; var rt = 0
         for (pl in players) {
             val mine = pl.isUserTeam
@@ -5158,7 +5158,8 @@ object HybridOmnipotentMatrixEngine {
         ballVx:Float, ballVy:Float,
         isOpponentExecutingSkill:Boolean,
         joystickX:Float=250f, joystickY:Float=550f,
-        screenWidth:Float=1650f, screenHeight:Float=720f
+        screenWidth:Float=com.assistant.vision.CameraProfile.captureWidthOrFallback(),
+        screenHeight:Float=com.assistant.vision.CameraProfile.captureHeightOrFallback()
     ): Long {
         physicsMatrix[ATTACKER_X]=oppPlayerX; physicsMatrix[ATTACKER_Y]=oppPlayerY
         physicsMatrix[ATTACKER_VX]=oppVx;     physicsMatrix[ATTACKER_VY]=oppVy
@@ -7254,8 +7255,8 @@ data class OverloadPlaystyleResult(
 
 object OverloadPlaystyleEngine {
 
-    private const val DEFAULT_PITCH_W = 1650f
-    private const val DEFAULT_PITCH_H = 720f
+    private val DEFAULT_PITCH_W get() = com.assistant.vision.CameraProfile.captureWidthOrFallback()
+    private val DEFAULT_PITCH_H get() = com.assistant.vision.CameraProfile.captureHeightOrFallback()
     private const val ADVANCE_RATIO = 0.18f
     private const val OPPONENT_PRESSURE_THRESHOLD = 0.60f
 
@@ -15122,7 +15123,7 @@ object KickingPostureContributor : GameplayContributor {
         val targetY = if (frame.passTargetY > 0f) frame.passTargetY else frame.ballY
 
         val kickingBuffer = FloatArray(4)
-        NativeBridge.nativeKickingPosture(userX, userY, userVx, userVy, targetX, targetY, 1650f, 1080f, kickingBuffer)
+        NativeBridge.nativeKickingPosture(userX, userY, userVx, userVy, targetX, targetY, com.assistant.vision.CameraProfile.captureWidthOrFallback(), com.assistant.vision.CameraProfile.captureHeightOrFallback(), kickingBuffer)
         val result = PostureCorrectionResult(
             correctedX = kickingBuffer[0],
             correctedY = kickingBuffer[1],
@@ -15677,7 +15678,7 @@ object WingBlockContributor : GameplayContributor {
             wingerY = frame.ballY,
             wingerVx = 0f,
             wingerVy = 0f,
-            pitchWidth = 1650f
+            pitchWidth = com.assistant.vision.CameraProfile.captureWidthOrFallback()
         ) ?: return null
 
         return EngineContribution(

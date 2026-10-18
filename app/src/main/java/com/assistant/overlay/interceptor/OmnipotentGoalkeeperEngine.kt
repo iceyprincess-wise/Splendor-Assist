@@ -72,8 +72,8 @@ object OmnipotentGoalkeeperEngine {
         nearestAttackerX: Float, nearestAttackerY: Float,
         pressureButtonX: Float, pressureButtonY: Float,
         joystickX: Float = 250f, joystickY: Float = 550f,
-        screenWidth: Float = 1650f,
-        screenHeight: Float = 720f,
+        screenWidth: Float = com.assistant.vision.CameraProfile.captureWidthOrFallback(),
+        screenHeight: Float = com.assistant.vision.CameraProfile.captureHeightOrFallback(),
         isAttackerDetected: Boolean = true,
         isGkDetected: Boolean = true
     ): Boolean {

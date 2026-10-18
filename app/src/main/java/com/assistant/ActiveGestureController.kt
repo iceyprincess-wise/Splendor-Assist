@@ -779,20 +779,8 @@ class ActiveGestureController(
                 duration = boostedDuration
             )
 
-        // Fold demoted contributors in: highest-priority fresh contribution
-        // outranks this cycle's own request. One submitter, one action.
-        val contribution =
-            com.assistant.execution.ContributionRegistry.drainBest()
-
-        val finalRequest =
-            if (
-                contribution != null &&
-                HybridExecutionTerminal.priority(contribution.source) >
-                HybridExecutionTerminal.priority(request.source)
-            ) contribution else request
-
         val accepted =
-            HybridExecutionTerminal.route(finalRequest)
+            HybridExecutionTerminal.route(request)
 
         RuntimeLogger.log(
             "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()}",
