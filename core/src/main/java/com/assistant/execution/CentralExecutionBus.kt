@@ -162,9 +162,9 @@ object CentralExecutionBus {
     
     fun pendingCount(): Int {
         var count = 0
-        count += (highRing.writeCursor.get() - highRing.readCursor.get()).toInt()
-        count += (medRing.writeCursor.get() - medRing.readCursor.get()).toInt()
-        count += (lowRing.writeCursor.get() - lowRing.readCursor.get()).toInt()
+        count += maxOf(0, (highRing.writeCursor.get() - highRing.readCursor.get()).toInt())
+        count += maxOf(0, (medRing.writeCursor.get() - medRing.readCursor.get()).toInt())
+        count += maxOf(0, (lowRing.writeCursor.get() - lowRing.readCursor.get()).toInt())
         return count
     }
 

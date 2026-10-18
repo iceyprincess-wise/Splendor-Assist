@@ -393,18 +393,21 @@ class ActiveGestureController(
             speedComp.containmentAngle
                 .coerceIn(-15f, 15f)
 
-        val movementAngleDegrees =
-            Math.toDegrees(
-                atan2(
-                     deltaY.toDouble(),
-                     deltaX.toDouble()
-                )
-            ).toFloat()
+        val rawAngleDegrees = Math.toDegrees(
+            atan2(
+                 deltaY.toDouble(),
+                 deltaX.toDouble()
+            )
+        ).toFloat()
+        val movementAngleDegrees = if (rawAngleDegrees.isNaN() || rawAngleDegrees.isInfinite()) 0f else rawAngleDegrees
+        val safeAngleRatio = if (angle.isNaN() || angle.isInfinite()) 0f else (kotlin.math.abs(angle) / 180f).coerceIn(0f, 1f)
+        val safeConfidence = if (telemetry.confidence.isNaN() || telemetry.confidence.isInfinite()) 0.5f else telemetry.confidence.coerceIn(0f, 1f)
+        val safeDistance = if (distance.isNaN() || distance.isInfinite()) 0f else distance.coerceAtLeast(0f)
 
         val agilityBuffer = FloatArray(6)
         NativeBridge.nativeAgilityPhysics(
-            speedComp.executionBoost, distance, movementAngleDegrees,
-            telemetry.confidence, kotlin.math.abs(angle) / 180f,
+            speedComp.executionBoost, safeDistance, movementAngleDegrees,
+            safeConfidence, safeAngleRatio,
             0f, 0f, 0f, 0f,
             NativeBridge.nextThreadSeed(), agilityBuffer
         )
