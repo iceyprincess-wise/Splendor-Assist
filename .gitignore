@@ -16,5 +16,9 @@ jdk17.tar.gz
 # Android build outputs
 build/
 **/build/
+.cxx/
+**/.cxx/
+
+f.py
 
 elf-verify/
