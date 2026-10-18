@@ -222,23 +222,33 @@ object OmnipotentGoalkeeperEngine {
 
         val defensiveActionPerformed = run {
             val t = TelemetryRepository.current()
-
-            processGoalkeeperDefensiveLayer(
-                ballX = if (t.ballX != 0f) t.ballX else width / 2f,
-                ballY = if (t.ballY != 0f) t.ballY else height * 0.8f,
-                ballVx = t.ballVelocityX,
-                ballVy = if (t.ballVelocityY != 0f) t.ballVelocityY else 0.0f,
-                gkX = if (t.goalkeeperX != 0f) t.goalkeeperX else width / 2f,
-                gkY = if (t.goalkeeperY != 0f) t.goalkeeperY else height * 0.9f,
-                nearestAttackerX = width / 2f,
-                nearestAttackerY = height * 0.7f,
-                pressureButtonX = width * 0.9f,
-                pressureButtonY = height * 0.7f,
-                screenWidth = width.toFloat(),
-                screenHeight = height.toFloat(),
-                isAttackerDetected = (t.ballY > height * 0.7f), // Active defensive evaluation when ball enters dangerous zone
-                isGkDetected = (t.goalkeeperX != 0f && t.goalkeeperY != 0f)
-            )
+            val hasRealGk = t.goalkeeperX != 0f && t.goalkeeperY != 0f
+            // FABRICATED-THREAT GATE: previously this layer ran on every frame and
+            // invented the attacker (width/2, height*0.7) and the keeper
+            // (width/2, height*0.9) whenever real telemetry was absent, so the
+            // 1v1 rush fired from made-up coordinates and auto-swiped the
+            // pressure button (ghost swipe). Require a real detected opponent
+            // animation AND a real tracked keeper position before acting.
+            if (!anomalyDetected || !hasRealGk) {
+                false
+            } else {
+                processGoalkeeperDefensiveLayer(
+                    ballX = if (t.ballX != 0f) t.ballX else width / 2f,
+                    ballY = if (t.ballY != 0f) t.ballY else height * 0.8f,
+                    ballVx = t.ballVelocityX,
+                    ballVy = if (t.ballVelocityY != 0f) t.ballVelocityY else 0.0f,
+                    gkX = t.goalkeeperX,
+                    gkY = t.goalkeeperY,
+                    nearestAttackerX = width / 2f,
+                    nearestAttackerY = height * 0.7f,
+                    pressureButtonX = width * 0.9f,
+                    pressureButtonY = height * 0.7f,
+                    screenWidth = width.toFloat(),
+                    screenHeight = height.toFloat(),
+                    isAttackerDetected = (t.ballY > height * 0.7f), // Active defensive evaluation when ball enters dangerous zone
+                    isGkDetected = hasRealGk
+                )
+            }
         }
 
         if (anomalyDetected && !defensiveActionPerformed) {
