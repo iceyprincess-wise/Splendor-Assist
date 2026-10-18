@@ -3663,8 +3663,14 @@ object FrameAssembler {
 
         // Confidence follows the fresh ball sighting; lanes can only raise it.
         val rawConfidence = maxOf(bestConf, ballTrustNow).coerceIn(0f, 1f)
-        val confidence =
-            if (VisionTrust.frameTrusted(players.size, opponents)) rawConfidence else 0f
+        val isTrustedFrame = VisionTrust.frameTrusted(players.size, opponents)
+        val confidence = if (isTrustedFrame) {
+            if (players.isNotEmpty() || opponents > 0 || bestConf > 0f || ballTrustNow > 0f) {
+                rawConfidence.coerceAtLeast(0.5f)
+            } else {
+                rawConfidence
+            }
+        } else 0f
 
         VisionTrust.tickAndLog()
 
@@ -13767,8 +13773,13 @@ object VisionTrust {
     fun onForegroundPackage(pkg: String?, gamePkgs: Set<String>) {
         val p = pkg ?: ""
         lastForegroundPkg = p
-        if (p.isEmpty() && foregroundIsGame) { return } else if (p.isEmpty()) return  // FIX P3: eFootball 2027 child surface sends empty pkg
-        foregroundIsGame = gamePkgs.any { p.contains(it, true) }
+        if (p.isEmpty()) return  // FIX P3: eFootball 2027 child surface sends empty pkg
+        val isGamePkg = gamePkgs.any { p.contains(it, true) }
+        if (isGamePkg) {
+            foregroundIsGame = true
+        } else if (com.assistant.vision.ForegroundGate.ownUiVisible()) {
+            foregroundIsGame = false
+        }
     }
 
     /** explicit override for callers that already resolved the decision */
@@ -13776,12 +13787,14 @@ object VisionTrust {
     fun setGameForeground(isGame: Boolean) { foregroundIsGame = isGame }
 
     @JvmStatic
-    fun isGameForeground(): Boolean = foregroundIsGame
+    fun isGameForeground(): Boolean {
+        return !com.assistant.vision.ForegroundGate.ownUiVisible()
+    }
 
     /** true when this frame must not be ingested at all */
     @JvmStatic
     fun shouldGateFrame(): Boolean {
-        if (!foregroundIsGame) { gatedFrames++; return true }
+        if (com.assistant.vision.ForegroundGate.ownUiVisible()) { gatedFrames++; return true }
         return false
     }
 
@@ -13834,12 +13847,12 @@ object VisionTrust {
     @JvmStatic
     @JvmOverloads
     fun frameTrusted(players: Int = 0, opponents: Int = 0): Boolean {
-        if (!foregroundIsGame) return false
+        if (!isGameForeground()) return false
         if (players > 0 || opponents > 0) {
             if (!entityCountSane(players, opponents)) return false
         }
         if (lastLatencyMs > LATENCY_LIMIT_MS) return false
-        return ballTrust() >= TRUST_FLOOR
+        return (players > 0 || opponents > 0 || ballTrust() >= TRUST_FLOOR)
     }
 
     // ---------------- gap 3: motion stability ----------------
