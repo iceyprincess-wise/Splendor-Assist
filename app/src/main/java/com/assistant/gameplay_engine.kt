@@ -7807,8 +7807,14 @@ object RuntimeDecisionLoop {
         return ExecutionRequest(
             source = ExecutionSource.SMART_ASSIST,
             phase = best.actionClass.ordinal,
-            startX = 250f,  // FIX: joystick origin, not ball position
-            startY = 550f,
+            // SPLENDOR_CONTROL_MAP_V1 - derive the joystick origin from the
+            // trainer's live normalised control map instead of a fixed point.
+            // All request coordinates live in the capture frame's space, so the
+            // normalised centre is scaled by the capture dimensions.
+            startX = com.assistant.vision.CameraProfile.captureWidthOrFallback() *
+                ControlMappingTrainer.joystickCenterX(),
+            startY = com.assistant.vision.CameraProfile.captureHeightOrFallback() *
+                ControlMappingTrainer.joystickCenterY(),
             endX = leadX.coerceAtLeast(0f),
             endY = leadY.coerceAtLeast(0f),
             duration = ControlMappingTrainer.personalDuration(best.actionClass, best.durationHintMs).coerceIn(15L, 85L)
@@ -10231,6 +10237,13 @@ object ControlMappingTrainer {
     fun trainedSlots(): Int = SLOTS.count { slotHits[it.id] >= 3 }
 
     fun slotCenter(id: Int): Pair<Float, Float> = Pair(slotX[id], slotY[id])
+
+    // SPLENDOR_CONTROL_MAP_V1 - the joystick origin was hard-coded at
+    // (250,550) in RuntimeDecisionLoop.chooseRequest and as the GK default. The
+    // trainer already probes the real joystick at (JOY_NX,JOY_NY); expose it so
+    // dispatch uses the measured point.
+    fun joystickCenterX(): Float = JOY_NX
+    fun joystickCenterY(): Float = JOY_NY
 
     fun labelFor(id: Int, attacking: Boolean): String =
         SLOTS.firstOrNull { it.id == id }?.let { if (attacking) it.attackLabel else it.defendLabel } ?: "none"
@@ -13770,6 +13783,12 @@ object VisionTrust {
     @Volatile private var lastForegroundPkg = ""
     @Volatile private var gatedFrames = 0L
 
+    // SPLENDOR_FG_TRUTH_V1 - real eFootball package ids. onForegroundPackage()
+    // matched against a caller-supplied set, but no caller ever existed, so the
+    // set was never populated and the gate had no real input.
+    @JvmField
+    val GAME_PACKAGES: Set<String> = setOf("jp.konami.pesam")
+
     @JvmStatic
     fun onForegroundPackage(pkg: String?, gamePkgs: Set<String>) {
         val p = pkg ?: ""
@@ -13789,7 +13808,18 @@ object VisionTrust {
 
     @JvmStatic
     fun isGameForeground(): Boolean {
-        return !com.assistant.vision.ForegroundGate.ownUiVisible()
+        // SPLENDOR_FG_TRUTH_V1 - read the REAL game-foreground flag.
+        // Returning only !ownUiVisible() discarded foregroundIsGame entirely,
+        // so setGameForeground(false) and onForegroundPackage() could never
+        // block a gesture and GestureExecutionAuthority's final execution gate
+        // was inert.
+        if (com.assistant.vision.ForegroundGate.ownUiVisible()) return false
+        // Cold start: before any window-state change has been observed there is
+        // no evidence either way, so keep the legacy "not our UI" behaviour and
+        // never block dispatch. Once a package has been seen the real flag is
+        // authoritative.
+        if (lastForegroundPkg.isEmpty()) return true
+        return foregroundIsGame
     }
 
     /** true when this frame must not be ingested at all */
@@ -13982,8 +14012,13 @@ object AgilityContributor : GameplayContributor {
             ).toFloat()
         } else 0f
 
-        // Scaled velocity estimate on the engine's 15.0f ceiling.
-        val playerVelocity = (frame.bestLaneConfidence * 10.0f + frame.confidence * 5.0f).coerceIn(0f, 15f)
+        // SPLENDOR_AGILITY_VELOCITY_UNITS_V1 - the engine declares a 0..15
+        // velocity space (native_agility_physics.c SPLENDOR_AGILITY_UNITS_V3).
+        // This contributor already matched it; the value is clamped explicitly
+        // so the contract cannot drift again.
+        val playerVelocity =
+            (frame.bestLaneConfidence * 10.0f + frame.confidence * 5.0f).coerceIn(0f, 15f)
+        // turnIntensity contract is 0..1 (how hard the carrier is turning).
         val turnIntensity = frame.defenderDensity.coerceIn(0f, 1f)
         val possessionConfidence = frame.confidence.coerceIn(0f, 1f)
 
@@ -14032,8 +14067,13 @@ object AttackingVectorContributor:GameplayContributor{
     val goalDetected=frame.goalDetected&&frame.goalConfidence>0.25f&&frame.goalRightX>frame.goalLeftX
     val gkX:Float;val gkY:Float;val lpX:Float;val lpY:Float;val rpX:Float;val rpY:Float
     if(goalDetected){gkX=(frame.goalLeftX+frame.goalRightX)*0.5f;gkY=(frame.goalTopY+frame.goalBottomY)*0.5f;lpX=frame.goalLeftX;lpY=frame.goalTopY;rpX=frame.goalRightX;rpY=frame.goalBottomY}
-    else if(frame.ballX>=825f){gkX=1620f;gkY=360f;lpX=1620f;lpY=280f;rpX=1620f;rpY=440f}
-    else{gkX=30f;gkY=360f;lpX=30f;lpY=280f;rpX=30f;rpY=440f}
+    /* SPLENDOR_CAPTURE_TO_SCREEN_V1 - this branch used to test frame.ballX>=825f
+       against a logical 1650x720 landscape pitch, but frame.ballX is measured
+       on the capture buffer (e.g. 288x640). 825 was therefore unreachable and
+       the engine always picked the LEFT goal, so every shot contribution was
+       aimed at the wrong end. The decision is now made in the frame's space. */
+    else if(frame.ballX>=com.assistant.vision.CameraProfile.captureWidthOrFallback()*0.5f){gkX=com.assistant.vision.CameraProfile.captureWidthOrFallback()-30f;gkY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.5f;lpX=com.assistant.vision.CameraProfile.captureWidthOrFallback()-30f;lpY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.39f;rpX=com.assistant.vision.CameraProfile.captureWidthOrFallback()-30f;rpY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.61f}
+    else{gkX=30f;gkY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.5f;lpX=30f;lpY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.39f;rpX=30f;rpY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.61f}
     val dist=hypot((frame.ballX-gkX).toDouble(),(frame.ballY-gkY).toDouble()).toFloat()
     // UNCONDITIONAL AGGRESSIVE EXECUTION: Allow shot calculation at all ranges for recovery
     val point=CriticalAttackingVectorEngine.computeAbsoluteScoringVector(frame.ballX,frame.ballY,gkX,gkY,lpX,lpY,rpX,rpY)
@@ -14059,13 +14099,27 @@ object BallRetentionShieldContributor : GameplayContributor {
     private val nativeBuffer = FloatArray(5)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        // UNCONDITIONAL AGGRESSIVE EXECUTION: Always evaluate shield positioning
+        // SPLENDOR_BALL_RETENTION_REAL_TELEMETRY_V1 - feed the frame's real
+        // telemetry. The previous call passed only three values and the bridge
+        // invented the rest (confidence 1.0, 3/3 lanes, zeroed zones), so this
+        // engine could never see a blocked lane or a low-confidence frame.
+        if (!frame.trusted || !frame.hasBall) return null
+        val zones = frame.zones
         val success = com.assistant.NativeBridge.nativeComputeBallRetention(
-            frame.ballX, frame.ballY,
-            frame.defenderDensity,
-            nativeBuffer
+            hasBall = frame.hasBall,
+            trusted = frame.trusted,
+            confidence = frame.confidence,
+            ballX = frame.ballX, ballY = frame.ballY,
+            viableLaneCount = frame.viableLaneCount,
+            laneCount = frame.laneCount,
+            passTargetX = frame.passTargetX, passTargetY = frame.passTargetY,
+            zonesLeftTheirs = zones.leftTheirs,
+            zonesMidTheirs = zones.midTheirs,
+            zonesRightTheirs = zones.rightTheirs,
+            defenderDensity = frame.defenderDensity,
+            resultBuffer = nativeBuffer
         )
-        
+
         if (!success || nativeBuffer[0] < 0.1f) return null // Active flag check
         
         val authority = nativeBuffer[3].coerceIn(0.1f, 1.0f)

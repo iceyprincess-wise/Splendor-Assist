@@ -232,6 +232,19 @@ object OmnipotentGoalkeeperEngine {
             if (!anomalyDetected || !hasRealGk) {
                 false
             } else {
+                // SPLENDOR_GK_REAL_THREAT_V1 - the attacker and the pressure
+                // button were both fabricated here: the attacker was forced to
+                // (width/2, height*0.7) and the pressure button to
+                // (width*0.9, height*0.7). processGoalkeeperDefensiveLayer()
+                // then computed attackerToGkDistance from that invented point
+                // and, whenever it fell under 200, auto-submitted a Down-swipe
+                // onto the pressure button - a gesture the player never asked
+                // for (the ghost swipe). Use the genuinely detected threat pixel
+                // for the attacker and the trainer's live pressure-button cell
+                // for the button.
+                val pressureSlot = com.assistant.ControlMappingTrainer.slotCenter(4)
+                val attackerX = if (detectedX > 0) detectedX.toFloat() else width / 2f
+                val attackerY = if (detectedY > 0) detectedY.toFloat() else height * 0.7f
                 processGoalkeeperDefensiveLayer(
                     ballX = if (t.ballX != 0f) t.ballX else width / 2f,
                     ballY = if (t.ballY != 0f) t.ballY else height * 0.8f,
@@ -239,10 +252,12 @@ object OmnipotentGoalkeeperEngine {
                     ballVy = if (t.ballVelocityY != 0f) t.ballVelocityY else 0.0f,
                     gkX = t.goalkeeperX,
                     gkY = t.goalkeeperY,
-                    nearestAttackerX = width / 2f,
-                    nearestAttackerY = height * 0.7f,
-                    pressureButtonX = width * 0.9f,
-                    pressureButtonY = height * 0.7f,
+                    nearestAttackerX = attackerX,
+                    nearestAttackerY = attackerY,
+                    pressureButtonX = width * pressureSlot.first,
+                    pressureButtonY = height * pressureSlot.second,
+                    joystickX = width * com.assistant.ControlMappingTrainer.joystickCenterX(),
+                    joystickY = height * com.assistant.ControlMappingTrainer.joystickCenterY(),
                     screenWidth = width.toFloat(),
                     screenHeight = height.toFloat(),
                     isAttackerDetected = (t.ballY > height * 0.7f), // Active defensive evaluation when ball enters dangerous zone

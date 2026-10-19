@@ -23,6 +23,8 @@ Java_com_assistant_NativeBridge_nativeBallRetentionShieldCompute(
     jint zonesRightTheirs,
     jfloat defenderDensity,
     jint laneCount,
+    jfloat frameWidth,
+    jfloat frameHeight,
     jfloatArray resultBuffer
 ) {
     (void)clazz;
@@ -39,8 +41,13 @@ Java_com_assistant_NativeBridge_nativeBallRetentionShieldCompute(
     }
 
     float shieldX, shieldY;
-    const float SCREEN_W = 1650.0f;
-    const float SCREEN_H = 720.0f;
+    /* SPLENDOR_BALL_RETENTION_REAL_TELEMETRY_V1 - the frame dimensions are now
+       supplied by the caller. The previous hard-coded 1650x720 landscape pitch
+       was mixed with capture-space ballX/ballY (e.g. 288x640), so the zone
+       branch produced a shield X on the wrong scale and every retention target
+       was clamped to the capture edge. */
+    const float SCREEN_W = (frameWidth > 1.0f) ? frameWidth : 1650.0f;
+    const float SCREEN_H = (frameHeight > 1.0f) ? frameHeight : 720.0f;
 
     if (viableLaneCount > 0 && (passTargetX > 0.0f || passTargetY > 0.0f)) {
         shieldX = splendor_coerce_in(ballX + (passTargetX - ballX) * 0.60f, 0.0f, SCREEN_W);

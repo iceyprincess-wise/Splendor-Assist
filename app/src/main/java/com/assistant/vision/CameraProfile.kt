@@ -62,6 +62,18 @@ object CameraProfile {
     @JvmStatic
     fun captureHeightOrFallback(fallback: Float = 720f): Float =
         if (captureHeight > 0) captureHeight.toFloat() else (if (sourceHeight > 0) sourceHeight.toFloat() else fallback)
+
+    // SPLENDOR_CAPTURE_TO_SCREEN_V1 - the vision pipeline runs on a downscaled
+    // capture surface (288x640 on a 720x1600 device, scale = 0.4) but
+    // AccessibilityService.dispatchGesture consumes REAL screen pixels. These
+    // helpers are the single declared conversion between the two spaces.
+    @JvmStatic
+    fun captureToScreenX(x: Float): Float =
+        if (captureWidth > 0 && sourceWidth > 0) x * sourceWidth.toFloat() / captureWidth.toFloat() else x
+
+    @JvmStatic
+    fun captureToScreenY(y: Float): Float =
+        if (captureHeight > 0 && sourceHeight > 0) y * sourceHeight.toFloat() / captureHeight.toFloat() else y
     // SPLENDOR_V23A_CAMERA_HELPERS_END
 
     // SPLENDOR_V25_CAMERA_PROOF_BEGIN

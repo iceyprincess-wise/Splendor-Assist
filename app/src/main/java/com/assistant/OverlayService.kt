@@ -486,6 +486,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         com.assistant.vision.ForegroundGate.install(application)
+        // SPLENDOR_CONTROL_MAP_V1 - RadarScaleCalibrator was never calibrated,
+        // so its logical-pitch -> screen mapping was permanently at its default
+        // 1080x2340 with unit scales. Calibrate from the real display once the
+        // service is up so the mapping is usable and not dead infrastructure.
+        try { com.assistant.RadarScaleCalibrator.calibrate(applicationContext) } catch (_: Throwable) {}
 
         try { com.assistant.RuntimeSelfHealEngine.init(applicationContext)
               com.assistant.RuntimeSelfHealEngine.start() } catch (_: Throwable) {}
@@ -633,7 +638,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                    // SPLENDOR_FG_TRUTH_V1 - FLAG_NOT_FOCUSABLE keeps the
+                    // recovery prompt from taking input focus away from the
+                    // running game while it is on screen (it stays tappable).
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT
                 )
                 params.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL

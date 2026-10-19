@@ -143,6 +143,8 @@ object PerformanceTelemetryRegistry {
     @Volatile private var shed = "NONE"
     @Volatile private var shedMs = 0L
     @Volatile private var sfile: File? = null
+    @Volatile private var shedReadAt = 0L
+    @Volatile private var shedReadCache = "NONE"
 
     @JvmStatic
     fun publishLoadShed(level: String) {
@@ -156,10 +158,24 @@ object PerformanceTelemetryRegistry {
     /** Stale-aware: advice older than 15s means the governor is gone - run full. */
     @JvmStatic
     // SPLENDOR_ASYNC_IO_FIX: Non-blocking load shed query on frame path
+    // SPLENDOR_LOADSHED_XPROC_V1 - publishLoadShed() runs in the :survival
+    // process and wrote perf_loadshed.txt for cross-process readers, but this
+    // reader only ever looked at its own in-process volatile, so the main
+    // process always saw "NONE" and the capture pipeline never shed load.
+    // Mirror the proven currentNet() file fallback with a throttle.
     fun currentLoadShed(): String {
         val now = System.currentTimeMillis()
         if (now - shedMs < 15_000L) return shed
-        return "NONE"
+        if (now - shedReadAt < 2_000L) return shedReadCache
+        shedReadAt = now
+        try {
+            if (sfile == null) sfile = file?.parentFile?.let { File(it, "perf_loadshed.txt") }
+            val f = sfile?.takeIf { it.exists() } ?: return shedReadCache
+            val p = f.readText().split("|")
+            if (p.isNotEmpty() && p[0].isNotEmpty()) shedReadCache = p[0]
+        } catch (_: Throwable) {
+        }
+        return shedReadCache
     }
 
     // ---- STUTTER (sub-second burst state: CALM / HICCUP / OSCILLATION / SEIZURE) ----

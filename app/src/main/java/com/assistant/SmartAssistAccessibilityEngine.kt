@@ -132,11 +132,20 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         val startedAt = dispatchStartedMs
 
         return try {
+            // SPLENDOR_CAPTURE_TO_SCREEN_V1 - every ExecutionRequest is built in
+            // the capture frame's space (frame.ballX/ballY and the capture-sized
+            // CameraProfile bounds), but dispatchGesture consumes real screen
+            // pixels. Converting at this single choke point stops every gesture
+            // from landing at ~40% of its intended screen position.
+            val screenStartX = com.assistant.vision.CameraProfile.captureToScreenX(request.startX)
+            val screenStartY = com.assistant.vision.CameraProfile.captureToScreenY(request.startY)
+            val screenEndX = com.assistant.vision.CameraProfile.captureToScreenX(request.endX)
+            val screenEndY = com.assistant.vision.CameraProfile.captureToScreenY(request.endY)
             val optimizedPath = generatePrecisionPath(
-                request.startX,
-                request.startY,
-                request.endX,
-                request.endY
+                screenStartX,
+                screenStartY,
+                screenEndX,
+                screenEndY
             )
             val syncedDuration = synchronizeToTickRate(request.duration)
 
@@ -312,7 +321,19 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-
+        // SPLENDOR_FG_TRUTH_V1 - feed the REAL foreground package into the
+        // vision trust gate. This callback was empty, so VisionTrust.
+        // onForegroundPackage() (the only writer of the real game-foreground
+        // flag) was dead code and the execution gate had no real input.
+        // accessibility_service_config.xml already declares
+        // typeWindowStateChanged, so these events are delivered.
+        if (event == null) return
+        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
+        val pkg = event.packageName?.toString() ?: return
+        try {
+            VisionTrust.onForegroundPackage(pkg, VisionTrust.GAME_PACKAGES)
+        } catch (_: Throwable) {
+        }
     }
 
     private fun stopExecutionLoop() {

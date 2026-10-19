@@ -159,6 +159,8 @@ object NativeBridge {
         zonesRightTheirs: Int,
         defenderDensity: Float,
         laneCount: Int,
+        frameWidth: Float,
+        frameHeight: Float,
         resultBuffer: FloatArray
     )
 
@@ -502,17 +504,37 @@ object NativeBridge {
 
     @JvmStatic
     fun nativeComputeBallRetention(
+        hasBall: Boolean,
+        trusted: Boolean,
+        confidence: Float,
         ballX: Float, ballY: Float,
+        viableLaneCount: Int,
+        laneCount: Int,
+        passTargetX: Float, passTargetY: Float,
+        zonesLeftTheirs: Int, zonesMidTheirs: Int, zonesRightTheirs: Int,
         defenderDensity: Float,
         resultBuffer: FloatArray
     ): Boolean {
-        // Map to existing native implementation with safe telemetry defaults
+        // SPLENDOR_BALL_RETENTION_REAL_TELEMETRY_V1 - forward real telemetry.
+        // The previous wrapper hard-coded hasBall=true, trusted=true,
+        // confidence=1.0f, viableLaneCount=3, laneCount=3 and zeroed every
+        // zone, so the native layer ALWAYS returned res[0]=1.0f (active) and
+        // fabricated a shield target from a zeroed zone vector. It also
+        // returned true even when the library was not loaded.
+        if (!nativeReady.get()) {
+            logFailureOnce()
+            return false
+        }
         nativeBallRetentionShieldCompute(
-            hasBall = true, trusted = true, confidence = 1.0f,
-            ballX = ballX, ballY = ballY, viableLaneCount = 3,
-            passTargetX = ballX, passTargetY = ballY,
-            zonesLeftTheirs = 0, zonesMidTheirs = 0, zonesRightTheirs = 0,
-            defenderDensity = defenderDensity, laneCount = 3,
+            hasBall = hasBall, trusted = trusted, confidence = confidence,
+            ballX = ballX, ballY = ballY,
+            viableLaneCount = viableLaneCount, laneCount = laneCount,
+            passTargetX = passTargetX, passTargetY = passTargetY,
+            zonesLeftTheirs = zonesLeftTheirs, zonesMidTheirs = zonesMidTheirs,
+            zonesRightTheirs = zonesRightTheirs,
+            defenderDensity = defenderDensity,
+            frameWidth = com.assistant.vision.CameraProfile.captureWidthOrFallback(),
+            frameHeight = com.assistant.vision.CameraProfile.captureHeightOrFallback(),
             resultBuffer = resultBuffer
         )
         return true

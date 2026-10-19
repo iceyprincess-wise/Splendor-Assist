@@ -413,14 +413,26 @@ class ActiveGestureController(
         val agilityPlayerY = telemetry.ballY.let { if (it.isFinite()) it else 0f }
 
         val agilityBuffer = FloatArray(6)
+        /* SPLENDOR_AGILITY_VELOCITY_UNITS_V1 - the native engine declares a
+           0..15 velocity space, but speedComp.executionBoost is a 10..35 boost
+           value. Feeding it raw pinned the engine's speed term at its 1.0
+           ceiling (speed = playerVelocity*0.06666667 saturates at 15), so the
+           carrier's speed carried almost no information. Normalise to the
+           declared contract. */
+        val agilityVelocityUnits =
+            ((speedComp.executionBoost - 10f) / 25f * 15f).coerceIn(0f, 15f)
         NativeBridge.nativeAgilityPhysics(
-            speedComp.executionBoost, safeDistance, movementAngleDegrees,
+            agilityVelocityUnits, safeDistance, movementAngleDegrees,
             safeConfidence, safeAngleRatio,
             agilityPlayerX, agilityPlayerY, agilityOppX, agilityOppY,
             NativeBridge.nextThreadSeed(), agilityBuffer
         )
         val agility = AgilityResult(
-            shieldActive = agilityBuffer[5] > 0.5f,
+            // SPLENDOR_AGILITY_VELOCITY_UNITS_V1 - align with the other caller
+            // (AgilityContributor gates on < 0.1f). Two different thresholds on
+            // the same native signal made the shield behave differently
+            // depending on which path produced the frame.
+            shieldActive = agilityBuffer[5] > 0.1f,
             stabilityBoost = agilityBuffer[0],
             controlRetentionBoost = agilityBuffer[1],
             turnAssist = agilityBuffer[2],
@@ -783,6 +795,12 @@ class ActiveGestureController(
                     lowBlockAuthority +
                     wingBlockAuthority +
                     shieldAuthority +
+                    // SPLENDOR_AGILITY_VELOCITY_UNITS_V1 - the native engine's
+                    // out[1] controlRetentionBoost was copied into AgilityResult
+                    // and then never read (dead output). It is the engine's
+                    // ball-control retention term, so feed it into the same
+                    // stability accumulator that shieldAuthority feeds.
+                    (agility.controlRetentionBoost * 4.0f) +
                     telemetryAuthority
             )
 

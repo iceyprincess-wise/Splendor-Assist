@@ -6,6 +6,29 @@
 #define M_PI 3.14159265358979323846f
 #endif
 
+/* SPLENDOR_AGILITY_UNITS_V3 - DECLARED UNIT CONTRACT.
+ *
+ * The four distance normalisations below were bare magic numbers (0.01,
+ * 0.004545455, 0.002) with no stated reference space, so each caller invented
+ * its own units: AgilityContributor fed detection pixels, ActiveGestureController
+ * fed a speed-compensation boost as "velocity", and nothing failed loudly.
+ * The engine now declares its space and clamps to it.
+ *
+ * Units: logical pitch pixels.
+ *   0                                   = contact
+ *   SPLENDOR_AGILITY_NEAR_UNITS (100)   = normDist == 1.0
+ *   SPLENDOR_AGILITY_PROX_UNITS (220)   = proximity decays to 0
+ *   SPLENDOR_AGILITY_SOFT_UNITS (500)   = soft proximity decays to 0
+ *   SPLENDOR_AGILITY_FAR_UNITS  (1200)  = hard ceiling, outside shield range
+ * Velocity contract: 0..SPLENDOR_AGILITY_MAX_VELOCITY (15) logical units.
+ * turnIntensity contract: 0..1.
+ */
+#define SPLENDOR_AGILITY_NEAR_UNITS    100.0f
+#define SPLENDOR_AGILITY_PROX_UNITS    220.0f
+#define SPLENDOR_AGILITY_SOFT_UNITS    500.0f
+#define SPLENDOR_AGILITY_FAR_UNITS     1200.0f
+#define SPLENDOR_AGILITY_MAX_VELOCITY  15.0f
+
 static inline float fast_atan2f(float y, float x) {
     float abs_y = fabsf(y);
     float abs_x = fabsf(x);
@@ -30,7 +53,7 @@ static inline float fast_atan2f(float y, float x) {
 }
 
 static inline float fast_wrap_360(float angle) {
-    float q = floorf(angle * 0.002777778f);
+    float q = floorf(angle * (1.0f / 360.0f));
     angle = angle - q * 360.0f;
     float overMask = (angle >= 360.0f) ? 1.0f : 0.0f;
     float underMask = (angle < 0.0f) ? 1.0f : 0.0f;
@@ -81,13 +104,23 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
     if (!isfinite(oppX)) oppX = 0.0f;
     if (!isfinite(oppY)) oppY = 0.0f;
 
+    /* SPLENDOR_AGILITY_UNITS_V3 - enforce the declared input contract rather
+       than letting the downstream coerce saturate silently. A caller that
+       feeds an out-of-range value is clamped into the documented space, so the
+       shield decision stays meaningful for every caller. */
+    if (opponentDistance > SPLENDOR_AGILITY_FAR_UNITS) opponentDistance = SPLENDOR_AGILITY_FAR_UNITS;
+    if (playerVelocity < 0.0f) playerVelocity = 0.0f;
+    if (playerVelocity > SPLENDOR_AGILITY_MAX_VELOCITY) playerVelocity = SPLENDOR_AGILITY_MAX_VELOCITY;
+    if (turnIntensity < 0.0f) turnIntensity = 0.0f;
+    if (turnIntensity > 1.0f) turnIntensity = 1.0f;
+
     uint32_t rng_state = (uint32_t)threadSeed ^ 2463534242U;
 
     float r_fuzz1 = local_next_float(&rng_state);
     float r_fuzz2 = local_next_float(&rng_state);
     float r_fuzz3 = local_next_float(&rng_state);
 
-    float normDist = opponentDistance * 0.01f;
+    float normDist = opponentDistance * (1.0f / SPLENDOR_AGILITY_NEAR_UNITS);
     float upperFuzz = 2.2f + (r_fuzz1 * 0.04f - 0.02f);
     float lowerFuzz = 1.0f + (r_fuzz2 * 0.02f - 0.01f);
     
@@ -98,7 +131,7 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
     float shieldActive = medProxMask * (velMask + closeProxMask - velMask * closeProxMask);
     shieldActive = branchless_coerce(shieldActive, 0.0f, 1.0f);
 
-    float proximity = 1.0f - (opponentDistance * 0.004545455f);
+    float proximity = 1.0f - (opponentDistance / SPLENDOR_AGILITY_PROX_UNITS);
     proximity = branchless_coerce(proximity, 0.0f, 1.0f);
 
     float speed = playerVelocity * 0.06666667f;
@@ -107,7 +140,7 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
     float conf = branchless_coerce(possessionConfidence, 0.0f, 1.0f);
 
     float shieldBoost = 4.0f + proximity * 6.0f + speed * 3.0f + conf * 2.0f;
-    float softP = 1.0f - opponentDistance * 0.002f;
+    float softP = 1.0f - (opponentDistance / SPLENDOR_AGILITY_SOFT_UNITS);
     softP = branchless_coerce(softP, 0.0f, 1.0f);
     float distBoost = 3.0f + softP * 4.0f * conf;
     float baseBoost = 1.5f + conf * 1.5f;
