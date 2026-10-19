@@ -544,14 +544,14 @@ class ActiveGestureController(
                 ?.x
                 ?: predictiveX
 
-        val throughReceiverY =
+        @Suppress("UNUSED_VARIABLE") val throughReceiverY =
             selectedThroughLane
                 ?.lane
                 ?.receiver
                 ?.y
                 ?: predictiveY
 
-        val throughLead =
+        @Suppress("UNUSED_VARIABLE") val throughLead =
             selectedThroughLane
                 ?.leadDistance
                 ?: 0f
@@ -616,26 +616,7 @@ class ActiveGestureController(
                 magneticFeet.touchRetention
             )
 
-        ThroughPassSanitizer(latencyInputEngine).sanitizeAndInjectThroughPass(
-            startX,
-            startY,
-            startX,
-            startY,
-            throughReceiverX,
-            throughReceiverY - throughLead,
-            predictiveX + 50f,
-            predictiveY + 50f
-        )
-
-        AdaptiveLoftedThroughEngine(latencyInputEngine).executeOptimalLoftedThrough(
-            startX,
-            startY,
-            throughReceiverX,
-            throughReceiverY,
-            1f,
-            1f,
-            1000f
-        )
+        // Direct unmonitored injection calls removed to prevent rogue autonomous touches
 
         val openSpaceDetectionResult =
             TrueTargetPassingEngine.currentOpenSpaceDetectionResult()

@@ -602,14 +602,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
         overlayView.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
         OverlaySurvivalEngine.attached()
-        updateOverlayVisuals("GUARD LOCK: SECURE [ANTI-BAN ON]", Color.GREEN)
+        updateOverlayVisuals("🕶️ GUARD LOCK: SECURE [ANTI-BAN ON]", Color.GREEN)
         startTrajectoryWatchdog()
     }
 
     private fun updateOverlayVisuals(text: String, color: Int) {
-        // Prevent app-painted HUD pixels from contaminating MediaProjection vision buffer
-        if (captureState == CaptureState.ACTIVE || captureState == CaptureState.AUTHORIZED) return
-        
         ChoreographerRenderLoop.postUpdate {
             txtEngineStatus.text = if (CallOverlayRepository.incomingCallVisible) "[CALL PROTECTED] " + text else text
             txtEngineStatus.setTextColor(color)

@@ -7697,6 +7697,12 @@ object RuntimeDecisionLoop {
         decisions.incrementAndGet()
         lastUpdatedMs = System.currentTimeMillis()
 
+        if (!com.assistant.VisionTrust.isGameForeground() || !com.assistant.SmartAssistRepository.enabled()) {
+            idleUntrusted.incrementAndGet()
+            lastAction = "idle-untrusted"
+            return false
+        }
+
         if (!frame.trusted) {
             idleUntrusted.incrementAndGet()
             lastAction = "idle-untrusted"
@@ -13818,7 +13824,7 @@ object VisionTrust {
         // no evidence either way, so keep the legacy "not our UI" behaviour and
         // never block dispatch. Once a package has been seen the real flag is
         // authoritative.
-        if (lastForegroundPkg.isEmpty()) return true
+        if (lastForegroundPkg.isEmpty()) return false
         return foregroundIsGame
     }
 
