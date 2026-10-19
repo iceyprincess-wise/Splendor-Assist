@@ -68,6 +68,18 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
 
     jfloat* result = (*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
     if (!result) return;
+    /* SPLENDOR_AGILITY_PHYSICS_V2 - guard NaN/Inf telemetry. A non-finite input
+       propagates through the branchless math (branchless_coerce cannot strip
+       NaN) and would surface as a NaN gesture target. */
+    if (!isfinite(playerVelocity)) playerVelocity = 0.0f;
+    if (!isfinite(opponentDistance) || opponentDistance < 0.0f) opponentDistance = 0.0f;
+    if (!isfinite(movementAngleDegrees)) movementAngleDegrees = 0.0f;
+    if (!isfinite(possessionConfidence)) possessionConfidence = 0.0f;
+    if (!isfinite(turnIntensity)) turnIntensity = 0.0f;
+    if (!isfinite(playerX)) playerX = 0.0f;
+    if (!isfinite(playerY)) playerY = 0.0f;
+    if (!isfinite(oppX)) oppX = 0.0f;
+    if (!isfinite(oppY)) oppY = 0.0f;
 
     uint32_t rng_state = (uint32_t)threadSeed ^ 2463534242U;
 
@@ -111,8 +123,29 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
     float turnAssist = turnBase * turnConf;
     turnAssist = branchless_coerce(turnAssist, 0.0f, 1.0f);
 
-    float angleDeg = fast_atan2f(oppY - playerY, oppX - playerX) * 57.29578f;
-    float shieldAngle = fast_wrap_360(angleDeg + 180.0f + (r_fuzz3 * 1.2f - 0.6f));
+    /* SPLENDOR_AGILITY_PHYSICS_V2 - shield orientation.
+       With live opponent coordinates, place the body directly opposite
+       (180 deg) to the tackle line. With no opponent telemetry
+       (opp == player) fall back to the movement-angle shield orientation:
+       +90 deg heading forward, -90 deg heading back. */
+    float deltaX = oppX - playerX;
+    float deltaY = oppY - playerY;
+    float shieldAngle;
+    if (deltaX == 0.0f && deltaY == 0.0f) {
+        float bounded = fmodf(movementAngleDegrees, 360.0f);
+        if (bounded < -180.0f) {
+            bounded += 360.0f;
+        } else if (bounded > 180.0f) {
+            bounded -= 360.0f;
+        }
+        shieldAngle = fast_wrap_360(
+            (bounded >= 0.0f ? bounded + 90.0f : bounded - 90.0f)
+            + (r_fuzz3 * 1.2f - 0.6f));
+    } else {
+        shieldAngle = fast_wrap_360(
+            fast_atan2f(deltaY, deltaX) * 57.29578f + 180.0f
+            + (r_fuzz3 * 1.2f - 0.6f));
+    }
 
     float pBonus = 100.0f / (normDist > 0.5f ? normDist : 0.5f);
     pBonus = branchless_coerce(pBonus, 0.0f, 60.0f);

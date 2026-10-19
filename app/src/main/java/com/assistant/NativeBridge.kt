@@ -476,20 +476,26 @@ object NativeBridge {
 
 
     @JvmStatic
-    @Suppress("UNUSED_PARAMETER")
     fun nativeComputeAgilityPhysics(
-        ballX: Float, ballY: Float,
-        passTargetX: Float, passTargetY: Float,
-        defenderDensity: Float,
+        playerVelocity: Float,
+        opponentDistance: Float,
+        movementAngleDegrees: Float,
+        possessionConfidence: Float,
+        turnIntensity: Float,
+        playerX: Float, playerY: Float,
+        oppX: Float, oppY: Float,
         outBuffer: FloatArray
     ): Boolean {
-        // Map to existing native implementation with safe telemetry defaults
+        // SPLENDOR_AGILITY_LIVE_TELEMETRY_V1 - forward real telemetry; report native readiness.
+        if (!nativeReady.get()) {
+            logFailureOnce()
+            return false
+        }
         nativeAgilityPhysicsImpl(
-            playerVelocity = 5.0f, opponentDistance = 100.0f,
-            movementAngleDegrees = 0.0f, possessionConfidence = 1.0f,
-            turnIntensity = 0.5f, playerX = ballX, playerY = ballY,
-            oppX = passTargetX, oppY = passTargetY, threadSeed = nextThreadSeed(),
-            outBuffer = outBuffer
+            playerVelocity, opponentDistance,
+            movementAngleDegrees, possessionConfidence,
+            turnIntensity, playerX, playerY, oppX, oppY,
+            nextThreadSeed(), outBuffer
         )
         return true
     }
