@@ -404,11 +404,19 @@ class ActiveGestureController(
         val safeConfidence = if (telemetry.confidence.isNaN() || telemetry.confidence.isInfinite()) 0.5f else telemetry.confidence.coerceIn(0f, 1f)
         val safeDistance = if (distance.isNaN() || distance.isInfinite()) 0f else distance.coerceAtLeast(0f)
 
+        // SPLENDOR_AGILITY_AGC_TELEMETRY_V1 - live carrier/opponent telemetry.
+        // Nearest opponent to the carrier (the earlier scan in this method).
+        val agilityOpponent = nearestOppEarly
+        val agilityOppX = (agilityOpponent?.x ?: telemetry.ballX).let { if (it.isFinite()) it else 0f }
+        val agilityOppY = (agilityOpponent?.y ?: telemetry.ballY).let { if (it.isFinite()) it else 0f }
+        val agilityPlayerX = telemetry.ballX.let { if (it.isFinite()) it else 0f }
+        val agilityPlayerY = telemetry.ballY.let { if (it.isFinite()) it else 0f }
+
         val agilityBuffer = FloatArray(6)
         NativeBridge.nativeAgilityPhysics(
             speedComp.executionBoost, safeDistance, movementAngleDegrees,
             safeConfidence, safeAngleRatio,
-            0f, 0f, 0f, 0f,
+            agilityPlayerX, agilityPlayerY, agilityOppX, agilityOppY,
             NativeBridge.nextThreadSeed(), agilityBuffer
         )
         val agility = AgilityResult(
@@ -419,6 +427,16 @@ class ActiveGestureController(
             shieldAngleDegrees = agilityBuffer[3],
             shieldDurationMs = agilityBuffer[4].toLong()
         )
+
+        val agilityShieldRad =
+            Math.toRadians(agility.shieldAngleDegrees.toDouble())
+        val agilityShieldDirX =
+            kotlin.math.cos(agilityShieldRad).toFloat().let { if (it.isFinite()) it else 0f }
+        val agilityShieldDirY =
+            kotlin.math.sin(agilityShieldRad).toFloat().let { if (it.isFinite()) it else 0f }
+        // Normalized shield-duration multiplier (engine range 40..124 ms -> 1.00..1.60).
+        val agilityDurationScale =
+            (agility.shieldDurationMs.coerceIn(40L, 124L) / 100.0).toFloat().coerceIn(1.0f, 1.6f)
 
         val shieldAuthority =
             agility.stabilityBoost
@@ -771,15 +789,36 @@ class ActiveGestureController(
         val finalX = arbitration.finalX
         val finalY = arbitration.finalY
 
+        // SPLENDOR_AGILITY_AGC_TELEMETRY_V1 - when the native engine reports an
+        // active shield, lead the gesture target along the computed shield
+        // vector. Magnitude is preserved, so the joystick deflection the engine
+        // affects is unchanged; only its direction is corrected to shield the ball.
+        val finalDeltaX = finalX - startX
+        val finalDeltaY = finalY - startY
+        val finalMagnitude =
+            kotlin.math.hypot(finalDeltaX.toDouble(), finalDeltaY.toDouble()).toFloat()
+        val shieldActiveForTarget =
+            agility.shieldActive && agilityShieldDirX.isFinite() && agilityShieldDirY.isFinite()
+        val routedEndX =
+            if (shieldActiveForTarget && finalMagnitude > 0.001f) {
+                startX + agilityShieldDirX * finalMagnitude
+            } else finalX
+        val routedEndY =
+            if (shieldActiveForTarget && finalMagnitude > 0.001f) {
+                startY + agilityShieldDirY * finalMagnitude
+            } else finalY
+        val routedDuration =
+            (boostedDuration * agilityDurationScale).toLong().coerceAtLeast(15L)
+
         val request =
             ExecutionRequest(
                 source = ExecutionSource.SMART_ASSIST,
                 phase = decision.mode,
                 startX = startX,
                 startY = startY,
-                endX = finalX,
-                endY = finalY,
-                duration = boostedDuration
+                endX = routedEndX,
+                endY = routedEndY,
+                duration = routedDuration
             )
 
         val accepted =
