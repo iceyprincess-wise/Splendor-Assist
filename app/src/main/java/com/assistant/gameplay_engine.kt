@@ -13800,12 +13800,10 @@ object VisionTrust {
         val p = pkg ?: ""
         lastForegroundPkg = p
         if (p.isEmpty()) return  // FIX P3: eFootball 2027 child surface sends empty pkg
-        val isGamePkg = gamePkgs.any { p.contains(it, true) }
-        if (isGamePkg) {
-            foregroundIsGame = true
-        } else if (com.assistant.vision.ForegroundGate.ownUiVisible()) {
-            foregroundIsGame = false
-        }
+        // SPLENDOR_FG_TRUTH_V2
+        // Every non-empty window-package event is authoritative.
+        // Leaving eFootball immediately clears gameplay execution trust.
+        foregroundIsGame = gamePkgs.any { p.contains(it, true) }
     }
 
     /** explicit override for callers that already resolved the decision */

@@ -116,6 +116,17 @@ class ActiveGestureController(
             return
         }
 
+        if (!VisionTrust.isGameForeground()) {
+            ActiveGestureControllerDiagnostics.blocked(
+                "game foreground false before controller execution"
+            )
+            RuntimeLogger.log(
+                "Game foreground false, ignoring legacy vector",
+                "SMART_ASSIST"
+            )
+            return
+        }
+
         val earlyScene = SceneTracker.current()
         val nearestOppEarly = earlyScene.trackedPlayers
             .filter { !it.isUserTeam }
@@ -544,14 +555,14 @@ class ActiveGestureController(
                 ?.x
                 ?: predictiveX
 
-        @Suppress("UNUSED_VARIABLE") val throughReceiverY =
+        val throughReceiverY =
             selectedThroughLane
                 ?.lane
                 ?.receiver
                 ?.y
                 ?: predictiveY
 
-        @Suppress("UNUSED_VARIABLE") val throughLead =
+        val throughLead =
             selectedThroughLane
                 ?.leadDistance
                 ?: 0f
@@ -756,8 +767,17 @@ class ActiveGestureController(
         val arbitration =
             AuthorityArbitrationEngine.arbitrate(
                 mode = mode,
-                passX = truePass.x + speedContainmentOffset,
-                passY = truePass.y + speedProtectionAuthority,
+        // SPLENDOR_THROUGH_PASS_ARBITRATION_V1
+        // Viable through-ball telemetry stays inside the unified
+        // arbitration -> execution bus -> accessibility path.
+        val passArbitrationX =
+            if (mode == 1 && selectedThroughLane != null) throughReceiverX else truePass.x
+
+        val passArbitrationY =
+            if (mode == 1 && selectedThroughLane != null) throughReceiverY - throughLead else truePass.y
+
+                passX = passArbitrationX + speedContainmentOffset,
+                passY = passArbitrationY + speedProtectionAuthority,
                 crossX = crossAssist.crossX + speedContainmentOffset,
                 crossY = crossAssist.crossY + speedProtectionAuthority,
                 predictiveX = scoreAim.x + speedContainmentOffset,

@@ -116,6 +116,25 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
+        // FINAL EXECUTION GATE
+        // Never turn a stale bus request into an Accessibility gesture
+        // while the game is not foreground.
+        if (!SmartAssistRepository.enabled()) {
+            RuntimeLogger.log(
+                "Direct dispatch blocked: SmartAssist disabled",
+                "SMART_ASSIST"
+            )
+            return false
+        }
+
+        if (!VisionTrust.isGameForeground()) {
+            RuntimeLogger.log(
+                "Direct dispatch blocked: game foreground is false",
+                "SMART_ASSIST"
+            )
+            return false
+        }
+
         val isMove = request.phase == com.assistant.runtime.ActionClass.MOVE.ordinal
         
         if (isDispatching) {
@@ -305,6 +324,14 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     fun triggerInstantExecution(x1: Float, y1: Float, x2: Float, y2: Float) {
         if (!SmartAssistRepository.enabled()) {
             RuntimeLogger.log("SmartAssist disabled, trigger dropped", "SMART_ASSIST")
+            return
+        }
+
+        if (!VisionTrust.isGameForeground()) {
+            RuntimeLogger.log(
+                "Game foreground is false, trigger dropped",
+                "SMART_ASSIST"
+            )
             return
         }
 
