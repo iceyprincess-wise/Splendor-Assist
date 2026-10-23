@@ -764,9 +764,6 @@ class ActiveGestureController(
                 ).coerceIn(0f,1f) * 2f
             ))
 
-        val arbitration =
-            AuthorityArbitrationEngine.arbitrate(
-                mode = mode,
         // SPLENDOR_THROUGH_PASS_ARBITRATION_V1
         // Viable through-ball telemetry stays inside the unified
         // arbitration -> execution bus -> accessibility path.
@@ -776,6 +773,9 @@ class ActiveGestureController(
         val passArbitrationY =
             if (mode == 1 && selectedThroughLane != null) throughReceiverY - throughLead else truePass.y
 
+        val arbitration =
+            AuthorityArbitrationEngine.arbitrate(
+                mode = mode,
                 passX = passArbitrationX + speedContainmentOffset,
                 passY = passArbitrationY + speedProtectionAuthority,
                 crossX = crossAssist.crossX + speedContainmentOffset,

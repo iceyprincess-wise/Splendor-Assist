@@ -4697,6 +4697,14 @@ object GestureExecutionAuthority {
             }
         }
 
+        if (!UserTouchState.isTouching()) {
+            RuntimeLogger.log(
+                "Gesture blocked: no active user touch",
+                "SMART_ASSIST"
+            )
+            return false
+        }
+
         return try {
             val result = service.dispatchGesture(gesture, wrappedCallback, handler)
             if (result) {
@@ -7747,9 +7755,9 @@ object RuntimeDecisionLoop {
                     .coerceIn(15L, 85L)
             )
         } else request
-        // Apply authority boost to the winning contribution's weight
+        // Apply authority boost and accuracy retention to the winning contribution's weight
         if (fs.active && best != null) {
-            lastWeight = (best.weight * fs.authorityBoost).coerceIn(0f, 1f)
+            lastWeight = (best.weight * fs.authorityBoost * fs.accuracyRetention).coerceIn(0f, 1f)
         }
 
         // ── Captaincy Skill amplification ────────────────────────────────
@@ -14295,7 +14303,7 @@ object DashPressureContributor : GameplayContributor {
             defHomeY = 360f,
             oppX   = oppX,
             oppY   = oppY,
-            isPlayerHoldingPressure = true
+            isPlayerHoldingPressure = UserTouchState.isTouching()
         )
 
         val tx = OmnipotentDashPressureMatrix.unpackX(packed)
