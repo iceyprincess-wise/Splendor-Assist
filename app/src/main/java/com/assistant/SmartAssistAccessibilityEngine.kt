@@ -355,11 +355,18 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // accessibility_service_config.xml already declares
         // typeWindowStateChanged, so these events are delivered.
         if (event == null) return
-        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
-        val pkg = event.packageName?.toString() ?: return
-        try {
-            VisionTrust.onForegroundPackage(pkg, VisionTrust.GAME_PACKAGES)
-        } catch (_: Throwable) {
+        when (event.eventType) {
+            AccessibilityEvent.TYPE_TOUCH_INTERACTION_START ->
+                UserTouchState.setTouching(true)
+            AccessibilityEvent.TYPE_TOUCH_INTERACTION_END ->
+                UserTouchState.setTouching(false)
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
+                val pkg = event.packageName?.toString() ?: return
+                try {
+                    VisionTrust.onForegroundPackage(pkg, VisionTrust.GAME_PACKAGES)
+                } catch (_: Throwable) {
+                }
+            }
         }
     }
 
