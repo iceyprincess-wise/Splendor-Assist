@@ -214,6 +214,8 @@ class ActiveGestureController(
                 .coerceAtLeast(0f)
 
 
+        val decisionDistance =
+            distance
         val goalFrameDetected =
             scene.goalDetected &&
             scene.goalConfidence > 0f
