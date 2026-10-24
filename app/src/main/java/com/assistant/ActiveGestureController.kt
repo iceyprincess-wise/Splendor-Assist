@@ -2,14 +2,10 @@ package com.assistant
 
 
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionSource
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.HybridExecutionTerminal
 import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.GestureDescription
-import android.graphics.Path
-import kotlin.math.abs
 import kotlin.math.atan2
 
 data class ControllerEntryDiagnostics(
@@ -179,18 +175,24 @@ class ActiveGestureController(
                 !it.isUserTeam
             }
 
+        val captureWidthSafe =
+            com.assistant.vision.CameraProfile.captureWidthOrFallback().coerceAtLeast(1f)
+        val captureHeightSafe =
+            com.assistant.vision.CameraProfile.captureHeightOrFallback().coerceAtLeast(1f)
+        val pressureColumnsSafe =
+            pressureMap.columns.coerceAtLeast(1)
+        val pressureRowsSafe =
+            pressureMap.rows.coerceAtLeast(1)
         val pressureCellX =
             (
-                (telemetry.ballX.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()) / com.assistant.vision.CameraProfile.captureWidthOrFallback()) *
-                pressureMap.columns
-            ).toInt().coerceIn(0, pressureMap.columns - 1)
-
+                (telemetry.ballX.coerceIn(0f, captureWidthSafe) / captureWidthSafe) *
+                pressureColumnsSafe
+            ).toInt().coerceIn(0, pressureColumnsSafe - 1)
         val pressureCellY =
             (
-                (telemetry.ballY.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()) / com.assistant.vision.CameraProfile.captureHeightOrFallback()) *
-                pressureMap.rows
-            ).toInt().coerceIn(0, pressureMap.rows - 1)
-
+                (telemetry.ballY.coerceIn(0f, captureHeightSafe) / captureHeightSafe) *
+                pressureRowsSafe
+            ).toInt().coerceIn(0, pressureRowsSafe - 1)
         val visionPressure =
             pressureMap.pressure
                 .getOrNull(pressureCellY)
@@ -211,8 +213,6 @@ class ActiveGestureController(
             scene.trackedBallSpeed
                 .coerceAtLeast(0f)
 
-        val decisionDistance =
-            distance
 
         val goalFrameDetected =
             scene.goalDetected &&
@@ -430,8 +430,14 @@ class ActiveGestureController(
            ceiling (speed = playerVelocity*0.06666667 saturates at 15), so the
            carrier's speed carried almost no information. Normalise to the
            declared contract. */
+        val safeExecutionBoost =
+            if (speedComp.executionBoost.isFinite() && speedComp.executionBoost > 0f) {
+                speedComp.executionBoost
+            } else {
+                1f
+            }
         val agilityVelocityUnits =
-            ((speedComp.executionBoost - 10f) / 25f * 15f).coerceIn(0f, 15f)
+            (((safeExecutionBoost - 10f) / 25f) * 15f).coerceIn(0f, 15f)
         NativeBridge.nativeAgilityPhysics(
             agilityVelocityUnits, safeDistance, movementAngleDegrees,
             safeConfidence, safeAngleRatio,
@@ -459,8 +465,12 @@ class ActiveGestureController(
             kotlin.math.sin(agilityShieldRad).toFloat().let { if (it.isFinite()) it else 0f }
         // Normalized shield-duration multiplier (engine range 40..124 ms -> 1.00..1.60).
         val agilityDurationScale =
-            (agility.shieldDurationMs.coerceIn(40L, 124L) / 100.0).toFloat().coerceIn(1.0f, 1.6f)
-
+            (
+                1.0f +
+                (
+                    (agility.shieldDurationMs.toFloat().coerceIn(40f, 124f) - 40f) / 84f
+                ) * 0.6f
+            ).coerceIn(1.0f, 1.6f)
         val shieldAuthority =
             agility.stabilityBoost
 
@@ -740,16 +750,23 @@ class ActiveGestureController(
 
         val wingBlockAuthority = (defenseAuthority.interception * 10.0f)
 
+        val safeDurationBoost =
+            if (speedComp.executionBoost.isFinite() && speedComp.executionBoost > 0f) {
+                speedComp.executionBoost
+            } else {
+                1f
+            }
+        val safeBoostedBaseDuration =
+            if (safeDurationBoost > 1f) {
+                (duration / safeDurationBoost).toLong().coerceAtLeast(15L)
+            } else {
+                duration.coerceAtLeast(15L)
+            }
         val boostedDuration =
             FrameDropCompensationEngine.compensate(
-                (
-                    duration /
-                    speedComp.executionBoost
-                ).toLong().coerceAtLeast(15L),
+                safeBoostedBaseDuration,
                 strength
             )
-
-
         val inputDiagnostics =
             InputAccumulationDiagnosticsEngine.analyze(
                 boostedDuration
@@ -829,17 +846,19 @@ class ActiveGestureController(
         val routedDuration =
             (boostedDuration * agilityDurationScale).toLong().coerceAtLeast(15L)
 
+        val safeRoutedEndX = if (routedEndX.isFinite()) routedEndX else endX
+        val safeRoutedEndY = if (routedEndY.isFinite()) routedEndY else endY
+        val safeRoutedDuration = routedDuration.coerceIn(15L, 10000L)
         val request =
             ExecutionRequest(
                 source = ExecutionSource.SMART_ASSIST,
                 phase = decision.mode,
                 startX = startX,
                 startY = startY,
-                endX = routedEndX,
-                endY = routedEndY,
-                duration = routedDuration
+                endX = safeRoutedEndX,
+                endY = safeRoutedEndY,
+                duration = safeRoutedDuration
             )
-
         val accepted =
             HybridExecutionTerminal.route(request)
 
