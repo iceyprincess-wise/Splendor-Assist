@@ -138,7 +138,7 @@ object DisplayProfileEngine {
 
     // ADMIN-TUNABLE (default = original hard-coded value)
     val gameFps: Float get() {
-        val v = 30f
+        val v = 60f
         return if (v > 0f) v else 30f
     }
     val gameBudgetMs: Float get() = 1000f / gameFps
