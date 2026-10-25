@@ -123,22 +123,32 @@ class ActiveGestureController(
             return
         }
 
+        memoryOptimizer.initialize()
+
         val earlyScene = SceneTracker.current()
         val nearestOppEarly = earlyScene.trackedPlayers
             .filter { !it.isUserTeam }
             .minByOrNull { p -> (p.x - startX) * (p.x - startX) + (p.y - startY) * (p.y - startY) }
         val earlyTraj = BallTrajectoryPredictor.current()
-        antiCutbackEngine.blockCutbackPassingLanes(
+
+        val dynamicGoalLeftX = if (earlyScene.goalDetected) earlyScene.goalLeftX else 1620f
+        val dynamicGoalLeftY = if (earlyScene.goalDetected) earlyScene.goalTopY else 280f
+        val dynamicGoalRightX = if (earlyScene.goalDetected) earlyScene.goalRightX else 1620f
+        val dynamicGoalRightY = if (earlyScene.goalDetected) earlyScene.goalBottomY else 440f
+        val dynamicGkX = TelemetryRepository.current().goalkeeperX.let { if (it > 0f) it else 1500f }
+        val dynamicGkY = TelemetryRepository.current().goalkeeperY.let { if (it > 0f) it else 360f }
+
+        val antiCutbackGain = if (antiCutbackEngine.blockCutbackPassingLanes(
             nearestOppEarly?.x ?: endX, nearestOppEarly?.y ?: endY,
-            startX, startY, 825f, 360f, 250f, 550f)
-        autoEvadeEngine.monitorAttackingSpace(
-            startX, startY, 250f, 550f,
+            startX, startY, dynamicGkX, dynamicGkY, startX, startY)) 1.0f else 0.0f
+        val evadeActive = if (autoEvadeEngine.monitorAttackingSpace(
+            startX, startY, startX, startY,
             nearestOppEarly?.x ?: endX, nearestOppEarly?.y ?: endY,
-            earlyTraj.velocityX, earlyTraj.velocityY)
-        val scoreAim = CriticalAttackingVectorEngine.computeAbsoluteScoringVector(startX, startY, 1500f, 360f, 1620f, 280f, 1620f, 440f)
-        OmnipotentDashPressureMatrix.computeHighAuthorityDefensiveVector(endX, endY, startX, startY, startX, startY + 50f, endX, endY, true)
-        HybridOmnipotentMatrixEngine.computeGodspeedInterceptVector(startX, startY, endX, endY, 0f, 0f, endX, endY, 0f, 0f, false)
-        val truePass = CriticalAttackingVectorEngine.computeTrueTargetPass(1300f, 550f, endX, endY, 0f, 0f, false)
+            earlyTraj.velocityX, earlyTraj.velocityY)) 1.0f else 0.0f
+        val scoreAim = CriticalAttackingVectorEngine.computeAbsoluteScoringVector(startX, startY, dynamicGkX, dynamicGkY, dynamicGoalLeftX, dynamicGoalLeftY, dynamicGoalRightX, dynamicGoalRightY)
+        val defensiveVectorPacked = OmnipotentDashPressureMatrix.computeHighAuthorityDefensiveVector(endX, endY, startX, startY, startX, startY + 50f, endX, endY, true)
+        val godspeedVectorPacked = HybridOmnipotentMatrixEngine.computeGodspeedInterceptVector(startX, startY, endX, endY, 0f, 0f, endX, endY, 0f, 0f, false)
+        val truePass = CriticalAttackingVectorEngine.computeTrueTargetPass(startX, startY, endX, endY, earlyTraj.velocityX, earlyTraj.velocityY, false)
         val deltaX = endX - startX
         val deltaY = endY - startY
         val distance = kotlin.math.hypot(deltaX, deltaY)
@@ -787,10 +797,14 @@ class ActiveGestureController(
         // Viable through-ball telemetry stays inside the unified
         // arbitration -> execution bus -> accessibility path.
         val passArbitrationX =
-            if (mode == 1 && selectedThroughLane != null) throughReceiverX else truePass.x
+            if (mode == 1 && selectedThroughLane != null) throughReceiverX
+            else if (passAssist.correctedX.isFinite()) passAssist.correctedX
+            else truePass.x
 
         val passArbitrationY =
-            if (mode == 1 && selectedThroughLane != null) throughReceiverY - throughLead else truePass.y
+            if (mode == 1 && selectedThroughLane != null) throughReceiverY - throughLead
+            else if (passAssist.correctedY.isFinite()) passAssist.correctedY
+            else truePass.y
 
         val arbitration =
             AuthorityArbitrationEngine.arbitrate(
@@ -815,13 +829,12 @@ class ActiveGestureController(
                     lowBlockAuthority +
                     wingBlockAuthority +
                     shieldAuthority +
-                    // SPLENDOR_AGILITY_VELOCITY_UNITS_V1 - the native engine's
-                    // out[1] controlRetentionBoost was copied into AgilityResult
-                    // and then never read (dead output). It is the engine's
-                    // ball-control retention term, so feed it into the same
-                    // stability accumulator that shieldAuthority feeds.
                     (agility.controlRetentionBoost * 4.0f) +
-                    telemetryAuthority
+                    telemetryAuthority +
+                    (antiCutbackGain * 0.2f) +
+                    (evadeActive * 0.2f) +
+                    if (defensiveVectorPacked != 0L) 0.1f else 0.0f +
+                    if (godspeedVectorPacked != 0L) 0.1f else 0.0f
             )
 
         val finalX = arbitration.finalX
@@ -848,9 +861,15 @@ class ActiveGestureController(
         val routedDuration =
             (boostedDuration * agilityDurationScale).toLong().coerceAtLeast(15L)
 
-        val safeRoutedEndX = if (routedEndX.isFinite()) routedEndX else endX
-        val safeRoutedEndY = if (routedEndY.isFinite()) routedEndY else endY
-        val safeRoutedDuration = routedDuration.coerceIn(15L, 10000L)
+        val safeRoutedEndXInitial = if (routedEndX.isFinite()) routedEndX else endX
+        val safeRoutedEndYInitial = if (routedEndY.isFinite()) routedEndY else endY
+        val isPanic = SmartAssistRepository.panicActive()
+        val (panicEndX, panicEndY) = if (isPanic) emergencyClearanceVector(safeRoutedEndXInitial, safeRoutedEndYInitial) else Pair(safeRoutedEndXInitial, safeRoutedEndYInitial)
+        val finalDuration = if (isPanic) emergencyClearanceDuration() else routedDuration
+
+        val safeRoutedEndX = if (panicEndX.isFinite()) panicEndX else endX
+        val safeRoutedEndY = if (panicEndY.isFinite()) panicEndY else endY
+        val safeRoutedDuration = finalDuration.coerceIn(15L, 10000L)
         val request =
             ExecutionRequest(
                 source = ExecutionSource.SMART_ASSIST,
