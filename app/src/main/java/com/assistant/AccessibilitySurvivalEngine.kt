@@ -15,8 +15,9 @@ import kotlin.random.Random
  * Upgraded for Zero-Latency, 120Hz Tick-Sync, and Absolute Persistence.
  */
 class AccessibilitySurvivalEngine private constructor(
-    private val context: Context?
+    contextParam: Context?
 ) {
+    private var applicationContext: Context? = contextParam?.applicationContext
     companion object {
         private const val TAG = "SurvivalEngine"
 
@@ -32,20 +33,23 @@ class AccessibilitySurvivalEngine private constructor(
 
         @JvmStatic
         fun getInstance(context: Context? = null): AccessibilitySurvivalEngine {
-            return instance ?: synchronized(this) {
-                instance ?: AccessibilitySurvivalEngine(context).also { instance = it }
+            return instance?.apply {
+                if (applicationContext == null && context != null) {
+                    applicationContext = context.applicationContext
+                }
+            } ?: synchronized(this) {
+                instance?.apply {
+                    if (applicationContext == null && context != null) {
+                        applicationContext = context.applicationContext
+                    }
+                } ?: AccessibilitySurvivalEngine(context).also { instance = it }
             }
         }
 
         @JvmStatic
         fun connected() {
             engineState.set(STATE_CONNECTED)
-            try {
-                // Elevate process thread priority to URGENT_DISPLAY for 120Hz micro-gesture frame sync
-                Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
-            } catch (e: Exception) {
-                Log.e(TAG, "Priority elevation failed", e)
-            }
+            instance?.ensureWatchdogPriority()
         }
 
         @JvmStatic
@@ -96,50 +100,75 @@ class AccessibilitySurvivalEngine private constructor(
         }
     }
 
-    private fun maintainTickSync() {
-        // Keep JIT pipeline hot: volatile read prevents dead-code elimination
-        @Suppress("UNUSED_VARIABLE")
-        val heartbeat = engineState.get()
-        Thread.yield()
+    fun ensureWatchdogPriority() {
+        try {
+            watchdogThread?.getThreadId()?.let { tid ->
+                Process.setThreadPriority(tid, Process.THREAD_PRIORITY_URGENT_DISPLAY)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Watchdog priority elevation failed", e)
+        }
     }
 
-    fun isReady(): Boolean = active()
+    private fun maintainTickSync() {
+        synchronized(this) {
+            if (active()) {
+                if (wakeLock == null || wakeLock?.isHeld == false) {
+                    renewWakeLock()
+                }
+            }
+        }
+    }
 
-    fun protect() {
-        connected()
-        context?.let { ctx ->
+    private fun renewWakeLock() {
+        applicationContext?.let { ctx ->
             try {
                 val powerManager = ctx.getSystemService(Context.POWER_SERVICE) as? PowerManager
                 powerManager?.let { pm ->
                     if (wakeLock == null) {
-                        // Acquire PARTIAL_WAKE_LOCK to prevent CPU sleep during background input injection
                         wakeLock = pm.newWakeLock(
                             PowerManager.PARTIAL_WAKE_LOCK,
                             "SmartAssist::SurvivalEngineLock"
                         )
                     }
                     if (wakeLock?.isHeld == false) {
-                        wakeLock?.acquire(10 * 60 * 1000L) // 10 minutes max buffer to prevent anomalous drain
+                        wakeLock?.acquire(10 * 60 * 1000L)
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Protection escalation failed", e)
+                Log.e(TAG, "Wake lock renewal failed", e)
             }
         }
     }
 
-    fun release() {
-        interrupted()
-        try {
-            if (wakeLock?.isHeld == true) {
-                wakeLock?.release()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Secure release fail-safe", e)
+    fun isReady(): Boolean = active()
+
+    fun protect() {
+        synchronized(this) {
+            connected()
+            renewWakeLock()
         }
-        // Explicitly returning Unit prevents the compiler from treating the try-catch block
-        // as an expression with missing branches, successfully fixing your compilation error.
-        Unit 
+    }
+
+    fun release() {
+        synchronized(this) {
+            interrupted()
+            try {
+                if (wakeLock?.isHeld == true) {
+                    wakeLock?.release()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Secure release fail-safe", e)
+            }
+            try {
+                watchdogHandler?.removeCallbacksAndMessages(null)
+                watchdogThread?.quitSafely()
+                watchdogThread = null
+                watchdogHandler = null
+            } catch (e: Exception) {
+                Log.e(TAG, "Watchdog teardown error", e)
+            }
+        }
     }
 
     /**
@@ -147,9 +176,7 @@ class AccessibilitySurvivalEngine private constructor(
      * for server-tick authoritative injection. Scaled dynamically with variance.
      */
     fun getTickSyncTimestamp(): Long {
-        val baseTimestamp = SystemClock.elapsedRealtimeNanos()
-        val microVarianceNs = Random.nextLong(100_000L, 500_000L) // 0.1ms to 0.5ms variance
-        return baseTimestamp + microVarianceNs
+        return SystemClock.elapsedRealtimeNanos()
     }
 }
 /* ======
