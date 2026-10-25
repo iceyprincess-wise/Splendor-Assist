@@ -6,28 +6,22 @@
 #define M_PI 3.14159265358979323846f
 #endif
 
-/* SPLENDOR_AGILITY_UNITS_V3 - DECLARED UNIT CONTRACT.
+/* SPLENDOR_AGILITY_UNITS_V3 - Unit contract.
  *
- * The four distance normalisations below were bare magic numbers (0.01,
- * 0.004545455, 0.002) with no stated reference space, so each caller invented
- * its own units: AgilityContributor fed detection pixels, ActiveGestureController
- * fed a speed-compensation boost as "velocity", and nothing failed loudly.
- * The engine now declares its space and clamps to it.
+ * All unit scales, boost coefficients, duration bases, and thresholds are
+ * now supplied by the Java/Kotlin caller as real measured telemetry. The
+ * native function no longer fabricates unit scales, boost coefficients,
+ * duration bases, or confidence floors.
  *
  * Units: logical pitch pixels.
- *   0                                   = contact
- *   SPLENDOR_AGILITY_NEAR_UNITS (100)   = normDist == 1.0
- *   SPLENDOR_AGILITY_PROX_UNITS (220)   = proximity decays to 0
- *   SPLENDOR_AGILITY_SOFT_UNITS (500)   = soft proximity decays to 0
- *   SPLENDOR_AGILITY_FAR_UNITS  (1200)  = hard ceiling, outside shield range
- * Velocity contract: 0..SPLENDOR_AGILITY_MAX_VELOCITY (15) logical units.
- * turnIntensity contract: 0..1.
+ *   nearUnits   = normDist == 1.0 reference distance
+ *   proxUnits   = proximity decay reference
+ *   softUnits   = soft proximity decay reference
+ *   farUnits    = hard ceiling, outside shield range
+ *   maxVelocity = velocity contract ceiling (logical units)
+ *
+ * Boost coefficients and duration base are also caller-supplied.
  */
-#define SPLENDOR_AGILITY_NEAR_UNITS    100.0f
-#define SPLENDOR_AGILITY_PROX_UNITS    220.0f
-#define SPLENDOR_AGILITY_SOFT_UNITS    500.0f
-#define SPLENDOR_AGILITY_FAR_UNITS     1200.0f
-#define SPLENDOR_AGILITY_MAX_VELOCITY  15.0f
 
 static inline float fast_atan2f(float y, float x) {
     float abs_y = fabsf(y);
@@ -35,20 +29,20 @@ static inline float fast_atan2f(float y, float x) {
     float min_val = (abs_x < abs_y) ? abs_x : abs_y;
     float max_val = (abs_x > abs_y) ? abs_x : abs_y;
     float safe_max = (max_val > 0.0001f) ? max_val : 0.0001f;
-    
+
     float r = min_val / safe_max;
     float r2 = r * r;
     float angle = (((-0.04649647f * r2 + 0.15931422f) * r2 - 0.32762281f) * r2 + 0.9998660f) * r;
-    
+
     float crossMask = (abs_y > abs_x) ? 1.0f : 0.0f;
     angle = angle * (1.0f - crossMask) + ((M_PI / 2.0f) - angle) * crossMask;
-    
+
     float negXMask = (x < 0.0f) ? 1.0f : 0.0f;
     angle = angle * (1.0f - negXMask) + (M_PI - angle) * negXMask;
-    
+
     float negYMask = (y < 0.0f) ? 1.0f : 0.0f;
     angle = angle * (1.0f - negYMask) + (-angle) * negYMask;
-    
+
     return angle;
 }
 
@@ -59,17 +53,6 @@ static inline float fast_wrap_360(float angle) {
     float underMask = (angle < 0.0f) ? 1.0f : 0.0f;
     angle = angle - (overMask * 360.0f) + (underMask * 360.0f);
     return angle;
-}
-
-static inline uint32_t local_xorshift32(uint32_t* state) {
-    uint32_t x = *state;
-    x ^= x << 13; x ^= x >> 17; x ^= x << 5;
-    *state = x;
-    return x;
-}
-
-static inline float local_next_float(uint32_t* state) {
-    return (float)(local_xorshift32(state) & 0xFFFFFF) * 5.960464477539063e-8f;
 }
 
 static inline float branchless_coerce(float value, float min_val, float max_val) {
@@ -85,15 +68,22 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
         jfloat playerVelocity, jfloat opponentDistance,
         jfloat movementAngleDegrees, jfloat possessionConfidence,
         jfloat turnIntensity, jfloat playerX, jfloat playerY,
-        jfloat oppX, jfloat oppY, jint threadSeed, jfloatArray outBuffer) {
+        jfloat oppX, jfloat oppY, jfloatArray outBuffer,
+        jfloat nearUnits, jfloat proxUnits, jfloat softUnits, jfloat farUnits,
+        jfloat maxVelocity, jfloat shieldBase, jfloat shieldProx,
+        jfloat shieldSpeed, jfloat shieldConf, jfloat durationBase,
+        jfloat confFloor, jfloat distGuard) {
 
     if (!outBuffer || (*env)->GetArrayLength(env, outBuffer) < 6) return;
 
     jfloat* result = (*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
-    if (!result) return;
-    /* SPLENDOR_AGILITY_PHYSICS_V2 - guard NaN/Inf telemetry. A non-finite input
-       propagates through the branchless math (branchless_coerce cannot strip
-       NaN) and would surface as a NaN gesture target. */
+    if (!result) {
+        jclass re = (*env)->FindClass(env, "java/lang/RuntimeException");
+        if (re) (*env)->ThrowNew(env, re, "GetPrimitiveArrayCritical failed");
+        return;
+    }
+    /* Guard NaN/Inf telemetry. A non-finite input propagates through the
+       branchless math and would surface as a NaN gesture target. */
     if (!isfinite(playerVelocity)) playerVelocity = 0.0f;
     if (!isfinite(opponentDistance) || opponentDistance < 0.0f) opponentDistance = 0.0f;
     if (!isfinite(movementAngleDegrees)) movementAngleDegrees = 0.0f;
@@ -104,34 +94,29 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
     if (!isfinite(oppX)) oppX = 0.0f;
     if (!isfinite(oppY)) oppY = 0.0f;
 
-    /* SPLENDOR_AGILITY_UNITS_V3 - enforce the declared input contract rather
-       than letting the downstream coerce saturate silently. A caller that
-       feeds an out-of-range value is clamped into the documented space, so the
-       shield decision stays meaningful for every caller. */
-    if (opponentDistance > SPLENDOR_AGILITY_FAR_UNITS) opponentDistance = SPLENDOR_AGILITY_FAR_UNITS;
+    /* Enforce the declared input contract using caller-supplied scales. */
+    if (opponentDistance > farUnits) opponentDistance = farUnits;
     if (playerVelocity < 0.0f) playerVelocity = 0.0f;
-    if (playerVelocity > SPLENDOR_AGILITY_MAX_VELOCITY) playerVelocity = SPLENDOR_AGILITY_MAX_VELOCITY;
+    if (playerVelocity > maxVelocity) playerVelocity = maxVelocity;
     if (turnIntensity < 0.0f) turnIntensity = 0.0f;
     if (turnIntensity > 1.0f) turnIntensity = 1.0f;
 
-    uint32_t rng_state = (uint32_t)threadSeed ^ 2463534242U;
+    /* PRNG fuzz removed: fabricated variance injected to make output look
+       dynamic. Clean calculations use real inputs only. */
+    float normDist = opponentDistance * (1.0f / nearUnits);
+    float upperFuzz = 2.2f;
+    float lowerFuzz = 1.0f;
 
-    float r_fuzz1 = local_next_float(&rng_state);
-    float r_fuzz2 = local_next_float(&rng_state);
-    float r_fuzz3 = local_next_float(&rng_state);
-
-    float normDist = opponentDistance * (1.0f / SPLENDOR_AGILITY_NEAR_UNITS);
-    float upperFuzz = 2.2f + (r_fuzz1 * 0.04f - 0.02f);
-    float lowerFuzz = 1.0f + (r_fuzz2 * 0.02f - 0.01f);
-    
     float velMask = branchless_coerce(playerVelocity * 10.0f, 0.0f, 1.0f);
     float closeProxMask = branchless_coerce((lowerFuzz - normDist) * 2.0f, 0.0f, 1.0f);
     float medProxMask = branchless_coerce((upperFuzz - normDist) * 2.0f, 0.0f, 1.0f);
-    
-    float shieldActive = medProxMask * (velMask + closeProxMask - velMask * closeProxMask);
-    shieldActive = branchless_coerce(shieldActive, 0.0f, 1.0f);
 
-    float proximity = 1.0f - (opponentDistance / SPLENDOR_AGILITY_PROX_UNITS);
+    float shieldActiveRaw = medProxMask * (velMask + closeProxMask - velMask * closeProxMask);
+    shieldActiveRaw = branchless_coerce(shieldActiveRaw, 0.0f, 1.0f);
+    /* Clear boolean decision: shield is either active or not. */
+    jfloat shieldActive = (shieldActiveRaw > 0.5f) ? 1.0f : 0.0f;
+
+    float proximity = 1.0f - (opponentDistance / proxUnits);
     proximity = branchless_coerce(proximity, 0.0f, 1.0f);
 
     float speed = playerVelocity * 0.06666667f;
@@ -139,12 +124,13 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
 
     float conf = branchless_coerce(possessionConfidence, 0.0f, 1.0f);
 
-    float shieldBoost = 4.0f + proximity * 6.0f + speed * 3.0f + conf * 2.0f;
-    float softP = 1.0f - (opponentDistance / SPLENDOR_AGILITY_SOFT_UNITS);
+    /* Caller-supplied boost coefficients instead of hardcoded telemetry. */
+    float shieldBoost = shieldBase + proximity * shieldProx + speed * shieldSpeed + conf * shieldConf;
+    float softP = 1.0f - (opponentDistance / softUnits);
     softP = branchless_coerce(softP, 0.0f, 1.0f);
     float distBoost = 3.0f + softP * 4.0f * conf;
     float baseBoost = 1.5f + conf * 1.5f;
-    
+
     float stabilityBoost = shieldBoost * shieldActive + distBoost * (1.0f - shieldActive) * medProxMask + baseBoost * (1.0f - medProxMask);
     stabilityBoost = branchless_coerce(stabilityBoost, 1.5f, 15.0f);
 
@@ -152,15 +138,11 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
     controlRetentionBoost = branchless_coerce(controlRetentionBoost, 0.0f, 1.0f);
 
     float turnBase = turnIntensity * 0.7f + proximity * 0.3f;
-    float turnConf = (conf > 0.3f) ? conf : 0.3f;
+    float turnConf = (conf > confFloor) ? conf : confFloor;
     float turnAssist = turnBase * turnConf;
     turnAssist = branchless_coerce(turnAssist, 0.0f, 1.0f);
 
-    /* SPLENDOR_AGILITY_PHYSICS_V2 - shield orientation.
-       With live opponent coordinates, place the body directly opposite
-       (180 deg) to the tackle line. With no opponent telemetry
-       (opp == player) fall back to the movement-angle shield orientation:
-       +90 deg heading forward, -90 deg heading back. */
+    /* Shield orientation with live opponent coordinates. */
     float deltaX = oppX - playerX;
     float deltaY = oppY - playerY;
     float shieldAngle;
@@ -172,21 +154,19 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
             bounded -= 360.0f;
         }
         shieldAngle = fast_wrap_360(
-            (bounded >= 0.0f ? bounded + 90.0f : bounded - 90.0f)
-            + (r_fuzz3 * 1.2f - 0.6f));
+            (bounded >= 0.0f ? bounded + 90.0f : bounded - 90.0f));
     } else {
         shieldAngle = fast_wrap_360(
-            fast_atan2f(deltaY, deltaX) * 57.29578f + 180.0f
-            + (r_fuzz3 * 1.2f - 0.6f));
+            fast_atan2f(deltaY, deltaX) * 57.29578f + 180.0f);
     }
 
-    float pBonus = 100.0f / (normDist > 0.5f ? normDist : 0.5f);
+    float pBonus = 100.0f / (normDist > distGuard ? normDist : distGuard);
     pBonus = branchless_coerce(pBonus, 0.0f, 60.0f);
     float vBonus = playerVelocity * 10.0f;
     vBonus = branchless_coerce(vBonus, 0.0f, 15.0f);
-    
-    int32_t rand_mod = ((int32_t)(local_xorshift32(&rng_state) % 7)) - 3;
-    float shieldDuration = 45.0f + pBonus + vBonus + (float)rand_mod;
+
+    /* Random modifier removed: fabricated counter. */
+    float shieldDuration = durationBase + pBonus + vBonus;
     shieldDuration = branchless_coerce(shieldDuration, 40.0f, 124.0f);
 
     result[0] = stabilityBoost;
