@@ -96,3 +96,22 @@ TASK AND DISCOVERY MASSIVELY ACCURATE.
 ENSURE ACCURATE FIXES APPLIED EACH OF THEM ALL FIXES IN ONE PYTHON3 PATCH FIX SCRIPT, AS USUAL PASTE THE CONTENT OF THE F.PY FIX PATCH WHICH I'LL EXECUTE IN MY TERMUX AND PUSH TO MAIN, AFTER ENSURING ADEQUATE ACCURATE VERIFICATION OF FIXES AND BUILD COMPLIANCE WITH NO WARNING, ERROR, ASSUMPTIONS, GUESSING AND FAKING 
 
 TARGET AGGREGATE: App must be effective, no parameters left unused, and engine actively working but the effect isnt feed properly,all engines must be effectively working and feeding the pipeline,using the overlay,mediaproj,accessibility and other integration to ensure it starts effectively and feeds effectively there by being effective on game screen during tests. Engines Should be traced properly starting with what's it's role is in teh repository,what it role would be on game and how it will play it role using all available tools, engines, integration and implementation on the repository to be effective and must be grep and trace properly not assumed or guessed that from wiring it's active and effective.
+
+
+⚠️ ⚠️ YOU MUST ALWAYS DO THE FOLLOWING WHEN TASK IS GIVEN TO YOU ⚠️ ⚠️ 📌
+
+YOU MUST ALWAYS FIX 20 OF THE FOLLOWING 👇👇
+
+Strictly and must do accurately,real and genuinely ✅
+
+Target: Real Deep investigation and fixes of issues in repository FIX Defects & 
+death paths — unreachable code, broken control flow, crashes, swallowed errors 
+
+⚠️ 📌 FIX Fabricated/hard-coded telemetry — hardcoded values posing as real 
+measurements, faked counters/stats.
+
+⚠️ 📌 FIX Discarded results — computations or 
+gesture results that are calculated but never actually used to affect what 
+happens on screen
+
+⚠️ 📌 FIX Decorative flags — flags set but never read, or read but never meaningfully influencing behavior
