@@ -107,11 +107,13 @@ Strictly and must do accurately,real and genuinely ✅
 Target: Real Deep investigation and fixes of issues in repository FIX Defects & 
 death paths — unreachable code, broken control flow, crashes, swallowed errors 
 
-⚠️ 📌 FIX Fabricated/hard-coded telemetry — hardcoded values posing as real 
+⚠️ 📌 FIX REAL Fabricated/hard-coded telemetry — hardcoded values posing as real 
 measurements, faked counters/stats.
 
-⚠️ 📌 FIX Discarded results — computations or 
+⚠️ 📌 FIX REAL Discarded results — computations or 
 gesture results that are calculated but never actually used to affect what 
 happens on screen
 
-⚠️ 📌 FIX Decorative flags — flags set but never read, or read but never meaningfully influencing behavior
+⚠️ 📌 FIX REAL Decorative flags — flags set but never read, or read but never meaningfully influencing behavior
+
+DO NOT FABRICATE OR FAKE
