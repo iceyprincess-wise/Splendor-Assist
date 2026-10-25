@@ -307,13 +307,7 @@ object DeathWatch {
 
                             nativeDetails = parsedForensics.embeddedSummary
 
-                            // 1. Save RAW BYTES to internal storage
-                            val rawFileInt = java.io.File(ctx.filesDir, "Splendor_Native_Crash.pb")
-                            rawFileInt.writeBytes(traceBytes)
-                            
-                            // 2. Save READABLE FORENSIC REPORT to internal storage
-                            val txtFileInt = java.io.File(ctx.filesDir, "Splendor_Native_Crash_Readable.txt")
-                            txtFileInt.writeText(parsedForensics.fullReport)
+                            // Internal filesDir crash logs skipped
                             
                             // 3. Save to external forensic storage
                             var extPath = ""
@@ -328,7 +322,7 @@ object DeathWatch {
                                 }
                             } catch (_: Throwable) {}
                             
-                            traceNote = " [Tombstone saved to ${if(extPath.isNotEmpty()) extPath else rawFileInt.absolutePath}]"
+                            traceNote = " [Tombstone saved to ${if(extPath.isNotEmpty()) extPath else SplendorStorageRoot.ROOT_PATH}]"
                         }
                     } catch (_: Throwable) {}
                 }

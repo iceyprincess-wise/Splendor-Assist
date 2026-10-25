@@ -77,7 +77,7 @@ object OmnipotentGoalkeeperEngine {
         isAttackerDetected: Boolean = true,
         isGkDetected: Boolean = true
     ): Boolean {
-        if (!com.assistant.VisionTrust.isGameForeground() || !com.assistant.SmartAssistRepository.enabled()) return false
+        if (!com.assistant.VisionTrust.isGameForeground() || !com.assistant.SmartAssistRepository.enabled() || !GoalkeeperRuntimeState.enabled) return false
         val now = System.currentTimeMillis()
         if (now - lastGkLayerTimestamp < 8L) return false // BEAST MODE: 120Hz reaction throttle for 0.00ms threat response
         lastGkLayerTimestamp = now

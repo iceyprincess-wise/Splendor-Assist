@@ -24,7 +24,7 @@ object PerformanceTelemetryRegistry {
 
     @JvmStatic
     fun initialize(context: Context) {
-        if (file == null) file = File(context.filesDir, "perf_telemetry.txt")
+        if (file == null) file = File("/sdcard/Splendor-Assist", "perf_telemetry.txt").also { it.parentFile?.mkdirs() }
     }
 
     @JvmStatic

@@ -39,17 +39,7 @@ object RuntimeLogger {
     @Synchronized
     fun initialize(context: Context) {
 
-        if (internalLogFile == null) {
-            internalLogFile =
-                File(
-                    context.filesDir,
-                    FILE_NAME
-                )
-        }
-        if (segmentDir == null) {
-            segmentDir = File(context.filesDir, "runtime_hour_segments").apply { mkdirs() }
-        }
-        reconcileExpired()
+        // Private internal filesDir logging disabled for SD card storage policy
 
         // FIX #3 & #4: Gate heavy external file creation to main process only.
         // Background processes will safely fall back to fast, process-private internal logs,
@@ -323,11 +313,7 @@ object RuntimeLogger {
     ) {
         val bytes = text.toByteArray(Charsets.UTF_8)
         try {
-            internalLogFile?.let { file ->
-                java.io.FileOutputStream(file, true).use { fos ->
-                    fos.write(bytes)
-                }
-            }
+            // Internal log write skipped
 
             externalLogFile?.let { file ->
                 java.io.FileOutputStream(file, true).use { fos ->

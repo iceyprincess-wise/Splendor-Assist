@@ -121,6 +121,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     @Volatile private var isRunning = false
+    private var modMenuController: ModMenuController? = null
+    private var interceptionBridge: com.assistant.overlay.bridge.InterceptionControlRoomBridge? = null
     private var processingThread: Thread? = null
     @Volatile private var reusableVisionBuffer: java.nio.ByteBuffer? = null
     @Volatile private var previousVisionBuffer: java.nio.ByteBuffer? = null
@@ -505,6 +507,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
         ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_DEFAULT).apply { start() }
         ocrIoHandler = android.os.Handler(ocrIoThread!!.looper)
         initializeOverlayUI()
+        interceptionBridge = com.assistant.overlay.bridge.InterceptionControlRoomBridge(com.assistant.overlay.repository.InterceptionRepository(this)).also { it.start() }
+        modMenuController = ModMenuController(this).also { it.show() }
     }
 
     private fun initializePerformanceMode() {
@@ -1022,6 +1026,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     override fun onDestroy() {
+        modMenuController?.hide()
+        modMenuController = null
         SmartAssistRepository.clearPanic()
         com.assistant.vision.OverlaySelfMask.clearPrefix("hud")
         com.assistant.RuntimeCoordinator.shutdown()

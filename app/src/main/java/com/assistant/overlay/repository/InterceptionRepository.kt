@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 data class InterceptionState(
     val enabled: Boolean = true,
     val autoIntercept: Boolean = true,
-    val awareness: Int = 50,
-    val prediction: Int = 50
+    val awareness: Int = 100,
+    val prediction: Int = 100
 )
 
 class InterceptionRepository(context: Context) {

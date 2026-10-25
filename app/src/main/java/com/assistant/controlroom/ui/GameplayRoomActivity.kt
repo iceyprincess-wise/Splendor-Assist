@@ -390,11 +390,15 @@ class GameplayRoomActivity : AppCompatActivity() {
                "capture(frameId=$frameId frames=$frames) decisionLoop(decisions=$decisionCount routed=$decisionRouted)"
     }
 
+    private val logExecutor = java.util.concurrent.Executors.newSingleThreadExecutor()
+
     private fun logLine(line: String) {
-        try {
-            val f = LOG_FILE
-            f.parentFile?.mkdirs()
-            PrintWriter(FileWriter(f, true)).use { it.println(line) }
-        } catch (_: Throwable) {}
+        logExecutor.execute {
+            try {
+                val f = LOG_FILE
+                f.parentFile?.mkdirs()
+                PrintWriter(FileWriter(f, true)).use { it.println(line) }
+            } catch (_: Throwable) {}
+        }
     }
 }
