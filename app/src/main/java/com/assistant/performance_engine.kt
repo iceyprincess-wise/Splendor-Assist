@@ -136,10 +136,10 @@ object CpuGovernorEngine {
  */
 object DisplayProfileEngine {
 
-    // ADMIN-TUNABLE (default = original hard-coded value)
+// ADMIN-TUNABLE (default = 60f for 60-FPS eFootball coexistence)
     val gameFps: Float get() {
-        val v = 30f
-        return if (v > 0f) v else 30f
+val v = 60f
+return if (v > 0f) v else 60f
     }
     val gameBudgetMs: Float get() = 1000f / gameFps
 
