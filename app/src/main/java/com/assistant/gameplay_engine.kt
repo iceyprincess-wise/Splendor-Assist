@@ -1166,8 +1166,6 @@ object BallDetector {
 
     private var initialized = false
     private var lostFrames = 0
-    private var totalFrames = 0
-    private var successfulFrames = 0
 
     fun detect(
         candidate: BallCandidate?
@@ -1206,7 +1204,6 @@ object BallDetector {
             )
         }
 
-        successfulFrames++
         lostFrames = 0
 
         // PHASE4: 15fps EWA — ball moves more between frames, new position must dominate
@@ -1472,7 +1469,7 @@ object BallTelemetryBridge {
         // Feed the trust chain at the source: without this stamp,
         // ballTrust() decays to zero and the trusted gate locks the whole
         // contributor stack out no matter what the detectors see.
-        try { VisionTrust.stampBall(ball.confidence) } catch (_: Throwable) { }
+        try { VisionTrust.stampBall(ball.confidence) } catch (e: Throwable) { android.util.Log.w("BallTelemetryBridge", "stampBall failed", e) }
 
         val vx = if (hasPrevious) ball.x - previousX else 0f
         val vy = if (hasPrevious) ball.y - previousY else 0f
@@ -1490,7 +1487,7 @@ object BallTelemetryBridge {
         } catch (_: Throwable) {
         }
 
-        try { VisionTrust.pushMotion(vx, vy) } catch (_: Throwable) { }
+        try { VisionTrust.pushMotion(vx, vy) } catch (e: Throwable) { android.util.Log.w("BallTelemetryBridge", "pushMotion failed", e) }
 
         previousX = ball.x
         previousY = ball.y
@@ -2243,7 +2240,7 @@ object CriticalAttackingVectorEngine {
     private val outScoring = FloatArray(2)
     private val outPass = FloatArray(2)
 
-    fun computeAbsoluteScoringVector(strikerX: Float, strikerY: Float, gkX: Float, gkY: Float, goalLeftPostX: Float, goalLeftPostY: Float, goalRightPostX: Float, goalRightPostY: Float, controlOriginX: Float = 1400f, controlOriginY: Float = 550f, controlRadius: Float = 110f): PointF {
+    fun computeAbsoluteScoringVector(strikerX: Float, strikerY: Float, gkX: Float, gkY: Float, goalLeftPostX: Float, goalLeftPostY: Float, goalRightPostX: Float, goalRightPostY: Float, controlOriginX: Float = 0f, controlOriginY: Float = 0f, controlRadius: Float = 0f): PointF {
         com.assistant.NativeBridge.nativeCriticalScoringVector(strikerX, strikerY, gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY, controlOriginX, controlOriginY, controlRadius, outScoring)
         return PointF(outScoring[0], outScoring[1])
     }
@@ -5169,11 +5166,6 @@ object HybridOmnipotentMatrixEngine {
         screenWidth:Float=com.assistant.vision.CameraProfile.captureWidthOrFallback(),
         screenHeight:Float=com.assistant.vision.CameraProfile.captureHeightOrFallback()
     ): Long {
-        physicsMatrix[ATTACKER_X]=oppPlayerX; physicsMatrix[ATTACKER_Y]=oppPlayerY
-        physicsMatrix[ATTACKER_VX]=oppVx;     physicsMatrix[ATTACKER_VY]=oppVy
-        physicsMatrix[BALL_X]=ballX;          physicsMatrix[BALL_Y]=ballY
-        physicsMatrix[BALL_VX]=ballVx;        physicsMatrix[BALL_YV]=ballVy
-
         val ballToOpp = hypot((ballX-oppPlayerX).toDouble(),(ballY-oppPlayerY).toDouble()).toFloat()
         val lookAhead = if (isOpponentExecutingSkill) 1.2f else 2.8f
         val loose     = screenWidth * 0.045f
@@ -13386,10 +13378,6 @@ object TacticalMapGenerationEngine {
         offensiveLine: OffensiveLineResult
     ): TacticalMapResult {
 
-        pressure.hashCode()
-        teamShape.hashCode()
-        defensiveLine.hashCode()
-        offensiveLine.hashCode()
 
         return TacticalMapResult(
             width = occupancy.columns,
@@ -13997,9 +13985,8 @@ object AgilityContributor : GameplayContributor {
         val ballX = frame.ballX
         val ballY = frame.ballY
 
-        // Nearest opponent to the carrier. Defaults keep the engine on its
-        // movement-angle shield fallback until a proven defender exists.
-        var opponentDistance = (1f - frame.defenderDensity.coerceIn(0f, 1f)) * 300f
+        // Real defender distance from world state; fallback to far ceiling if unknown.
+        var opponentDistance = 1200.0f
         var oppX = ballX
         var oppY = ballY
         try {
@@ -14024,20 +14011,22 @@ object AgilityContributor : GameplayContributor {
             ).toFloat()
         } else 0f
 
-        // SPLENDOR_AGILITY_VELOCITY_UNITS_V1 - the engine declares a 0..15
-        // velocity space (native_agility_physics.c SPLENDOR_AGILITY_UNITS_V3).
-        // This contributor already matched it; the value is clamped explicitly
-        // so the contract cannot drift again.
-        val playerVelocity =
-            (frame.bestLaneConfidence * 10.0f + frame.confidence * 5.0f).coerceIn(0f, 15f)
-        // turnIntensity contract is 0..1 (how hard the carrier is turning).
-        val turnIntensity = frame.defenderDensity.coerceIn(0f, 1f)
+        // Real player velocity from telemetry, not fabricated from confidence.
+        val telemetry = TelemetryRepository.current()
+        val playerVelocity = telemetry.playerVelocity.coerceIn(0f, 15f)
+        // Real turn intensity from actual movement angle, not defender density.
+        val turnIntensity = if (telemetry.playerVelocity > 0.1f) {
+            (kotlin.math.abs(movementAngleDegrees) / 180f).coerceIn(0f, 1f)
+        } else 0f
         val possessionConfidence = frame.confidence.coerceIn(0f, 1f)
 
         val success = com.assistant.NativeBridge.nativeComputeAgilityPhysics(
             playerVelocity, opponentDistance, movementAngleDegrees, possessionConfidence, turnIntensity,
             ballX, ballY, oppX, oppY,
-            nativeAgilityOut
+            nativeAgilityOut,
+            100.0f, 220.0f, 500.0f, 1200.0f,
+            15.0f, 4.0f, 6.0f, 3.0f, 2.0f,
+            45.0f, 0.3f, 0.5f
         )
 
         if (!success || nativeAgilityOut[5] < 0.1f) return null // Native layer determined no active shield/agile move
