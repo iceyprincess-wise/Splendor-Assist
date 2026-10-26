@@ -2,7 +2,6 @@ package com.assistant
 import java.nio.ByteBuffer
 
 import com.assistant.diagnostic.RuntimeLogger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.atomic.AtomicBoolean
 
 object NativeBridge {
@@ -55,7 +54,8 @@ object NativeBridge {
                 "PREPROCESS_NATIVE_UNAVAILABLE " + (t?.toString() ?: "unknown"),
                 "NATIVE_VISION"
             )
-        } catch (_: Throwable) {
+        } catch (e: Throwable) {
+            android.util.Log.w("NativeBridge", "RuntimeLogger failed", e)
         }
     }
 
@@ -69,7 +69,8 @@ object NativeBridge {
                 "AUTHORITY_NATIVE_UNAVAILABLE " + (t?.toString() ?: "unknown"),
                 "NATIVE_ARBITRATION"
             )
-        } catch (_: Throwable) {
+        } catch (e: Throwable) {
+            android.util.Log.w("NativeBridge", "RuntimeLogger failed", e)
         }
     }
 
@@ -271,7 +272,11 @@ object NativeBridge {
         playerVelocity: Float, opponentDistance: Float,
         movementAngleDegrees: Float, possessionConfidence: Float,
         turnIntensity: Float, playerX: Float, playerY: Float,
-        oppX: Float, oppY: Float, threadSeed: Int, outBuffer: FloatArray
+        oppX: Float, oppY: Float, outBuffer: FloatArray,
+        nearUnits: Float, proxUnits: Float, softUnits: Float, farUnits: Float,
+        maxVelocity: Float, shieldBase: Float, shieldProx: Float,
+        shieldSpeed: Float, shieldConf: Float, durationBase: Float,
+        confFloor: Float, distGuard: Float
     ) {
         if (!nativeReady.get()) {
             logFailureOnce()
@@ -279,7 +284,10 @@ object NativeBridge {
         }
         nativeAgilityPhysicsImpl(
             playerVelocity, opponentDistance, movementAngleDegrees, possessionConfidence,
-            turnIntensity, playerX, playerY, oppX, oppY, threadSeed, outBuffer
+            turnIntensity, playerX, playerY, oppX, oppY, outBuffer,
+            nearUnits, proxUnits, softUnits, farUnits,
+            maxVelocity, shieldBase, shieldProx, shieldSpeed,
+            shieldConf, durationBase, confFloor, distGuard
         )
     }
 
@@ -297,13 +305,12 @@ object NativeBridge {
         playerVelocity: Float, opponentDistance: Float,
         movementAngleDegrees: Float, possessionConfidence: Float,
         turnIntensity: Float, playerX: Float, playerY: Float,
-        oppX: Float, oppY: Float, threadSeed: Int, outBuffer: FloatArray
+        oppX: Float, oppY: Float, outBuffer: FloatArray,
+        nearUnits: Float, proxUnits: Float, softUnits: Float, farUnits: Float,
+        maxVelocity: Float, shieldBase: Float, shieldProx: Float,
+        shieldSpeed: Float, shieldConf: Float, durationBase: Float,
+        confFloor: Float, distGuard: Float
     )
-
-    @JvmStatic
-    fun nextThreadSeed(): Int {
-        return ThreadLocalRandom.current().nextInt()
-    }
 
 
 
@@ -486,7 +493,11 @@ object NativeBridge {
         turnIntensity: Float,
         playerX: Float, playerY: Float,
         oppX: Float, oppY: Float,
-        outBuffer: FloatArray
+        outBuffer: FloatArray,
+        nearUnits: Float, proxUnits: Float, softUnits: Float, farUnits: Float,
+        maxVelocity: Float, shieldBase: Float, shieldProx: Float,
+        shieldSpeed: Float, shieldConf: Float, durationBase: Float,
+        confFloor: Float, distGuard: Float
     ): Boolean {
         // SPLENDOR_AGILITY_LIVE_TELEMETRY_V1 - forward real telemetry; report native readiness.
         if (!nativeReady.get()) {
@@ -496,8 +507,10 @@ object NativeBridge {
         nativeAgilityPhysicsImpl(
             playerVelocity, opponentDistance,
             movementAngleDegrees, possessionConfidence,
-            turnIntensity, playerX, playerY, oppX, oppY,
-            nextThreadSeed(), outBuffer
+            turnIntensity, playerX, playerY, oppX, oppY, outBuffer,
+            nearUnits, proxUnits, softUnits, farUnits,
+            maxVelocity, shieldBase, shieldProx, shieldSpeed,
+            shieldConf, durationBase, confFloor, distGuard
         )
         return true
     }
