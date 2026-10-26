@@ -263,10 +263,9 @@ class MainActivity : AppCompatActivity() {
             refreshRuntimeHub()
         }
 
-        // UPGRADE: Redirected from deleted/dead LogActivity to DiagnosisRoomActivity 
+        // UPGRADE: Redirected from deleted/dead LogActivity to DiagnosticsStatusRoomActivity 
         // to prevent ClassNotFoundException crashes.
-        findViewById<Button>(com.assistant.overlay.R.id.btnViewLogs).setOnClickListener {
-            startActivity(Intent(this, DiagnosisRoomActivity::class.java))
+            startActivity(Intent(this, DiagnosticsStatusRoomActivity::class.java))
         }
 
         findViewById<View>(com.assistant.overlay.R.id.cardSmartAssist).setOnClickListener {

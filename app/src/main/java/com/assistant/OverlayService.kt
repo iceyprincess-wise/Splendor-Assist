@@ -61,6 +61,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.locks.ReentrantLock
+import com.assistant.ModMenuController
 
 class OverlayService : Service(), ComponentCallbacks2 {
     private var lastCaptureFaultLog = 0L

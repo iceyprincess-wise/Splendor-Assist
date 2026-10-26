@@ -60,7 +60,6 @@ import java.util.Locale
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -419,8 +418,6 @@ object ActiveDefenderEngine {
         var v2: Float
         var s: Float
         do {
-            v1 = 2f * Random.nextFloat() - 1f
-            v2 = 2f * Random.nextFloat() - 1f
             s = v1 * v1 + v2 * v2
         } while (s >= 1f || s == 0f)
         val multiplier = sqrt(-2f * ln(s) / s)
@@ -463,8 +460,6 @@ object ActiveDefenderEngine {
 
         // --- ADAPTIVE NOISE HUMANIZATION ---
         // Generates organic micro-drifts that easily bypass latency tracking heuristics
-        val humanVarianceX = nextGaussianNoise() * HUMANIZATION_NOISE_MAX
-        val humanVarianceY = nextGaussianNoise() * HUMANIZATION_NOISE_MAX
 
         for (index in scene.trackedPlayers.indices) {
             if (index == attacker.attackerIndex) continue
@@ -474,8 +469,6 @@ object ActiveDefenderEngine {
             if (player.isUserTeam == attackerTeam) continue
 
             // Apply variance and compute relative offset to the *predicted* location
-            val dx = (player.x - predictedAttackerX) + humanVarianceX
-            val dy = (player.y - predictedAttackerY) + humanVarianceY
 
             // Fast culling using Manhattan distance to eliminate heavy sqrt calls per frame
             val manhattanDist = abs(dx) + abs(dy)
@@ -3842,7 +3835,6 @@ object FrameNormalizer {
         val timestampNanos: Long,
         val deltaNanos: Long,
         val isTickAligned: Boolean,
-        val jitterVariance: Float,
         val recommendedInputScale: Float
     )
 
@@ -3878,7 +3870,6 @@ object FrameNormalizer {
         val frameSyncRatio = if (deltaNanos > 0) targetFrameTime.toFloat() / deltaNanos.toFloat() else 1.0f
 
         // 2. Frame-time ratio only (no fabricated jitter)
-        val jitterVariance = 1.0f
 
         // 3. Server-Tick Synchronization Check
         // Determines if this specific frame cycle perfectly aligns with the standard server packet boundary
@@ -3888,16 +3879,13 @@ object FrameNormalizer {
         // Computes dynamic gesture scaling to force maximal packet payload effectiveness without breaking boundaries
         val baseScale = max(0.5f, min(2.0f, frameSyncRatio))
         val recommendedInputScale = if (isTickAligned) {
-            baseScale * jitterVariance * 1.05f // +5% input penetration boost on perfect server tick alignment
         } else {
-            baseScale * jitterVariance
         }
 
         val metadata = FrameMetadata(
             timestampNanos = currentTime,
             deltaNanos = deltaNanos,
             isTickAligned = isTickAligned,
-            jitterVariance = jitterVariance,
             recommendedInputScale = recommendedInputScale
         )
 
@@ -4001,11 +3989,7 @@ object FrameScanner {
                 var finalY = y
 
                 if (adaptiveNoiseVariance > 0 || serverTickSyncScale != 1.0f) {
-                    val noiseX = if (adaptiveNoiseVariance > 0) Random.nextInt(-adaptiveNoiseVariance, adaptiveNoiseVariance + 1) else 0
-                    val noiseY = if (adaptiveNoiseVariance > 0) Random.nextInt(-adaptiveNoiseVariance, adaptiveNoiseVariance + 1) else 0
                     
-                    val scaledX = (x + noiseX) * serverTickSyncScale
-                    val scaledY = (y + noiseY) * serverTickSyncScale
 
                     finalX = scaledX.roundToInt().coerceIn(0, width - 1)
                     finalY = scaledY.roundToInt().coerceIn(0, height - 1)
@@ -4325,10 +4309,8 @@ object GameplayDecisionEngine {
     private inline fun bound(v: Float, min: Float, max: Float): Float =
         if (v < min) min else if (v > max) max else v
 
-    // Organic Adaptive Noise utilizing the native ThreadLocalRandom for max concurrent throughput
     @Suppress("NOTHING_TO_INLINE")
     private inline fun generateHumanizedNoise(variance: Float): Float =
-        (ThreadLocalRandom.current().nextFloat() * 2f - 1f) * variance
 
     fun selectVisionAdaptiveMode(
         hasBall: Boolean,
@@ -5666,8 +5648,6 @@ object SmartAssistUltimateCorrector {
             val frameTimeMs = calculateFrameTimeMs(service)
 
             // Adaptive humanization offsets applied to initial coordinates
-            val jitterX = Random.nextFloat() * JITTER_RADIUS_PIXELS * (if (Random.nextBoolean()) 1f else -1f)
-            val jitterY = Random.nextFloat() * JITTER_RADIUS_PIXELS * (if (Random.nextBoolean()) 1f else -1f)
 
             val adjustedDashX = dashButtonX + jitterX
             val adjustedDashY = dashButtonY + jitterY
@@ -6985,7 +6965,6 @@ object OnlineParameterAdaptationEngine {
             confidence = state.confidence,
             adaptationGain = humanizedGain,
             tickSyncMultiplier = finalTickMultiplier,
-            humanizedNoise = (noiseFactor * dynamicSpread)
         )
     }
 
@@ -10053,20 +10032,14 @@ class ZeroFramePressEngine(
 
         if (distanceSqr < ENGAGEMENT_DISTANCE_SQR) {
             
-            val microVarianceX = 0f
-            val microVarianceY = 0f
 
             // Server-Tick Sync: Dynamically scale gesture path lengths and hold durations to match packet boundaries
-            val dynamicPathLength = (PATH_SCALAR_BASE * TICK_RATE_MULTIPLIER) + (Random.nextFloat() * 1.5f)
             
             // Modulating hold duration to register maximum possession effectiveness
             val dynamicHoldDuration = (BASE_HOLD_DURATION_MS * TICK_RATE_MULTIPLIER).toLong()
 
-            val originX = dashButtonX + microVarianceX
-            val originY = dashButtonY + microVarianceY
 
             val targetX = originX + dynamicPathLength
-            val targetY = originY + (microVarianceY * 0.5f) // Subtle angular trajectory variance
 
             inputEngine.injectZeroLatencySwipe(
                 originX,
@@ -11783,13 +11756,10 @@ object ShieldAssistEngine {
         if (opponentDistance <= 0f) return false
         val normalizedDistance = opponentDistance / 100.0f
 
-        val upperTriggerFuzz = 2.2f
-        val lowerOverrideFuzz = 1.0f
 
         // Dynamic Threat Evaluation:
         // 1. Dynamic trigger if opponent is inside 220 coordinate points (2.2f) and player velocity is active.
         // 2. Immediate force override if within critical body collision box of 100.0f (1.0f normalized).
-        return normalizedDistance < upperTriggerFuzz && (playerVelocity > 0.15f || normalizedDistance < lowerOverrideFuzz)
     }
 
     /**
@@ -13045,7 +13015,6 @@ object PressureFieldEngine {
 
         if (maxValue > 0f) {
             // Add a minute float variance to disrupt absolute identical mathematical normalized limits
-            val normalizationJitter = Random.nextFloat() * 0.002f - 0.001f
             val dynamicMax = maxValue + (maxValue * normalizationJitter)
 
             grid.forEachIndexed { r, _ ->
