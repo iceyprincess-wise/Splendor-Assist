@@ -1472,6 +1472,9 @@ object NetProbeEngine {
         }
         PerformanceTelemetryRegistry.publishNet(
             rtt, jitter, quality, CarrierProfileEngine.current.name, NetworkStateEngine.transport)
+        // Live ping quality was measured here but never published to the bus
+        // that consumers read, so AdapterSignalBus.pingQuality stayed "UNKNOWN".
+        com.assistant.diagnostic.AdapterSignalBus.publishPing(quality)
     }
 
     private fun tcpRtt(host: String, port: Int): Long = try {

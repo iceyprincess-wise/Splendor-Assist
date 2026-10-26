@@ -135,8 +135,23 @@ class ActiveGestureController(
         val dynamicGoalLeftY = if (earlyScene.goalDetected) earlyScene.goalTopY else 280f
         val dynamicGoalRightX = if (earlyScene.goalDetected) earlyScene.goalRightX else 1620f
         val dynamicGoalRightY = if (earlyScene.goalDetected) earlyScene.goalBottomY else 440f
-        val dynamicGkX = TelemetryRepository.current().goalkeeperX.let { if (it > 0f) it else 1500f }
-        val dynamicGkY = TelemetryRepository.current().goalkeeperY.let { if (it > 0f) it else 360f }
+        // Keeper position: prefer the tracked keeper, then live telemetry, then
+        // the real detected goal centre (the keeper stands on the goal line).
+        // The previous hard-coded 1500f/360f was presented to the scoring
+        // vector as if it were a measured keeper position.
+        val liveTelemetry = TelemetryRepository.current()
+        val dynamicGkX = when {
+            earlyScene.goalkeeperVisible -> earlyScene.goalkeeperX
+            liveTelemetry.goalkeeperX > 0f -> liveTelemetry.goalkeeperX
+            earlyScene.goalDetected -> (earlyScene.goalLeftX + earlyScene.goalRightX) / 2f
+            else -> 0f
+        }
+        val dynamicGkY = when {
+            earlyScene.goalkeeperVisible -> earlyScene.goalkeeperY
+            liveTelemetry.goalkeeperY > 0f -> liveTelemetry.goalkeeperY
+            earlyScene.goalDetected -> (earlyScene.goalTopY + earlyScene.goalBottomY) / 2f
+            else -> 0f
+        }
 
         val antiCutbackGain = if (antiCutbackEngine.blockCutbackPassingLanes(
             nearestOppEarly?.x ?: endX, nearestOppEarly?.y ?: endY,
@@ -290,26 +305,44 @@ class ActiveGestureController(
                     ?: 0f
             ).coerceIn(0f,1f)
 
+        // The Pass/Shot/Cross sliders persist passThreshold/shotThreshold/
+        // crossThreshold, but nothing read them, so changing a slider never
+        // affected the on-screen decision. Use each value as a direct bias on
+        // the matching authority: 50 is neutral, 0 halves, 100 saturates.
+        val smartAssistConfig = com.assistant.SmartAssistRepository.configuration()
+        val shotThresholdBias =
+            (smartAssistConfig.shotThreshold.coerceIn(0, 100) / 50f)
+        val passThresholdBias =
+            (smartAssistConfig.passThreshold.coerceIn(0, 100) / 50f)
+        val crossThresholdBias =
+            (smartAssistConfig.crossThreshold.coerceIn(0, 100) / 50f)
+
         val shotAuthority =
             (
-                shootingLaneScore +
-                worldState.tacticalIntelligenceResult.confidence +
-                worldState.runtimeConfidenceCalibrationResult.calibratedConfidence
+                (
+                    shootingLaneScore +
+                    worldState.tacticalIntelligenceResult.confidence +
+                    worldState.runtimeConfidenceCalibrationResult.calibratedConfidence
+                ) * shotThresholdBias
             ).coerceIn(0f,1f)
 
         val passAuthority =
             (
-                passingGraphScore +
-                trajectory.speed.coerceIn(0f,1f) +
-                worldState.buildUpRecognitionResult.confidence +
-                worldState.possessionStyleRecognitionResult.confidence
+                (
+                    passingGraphScore +
+                    trajectory.speed.coerceIn(0f,1f) +
+                    worldState.buildUpRecognitionResult.confidence +
+                    worldState.possessionStyleRecognitionResult.confidence
+                ) * passThresholdBias
             ).coerceIn(0f,1f)
 
         val crossAuthority =
             (
-                crossingLaneScore +
-                worldState.wingOverloadDetectionResult.confidence +
-                worldState.runtimeConfidenceCalibrationResult.calibratedConfidence
+                (
+                    crossingLaneScore +
+                    worldState.wingOverloadDetectionResult.confidence +
+                    worldState.runtimeConfidenceCalibrationResult.calibratedConfidence
+                ) * crossThresholdBias
             ).coerceIn(0f,1f)
 
         val visionProximityConfidence =

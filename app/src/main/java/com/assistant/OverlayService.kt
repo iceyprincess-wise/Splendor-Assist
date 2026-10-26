@@ -192,7 +192,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var visionStartTimeMs = 0L
     private val visionWatchdogJob = kotlinx.coroutines.Job()
 
-    private val captureFrameIntervalBase = 33L
     private val captureFrameIntervalMs: Long
         get() = com.assistant.MemoryCaptureGateEngine.recommendedIntervalMs()
 
@@ -996,9 +995,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
             override fun run() {
                 if (!::overlayView.isInitialized) return
                 val panicActive = SmartAssistRepository.panicActive()
-                if (!panicActive && SmartAssistRepository.panicActive()) {
-                    // PHASE10_PANIC_PERSISTENCE_KEEP_STATE
-                }
                 if (lastPanicState != panicActive) {
                     lastPanicState = panicActive
                     // overlayView MUST remain fully transparent to prevent MediaProjection pixel contamination.

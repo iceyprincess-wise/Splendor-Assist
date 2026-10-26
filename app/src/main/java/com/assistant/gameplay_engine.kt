@@ -9708,6 +9708,10 @@ object TacticalAnalyticsEngine{
     private val outBuffer = FloatArray(1)
     fun analyze(tacticalMap:TacticalMapResult, compactness:DefensiveCompactnessResult, wing:WingOverloadDetectionResult, central:CentralOverloadDetectionResult, pressing:PressingRecognitionResult, counterPress:CounterPressRecognitionResult, buildUp:BuildUpRecognitionResult, possession:PossessionStyleRecognitionResult):TacticalAnalyticsResult {
         com.assistant.NativeBridge.nativeTacticalAnalytics(tacticalMap.confidence, compactness.confidence, compactness.compactness, wing.confidence, wing.overloaded, central.confidence, central.overloaded, pressing.confidence, pressing.detected, counterPress.confidence, counterPress.detected, buildUp.confidence, buildUp.detected, possession.confidence, possession.detected, outBuffer)
+        // Real analytics produced: analyticsProduced was declared and printed
+        // but never incremented, so the ANALYTICS counter read 0 no matter how
+        // many analyses ran.
+        com.assistant.diagnostic.RuntimeMetricsRegistry.analyticsProduced.incrementAndGet()
         return TacticalAnalyticsResult(confidence = outBuffer[0])
     }
 }
@@ -11967,9 +11971,16 @@ fun updateThresholds(pass: Int, shot: Int, cross: Int) {
     }
     
     fun saveCurrentSettings(): Boolean {
+        // Real save: persist the current in-memory configuration through the
+        // repository. Previously this returned true unconditionally while
+        // performing no write, so callers were told a save succeeded when
+        // nothing was saved.
         return try {
+            repository.saveState(repository.getCurrentState())
             true
         } catch (e: Exception) {
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "saveCurrentSettings failed: " + e.message, "SMART_ASSIST")
             false
         }
     }
@@ -12447,6 +12458,21 @@ SceneTracker.update(
 
   val scene =
       SceneTracker.current()
+
+  // Keep the telemetry repository goalkeeper slot live. SceneTracker is the
+  // only component that actually tracks the keeper, but its result was never
+  // copied into TelemetryRepository, so goalkeeperX/Y stayed 0 for every
+  // consumer. Publish the real tracked position; when the keeper is not
+  // visible publish 0,0 so confidence collapses instead of holding a stale
+  // position.
+  if (scene.goalkeeperVisible) {
+      TelemetryCoordinator.updateGoalkeeperPosition(
+          scene.goalkeeperX,
+          scene.goalkeeperY
+      )
+  } else {
+      TelemetryCoordinator.updateGoalkeeperPosition(0f, 0f)
+  }
 
   val closestPlayer =
       ClosestPlayerEngine.compute(
@@ -15518,6 +15544,12 @@ object SpeedCompensationContributor : GameplayContributor {
                     AdapterSignalBus.inputIsLagging -> 0.7f
                     AdapterSignalBus.stutterIsSevere -> 0.65f         // now actually works (bus was never published before)
                     AdapterSignalBus.lagVerdict == "JITTERY" || AdapterSignalBus.memoryIsUnderPressure -> 0.8f
+                    // Live adaptive brake: PerformanceEngineService publishes
+                    // executionBrake from measured load shedding, but nothing on
+                    // the execution path read it, so the brake was a decorative
+                    // flag. Honour it here by shortening the gesture window.
+                    AdapterSignalBus.executionIsFullyBraked -> 0.55f
+                    AdapterSignalBus.executionIsBraked -> 0.8f
                     aggro > 1.5f -> 1.2f // EXTREMIST OVERRIDE: Force longer holds for guaranteed execution
                     else -> 1.0f
                 }

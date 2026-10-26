@@ -380,6 +380,23 @@ object OmnipotentGoalkeeperEngine {
                     lastSaveTimestamp = System.currentTimeMillis() // Mark save for rebound detection ONLY if bus accepted
                 }
 
+                // Classify the accepted action so the registry interception and
+                // panic-save counters are no longer permanently zero. These
+                // counters were declared and printed but never incremented
+                // anywhere, so the snapshot always reported Intercept=0 Panic=0.
+                if (accepted) {
+                    when (finalAction) {
+                        GoalkeeperAction.PUNCH_CROSS,
+                        GoalkeeperAction.CLAIM_CROSS -> GoalkeeperMetricsRegistry.interceptions.incrementAndGet()
+                        GoalkeeperAction.REBOUND_SAVE -> {
+                            if (com.assistant.SmartAssistRepository.panicActive()) {
+                                GoalkeeperMetricsRegistry.panicSaves.incrementAndGet()
+                            }
+                        }
+                        else -> Unit
+                    }
+                }
+
                 RecoveryPositionEngine.beginRecovery()
                 RecoveryPositionEngine.finishRecovery()
 

@@ -324,7 +324,11 @@ object DeathWatch {
                             
                             traceNote = " [Tombstone saved to ${if(extPath.isNotEmpty()) extPath else SplendorStorageRoot.ROOT_PATH}]"
                         }
-                    } catch (_: Throwable) {}
+                    } catch (t: Throwable) {
+                        com.assistant.diagnostic.RuntimeLogger.log(
+                            "DeathWatch: native crash persistence failed: " + t.message,
+                            "DEATHWATCH")
+                    }
                 }
 
                 val reasonStr = when (info.reason) {
