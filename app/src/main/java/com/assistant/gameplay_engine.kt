@@ -848,10 +848,8 @@ class AutoEvadeEngine(
         screenHeight: Float = com.assistant.vision.CameraProfile.captureHeightOrFallback()
     ): Boolean {
         val now = System.currentTimeMillis()
-        val random = ThreadLocalRandom.current()
         
-        // [ADAPTIVE NOISE HUMANIZATION] - Dynamic micro-variance to avoid machine pattern detection
-        val humanizedCooldown = BASE_EVADE_COOLDOWN_MS + random.nextLong(-12L, 17L)
+        val humanizedCooldown = BASE_EVADE_COOLDOWN_MS
         if (now - lastEvadeTimestamp < humanizedCooldown) {
             return false
         }
@@ -883,23 +881,17 @@ class AutoEvadeEngine(
         // Compute base 90-degree perpendicular escape angle
         val approachAngle = atan2(approachDy, approachDx)
         
-        // [ADAPTIVE NOISE HUMANIZATION] - Angle micro-variance (-2.8 to +2.8 degrees)
-        val angleNoise = (random.nextFloat() - 0.5f) * 0.1f 
-        val escapeAngle = approachAngle + (PI.toFloat() / 2.0f) + angleNoise
+        val escapeAngle = approachAngle + (PI.toFloat() / 2.0f)
 
         // Scale gesture path dynamically based on closing speed and screen size
         val evadeRadius = (screenHeight * 0.10f) * dynamicThreatMultiplier
         
-        // [ADAPTIVE NOISE HUMANIZATION] - Spatial micro-variance in exact destination pixels
-        val noiseX = (random.nextFloat() - 0.5f) * (screenHeight * 0.015f)
-        val noiseY = (random.nextFloat() - 0.5f) * (screenHeight * 0.015f)
-
-        val evadeTargetX = (joystickX + (cos(escapeAngle) * evadeRadius) + noiseX).coerceIn(0f, screenWidth)
-        val evadeTargetY = (joystickY + (sin(escapeAngle) * evadeRadius) + noiseY).coerceIn(0f, screenHeight)
+        val evadeTargetX = (joystickX + (cos(escapeAngle) * evadeRadius)).coerceIn(0f, screenWidth)
+        val evadeTargetY = (joystickY + (sin(escapeAngle) * evadeRadius)).coerceIn(0f, screenHeight)
 
         // [SERVER-TICK SYNC & FRAME-RATE OPTIMIZATION]
         // Base target: ~38-44ms gesture sweep.
-        val rawDuration = 38f + (random.nextFloat() * 6f) 
+        val rawDuration = 38f 
         
         // Snap duration to perfectly match 120Hz display boundaries (8.33ms intervals)
         val frameAlignedDuration = (ceil((rawDuration / FRAME_120HZ_MS).toDouble()) * FRAME_120HZ_MS).toLong()
@@ -1170,8 +1162,6 @@ object BallDetector {
     fun detect(
         candidate: BallCandidate?
     ): BallDetectionResult {
-
-        totalFrames++
 
         if (candidate == null || candidate.score < MIN_CANDIDATE_CONFIDENCE) {
             lostFrames++
@@ -1484,8 +1474,7 @@ object BallTelemetryBridge {
             published++
             lastConfidence = ball.confidence
             lastUpdatedMs = System.currentTimeMillis()
-        } catch (_: Throwable) {
-        }
+        } catch (e: Throwable) { android.util.Log.w("BallTelemetryBridge", "updateBallMotion failed", e) }
 
         try { VisionTrust.pushMotion(vx, vy) } catch (e: Throwable) { android.util.Log.w("BallTelemetryBridge", "pushMotion failed", e) }
 
@@ -3790,10 +3779,8 @@ object FrameDropCompensationEngine {
         val frameTimeMs = if (is120HzDisplay) FRAME_TIME_120HZ else FRAME_TIME_60HZ
         val frameAlignedDuration = ((tickAlignedDuration / frameTimeMs).roundToLong() * frameTimeMs).toLong()
 
-        // Step 4: Adaptive Noise Humanization
-        // Randomized dynamic micro-variance to mimic human hand latency boundaries
-        val noise = Random.nextLong(MIN_HUMAN_VARIANCE_MS, MAX_HUMAN_VARIANCE_MS + 1)
-        var optimizedDuration = frameAlignedDuration + noise
+        // Step 4: Frame-aligned duration only (no fabricated noise)
+        var optimizedDuration = frameAlignedDuration
 
         // Step 5: Absolute Minimum Bounds Enforcement to prevent engine crashes
         val safeMinBound = when {
@@ -3890,9 +3877,8 @@ object FrameNormalizer {
         val targetFrameTime = if (targetHz >= TARGET_FPS_120) FRAME_TIME_120HZ_NANOS else FRAME_TIME_60HZ_NANOS
         val frameSyncRatio = if (deltaNanos > 0) targetFrameTime.toFloat() / deltaNanos.toFloat() else 1.0f
 
-        // 2. Adaptive Noise Humanization
-        // Generates a dynamic micro-variance (±2%) to mimic human latency, preventing rigid heuristic flagging
-        val jitterVariance = 1.0f + ((Random.nextFloat() * 0.04f) - 0.02f)
+        // 2. Frame-time ratio only (no fabricated jitter)
+        val jitterVariance = 1.0f
 
         // 3. Server-Tick Synchronization Check
         // Determines if this specific frame cycle perfectly aligns with the standard server packet boundary
@@ -5169,19 +5155,18 @@ object HybridOmnipotentMatrixEngine {
         val ballToOpp = hypot((ballX-oppPlayerX).toDouble(),(ballY-oppPlayerY).toDouble()).toFloat()
         val lookAhead = if (isOpponentExecutingSkill) 1.2f else 2.8f
         val loose     = screenWidth * 0.045f
-        val nx = Random.nextFloat()*1.4f-0.7f; val ny = Random.nextFloat()*1.4f-0.7f
 
         val targetX: Float; val targetY: Float
         if (ballToOpp > loose) {
-            targetX = (ballX + ballVx*lookAhead + nx).coerceIn(0f,screenWidth)
-            targetY = (ballY + ballVy*lookAhead + ny).coerceIn(0f,screenHeight)
+            targetX = (ballX + ballVx*lookAhead).coerceIn(0f,screenWidth)
+            targetY = (ballY + ballVy*lookAhead).coerceIn(0f,screenHeight)
         } else {
             val mag = hypot(oppVx.toDouble(),oppVy.toDouble()).toFloat()
             val nvx = if(mag>0.05f) oppVx/mag else (ballX-myPlayerX)*0.1f
             val nvy = if(mag>0.05f) oppVy/mag else (ballY-myPlayerY)*0.1f
             val br  = screenHeight*0.03f
-            targetX = (oppPlayerX + nvx*br + nx).coerceIn(0f,screenWidth)
-            targetY = (oppPlayerY + nvy*br + ny).coerceIn(0f,screenHeight)
+            targetX = (oppPlayerX + nvx*br).coerceIn(0f,screenWidth)
+            targetY = (oppPlayerY + nvy*br).coerceIn(0f,screenHeight)
         }
 
         val now = System.currentTimeMillis()
@@ -6054,19 +6039,15 @@ object LowBlockContainmentEngine {
                     ballBias + squeezeCenterBias
                 }
 
-                // Inject dynamic fractional math jitter to scramble linear tracking data patterns
-                val humanizationNoiseX = Random.nextFloat() * 1.5f - 0.75f // +/- 0.75 pixel horizontal wobble
-                val humanizationNoiseY = Random.nextFloat() * 1.8f - 0.90f // Staggers defensive line heights uniquely
-
                 val lerpFactor = 0.35f + (hazardLevel * 0.30f)
 
                 val targetX = (
                     defender.first +
                         ((optimalX - defender.first) * lerpFactor) +
-                        horizontalBias + humanizationNoiseX
+                        horizontalBias
                     ).coerceIn(0f, safeWidth)
 
-                val defenderLineY = baseTargetLineY + humanizationNoiseY
+                val defenderLineY = baseTargetLineY
 
                 updated.add(
                     Pair(
@@ -6859,16 +6840,12 @@ object OmnipotentDashPressureMatrix {
         var targetY: Float
 
         if (isPlayerHoldingPressure) {
-            // Introduce subtle sub-pixel coordinates jitter to ensure vectors show authentic variance
-            val matrixNoiseX = Random.nextFloat() * 1.6f - 0.8f // +/- 0.8 pixel tracking wobble
-            val matrixNoiseY = Random.nextFloat() * 1.6f - 0.8f
-
             if (distanceToOpponent > compactThreshold) {
                 val interceptAggression = (1f - (distanceToOpponent / safeWidth))
                     .coerceIn(0.25f, 0.85f)
 
-                targetX = ((defHomeX + ((ballX - defHomeX) * interceptAggression)) + matrixNoiseX).coerceIn(0f, safeWidth)
-                targetY = ((defHomeY + ((ballY - defHomeY) * interceptAggression)) + matrixNoiseY).coerceIn(0f, safeHeight)
+                targetX = (defHomeX + ((ballX - defHomeX) * interceptAggression)).coerceIn(0f, safeWidth)
+                targetY = (defHomeY + ((ballY - defHomeY) * interceptAggression)).coerceIn(0f, safeHeight)
             } else {
                 val dx = ballX - oppX
                 val dy = ballY - oppY
@@ -6880,8 +6857,8 @@ object OmnipotentDashPressureMatrix {
 
                 val pressureForce = 22f
 
-                targetX = ((ballX + (dirX * pressureForce)) + matrixNoiseX).coerceIn(0f, safeWidth)
-                targetY = ((ballY + (dirY * pressureForce)) + matrixNoiseY).coerceIn(0f, safeHeight)
+                targetX = (ballX + (dirX * pressureForce)).coerceIn(0f, safeWidth)
+                targetY = (ballY + (dirY * pressureForce)).coerceIn(0f, safeHeight)
             }
         } else {
             targetX = defHomeX.coerceIn(0f, safeWidth)
@@ -6989,13 +6966,8 @@ object OnlineParameterAdaptationEngine {
 
         val clampedGain = fastClamp(baseGain, 0f, 1f)
 
-        // 2. ADAPTIVE NOISE HUMANIZATION (Latency Boundary Masking)
-        // Generates non-linear variance that tightens during high confidence
-        // and loosens during low confidence to prevent robotic tracking detection.
-        val rand = Random.Default
-        val noiseFactor = (rand.nextFloat() * 2f) - 1f // [-1.0, 1.0] range
-        val dynamicSpread = BASE_HUMAN_VARIANCE * (1.1f - clampedGain) 
-        val humanizedGain = fastClamp(clampedGain + (noiseFactor * dynamicSpread), 0f, 1f)
+        // 2. No fabricated noise — clamped gain is the real adaptation signal
+        val humanizedGain = clampedGain
 
         // 3. SERVER-TICK SYNC (High-Ping Netcode Compensation)
         // Scales the hold durations and physical coordinate mappings to perfectly
@@ -8619,11 +8591,9 @@ object TemporalMemoryEngine {
         // Calculate synchronization scalar forcing maximum possession effectiveness during high ping
         val pingCompensation = (pingMs / BASE_SERVER_TICK_MS).coerceIn(1.0f, 3.0f)
         
-        // Randomized dynamic micro-variance to mimic human hand latency boundaries
-        val humanVariance = (Random.nextFloat() * 2f - 1f) * NOISE_VARIANCE_SCALE
-        
-        val newGestureScale = (1.0f + (historyStability * pingCompensation * humanVariance)).coerceIn(0.85f, 1.25f)
-        val newHoldDelay = Random.nextLong(HUMAN_LATENCY_MIN_MS, HUMAN_LATENCY_MAX_MS)
+        // No fabricated human variance — gesture scale from real stability only
+        val newGestureScale = (1.0f + (historyStability * pingCompensation * 0.0f)).coerceIn(0.85f, 1.25f)
+        val newHoldDelay = 0L
         val syncOffset = (frameTargetMs * pingCompensation) % frameTargetMs
 
         return TemporalMemoryState(
@@ -8880,8 +8850,8 @@ object WingBlockEngine {
         pitchWidth: Float
     ): WingBlockResult? {
 
-        val leftBoundary  = pitchWidth * (0.15f + (Random.nextFloat() * 0.01f - 0.005f))
-        val rightBoundary = pitchWidth * (0.85f + (Random.nextFloat() * 0.01f - 0.005f))
+        val leftBoundary  = pitchWidth * 0.15f
+        val rightBoundary = pitchWidth * 0.85f
 
         val isLeftFlank  = wingerX < leftBoundary
         val isRightFlank = wingerX > rightBoundary
@@ -8891,12 +8861,9 @@ object WingBlockEngine {
         // central press that duplicated DefenseContributor with no added value.
         if (!isLeftFlank && !isRightFlank) return null
 
-        val noiseX = Random.nextFloat() * 1.5f - 0.75f
-        val noiseY = Random.nextFloat() * 1.5f - 0.75f
-
         val baseAnchorX = if (isLeftFlank) pitchWidth * 0.12f else pitchWidth * 0.88f
-        val blockingAnchorX = (baseAnchorX + (wingerVx * 0.2f)) + noiseX
-        val blockingAnchorY = wingerY + (wingerVy * 0.2f) + noiseY
+        val blockingAnchorX = (baseAnchorX + (wingerVx * 0.2f))
+        val blockingAnchorY = wingerY + (wingerVy * 0.2f)
 
         return WingBlockResult(blockingAnchorX, blockingAnchorY)
     }
@@ -9688,12 +9655,7 @@ data class SpeedCompensationResult(
 object SpeedCompensationEngine {
     private val outBuffer = FloatArray(5)
     fun compensate(distance: Float, angle: Float, strength: Int): SpeedCompensationResult {
-        val angleJitter = Random.nextFloat() * 0.8f - 0.4f
-        val execNoise = Random.nextFloat() * 0.24f - 0.12f
-        val protNoise = Random.nextFloat() * 0.18f - 0.09f
-        val pressNoise = Random.nextFloat() * 0.18f - 0.09f
-        val laneNoise = Random.nextFloat() * 0.20f - 0.10f
-        com.assistant.NativeBridge.nativeSpeedCompensate(distance, angle, strength, angleJitter, execNoise, protNoise, pressNoise, laneNoise, outBuffer)
+        com.assistant.NativeBridge.nativeSpeedCompensate(distance, angle, strength, 0f, 0f, 0f, 0f, 0f, outBuffer)
         return SpeedCompensationResult(outBuffer[0], outBuffer[1], outBuffer[2], outBuffer[3], outBuffer[4])
     }
 }
@@ -10091,16 +10053,14 @@ class ZeroFramePressEngine(
 
         if (distanceSqr < ENGAGEMENT_DISTANCE_SQR) {
             
-            // Adaptive Noise Humanization: Dynamic micro-variance mimicking human hand latency boundaries
-            val microVarianceX = NOISE_VARIANCE_MIN + (Random.nextFloat() * (NOISE_VARIANCE_MAX - NOISE_VARIANCE_MIN))
-            val microVarianceY = NOISE_VARIANCE_MIN + (Random.nextFloat() * (NOISE_VARIANCE_MAX - NOISE_VARIANCE_MIN))
+            val microVarianceX = 0f
+            val microVarianceY = 0f
 
             // Server-Tick Sync: Dynamically scale gesture path lengths and hold durations to match packet boundaries
             val dynamicPathLength = (PATH_SCALAR_BASE * TICK_RATE_MULTIPLIER) + (Random.nextFloat() * 1.5f)
             
             // Modulating hold duration to register maximum possession effectiveness
-            val randomHoldVariance = Random.nextLong(3L, 9L)
-            val dynamicHoldDuration = (BASE_HOLD_DURATION_MS * TICK_RATE_MULTIPLIER).toLong() + randomHoldVariance
+            val dynamicHoldDuration = (BASE_HOLD_DURATION_MS * TICK_RATE_MULTIPLIER).toLong()
 
             val originX = dashButtonX + microVarianceX
             val originY = dashButtonY + microVarianceY
@@ -11785,9 +11745,7 @@ object ShieldAssistEngine {
             bounded
         }
         
-        // Add dynamic humanization drift to scramble exact 90-degree adjustments
-        val microDrift = Random.nextFloat() * 1.3f - 0.65f // +/- 0.65 degree offset
-        val result = if (angle >= 0f) angle + 90f + microDrift else angle - 90f + microDrift
+        val result = if (angle >= 0f) angle + 90f else angle - 90f
         return (result % 360f + 360f) % 360f
     }
 
@@ -11807,11 +11765,8 @@ object ShieldAssistEngine {
         val angleRad = atan2(dy.toDouble(), dx.toDouble())
         val angleDeg = Math.toDegrees(angleRad).toFloat()
         
-        // Add tiny float variance to mask the perfect geometric line signature from telemetry logs
-        val trajectoryJitter = Random.nextFloat() * 1.2f - 0.6f
-        
         // Position player's physical body exactly opposite (180 deg) to block the direct tackle line
-        val shieldDir = angleDeg + 180f + trajectoryJitter
+        val shieldDir = angleDeg + 180f
         return (shieldDir % 360f + 360f) % 360f
     }
 
@@ -11828,9 +11783,8 @@ object ShieldAssistEngine {
         if (opponentDistance <= 0f) return false
         val normalizedDistance = opponentDistance / 100.0f
 
-        // Fuzz boundaries subtly to prevent instant, pixel-perfect activation triggers across matches
-        val upperTriggerFuzz = 2.2f + (Random.nextFloat() * 0.04f - 0.02f) // +/- 0.02 range
-        val lowerOverrideFuzz = 1.0f + (Random.nextFloat() * 0.02f - 0.01f)
+        val upperTriggerFuzz = 2.2f
+        val lowerOverrideFuzz = 1.0f
 
         // Dynamic Threat Evaluation:
         // 1. Dynamic trigger if opponent is inside 220 coordinate points (2.2f) and player velocity is active.
@@ -11842,9 +11796,7 @@ object ShieldAssistEngine {
      * Backward-compatible static shield duration (45ms).
      */
     fun shieldHoldDuration(): Long {
-        // Scramble fixed backup tracking values by +/- 2ms to break rhythmic timeline blocks
-        val staticJitter = Random.nextLong(-2, 3)
-        return (45L + staticJitter).coerceAtLeast(40L)
+        return 45L.coerceAtLeast(40L)
     }
 
     /**
@@ -11865,10 +11817,7 @@ object ShieldAssistEngine {
             (playerVelocity.coerceAtLeast(0f) * 10f).toLong()
                 .coerceIn(0L, 15L)
                 
-        // Inject per-frame timeline variance to break absolute caps on math metrics
-        val adaptiveJitter = Random.nextLong(-3, 4) // -3ms to +3ms window
-        
-        val dynamicDuration = 45L + proximityBonus + velocityBonus + adaptiveJitter
+        val dynamicDuration = 45L + proximityBonus + velocityBonus
         return dynamicDuration.coerceAtLeast(40L).coerceAtMost(124L)
     }
 }
@@ -12325,14 +12274,9 @@ object TouchRecoveryEngine {
         val factor = (strength.coerceIn(0, 100) / 100f)
         val pressureFactor = (pressure.coerceIn(0, 100) / 100f)
 
-        // Inject subtle sub-decimal float variance to break up repetitive data signatures
-        val recoveryNoise = Random.nextFloat() * 0.16f - 0.08f // +/- 0.08 variance bounds
-        val shieldNoise = Random.nextFloat() * 0.12f - 0.06f
-        val balanceNoise = Random.nextFloat() * 0.12f - 0.06f
-
-        val calculatedRecovery = (2f + (factor * 5.00f) + (pressureFactor * 3.00f) + recoveryNoise).coerceAtLeast(0f)
-        val calculatedShield = (2f + (factor * 4.00f) + (pressureFactor * 2.00f) + shieldNoise).coerceAtLeast(0f)
-        val calculatedBalance = (2f + (factor * 4.00f) + (pressureFactor * 2.00f) + balanceNoise).coerceAtLeast(0f)
+        val calculatedRecovery = (2f + (factor * 5.00f) + (pressureFactor * 3.00f)).coerceAtLeast(0f)
+        val calculatedShield = (2f + (factor * 4.00f) + (pressureFactor * 2.00f)).coerceAtLeast(0f)
+        val calculatedBalance = (2f + (factor * 4.00f) + (pressureFactor * 2.00f)).coerceAtLeast(0f)
 
         return TouchRecoveryResult(
             recoveryBoost = calculatedRecovery,
@@ -13074,12 +13018,8 @@ object PressureFieldEngine {
         for (row in 0 until GRID_ROWS) {
             for (col in 0 until GRID_COLUMNS) {
 
-                // Introduce spatial coordinate fuzzing to break up rigid cell tracking borders
-                val horizontalFuzz = Random.nextFloat() * 0.08f - 0.04f // Tiny cell offset bounds
-                val verticalFuzz = Random.nextFloat() * 0.08f - 0.04f
-
-                val x = (col + 0.5f + horizontalFuzz) * frameWidth / GRID_COLUMNS
-                val y = (row + 0.5f + verticalFuzz) * frameHeight / GRID_ROWS
+                val x = (col + 0.5f) * frameWidth / GRID_COLUMNS
+                val y = (row + 0.5f) * frameHeight / GRID_ROWS
 
                 var pressure = 0f
 
@@ -15960,10 +15900,7 @@ fun injectZeroLatencySwipe(
     restrictedDuration: Long,
     currentPingMs: Int = 40
 ) {
-    // LETHAL UTILIZATION: Satisfy the compiler by using currentPingMs in a dead math filter,
-    // ensuring the parameter is consumed without diluting raw vector positioning.
-    val pingBypassModifier = (currentPingMs - currentPingMs).toFloat()    
-    val targetStartX = (startX + pingBypassModifier).coerceAtLeast(0f)
+    val targetStartX = startX.coerceAtLeast(0f)
     val targetStartY = startY.coerceAtLeast(0f)
     val targetEndX = endX.coerceAtLeast(0f)
     val targetEndY = endY.coerceAtLeast(0f)
