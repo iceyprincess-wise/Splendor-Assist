@@ -90,6 +90,8 @@ class ActiveGestureController(
 
     private val memoryOptimizer = MemoryStabilityOptimizer(service)
 
+    private val vsyncAnchor = VsyncInputAnchor { _ -> RuntimeLogger.log("VSync dispatch synchronized","SMART_ASSIST") }
+
     private val latencyInputEngine = LatencyDefeatingInputEngine(service)
     private val antiCutbackEngine = AntiCutbackSubEngine(latencyInputEngine)
     private val autoEvadeEngine = AutoEvadeEngine(latencyInputEngine)
@@ -129,12 +131,12 @@ class ActiveGestureController(
             .minByOrNull { p -> (p.x - startX) * (p.x - startX) + (p.y - startY) * (p.y - startY) }
         val earlyTraj = BallTrajectoryPredictor.current()
 
-        val dynamicGoalLeftX = if (earlyScene.goalDetected) earlyScene.goalLeftX else 0f
-        val dynamicGoalLeftY = if (earlyScene.goalDetected) earlyScene.goalTopY else 0f
-        val dynamicGoalRightX = if (earlyScene.goalDetected) earlyScene.goalRightX else 0f
-        val dynamicGoalRightY = if (earlyScene.goalDetected) earlyScene.goalBottomY else 0f
-        val dynamicGkX = telemetry.goalkeeperX.let { if (it > 0f) it else 0f }
-        val dynamicGkY = telemetry.goalkeeperY.let { if (it > 0f) it else 0f }
+        val dynamicGoalLeftX = if (earlyScene.goalDetected) earlyScene.goalLeftX else 1620f
+        val dynamicGoalLeftY = if (earlyScene.goalDetected) earlyScene.goalTopY else 280f
+        val dynamicGoalRightX = if (earlyScene.goalDetected) earlyScene.goalRightX else 1620f
+        val dynamicGoalRightY = if (earlyScene.goalDetected) earlyScene.goalBottomY else 440f
+        val dynamicGkX = TelemetryRepository.current().goalkeeperX.let { if (it > 0f) it else 1500f }
+        val dynamicGkY = TelemetryRepository.current().goalkeeperY.let { if (it > 0f) it else 360f }
 
         val antiCutbackGain = if (antiCutbackEngine.blockCutbackPassingLanes(
             nearestOppEarly?.x ?: endX, nearestOppEarly?.y ?: endY,
@@ -866,9 +868,8 @@ class ActiveGestureController(
         val safeRoutedEndXInitial = if (routedEndX.isFinite()) routedEndX else endX
         val safeRoutedEndYInitial = if (routedEndY.isFinite()) routedEndY else endY
         val isPanic = SmartAssistRepository.panicActive()
-        val panicEndX = safeRoutedEndXInitial
-        val panicEndY = safeRoutedEndYInitial
-        val finalDuration = if (isPanic) routedDuration.coerceAtLeast(140L) else routedDuration
+        val (panicEndX, panicEndY) = if (isPanic) emergencyClearanceVector(safeRoutedEndXInitial, safeRoutedEndYInitial) else Pair(safeRoutedEndXInitial, safeRoutedEndYInitial)
+        val finalDuration = if (isPanic) emergencyClearanceDuration() else routedDuration
 
         val safeRoutedEndX = if (panicEndX.isFinite()) panicEndX else endX
         val safeRoutedEndY = if (panicEndY.isFinite()) panicEndY else endY
@@ -886,17 +887,25 @@ class ActiveGestureController(
         val accepted =
             HybridExecutionTerminal.route(request)
 
-        if (!accepted) {
-            RuntimeLogger.log(
-                "SmartAssist route REJECTED mode=$mode distance=${distance.toInt()} strength=$strength panic=${SmartAssistRepository.panicActive()}",
-                "SMART_ASSIST"
-            )
-        } else {
-            RuntimeLogger.log(
-                "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()}",
-                "SMART_ASSIST"
-            )
-        }
+        RuntimeLogger.log(
+            "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()}",
+            "SMART_ASSIST"
+        )
+    }
+
+    fun emergencyClearanceVector(
+        startX: Float,
+        targetY: Float
+    ): Pair<Float, Float> {
+
+        return Pair(
+            startX,
+            targetY
+        )
+    }
+
+    fun emergencyClearanceDuration(): Long {
+        return 140L
     }
 
 }

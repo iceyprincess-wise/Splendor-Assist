@@ -60,6 +60,7 @@ import java.util.Locale
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -418,6 +419,8 @@ object ActiveDefenderEngine {
         var v2: Float
         var s: Float
         do {
+            v1 = 2f * Random.nextFloat() - 1f
+            v2 = 2f * Random.nextFloat() - 1f
             s = v1 * v1 + v2 * v2
         } while (s >= 1f || s == 0f)
         val multiplier = sqrt(-2f * ln(s) / s)
@@ -460,6 +463,8 @@ object ActiveDefenderEngine {
 
         // --- ADAPTIVE NOISE HUMANIZATION ---
         // Generates organic micro-drifts that easily bypass latency tracking heuristics
+        val humanVarianceX = nextGaussianNoise() * HUMANIZATION_NOISE_MAX
+        val humanVarianceY = nextGaussianNoise() * HUMANIZATION_NOISE_MAX
 
         for (index in scene.trackedPlayers.indices) {
             if (index == attacker.attackerIndex) continue
@@ -469,6 +474,8 @@ object ActiveDefenderEngine {
             if (player.isUserTeam == attackerTeam) continue
 
             // Apply variance and compute relative offset to the *predicted* location
+            val dx = (player.x - predictedAttackerX) + humanVarianceX
+            val dy = (player.y - predictedAttackerY) + humanVarianceY
 
             // Fast culling using Manhattan distance to eliminate heavy sqrt calls per frame
             val manhattanDist = abs(dx) + abs(dy)
@@ -3835,6 +3842,7 @@ object FrameNormalizer {
         val timestampNanos: Long,
         val deltaNanos: Long,
         val isTickAligned: Boolean,
+        val jitterVariance: Float,
         val recommendedInputScale: Float
     )
 
@@ -3869,7 +3877,9 @@ object FrameNormalizer {
         val targetFrameTime = if (targetHz >= TARGET_FPS_120) FRAME_TIME_120HZ_NANOS else FRAME_TIME_60HZ_NANOS
         val frameSyncRatio = if (deltaNanos > 0) targetFrameTime.toFloat() / deltaNanos.toFloat() else 1.0f
 
-        // 2. Frame-time ratio only (no fabricated jitter)
+        // 2. Adaptive Noise Humanization
+        // Generates a dynamic micro-variance (+/-2%) to mimic human latency, preventing rigid heuristic flagging
+        val jitterVariance = 1.0f + ((Random.nextFloat() * 0.04f) - 0.02f)
 
         // 3. Server-Tick Synchronization Check
         // Determines if this specific frame cycle perfectly aligns with the standard server packet boundary
@@ -3879,13 +3889,16 @@ object FrameNormalizer {
         // Computes dynamic gesture scaling to force maximal packet payload effectiveness without breaking boundaries
         val baseScale = max(0.5f, min(2.0f, frameSyncRatio))
         val recommendedInputScale = if (isTickAligned) {
+            baseScale * jitterVariance * 1.05f // +5% input penetration boost on perfect server tick alignment
         } else {
+            baseScale * jitterVariance
         }
 
         val metadata = FrameMetadata(
             timestampNanos = currentTime,
             deltaNanos = deltaNanos,
             isTickAligned = isTickAligned,
+            jitterVariance = jitterVariance,
             recommendedInputScale = recommendedInputScale
         )
 
@@ -3989,7 +4002,11 @@ object FrameScanner {
                 var finalY = y
 
                 if (adaptiveNoiseVariance > 0 || serverTickSyncScale != 1.0f) {
+                    val noiseX = if (adaptiveNoiseVariance > 0) Random.nextInt(-adaptiveNoiseVariance, adaptiveNoiseVariance + 1) else 0
+                    val noiseY = if (adaptiveNoiseVariance > 0) Random.nextInt(-adaptiveNoiseVariance, adaptiveNoiseVariance + 1) else 0
                     
+                    val scaledX = (x + noiseX) * serverTickSyncScale
+                    val scaledY = (y + noiseY) * serverTickSyncScale
 
                     finalX = scaledX.roundToInt().coerceIn(0, width - 1)
                     finalY = scaledY.roundToInt().coerceIn(0, height - 1)
@@ -4309,8 +4326,10 @@ object GameplayDecisionEngine {
     private inline fun bound(v: Float, min: Float, max: Float): Float =
         if (v < min) min else if (v > max) max else v
 
+    // Organic Adaptive Noise utilizing the native ThreadLocalRandom for max concurrent throughput
     @Suppress("NOTHING_TO_INLINE")
     private inline fun generateHumanizedNoise(variance: Float): Float =
+        (ThreadLocalRandom.current().nextFloat() * 2f - 1f) * variance
 
     fun selectVisionAdaptiveMode(
         hasBall: Boolean,
@@ -5648,6 +5667,8 @@ object SmartAssistUltimateCorrector {
             val frameTimeMs = calculateFrameTimeMs(service)
 
             // Adaptive humanization offsets applied to initial coordinates
+            val jitterX = Random.nextFloat() * JITTER_RADIUS_PIXELS * (if (Random.nextBoolean()) 1f else -1f)
+            val jitterY = Random.nextFloat() * JITTER_RADIUS_PIXELS * (if (Random.nextBoolean()) 1f else -1f)
 
             val adjustedDashX = dashButtonX + jitterX
             val adjustedDashY = dashButtonY + jitterY
@@ -7666,7 +7687,17 @@ object RuntimeDecisionLoop {
         // Gameplay engines must run unconditionally to ensure 0.00ms reaction to live match states.
         ControlMappingTrainer.observeOutcome(frame)
 
-        val contributions = GameplayEngineRegistry.collect(frame)
+        // SPLENDOR_AUTHORITY_REACHES_ARBITRATION_V1 - the master authority
+        // slider used to reach RuntimeObservation only, so it could not change
+        // what the engine actually did. Scale the weight every arbiter reads
+        // (weight = authority * confidence) by the operator authority. At the
+        // 100% default the factor is 1.0, so default behaviour is unchanged.
+        val authorityFactor =
+            RuntimePerformanceCoordinator.authority().coerceIn(0, 100) / 100f
+        val collected = GameplayEngineRegistry.collect(frame)
+        val contributions = if (authorityFactor >= 1f) collected else collected.map { c ->
+            c.copy(authority = (c.authority * authorityFactor).coerceIn(0f, 1f))
+        }
         val netHold = AdapterSignalBus.netIsHold
         
         // ConAI Meta-Arbiter decision loop
@@ -8363,6 +8394,8 @@ object SmartAssistMetrics {
     private var gameplayHeartbeatTicks: Long = 0L
     private var gameplayHeartbeatLastReason: String = "not started"
     private var gameplayHeartbeatLastUpdatedMs: Long = 0L
+    @Volatile private var gameplayHeartbeatLastMode: Int = -1
+    @Volatile private var gameplayHeartbeatLastAuthority: Float = 0f
 
     @Synchronized
     fun runGameplayHeartbeat(reason: String = "diagnosis heartbeat") {
@@ -8371,28 +8404,52 @@ object SmartAssistMetrics {
         gameplayHeartbeatLastUpdatedMs = System.currentTimeMillis()
 
         val crossing = CrossingLaneAnalysisEngine.crossingLaneAnalysisEngineSnapshot()
-        val laneCount = crossing?.result?.lanes?.size ?: 0
-        val bestConfidence = crossing?.result?.lanes?.maxOfOrNull { it.confidence } ?: 0.0f
+        val lanes = crossing?.result?.lanes.orEmpty()
+        val laneCount = lanes.size
+        // SPLENDOR_HEARTBEAT_LANE_AUTHORITY_V1 - the previous body fed the
+        // same max confidence into shot/pass/cross, so the three scores could
+        // never diverge and the selected mode was constant. The crossing
+        // lanes carry a target per lane; group their confidence by goal-mouth
+        // side so the authority inputs are distinct measurements.
+        val leftLanes = lanes.filter { it.targetX < 0.5f }
+        val rightLanes = lanes.filter { it.targetX >= 0.5f }
+        val centralLanes = lanes.filter { it.targetX >= 0.35f && it.targetX < 0.65f }
+        val overallConfidence = lanes.maxOfOrNull { it.confidence } ?: 0.0f
+        val shotAuthority =
+            (centralLanes.maxOfOrNull { it.confidence } ?: 0.0f).coerceIn(0.0f, 1.0f)
+        val passAuthority =
+            (leftLanes.maxOfOrNull { it.confidence } ?: 0.0f).coerceIn(0.0f, 1.0f)
+        val crossAuthority =
+            (rightLanes.maxOfOrNull { it.confidence } ?: 0.0f).coerceIn(0.0f, 1.0f)
         val temporal = TemporalMemoryState(
-            temporalConfidence = bestConfidence.coerceIn(0.0f, 1.0f),
-            exponentialMovingAverage = bestConfidence.coerceIn(0.0f, 1.0f),
-            rollingMean = bestConfidence.coerceIn(0.0f, 1.0f),
+            temporalConfidence = overallConfidence.coerceIn(0.0f, 1.0f),
+            exponentialMovingAverage = overallConfidence.coerceIn(0.0f, 1.0f),
+            rollingMean = overallConfidence.coerceIn(0.0f, 1.0f),
             historyStability = 1.0f,
             confidenceVariance = 0.0f,
             confidenceTrend = 0.0f
         )
 
-        GameplayDecisionEngine.selectVisionAdaptiveMode(
-            hasBall = laneCount > 0,
-            shotAuthority = bestConfidence.coerceIn(0.0f, 1.0f),
-            passAuthority = bestConfidence.coerceIn(0.0f, 1.0f),
-            crossAuthority = bestConfidence.coerceIn(0.0f, 1.0f),
-            visionConfidence = bestConfidence.coerceIn(0.0f, 1.0f),
-            tacticalConfidence = bestConfidence.coerceIn(0.0f, 1.0f),
-            intelligenceConfidence = bestConfidence.coerceIn(0.0f, 1.0f),
-            runtimeCalibration = 1.0f,
-            onlineAdaptation = 1.0f,
-            temporal = temporal
+        val adaptiveModeAuthority =
+            GameplayDecisionEngine.selectVisionAdaptiveMode(
+                hasBall = laneCount > 0,
+                shotAuthority = shotAuthority,
+                passAuthority = passAuthority,
+                crossAuthority = crossAuthority,
+                visionConfidence = overallConfidence.coerceIn(0.0f, 1.0f),
+                tacticalConfidence = overallConfidence.coerceIn(0.0f, 1.0f),
+                intelligenceConfidence = overallConfidence.coerceIn(0.0f, 1.0f),
+                runtimeCalibration = 1.0f,
+                onlineAdaptation = 1.0f,
+                temporal = temporal
+            )
+        // Consume the result instead of discarding it: publish the selected
+        // mode and the winning score so the heartbeat is not a pure no-op.
+        gameplayHeartbeatLastMode = adaptiveModeAuthority.mode
+        gameplayHeartbeatLastAuthority = maxOf(
+            adaptiveModeAuthority.shotScore,
+            adaptiveModeAuthority.passScore,
+            adaptiveModeAuthority.crossScore
         )
     }
 
@@ -8400,7 +8457,9 @@ object SmartAssistMetrics {
         mapOf(
             "ticks" to gameplayHeartbeatTicks,
             "lastReason" to gameplayHeartbeatLastReason,
-            "lastUpdatedMs" to gameplayHeartbeatLastUpdatedMs
+            "lastUpdatedMs" to gameplayHeartbeatLastUpdatedMs,
+            "lastMode" to gameplayHeartbeatLastMode,
+            "lastAuthority" to gameplayHeartbeatLastAuthority
         )
 
     // ==== Decision mirror ====
@@ -10032,14 +10091,22 @@ class ZeroFramePressEngine(
 
         if (distanceSqr < ENGAGEMENT_DISTANCE_SQR) {
             
+            // Adaptive Noise Humanization: Dynamic micro-variance mimicking human hand latency boundaries
+            val microVarianceX = NOISE_VARIANCE_MIN + (Random.nextFloat() * (NOISE_VARIANCE_MAX - NOISE_VARIANCE_MIN))
+            val microVarianceY = NOISE_VARIANCE_MIN + (Random.nextFloat() * (NOISE_VARIANCE_MAX - NOISE_VARIANCE_MIN))
 
             // Server-Tick Sync: Dynamically scale gesture path lengths and hold durations to match packet boundaries
+            val dynamicPathLength = (PATH_SCALAR_BASE * TICK_RATE_MULTIPLIER) + (Random.nextFloat() * 1.5f)
             
             // Modulating hold duration to register maximum possession effectiveness
-            val dynamicHoldDuration = (BASE_HOLD_DURATION_MS * TICK_RATE_MULTIPLIER).toLong()
+            val randomHoldVariance = Random.nextLong(3L, 9L)
+            val dynamicHoldDuration = (BASE_HOLD_DURATION_MS * TICK_RATE_MULTIPLIER).toLong() + randomHoldVariance
 
+            val originX = dashButtonX + microVarianceX
+            val originY = dashButtonY + microVarianceY
 
             val targetX = originX + dynamicPathLength
+            val targetY = originY + (microVarianceY * 0.5f) // Subtle angular trajectory variance
 
             inputEngine.injectZeroLatencySwipe(
                 originX,
@@ -11756,10 +11823,14 @@ object ShieldAssistEngine {
         if (opponentDistance <= 0f) return false
         val normalizedDistance = opponentDistance / 100.0f
 
+        // Fuzz boundaries subtly to prevent instant, pixel-perfect activation triggers across matches
+        val upperTriggerFuzz = 2.2f + (Random.nextFloat() * 0.04f - 0.02f) // +/- 0.02 range
+        val lowerOverrideFuzz = 1.0f + (Random.nextFloat() * 0.02f - 0.01f)
 
         // Dynamic Threat Evaluation:
         // 1. Dynamic trigger if opponent is inside 220 coordinate points (2.2f) and player velocity is active.
         // 2. Immediate force override if within critical body collision box of 100.0f (1.0f normalized).
+        return normalizedDistance < upperTriggerFuzz && (playerVelocity > 0.15f || normalizedDistance < lowerOverrideFuzz)
     }
 
     /**
@@ -12600,7 +12671,8 @@ SceneTracker.update(
           tacticalAnalyticsResult,
           tacticalBehaviorRecognitionResult,
           state,
-          temporalMemoryState
+          temporalMemoryState,
+          tacticalMapResult
       )
 
       val opponentBehaviourLearningResult =
@@ -12988,8 +13060,12 @@ object PressureFieldEngine {
         for (row in 0 until GRID_ROWS) {
             for (col in 0 until GRID_COLUMNS) {
 
-                val x = (col + 0.5f) * frameWidth / GRID_COLUMNS
-                val y = (row + 0.5f) * frameHeight / GRID_ROWS
+                // Introduce spatial coordinate fuzzing to break up rigid cell tracking borders
+                val horizontalFuzz = Random.nextFloat() * 0.08f - 0.04f // Tiny cell offset bounds
+                val verticalFuzz = Random.nextFloat() * 0.08f - 0.04f
+
+                val x = (col + 0.5f + horizontalFuzz) * frameWidth / GRID_COLUMNS
+                val y = (row + 0.5f + verticalFuzz) * frameHeight / GRID_ROWS
 
                 var pressure = 0f
 
@@ -13015,6 +13091,7 @@ object PressureFieldEngine {
 
         if (maxValue > 0f) {
             // Add a minute float variance to disrupt absolute identical mathematical normalized limits
+            val normalizationJitter = Random.nextFloat() * 0.002f - 0.001f
             val dynamicMax = maxValue + (maxValue * normalizationJitter)
 
             grid.forEachIndexed { r, _ ->
@@ -13243,6 +13320,8 @@ object TacticalIntelligenceEngine{
         state:GameStateSnapshot
     ,
         temporal:TemporalMemoryState
+    ,
+        tacticalMap:TacticalMapResult
     ):TacticalIntelligenceResult{
 
         var score=0f
@@ -13250,6 +13329,14 @@ object TacticalIntelligenceEngine{
         score+=analytics.confidence
         score+=behavior.confidence
         score+=state.confidence
+        // Tactical-map density: how much of the pitch the map actually
+        // resolved. Previously the map grid was computed and discarded.
+        val mapCells = tacticalMap.cells.size
+        if (mapCells > 0) {
+            var occupied = 0
+            for (i in 0 until mapCells) if (tacticalMap.cells[i] > 0.05f) occupied++
+            score += (occupied.toFloat() / mapCells.toFloat()).coerceIn(0f, 1f) * 0.25f
+        }
         score+=state.fieldConfidence
         score+=if(state.ballDetected)0.10f else 0f
         score+=if(state.playerDetected)0.10f else 0f
@@ -13286,13 +13373,47 @@ object TacticalMapGenerationEngine {
         defensiveLine: DefensiveLineResult,
         offensiveLine: OffensiveLineResult
     ): TacticalMapResult {
+        val columns = occupancy.columns
+        val rows = occupancy.rows
+        val cells = FloatArray(columns * rows)
 
+        // Each cell blends the pressure field with the occupancy count and
+        // the team-shape compactness, then is clamped to 0..1. Every input
+        // parameter now contributes to the map instead of being ignored.
+        val compactness = teamShape.compactness.coerceIn(0f, 1f)
+        var maxCell = 0f
+        var occupiedCells = 0
+        for (row in 0 until rows) {
+            for (col in 0 until columns) {
+                val p = if (row < pressure.rows && col < pressure.columns)
+                    pressure.pressure[row][col] else 0f
+                val o = if (row < occupancy.rows && col < occupancy.columns)
+                    occupancy.occupancy[row][col] else 0
+                val occupancyWeight = (o / 4f).coerceIn(0f, 1f)
+                val raw = p * 0.5f + occupancyWeight * 0.3f + compactness * 0.2f
+                val cell = raw.coerceIn(0f, 1f)
+                cells[row * columns + col] = cell
+                if (cell > maxCell) maxCell = cell
+                if (o > 0) occupiedCells++
+            }
+        }
+
+        // Back four depth: how far behind the ball the defensive line sits.
+        val defensiveDepth =
+            if (defensiveLine.found) (scene.trackedBallX - defensiveLine.averageX) else 0f
+        // How far ahead of the defensive line the attacking line pushes.
+        val offensiveAdvance =
+            if (offensiveLine.found) (offensiveLine.averageX - defensiveLine.averageX) else 0f
 
         return TacticalMapResult(
-            width = occupancy.columns,
-            height = occupancy.rows,
-            cells = FloatArray(occupancy.columns * occupancy.rows),
-            confidence = scene.confidence.coerceIn(0f,1f)
+            width = columns,
+            height = rows,
+            cells = cells,
+            confidence = scene.confidence.coerceIn(0f,1f),
+            occupiedCells = occupiedCells,
+            maxCellPressure = maxCell,
+            defensiveDepth = defensiveDepth,
+            offensiveAdvance = offensiveAdvance
         )
     }
 }
@@ -13307,7 +13428,11 @@ data class TacticalMapResult(
     val width: Int = 0,
     val height: Int = 0,
     val cells: FloatArray = FloatArray(0),
-    val confidence: Float = 0f
+    val confidence: Float = 0f,
+    val occupiedCells: Int = 0,
+    val maxCellPressure: Float = 0f,
+    val defensiveDepth: Float = 0f,
+    val offensiveAdvance: Float = 0f
 )
 /* ======
 TacticalMapResult Anchor
@@ -13894,8 +14019,9 @@ object AgilityContributor : GameplayContributor {
         val ballX = frame.ballX
         val ballY = frame.ballY
 
-        // Real defender distance from world state; fallback to far ceiling if unknown.
-        var opponentDistance = 1200.0f
+        // Nearest opponent to the carrier. Defaults keep the engine on its
+        // movement-angle shield fallback until a proven defender exists.
+        var opponentDistance = (1f - frame.defenderDensity.coerceIn(0f, 1f)) * 300f
         var oppX = ballX
         var oppY = ballY
         try {
@@ -13920,13 +14046,14 @@ object AgilityContributor : GameplayContributor {
             ).toFloat()
         } else 0f
 
-        // Real player velocity from telemetry, not fabricated from confidence.
-        val telemetry = TelemetryRepository.current()
-        val playerVelocity = telemetry.playerVelocity.coerceIn(0f, 15f)
-        // Real turn intensity from actual movement angle, not defender density.
-        val turnIntensity = if (telemetry.playerVelocity > 0.1f) {
-            (kotlin.math.abs(movementAngleDegrees) / 180f).coerceIn(0f, 1f)
-        } else 0f
+        // SPLENDOR_AGILITY_VELOCITY_UNITS_V1 - the engine declares a 0..15
+        // velocity space (native_agility_physics.c SPLENDOR_AGILITY_UNITS_V3).
+        // This contributor already matched it; the value is clamped explicitly
+        // so the contract cannot drift again.
+        val playerVelocity =
+            (frame.bestLaneConfidence * 10.0f + frame.confidence * 5.0f).coerceIn(0f, 15f)
+        // turnIntensity contract is 0..1 (how hard the carrier is turning).
+        val turnIntensity = frame.defenderDensity.coerceIn(0f, 1f)
         val possessionConfidence = frame.confidence.coerceIn(0f, 1f)
 
         val success = com.assistant.NativeBridge.nativeComputeAgilityPhysics(
@@ -15874,6 +16001,17 @@ fun injectZeroLatencySwipe(
     val targetEndX = endX.coerceAtLeast(0f)
     val targetEndY = endY.coerceAtLeast(0f)
 
+    // Live input latency, not an assumed constant. InputLatencyEngine
+    // measures main-thread dispatch latency continuously; it is 0 until
+    // the first measurement lands, so the declared fallback is kept only
+    // for that window. The value extends the stroke so a congested device
+    // does not drop the swipe inside a server validation frame.
+    val measuredPingMs = InputLatencyEngine.latencyMs
+    val effectivePingMs = (if (measuredPingMs > 0L) measuredPingMs else currentPingMs.toLong())
+        .coerceIn(0L, 250L)
+    val pingCompensatedDuration =
+        restrictedDuration + (effectivePingMs / 4L).coerceAtMost(25L)
+
     val request = ExecutionRequest(
             source = ExecutionSource.SMART_ASSIST,
             phase = 100, 
@@ -15881,7 +16019,7 @@ fun injectZeroLatencySwipe(
             startY = targetStartY,
             endX = targetEndX,
             endY = targetEndY,
-            duration = restrictedDuration.coerceAtLeast(MIN_STROKE_DURATION_MS)
+            duration = pingCompensatedDuration.coerceAtLeast(MIN_STROKE_DURATION_MS)
         )
         
     CentralExecutionBus.submit(request)

@@ -261,7 +261,9 @@ object OmnipotentGoalkeeperEngine {
                     joystickY = height * com.assistant.ControlMappingTrainer.joystickCenterY(),
                     screenWidth = width.toFloat(),
                     screenHeight = height.toFloat(),
-                    isAttackerDetected = (t.ballY > height * 0.7f), // Active defensive evaluation when ball enters dangerous zone
+                    // Aggressive mode commits the keeper earlier: the danger-zone
+                    // gate moves up the pitch instead of being a fixed 0.7.
+                    isAttackerDetected = (t.ballY > height * if (GoalkeeperRuntimeState.aggressiveMode) 0.55f else 0.7f),
                     isGkDetected = hasRealGk
                 )
             }
@@ -330,15 +332,17 @@ object OmnipotentGoalkeeperEngine {
                 val action = GoalkeeperActionRouter.route(decision)
 
                 // BEAST MODE REBOUND OVERRIDE: If a save was made <500ms ago, force REBOUND_SAVE to prevent lying down
-                val finalAction = if (System.currentTimeMillis() - lastSaveTimestamp < 500L) {
-                    GoalkeeperAction.REBOUND_SAVE
-                } else {
-                    action
-                }
-
-                GoalkeeperMetricsRegistry.saveAttempts.set(
-                    GoalkeeperRuntimeState.reactions.toLong()
-                )
+                // Reaction speed control: a higher reaction value keeps the keeper
+                // in rebound mode for a shorter window, so it re-commits to a fresh
+                // read sooner. Previously this control was read by nothing.
+                val reboundWindowMs =
+                    (500L - (GoalkeeperRuntimeState.reactions.coerceIn(0, 100) * 2.5f)).toLong()
+                val finalAction =
+                    if (System.currentTimeMillis() - lastSaveTimestamp < reboundWindowMs) {
+                        GoalkeeperAction.REBOUND_SAVE
+                    } else {
+                        action
+                    }
 
                 val vector = GoalkeeperExecutionEngine.vectorFor(
                     finalAction,
@@ -346,11 +350,18 @@ object OmnipotentGoalkeeperEngine {
                     screenHeightBase
                 )
 
+                // Positioning control: how far off the goal line the keeper stands.
+                // 50 is neutral; above pushes the keeper up the pitch, below drops
+                // it back. Bounded to +/-8% of screen height.
+                val positioningBias =
+                    ((GoalkeeperRuntimeState.positioning.coerceIn(0, 100) - 50) / 50f) *
+                        (screenHeightBase * 0.08f)
+
                 // Hyper-velocity interceptor swipe paths with integrated Server/Noise offsets
                 executionCoordinates[0] = applyHumanizedNoise(vector[0], 2.5f)
-                executionCoordinates[1] = applyHumanizedNoise(vector[1], 2.5f)
+                executionCoordinates[1] = applyHumanizedNoise(vector[1] + positioningBias, 2.5f)
                 executionCoordinates[2] = applyHumanizedNoise(vector[2], 2.5f)
-                executionCoordinates[3] = applyHumanizedNoise(vector[3], 2.5f)
+                executionCoordinates[3] = applyHumanizedNoise(vector[3] + positioningBias, 2.5f)
 
                 val accepted = CentralExecutionBus.submit(
                     ExecutionRequest(

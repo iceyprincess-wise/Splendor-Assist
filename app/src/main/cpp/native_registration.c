@@ -4,7 +4,9 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeKickingPostureImpl(
     JNIEnv*, jclass, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloatArray);
 
 JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
-    JNIEnv*, jclass, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jint, jfloatArray);
+    JNIEnv*, jclass, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat,
+    jfloatArray, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat,
+    jfloat, jfloat, jfloat);
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     JNIEnv* env = NULL;
@@ -17,7 +19,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     
     static const JNINativeMethod methods[] = {
         {"nativeKickingPostureImpl", "(FFFFFFFF[F)V", (void*)Java_com_assistant_NativeBridge_nativeKickingPostureImpl},
-        {"nativeAgilityPhysicsImpl", "(FFFFFFFFFI[F)V", (void*)Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl}
+        {"nativeAgilityPhysicsImpl", "(FFFFFFFFF[FFFFFFFFFFFFF)V", (void*)Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl}
     };
     
     const jint rc = (*env)->RegisterNatives(env, bridge, methods, sizeof(methods) / sizeof(methods[0]));

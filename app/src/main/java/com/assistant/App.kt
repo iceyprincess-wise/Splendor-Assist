@@ -69,6 +69,7 @@ class App : Application() {
             DeathWatch.install(this)
             com.assistant.diagnostic.TruthLogcatEngine.start()
             com.assistant.controlroom.ControlRoomBootstrap.initialize()
+            com.assistant.controlroom.AdapterControlRoomSync.start(this)
 
             if (!storageReady) {
                 logSafe("App.onCreate: IN-APP AGENT SKIPPED - Storage not ready", "BOOT")

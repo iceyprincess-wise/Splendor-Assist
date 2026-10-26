@@ -1027,6 +1027,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     override fun onDestroy() {
+        // Tear down both surfaces so engine shutdown cannot leave a stale
+        // control surface floating over the game.
+        modMenuController?.hideLauncher()
         modMenuController?.hide()
         modMenuController = null
         SmartAssistRepository.clearPanic()

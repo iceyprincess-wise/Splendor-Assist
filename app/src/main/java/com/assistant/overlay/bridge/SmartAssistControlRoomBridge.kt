@@ -26,7 +26,7 @@ class SmartAssistControlRoomBridge(
     fun saveCurrentSettings(): Boolean {
         return try {
             val current = repository.getCurrentState()
-            repository.updateEnabled(current.enabled)
+            repository.saveState(current)
             true
         } catch (e: Exception) {
             false

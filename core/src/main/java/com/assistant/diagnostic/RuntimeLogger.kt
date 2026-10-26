@@ -9,12 +9,6 @@ import java.util.Locale
 
 object RuntimeLogger {
 
-    private const val FILE_NAME =
-        "runtime_diagnostic.txt"
-
-    @Volatile
-    private var : File? = null
-
     @Volatile
     private var externalLogFile: File? = null
 
@@ -40,6 +34,11 @@ object RuntimeLogger {
     fun initialize(context: Context) {
 
         // Private internal filesDir logging disabled for SD card storage policy
+
+        // Retention must actually run. App.kt previously asserted that
+        // initialize() already swept expired logs, but it never did, so the
+        // retention policy was dead and the forensic directory grew forever.
+        reconcileExpired()
 
         // FIX #3 & #4: Gate heavy external file creation to main process only.
         // Background processes will safely fall back to fast, process-private internal logs,
@@ -133,78 +132,24 @@ object RuntimeLogger {
         }
     }
 
-    data class HourBucket(
-        val hourStart: Long,
-        val expiresAt: Long,
-        val count: Long
-    )
-
     private const val RETENTION_MS = 10_800_000L
-    private const val HOUR_MS = 3_600_000L
-    private const val PAGE_SIZE = 250
-    private var : File? = null
 
+    /**
+     * Retention sweep over the canonical external forensic directory.
+     *
+     * The private app filesDir hour-segment store was removed by the
+     * SD-card-only logging policy, so the previous runtime_hour_segments
+     * directory is never created. Retention now prunes the canonical
+     * /sdcard/Splendor-Assist/Forensics directory instead of a directory
+     * that does not exist.
+     */
     @Synchronized
     fun reconcileExpired(now: Long = System.currentTimeMillis()) {
-        ?.listFiles()?.forEach { file ->
-            val hour = file.name.removePrefix("hour_").removeSuffix(".log").toLongOrNull()
-            if (hour != null && now >= hour + HOUR_MS + RETENTION_MS) file.delete()
-        }
-    }
-
-    @Synchronized
-    fun hourBuckets(now: Long = System.currentTimeMillis()): List<HourBucket> {
-        reconcileExpired(now)
-        return ?.listFiles()
-            ?.mapNotNull { file ->
-                val hour = file.name.removePrefix("hour_").removeSuffix(".log").toLongOrNull()
-                hour?.let { HourBucket(it, it + HOUR_MS + RETENTION_MS, countLines(file)) }
-            }?.filter { now < it.expiresAt }?.sortedByDescending { it.hourStart }.orEmpty()
-    }
-
-    @Synchronized
-    fun readHourPage(hourStart: Long, page: Int, size: Int = PAGE_SIZE): List<String> {
-        reconcileExpired()
-        val file = File( ?: return emptyList(), "hour_$hourStart.log")
-        if (!file.exists()) return emptyList()
-        val from = page.coerceAtLeast(0) * size.coerceIn(1, PAGE_SIZE)
-        return file.bufferedReader().useLines {
-            it.drop(from).take(size.coerceIn(1, PAGE_SIZE)).toList()
-        }
-    }
-
-    @Synchronized
-    fun copyHour(hourStart: Long): String {
-        reconcileExpired()
-        val file = File( ?: return "", "hour_$hourStart.log")
-        return if (file.exists()) file.readText() else ""
-    }
-
-    @Synchronized
-    fun deleteHour(hourStart: Long): Boolean {
-        val file = File( ?: return false, "hour_$hourStart.log")
-        return !file.exists() || file.delete()
-    }
-
-    @Synchronized
-    fun deleteAllOwnedLogs(): Boolean {
-        val segments = ?.listFiles()?.all { it.delete() } ?: true
-        val internal = ?.let { !it.exists() || it.delete() } ?: true
-        return segments && internal
-    }
-
-    private fun countLines(file: File): Long =
-        file.bufferedReader().use { reader ->
-            var count = 0L
-            while (reader.readLine() != null) count++
-            count
-        }
-
-    private fun appendSegment(text: String, now: Long) {
-        val dir =  ?: return
-        val hour = now - now % HOUR_MS
-        java.io.FileOutputStream(File(dir, "hour_$hour.log"), true).use { fos ->
-            fos.write(text.toByteArray(Charsets.UTF_8))
+        val dir = forensicDir ?: return
+        val files = dir.listFiles() ?: return
+        for (file in files) {
+            if (!file.isFile) continue
+            if (now - file.lastModified() >= RETENTION_MS) file.delete()
         }
     }
 
@@ -227,7 +172,6 @@ object RuntimeLogger {
         val logEntry =
             "$timestamp [$tag] $message\n"
 
-        appendSegment(logEntry, System.currentTimeMillis())
         writeToAll(logEntry)
 
         if (FIELD_TEST_MODE) {

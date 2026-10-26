@@ -22,8 +22,14 @@ object PerformanceTelemetryRegistry {
     @Volatile private var lastRead = 0L
     @Volatile private var readCache: NetTelemetry = EMPTY
 
+    /**
+     * [context] is accepted so every existing caller keeps one stable
+     * contract. The registry only needs the canonical external root, which
+     * is fixed, so the argument is intentionally unused.
+     */
     @JvmStatic
-    fun initialize() {
+    @Suppress("UNUSED_PARAMETER")
+    fun initialize(context: Context) {
         if (file == null) file = File("/sdcard/Splendor-Assist", "perf_telemetry.txt").also { it.parentFile?.mkdirs() }
     }
 

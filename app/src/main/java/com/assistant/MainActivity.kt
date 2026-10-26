@@ -263,10 +263,10 @@ class MainActivity : AppCompatActivity() {
             refreshRuntimeHub()
         }
 
-        // UPGRADE: Redirected from deleted/dead LogActivity to DiagnosticsStatusRoomActivity 
-        // to prevent ClassNotFoundException crashes.
-            startActivity(Intent(this, DiagnosticsStatusRoomActivity::class.java))
-        }
+        // The VIEW LOGS button and the DiagnosisRoom/DiagnosisDetail log
+        // viewer were removed (Task 3): /sdcard/Splendor-Assist is now the
+        // only log destination. This block was the deleted button listener
+        // body, left behind without its lambda, which broke compilation.
 
         findViewById<View>(com.assistant.overlay.R.id.cardSmartAssist).setOnClickListener {
             startActivity(Intent(this, SmartAssistControlRoomActivity::class.java))
@@ -293,6 +293,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshRoomBulbs() {
+        // Project live runtime state into the registry before reading it,
+        // so these bulbs reflect reality instead of the bootstrap snapshot.
+        com.assistant.controlroom.AdapterControlRoomSync.snapshot()
+
         val smartReady = SmartAssistRepository.enabled()
         setBulb(
             com.assistant.overlay.R.id.tvSmartAssistBulb,
@@ -317,11 +321,12 @@ class MainActivity : AppCompatActivity() {
             if (interceptionReady) "ACTIVE" else "OFF"
         )
 
+        val roomCount = AdapterControlRoomRegistry.getAll().size
         setBulb(
             com.assistant.overlay.R.id.tvFutureBulb,
             com.assistant.overlay.R.id.tvFutureState,
-            true,
-            "30 ROOMS"
+            roomCount > 0,
+            "$roomCount ROOMS"
         )
     }
 

@@ -22,8 +22,8 @@ class InterceptionRepository(context: Context) {
         return InterceptionState(
             enabled = prefs.getBoolean("enabled", true),
             autoIntercept = prefs.getBoolean("auto_intercept", true),
-            awareness = prefs.getInt("awareness", 50),
-            prediction = prefs.getInt("prediction", 50)
+            awareness = prefs.getInt("awareness", 100),
+            prediction = prefs.getInt("prediction", 100)
         )
     }
     
