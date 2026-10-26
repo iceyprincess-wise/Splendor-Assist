@@ -23,7 +23,7 @@ object PerformanceTelemetryRegistry {
     @Volatile private var readCache: NetTelemetry = EMPTY
 
     @JvmStatic
-    fun initialize(context: Context) {
+    fun initialize() {
         if (file == null) file = File("/sdcard/Splendor-Assist", "perf_telemetry.txt").also { it.parentFile?.mkdirs() }
     }
 
