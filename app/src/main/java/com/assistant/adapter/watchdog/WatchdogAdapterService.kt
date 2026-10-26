@@ -42,7 +42,7 @@ class WatchdogAdapterService : Service() {
             AdapterHealthRegistry.update(
                 AdapterHealthSnapshot(
                     adapterName = "adapter_watchdog",
-                    status = "ACTIVE",
+                    status = if (lastScan == "no scan yet") "STARTING" else "ACTIVE",
                     lastHeartbeat = System.currentTimeMillis(),
                     errorCount = 0,
                     recoveryCount = totalRestarts,

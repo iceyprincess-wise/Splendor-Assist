@@ -77,27 +77,6 @@ object ContributionRegistry {
     }
 
     /*
-     * Non-destructive peek at the highest-priority fresh contribution.
-     */
-    fun peekBest(): ExecutionRequest? {
-        if (pending.isEmpty()) return null
-
-        val now = System.currentTimeMillis()
-        var best: ExecutionRequest? = null
-        for (entry in pending.values) {
-            if (now - entry.timestamp > MAX_AGE_MS) continue
-            val current = best
-            if (current == null ||
-                HybridExecutionTerminal.priority(entry.source) >
-                HybridExecutionTerminal.priority(current.source)
-            ) {
-                best = entry
-            }
-        }
-        return best
-    }
-
-    /*
      * Returns the highest-priority fresh contribution and clears pending requests.
      */
     fun drainBest(): ExecutionRequest? {
@@ -105,7 +84,7 @@ object ContributionRegistry {
 
         val now = System.currentTimeMillis()
         val snapshot = pending.entries.toList()
-        pending.clear()
+        for (entry in snapshot) pending.remove(entry.key, entry.value)
 
         var best: ExecutionRequest? = null
         for (entry in snapshot) {

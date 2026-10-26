@@ -202,7 +202,7 @@ class GlobalCrashHandler(
                 "adapter_smartassist"  to "SmartAssist decision health monitor"
             )
             try {
-                val snapshots = com.assistant.diagnostic.registry.AdapterHealthRegistry.getAll()
+                val snapshots = com.assistant.diagnostic.registry.AdapterHealthRegistry.getAllLive()
                 if (snapshots.isEmpty()) {
                     out.appendLine("  [WARN] No adapter snapshots — registry empty (cold start or all offline)")
                 } else {

@@ -12,11 +12,21 @@ object HealthPersistenceStore {
     private fun file(context: Context): File =
         File(context.getExternalFilesDir(null), FILE_NAME)
 
+    private val lastWriteMs = HashMap<String, Long>()
+    private val lastWriteStatus = HashMap<String, String>()
+    private const val WRITE_MIN_INTERVAL_MS = 5000L
+
     @Synchronized
     fun write(
         context: Context,
         snapshot: AdapterHealthSnapshot
     ) {
+        val now = System.currentTimeMillis()
+        val prevMs = lastWriteMs[snapshot.adapterName] ?: 0L
+        if (lastWriteStatus[snapshot.adapterName] == snapshot.status &&
+            now - prevMs < WRITE_MIN_INTERVAL_MS) return
+        lastWriteMs[snapshot.adapterName] = now
+        lastWriteStatus[snapshot.adapterName] = snapshot.status
         try {
 
             val store =
@@ -68,7 +78,8 @@ object HealthPersistenceStore {
                 root.toString()
             )
 
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            com.assistant.diagnostic.RuntimeLogger.log("HealthPersistence write failed: " + e, "HEALTH_IO")
         }
     }
 

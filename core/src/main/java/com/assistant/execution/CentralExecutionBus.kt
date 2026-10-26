@@ -1,6 +1,5 @@
 package com.assistant.execution
 
-import com.assistant.diagnostic.RuntimeLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -128,6 +127,7 @@ object CentralExecutionBus {
                 }
                 consumed.incrementAndGet()
                 request.busConsumed = true
+                updateStatistics()
                 return request
             }
         }
@@ -167,11 +167,6 @@ object CentralExecutionBus {
         count += maxOf(0, (lowRing.writeCursor.get() - lowRing.readCursor.get()).toInt())
         return count
     }
-
-    fun dropStatistics() = mapOf(
-        "stopped" to stoppedDrops.get(), "invalid" to invalidDrops.get(),
-        "stale" to staleDrops.get(), "capacity" to capacityDrops.get()
-    )
 
     private fun updateStatistics(force: Boolean = false) {
         val now = System.currentTimeMillis()

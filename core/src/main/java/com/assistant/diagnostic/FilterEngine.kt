@@ -45,7 +45,9 @@ object FilterEngine {
                 try {
                     calculateEffectivenessAndPush()
                     writeReport()
-                } catch (_: Throwable) {}
+                } catch (t: Throwable) {
+                    com.assistant.diagnostic.RuntimeLogger.log("FilterEngine error: " + t, "FILTER")
+                }
                 try { Thread.sleep(1000L) } catch (_: Throwable) { break }
             }
         }.apply {

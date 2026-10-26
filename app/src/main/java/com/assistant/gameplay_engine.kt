@@ -11290,22 +11290,15 @@ object RuntimeSelfHealEngine {
                 if (busUnknownSinceMs == 0L) busUnknownSinceMs = System.currentTimeMillis()
                 val stuckMs = System.currentTimeMillis() - busUnknownSinceMs
                 if (stuckMs > 30_000L && shouldLog("BUS_ALL_UNKNOWN", "stuck")) {
-                    bus.publishNet("GO")
-                    bus.publishLag("SMOOTH")
-                    bus.publishStutter("CALM")
-                    bus.publishMemory("HEALTHY", 1500L)
-                    try { bus.publishThermal(0) } catch (_: Throwable) {}
-                    try { bus.publishBattery(100, true) } catch (_: Throwable) {}
+                    // no fabricated signals: stuck UNKNOWN is reported, not replaced
                     totalHeals++
                     record(HealEvent(
                         timestamp = fmt.format(Date()),
                         category = "BUS_ALL_UNKNOWN",
                         detected = "ALL bus signals stuck at UNKNOWN for ${stuckMs / 1000}s. " +
                             "Adapter services not publishing. SpeedCompensationContributor + RuntimeDecisionLoop blind.",
-                        fix = "FIXED: Published safe defaults GO/SMOOTH/CALM/HEALTHY. " +
-                            "Will re-apply on next check if still UNKNOWN. " +
-                            "CODE FIX: Run apply_phase3_adapters.py if not yet applied.",
-                        severity = "FIXED"
+                        fix = "REPORTED: signals stuck UNKNOWN; no values were injected.",
+                        severity = "WARN"
                     ))
                     RuntimeLogger.log("AGENT HEAL #$totalHeals BUS: safe defaults published", "AGENT")
                     busUnknownSinceMs = 0L

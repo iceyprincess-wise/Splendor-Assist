@@ -1,7 +1,5 @@
 package com.assistant.execution
 
-import com.assistant.diagnostic.RuntimeLogger
-
 object HybridExecutionTerminal {
 
     /*
@@ -11,7 +9,8 @@ object HybridExecutionTerminal {
      * - STUTTER = 80 (Low ring)
      *
      * Note: Threat priority scores (0..150) are internal contributor decision weights
-     * normalized against MAX_THREAT_PRIORITY (150f) to calculate authority (0.0..1.0).
+     * (no MAX_THREAT_PRIORITY constant exists in this module; the 0..150 scale is
+     * documented only, not enforced here.)
      */
     fun priority(
         source: ExecutionSource

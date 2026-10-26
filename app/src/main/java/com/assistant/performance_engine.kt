@@ -1089,7 +1089,9 @@ object ActionWindowEngine {
                     PerformanceTelemetryRegistry.publishActionWindow(verdict,
                         "rtt=" + NetProbeEngine.rtt.toInt() + " jit=" + NetProbeEngine.jitter.toInt() +
                         " loss=" + loss.toInt())
-                } catch (_: Throwable) { }
+                } catch (t: Throwable) {
+                    com.assistant.diagnostic.RuntimeLogger.log("NetWindow error: " + t, "NETWINDOW")
+                }
                 val nap = POLL_MS
                 try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }
             }
@@ -2819,8 +2821,7 @@ object AggressiveMemoryHoarding {
         purgesExecuted.incrementAndGet()
         RuntimeLogger.log("Initiating memory purge...", "MEMORY_HOARDER")
         // MASSIVE POWER: Force capture loop into survival mode (10fps) immediately
-        try { com.assistant.diagnostic.AdapterSignalBus.publishCaptureThrottle(3) } catch (_: Throwable) {}
-        // MASSIVE POWER: Force capture loop into survival mode (10fps) immediately
+        // Force capture loop into survival mode (10fps) immediately
         // to prevent LMK kills while the purge runs and OS reclaims RAM.
         try { com.assistant.diagnostic.AdapterSignalBus.publishCaptureThrottle(3) } catch (_: Throwable) {}
 
@@ -3022,6 +3023,7 @@ MemoryPressureBusEngine
 object MemoryPressureBusEngine {
     fun publish(tier: String, availMb: Long) {
         AdapterSignalBus.publishMemory(tier, availMb)
+        try { MemoryCaptureGateEngine.onTierChange(tier, availMb) } catch (_: Throwable) {}
         if (tier == "CRITICAL")
             RuntimeLogger.log("MemoryPressureBus: CRITICAL (avail=${availMb}MB)", "MEMBUSENGINE")
     }

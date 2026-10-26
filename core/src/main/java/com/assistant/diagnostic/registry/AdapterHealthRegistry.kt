@@ -93,23 +93,6 @@ object AdapterHealthRegistry {
     }
 
     @Synchronized
-    fun healthPercent(name: String): Int {
-
-        val snapshot =
-            snapshots[name] ?: return 0
-
-        val age =
-            System.currentTimeMillis() -
-            snapshot.lastHeartbeat
-
-        return when {
-            age < 30000 -> 100
-            age < 120000 -> 75
-            else -> 25
-        }
-    }
-
-    @Synchronized
     fun effectiveStatus(name: String): String {
 
         val snapshot =
