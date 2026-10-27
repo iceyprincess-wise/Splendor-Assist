@@ -1,59 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#070B14"
-    android:fillViewport="true">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#070B14" android:fillViewport="true" android:overScrollMode="never">
+  <LinearLayout xmlns:tools="http://schemas.android.com/tools" tools:ignore="HardcodedText,DisableBaselineAlignment,ButtonStyle,UseCompoundDrawables"
+      android:layout_width="match_parent" android:layout_height="wrap_content"
+      android:orientation="vertical" android:padding="24dp">
 
-    <LinearLayout xmlns:tools="http://schemas.android.com/tools" tools:ignore="HardcodedText,DisableBaselineAlignment,ButtonStyle" android:baselineAligned="false"
-    android:tag="PHASE10_MATERIAL3_LAYOUT_MARKER"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="@string/auto_extracted_66" android:textSize="26sp" android:textStyle="bold"
+        android:textColor="#E8EEF9" android:letterSpacing="0.02"/>
+    <View android:layout_width="56dp" android:layout_height="3dp"
+        android:layout_marginTop="10dp" android:layout_marginBottom="20dp"
+        android:background="@drawable/accent_bar"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="@string/auto_extracted_67" android:textSize="13sp" android:textColor="#9FB3D1"
+        android:layout_marginTop="4dp" android:layout_marginBottom="20dp"/>
+    <TextView android:id="@+id/tvFutureEmoji"
+        android:layout_width="52dp" android:layout_height="52dp"
+        android:background="@drawable/panel_surface" android:gravity="center"
+        android:text="@string/auto_extracted_65" android:textSize="24sp"
+        android:layout_marginBottom="14dp"/>
 
-        <TextView
-            android:id="@+id/tvFutureEmoji"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_65"
-            android:textSize="28sp"
-            android:textColor="#FFFFFF"/>
+    <TextView android:id="@+id/tvFutureTitle"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="@string/auto_extracted_66" android:textStyle="bold"
+        android:textColor="#E8EEF9" android:textSize="26sp"/>
 
-        <TextView
-            android:id="@+id/tvFutureTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_66"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:textSize="24sp"/>
+    <TextView android:id="@+id/tvFutureSubtitle"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="@string/auto_extracted_67" android:textColor="#9FB3D1"
+        android:textSize="13sp" android:layout_marginBottom="18dp"/>
 
-        <TextView
-            android:id="@+id/tvFutureSubtitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_67"
-            android:textColor="#E0E0E0"
-            android:layout_marginBottom="18dp"/>
+    <TextView android:id="@+id/tvFutureList"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textColor="#C7D2E5" android:textSize="14sp" android:lineSpacingExtra="6dp"
+        android:padding="18dp" android:background="@drawable/panel_surface"/>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnBack" android:layout_width="match_parent" android:layout_height="54dp"
+        android:layout_marginTop="24dp" android:text="@string/auto_extracted_68"
+        android:textColor="#00D4FF" android:textStyle="bold" android:textSize="15sp"
+        android:letterSpacing="0.06" android:background="@drawable/btn_ghost"/>
 
-        <TextView
-            android:id="@+id/tvFutureList"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:lineSpacingExtra="4dp"
-            android:padding="12dp"
-            android:background="@drawable/banner_premium"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnBack"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_68"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/button_premium"
-            android:textColor="#FFFFFF"/>
-    </LinearLayout>
+  </LinearLayout>
 </ScrollView>
