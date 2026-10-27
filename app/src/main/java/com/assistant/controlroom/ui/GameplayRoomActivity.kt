@@ -216,13 +216,16 @@ class GameplayRoomActivity : AppCompatActivity() {
         section(root, "CONTROLS")
         btn(root, "↺  Refresh Now") { refreshNow() }
         btn(root, "🗑  Clear Gameplay Log", Color.parseColor("#8B0000")) {
-            try {
-                LOG_FILE.writeText("")
-                android.widget.Toast.makeText(this, "Gameplay log cleared",
-                    android.widget.Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                android.widget.Toast.makeText(this, "Error: ${e.message}",
-                    android.widget.Toast.LENGTH_SHORT).show()
+            logExecutor.execute {
+                val msg = try {
+                    LOG_FILE.writeText("")
+                    "Gameplay log cleared"
+                } catch (e: Exception) {
+                    "Error: ${e.message}"
+                }
+                runOnUiThread {
+                    android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
+                }
             }
         }
         btn(root, "←  Back", Color.parseColor("#222233")) { finish() }

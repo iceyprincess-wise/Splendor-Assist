@@ -46,6 +46,9 @@ object ThreatPriorityContributor : GameplayContributor {
     }
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
+        // Interception switch gate (f5): when the user turns Interception off the
+        // threat-priority claim is withdrawn at the live contributor entry.
+        if (!InterceptionRuntimeRegistry.enabled) return null
         if (frame.confidence < 0.05f) return null
         val possessionWeight = if (!frame.hasBall) 1.0f else 0.3f // Defensive focus when opponent has ball
         val trustWeight = if (frame.trusted) 1.0f else 0.6f

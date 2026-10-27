@@ -233,6 +233,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
         lastFrameProcessedMs = 0L
         captureFrameCount = 0L
         captureState = finalState
+        // f5: capture teardown must not leave the mod menu on screen.
+        modMenuController?.hideLauncher()
+        modMenuController?.hide()
     }
 
     private var currentWidth = 0
@@ -717,6 +720,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         if (mp == null) {
             captureState = CaptureState.FAILED
+            // f5: failed capture must not leave the mod menu up.
+            modMenuController?.hideLauncher()
+            modMenuController?.hide()
             RuntimeLogger.log("MediaProjection setup failed: getMediaProjection returned null", "OVERLAY")
             throw IllegalStateException("MediaProjection unavailable")
         }

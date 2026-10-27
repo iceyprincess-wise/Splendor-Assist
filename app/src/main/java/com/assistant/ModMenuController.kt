@@ -23,6 +23,16 @@ import com.assistant.overlay.repository.InterceptionRepository
 
 class ModMenuController(private val context: Context) {
 
+    /* Colour tokens: accent #00E5FF, background #0A0E17, muted text #B8CCE6 (same values
+       as the app theme and layouts). Restyle here only. */
+    private companion object {
+        const val ACCENT = "#00E5FF"
+        const val BG = "#0A0E17"
+        const val TEXT_MUTED = "#B8CCE6"
+        const val PANEL_BG = "#EE0A0E17"
+        const val ORB_BG = "#CC0A0E17"
+    }
+
     private var windowManager: WindowManager? = null
     private var menuView: View? = null
     private var launcherView: View? = null
@@ -110,9 +120,9 @@ class ModMenuController(private val context: Context) {
 
         val orb = TextView(context).apply {
             text = "\u2699"
-            setTextColor(Color.parseColor("#00E5FF"))
+            setTextColor(Color.parseColor(ACCENT))
             textSize = 20f
-            setBackgroundColor(Color.parseColor("#CC0A0E17"))
+            setBackgroundColor(Color.parseColor(ORB_BG))
             setPadding(24, 12, 24, 12)
         }
         orb.setOnTouchListener { _, event ->
@@ -205,7 +215,7 @@ class ModMenuController(private val context: Context) {
 
         val mainLayout = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(Color.parseColor("#EE0A0E17"))
+            setBackgroundColor(Color.parseColor(PANEL_BG))
             setPadding(24, 20, 24, 20)
         }
 
@@ -216,7 +226,7 @@ class ModMenuController(private val context: Context) {
 
         val title = TextView(context).apply {
             text = "⚡ SPLENDOR MOD MENU"
-            setTextColor(Color.parseColor("#00E5FF"))
+            setTextColor(Color.parseColor(ACCENT))
             textSize = 15f
             setTypeface(null, Typeface.BOLD)
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
@@ -272,18 +282,19 @@ class ModMenuController(private val context: Context) {
         contentContainer.addView(swKeeper)
 
         val swIntercept = Switch(context).apply {
-            text = "Auto Interception"
+            text = "Interception"
             setTextColor(Color.WHITE)
             isChecked = InterceptionRuntimeRegistry.enabled
             setOnCheckedChangeListener { _, isChecked ->
                 interceptionRepo.updateEnabled(isChecked)
+                InterceptionRuntimeRegistry.enabled = isChecked
             }
         }
         contentContainer.addView(swIntercept)
 
         val tvAuthority = TextView(context).apply {
             text = "Engine Authority Level: ${SmartAssistRepository.configuration().authority}"
-            setTextColor(Color.parseColor("#B8CCE6"))
+            setTextColor(Color.parseColor(TEXT_MUTED))
             textSize = 12f
             setPadding(0, 16, 0, 4)
         }
@@ -295,7 +306,12 @@ class ModMenuController(private val context: Context) {
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                     tvAuthority.text = "Engine Authority Level: $progress"
-                    if (fromUser) smartRepo.updateAuthority(progress)
+                    if (fromUser) {
+                        smartRepo.updateAuthority(progress)
+                        // RuntimePerformanceCoordinator.masterAuthority is what the runtime reads;
+                        // the repo write alone never reached it.
+                        RuntimePerformanceCoordinator.updateAuthority(progress)
+                    }
                 }
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {}
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {}
@@ -305,7 +321,7 @@ class ModMenuController(private val context: Context) {
 
         val tvPass = TextView(context).apply {
             text = "Pass Force Threshold: ${SmartAssistRepository.configuration().passThreshold}"
-            setTextColor(Color.parseColor("#B8CCE6"))
+            setTextColor(Color.parseColor(TEXT_MUTED))
             textSize = 12f
             setPadding(0, 12, 0, 4)
         }
@@ -327,6 +343,56 @@ class ModMenuController(private val context: Context) {
             })
         }
         contentContainer.addView(seekPass)
+
+        val tvShot = TextView(context).apply {
+            text = "Shot Force Threshold: ${SmartAssistRepository.configuration().shotThreshold}"
+            setTextColor(Color.parseColor(TEXT_MUTED))
+            textSize = 12f
+            setPadding(0, 12, 0, 4)
+        }
+        contentContainer.addView(tvShot)
+
+        val seekShot = SeekBar(context).apply {
+            max = 100
+            progress = SmartAssistRepository.configuration().shotThreshold
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    tvShot.text = "Shot Force Threshold: $progress"
+                    if (fromUser) {
+                        val cfg = SmartAssistRepository.configuration()
+                        smartRepo.updateThresholds(cfg.passThreshold, progress, cfg.crossThreshold)
+                    }
+                }
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            })
+        }
+        contentContainer.addView(seekShot)
+
+        val tvCross = TextView(context).apply {
+            text = "Cross Force Threshold: ${SmartAssistRepository.configuration().crossThreshold}"
+            setTextColor(Color.parseColor(TEXT_MUTED))
+            textSize = 12f
+            setPadding(0, 12, 0, 4)
+        }
+        contentContainer.addView(tvCross)
+
+        val seekCross = SeekBar(context).apply {
+            max = 100
+            progress = SmartAssistRepository.configuration().crossThreshold
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    tvCross.text = "Cross Force Threshold: $progress"
+                    if (fromUser) {
+                        val cfg = SmartAssistRepository.configuration()
+                        smartRepo.updateThresholds(cfg.passThreshold, cfg.shotThreshold, progress)
+                    }
+                }
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            })
+        }
+        contentContainer.addView(seekCross)
 
         val tvStatus = TextView(context).apply {
             text = liveStatusLine()
@@ -351,7 +417,7 @@ class ModMenuController(private val context: Context) {
 
         val tvKeeperPositioning = TextView(context).apply {
             text = "Keeper Positioning: " + GoalkeeperRuntimeState.positioning
-            setTextColor(Color.parseColor("#B8CCE6"))
+            setTextColor(Color.parseColor(TEXT_MUTED))
             textSize = 12f
             setPadding(0, 12, 0, 4)
         }
@@ -373,7 +439,7 @@ class ModMenuController(private val context: Context) {
 
         val tvKeeperReactions = TextView(context).apply {
             text = "Keeper Reactions: " + GoalkeeperRuntimeState.reactions
-            setTextColor(Color.parseColor("#B8CCE6"))
+            setTextColor(Color.parseColor(TEXT_MUTED))
             textSize = 12f
             setPadding(0, 12, 0, 4)
         }
@@ -392,6 +458,56 @@ class ModMenuController(private val context: Context) {
             })
         }
         contentContainer.addView(seekKeeperReactions)
+
+        val tvAwareness = TextView(context).apply {
+            text = "Awareness: ${InterceptionRuntimeRegistry.awareness}"
+            setTextColor(Color.parseColor(TEXT_MUTED))
+            textSize = 12f
+            setPadding(0, 12, 0, 4)
+        }
+        contentContainer.addView(tvAwareness)
+
+        val seekAwareness = SeekBar(context).apply {
+            max = 100
+            progress = InterceptionRuntimeRegistry.awareness
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    tvAwareness.text = "Awareness: $progress"
+                    if (fromUser) {
+                        interceptionRepo.updateAwareness(progress)
+                        InterceptionRuntimeRegistry.awareness = progress
+                    }
+                }
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            })
+        }
+        contentContainer.addView(seekAwareness)
+
+        val tvPrediction = TextView(context).apply {
+            text = "Prediction: ${InterceptionRuntimeRegistry.prediction}"
+            setTextColor(Color.parseColor(TEXT_MUTED))
+            textSize = 12f
+            setPadding(0, 12, 0, 4)
+        }
+        contentContainer.addView(tvPrediction)
+
+        val seekPrediction = SeekBar(context).apply {
+            max = 100
+            progress = InterceptionRuntimeRegistry.prediction
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    tvPrediction.text = "Prediction: $progress"
+                    if (fromUser) {
+                        interceptionRepo.updatePrediction(progress)
+                        InterceptionRuntimeRegistry.prediction = progress
+                    }
+                }
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            })
+        }
+        contentContainer.addView(seekPrediction)
 
         // Single refresh loop for the whole panel, started only once every
         // widget exists. The sliders are refreshed as well because the control

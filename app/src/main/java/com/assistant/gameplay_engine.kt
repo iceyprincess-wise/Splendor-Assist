@@ -7805,8 +7805,21 @@ object RuntimeDecisionLoop {
                 ControlMappingTrainer.joystickCenterY(),
             endX = leadX.coerceAtLeast(0f),
             endY = leadY.coerceAtLeast(0f),
-            duration = ControlMappingTrainer.personalDuration(best.actionClass, best.durationHintMs).coerceIn(15L, 85L)
+            duration = (ControlMappingTrainer.personalDuration(best.actionClass, best.durationHintMs) * executionBias(best.actionClass)).toLong().coerceIn(15L, 85L)
         )
+    }
+
+    /* f5: Pass/Shot/Cross threshold slider -> live duration factor. 50 = 1.0 (unchanged),
+       0 = 0.0, 100 = 2.0. DEFEND/EVADE/other classes are not biased. */
+    private fun executionBias(actionClass: ActionClass): Float {
+        val cfg = SmartAssistRepository.configuration()
+        val threshold = when (actionClass) {
+            ActionClass.PASS -> cfg.passThreshold
+            ActionClass.SHOT -> cfg.shotThreshold
+            ActionClass.CROSS -> cfg.crossThreshold
+            else -> 50
+        }
+        return threshold.coerceIn(0, 100) / 50f
     }
 
     private fun describe(best: EngineContribution?, emergency: ExecutionRequest?): String =
