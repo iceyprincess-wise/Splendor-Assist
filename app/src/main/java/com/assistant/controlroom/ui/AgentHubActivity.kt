@@ -40,12 +40,12 @@ class AgentHubActivity : AppCompatActivity() {
     private fun page() = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         setPadding(dp(16), dp(24), dp(16), dp(32))
-        setBackgroundColor(Color.parseColor("#0A0A1A"))
+        setBackgroundColor(ThemeTokens.BG)
     }
 
     private fun text(
         list: LinearLayout, t: String, size: Float = 13f,
-        bold: Boolean = false, color: Int = Color.parseColor("#DDDDDD")
+        bold: Boolean = false, color: Int = ThemeTokens.TEXT
     ): TextView {
         val tv = TextView(this).apply {
             text = t; textSize = size; setTextColor(color)
@@ -57,7 +57,7 @@ class AgentHubActivity : AppCompatActivity() {
     }
 
     private fun btn(list: LinearLayout, label: String,
-                    bg: Int = Color.parseColor("#1565C0"), onClick: () -> Unit) {
+                    bg: Int = ThemeTokens.BUTTON, onClick: () -> Unit) {
         list.addView(Button(this).apply {
             text = label; isAllCaps = false; setBackgroundColor(bg)
             setTextColor(Color.WHITE); textSize = 14f
@@ -70,7 +70,7 @@ class AgentHubActivity : AppCompatActivity() {
 
     private fun divider(list: LinearLayout) {
         list.addView(android.view.View(this).apply {
-            setBackgroundColor(Color.parseColor("#2A2A3A"))
+            setBackgroundColor(ThemeTokens.SURFACE)
             val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1))
             lp.setMargins(0, dp(14), 0, dp(14)); layoutParams = lp
         })
@@ -94,14 +94,14 @@ class AgentHubActivity : AppCompatActivity() {
 
         text(root, "🤖  AGENT HUB ROOM", 22f, bold = true, color = Color.WHITE)
         text(root, "AI Self-Heal Agent — runtime monitor for broken engine states",
-            11f, color = Color.parseColor("#8888AA"))
+            11f, color = ThemeTokens.TEXT_MUTED)
 
         divider(root)
 
-        text(root, "LIVE STATUS", 13f, bold = true, color = Color.parseColor("#4CAF50"))
+        text(root, "LIVE STATUS", 13f, bold = true, color = ThemeTokens.SUCCESS)
 
         val statusTv = TextView(this).apply {
-            textSize = 11f; setTextColor(Color.parseColor("#80FF80"))
+            textSize = 11f; setTextColor(ThemeTokens.SUCCESS)
             setPadding(0, dp(4), 0, dp(8)); typeface = Typeface.MONOSPACE
             text = "Loading agent status..."
         }
@@ -110,7 +110,7 @@ class AgentHubActivity : AppCompatActivity() {
 
         val coreTv = TextView(this).apply {
             textSize = 10f
-            setTextColor(Color.parseColor("#9FE7FF"))
+            setTextColor(ThemeTokens.ACCENT)
             setPadding(0, dp(4), 0, dp(8))
             typeface = Typeface.MONOSPACE
             text = "InAppAgentCore: starting..."
@@ -121,10 +121,10 @@ class AgentHubActivity : AppCompatActivity() {
         divider(root)
 
         text(root, "HEAL EVENT LOG  (latest 20)", 13f, bold = true,
-            color = Color.parseColor("#FF9800"))
+            color = ThemeTokens.WARN)
 
         val eventsTv = TextView(this).apply {
-            textSize = 10f; setTextColor(Color.parseColor("#CCCCCC"))
+            textSize = 10f; setTextColor(ThemeTokens.TEXT)
             setPadding(0, dp(4), 0, dp(8)); typeface = Typeface.MONOSPACE
             text = "Waiting for heal events..."
         }
@@ -133,7 +133,7 @@ class AgentHubActivity : AppCompatActivity() {
 
         divider(root)
 
-        btn(root, "↺  Force Heal Cycle Now", Color.parseColor("#6A1B9A")) {
+        btn(root, "↺  Force Heal Cycle Now", ThemeTokens.BUTTON_ALT) {
             try {
                 InAppAgentCore.runNow()
                 android.widget.Toast.makeText(this, "Agent cycle triggered",
@@ -144,10 +144,10 @@ class AgentHubActivity : AppCompatActivity() {
             }
         }
 
-        btn(root, "←  Back", Color.parseColor("#333333")) { finish() }
+        btn(root, "←  Back", ThemeTokens.BUTTON_NEUTRAL) { finish() }
 
         setContentView(ScrollView(this).apply {
-            setBackgroundColor(Color.parseColor("#0A0A1A"))
+            setBackgroundColor(ThemeTokens.BG)
             addView(root, ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         })

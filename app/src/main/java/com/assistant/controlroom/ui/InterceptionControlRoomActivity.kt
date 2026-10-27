@@ -42,7 +42,7 @@ class InterceptionControlRoomActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_interception_control_room)
 
-        repository = InterceptionRepository(this)
+        repository = InterceptionRepository.shared(this)
 
         val switchEnabled = findViewById<MaterialSwitch>(R.id.switch_enabled)
         val switchAutoIntercept = findViewById<MaterialSwitch>(R.id.switch_auto_intercept)

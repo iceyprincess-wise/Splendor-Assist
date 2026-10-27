@@ -71,13 +71,13 @@ class FutureRoomsActivity : AppCompatActivity() {
     private fun page(): LinearLayout = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         setPadding(dp(16), dp(24), dp(16), dp(32))
-        setBackgroundColor(Color.parseColor("#121212"))
+        setBackgroundColor(ThemeTokens.BG)
     }
 
     private fun mount(v: LinearLayout) {
         agentRefreshRunnable?.let { refreshHandler.removeCallbacks(it)  }
         setContentView(ScrollView(this).apply {
-            setBackgroundColor(Color.parseColor("#121212"))
+            setBackgroundColor(ThemeTokens.BG)
             addView(v, ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -86,7 +86,7 @@ class FutureRoomsActivity : AppCompatActivity() {
     }
 
     private fun text(list: LinearLayout, t: String, size: Float = 13f,
-                     bold: Boolean = false, color: Int = Color.parseColor("#DDDDDD")): TextView {
+                     bold: Boolean = false, color: Int = ThemeTokens.TEXT): TextView {
         val tv = TextView(this).apply {
             text = t; textSize = size; setTextColor(color)
             if (bold) setTypeface(typeface, Typeface.BOLD)
@@ -97,7 +97,7 @@ class FutureRoomsActivity : AppCompatActivity() {
     }
 
     private fun btn(list: LinearLayout, label: String,
-                    bg: Int = Color.parseColor("#1565C0"), onClick: () -> Unit) {
+                    bg: Int = ThemeTokens.BUTTON, onClick: () -> Unit) {
         list.addView(Button(this).apply {
             text = label; isAllCaps = false; setBackgroundColor(bg)
             setTextColor(Color.WHITE); textSize = 14f
@@ -111,7 +111,7 @@ class FutureRoomsActivity : AppCompatActivity() {
 
     private fun divider(list: LinearLayout) {
         list.addView(android.view.View(this).apply {
-            setBackgroundColor(Color.parseColor("#333333"))
+            setBackgroundColor(ThemeTokens.BUTTON_NEUTRAL)
             val lp = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, dp(1))
             lp.setMargins(0, dp(14), 0, dp(14))
@@ -127,22 +127,22 @@ class FutureRoomsActivity : AppCompatActivity() {
         val root = page()
 
         text(root, "SPLENDOR ROOMS", 22f, bold = true, color = Color.WHITE)
-        text(root, "Control centers for every subsystem", 12f, color = Color.parseColor("#888888"))
+        text(root, "Control centers for every subsystem", 12f, color = ThemeTokens.TEXT_DIM)
 
         divider(root)
 
-        text(root, "ACTIVE ROOMS", 13f, bold = true, color = Color.parseColor("#4CAF50"))
+        text(root, "ACTIVE ROOMS", 13f, bold = true, color = ThemeTokens.SUCCESS)
 
-        btn(root, "🤖   AI Self-Heal Agent Monitor", Color.parseColor("#6A1B9A")) {
+        btn(root, "🤖   AI Self-Heal Agent Monitor", ThemeTokens.BUTTON_ALT) {
             showAgent()
         }
-        text(root, "   Detects and fixes broken engine states while you play. Logs every fix to SplendorHealLog.txt", 11f, color = Color.parseColor("#AAAAAA"))
+        text(root, "   Detects and fixes broken engine states while you play. Logs every fix to SplendorHealLog.txt", 11f, color = ThemeTokens.TEXT_MUTED)
 
-        text(root, "  ⚙️  Admin Settings — removed", 11f, color = Color.parseColor("#888888"))
+        text(root, "  ⚙️  Admin Settings — removed", 11f, color = ThemeTokens.TEXT_DIM)
 
         divider(root)
 
-        text(root, "PLANNED ROOMS", 13f, bold = true, color = Color.parseColor("#FF9800"))
+        text(root, "COMING SOON (not wired yet)", 13f, bold = true, color = ThemeTokens.WARN)
 
         val planned = listOf(
             "📊  Live Frame Monitor          — real-time VisionCore frame display",
@@ -162,12 +162,12 @@ class FutureRoomsActivity : AppCompatActivity() {
             "🏆  Keeper Command Room         — goalkeeper beast save configuration"
         )
         for (r in planned) {
-            text(root, "  $r", 11f, color = Color.parseColor("#888888"))
+            text(root, "  $r", 11f, color = ThemeTokens.TEXT_DIM)
         }
 
         divider(root)
 
-        btn(root, "←  Back", Color.parseColor("#333333")) { finish() }
+        btn(root, "←  Back", ThemeTokens.BUTTON_NEUTRAL) { finish() }
         mount(root)
     }
 
@@ -180,15 +180,15 @@ class FutureRoomsActivity : AppCompatActivity() {
 
         text(root, "🤖  AI SELF-HEAL AGENT", 20f, bold = true, color = Color.WHITE)
         text(root, "Runtime monitor: detects broken engine states and fixes them in-memory while you play",
-            11f, color = Color.parseColor("#AAAAAA"))
+            11f, color = ThemeTokens.TEXT_MUTED)
 
         divider(root)
 
-        text(root, "LIVE STATUS", 13f, bold = true, color = Color.parseColor("#4CAF50"))
+        text(root, "LIVE STATUS", 13f, bold = true, color = ThemeTokens.SUCCESS)
 
         val statusTv = TextView(this).apply {
             textSize = 11f
-            setTextColor(Color.parseColor("#80FF80"))
+            setTextColor(ThemeTokens.SUCCESS)
             setPadding(0, dp(4), 0, dp(8))
             typeface = Typeface.MONOSPACE
             text = "Loading agent status..."
@@ -198,11 +198,11 @@ class FutureRoomsActivity : AppCompatActivity() {
 
         divider(root)
 
-        text(root, "HEAL EVENT LOG  (latest 20)", 13f, bold = true, color = Color.parseColor("#FF9800"))
+        text(root, "HEAL EVENT LOG  (latest 20)", 13f, bold = true, color = ThemeTokens.WARN)
 
         val eventsTv = TextView(this).apply {
             textSize = 10f
-            setTextColor(Color.parseColor("#CCCCCC"))
+            setTextColor(ThemeTokens.TEXT)
             setPadding(0, dp(4), 0, dp(8))
             typeface = Typeface.MONOSPACE
             text = "Waiting for heal events..."
@@ -212,7 +212,7 @@ class FutureRoomsActivity : AppCompatActivity() {
 
         divider(root)
 
-        btn(root, "↺  Force Heal Cycle Now", Color.parseColor("#6A1B9A")) {
+        btn(root, "↺  Force Heal Cycle Now", ThemeTokens.BUTTON_ALT) {
             try {
                 RuntimeSelfHealEngine.start()
                 android.widget.Toast.makeText(this, "Heal cycle triggered", android.widget.Toast.LENGTH_SHORT).show()
@@ -221,7 +221,7 @@ class FutureRoomsActivity : AppCompatActivity() {
             }
         }
 
-        btn(root, "←  Back to Rooms", Color.parseColor("#333333")) { showHome() }
+        btn(root, "←  Back to Rooms", ThemeTokens.BUTTON_NEUTRAL) { showHome() }
 
         mount(root)
 

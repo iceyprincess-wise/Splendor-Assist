@@ -30,7 +30,7 @@ object AdapterControlRoomSync {
         val app = context.applicationContext
 
         val goalkeeperRepository = GoalkeeperRepository(app)
-        val interceptionRepository = InterceptionRepository(app)
+        val interceptionRepository = InterceptionRepository.shared(app)
         val smartAssistRepository = SmartAssistRepository(app)
 
         syncAll(goalkeeperRepository, interceptionRepository, smartAssistRepository)

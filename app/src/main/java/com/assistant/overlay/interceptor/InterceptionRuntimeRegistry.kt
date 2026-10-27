@@ -6,7 +6,7 @@ object InterceptionRuntimeRegistry {
     var enabled: Boolean = true
 
     @Volatile
-    var autoIntercept: Boolean = true
+    @Volatile var autoIntercept: Boolean = true
 
     @Volatile
     var awareness: Int = 100

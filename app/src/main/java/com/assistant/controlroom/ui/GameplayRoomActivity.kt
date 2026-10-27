@@ -58,19 +58,19 @@ class GameplayRoomActivity : AppCompatActivity() {
     private fun page() = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         setPadding(dp(14), dp(20), dp(14), dp(40))
-        setBackgroundColor(Color.parseColor("#080816"))
+        setBackgroundColor(ThemeTokens.BG)
     }
 
     private fun section(list: LinearLayout, title: String) {
         val tv = TextView(this).apply {
             text = title; textSize = 13f
-            setTextColor(Color.parseColor("#4FC3F7"))
+            setTextColor(ThemeTokens.ACCENT)
             setTypeface(typeface, Typeface.BOLD)
             setPadding(0, dp(12), 0, dp(4))
         }
         list.addView(tv)
         list.addView(android.view.View(this).apply {
-            setBackgroundColor(Color.parseColor("#1A2A4A"))
+            setBackgroundColor(ThemeTokens.SURFACE)
             val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1))
             lp.setMargins(0, 0, 0, dp(6)); layoutParams = lp
         })
@@ -79,7 +79,7 @@ class GameplayRoomActivity : AppCompatActivity() {
     private fun mono(list: LinearLayout, initText: String = ""): TextView {
         val tv = TextView(this).apply {
             text = initText; textSize = 10f
-            setTextColor(Color.parseColor("#CCDDEE"))
+            setTextColor(ThemeTokens.TEXT)
             typeface = Typeface.MONOSPACE
             setPadding(0, dp(2), 0, dp(6))
         }
@@ -88,7 +88,7 @@ class GameplayRoomActivity : AppCompatActivity() {
     }
 
     private fun btn(list: LinearLayout, label: String,
-                    bg: Int = Color.parseColor("#1565C0"), onClick: () -> Unit) {
+                    bg: Int = ThemeTokens.BUTTON, onClick: () -> Unit) {
         list.addView(Button(this).apply {
             text = label; isAllCaps = false; setBackgroundColor(bg)
             setTextColor(Color.WHITE); textSize = 13f
@@ -124,7 +124,7 @@ class GameplayRoomActivity : AppCompatActivity() {
 
         val subTv = TextView(this).apply {
             text = "Live engine + contributor state · proof of effectiveness during gameplay"
-            textSize = 10f; setTextColor(Color.parseColor("#6688AA"))
+            textSize = 10f; setTextColor(ThemeTokens.TEXT_MUTED)
             setPadding(0, 0, 0, dp(8))
         }
         root.addView(subTv)
@@ -150,7 +150,7 @@ class GameplayRoomActivity : AppCompatActivity() {
         }
         val crowdToggleLabel = TextView(this).apply {
             text = "Crowding Zone Detector enabled"; textSize = 13f
-            setTextColor(Color.parseColor("#DDDDDD"))
+            setTextColor(ThemeTokens.TEXT)
             val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
             layoutParams = lp
         }
@@ -179,7 +179,7 @@ class GameplayRoomActivity : AppCompatActivity() {
             text = "Enable only when your squad captain holds the Captaincy skill\n" +
                    "(eFootball 2027: \"Reduces fatigue effects — entire squad\").\n" +
                    "Disabling clears the designation immediately."
-            textSize = 10f; setTextColor(Color.parseColor("#AABBCC"))
+            textSize = 10f; setTextColor(ThemeTokens.TEXT_MUTED)
             setPadding(0, dp(2), 0, dp(6))
         }
         root.addView(captaincyDescTv)
@@ -193,7 +193,7 @@ class GameplayRoomActivity : AppCompatActivity() {
         }
         val toggleLabel = TextView(this).apply {
             text = "Captain has Captaincy skill"; textSize = 13f
-            setTextColor(Color.parseColor("#DDDDDD"))
+            setTextColor(ThemeTokens.TEXT)
             val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
             layoutParams = lp
         }
@@ -216,7 +216,7 @@ class GameplayRoomActivity : AppCompatActivity() {
         // ── CONTROLS ──────────────────────────────────────────────────────
         section(root, "CONTROLS")
         btn(root, "↺  Refresh Now") { refreshNow() }
-        btn(root, "🗑  Clear Gameplay Log", Color.parseColor("#8B0000")) {
+        btn(root, "🗑  Clear Gameplay Log", ThemeTokens.DANGER) {
             logExecutor.execute {
                 val msg = try {
                     LOG_FILE.writeText("")
@@ -229,10 +229,10 @@ class GameplayRoomActivity : AppCompatActivity() {
                 }
             }
         }
-        btn(root, "←  Back", Color.parseColor("#222233")) { finish() }
+        btn(root, "←  Back", ThemeTokens.SURFACE) { finish() }
 
         setContentView(ScrollView(this).apply {
-            setBackgroundColor(Color.parseColor("#080816"))
+            setBackgroundColor(ThemeTokens.BG)
             addView(root, ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         })

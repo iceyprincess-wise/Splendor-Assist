@@ -42,4 +42,13 @@ class InterceptionRepository(context: Context) {
     fun updateAutoIntercept(auto: Boolean) = save(_state.value.copy(autoIntercept = auto))
     fun updateAwareness(awareness: Int) = save(_state.value.copy(awareness = awareness))
     fun updatePrediction(prediction: Int) = save(_state.value.copy(prediction = prediction))
+
+    companion object {
+        @Volatile private var instance: InterceptionRepository? = null
+
+        fun shared(context: Context): InterceptionRepository =
+            instance ?: synchronized(this) {
+                instance ?: InterceptionRepository(context.applicationContext).also { instance = it }
+            }
+    }
 }

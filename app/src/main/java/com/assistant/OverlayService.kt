@@ -510,7 +510,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_DEFAULT).apply { start() }
         ocrIoHandler = android.os.Handler(ocrIoThread!!.looper)
         initializeOverlayUI()
-        interceptionBridge = com.assistant.overlay.bridge.InterceptionControlRoomBridge(com.assistant.overlay.repository.InterceptionRepository(this)).also { it.start() }
+        interceptionBridge = com.assistant.overlay.bridge.InterceptionControlRoomBridge(com.assistant.overlay.repository.InterceptionRepository.shared(this)).also { it.start() }
         modMenuController = ModMenuController(this).also { it.show() }
     }
 

@@ -20,17 +20,18 @@ import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
 import com.assistant.overlay.repository.GoalkeeperRepository
 import com.assistant.overlay.repository.GoalkeeperRuntimeState
 import com.assistant.overlay.repository.InterceptionRepository
+import com.assistant.controlroom.ui.ThemeTokens
 
 class ModMenuController(private val context: Context) {
 
     /* Colour tokens: accent #00E5FF, background #0A0E17, muted text #B8CCE6 (same values
        as the app theme and layouts). Restyle here only. */
     private companion object {
-        const val ACCENT = "#00E5FF"
-        const val BG = "#0A0E17"
-        const val TEXT_MUTED = "#B8CCE6"
-        const val PANEL_BG = "#EE0A0E17"
-        const val ORB_BG = "#CC0A0E17"
+        const val ACCENT = ThemeTokens.ACCENT_HEX
+        const val BG = ThemeTokens.BG_HEX
+        const val TEXT_MUTED = ThemeTokens.TEXT_MUTED_HEX
+        const val PANEL_BG = ThemeTokens.PANEL_BG_HEX
+        const val ORB_BG = ThemeTokens.ORB_BG_HEX
     }
 
     private var windowManager: WindowManager? = null
@@ -42,7 +43,7 @@ class ModMenuController(private val context: Context) {
 
     private val smartRepo by lazy { SmartAssistRepository(context) }
     private val goalkeeperRepo by lazy { GoalkeeperRepository(context) }
-    private val interceptionRepo by lazy { InterceptionRepository(context) }
+    private val interceptionRepo by lazy { InterceptionRepository.shared(context) }
 
     fun show() {
         if (isShown) return
@@ -291,6 +292,17 @@ class ModMenuController(private val context: Context) {
             }
         }
         contentContainer.addView(swIntercept)
+
+        val swAutoIntercept = Switch(context).apply {
+            text = "Auto-intercept"
+            setTextColor(Color.WHITE)
+            isChecked = InterceptionRuntimeRegistry.autoIntercept
+            setOnCheckedChangeListener { _, isChecked ->
+                interceptionRepo.updateAutoIntercept(isChecked)
+                InterceptionRuntimeRegistry.autoIntercept = isChecked
+            }
+        }
+        contentContainer.addView(swAutoIntercept)
 
         val tvAuthority = TextView(context).apply {
             text = "Engine Authority Level: ${SmartAssistRepository.configuration().authority}"
