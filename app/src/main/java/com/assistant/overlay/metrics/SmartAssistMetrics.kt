@@ -1,6 +1,5 @@
 package com.assistant.overlay.metrics
 
-import com.assistant.SmartAssistMetrics as RuntimeMetrics
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,13 +50,11 @@ object SmartAssistMetrics {
             uptimeSeconds = (System.currentTimeMillis() - startTime) / 1000
         )
 
-        RuntimeMetrics.recordDecisionMirror(durationMs, triggeredAction)
     }
 
     fun recordError() {
         errorsCounter.incrementAndGet()
         _state.value = _state.value.copy(errorCount = errorsCounter.get())
-        RuntimeMetrics.recordDecisionErrorMirror()
     }
 
     fun reset() {
@@ -67,7 +64,6 @@ object SmartAssistMetrics {
         decisionTimeAccumulator.set(0)
         startTime = System.currentTimeMillis()
         _state.value = SmartAssistMetricsState()
-        RuntimeMetrics.resetDecisionMirror()
     }
 
     fun getSnapshot(): SmartAssistMetricsState = _state.value

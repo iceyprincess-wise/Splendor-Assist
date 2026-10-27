@@ -8472,31 +8472,6 @@ object SmartAssistMetrics {
     @Volatile private var lastDecisionMs: Long = 0L
     @Volatile private var lastDecisionUpdatedMs: Long = 0L
 
-    fun recordDecisionMirror(durationMs: Long, triggeredAction: Boolean) {
-        decisionsMade.incrementAndGet()
-        decisionTimeTotal.addAndGet(durationMs)
-        if (triggeredAction) {
-            decisionActions.incrementAndGet()
-        }
-        lastDecisionMs = durationMs
-        lastDecisionUpdatedMs = System.currentTimeMillis()
-    }
-
-    fun recordDecisionErrorMirror() {
-        decisionErrors.incrementAndGet()
-        lastDecisionUpdatedMs = System.currentTimeMillis()
-    }
-
-    fun resetDecisionMirror() {
-        decisionsMade.set(0L)
-        decisionActions.set(0L)
-        decisionErrors.set(0L)
-        decisionTimeTotal.set(0L)
-        lastDecisionMs = 0L
-        lastDecisionUpdatedMs = 0L
-    }
-
-    fun decisionRuntimeSnapshot(): Map<String, Any> {
         val made = decisionsMade.get()
         return mapOf(
             "decisionsMade" to made,

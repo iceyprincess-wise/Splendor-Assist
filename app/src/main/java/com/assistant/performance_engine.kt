@@ -706,7 +706,6 @@ object RenderThreadStallEngine {
 // --- NEW: NetJitterEngine ---
 object NetJitterEngine {
     @Volatile private var running = false
-    @Volatile var netJitterMs = 0f; private set
     @Volatile private var lastRtt = 0f
     private val ALPHA = 0.2f
     fun start() {
@@ -716,10 +715,6 @@ object NetJitterEngine {
                 try {
                     val rtt = try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentNet().rttMs } catch (_: Throwable) { 0f }
                     if (rtt > 0f) {
-                        if (lastRtt > 0f) {
-                            val d = Math.abs(rtt - lastRtt)
-                            netJitterMs = netJitterMs * (1 - ALPHA) + d * ALPHA
-                        }
                         lastRtt = rtt
                     }
                 } catch (_: Throwable) {}

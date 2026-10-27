@@ -122,15 +122,4 @@ object GameplayEngineRegistry {
         "sessionEpoch" to sessionEpoch.get()
     )
 
-    fun engineStates(): List<Map<String, Any>> = contributors.map { c ->
-        val last = lastContribution[c.engineName]
-        mapOf(
-            "engine" to c.engineName,
-            "capabilities" to c.capabilities.joinToString(",") ,
-            "contributions" to (contributed[c.engineName] ?: 0L),
-            "failures" to (failures[c.engineName] ?: 0L),
-            "lastAction" to (last?.actionClass?.name ?: "none"),
-            "lastWeight" to (last?.weight ?: 0f)
-        )
-    }
 }

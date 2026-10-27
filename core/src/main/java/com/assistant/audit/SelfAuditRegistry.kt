@@ -16,25 +16,6 @@ object SelfAuditRegistry {
 
     @Synchronized
     fun update(
-        verified: Int,
-        total: Int
-    ) {
-        verifiedNodes = verified
-        totalNodes = total
-
-        state =
-            if (
-                verified >= total &&
-                total > 0
-            ) {
-                "PASS"
-            } else {
-                "WARNING"
-            }
-    }
-
-    @Synchronized
-    fun update(
         node: String,
         status: String
     ) {

@@ -22,10 +22,6 @@ object MmapStateEngine {
         } catch (_: Throwable) {}
     }
     
-    fun writeInt(offset: Int, value: Int) { buffer?.putInt(offset, value) }
-    fun readInt(offset: Int): Int = buffer?.getInt(offset) ?: 0
-    fun writeLong(offset: Int, value: Long) { buffer?.putLong(offset, value) }
-    fun readLong(offset: Int): Long = buffer?.getLong(offset) ?: 0L
     
     fun release() {
         try { raf?.close() } catch (_: Throwable) {}
