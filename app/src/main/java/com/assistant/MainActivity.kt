@@ -263,10 +263,7 @@ class MainActivity : AppCompatActivity() {
             refreshRuntimeHub()
         }
 
-        // The VIEW LOGS button and the DiagnosisRoom/DiagnosisDetail log
-        // viewer were removed (Task 3): /sdcard/Splendor-Assist is now the
-        // only log destination. This block was the deleted button listener
-        // body, left behind without its lambda, which broke compilation.
+        // Log viewer removed: /sdcard/Splendor-Assist is the only log destination.
 
         findViewById<View>(com.assistant.overlay.R.id.cardSmartAssist).setOnClickListener {
             startActivity(Intent(this, SmartAssistControlRoomActivity::class.java))

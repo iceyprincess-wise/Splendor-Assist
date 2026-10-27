@@ -33,12 +33,7 @@ object RuntimeLogger {
     @Synchronized
     fun initialize(context: Context) {
 
-        // Private internal filesDir logging disabled for SD card storage policy
-
-        // Retention must actually run. App.kt previously asserted that
-        // initialize() already swept expired logs, but it never did, so the
-        // retention policy was dead and the forensic directory grew forever.
-        reconcileExpired()
+        // Logging destination: /sdcard/Splendor-Assist only (SplendorStorageRoot).
 
         // FIX #3 & #4: Gate heavy external file creation to main process only.
         // Background processes will safely fall back to fast, process-private internal logs,
@@ -84,6 +79,10 @@ object RuntimeLogger {
                     )
             }
         }
+
+        // Retention: runs after forensicDir is assigned above. Before this fix it
+        // ran first, while forensicDir was still null, so the sweep deleted nothing.
+        reconcileExpired()
 
         if (!isMainProcess) {
             return
@@ -137,11 +136,9 @@ object RuntimeLogger {
     /**
      * Retention sweep over the canonical external forensic directory.
      *
-     * The private app filesDir hour-segment store was removed by the
-     * SD-card-only logging policy, so the previous runtime_hour_segments
-     * directory is never created. Retention now prunes the canonical
-     * /sdcard/Splendor-Assist/Forensics directory instead of a directory
-     * that does not exist.
+     * Deletes files in the canonical /sdcard/Splendor-Assist/Forensics
+     * directory whose last write is older than RETENTION_MS. No-op until
+     * initialize() has assigned forensicDir (main process only).
      */
     @Synchronized
     fun reconcileExpired(now: Long = System.currentTimeMillis()) {

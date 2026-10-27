@@ -307,7 +307,7 @@ object DeathWatch {
 
                             nativeDetails = parsedForensics.embeddedSummary
 
-                            // Internal filesDir crash logs skipped
+                            // Crash copies: canonical /sdcard/Splendor-Assist only (SplendorStorageRoot)
                             
                             // 3. Save to external forensic storage
                             var extPath = ""
