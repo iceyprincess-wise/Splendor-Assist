@@ -332,8 +332,8 @@ class MainActivity : AppCompatActivity() {
         val state = findViewById<android.widget.TextView>(stateId)
 
         bulb.setTextColor(
-            if (active) android.graphics.Color.parseColor("#40E36A")
-            else android.graphics.Color.parseColor("#D0D0D0")
+            if (active) android.graphics.Color.parseColor("#00E676")
+            else android.graphics.Color.parseColor("#C7D2E5")
         )
         state.text = label
     }

@@ -7,16 +7,16 @@ import android.graphics.Color
  * Pairings are contrast-checked (>= 4.5:1) by f7.py. Plain constants only: no I/O.
  */
 object ThemeTokens {
-    const val BG_HEX = "#0A0E17"
-    const val SURFACE_HEX = "#1A1A2E"
-    const val ACCENT_HEX = "#00E5FF"
+    const val BG_HEX = "#070B14"
+    const val SURFACE_HEX = "#101828"
+    const val ACCENT_HEX = "#7C4DFF"
     const val TEXT_HEX = "#DDDDDD"
-    const val TEXT_MUTED_HEX = "#B8CCE6"
+    const val TEXT_MUTED_HEX = "#9FB3D1"
     const val TEXT_DIM_HEX = "#888888"
     const val WARN_HEX = "#FF9800"
     const val SUCCESS_HEX = "#4CAF50"
-    const val BUTTON_HEX = "#1565C0"
-    const val BUTTON_ALT_HEX = "#6A1B9A"
+    const val BUTTON_HEX = "#7C4DFF"
+    const val BUTTON_ALT_HEX = "#00B8D4"
     const val BUTTON_NEUTRAL_HEX = "#333333"
     const val DANGER_HEX = "#8B0000"
     const val PANEL_BG_HEX = "#EE0A0E17"

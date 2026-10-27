@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#173A6A">
+    android:background="#070B14">
     <com.google.android.material.card.MaterialCardView
     android:tag="PHASE10_MATERIAL_DASHBOARD_CARD_MARKER"
     android:layout_width="match_parent"
@@ -23,13 +23,13 @@
         <TextView android:id="@+id/tvTitle"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:text="SPLENDOR ASSIST 2027"
-            android:textColor="#00E5FF"
+            android:textColor="#7C4DFF"
             android:textStyle="bold" android:textSize="32sp"
-            android:shadowColor="#00E5FF" android:shadowRadius="8.0"/>
+            android:shadowColor="#7C4DFF" android:shadowRadius="8.0"/>
         <TextView android:id="@+id/tvSubtitle"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:text="NATIVE C MUTATION ENGINE ACTIVE"
-            android:textColor="#40E36A"
+            android:textColor="#00E676"
             android:textStyle="bold"
             android:layout_marginBottom="20dp"/>
 
@@ -80,10 +80,10 @@
                         android:gravity="center" android:orientation="vertical" android:padding="8dp">
                         <TextView android:id="@+id/tvSmartAssistBulb"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="@string/auto_extracted_11" android:textSize="14sp" android:textColor="#40E36A"/>
+                            android:text="@string/auto_extracted_11" android:textSize="14sp" android:textColor="#00E676"/>
                         <TextView android:id="@+id/tvSmartAssistState"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="@string/auto_extracted_12" android:textSize="12sp" android:textColor="#B8CCE6"/>
+                            android:text="@string/auto_extracted_12" android:textSize="12sp" android:textColor="#9FB3D1"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="@string/auto_extracted_13" android:textSize="24sp" android:layout_marginTop="4dp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -104,10 +104,10 @@
                         android:gravity="center" android:orientation="vertical" android:padding="8dp">
                         <TextView android:id="@+id/tvGoalkeeperBulb"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="@string/auto_extracted_15" android:textSize="14sp" android:textColor="#D0D0D0"/>
+                            android:text="@string/auto_extracted_15" android:textSize="14sp" android:textColor="#C7D2E5"/>
                         <TextView android:id="@+id/tvGoalkeeperState"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="@string/auto_extracted_16" android:textSize="12sp" android:textColor="#B8CCE6"/>
+                            android:text="@string/auto_extracted_16" android:textSize="12sp" android:textColor="#9FB3D1"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="@string/auto_extracted_17" android:textSize="24sp" android:layout_marginTop="4dp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -128,10 +128,10 @@
                         android:gravity="center" android:orientation="vertical" android:padding="8dp">
                         <TextView android:id="@+id/tvInterceptionBulb"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="@string/auto_extracted_19" android:textSize="14sp" android:textColor="#D0D0D0"/>
+                            android:text="@string/auto_extracted_19" android:textSize="14sp" android:textColor="#C7D2E5"/>
                         <TextView android:id="@+id/tvInterceptionState"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="@string/auto_extracted_20" android:textSize="12sp" android:textColor="#B8CCE6"/>
+                            android:text="@string/auto_extracted_20" android:textSize="12sp" android:textColor="#9FB3D1"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="@string/auto_extracted_21" android:textSize="24sp" android:layout_marginTop="4dp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -244,10 +244,10 @@
                         android:gravity="center" android:orientation="vertical" android:padding="8dp">
                         <TextView android:id="@+id/tvFutureBulb"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="@string/auto_extracted_33" android:textSize="14sp" android:textColor="#40E36A"/>
+                            android:text="@string/auto_extracted_33" android:textSize="14sp" android:textColor="#00E676"/>
                         <TextView android:id="@+id/tvFutureState"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="@string/auto_extracted_34" android:textSize="12sp" android:textColor="#B8CCE6"/>
+                            android:text="@string/auto_extracted_34" android:textSize="12sp" android:textColor="#9FB3D1"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="@string/auto_extracted_35" android:textSize="24sp" android:layout_marginTop="4dp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -292,7 +292,7 @@
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:text="@string/auto_extracted_40"
-            android:textColor="#6B8AAA" android:textSize="12sp"
+            android:textColor="#5C7399" android:textSize="12sp"
             android:layout_marginTop="24dp" android:layout_gravity="center_horizontal"/>
     </LinearLayout></com.google.android.material.card.MaterialCardView>
 

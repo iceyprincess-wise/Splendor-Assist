@@ -24,7 +24,7 @@ import com.assistant.controlroom.ui.ThemeTokens
 
 class ModMenuController(private val context: Context) {
 
-    /* Colour tokens: accent #00E5FF, background #0A0E17, muted text #B8CCE6 (same values
+    /* Colour tokens: accent #7C4DFF, background #070B14, muted text #9FB3D1 (same values
        as the app theme and layouts). Restyle here only. */
     private companion object {
         const val ACCENT = ThemeTokens.ACCENT_HEX
@@ -408,7 +408,7 @@ class ModMenuController(private val context: Context) {
 
         val tvStatus = TextView(context).apply {
             text = liveStatusLine()
-            setTextColor(Color.parseColor("#40E36A"))
+            setTextColor(Color.parseColor("#00E676"))
             textSize = 11f
             setTypeface(null, Typeface.BOLD)
             setPadding(0, 20, 0, 0)
