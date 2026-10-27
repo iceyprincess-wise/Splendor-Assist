@@ -5,7 +5,6 @@ object InterceptionRuntimeRegistry {
     @Volatile
     var enabled: Boolean = true
 
-    @Volatile
     @Volatile var autoIntercept: Boolean = true
 
     @Volatile
