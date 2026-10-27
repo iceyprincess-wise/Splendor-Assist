@@ -18,3 +18,169 @@ Changes not staged for commit:
 	modified:   Build_lint_output.txt
 
 no changes added to commit (use "git add" and/or "git commit -a")
+[main 612bce81] updates
+ 1 file changed, 3 insertions(+), 170 deletions(-)
+
+
+[  5%] BUILD STATE
+
+================================================================
+>>> OPTIONAL CLEAN
+================================================================
+NO — clean skipped; preserving incremental build state.
+
+[ 15%] LINT
+
+================================================================
+>>> OPTIONAL LINT
+================================================================
+NO — lint skipped by user.
+
+================================================================
+>>> LINT ISSUE EXTRACTION
+================================================================
+SKIPPED — lint was not run.
+
+[ 30%] CONNECTED TESTS
+
+================================================================
+>>> CONNECTED ANDROID TESTS
+================================================================
+SKIPPED — no ADB device connected (not a failure)
+
+[ 45%] VERSION BUMP
+
+================================================================
+>>> VERSION BUMP
+================================================================
+versionCode: 202 -> 203
+
+[ 50%] ASSEMBLE DEBUG APK
+
+================================================================
+>>> ASSEMBLE DEBUG APK
+================================================================
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8489:9 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8489:16 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8489:21 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8490:13 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8490:14 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8490:27 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8490:29 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8490:32 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8490:36 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8491:13 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8491:14 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8491:30 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8491:32 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8491:35 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8491:50 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8491:51 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8491:54 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8491:55 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8491:56 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8492:13 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8492:14 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8492:24 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8492:26 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8492:29 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8492:43 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8492:44 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8492:47 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8492:48 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8492:49 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:13 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:14 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:31 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:33 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:36 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:39 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:40 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:45 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:47 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:49 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:51 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:68 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:69 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:72 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:73 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:75 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:77 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:82 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:87 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8493:89 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8494:13 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8494:14 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8494:32 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8494:34 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8494:37 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8494:51 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8495:13 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8495:14 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8495:27 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8495:29 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8495:32 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8496:9 Expecting member declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/gameplay_engine.kt:8499:1 Expecting a top level declaration
+e: file:///data/data/com.termux/files/home/projects/Splendor-Assist/app/src/main/java/com/assistant/overlay/interceptor/InterceptionRuntimeRegistry.kt:9:5 This annotation is not repeatable
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 1m 47s
+
+ASSEMBLE DEBUG APK EXIT: 1
+
+[ 90%] APK EXPORT
+
+================================================================
+>>> APK EXPORT
+================================================================
+SKIPPED — build exit=1, apk_exists=NO
+VERSION TRANSACTION: ROLLED BACK
+Restored: /data/data/com.termux/files/home/projects/Splendor-Assist/app/build.gradle.kts\n
+================================================================
+>>> OPTIONAL GRADLE DAEMON STOP
+================================================================
+NO — Gradle daemon remains running for warm builds.
+
+Current Gradle daemon status:
+   PID STATUS   INFO
+  9669 IDLE     8.5
+   737 STOPPED  (by user or operating system)
+
+Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:status in the Gradle documentation.
+
+================================================================
+>>> BUILD RESULT SUMMARY
+================================================================
+CLEAN:                           0
+LINT:                            SKIPPED — OPTIONAL
+CONNECTED TESTS:                 0
+VERSION BUMP:                    0
+ASSEMBLE DEBUG:                  1
+APK EXPORT:                      1
+GRADLE DAEMON STOP:              0
+
+FINAL STATUS: FAILED — check items above
+
+GIT STATUS-IT WILL BE PUSED BELOW TO SHOW ACCURATE COMMIT HEAD -> MAIN:
+ M Build_lint_output.txt
+?? "app/\001@\b\235\002@0\325b\003@8\f@\036\035\006\004@@"
+
+[ 97%] GIT CLEANUP / APK VERIFICATION
+
+[ 97%] GIT CLEANUP / APK VERIFICATION
+=== REMOVED TERMUX BUILD ENVIRONMENT /APP/ CORRUPT FILE & VERIFY AS WELL VERIFY APK WHICH WILL BE SENT TO REPOSITORY ===
+rm 'app/@�@0�b@8@@@'
+FATAL: APK not found: app/build/outputs/apk/debug/app-debug.apk
+=== CONFIRMATION OF HEAD & MAIN ===
+=== HEAD ===
+612bce81 (HEAD -> main) updates
+
+=== MAIN ===
+612bce81 (HEAD -> main) updates
+
+Finished: 2026-10-27 09:53:23 WAT
+Report size: 13910 bytes
+================================================================
+
+=== PUSHED ===
