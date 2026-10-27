@@ -8485,6 +8485,7 @@ object SmartAssistMetrics {
     @Volatile private var lastDecisionMs: Long = 0L
     @Volatile private var lastDecisionUpdatedMs: Long = 0L
 
+    fun decisionRuntimeSnapshot(): Map<String, Any> {
         val made = decisionsMade.get()
         return mapOf(
             "decisionsMade" to made,
