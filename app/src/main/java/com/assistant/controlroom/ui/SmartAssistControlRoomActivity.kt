@@ -218,43 +218,4 @@ setContentView(R.layout.activity_smartassist_control_room)
         }
     }
 
-private fun refreshRuntimeStatus() {
-        refreshEngineStatus()
-
-        runCatching {
-            RuntimePerformanceCoordinator.synchronizeExistingPerformanceEngines()
-        }
-
-        runCatching {
-            RuntimePerformanceCoordinator.synchronizeRuntimePipeline()
-        }
-
-        runCatching {
-            RuntimeDiagnosticsRegistry.refresh()
-        }
-
-        runCatching {
-            RuntimeVisualizationRegistry.refresh()
-        }
-
-        runCatching {
-            VisionOverlayRegistry.enableAll()
-        }
-
-        runCatching {
-            RuntimeOverlayHub.enableDiagnostics()
-        }
-
-        runCatching {
-            FPSMonitor.refresh()
-        }
-
-        runCatching {
-            VisionLatencyMonitor.refresh()
-        }
-
-        runCatching {
-            ConfidenceHeatmap.refresh()
-        }
-    }
 }

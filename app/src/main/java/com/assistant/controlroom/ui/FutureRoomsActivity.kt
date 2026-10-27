@@ -136,9 +136,9 @@ class FutureRoomsActivity : AppCompatActivity() {
         btn(root, "🤖   AI Self-Heal Agent Monitor", Color.parseColor("#6A1B9A")) {
             showAgent()
         }
-        text(root, "   Detects and fixes broken engine states while you play. Logs every fix to Splendor_HealLog.txt", 11f, color = Color.parseColor("#AAAAAA"))
+        text(root, "   Detects and fixes broken engine states while you play. Logs every fix to SplendorHealLog.txt", 11f, color = Color.parseColor("#AAAAAA"))
 
-        text(root, "  ⚙️  Admin Settings — removed", 11f, color = Color.parseColor("#444444"))
+        text(root, "  ⚙️  Admin Settings — removed", 11f, color = Color.parseColor("#888888"))
 
         divider(root)
 
@@ -162,7 +162,7 @@ class FutureRoomsActivity : AppCompatActivity() {
             "🏆  Keeper Command Room         — goalkeeper beast save configuration"
         )
         for (r in planned) {
-            text(root, "  $r", 11f, color = Color.parseColor("#666666"))
+            text(root, "  $r", 11f, color = Color.parseColor("#888888"))
         }
 
         divider(root)

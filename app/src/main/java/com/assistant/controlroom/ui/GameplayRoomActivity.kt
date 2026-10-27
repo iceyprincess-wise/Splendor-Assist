@@ -107,6 +107,7 @@ class GameplayRoomActivity : AppCompatActivity() {
     override fun onDestroy() {
         refreshRunnable?.let { refreshHandler.removeCallbacks(it) }
         decisionView = null; amplifierView = null; busView = null; crowdView = null
+        logExecutor.shutdown()
         super.onDestroy()
     }
 
