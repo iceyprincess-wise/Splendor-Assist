@@ -60,13 +60,6 @@ object PerformanceTelemetryRegistry {
         return readCache
     }
 
-    @JvmStatic
-    fun netSummary(): String {
-        val t = currentNet()
-        return "rtt=" + t.rttMs + "ms jitter=" + t.jitterMs + "ms " + t.quality +
-               " carrier=" + t.carrier + " via=" + t.transport
-    }
-
     // ---- ACTION WINDOW (net stack verdict: GO / CAUTION / HOLD) ----
     @Volatile private var window = "UNKNOWN"
     @Volatile private var windowDetail = ""
@@ -80,19 +73,6 @@ object PerformanceTelemetryRegistry {
             if (wfile == null) wfile = file?.parentFile?.let { File(it, "perf_window.txt") }
             wfile?.writeText(verdict + "|" + detail + "|" + windowMs)
         } catch (_: Throwable) { }
-    }
-
-    /** Stale-aware: a verdict older than 10s degrades to UNKNOWN. Never blocks. */
-    @JvmStatic
-    fun currentActionWindow(): String {
-        val now = System.currentTimeMillis()
-        if (now - windowMs < 10_000L) return window
-        try {
-            if (wfile == null) wfile = file?.parentFile?.let { File(it, "perf_window.txt") }
-            val p = (wfile?.takeIf { it.exists() }?.readText() ?: return "UNKNOWN").split("|")
-            if (p.size >= 3 && now - (p[2].toLongOrNull() ?: 0L) < 10_000L) return p[0]
-        } catch (_: Throwable) { }
-        return "UNKNOWN"
     }
 
     // ---- DISPLAY / DEVICE-SIDE (lag stack verdict: SMOOTH / STRAINED / CHOKING) ----
@@ -113,37 +93,9 @@ object PerformanceTelemetryRegistry {
         } catch (_: Throwable) { }
     }
 
-    /** Stale-aware, non-blocking. Older than 10s degrades to UNKNOWN. */
-    @JvmStatic
-    fun currentDisplayVerdict(): String {
-        val now = System.currentTimeMillis()
-        if (now - dMs < 10_000L) return dVerdict
-        try {
-            if (dfile == null) dfile = file?.parentFile?.let { File(it, "perf_display.txt") }
-            val p = (dfile?.takeIf { it.exists() }?.readText() ?: return "UNKNOWN").split("|")
-            if (p.size >= 5 && now - (p[4].toLongOrNull() ?: 0L) < 10_000L) return p[3]
-        } catch (_: Throwable) { }
-        return "UNKNOWN"
-    }
-
-    @JvmStatic
-    fun displaySummary(): String =
-        "gap=" + dGap + "ms jank/min=" + dJank + " stall=" + dStall + "ms " + dVerdict
-
     // ---- GESTURE TIMING ADVICE (lag stack -> execution authority) ----
     @Volatile private var holdMs = 0L
     @Volatile private var holdStampMs = 0L
-
-    @JvmStatic
-    fun publishGestureTiming(recommendedHoldMs: Long) {
-        holdMs = recommendedHoldMs
-        holdStampMs = System.currentTimeMillis()
-    }
-
-    /** 0 = no fresh advice; caller keeps its own default. Never blocks. */
-    @JvmStatic
-    fun recommendedHoldMs(): Long =
-        if (System.currentTimeMillis() - holdStampMs < 15_000L) holdMs else 0L
 
     // ---- LOAD SHED (lag governor -> main-process capture pipeline) ----
     @Volatile private var shed = "NONE"

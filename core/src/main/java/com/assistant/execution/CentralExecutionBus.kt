@@ -120,7 +120,7 @@ object CentralExecutionBus {
             if (request == null) return null // In-flight write, do not skip slot
 
             if (ring.readCursor.compareAndSet(readPos, readPos + 1)) {
-                ring.buffer.set(index, null)
+                ring.buffer.compareAndSet(index, request, null)
                 if (requestIsStale(request, System.currentTimeMillis())) {
                     staleDrops.incrementAndGet()
                     continue // Drop stale and try next
@@ -134,23 +134,24 @@ object CentralExecutionBus {
     }
 
     fun peekSource(): ExecutionSource? {
+        val now = System.currentTimeMillis()
         // Check High
         val hRead = highRing.readCursor.get()
         if (hRead < highRing.writeCursor.get()) {
             val req = highRing.buffer.get((hRead and MASK).toInt())
-            if (req != null) return req.source
+            if (req != null && !requestIsStale(req, now)) return req.source
         }
         // Check Med
         val mRead = medRing.readCursor.get()
         if (mRead < medRing.writeCursor.get()) {
             val req = medRing.buffer.get((mRead and MASK).toInt())
-            if (req != null) return req.source
+            if (req != null && !requestIsStale(req, now)) return req.source
         }
         // Check Low
         val lRead = lowRing.readCursor.get()
         if (lRead < lowRing.writeCursor.get()) {
             val req = lowRing.buffer.get((lRead and MASK).toInt())
-            if (req != null) return req.source
+            if (req != null && !requestIsStale(req, now)) return req.source
         }
         return null
     }

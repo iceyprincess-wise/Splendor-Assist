@@ -91,6 +91,7 @@ class WatchdogAdapterService : Service() {
             }
             AdapterSignalBus.publishFleet(offline)
             lastScan = "offline=$offline degraded=$degraded restarted=$restarted"
+            com.assistant.survival.ResourceBudgetRegistry.update(maxOf(0, adapterMap.size - offline - degraded), degraded, offline)
             watchdogHandler.postDelayed(this, 15000)
             // HYPEROS LMK SURVIVAL: Renew WakeLock timeout on every successful scan cycle
             wakeLock?.acquire(10 * 60 * 1000L)

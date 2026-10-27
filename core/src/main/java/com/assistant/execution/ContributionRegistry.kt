@@ -73,7 +73,7 @@ object ContributionRegistry {
             superseded.incrementAndGet()
         }
         offered.incrementAndGet()
-        return true
+        return false // parked, not dispatched: callers must not set cooldowns
     }
 
     /*
