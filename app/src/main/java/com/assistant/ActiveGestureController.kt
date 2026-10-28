@@ -458,7 +458,6 @@ class ActiveGestureController(
         val movementAngleDegrees = if (rawAngleDegrees.isNaN() || rawAngleDegrees.isInfinite()) 0f else rawAngleDegrees
         val safeAngleRatio = if (angle.isNaN() || angle.isInfinite()) 0f else (kotlin.math.abs(angle) / 180f).coerceIn(0f, 1f)
         val safeConfidence = if (telemetry.confidence.isNaN() || telemetry.confidence.isInfinite()) 0.5f else telemetry.confidence.coerceIn(0f, 1f)
-        val safeDistance = if (distance.isNaN() || distance.isInfinite()) 0f else distance.coerceAtLeast(0f)
 
         // SPLENDOR_AGILITY_AGC_TELEMETRY_V1 - live carrier/opponent telemetry.
         // Nearest opponent to the carrier (the earlier scan in this method).
