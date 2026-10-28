@@ -7533,29 +7533,32 @@ object ReceiverRankingEngine{
         graph:PassingLaneGraph
     ):ReceiverRankingResult{
 
-        val ranked=
-            graph.lanes.map{
+        val ranked=ArrayList<RankedReceiver>(graph.lanes.size)
+        for(lane in graph.lanes){
 
-                val p=it.receiver
+            val p=lane.receiver
 
-                val movement=
-                    hypot(
-                        p.velocityX.toDouble(),
-                        p.velocityY.toDouble()
-                    ).toFloat()/150f
+            val movement=
+                hypot(
+                    p.velocityX.toDouble(),
+                    p.velocityY.toDouble()
+                ).toFloat()/150f
 
+            ranked.add(
                 RankedReceiver(
                     player=p,
                     score=
                         (
-                            it.score+
+                            lane.score+
                             movement+
-                            (1f-it.pressure)
+                            (1f-lane.pressure)
                         ).coerceIn(0f,1f)
                 )
-            }.sortedByDescending{
-                it.score
-            }
+            )
+        }
+        ranked.sortByDescending{
+            it.score
+        }
 
         return ReceiverRankingResult(ranked)
     }
@@ -13466,9 +13469,9 @@ object ThroughBallLaneAnalysisEngine {
         graph: PassingLaneGraph
     ): ThroughBallLaneAnalysis {
 
-        val result = ArrayList<ThroughBallLane>()
+        val result = ArrayList<ThroughBallLane>(graph.lanes.size)
 
-        graph.lanes.forEach { lane ->
+        for (lane in graph.lanes) {
 
             val leadDistance =
                 (lane.distance * 0.18f)
@@ -13488,11 +13491,11 @@ object ThroughBallLaneAnalysisEngine {
             )
         }
 
-        return ThroughBallLaneAnalysis(
-            result.sortedByDescending {
-                it.confidence
-            }
-        )
+        result.sortByDescending {
+            it.confidence
+        }
+
+        return ThroughBallLaneAnalysis(result)
     }
 }
 /* ======
