@@ -304,6 +304,16 @@ class ModMenuController(private val context: Context) {
         }
         contentContainer.addView(swAutoIntercept)
 
+        val swArmed = Switch(context).apply {
+            text = "Armed (engine analysis + keeper actions)"
+            setTextColor(Color.WHITE)
+            isChecked = InterceptionRuntimeRegistry.armed
+            setOnCheckedChangeListener { _, isChecked ->
+                InterceptionRuntimeRegistry.armed = isChecked
+            }
+        }
+        contentContainer.addView(swArmed)
+
         val tvAuthority = TextView(context).apply {
             text = "Engine Authority Level: ${SmartAssistRepository.configuration().authority}"
             setTextColor(Color.parseColor(TEXT_MUTED))

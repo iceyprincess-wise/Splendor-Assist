@@ -100,7 +100,7 @@ object GoalkeeperActionRouter {
 
 
         // Interception gate (restored): live read of the autoIntercept setting.
-        if (InterceptionRuntimeRegistry.autoIntercept && cross == CrossAction.PUNCH) {
+        if (InterceptionRuntimeRegistry.armed && InterceptionRuntimeRegistry.autoIntercept && cross == CrossAction.PUNCH) {
             GoalkeeperMetricsRegistry
                 .crossClaims
                 .incrementAndGet()
@@ -108,7 +108,8 @@ object GoalkeeperActionRouter {
             return GoalkeeperAction.PUNCH_CROSS
         }
 
-        if (InterceptionRuntimeRegistry.autoIntercept &&
+        if (InterceptionRuntimeRegistry.armed &&
+            InterceptionRuntimeRegistry.autoIntercept &&
             cross == CrossAction.CLAIM &&
             CollisionAvoidanceEngine.allowClaim(collision)
         ) {

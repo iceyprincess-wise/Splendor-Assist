@@ -12557,34 +12557,34 @@ SceneTracker.update(
       )
 
   val throughBallAnalysis =
-      ThroughBallLaneAnalysisEngine.analyze(
+      if (!InterceptionRuntimeRegistry.armed) ThroughBallLaneAnalysis() else ThroughBallLaneAnalysisEngine.analyze(
           passingGraph
       )
 
   val crossingLaneAnalysis =
-      CrossingLaneAnalysisEngine.analyze(
+      if (!InterceptionRuntimeRegistry.armed) CrossingLaneAnalysis() else CrossingLaneAnalysisEngine.analyze(
           passingGraph
       )
 
   val shootingLaneAnalysis =
-      ShootingLaneAnalysisEngine.analyze(
+      if (!InterceptionRuntimeRegistry.armed) ShootingLaneAnalysis() else ShootingLaneAnalysisEngine.analyze(
           scene,
           passingGraph
       )
 
   val blockedLanePredictionAnalysis =
-      BlockedLanePredictionEngine.analyze(
+      if (!InterceptionRuntimeRegistry.armed) BlockedLanePredictionAnalysis() else BlockedLanePredictionEngine.analyze(
           passingGraph
       )
 
   val defenderInterceptionPredictionAnalysis =
-      DefenderInterceptionPredictionEngine.analyze(
+      if (!InterceptionRuntimeRegistry.armed) DefenderInterceptionPredictionAnalysis() else DefenderInterceptionPredictionEngine.analyze(
           scene,
           passingGraph
       )
 
   val openSpaceDetectionResult =
-      OpenSpaceDetectionEngine.analyze(
+      if (!InterceptionRuntimeRegistry.armed) OpenSpaceDetectionResult() else OpenSpaceDetectionEngine.analyze(
           occupancy,
           pressure,
           frame.width.toFloat(),
@@ -12592,22 +12592,22 @@ SceneTracker.update(
       )
 
   val receiverRankingResult =
-      ReceiverRankingEngine.analyze(
+      if (!InterceptionRuntimeRegistry.armed) ReceiverRankingResult() else ReceiverRankingEngine.analyze(
           passingGraph
       )
 
   val runPredictionResult =
-      RunPredictionEngine.analyze(
+      if (!InterceptionRuntimeRegistry.armed) RunPredictionResult() else RunPredictionEngine.analyze(
           scene
       )
 
   val overlapDetectionResult =
-      OverlapDetectionEngine.analyze(
+      if (!InterceptionRuntimeRegistry.armed) OverlapDetectionResult() else OverlapDetectionEngine.analyze(
           runPredictionResult
       )
 
   val counterattackDetectionResult =
-      CounterattackDetectionEngine.analyze(
+      if (!InterceptionRuntimeRegistry.armed) CounterattackDetectionResult() else CounterattackDetectionEngine.analyze(
           scene,
           teamShape,
           offensiveLine
