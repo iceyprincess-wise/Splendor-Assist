@@ -48,7 +48,7 @@ object AsynchronousGestureQueue {
 
         try {
             val smoothedPoints = FloatArray(33)
-            NativeBridge.nativeSmoothVector(
+            VectorSmootherPort.smooth(
                 req.startX, req.startY, req.endX, req.endY,
                 req.durationMs.toFloat(), smoothedPoints
             )

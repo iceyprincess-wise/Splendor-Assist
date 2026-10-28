@@ -13,7 +13,6 @@ add_library(splendor_native SHARED
   native_vision_preprocessor.c
   native_frame_analyzer.c
   native_vector_smoother.c
-  native_state_gater.c
   native_direct_input_hook.c
   native_thermal_throttling_spoofer.c
   native_predictive_frame_interp.c
@@ -29,7 +28,6 @@ add_library(splendor_native SHARED
   native_panic_save.c
 
   native_true_shot.c
-  native_thread_priority.c
   native_optical_variance.c
   native_input_strobe.c
 

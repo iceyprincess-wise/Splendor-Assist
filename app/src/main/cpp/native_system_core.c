@@ -44,46 +44,6 @@ static inline uint32_t local_xorshift32(uint32_t* state) {
     return x;
 }
 
-JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeUpdateStateMatrix(
-        JNIEnv* env, jobject thiz,
-        jboolean isCounter, jint threat, jfloat bx, jfloat by, jfloat bvx, jfloat bvy, jint serverTickTime) {
-    g_StateMatrix.isCounterAttack = isCounter ? 1 : 0;
-    g_StateMatrix.threatLevel = (uint32_t)threat;
-    g_StateMatrix.ballX = bx;
-    g_StateMatrix.ballY = by;
-    g_StateMatrix.carrierVx = bvx;
-    g_StateMatrix.carrierVy = bvy;
-    g_StateMatrix.lastServerTickTimestamp = (uint32_t)serverTickTime;
-}
-
-JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeAnalyzeFrameBuffer(
-        JNIEnv* env, jobject thiz,
-        jobject bufferObj, jint width, jint height, jint stride, jfloatArray outCoordinates) {
-    uint8_t* rawPixels = (uint8_t*)(*env)->GetDirectBufferAddress(env, bufferObj);
-    if (!rawPixels) return;
-    jfloat* coordinates = (jfloat*)(*env)->GetPrimitiveArrayCritical(env, outCoordinates, NULL);
-    if (!coordinates) return;
-
-    int elementIndex = 0;
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int idx = (y * stride) + (x * 4);
-            uint8_t r = rawPixels[idx];
-            uint8_t g = rawPixels[idx + 1];
-            uint8_t b = rawPixels[idx + 2];
-            if (r > 240 && g < 30 && b < 30) { 
-                coordinates[elementIndex++] = (float)x;
-                coordinates[elementIndex++] = (float)y;
-                if (elementIndex >= 30) goto processing_complete;
-            }
-        }
-    }
-processing_complete:
-    (*env)->ReleasePrimitiveArrayCritical(env, outCoordinates, coordinates, 0);
-}
-
 JNIEXPORT jlong JNICALL
 Java_com_assistant_NativeBridge_nativeCompileMotionEvent(
         JNIEnv* env, jobject thiz,

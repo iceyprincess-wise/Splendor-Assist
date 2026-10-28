@@ -212,14 +212,7 @@ object NativeBridge {
         outBuffer: FloatArray
     )
 
-    @JvmStatic
-    external fun nativeUpdateMatchState(
-        isCounter: Int, carrierIsUser: Int,
-        threat: Int, ballX: Float, ballY: Float
-    )
 
-    @JvmStatic
-    external fun nativeReadMatchState(outBuffer: IntArray)
     init {
         try {
             System.loadLibrary(LIBRARY)
@@ -381,8 +374,6 @@ object NativeBridge {
 
 
     // --- V44/V45: System Core & Dynamic Jitter ---
-    @JvmStatic external fun nativeUpdateStateMatrix(isCounterAttack: Boolean, threatLevel: Int, ballX: Float, ballY: Float, carrierVx: Float, carrierVy: Float, lastServerTickTimestamp: Int)
-    @JvmStatic external fun nativeAnalyzeFrameBuffer(buffer: java.nio.ByteBuffer, width: Int, height: Int, stride: Int, outCoordinates: FloatArray)
     @JvmStatic external fun nativeCompileMotionEvent(startX: Float, startY: Float, endX: Float, endY: Float, durationMs: Long, pitchWidth: Float, pitchHeight: Float, detectedLagSpike: Boolean): Long
     // --- V46: Defensive Dominance Matrix ---
     @JvmStatic external fun nativeComputeDominanceVectors(defX: Float, defY: Float, defVx: Float, defVy: Float, targetX: Float, targetY: Float, targetVx: Float, targetVy: Float, isHoldingPressure: Boolean, screenWidth: Float, screenHeight: Float, globalMatchTick: Int, outBuffer: FloatArray)
@@ -406,7 +397,6 @@ object NativeBridge {
     // --- V54: TrueShot Native Migration ---
     @JvmStatic external fun nativeTrueShotCompute(ballX: Float, ballY: Float, goalLeftX: Float, goalRightX: Float, goalTopY: Float, goalBottomY: Float, goalkeeperX: Float, goalkeeperVisible: Boolean, goalDetected: Boolean, defenderDensity: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
     // --- V55: Heavy Mutation Engines ---
-    @JvmStatic external fun nativeEscalateThreadPriority(): Int
     @JvmStatic external fun nativeComputeOpticalVariance(currentBuffer: java.nio.ByteBuffer, previousBuffer: java.nio.ByteBuffer, width: Int, height: Int, stride: Int, roiX: Int, roiY: Int, roiW: Int, roiH: Int): Float
     @JvmStatic external fun nativeInjectStrobePackets(startX: Float, startY: Float, endX: Float, endY: Float, durationMs: Int, pointerCount: Int, outPackets: FloatArray)
 
@@ -473,15 +463,6 @@ object NativeBridge {
     @JvmStatic
     external fun nativeBoostThreadPriority()
 
-    @JvmStatic
-    external fun nativeExecuteQuantumSimulation(
-        rawPlayerX: Float, rawPlayerY: Float,
-        rawPlayerVx: Float, rawPlayerVy: Float,
-        rawOppX: Float, rawOppY: Float,
-        rawOppVx: Float, rawOppVy: Float,
-        screenWidth: Float, screenHeight: Float,
-        outBuffer: FloatArray
-    )
 
 
     @JvmStatic
