@@ -12,9 +12,12 @@ static inline float branchless_coerce(float value, float min_val, float max_val)
 JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeCounterattackAnalyze(
     JNIEnv* env, jobject thiz, jint attackers, jboolean teamShapeFound, jfloat teamShapeConf,
     jboolean offensiveLineFound, jfloat offensiveLineConf, jfloatArray out) {
+    if ((*env)->GetArrayLength(env, out) < 2) return;
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     
+    if (!isfinite(teamShapeConf)) teamShapeConf = 0.0f;
+    if (!isfinite(offensiveLineConf)) offensiveLineConf = 0.0f;
     float shapeMask = (float)teamShapeFound;
     float lineMask = (float)offensiveLineFound;
     
@@ -24,6 +27,7 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeCounterattackAnalyz
                  (teamShapeConf * 0.05f) + 
                  (offensiveLineConf * 0.05f);
                  
+    if (!isfinite(conf)) conf = 0.0f;
     conf = branchless_coerce(conf, 0.0f, 1.0f);
     
     // NO HARD GATES. Unconditional aggressive output via smoothstep amplification
