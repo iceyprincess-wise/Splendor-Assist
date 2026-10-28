@@ -467,6 +467,18 @@ class ActiveGestureController(
         val agilityOppY = (agilityOpponent?.y ?: telemetry.ballY).let { if (it.isFinite()) it else 0f }
         val agilityPlayerX = telemetry.ballX.let { if (it.isFinite()) it else 0f }
         val agilityPlayerY = telemetry.ballY.let { if (it.isFinite()) it else 0f }
+        // Real carrier-to-opponent distance for the shield engine. safeDistance is the
+        // drag-vector length, not a defender distance. No opponent -> 9999f, which the
+        // native layer clamps to farUnits so the proximity masks go to zero.
+        val agilityOpponentDistance: Float =
+            if (agilityOpponent != null) {
+                val odx = agilityOppX - agilityPlayerX
+                val ody = agilityOppY - agilityPlayerY
+                kotlin.math.hypot(odx.toDouble(), ody.toDouble()).toFloat()
+                    .let { if (it.isFinite()) it else 9999f }
+            } else {
+                9999f
+            }
 
         val agilityBuffer = FloatArray(6)
         /* SPLENDOR_AGILITY_VELOCITY_UNITS_V1 - the native engine declares a
@@ -484,7 +496,7 @@ class ActiveGestureController(
         val agilityVelocityUnits =
             (((safeExecutionBoost - 10f) / 25f) * 15f).coerceIn(0f, 15f)
         NativeBridge.nativeAgilityPhysics(
-            agilityVelocityUnits, safeDistance, movementAngleDegrees,
+            agilityVelocityUnits, agilityOpponentDistance, movementAngleDegrees,
             safeConfidence, safeAngleRatio,
             agilityPlayerX, agilityPlayerY, agilityOppX, agilityOppY,
             agilityBuffer,
