@@ -39,6 +39,7 @@ import com.assistant.execution.ContributionRegistry
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
 import com.assistant.execution.HybridExecutionTerminal
+import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
 import com.assistant.runtime.*
 import com.assistant.runtime.ActionClass
 import com.assistant.runtime.EngineCapability
