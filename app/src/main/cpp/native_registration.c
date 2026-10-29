@@ -19,7 +19,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     
     static const JNINativeMethod methods[] = {
         {"nativeKickingPostureImpl", "(FFFFFFFF[F)V", (void*)Java_com_assistant_NativeBridge_nativeKickingPostureImpl},
-        {"nativeAgilityPhysicsImpl", "(FFFFFFFFF[FFFFFFFFFFFF)V", (void*)Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl}
+        {"nativeAgilityPhysicsImpl", "(FFFFFFFFF[FFFFFFFFFFFFF)V", (void*)Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl}
     };
     
     const jint rc = (*env)->RegisterNatives(env, bridge, methods, sizeof(methods) / sizeof(methods[0]));
