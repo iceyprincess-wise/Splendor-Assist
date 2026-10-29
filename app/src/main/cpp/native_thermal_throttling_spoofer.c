@@ -85,12 +85,3 @@ Java_com_assistant_NativeBridge_nativeStopThermalSpooferImpl(JNIEnv *env, jobjec
     }
 }
 
-JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeStartThermalSpoofer(JNIEnv *env, jobject thiz) {
-    Java_com_assistant_NativeBridge_nativeStartThermalSpooferImpl(env, thiz);
-}
-
-JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeStopThermalSpoofer(JNIEnv *env, jobject thiz) {
-    Java_com_assistant_NativeBridge_nativeStopThermalSpooferImpl(env, thiz);
-}
