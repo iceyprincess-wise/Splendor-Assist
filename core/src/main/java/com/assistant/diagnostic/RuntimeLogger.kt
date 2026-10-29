@@ -159,7 +159,7 @@ object RuntimeLogger {
     /** Caller location for field, watchdog, deathwatch and agent diagnostics. */
     private fun callerLocation(): String {
         val frame = Throwable().stackTrace.firstOrNull {
-            it.className != RuntimeLogger::class.java.name &&
+            it.className != RuntimeLogger::class.java.name
         } ?: return "unknown:0"
         val file = frame.fileName ?: "Unknown.kt"
         val className = frame.className.substringBefore('$')
