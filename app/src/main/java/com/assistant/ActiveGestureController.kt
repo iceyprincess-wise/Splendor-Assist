@@ -912,7 +912,11 @@ class ActiveGestureController(
         val safeRoutedEndXInitial = if (routedEndX.isFinite()) routedEndX else endX
         val safeRoutedEndYInitial = if (routedEndY.isFinite()) routedEndY else endY
         val isPanic = SmartAssistRepository.panicActive()
-        val (panicEndX, panicEndY) = if (isPanic) emergencyClearanceVector(safeRoutedEndXInitial, safeRoutedEndYInitial) else Pair(safeRoutedEndXInitial, safeRoutedEndYInitial)
+        // emergencyClearanceVector is exactly Pair(startX, targetY). Keep its
+        // public helper contract, but use its scalar identity here to avoid a
+        // per-panic-gesture Pair allocation.
+        val panicEndX = safeRoutedEndXInitial
+        val panicEndY = safeRoutedEndYInitial
         val finalDuration = if (isPanic) emergencyClearanceDuration() else routedDuration
 
         val safeRoutedEndX = if (panicEndX.isFinite()) panicEndX else endX

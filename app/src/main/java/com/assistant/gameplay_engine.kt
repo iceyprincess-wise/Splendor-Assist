@@ -6670,9 +6670,17 @@ object OffensiveLineEngine {
 
         val minX = attackers.minOf { it.x }
         val maxX = attackers.maxOf { it.x }
-        val averageX = attackers.map { it.x }.average().toFloat()
-        val confidence =
-            attackers.map { it.confidence }.average().toFloat()
+        // Float.average() accumulates in Double, then converts to Float.
+        // Keep the same input order and arithmetic while avoiding two mapped lists.
+        var sumX = 0.0
+        var sumConfidence = 0.0
+        for (i in attackers.indices) {
+            val player = attackers[i]
+            sumX += player.x.toDouble()
+            sumConfidence += player.confidence.toDouble()
+        }
+        val averageX = (sumX / attackers.size).toFloat()
+        val confidence = (sumConfidence / attackers.size).toFloat()
 
         return OffensiveLineResult(
             found = true,
@@ -7471,11 +7479,18 @@ object PreferredPassingLaneLearningEngine{
         temporal:TemporalMemoryState
     ):PreferredPassingLaneLearningResult{
 
-        val laneScore =
-            graph.lanes
-                .map { it.score }
-                .maxOrNull()
-                ?: 0f
+        // Kotlin Float.compareTo orders NaN above numbers and distinguishes
+        // signed zero, matching maxOrNull on the mapped Float list.
+        var laneScore = 0f
+        var hasLaneScore = false
+        for (i in graph.lanes.indices) {
+            val score = graph.lanes[i].score
+            if (!hasLaneScore || score.compareTo(laneScore) > 0) {
+                laneScore = score
+                hasLaneScore = true
+            }
+        }
+        if (!hasLaneScore) laneScore = 0f
 
         val temporalScore =
             (
@@ -12204,20 +12219,24 @@ object TeamShapeEngine {
         val width = maxX - minX
         val depth = maxY - minY
 
-        val centerX =
-            scene.trackedPlayers.map { it.x }.average().toFloat()
-
-        val centerY =
-            scene.trackedPlayers.map { it.y }.average().toFloat()
+        // Match Float.average(): ordered Double accumulation and one Float cast.
+        // Indexed traversal avoids iterator and mapped-list allocations.
+        var sumX = 0.0
+        var sumY = 0.0
+        var sumConfidence = 0.0
+        for (i in scene.trackedPlayers.indices) {
+            val player = scene.trackedPlayers[i]
+            sumX += player.x.toDouble()
+            sumY += player.y.toDouble()
+            sumConfidence += player.confidence.toDouble()
+        }
+        val centerX = (sumX / scene.trackedPlayers.size).toFloat()
+        val centerY = (sumY / scene.trackedPlayers.size).toFloat()
 
         val compactness =
             sqrt(width * width + depth * depth)
 
-        val confidence =
-            scene.trackedPlayers
-                .map { it.confidence }
-                .average()
-                .toFloat()
+        val confidence = (sumConfidence / scene.trackedPlayers.size).toFloat()
 
         return TeamShapeResult(
             found = true,
