@@ -156,6 +156,19 @@ object RuntimeLogger {
     }
     private val threadLocalDate = ThreadLocal.withInitial { java.util.Date() }
 
+    /** Caller location for field, watchdog, deathwatch and agent diagnostics. */
+    private fun callerLocation(): String {
+        val frame = Throwable().stackTrace.firstOrNull {
+            it.className != RuntimeLogger::class.java.name &&
+        } ?: return "unknown:0"
+        val file = frame.fileName ?: "Unknown.kt"
+        val className = frame.className.substringBefore('$')
+        val pkg = className.substringBeforeLast('.', "").replace('.', '/')
+        val root = if (className.startsWith("com.assistant.diagnostic."))
+            "core/src/main/java" else "app/src/main/java"
+        return "$root/$pkg/$file:${frame.lineNumber}"
+    }
+
     @Synchronized
     fun log(
         message: String,
@@ -167,7 +180,7 @@ object RuntimeLogger {
         val timestamp = dateFormat.get()!!.format(date)
 
         val logEntry =
-            "$timestamp [$tag] $message\n"
+            "$timestamp [$tag] source=${callerLocation()} $message\n"
 
         writeToAll(logEntry)
 
@@ -186,7 +199,7 @@ object RuntimeLogger {
     ){
         append(
             executionChainLog,
-            "${now()} [$stage] $details\n"
+            "${now()} [$stage] source=${callerLocation()} $details\n"
         )
     }
 
@@ -196,7 +209,7 @@ object RuntimeLogger {
     ){
         append(
             telemetryLog,
-            "${now()} $details\n"
+            "${now()} source=${callerLocation()} $details\n"
         )
     }
 
@@ -206,7 +219,7 @@ object RuntimeLogger {
     ){
         append(
             heartbeatLog,
-            "${now()} $details\n"
+            "${now()} source=${callerLocation()} $details\n"
         )
     }
 
@@ -217,7 +230,7 @@ object RuntimeLogger {
     ){
         append(
             fieldTestLog,
-            "${now()} [$tag] $details\n"
+            "${now()} [$tag] source=${callerLocation()} $details\n"
         )
     }
 

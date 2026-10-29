@@ -11659,6 +11659,7 @@ object RuntimeSelfHealEngine {
                 }
                 if (ev == null) return
                 w.write("[${ev.timestamp}] [${ev.severity}] [${ev.category}]\n")
+                w.write("  SOURCE: ${CrashForensics.currentLocation()}\n")
                 w.write("  DETECTED: ${ev.detected}\n")
                 w.write("  FIX:      ${ev.fix}\n\n")
             }

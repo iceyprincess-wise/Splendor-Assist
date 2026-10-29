@@ -183,6 +183,7 @@ object DeathWatch {
         sb.appendLine("Memory then   : avail=" + availMb + "MB threshold=" + threshMb + "MB lowMemory=" + lowMem)
         sb.appendLine("Java crash    : " + (if (javaCrash) "YES" else "NO"))
         sb.appendLine("VERDICT       : " + verdict)
+        sb.appendLine("Report source : " + CrashForensics.currentLocation())
         sb.appendLine("Marker state  : " + at(0))
         if (nativeCrashDetails.isNotBlank()) {
             sb.appendLine()

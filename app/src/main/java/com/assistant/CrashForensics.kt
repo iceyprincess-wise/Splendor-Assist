@@ -21,6 +21,9 @@ object CrashForensics {
     private val times = LongArray(CAPACITY)
     private val stages = IntArray(CAPACITY)
     private val details = LongArray(CAPACITY)
+    // Cache source location once per stage to keep hot breadcrumb writes cheap.
+    private val locations = Array(CAPACITY) { "unknown:0" }
+    private val stageLocations = arrayOfNulls<String>(256)
     private val beats = LongArray(5)
     private val reported = LongArray(5)
     private val cursor = AtomicLong(0L)
@@ -49,6 +52,10 @@ object CrashForensics {
             times[slot] = now
             stages[slot] = stage
             details[slot] = detail
+            val location = if (stage in stageLocations.indices) stageLocations[stage] else null
+            locations[slot] = location ?: sourceFromCurrentStack().also { captured ->
+                if (stage in stageLocations.indices) stageLocations[stage] = captured
+            }
             if (loop in CAPTURE..OVERLAY) beats[loop] = now
         }
     }
@@ -80,9 +87,51 @@ object CrashForensics {
             val trace = java.io.StringWriter()
             error.printStackTrace(java.io.PrintWriter(trace))
             appendReport("[DEATH] uncaught thread=${thread.name} id=${thread.id} " +
-                "${error.javaClass.name}: ${error.message}\n" +
+                "${error.javaClass.name}: ${error.message} throwSite=${throwLocation(error)}\n" +
                 "capture=${captureWidth}x${captureHeight} engineStage=${stageName(engineStage)}\n" +
                 trace.toString() + snapshotText())
+        } catch (_: Throwable) { }
+    }
+
+    /** Resolve JVM frames to an app/core repository-relative path and source line. */
+    private fun frameLocation(frame: StackTraceElement): String {
+        val file = frame.fileName ?: "Unknown.kt"
+        val className = frame.className.substringBefore('$')
+        val pkg = className.substringBeforeLast('.', "").replace('.', '/')
+        val root = if (className.startsWith("com.assistant.diagnostic."))
+            "core/src/main/java" else "app/src/main/java"
+        return "$root/$pkg/$file:${frame.lineNumber}"
+    }
+
+    private fun sourceFromCurrentStack(): String {
+        val frame = Thread.currentThread().stackTrace.firstOrNull {
+            it.className != Thread::class.java.name &&
+                it.className != CrashForensics::class.java.name &&
+                !it.className.startsWith("java.lang.Thread")
+        }
+        return if (frame == null) "unknown:0" else frameLocation(frame)
+    }
+
+    @JvmStatic
+    fun currentLocation(): String = sourceFromCurrentStack()
+
+    @JvmStatic
+    fun throwLocation(error: Throwable): String {
+        val frame = error.stackTrace.firstOrNull { it.lineNumber > 0 }
+        return if (frame == null) "unknown:0" else frameLocation(frame)
+    }
+
+    /** JNI callback for the first native vision frame only. */
+    @JvmStatic
+    fun nativeBreadcrumb(source: String, line: Int, phase: String) {
+        try {
+            mark(4, VISION, line.toLong())
+            val relative = if (source.contains("/app/src/main/cpp/"))
+                source.substringAfter("/app/src/main/cpp/") else source.substringAfterLast('/')
+            synchronized(lock) {
+                val slot = ((cursor.get() - 1L) % CAPACITY).toInt()
+                locations[slot] = "app/src/main/cpp/$relative:$line native=$phase"
+            }
         } catch (_: Throwable) { }
     }
 
@@ -90,7 +139,7 @@ object CrashForensics {
     @JvmStatic
     fun reportDetectedDeath(process: String, pid: String, verdict: String) {
         try {
-            appendReport("[DEATH DETECTED] process=$process pid=$pid verdict=$verdict " +
+            appendReport("[DEATH DETECTED] process=$process pid=$pid verdict=$verdict source=${sourceFromCurrentStack()} " +
                 "capture=${captureWidth}x$captureHeight engineStage=${stageName(engineStage)}\n" + snapshotText())
         } catch (_: Throwable) { }
     }
@@ -102,7 +151,7 @@ object CrashForensics {
             synchronized(lock) { beat = beats[loop] }
             if (beat > 0L && now - beat > WATCHDOG_MS && reported[loop] != beat) {
                 reported[loop] = beat
-                appendReport("[STALLED] loop=${labels[loop]} heartbeatAgeMs=${now - beat} " +
+                appendReport("[STALLED] loop=${labels[loop]} heartbeatAgeMs=${now - beat} source=${sourceFromCurrentStack()} " +
                     "thresholdMs=$WATCHDOG_MS capture=${captureWidth}x$captureHeight " +
                     "engineStage=${stageName(engineStage)} action=report-only\n" + snapshotText())
             }
@@ -121,6 +170,7 @@ object CrashForensics {
                 val slot = (n % CAPACITY).toInt()
                 val time = times[slot]
                 if (time > 0L) out.append(time).append(" ").append(stageName(stages[slot]))
+                    .append(" source=").append(locations[slot])
                     .append(" detail=").append(details[slot]).append('\n')
                 n++
             }
@@ -134,7 +184,8 @@ object CrashForensics {
     }
 
     private fun flushSnapshot(full: Boolean) {
-        val header = if (full) "[SNAPSHOT] full ring\n" else "[SNAPSHOT] periodic\n"
+        val header = if (full) "[SNAPSHOT] full ring source=${sourceFromCurrentStack()}\n"
+            else "[SNAPSHOT] periodic source=${sourceFromCurrentStack()}\n"
         appendReport(header + snapshotText())
     }
 

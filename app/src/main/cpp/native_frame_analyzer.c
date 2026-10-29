@@ -6,6 +6,21 @@
 #define REGION_RADAR_X 100
 #define REGION_RADAR_Y 50
 
+/* JNI source breadcrumb bridge, used only on first-frame entry/exit. */
+static void splendor_log_vision_site(JNIEnv *env, const char *file, jint line, const char *phase) {
+    jclass cls = (*env)->FindClass(env, "com/assistant/CrashForensics");
+    if (cls == NULL) { if ((*env)->ExceptionCheck(env)) (*env)->ExceptionClear(env); return; }
+    jmethodID method = (*env)->GetStaticMethodID(env, cls, "nativeBreadcrumb", "(Ljava/lang/String;ILjava/lang/String;)V");
+    if (method == NULL) { if ((*env)->ExceptionCheck(env)) (*env)->ExceptionClear(env); (*env)->DeleteLocalRef(env, cls); return; }
+    jstring jfile = (*env)->NewStringUTF(env, file);
+    jstring jphase = (*env)->NewStringUTF(env, phase);
+    if (jfile != NULL && jphase != NULL) (*env)->CallStaticVoidMethod(env, cls, method, jfile, line, jphase);
+    if ((*env)->ExceptionCheck(env)) (*env)->ExceptionClear(env);
+    if (jfile != NULL) (*env)->DeleteLocalRef(env, jfile);
+    if (jphase != NULL) (*env)->DeleteLocalRef(env, jphase);
+    (*env)->DeleteLocalRef(env, cls);
+}
+
 typedef struct {
     int32_t x;
     int32_t y;
@@ -20,8 +35,17 @@ Java_com_assistant_NativeBridge_nativeAnalyzeFrame(JNIEnv *env, jclass clazz,
                                                    jobject byteBuffer, jint width, jint height,
                                                    jint rowStride, jint pixelStride,
                                                    jfloatArray outBuffer) {
+    static int firstFrameSitesLogged = 0;
+    const int logFirstFrameSites = !firstFrameSitesLogged;
+    if (logFirstFrameSites) {
+        firstFrameSitesLogged = 1;
+        splendor_log_vision_site(env, __FILE__, __LINE__, "nativeAnalyzeFrame entry");
+    }
     uint8_t* pixels = (uint8_t*) (*env)->GetDirectBufferAddress(env, byteBuffer);
-    if (!pixels) return;
+    if (!pixels) {
+        if (logFirstFrameSites) splendor_log_vision_site(env, __FILE__, __LINE__, "nativeAnalyzeFrame exit: null pixels");
+        return;
+    }
 
     g_player_count = 0;
     
@@ -54,4 +78,5 @@ Java_com_assistant_NativeBridge_nativeAnalyzeFrame(JNIEnv *env, jclass clazz,
         }
         (*env)->ReleaseFloatArrayElements(env, outBuffer, result, 0);
     }
+    if (logFirstFrameSites) splendor_log_vision_site(env, __FILE__, __LINE__, "nativeAnalyzeFrame exit");
 }

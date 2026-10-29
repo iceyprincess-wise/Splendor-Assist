@@ -146,6 +146,7 @@ class GlobalCrashHandler(
             sb.appendLine("Process: ${android.os.Process.myPid()}  Thread: ${thread.name} id=${thread.id}")
             sb.appendLine()
             sb.appendLine("--- EXCEPTION ---")
+            sb.appendLine("Throw site: ${CrashForensics.throwLocation(e)}")
             sb.appendLine(stackTraceString(e))
             sb.appendLine()
             sb.appendLine("--- FEATURE HEALTH AUDIT ---")
