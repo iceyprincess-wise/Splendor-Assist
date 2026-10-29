@@ -87,11 +87,13 @@ object VectorSmootherPort {
         return x
     }
 
-    // C: (float)(xorshift32() % m - sub) in uint32 arithmetic (wraps), then unsigned->float
+    // Intentional behavior change from the f17 bit-for-bit port: the C expression
+    // subtracted in uint32 and wrapped (e.g. 0u - 10u became 4294967286f).
+    // Jitter intent is signed range [-sub, m-sub-1], so subtract after modulo.
+    // This removes wrap-sized cursor jumps while retaining the xorshift sequence.
     private fun unsignedModMinusToFloat(x: Int, m: Int, sub: Int): Float {
         val r = Integer.remainderUnsigned(x, m)
-        val d = r - sub
-        return (d.toLong() and 0xFFFFFFFFL).toFloat()
+        return (r - sub).toFloat()
     }
 
     fun smooth(startX: Float, startY: Float, endX: Float, endY: Float, durationMs: Float, out: FloatArray) {
