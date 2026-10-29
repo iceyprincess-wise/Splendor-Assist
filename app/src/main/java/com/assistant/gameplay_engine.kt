@@ -4778,7 +4778,7 @@ object GestureExecutionAuthority {
             }
         }
 
-        if (!UserTouchState.isTouching()) {
+        if (!InterceptionRuntimeRegistry.bypassTouchGate && !UserTouchState.isTouching()) {
             RuntimeLogger.log(
                 "Gesture blocked: no active user touch",
                 "SMART_ASSIST"

@@ -304,6 +304,16 @@ class ModMenuController(private val context: Context) {
         }
         contentContainer.addView(swAutoIntercept)
 
+        val swTouchGateBypass = Switch(context).apply {
+            text = "Bypass UserTouchState gate"
+            setTextColor(Color.WHITE)
+            isChecked = InterceptionRuntimeRegistry.bypassTouchGate
+            setOnCheckedChangeListener { _, isChecked ->
+                InterceptionRuntimeRegistry.bypassTouchGate = isChecked
+            }
+        }
+        contentContainer.addView(swTouchGateBypass)
+
         val swArmed = Switch(context).apply {
             text = "Armed (engine analysis + keeper actions)"
             setTextColor(Color.WHITE)

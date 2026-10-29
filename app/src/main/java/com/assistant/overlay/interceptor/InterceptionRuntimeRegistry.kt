@@ -9,6 +9,8 @@ object InterceptionRuntimeRegistry {
 
     @Volatile var armed: Boolean = true
 
+    @Volatile var bypassTouchGate: Boolean = false
+
     @Volatile
     var awareness: Int = 100
 
