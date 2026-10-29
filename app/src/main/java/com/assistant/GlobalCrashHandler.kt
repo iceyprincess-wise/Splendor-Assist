@@ -28,6 +28,7 @@ class GlobalCrashHandler(
     }
 
     override fun uncaughtException(t: Thread, e: Throwable) {
+        try { CrashForensics.onUncaught(t, e) } catch (_: Throwable) {}
         try {
             writeJavaCrashMarker(appContext, t)
         } catch (_: Throwable) {}

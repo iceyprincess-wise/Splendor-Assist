@@ -43,6 +43,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         GlobalCrashHandler.install(this)
+        try { CrashForensics.install(this) } catch (_: Throwable) {}
 
         val currentProcess = getCurrentProcessName()
         val isMainProcess = currentProcess == packageName

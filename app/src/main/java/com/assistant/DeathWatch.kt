@@ -194,6 +194,7 @@ object DeathWatch {
         val text = sb.toString()
 
         try { reportFile()?.appendText(text) } catch (_: Throwable) { }
+        try { CrashForensics.reportDetectedDeath(deadProc, deadPid, verdict) } catch (_: Throwable) { }
 
         if (javaCrash) {
             try { javaCrashMarkerFile()?.delete() } catch (_: Throwable) { }

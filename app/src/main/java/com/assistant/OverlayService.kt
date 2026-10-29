@@ -244,6 +244,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     private val imageAvailableListener = ImageReader.OnImageAvailableListener { reader ->
         val image = try { reader.acquireLatestImage() } catch (_: Throwable) { null } ?: return@OnImageAvailableListener
+        com.assistant.CrashForensics.mark(2, 1, captureFrameCount)
         val captureNow = System.currentTimeMillis()
         if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
             image.close()
@@ -262,6 +263,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // OMEGA FIX: SYNCHRONOUS EXTRACTION prevents "Image is already closed" race conditions
         val width = try { image.width } catch (_: Throwable) { try { image.close() } catch (_: Throwable) {}; return@OnImageAvailableListener }
         val height = try { image.height } catch (_: Throwable) { try { image.close() } catch (_: Throwable) {}; return@OnImageAvailableListener }
+        com.assistant.CrashForensics.setCaptureSize(width, height)
+        com.assistant.CrashForensics.mark(7, 1, (width.toLong() shl 32) or (height.toLong() and 0xffffffffL))
         val plane = try { image.planes[0] } catch (_: Throwable) { try { image.close() } catch (_: Throwable) {}; return@OnImageAvailableListener }
         val rowStride = plane.rowStride
         val pixelStride = plane.pixelStride
@@ -312,7 +315,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // Launch Vision Coroutine with SAFE copied buffer
         if (startVision) visionScope.launch {
             try {
+                com.assistant.CrashForensics.mark(3, 2, System.currentTimeMillis())
                 val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride)
+                com.assistant.CrashForensics.mark(4, 2, System.currentTimeMillis())
                 val prevBuf = previousVisionBuffer
                 if (prevBuf != null && prevBuf.remaining() == visionBuffer.remaining()) {
                     com.assistant.NativeBridge.nativeComputeOpticalVariance(visionBuffer, prevBuf, width, height, rowStride, 0, 0, width, height)
@@ -332,11 +337,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 visionBuffer.position(pos)
                 targetBuf.flip()
                 val state = com.assistant.VisionCore.process(normalized)
+                com.assistant.CrashForensics.mark(4, 2, System.currentTimeMillis())
                 com.assistant.BoosterIgnition.ensureIgnited(this@OverlayService)
                 com.assistant.AppContributorRegistration.ensureRegistered()
                 com.assistant.RuntimeCoordinator.reportCaptureReady()
+                com.assistant.CrashForensics.mark(5, 3, captureFrameCount)
+                com.assistant.CrashForensics.setEngineStage(5)
                 val frame = com.assistant.FrameAssembler.assemble()
+                com.assistant.CrashForensics.mark(6, 3, captureFrameCount)
                 com.assistant.RuntimeDecisionLoop.onFrame(frame)
+                com.assistant.CrashForensics.mark(6, 3, captureFrameCount)
                 // WIRE SILOED GK ENGINES: Activate Dive, Claim, Rush, and Block action engines
                 com.assistant.GameStateBuilder.update(state)
                 com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(visionBuffer, width, height, rowStride)
@@ -467,6 +477,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     override fun onCreate() {
+        com.assistant.CrashForensics.install(applicationContext)
+        com.assistant.CrashForensics.mark(1, 4, android.os.Process.myPid().toLong())
         com.assistant.SplendorCaptureRecovery.attach(this)
         // SplendorWatchdog removed: WatchdogAdapterService handles survival process watchdog
         if(runtimeInitialized) return
