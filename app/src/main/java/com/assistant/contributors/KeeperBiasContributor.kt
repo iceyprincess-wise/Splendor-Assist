@@ -1,4 +1,5 @@
 package com.assistant.contributors
+import com.assistant.NativePorts
 
 import com.assistant.NativeBridge
 import com.assistant.overlay.interceptor.*
