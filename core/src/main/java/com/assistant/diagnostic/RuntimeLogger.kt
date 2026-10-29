@@ -158,10 +158,22 @@ object RuntimeLogger {
 
     /** Caller location for field, watchdog, deathwatch and agent diagnostics. */
     private fun callerLocation(): String {
-        val frame = Throwable().stackTrace.firstOrNull {
-            it.className != RuntimeLogger::class.java.name
+        // ART can place VMStack.java with line -2 before the source caller.
+        // Skip logger internals and runtime frames, then use the first real
+        // Kotlin or Java source location with a positive line number.
+        val frame = Throwable().stackTrace.firstOrNull { candidate ->
+            val name = candidate.className
+            val file = candidate.fileName
+            !name.startsWith(RuntimeLogger::class.java.name) &&
+                !name.startsWith("dalvik.") &&
+                !name.startsWith("java.") &&
+                !name.startsWith("javax.") &&
+                !name.startsWith("jdk.") &&
+                !name.startsWith("sun.") &&
+                candidate.lineNumber > 0 &&
+                file != null && (file.endsWith(".kt") || file.endsWith(".java"))
         } ?: return "unknown:0"
-        val file = frame.fileName ?: "Unknown.kt"
+        val file = frame.fileName ?: return "unknown:0"
         val className = frame.className.substringBefore('$')
         val pkg = className.substringBeforeLast('.', "").replace('.', '/')
         val root = if (className.startsWith("com.assistant.diagnostic."))
