@@ -78,20 +78,16 @@ object ContributionRegistry {
 
     /*
      * Returns the highest-priority fresh contribution and clears pending requests.
-     * drainBest has one caller on RuntimeDecisionLoop.onFrame and is not safe
-     * for concurrent invocations: it snapshots then claims entries individually.
      */
     fun drainBest(): ExecutionRequest? {
         if (pending.isEmpty()) return null
 
         val now = System.currentTimeMillis()
         val snapshot = pending.entries.toList()
+        for (entry in snapshot) pending.remove(entry.key, entry.value)
 
         var best: ExecutionRequest? = null
         for (entry in snapshot) {
-            // Keep the current drain semantics: one invocation consumes every
-            // snapshotted value, including replacements racing the snapshot.
-            pending.remove(entry.key, entry.value)
             val candidate = entry.value
             if (now - candidate.timestamp > MAX_AGE_MS) {
                 expired.incrementAndGet()
