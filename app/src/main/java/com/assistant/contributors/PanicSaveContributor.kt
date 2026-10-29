@@ -17,7 +17,7 @@ object PanicSaveContributor : GameplayContributor {
         val fluidMultiplier = possessionWeight * trustWeight
         val decision = ThreatPriorityContributor.decisionOf(frame) ?: return null
 
-        NativeBridge.nativePanicSaveCompute(
+        NativePorts.panic(
             decision.direction.ordinal,
             decision.priority,
             outBuffer

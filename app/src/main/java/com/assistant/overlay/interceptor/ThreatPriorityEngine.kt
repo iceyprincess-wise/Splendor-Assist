@@ -25,7 +25,7 @@ object ThreatPriorityEngine {
         val direction = ShotDirectionEngine.detect(zone, threat)
         
         // Delegate heavy compute to bare-metal C standard
-        com.assistant.NativeBridge.nativeThreatPriorityCompute(
+        com.assistant.NativePorts.threat(
             threat.score, zone.ordinal, direction.ordinal,
             InterceptionRuntimeRegistry.awareness, InterceptionRuntimeRegistry.prediction,
             GoalkeeperAdaptiveFeedbackEngine.interceptionBonus(),

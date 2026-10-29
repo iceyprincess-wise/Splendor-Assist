@@ -10,7 +10,7 @@ enum class CrossAction {
 
 object CrossClaimEngine {
     fun evaluate(decision: ThreatDecision): CrossAction {
-        val actionOrdinal = NativeBridge.nativeCrossClaimEvaluate(
+        val actionOrdinal = com.assistant.NativePorts.claim(
             decision.direction.ordinal,
             decision.priority
         )

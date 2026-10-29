@@ -14,7 +14,7 @@ object KeeperBiasContributor : GameplayContributor {
         if (!frame.trusted || frame.hasBall) return null
         val decision = ThreatPriorityContributor.decisionOf(frame) ?: return null
 
-        NativeBridge.nativeKeeperBiasCompute(
+        NativePorts.keeper(
             decision.zone.ordinal,
             decision.direction.ordinal,
             decision.priority,

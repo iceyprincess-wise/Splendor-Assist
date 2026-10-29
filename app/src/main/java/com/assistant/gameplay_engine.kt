@@ -2257,13 +2257,13 @@ object CrossPrecisionEngine {
     private val outCross = FloatArray(3)
 
     fun calculate(x: Float, y: Float, strength: Int): CrossPrecisionResult {
-        com.assistant.NativeBridge.nativeCrossPrecisionCalculate(x, y, strength, outCross)
+        NativePorts.cross(x, y, strength, outCross)
         return CrossPrecisionResult(outCross[0], outCross[1], outCross[2])
     }
 
-    fun stunningCrossLeadDistance(strikerVelocity: Float): Float = com.assistant.NativeBridge.nativeCrossStunningLeadDistance(strikerVelocity)
-    fun stunningCrossSwipeDistance(): Float = com.assistant.NativeBridge.nativeCrossStunningSwipeDistance()
-    fun stunningCrossDuration(): Long = com.assistant.NativeBridge.nativeCrossStunningDuration()
+    fun stunningCrossLeadDistance(strikerVelocity: Float): Float = NativePorts.crossLead(strikerVelocity)
+    fun stunningCrossSwipeDistance(): Float = NativePorts.crossSwipe()
+    fun stunningCrossDuration(): Long = NativePorts.crossDuration()
 }
 /* ======
 CrossPrecisionEngine Anchor
@@ -2326,7 +2326,7 @@ object CrossingLaneAnalysisEngine {
     ): CrossingLaneAnalysis {
         assertCrossingLaneOmegaAuthority("analyze")
 
-        val result = ArrayList<CrossingLane>()
+        val result = ArrayList<CrossingLane>(graph.lanes.size)
 
         graph.lanes.forEach { lane ->
 
@@ -2345,11 +2345,8 @@ object CrossingLaneAnalysisEngine {
             )
         }
 
-        val crossingLaneAnalysisResult = CrossingLaneAnalysis(
-            result.sortedByDescending {
-                it.confidence
-            }
-        )
+        result.sortByDescending { it.confidence }
+        val crossingLaneAnalysisResult = CrossingLaneAnalysis(result)
         publishCrossingLaneAnalysisEngineResult(crossingLaneAnalysisResult)
         return crossingLaneAnalysisResult
     }
@@ -2735,23 +2732,50 @@ object DefensiveLineEngine {
 
     /** compute() — OPPONENT back line (unchanged). */
     fun compute(scene: SceneSnapshot): DefensiveLineResult {
-        val d = scene.trackedPlayers.filter { !it.isUserTeam }
-        if (d.isEmpty()) return DefensiveLineResult(found=false)
-        return DefensiveLineResult(true,
-            d.map{it.x}.average().toFloat(), d.minOf{it.x}, d.maxOf{it.x},
-            d.size, d.map{it.confidence}.average().toFloat())
+        var count = 0
+        var sumX = 0.0
+        var sumConfidence = 0.0
+        var minX = Float.POSITIVE_INFINITY
+        var maxX = Float.NEGATIVE_INFINITY
+        for (i in scene.trackedPlayers.indices) {
+            val player = scene.trackedPlayers[i]
+            if (player.isUserTeam) continue
+            count++
+            sumX += player.x.toDouble()
+            sumConfidence += player.confidence.toDouble()
+            if (player.x < minX) minX = player.x
+            if (player.x > maxX) maxX = player.x
+        }
+        if (count == 0) return DefensiveLineResult(found=false)
+        return DefensiveLineResult(true, (sumX / count).toFloat(), minX, maxX,
+            count, (sumConfidence / count).toFloat())
     }
 
     /** computeUserLine() — OUR back line (NEW).
      *  Deepest 40% of user-team players by Y, capped at 5. */
     fun computeUserLine(scene: SceneSnapshot): DefensiveLineResult {
-        val u = scene.trackedPlayers.filter { it.isUserTeam }
-        if (u.isEmpty()) return DefensiveLineResult(found=false)
-        val keep = u.sortedByDescending{it.y}
-            .take((u.size*0.4f).toInt().coerceAtLeast(1).coerceAtMost(5))
-        return DefensiveLineResult(true,
-            keep.map{it.x}.average().toFloat(), keep.minOf{it.x}, keep.maxOf{it.x},
-            keep.size, keep.map{it.confidence}.average().toFloat())
+        val users = ArrayList<TrackedPlayer>(scene.trackedPlayers.size)
+        for (i in scene.trackedPlayers.indices) {
+            val player = scene.trackedPlayers[i]
+            if (player.isUserTeam) users.add(player)
+        }
+        if (users.isEmpty()) return DefensiveLineResult(found=false)
+        // Preserve the original stable descending-Y order and take count exactly.
+        users.sortByDescending { it.y }
+        val keepCount = (users.size * 0.4f).toInt().coerceAtLeast(1).coerceAtMost(5)
+        var sumX = 0.0
+        var sumConfidence = 0.0
+        var minX = Float.POSITIVE_INFINITY
+        var maxX = Float.NEGATIVE_INFINITY
+        for (i in 0 until keepCount) {
+            val player = users[i]
+            sumX += player.x.toDouble()
+            sumConfidence += player.confidence.toDouble()
+            if (player.x < minX) minX = player.x
+            if (player.x > maxX) maxX = player.x
+        }
+        return DefensiveLineResult(true, (sumX / keepCount).toFloat(), minX, maxX,
+            keepCount, (sumConfidence / keepCount).toFloat())
     }
 }
 /* ======
@@ -3014,18 +3038,11 @@ object FastBreakDetectionEngine{
 
         var speed=0f
 
-        scene.trackedPlayers
-            .filter{it.isUserTeam}
-            .forEach{
-
-                speed=maxOf(
-                    speed,
-                    hypot(
-                        it.velocityX.toDouble(),
-                        it.velocityY.toDouble()
-                    ).toFloat()
-                )
-            }
+        for (i in scene.trackedPlayers.indices) {
+            val player = scene.trackedPlayers[i]
+            if (!player.isUserTeam) continue
+            speed = maxOf(speed, hypot(player.velocityX.toDouble(), player.velocityY.toDouble()).toFloat())
+        }
 
         val confidence=
             (speed/180f)
@@ -7051,7 +7068,7 @@ object OpenSpaceDetectionEngine {
             return OpenSpaceDetectionResult()
         }
 
-        val result=ArrayList<OpenSpaceCell>()
+        val result=ArrayList<OpenSpaceCell>(occupancy.rows * occupancy.columns)
 
         for(row in 0 until occupancy.rows){
             for(col in 0 until occupancy.columns){
@@ -7076,9 +7093,8 @@ object OpenSpaceDetectionEngine {
             }
         }
 
-        return OpenSpaceDetectionResult(
-            result.sortedByDescending{it.openness}
-        )
+        result.sortByDescending { it.openness }
+        return OpenSpaceDetectionResult(result)
     }
 }
 /* ======
@@ -7162,33 +7178,14 @@ object OverlapDetectionEngine{
         runs:RunPredictionResult
     ):OverlapDetectionResult{
 
-        val result=
-            runs.runs.map{
-
-                val speed=
-                    hypot(
-                        it.player.velocityX.toDouble(),
-                        it.player.velocityY.toDouble()
-                    ).toFloat()
-
-                val confidence=
-                    (
-                        (speed/120f)+
-                        it.confidence
-                    ).coerceIn(0f,1f)
-
-                OverlapRun(
-                    runner=it.player,
-                    supportX=it.predictedX,
-                    supportY=it.predictedY,
-                    confidence=confidence,
-                    viable=confidence>=0.50f
-                )
-
-            }.sortedByDescending{
-                it.confidence
-            }
-
+        val result = ArrayList<OverlapRun>(runs.runs.size)
+        for (i in runs.runs.indices) {
+            val run = runs.runs[i]
+            val speed = hypot(run.player.velocityX.toDouble(), run.player.velocityY.toDouble()).toFloat()
+            val confidence = ((speed / 120f) + run.confidence).coerceIn(0f, 1f)
+            result.add(OverlapRun(run.player, run.predictedX, run.predictedY, confidence, confidence >= 0.50f))
+        }
+        result.sortByDescending { it.confidence }
         return OverlapDetectionResult(result)
     }
 }
@@ -7588,22 +7585,14 @@ object RunPredictionEngine{
         scene:SceneSnapshot
     ):RunPredictionResult{
 
-        val runs=
-            scene.trackedPlayers
-                .filter{it.isUserTeam}
-                .map{
-
-                    PredictedRun(
-                        player=it,
-                        predictedX=it.x+(it.velocityX*0.45f),
-                        predictedY=it.y+(it.velocityY*0.45f),
-                        confidence=it.confidence.coerceIn(0f,1f)
-                    )
-
-                }.sortedByDescending{
-                    it.confidence
-                }
-
+        val runs = ArrayList<PredictedRun>(scene.trackedPlayers.size)
+        for (i in scene.trackedPlayers.indices) {
+            val player = scene.trackedPlayers[i]
+            if (!player.isUserTeam) continue
+            runs.add(PredictedRun(player, player.x + (player.velocityX * 0.45f),
+                player.y + (player.velocityY * 0.45f), player.confidence.coerceIn(0f, 1f)))
+        }
+        runs.sortByDescending { it.confidence }
         return RunPredictionResult(runs)
     }
 }
@@ -9604,7 +9593,7 @@ data class ShotOpportunityResult(
 object ShotOpportunityAnalysisEngine {
     private val outBuffer = FloatArray(3)
     fun analyze(distance:Float, pressure:Float):ShotOpportunityResult {
-        com.assistant.NativeBridge.nativeShotOpportunityAnalyze(distance, pressure, outBuffer)
+        NativePorts.shot(distance, pressure, outBuffer)
         return ShotOpportunityResult(outBuffer[0], outBuffer[1], outBuffer[2])
     }
 }
@@ -9686,7 +9675,7 @@ data class SpeedCompensationResult(
 object SpeedCompensationEngine {
     private val outBuffer = FloatArray(5)
     fun compensate(distance: Float, angle: Float, strength: Int): SpeedCompensationResult {
-        com.assistant.NativeBridge.nativeSpeedCompensate(distance, angle, strength, 0f, 0f, 0f, 0f, 0f, outBuffer)
+        NativePorts.speed(distance, angle, strength, 0f, 0f, 0f, 0f, 0f, outBuffer)
         return SpeedCompensationResult(outBuffer[0], outBuffer[1], outBuffer[2], outBuffer[3], outBuffer[4])
     }
 }
@@ -11889,7 +11878,7 @@ object ShootingLaneAnalysisEngine {
         val goalCenterY =
             (scene.goalTopY + scene.goalBottomY) * 0.5f
 
-        val result = ArrayList<ShootingLane>()
+        val result = ArrayList<ShootingLane>(graph.lanes.size)
 
         graph.lanes.forEach { lane ->
 
@@ -11918,11 +11907,8 @@ object ShootingLaneAnalysisEngine {
             )
         }
 
-        return ShootingLaneAnalysis(
-            result.sortedByDescending {
-                it.confidence
-            }
-        )
+        result.sortByDescending { it.confidence }
+        return ShootingLaneAnalysis(result)
     }
 }
 /* ======

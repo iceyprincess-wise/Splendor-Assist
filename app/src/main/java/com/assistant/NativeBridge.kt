@@ -382,16 +382,12 @@ object NativeBridge {
 
 
     // --- V48: CrossClaim Native Migration ---
-    @JvmStatic external fun nativeCrossClaimEvaluate(directionOrdinal: Int, priority: Int): Int
-    @JvmStatic external fun nativeCrossClaimVector(width: Float, height: Float, outBuffer: FloatArray)
 
 
     // --- V49: KeeperBias Native Migration ---
-    @JvmStatic external fun nativeKeeperBiasCompute(zoneOrdinal: Int, directionOrdinal: Int, priority: Int, ballX: Float, ballY: Float, outBuffer: FloatArray)
 
 
     // --- V50: PanicSave Native Migration ---
-    @JvmStatic external fun nativePanicSaveCompute(directionOrdinal: Int, priority: Int, outBuffer: FloatArray)
 
 
     // --- V54: TrueShot Native Migration ---
@@ -411,16 +407,10 @@ object NativeBridge {
     // --- V57: CriticalAttackingVector & CrossPrecision Native Migration ---
     @JvmStatic external fun nativeCriticalScoringVector(strikerX: Float, strikerY: Float, gkX: Float, gkY: Float, goalLeftPostX: Float, goalLeftPostY: Float, goalRightPostX: Float, goalRightPostY: Float, controlOriginX: Float, controlOriginY: Float, controlRadius: Float, outBuffer: FloatArray)
     @JvmStatic external fun nativeCriticalTrueTargetPass(passButtonX: Float, passButtonY: Float, activeStrikerX: Float, activeStrikerY: Float, strikerVx: Float, strikerVy: Float, isLoftedContext: Boolean, screenWidth: Float, screenHeight: Float, outBuffer: FloatArray)
-    @JvmStatic external fun nativeCrossPrecisionCalculate(x: Float, y: Float, strength: Int, outBuffer: FloatArray)
-    @JvmStatic external fun nativeCrossStunningLeadDistance(strikerVelocity: Float): Float
-    @JvmStatic external fun nativeCrossStunningSwipeDistance(): Float
-    @JvmStatic external fun nativeCrossStunningDuration(): Long
 
 
     // --- V58: Pure Math Engines Native Migration ---
     @JvmStatic external fun nativeCounterattackAnalyze(attackers: Int, teamShapeFound: Boolean, teamShapeConf: Float, offensiveLineFound: Boolean, offensiveLineConf: Float, outBuffer: FloatArray)
-    @JvmStatic external fun nativeSpeedCompensate(distance: Float, angle: Float, strength: Int, angleJitter: Float, execNoise: Float, protNoise: Float, pressNoise: Float, laneNoise: Float, outBuffer: FloatArray)
-    @JvmStatic external fun nativeShotOpportunityAnalyze(distance: Float, pressure: Float, outBuffer: FloatArray)
 
 
     // --- V59: Tactical & Compactness Pure Math Native Migration ---
@@ -439,25 +429,6 @@ object NativeBridge {
     @JvmStatic external fun nativePossessionStyleCompute(hasPossession: Boolean, possessionFrames: Long, possessionConf: Float, lanesNotEmpty: Boolean, pressureRows: Int, pressureCols: Int, outBuffer: FloatArray)
 
 
-    @JvmStatic
-    fun nativeThreatPriorityCompute(
-        threatScore: Int, zone: Int, direction: Int,
-        awareness: Int, prediction: Int,
-        interceptionBonus: Int, recoveryBonus: Int,
-        x: Int, y: Int, width: Int, height: Int,
-        outBuffer: FloatArray
-    ) {
-        if (!nativeReady.get()) { logFailureOnce(); return }
-        nativeThreatPriorityComputeImpl(threatScore, zone, direction, awareness, prediction, interceptionBonus, recoveryBonus, x, y, width, height, outBuffer)
-    }
-    @JvmStatic
-    private external fun nativeThreatPriorityComputeImpl(
-        threatScore: Int, zone: Int, direction: Int,
-        awareness: Int, prediction: Int,
-        interceptionBonus: Int, recoveryBonus: Int,
-        x: Int, y: Int, width: Int, height: Int,
-        outBuffer: FloatArray
-    )
 
 
     @JvmStatic
