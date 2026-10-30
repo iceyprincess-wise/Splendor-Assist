@@ -14,6 +14,8 @@ object GameplayEngineRegistry {
     private val contributed = ConcurrentHashMap<String, Long>()
     private val failures = ConcurrentHashMap<String, Long>()
     private val collectCycles = AtomicLong(0L)
+    // SPLENDOR_F31_TRUST_VISIBILITY: count frames rejected before contributors ever run.
+    private val untrustedSkipped = AtomicLong(0L)
     
     private val registrationGeneration = AtomicLong(0L)
     private val collisions = AtomicLong(0L)
@@ -63,7 +65,20 @@ object GameplayEngineRegistry {
 
     fun collect(frame: RuntimeFrame): List<EngineContribution> {
         // SPLENDOR_V43_FAST_GATE: Instant exit on untrusted frames (saves 37 engine calls)
-        if (!frame.trusted) return emptyList()
+        if (!frame.trusted) {
+            // SPLENDOR_F31_TRUST_VISIBILITY: trust-blocked frames are now counted and logged
+            // instead of vanishing. The empty return is unchanged on purpose: an untrusted
+            // frame must still yield no contributions, but the starvation becomes observable.
+            val skipped = untrustedSkipped.incrementAndGet()
+            if (skipped == 1L || skipped % 100L == 0L) {
+                RuntimeLogger.log(
+                    "TRUST_SKIPPED x$skipped: untrusted frame returned empty before contributors "
+                        + "(core/src/main/java/com/assistant/runtime/GameplayEngineRegistry.kt collect())",
+                    "RUNTIME"
+                )
+            }
+            return emptyList()
+        }
         collectCycles.incrementAndGet()
         val results = ArrayList<EngineContribution>(contributors.size)
         for (c in contributors) {
@@ -108,6 +123,9 @@ object GameplayEngineRegistry {
     fun contributorCount(): Int = contributors.size
 
     fun collectCycleCount(): Long = collectCycles.get()
+
+    // SPLENDOR_F31_TRUST_VISIBILITY
+    fun untrustedSkippedCount(): Long = untrustedSkipped.get()
 
     fun isExpectedRegistered(expected: Int): Boolean = contributors.size == expected
     // SPLENDOR_V18_REGISTRY_HEALTH_END
