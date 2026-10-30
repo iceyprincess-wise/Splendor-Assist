@@ -579,9 +579,9 @@ object RuntimeSelfHealEngine {
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
                     category = "REGISTRY_EMPTY",
-                    detected = "RuntimeSelfHealAgent observed 0 registered contributors after warm grace. collectCycles=$cycles. "
-                            "Snapshot: ${GameplayEngineRegistry.registryRuntimeSnapshot()}. "
-                            "Registration is asynchronous (AppContributorRegistration.ensureRegistered() runs from the image-frame path); "
+                    detected = "RuntimeSelfHealAgent observed 0 registered contributors after warm grace. collectCycles=$cycles. " +
+                            "Snapshot: ${GameplayEngineRegistry.registryRuntimeSnapshot()}. " +
+                            "Registration is asynchronous (AppContributorRegistration.ensureRegistered() runs from the image-frame path); " +
                             "this may be a point-in-time count before registration completes, not necessarily drift.",
                     fix = "Forcing AppContributorRegistration.reset()+ensureRegistered() and capture health check.",
                     severity = "CRITICAL"
@@ -609,7 +609,7 @@ object RuntimeSelfHealEngine {
                     timestamp = fmt.format(Date()),
                     category = "COLLECT_STALL",
                     detected = "GameplayEngineRegistry.collect() stalled — 0 new collect cycles " +
-                        "since the previous health check (total cycles so far: $cycles, "
+                        "since the previous health check (total cycles so far: $cycles, " +
                         "untrustedSkipped: ${GameplayEngineRegistry.untrustedSkippedCount()}). " +
                         "$engines contributors registered but idle this interval. " +
                         "No progress since the last check; ImageReader death is a hypothesis, not verified.",
@@ -625,7 +625,7 @@ object RuntimeSelfHealEngine {
                     timestamp = fmt.format(Date()),
                     category = "REGISTRY_GAP",
                     detected = "Only $engines/39 contributors registered. Missing ${39 - engines}. " +
-                        "Collect cycles since last health check: $delta (0 = no cycles since the previous check, "
+                        "Collect cycles since last health check: $delta (0 = no cycles since the previous check, " +
                         "not proof of a frozen collector). " +
                         "Registration is asynchronous from the image-frame path; recheck after registration completes.",
                     fix = "NONE in-memory — registration runs asynchronously from the image-frame path. " +

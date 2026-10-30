@@ -112,5 +112,5 @@ CrossPrecisionEngine Anchor
 /* ========
 CrossingLaneAnalysisEngine
 ======== */
-private const val CROSSINGLANE_OMEGA_AUTHORITY_TAG = "CrossingLane.omega"
+internal const val CROSSINGLANE_OMEGA_AUTHORITY_TAG = "CrossingLane.omega"
 
