@@ -604,7 +604,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         val layoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
             PixelFormat.TRANSLUCENT
         )
@@ -653,7 +653,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val params = WindowManager.LayoutParams(
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT,
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                     // SPLENDOR_FG_TRUTH_V1 - FLAG_NOT_FOCUSABLE keeps the
                     // recovery prompt from taking input focus away from the
                     // running game while it is on screen (it stays tappable).

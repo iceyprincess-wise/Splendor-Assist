@@ -138,8 +138,7 @@ class GlobalCrashHandler(
                 val pm = ctx.packageManager
                 val pi = pm.getPackageInfo(ctx.packageName, 0)
                 sb.appendLine("Package: ${ctx.packageName}")
-                @Suppress("DEPRECATION")
-                sb.appendLine("Version: ${pi.versionName} (${pi.versionCode})")
+                sb.appendLine("Version: ${pi.versionName} (${androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(pi)})")
             } catch (_: Throwable) {
                 sb.appendLine("Package: ${ctx.packageName}")
             }
