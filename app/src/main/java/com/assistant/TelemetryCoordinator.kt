@@ -95,9 +95,6 @@ import org.tensorflow.lite.Interpreter
 
 object TelemetryCoordinator {
 
-
-    }
-
     fun updatePlayerMotion(
         velocity: Float,
         opponentDistance: Float

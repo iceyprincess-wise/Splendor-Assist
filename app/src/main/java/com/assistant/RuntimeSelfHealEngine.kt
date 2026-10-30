@@ -398,7 +398,7 @@ object RuntimeSelfHealEngine {
                 ))
 
                 if (!restarted) {
-                    printCodeFix(
+                    printCodeFix("CAPTURE_THREAD_DEATH",
                         "HyperOS kills media projection after long sessions.\n" +
                         "The ImageReader stops delivering frames silently.\n" +
                         "PERMANENT FIX OPTIONS:\n" +
@@ -684,7 +684,7 @@ object RuntimeSelfHealEngine {
     // ─────────────────────────────────────────────────────────────────────
     // Code fix printer — outputs structured patch to HealLog
     // ─────────────────────────────────────────────────────────────────────
-    private fun printCodeFix(description: String) {
+    private fun printCodeFix(issueId: String, description: String) {
         val ts = fmt.format(Date())
         val text = buildString {
             appendLine("=" .repeat(60))
