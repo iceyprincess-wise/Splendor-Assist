@@ -29,6 +29,11 @@ object AsynchronousGestureQueue {
     }
 
     fun enqueue(request: GestureRequest) {
+        // SPLENDOR_F34_NEWEST_MOVE: drop stale backlog so a superseded move never
+        // executes after a newer decision arrived.
+        if (queue.size > 2) {
+            queue.clear()
+        }
         queue.offer(request)
         processNext()
     }

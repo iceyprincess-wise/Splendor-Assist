@@ -311,6 +311,18 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         AsynchronousGestureQueue.bindService(this)
         AccessibilitySurvivalEngine.connected()
 
+        // SPLENDOR_F34_SEED_FG: seed foreground package from rootInActiveWindow on connect.
+        // If the game was already running when the service came up, this breaks the
+        // cold-start dead lock without waiting for a new window-state-changed event.
+        try {
+            val activeRoot = rootInActiveWindow
+            val seedPkg = activeRoot?.packageName?.toString()
+            if (!seedPkg.isNullOrEmpty() && seedPkg != packageName && !seedPkg.contains("systemui", true)) {
+                VisionTrust.onForegroundPackage(seedPkg, VisionTrust.GAME_PACKAGES)
+                RuntimeLogger.log("Seeded foreground package on connect: $seedPkg", "SMART_ASSIST")
+            }
+        } catch (_: Throwable) {}
+
         RuntimeCoordinator.attachExecutionLoop(
             start = { busHandler.post(busRunnable) },
             stop = { stopExecutionLoop() }

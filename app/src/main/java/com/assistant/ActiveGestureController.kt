@@ -881,8 +881,10 @@ class ActiveGestureController(
                     telemetryAuthority +
                     (antiCutbackGain * 0.2f) +
                     (evadeActive * 0.2f) +
-                    if (defensiveVectorPacked != 0L) 0.1f else 0.0f +
-                    if (godspeedVectorPacked != 0L) 0.1f else 0.0f
+                    // SPLENDOR_F34_PRECEDENCE: parenthesize conditional bonuses so the
+                    // godspeed bonus is not swallowed into the defensive else-arm.
+                    (if (defensiveVectorPacked != 0L) 0.1f else 0.0f) +
+                    (if (godspeedVectorPacked != 0L) 0.1f else 0.0f)
             )
 
         val finalX = arbitration.finalX

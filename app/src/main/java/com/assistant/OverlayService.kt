@@ -621,7 +621,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
         overlayView.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
         OverlaySurvivalEngine.attached()
-        updateOverlayVisuals("🕶️ GUARD LOCK: SECURE [ANTI-BAN ON]", Color.GREEN)
+        // SPLENDOR_F34_TRUTH: truthful status instead of decorative claim.
+        updateOverlayVisuals("🕶️ SPLENDOR ASSIST ACTIVE", Color.GREEN)
         startTrajectoryWatchdog()
     }
 

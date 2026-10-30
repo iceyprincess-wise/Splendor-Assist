@@ -17,8 +17,17 @@ class GameplayEngineService : Service() {
         NodeNotificationHub.attach(this, "gameplay_engine")
 
         // IGNITE CONSOLIDATED GAMEPLAY ENGINES & STATE STORES
-        try { AppContributorRegistration.ensureRegistered() } catch (_: Throwable) {}
-        try { AccessibilitySurvivalEngine.getInstance(this).protect() } catch (_: Throwable) {}
+        // SPLENDOR_F34_ERRORS: report registration failures loudly instead of swallowing.
+        try {
+            AppContributorRegistration.ensureRegistered()
+        } catch (t: Throwable) {
+            RuntimeLogger.log("CRITICAL: AppContributorRegistration.ensureRegistered failed: ${t.message}", "ENGINE_FAULT")
+        }
+        try {
+            AccessibilitySurvivalEngine.getInstance(this).protect()
+        } catch (t: Throwable) {
+            RuntimeLogger.log("CRITICAL: AccessibilitySurvivalEngine.protect failed: ${t.message}", "ENGINE_FAULT")
+        }
         
         RuntimeLogger.log("Gameplay domain ignited", "ENGINE")
     }

@@ -7558,7 +7558,8 @@ object RuntimeSelfHealEngine {
 
     private fun runChecks() {
         val warmed = agentAgeMs() > 5_000L  // only 5s grace for flagging
-        // enforceForegroundGate() removed: foreground override disabled
+        // SPLENDOR_F34_FG_ENFORCE: re-enabled so capture active keeps foregroundIsGame true.
+        enforceForegroundGate()
         checkCaptureThread()         // critical — can restart
         checkBusSignals(warmed)
         checkLoadShed()

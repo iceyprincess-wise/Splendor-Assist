@@ -34,6 +34,24 @@ class ModMenuController(private val context: Context) {
         const val ORB_BG = ThemeTokens.ORB_BG_HEX
     }
 
+    // SPLENDOR_F34_TICKER_LEAK: controller-owned single ticker loop.
+    private val statusHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val statusRunnable = object : Runnable {
+        override fun run() {
+            if (!isShown) return
+            try {
+                statusView?.text = liveStatusLine()
+            } catch (_: Throwable) {}
+            statusHandler.postDelayed(this, 1000L)
+        }
+    }
+    private fun startStatusTicker() {
+        statusHandler.removeCallbacks(statusRunnable)
+        statusHandler.postDelayed(statusRunnable, 1000L)
+    }
+    private fun stopStatusTicker() {
+        statusHandler.removeCallbacks(statusRunnable)
+    }
     private var windowManager: WindowManager? = null
     private var menuView: View? = null
     private var launcherView: View? = null
@@ -77,6 +95,7 @@ class ModMenuController(private val context: Context) {
     }
 
     fun hide() {
+        stopStatusTicker()
         if (!isShown || menuView == null) {
             isShown = false
             return
@@ -541,20 +560,8 @@ class ModMenuController(private val context: Context) {
         }
         contentContainer.addView(seekPrediction)
 
-        // Single refresh loop for the whole panel, started only once every
-        // widget exists. The sliders are refreshed as well because the control
-        // rooms write the same runtime state, so a change made there must show
-        // here instead of leaving a stale reading on screen. Only a real user
-        // drag persists, so this refresh never writes configuration back.
-        val statusTicker = android.os.Handler(android.os.Looper.getMainLooper())
-        statusTicker.postDelayed(object : Runnable {
-            override fun run() {
-                statusView?.text = liveStatusLine()
-                seekKeeperPositioning.progress = GoalkeeperRuntimeState.positioning
-                seekKeeperReactions.progress = GoalkeeperRuntimeState.reactions
-                statusTicker.postDelayed(this, 1000L)
-            }
-        }, 1000L)
+        // SPLENDOR_F34_TICKER_LEAK: controller-owned single ticker, re-scheduled only while shown.
+        startStatusTicker()
 
         contentScroll.addView(contentContainer)
         mainLayout.addView(contentScroll)
