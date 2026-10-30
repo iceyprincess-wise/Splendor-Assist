@@ -1,143 +1,34 @@
-package com.assistant
-
-import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.GestureDescription
-import android.app.ActivityManager
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
-import android.content.ComponentCallbacks2
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
-import android.content.res.Configuration
-import android.graphics.Path
-import android.graphics.PointF
-import android.os.Build
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.IBinder
-import android.os.Looper
-import android.os.Messenger
-import android.os.PowerManager
-import android.os.Process
-import android.os.SystemClock
-import android.util.Log
-import android.view.Choreographer
-import android.view.WindowManager
-import com.assistant.diagnostic.AdapterSignalBus
-import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.registry.AdapterHealthRegistry
-import com.assistant.diagnostic.registry.AdapterHealthSnapshot
-import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
-import com.assistant.execution.CentralExecutionBus
-import com.assistant.execution.ContributionRegistry
-import com.assistant.execution.ExecutionRequest
-import com.assistant.execution.ExecutionSource
-import com.assistant.execution.HybridExecutionTerminal
-import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
-import com.assistant.runtime.*
-import com.assistant.runtime.ActionClass
-import com.assistant.runtime.EngineCapability
-import com.assistant.runtime.EngineContribution
-import com.assistant.runtime.GameplayContributor
-import com.assistant.runtime.GameplayEngineRegistry
-import com.assistant.runtime.RuntimeFrame
-import com.assistant.runtime.ZoneDistribution
-import com.assistant.storage.SplendorStorageRoot
-import java.io.File
-import java.io.FileWriter
-import java.lang.ref.WeakReference
-import java.net.Socket
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.ThreadLocalRandom
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.math.*
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.ceil
-import kotlin.math.cos
-import kotlin.math.hypot
-import kotlin.math.ln
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.roundToInt
-import kotlin.math.roundToLong
-import kotlin.math.sin
-import kotlin.math.sqrt
-import kotlin.random.Random
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import org.tensorflow.lite.Interpreter
-
-object DashAnchorContributor : GameplayContributor {
-    override val engineName = "DashAnchor"
-    override val capabilities = setOf(EngineCapability.MOVEMENT)
+object CrossContributor : GameplayContributor {
+    override val engineName = "Cross"
+    override val capabilities = setOf(EngineCapability.ATTACK, EngineCapability.PASSING)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
-        if (!frame.trusted || !frame.hasBall) return null
+        // UNCONDITIONAL: Defensive positioning is critical when opponent has the ball
+        if (!frame.trusted) return null
+        if (frame.viableLaneCount <= 0) return null
 
-        // Resolve high-speed target vector with fallback guarantees
-        val directionalX = when {
-            frame.passTargetX > 0f -> frame.passTargetX
-            frame.goalDetected && frame.goalRightX > 0f ->
-                (frame.goalRightX + frame.goalLeftX) * 0.5f
-            else -> frame.ballX + 200f
-        }
-        val directionalY = when {
-            frame.passTargetY > 0f -> frame.passTargetY
-            frame.goalDetected && frame.goalTopY > 0f ->
-                (frame.goalTopY + frame.goalBottomY) * 0.5f
-            else -> frame.ballY
-        }
-
-        val result = MagneticDashAnchor.computeAnchorTarget(
-            dashX = frame.ballX,
-            dashY = frame.ballY,
-            directionalX = directionalX,
-            directionalY = directionalY
+        val strength = (frame.bestLaneConfidence * 100f).toInt().coerceIn(0, 100)
+        val result = CrossPrecisionEngine.calculate(
+            frame.passTargetX,
+            frame.passTargetY,
+            strength
         )
-
-        if (result.strength <= 0f) return null
 
         return EngineContribution(
             engine = engineName,
-            actionClass = ActionClass.MOVE,
-            targetX = result.anchorX,
-            targetY = result.anchorY,
-            authority = result.strength.coerceIn(0f, 1f),
+            actionClass = ActionClass.CROSS,
+            targetX = result.crossX.coerceAtLeast(0f),
+            targetY = result.crossY.coerceAtLeast(0f),
+            authority = result.confidence.coerceIn(0f, 1f),
             confidence = frame.confidence,
-            durationHintMs = if (result.turning) 25L else 40L
+            durationHintMs = 45L
         )
     }
 }
 /* ======
-DashAnchorContributor Anchor
+CrossContributor Anchor
 ====== */
 
 /* ========
-DashPressureContributor
+DashAnchorContributor
 ======== */

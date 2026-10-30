@@ -93,93 +93,195 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 
-object FrameDropCompensationEngine {
+internal const val GAMEPLAY_DECISION_ENGINE_RAPID_EXECUTION_TAG = "GameplayDecisionEngine.rapidPrime"
 
-    // --- 1. CORE ENGINE CONSTANTS (Frame-Rate & Netcode) ---
-    private const val FRAME_TIME_60HZ = 16.6667f
-    private const val FRAME_TIME_120HZ = 8.3333f
-    private const val SERVER_TICK_WINDOW_MS = 33L // Assumption for standard 30Hz server authoritative netcode
+internal const val GAMEPLAY_DECISION_ENGINE_PRIME_AUTHORITY_TAG = "GameplayDecisionEngine.prime"
 
-    // --- 2. ADAPTIVE NOISE CONSTANTS ---
-    private const val MIN_HUMAN_VARIANCE_MS = -3L
-    private const val MAX_HUMAN_VARIANCE_MS = 7L
+internal const val GAMEPLAY_ENGINE_AMPLIFICATION: Float = 1000000.0f
 
-    // --- 3. HARD BOUNDARY LIMITS ---
-    private const val ABSOLUTE_MINIMUM_MS = 4L
+internal const val MAX_TELEMETRY_AGE_MS = 250L
 
-    /**
-     * AMPLIFIED INPUT EFFECTIVENESS
-     * High-frequency touch injector calculation with adaptive noise and server-tick sync.
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun compensate(
-        duration: Long,
-        strength: Int,
-        is120HzDisplay: Boolean = false,
-        estimatedPingMs: Long = 0L
-    ): Long {
-        // Step 1: Base Amplifier Logic (Dynamic Vector Scaling based on Strength)
-        val baseMultiplier = when {
-            strength >= 95 -> 0.40f
-            strength >= 80 -> 0.55f
-            strength >= 60 -> 0.80f
-            strength >= 45 -> 0.90f
-            else -> 1.00f
+internal const val SERVER_TICK_RATE_MS = 33.33333f // 30Hz Authoritative Tick Window
+
+internal const val DISPLAY_REFRESH_120HZ_MS = 8.333333f
+
+internal const val ADHESION_COEFFICIENT = 1.25f       // Magnetic retention pull factor
+
+internal const val DRIFT_FILTER_BETA = 0.90f          // Jitter filter strength
+
+internal const val MIN_PULSE_INTERVAL_NS = 7_000_000L // ~142Hz micro-tick limit (7ms)
+
+internal const val OMEGA_TURNING_THRESHOLD = 6.0f     // Joystick displacement speed threshold
+
+
+object FrameAssembler {
+
+    private val frameCounter = AtomicLong(0L)
+
+    @Volatile private var lastFrame: RuntimeFrame? = null
+
+    fun assemble(): RuntimeFrame {
+        val id = frameCounter.incrementAndGet()
+
+        val crossing = try {
+            CrossingLaneAnalysisEngine.crossingLaneAnalysisEngineSnapshot()
+        } catch (_: Throwable) { null }
+        val lanes = crossing?.result?.lanes.orEmpty()
+        val laneCount = lanes.size
+        val viable = lanes.count { it.viable }
+        val bestLane = lanes.firstOrNull { it.viable }
+        val passTargetX = bestLane?.targetX ?: 0f
+        val passTargetY = bestLane?.targetY ?: 0f
+        val bestConf = lanes.maxOfOrNull { it.confidence } ?: 0f
+
+        val telemetry = try { TelemetryRepository.current() } catch (_: Throwable) { null }
+        val ballX = telemetry?.ballX ?: 0f
+        val ballY = telemetry?.ballY ?: 0f
+        val ballVx = telemetry?.ballVelocityX ?: 0f
+        val ballVy = telemetry?.ballVelocityY ?: 0f
+        val ballTrustNow = VisionTrust.ballTrust()
+        val ballSeen = ballTrustNow > 0f && (ballX != 0f || ballY != 0f)
+
+        /*
+         * ROOT-CAUSE FIX (round 2): possession, not visibility.
+         * BallPossessionEngine already computes true ownership every vision
+         * cycle; the frame just never consumed it.
+         */
+        val possession = try {
+            Phase3WorldStateStore.current().possession
+        } catch (_: Throwable) { null }
+        val possessionMinConf = 0.20f
+        val hasBall =
+            if (possession != null && possession.confidence >= possessionMinConf) {
+                ballSeen && possession.hasPossession
+            } else {
+                ballSeen // cold-start fallback: old fresh-sighting semantics
+            }
+
+        val scene = try { SceneTracker.current() } catch (_: Throwable) { null }
+        val rawPlayers = scene?.trackedPlayers.orEmpty()
+
+        // V6 VISION GUARD (field-proven over-count: players=30/opponents=30):
+        // cap each side to 11 before zones/density/trust so downstream engines
+        // never consume impossible head-counts.
+        val assemblerPool = java.util.ArrayList<com.assistant.TrackedPlayer>(22)
+        var oursCount = 0
+        var theirsCount = 0
+        for (p in rawPlayers) {
+            if (p.isUserTeam) {
+                if (oursCount < 11) { assemblerPool.add(p); oursCount++ }
+            } else {
+                if (theirsCount < 11) { assemblerPool.add(p); theirsCount++ }
+            }
         }
-        val baseDuration = (duration * baseMultiplier).toLong()
+        val players = assemblerPool
+        val opponents = theirsCount
 
-        // Step 2: Server-Tick Synchronization 
-        // Scale durations to overlap network packet boundaries (Server-authoritative sync)
-        val tickAlignedDuration = applyServerTickSync(baseDuration, estimatedPingMs)
-
-        // Step 3: Frame-Rate Synchronization
-        // Snap to exact display refresh boundaries to maximize coordinate translation speed
-        val frameTimeMs = if (is120HzDisplay) FRAME_TIME_120HZ else FRAME_TIME_60HZ
-        val frameAlignedDuration = ((tickAlignedDuration / frameTimeMs).roundToLong() * frameTimeMs).toLong()
-
-        // Step 4: Frame-aligned duration only (no fabricated noise)
-        var optimizedDuration = frameAlignedDuration
-
-        // Step 5: Absolute Minimum Bounds Enforcement to prevent engine crashes
-        val safeMinBound = when {
-            strength >= 80 -> ABSOLUTE_MINIMUM_MS
-            strength >= 60 -> 10L
-            strength >= 45 -> 12L
-            else -> duration
+        // Real per-zone counts from tracked player positions (landscape thirds).
+        val pitchH = com.assistant.vision.CameraProfile.captureHeightOrFallback()
+        var lo = 0; var lt = 0; var mo = 0; var mt = 0; var ro = 0; var rt = 0
+        for (pl in players) {
+            val mine = pl.isUserTeam
+            when {
+                pl.y < pitchH * 0.33f -> if (mine) lo++ else lt++
+                pl.y > pitchH * 0.67f -> if (mine) ro++ else rt++
+                else -> if (mine) mo++ else mt++
+            }
         }
+        val zones = ZoneDistribution(lo, lt, mo, mt, ro, rt)
 
-        if (optimizedDuration < safeMinBound) {
-            // Keep minimal micro-variance even at extreme lower boundaries
-            optimizedDuration = safeMinBound + Random.nextLong(0L, 3L)
-        }
+        val enabled = try { SmartAssistRepository.enabled() } catch (_: Throwable) { false }
+        val panic = try { SmartAssistRepository.panicActive() } catch (_: Throwable) { false }
 
-        return optimizedDuration
+        // GAP3: lane spread = share of lanes that are actually viable
+        VisionTrust.stampLaneSpread(
+            if (laneCount > 0) viable.toFloat() / laneCount.toFloat() else 0f
+        )
+
+        // Confidence follows the fresh ball sighting; lanes can only raise it.
+        val rawConfidence = maxOf(bestConf, ballTrustNow).coerceIn(0f, 1f)
+        val isTrustedFrame = VisionTrust.frameTrusted(players.size, opponents)
+        val confidence = if (isTrustedFrame) {
+            if (players.isNotEmpty() || opponents > 0 || bestConf > 0f || ballTrustNow > 0f) {
+                rawConfidence.coerceAtLeast(0.5f)
+            } else {
+                rawConfidence
+            }
+        } else 0f
+
+        VisionTrust.tickAndLog()
+
+        val goalDetected =
+            (scene?.goalDetected ?: false) &&
+                (scene?.goalConfidence ?: 0f) > 0f &&
+                (scene?.goalRightX ?: 0f) > (scene?.goalLeftX ?: 0f) &&
+                (scene?.goalBottomY ?: 0f) > (scene?.goalTopY ?: 0f)
+
+        val frame = RuntimeFrame(
+            frameId = id,
+            timestampMs = System.currentTimeMillis(),
+            hasBall = hasBall,
+            ballX = ballX,
+            ballY = ballY,
+            ballVelocityX = ballVx,
+            ballVelocityY = ballVy,
+            playerCount = players.size,
+            opponentCount = opponents,
+            laneCount = laneCount,
+            viableLaneCount = viable,
+            passTargetX = passTargetX,
+            passTargetY = passTargetY,
+            bestLaneConfidence = bestConf,
+            defenderDensity = if (players.isNotEmpty())
+                opponents.toFloat() / players.size else 0f,
+            zones = zones,
+            confidence = confidence,
+            enabled = enabled,
+            panic = panic,
+            goalDetected = goalDetected,
+            goalLeftX = scene?.goalLeftX ?: 0f,
+            goalRightX = scene?.goalRightX ?: 0f,
+            goalTopY = scene?.goalTopY ?: 0f,
+            goalBottomY = scene?.goalBottomY ?: 0f,
+            goalConfidence = scene?.goalConfidence ?: 0f,
+            goalkeeperVisible = scene?.goalkeeperVisible ?: false,
+            goalkeeperX = scene?.goalkeeperX ?: 0f,
+            goalkeeperY = scene?.goalkeeperY ?: 0f
+        )
+        lastFrame = frame
+        return frame
     }
 
-    /**
-     * SERVER-TICK SYNC: Dynamically scales durations to match network packet boundaries.
-     * Forces server-authoritative netcode to register inputs reliably during high-ping spikes.
-     */
-    @JvmStatic
-    private fun applyServerTickSync(duration: Long, ping: Long): Long {
-        // If ping is high, ensure the input spans at least two server tick windows to avoid dropped inputs
-        val minimumTickSpan = if (ping > 80L) SERVER_TICK_WINDOW_MS * 2 else SERVER_TICK_WINDOW_MS
-        val maxSpan = maxOf(duration, minimumTickSpan)
-        
-        // Align to nearest server tick boundary
-        val remainder = maxSpan % SERVER_TICK_WINDOW_MS
-        return if (remainder > (SERVER_TICK_WINDOW_MS / 2)) {
-            maxSpan + (SERVER_TICK_WINDOW_MS - remainder)
-        } else {
-            maxSpan - remainder
-        }
+    fun current(): RuntimeFrame? = lastFrame
+
+    fun reset() {
+        frameCounter.set(0L)
+        lastFrame = null
+    }
+
+    fun frameRuntimeSnapshot(): Map<String, Any> {
+        val f = lastFrame ?: return mapOf("frames" to frameCounter.get(), "state" to "cold")
+        return mapOf(
+            "frames" to frameCounter.get(),
+            "frameId" to f.frameId,
+            "hasBall" to f.hasBall,
+            "players" to f.playerCount,
+            "opponents" to f.opponentCount,
+            "viableLanes" to f.viableLaneCount,
+            "zones" to "L${f.zones.leftOurs}v${f.zones.leftTheirs} M${f.zones.midOurs}v${f.zones.midTheirs} R${f.zones.rightOurs}v${f.zones.rightTheirs}",
+            "passTargetX" to f.passTargetX,
+            "passTargetY" to f.passTargetY,
+            "goalDetected" to f.goalDetected,
+            "goalConfidence" to f.goalConfidence,
+            "confidence" to f.confidence,
+            "trusted" to f.trusted
+        )
     }
 }
 /* ======
-FrameDropCompensationEngine Anchor
+FrameAssembler Anchor
 ====== */
 
 /* ========
-FrameNormalizer
+FrameDropCompensationEngine
 ======== */
