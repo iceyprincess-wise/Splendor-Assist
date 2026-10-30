@@ -1,4 +1,19 @@
 #include <jni.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
+#ifdef SPLENDOR_BREADCRUMBS
+static void splendor_native_breadcrumb(const char *entry) {
+    const char *path = "/data/user/0/com.assistant.overlay/files/native_breadcrumbs.txt";
+    int fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+    if (fd >= 0) {
+        (void)write(fd, entry, strlen(entry));
+        (void)write(fd, "\n", 1);
+        (void)close(fd);
+    }
+}
+#endif
 #include <stdint.h>
 #include <string.h>
 
@@ -35,6 +50,10 @@ Java_com_assistant_NativeBridge_nativeAnalyzeFrame(JNIEnv *env, jclass clazz,
                                                    jobject byteBuffer, jint width, jint height,
                                                    jint rowStride, jint pixelStride,
                                                    jfloatArray outBuffer) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeAnalyzeFrame");
+#endif
+
     static int firstFrameSitesLogged = 0;
     const int logFirstFrameSites = !firstFrameSitesLogged;
     if (logFirstFrameSites) {

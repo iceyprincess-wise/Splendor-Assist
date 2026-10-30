@@ -1,4 +1,19 @@
 #include <jni.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
+#ifdef SPLENDOR_BREADCRUMBS
+static void splendor_native_breadcrumb(const char *entry) {
+    const char *path = "/data/user/0/com.assistant.overlay/files/native_breadcrumbs.txt";
+    int fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+    if (fd >= 0) {
+        (void)write(fd, entry, strlen(entry));
+        (void)write(fd, "\n", 1);
+        (void)close(fd);
+    }
+}
+#endif
 #include <math.h>
 #include <stdint.h>
 
@@ -18,6 +33,10 @@ Java_com_assistant_NativeBridge_nativeCriticalScoringVector(
         jfloat goalRightPostX, jfloat goalRightPostY,
         jfloat controlOriginX, jfloat controlOriginY, jfloat controlRadius,
         jfloatArray outBuffer) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeCriticalScoringVector");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
     if (!r) return;
 
@@ -48,6 +67,10 @@ Java_com_assistant_NativeBridge_nativeCriticalTrueTargetPass(
         jboolean isLoftedContext,
         jfloat screenWidth, jfloat screenHeight,
         jfloatArray outBuffer) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeCriticalTrueTargetPass");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
     if (!r) return;
 

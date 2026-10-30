@@ -1,4 +1,19 @@
 #include <jni.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
+#ifdef SPLENDOR_BREADCRUMBS
+static void splendor_native_breadcrumb(const char *entry) {
+    const char *path = "/data/user/0/com.assistant.overlay/files/native_breadcrumbs.txt";
+    int fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+    if (fd >= 0) {
+        (void)write(fd, entry, strlen(entry));
+        (void)write(fd, "\n", 1);
+        (void)close(fd);
+    }
+}
+#endif
 #include <android/input.h>
 #include <stdint.h>
 
@@ -21,6 +36,10 @@ Java_com_assistant_NativeBridge_nativeDirectInputHookImpl(
     jfloatArray j_event_times, jint point_count,
     jfloat screen_w, jfloat screen_h,
     jfloatArray j_out_flat) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeDirectInputHookImpl");
+#endif
+
 
     if (point_count > MAX_STROKE_POINTS) point_count = MAX_STROKE_POINTS;
     if (point_count <= 0) return;
@@ -64,5 +83,9 @@ Java_com_assistant_NativeBridge_nativeDirectInputHookPrepare(
     jfloatArray j_event_times, jint point_count,
     jfloat screen_w, jfloat screen_h,
     jfloatArray j_out_flat) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeDirectInputHookPrepare");
+#endif
+
     Java_com_assistant_NativeBridge_nativeDirectInputHookImpl(env, thiz, j_x_coords, j_y_coords, j_event_times, point_count, screen_w, screen_h, j_out_flat);
 }

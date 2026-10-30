@@ -339,20 +339,6 @@ object NativeBridge {
         pointCount: Int, screenW: Float, screenH: Float, outFlat: FloatArray
     )
 
-    @JvmStatic
-    fun startThermalSpoofer() {
-        if (!nativeReady.get()) { logFailureOnce(); return }
-        nativeStartThermalSpooferImpl()
-    }
-    @JvmStatic
-    fun stopThermalSpoofer() {
-        if (!nativeReady.get()) { logFailureOnce(); return }
-        nativeStopThermalSpooferImpl()
-    }
-    @JvmStatic
-    private external fun nativeStartThermalSpooferImpl()
-    @JvmStatic
-    private external fun nativeStopThermalSpooferImpl()
 
     @JvmStatic
     fun nativePredictiveFrameInterp(

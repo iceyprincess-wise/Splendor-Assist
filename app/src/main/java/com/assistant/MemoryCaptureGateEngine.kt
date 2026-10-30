@@ -69,6 +69,9 @@ import kotlin.random.Random
 object MemoryCaptureGateEngine {
 
     @Volatile var captureThrottle = 0; private set
+    @Volatile var targetFps: Int = 60; private set
+
+    fun setTargetFps(fps: Int) { targetFps = if (fps in setOf(30, 45, 60)) fps else 60 }
     @Volatile private var lastTier = "UNKNOWN"
 
     /**
@@ -111,11 +114,17 @@ object MemoryCaptureGateEngine {
      */
     // V10 LATENCY FIX: Cap interval at 33ms for gameplay freshness.
     // Memory pressure must not starve the decision loop of fresh frames.
-    fun recommendedIntervalMs(): Long = when (captureThrottle) {
-        3 -> 100L // CRITICAL: 10fps (Survival mode)
-        2 -> 66L  // PRESSURE: 15fps
-        1 -> 50L  // WATCH: 20fps
-        else -> 33L // HEALTHY: 30fps
+    fun recommendedIntervalMs(): Long {
+        val memoryInterval = when (captureThrottle) {
+            3 -> 100L
+            2 -> 66L
+            1 -> 50L
+            else -> 33L
+        }
+        // While the game is foregrounded, memory shedding may not lower the
+        // configured minimum capture rate. Outside a match the memory interval wins.
+        return if (com.assistant.VisionTrust.isGameForeground())
+            minOf(memoryInterval, 1000L / targetFps) else memoryInterval
     }
 
     /**

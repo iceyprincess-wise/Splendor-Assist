@@ -1,4 +1,19 @@
 #include <jni.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
+#ifdef SPLENDOR_BREADCRUMBS
+static void splendor_native_breadcrumb(const char *entry) {
+    const char *path = "/data/user/0/com.assistant.overlay/files/native_breadcrumbs.txt";
+    int fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+    if (fd >= 0) {
+        (void)write(fd, entry, strlen(entry));
+        (void)write(fd, "\n", 1);
+        (void)close(fd);
+    }
+}
+#endif
 #include <stdint.h>
 
 static inline float coerce(float v, float min, float max) {
@@ -8,6 +23,10 @@ static inline float coerce(float v, float min, float max) {
 JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeWingOverloadCompute(
     JNIEnv* env, jobject thiz, jint playerCount, jfloat sceneConf, jfloat fieldConf,
     jint pressureRows, jint pressureCols, jint occupancyRows, jint occupancyCols, jfloatArray out) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeWingOverloadCompute");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     jboolean overloaded = (playerCount >= 8);
@@ -19,6 +38,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeWingOverloadCompute
 
 JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeCentralOverloadCompute(
     JNIEnv* env, jobject thiz, jint playerCount, jfloat sceneConf, jfloat fieldConf, jfloatArray out) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeCentralOverloadCompute");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     jboolean overloaded = (playerCount >= 8);
@@ -29,6 +52,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeCentralOverloadComp
 JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativePressingRecognitionCompute(
     JNIEnv* env, jobject thiz, jint pressureRows, jint pressureCols,
     jboolean formationFound, jfloat formationConf, jfloat compactnessCompactness, jfloat compactnessConf, jfloatArray out) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativePressingRecognitionCompute");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     float pressureFactor = (pressureRows > 0 && pressureCols > 0) ? 1.0f : 0.0f;
@@ -41,6 +68,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativePressingRecognition
 JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeCounterPressCompute(
     JNIEnv* env, jobject thiz, jfloat sceneConf, jboolean hasPossession, jboolean possessionChanged, jfloat possessionConf,
     jint pressureRows, jint pressureCols, jfloatArray out) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeCounterPressCompute");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     jboolean detected = hasPossession && possessionChanged;
@@ -53,6 +84,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeCounterPressCompute
 JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeBuildUpRecognitionCompute(
     JNIEnv* env, jobject thiz, jboolean formationFound, jfloat formationConf, jfloat teamShapeConf,
     jboolean lanesNotEmpty, jfloatArray out) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeBuildUpRecognitionCompute");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     jboolean detected = formationFound && lanesNotEmpty;
@@ -65,6 +100,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeBuildUpRecognitionC
 JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativePossessionStyleCompute(
     JNIEnv* env, jobject thiz, jboolean hasPossession, jlong possessionFrames, jfloat possessionConf,
     jboolean lanesNotEmpty, jint pressureRows, jint pressureCols, jfloatArray out) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativePossessionStyleCompute");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     jboolean detected = hasPossession && (possessionFrames > 30L);

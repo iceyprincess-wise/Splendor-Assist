@@ -20,7 +20,7 @@ object FilterEngine {
     @Volatile var isActive = false; private set
     
     // Effectiveness Score: 100 = perfect 60fps, <100 = struggling
-    @Volatile var effectivenessScore: Int = 100; private set
+    @Volatile var effectivenessScore: Int? = null; private set
     
     // Aggression Multiplier: 1.0 = baseline, >1.0 = extremist push (forces engines to work harder)
     @Volatile var aggressionMultiplier: Float = 1.0f; private set
@@ -67,48 +67,43 @@ object FilterEngine {
         val stutter = AdapterSignalBus.stutterState
         val thermal = AdapterSignalBus.thermalStatus
         val memTier = AdapterSignalBus.memoryTier
-        
+        val memoryAvailMb = AdapterSignalBus.memoryAvailMb
+        val telemetryMissing = lag == "UNKNOWN" || stutter == "UNKNOWN" ||
+            memTier == "UNKNOWN" || memoryAvailMb < 0L || thermal < 0
+
+        if (telemetryMissing) {
+            effectivenessScore = null
+            return
+        }
+
         var score = 100
-        
-        // OMEGA FIX: Stop lying. If telemetry is UNKNOWN, assume worst-case blind spot.
         score -= when (lag) {
             "CHOKING" -> 40
             "JITTERY" -> 15
-            "UNKNOWN" -> 0 // Baseline during startup/warmup
             else -> 0
         }
-        
         score -= when (stutter) {
             "SEIZURE" -> 50
             "OSCILLATION" -> 25
             "HICCUP" -> 10
-            "UNKNOWN" -> 0 // Baseline during startup/warmup
             else -> 0
         }
-        
-        score -= (thermal * 5) 
-        
+        score -= (thermal * 5)
         score -= when (memTier) {
             "CRITICAL" -> 20
             "PRESSURE" -> 10
             else -> 0
         }
-        
         score = score.coerceAtLeast(0)
         effectivenessScore = score
-        
+
         val targetMultiplier = when {
-            score < 50 -> 2.5f  // Extreme push: force engines to bypass safety gates
-            score < 70 -> 1.8f  // Heavy push
-            score < 85 -> 1.3f  // Moderate push
-            score >= 95 -> 1.0f // Baseline
+            score < 50 -> 2.5f
+            score < 70 -> 1.8f
+            score < 85 -> 1.3f
             else -> 1.0f
         }
-        
-        // Smooth transition to prevent whipsawing
         aggressionMultiplier = (aggressionMultiplier * 0.7f) + (targetMultiplier * 0.3f)
-        
-        // Publish to Signal Bus so sub-engines can read and adapt their thresholds
         AdapterSignalBus.publishFilterAggression(aggressionMultiplier)
     }
 
@@ -126,14 +121,23 @@ object FilterEngine {
             val report = buildString {
                 appendLine("[$timestamp] FILTER ENGINE REPORT")
                 appendLine("-----------------------------------")
-                appendLine("EFFECTIVENESS SCORE: $effectivenessScore/100")
+                val lag = AdapterSignalBus.lagVerdict
+                val stutter = AdapterSignalBus.stutterState
+                val memoryTier = AdapterSignalBus.memoryTier
+                val memoryAvailMb = AdapterSignalBus.memoryAvailMb
+                val telemetryMissing = lag == "UNKNOWN" || stutter == "UNKNOWN" ||
+                    memoryTier == "UNKNOWN" || memoryAvailMb < 0L || AdapterSignalBus.thermalStatus < 0
+                val scoreText = if (telemetryMissing || effectivenessScore == null)
+                    "score: UNKNOWN (telemetry missing)" else "score: ${effectivenessScore}/100"
+                appendLine(scoreText)
                 appendLine("AGGRESSION MULTIPLIER: ${"%.2f".format(aggressionMultiplier)}x")
                 appendLine("")
                 appendLine("DEVICE STATE (Helio G81-Ultra / 4GB RAM):")
                 appendLine("  Lag Verdict    : ${AdapterSignalBus.lagVerdict}")
                 appendLine("  Stutter State  : ${AdapterSignalBus.stutterState}")
                 appendLine("  Thermal Status : ${AdapterSignalBus.thermalStatus}")
-                appendLine("  Memory Tier    : ${AdapterSignalBus.memoryTier} (${AdapterSignalBus.memoryAvailMb}MB)")
+                appendLine("  Memory Tier    : $memoryTier (${memoryAvailMb}MB)")
+                appendLine("  Battery        : ${AdapterSignalBus.batteryLevel}% charging=${AdapterSignalBus.batteryCharging}")
                 appendLine("  Network RTT    : ${net.rttMs}ms")
                 appendLine("  Load Shed      : ${PerformanceTelemetryRegistry.currentLoadShed()}")
                 appendLine("  Execution Brake: ${AdapterSignalBus.executionBrake}")

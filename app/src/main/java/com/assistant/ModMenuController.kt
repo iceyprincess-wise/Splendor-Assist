@@ -24,6 +24,13 @@ import com.assistant.controlroom.ui.ThemeTokens
 
 class ModMenuController(private val context: Context) {
 
+    private val fpsPreferences by lazy { context.getSharedPreferences("splendor_capture", Context.MODE_PRIVATE) }
+
+    init {
+        val saved = fpsPreferences.getInt("target_fps", 60)
+        com.assistant.MemoryCaptureGateEngine.setTargetFps(saved)
+    }
+
     /* Colour tokens: accent #7C4DFF, background #070B14, muted text #9FB3D1 (same values
        as the app theme and layouts). Restyle here only. */
     private companion object {
@@ -332,6 +339,33 @@ class ModMenuController(private val context: Context) {
             }
         }
         contentContainer.addView(swTouchGateBypass)
+
+        val targetFpsLabel = TextView(context).apply {
+            setTextColor(Color.parseColor(TEXT_MUTED))
+            textSize = 12f
+            setPadding(0, 12, 0, 4)
+        }
+        val fpsValues = intArrayOf(30, 45, 60)
+        val savedFps = com.assistant.MemoryCaptureGateEngine.targetFps
+        targetFpsLabel.text = "Target capture FPS: ${savedFps}"
+        contentContainer.addView(targetFpsLabel)
+        val fpsSeek = SeekBar(context).apply {
+            max = 2
+            progress = fpsValues.indexOf(savedFps).coerceAtLeast(0)
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    val fps = fpsValues[progress.coerceIn(0, fpsValues.lastIndex)]
+                    targetFpsLabel.text = "Target capture FPS: $fps"
+                    if (fromUser) {
+                        com.assistant.MemoryCaptureGateEngine.setTargetFps(fps)
+                        fpsPreferences.edit().putInt("target_fps", fps).apply()
+                    }
+                }
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            })
+        }
+        contentContainer.addView(fpsSeek)
 
         val swArmed = Switch(context).apply {
             text = "Armed (engine analysis + keeper actions)"

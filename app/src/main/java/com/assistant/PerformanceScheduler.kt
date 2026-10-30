@@ -85,7 +85,8 @@ object PerformanceScheduler {
                     val pct = if (scale > 0) (level * 100) / scale else level
                     com.assistant.diagnostic.AdapterSignalBus.publishBattery(pct, charging)
                 } catch (_: Throwable) {}
-                schedulerHandler?.postDelayed(this, 5000L)
+                val cadence = if (com.assistant.VisionTrust.isGameForeground()) 30_000L else 5_000L
+                schedulerHandler?.postDelayed(this, cadence)
             }
         })
 
@@ -98,7 +99,8 @@ object PerformanceScheduler {
                         com.assistant.diagnostic.AdapterSignalBus.publishThermal(status)
                     }
                 } catch (_: Throwable) {}
-                schedulerHandler?.postDelayed(this, 30000L)
+                val cadence = if (com.assistant.VisionTrust.isGameForeground()) 60_000L else 30_000L
+                schedulerHandler?.postDelayed(this, cadence)
             }
         }, 10000L)
     }

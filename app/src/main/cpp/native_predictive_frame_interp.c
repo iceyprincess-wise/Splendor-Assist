@@ -1,4 +1,19 @@
 #include <jni.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
+#ifdef SPLENDOR_BREADCRUMBS
+static void splendor_native_breadcrumb(const char *entry) {
+    const char *path = "/data/user/0/com.assistant.overlay/files/native_breadcrumbs.txt";
+    int fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+    if (fd >= 0) {
+        (void)write(fd, entry, strlen(entry));
+        (void)write(fd, "\n", 1);
+        (void)close(fd);
+    }
+}
+#endif
 #include <stdint.h>
 #include <math.h>
 
@@ -22,6 +37,10 @@ Java_com_assistant_NativeBridge_nativePredictiveFrameInterpImpl(
     jfloatArray j_curr_x, jfloatArray j_curr_y,
     jfloat dt, jint player_count,
     jfloatArray j_out_x, jfloatArray j_out_y) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativePredictiveFrameInterpImpl");
+#endif
+
     
     if (player_count > MAX_PLAYERS) player_count = MAX_PLAYERS;
     if (player_count <= 0) return;
@@ -66,5 +85,9 @@ Java_com_assistant_NativeBridge_nativePredictiveFrameInterp(
     jfloatArray j_curr_x, jfloatArray j_curr_y,
     jfloat dt, jint player_count,
     jfloatArray j_out_x, jfloatArray j_out_y) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativePredictiveFrameInterp");
+#endif
+
     Java_com_assistant_NativeBridge_nativePredictiveFrameInterpImpl(env, thiz, j_prev_x, j_prev_y, j_curr_x, j_curr_y, dt, player_count, j_out_x, j_out_y);
 }

@@ -1,4 +1,19 @@
 #include <jni.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
+#ifdef SPLENDOR_BREADCRUMBS
+static void splendor_native_breadcrumb(const char *entry) {
+    const char *path = "/data/user/0/com.assistant.overlay/files/native_breadcrumbs.txt";
+    int fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+    if (fd >= 0) {
+        (void)write(fd, entry, strlen(entry));
+        (void)write(fd, "\n", 1);
+        (void)close(fd);
+    }
+}
+#endif
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -49,6 +64,10 @@ Java_com_assistant_NativeBridge_nativeCompileMotionEvent(
         JNIEnv* env, jobject thiz,
         jfloat startX, jfloat startY, jfloat endX, jfloat endY, jlong durationMs,
         jfloat pitchWidth, jfloat pitchHeight, jboolean detectedLagSpike) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeCompileMotionEvent");
+#endif
+
     uint32_t rng = local_xorshift32(&g_StateMatrix.globalRngState);
     float noiseOffset = ((float)(rng & 0xFF) / 255.0f) * 1.2f - 0.6f;
     float clampedEndX = branchless_coerce(endX + noiseOffset, 0.0f, pitchWidth);

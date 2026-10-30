@@ -171,7 +171,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
     val isProjectionFailed: Boolean
         get() = readCaptureState() == CaptureState.FAILED
 
-    private var perfHintSession: PerformanceHintManager.Session? = null
     private var ocrIoThread: android.os.HandlerThread? = null
     private var ocrIoHandler: android.os.Handler? = null
     private var lastOcrTime = 0L
@@ -214,6 +213,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     private fun teardownCaptureResourcesInternal(finalState: CaptureState = CaptureState.IDLE) {
+        com.assistant.PerformanceHintEngine.endCapture()
         try { imageReader?.setOnImageAvailableListener(null, null) } catch (_: Throwable) {}
         try { virtualDisplay?.release() } catch (_: Throwable) {}
         try { imageReader?.close() } catch (_: Throwable) {}
@@ -313,6 +313,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         // Launch Vision Coroutine with SAFE copied buffer
         if (startVision) visionScope.launch {
+            val visionStartedNanos = System.nanoTime()
             try {
                 com.assistant.CrashForensics.mark(3, 2, System.currentTimeMillis())
                 val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride)
@@ -357,6 +358,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     try { RuntimeLogger.log("CAPTURE FAULT " + t.javaClass.simpleName + ": " + t.message, "FAULT") } catch (_: Throwable) {}
                 }
             } finally {
+                com.assistant.PerformanceHintEngine.reportActualWorkload(
+                    this@OverlayService, System.nanoTime() - visionStartedNanos,
+                    com.assistant.MemoryCaptureGateEngine.targetFps
+                )
                 visionInFlight.set(false)
             }
         }
@@ -515,7 +520,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         instance = this
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        initializePerformanceMode()
         MmapStateEngine.initialize(cacheDir)
         ChoreographerRenderLoop.start()
         ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_DEFAULT).apply { start() }
@@ -525,14 +529,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         modMenuController = ModMenuController(this).also { it.show() }
     }
 
-    private fun initializePerformanceMode() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            try {
-                val hintManager = getSystemService(PerformanceHintManager::class.java)
-                perfHintSession = hintManager?.createHintSession(intArrayOf(Process.myTid()), 33333333L)
-            } catch (e: Exception) {}
-        }
-    }
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForegroundSafely()
@@ -715,6 +712,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     private fun setupMediaProjectionInternal(code: Int, intent: Intent) {
+        com.assistant.PerformanceHintEngine.beginCapture()
         // Clear transient panic state on fresh capture start to prevent stale contamination
         SmartAssistRepository.clearPanic()
         
@@ -1080,10 +1078,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
         reusableBitmap?.recycle()
         reusableBitmap = null
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            try { perfHintSession?.close() } catch (_: Throwable) {}
-        }
-        perfHintSession = null
         ChoreographerRenderLoop.stop()
         MmapStateEngine.release()
         ocrIoThread?.quitSafely()

@@ -1,4 +1,19 @@
 #include <jni.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
+#ifdef SPLENDOR_BREADCRUMBS
+static void splendor_native_breadcrumb(const char *entry) {
+    const char *path = "/data/user/0/com.assistant.overlay/files/native_breadcrumbs.txt";
+    int fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+    if (fd >= 0) {
+        (void)write(fd, entry, strlen(entry));
+        (void)write(fd, "\n", 1);
+        (void)close(fd);
+    }
+}
+#endif
 #include <stdint.h>
 #include <math.h>
 
@@ -8,6 +23,10 @@ Java_com_assistant_NativeBridge_nativeComputeOpticalVariance(
         jobject currentBuffer, jobject previousBuffer,
         jint width, jint height, jint stride,
         jint roiX, jint roiY, jint roiW, jint roiH) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeComputeOpticalVariance");
+#endif
+
             
     if (!currentBuffer || !previousBuffer) return 0.0f;
     uint8_t* curr = (uint8_t*)(*env)->GetDirectBufferAddress(env, currentBuffer);

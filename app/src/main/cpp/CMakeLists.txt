@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.18.1)
 project("splendor_native" C CXX)
 
+# Native crash breadcrumbs are on by default for every exported JNI entry.
+add_compile_definitions(SPLENDOR_BREADCRUMBS=1)
+
 add_library(splendor_native SHARED
   native_quantum_core.c
   native_input.cpp
@@ -14,7 +17,6 @@ add_library(splendor_native SHARED
   native_frame_analyzer.c
   native_vector_smoother.c
   native_direct_input_hook.c
-  native_thermal_throttling_spoofer.c
   native_predictive_frame_interp.c
 
   native_system_core.c

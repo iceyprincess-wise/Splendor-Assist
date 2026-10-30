@@ -66,49 +66,7 @@ import kotlin.math.min
 import kotlin.math.sin
 import kotlin.random.Random
 
-object CpuGovernorEngine {
-    @Volatile private var running = false
-    @Volatile var mode = "STARTING"; private set
 
-    fun start() {
-        if (running) return
-        running = true
-        try { Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND) } catch (_: Throwable) {}
-        val t = Thread {
-            var logged = false
-            while (running) {
-                try {
-                    var wrote = false
-                    for (core in 6..7) {
-                        val gov = java.io.File("/sys/devices/system/cpu/cpu$core/cpufreq/scaling_governor")
-                        // SPLENDOR_SYSFS_ASYNC_FIX
-                    if (gov.canWrite()) { try { gov.writeText("performance") } catch (_: Throwable) {}; wrote = true }
-                    }
-                    for (core in 0..5) {
-                        val gov = java.io.File("/sys/devices/system/cpu/cpu$core/cpufreq/scaling_governor")
-                        if (gov.canWrite()) gov.writeText("schedutil")
-                    }
-                    if (!logged) {
-                        mode = if (wrote) "SYSFS_ACTIVE" else "PRIORITY_ONLY"
-                        RuntimeLogger.log("CpuGovernor mode=$mode (A75=game A55=splendor)", "CPUGOV")
-                        logged = true
-                    }
-                } catch (e: Throwable) {
-                    if (!logged) {
-                        mode = "PRIORITY_ONLY"
-                        RuntimeLogger.log("CpuGovernor: priority-only (${e.javaClass.simpleName})", "CPUGOV")
-                        logged = true
-                    }
-                }
-                try { Thread.sleep(30_000L) } catch (_: Throwable) { return@Thread }
-            }
-        }
-        t.isDaemon = true; t.name = "lag-cpu-gov"; t.priority = Thread.MIN_PRIORITY; t.start()
-        RuntimeLogger.log("CpuGovernorEngine started", "CPUGOV")
-    }
-
-    fun stop() { running = false; mode = "STOPPED" }
-}
 
 // --- MERGED: DisplayProfileEngine.kt ---
 
@@ -121,3 +79,60 @@ object CpuGovernorEngine {
  * V3: the game frame rate is admin-tunable for the day the game changes
  * its lock - no rebuild needed (invalid/0 safely falls back to 30).
  */
+
+object CpuGovernorEngine {
+    @Volatile var mode: String = "OBSERVING"
+        private set
+    @Volatile var thermalStatus: Int = -1
+        private set
+    @Volatile var batteryPercent: Int = -1
+        private set
+    @Volatile var batteryCharging: Boolean = false
+        private set
+    private var context: android.content.Context? = null
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val poll = object : Runnable {
+        override fun run() {
+            val app = context
+            if (app != null) {
+                try {
+                    val battery = app.registerReceiver(null, android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED))
+                    if (battery != null) {
+                        val level = battery.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1)
+                        val scale = battery.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1)
+                        batteryPercent = if (level >= 0 && scale > 0) level * 100 / scale else -1
+                        batteryCharging = battery.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) in
+                            setOf(android.os.BatteryManager.BATTERY_STATUS_CHARGING, android.os.BatteryManager.BATTERY_STATUS_FULL)
+                    }
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        val power = app.getSystemService(android.os.PowerManager::class.java)
+                        thermalStatus = power?.currentThermalStatus ?: -1
+                    } else {
+                        thermalStatus = -1
+                    }
+                    mode = "OBSERVING"
+                } catch (_: Throwable) {
+                    mode = "OBSERVATION_UNAVAILABLE"
+                }
+            }
+            handler.postDelayed(this, 30_000L)
+        }
+    }
+
+    fun start() {
+        if (context == null) return
+        handler.removeCallbacks(poll)
+        poll.run()
+    }
+
+    fun start(appContext: android.content.Context) {
+        context = appContext.applicationContext
+        start()
+    }
+
+    fun stop() {
+        handler.removeCallbacks(poll)
+        context = null
+        mode = "OBSERVING"
+    }
+}

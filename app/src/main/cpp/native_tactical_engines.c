@@ -1,5 +1,20 @@
 #include <math.h>
 #include <jni.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
+#ifdef SPLENDOR_BREADCRUMBS
+static void splendor_native_breadcrumb(const char *entry) {
+    const char *path = "/data/user/0/com.assistant.overlay/files/native_breadcrumbs.txt";
+    int fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+    if (fd >= 0) {
+        (void)write(fd, entry, strlen(entry));
+        (void)write(fd, "\n", 1);
+        (void)close(fd);
+    }
+}
+#endif
 #include <stdint.h>
 
 static inline float branchless_coerce(float value, float min_val, float max_val) {
@@ -19,6 +34,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeTacticalAnalytics(
     jfloat buildUpConf, jboolean buildUpDetected,
     jfloat possessionConf, jboolean possessionDetected,
     jfloatArray out) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeTacticalAnalytics");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     
@@ -39,6 +58,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeTacticalBehavior(
     jfloat analyticsConf, jfloat formationConf, jboolean formationFound,
     jfloat teamShapeConf, jfloat teamShapeCompactness,
     jfloatArray out) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeTacticalBehavior");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     float score = analyticsConf + formationConf +
@@ -54,6 +77,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeRuntimeConfidenceCa
     jfloat passingConf, jfloat shootingConf,
     jfloat ema, jfloat rollingMean, jfloat temporalConf,
     jfloatArray out) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeRuntimeConfidenceCalibration");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     float cal = (tacticalConf * 0.25f) + (formationConf * 0.20f) +
@@ -69,6 +96,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeDefensiveCompactnes
     jfloat fieldConf, jfloat defLineConf, jfloat teamShapeConf,
     jfloat teamShapeWidth, jfloat teamShapeDepth, jfloat teamShapeCompactness,
     jfloat screenW, jfloat screenH, jfloatArray out) {
+#ifdef SPLENDOR_BREADCRUMBS
+    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeDefensiveCompactness");
+#endif
+
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
     float maxSpread = sqrtf((screenW * screenW) + (screenH * screenH));
