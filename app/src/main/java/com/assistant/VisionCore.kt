@@ -525,9 +525,6 @@ return state
     // PHASE8 CLOSED-LOOP TEMPORAL HOOK
     // Wired for ClosedLoopTemporalFeedbackEngine integration.
 }
-/* ======
-VisionCore Anchor
-====== */
 
 /* ========
 VisionDebugOverlay

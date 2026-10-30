@@ -110,9 +110,6 @@ object OverlapDetectionEngine{
         return OverlapDetectionResult(result)
     }
 }
-/* ======
-OverlapDetectionEngine Anchor
-====== */
 
 /* ========
 OverloadPlaystyleEngine

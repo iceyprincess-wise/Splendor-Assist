@@ -100,9 +100,6 @@ object TacticalBehaviorRecognitionEngine{
         return TacticalBehaviorRecognitionResult(confidence = outBuffer[0])
     }
 }
-/* ======
-TacticalBehaviorRecognitionEngine Anchor
-====== */
 
 /* ========
 TelemetryCoordinator

@@ -110,9 +110,6 @@ object InputAccumulationDiagnosticsEngine {
         )
     }
 }
-/* ======
-InputAccumulationDiagnosticsEngine Anchor
-====== */
 
 /* ========
 InputResponsivenessCoordinator

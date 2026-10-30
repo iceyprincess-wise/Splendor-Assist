@@ -98,9 +98,6 @@ data class TeamClassificationResult(
     val opponentPlayers: Int,
     val confidence: Float
 )
-/* ======
-TeamClassificationResult Anchor
-====== */
 
 /* ========
 TemporalMemoryEngine

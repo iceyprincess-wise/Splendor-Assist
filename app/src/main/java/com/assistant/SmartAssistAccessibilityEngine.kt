@@ -298,7 +298,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             serverTickRateMs = 16.6667f
         }
 
-        TelemetryCoordinator.initializeTransport("127.0.0.1", 8080)
         AccessibilitySurvivalEngine.getInstance(this).protect()
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
 

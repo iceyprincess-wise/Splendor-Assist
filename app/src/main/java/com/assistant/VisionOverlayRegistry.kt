@@ -158,9 +158,6 @@ object VisionOverlayRegistry {
     fun selfMaskCount(): Int = selfRects.size
 
 }
-/* ======
-VisionOverlayRegistry Anchor
-====== */
 
 /* ========
 PassingLane

@@ -97,7 +97,6 @@ class SmartAssistRepository(context: Context) {
     companion object {
         private const val PREFS_NAME = "smart_assist_prefs"
         private const val KEY_ENABLED = "enabled"
-        private const val KEY_PANIC = "panic_mode"
         private const val KEY_PASS = "pass_threshold"
         private const val KEY_SHOT = "shot_threshold"
         private const val KEY_CROSS = "cross_threshold"
@@ -189,9 +188,6 @@ class SmartAssistRepository(context: Context) {
 
 fun getCurrentState(): SmartAssistState = _state.value
 }
-/* ======
-SmartAssistRepository Anchor
-====== */
 
 /* ========
 SpaceOccupancyEngine

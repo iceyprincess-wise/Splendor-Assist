@@ -155,9 +155,6 @@ object BallTelemetryBridge {
         "lastUpdatedMs" to lastUpdatedMs
     )
 }
-/* ======
-BallTelemetryBridge Anchor
-====== */
 
 /* ========
 BallTrajectoryPredictor

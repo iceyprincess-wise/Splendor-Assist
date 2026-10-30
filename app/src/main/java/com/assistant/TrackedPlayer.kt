@@ -116,9 +116,6 @@ data class TrackedPlayer(
     var lastSeenFrame:Long
 
 )
-/* ======
-TrackedPlayer Anchor
-====== */
 
 /* ========
 WingOverloadDetectionEngine

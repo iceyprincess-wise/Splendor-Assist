@@ -146,9 +146,6 @@ object InterceptMatrixContributor : GameplayContributor {
         )
     }
 }
-/* ======
-InterceptMatrixContributor Anchor
-====== */
 
 /* ========
 KeeperFeedbackContributor

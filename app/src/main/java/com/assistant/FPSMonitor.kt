@@ -112,9 +112,6 @@ object FPSMonitor {
         )
     }
 }
-/* ======
-FPSMonitor Anchor
-====== */
 
 /* ========
 FalseRunSequenceEngine

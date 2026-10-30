@@ -124,9 +124,6 @@ object KeeperFeedbackContributor : GameplayContributor {
         )
     }
 }
-/* ======
-KeeperFeedbackContributor Anchor
-====== */
 
 /* ========
 MagneticFeetContributor

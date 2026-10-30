@@ -139,9 +139,6 @@ object TacticalIntelligenceEngine{
         )
     }
 }
-/* ======
-TacticalIntelligenceEngine Anchor
-====== */
 
 /* ========
 TacticalMapGenerationEngine

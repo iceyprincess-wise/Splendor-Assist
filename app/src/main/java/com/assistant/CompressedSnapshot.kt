@@ -71,9 +71,6 @@ data class CompressedSnapshot(
     val timestamp: Long,
     val payload: ByteArray
 )
-/* ======
-CompressedSnapshot Anchor
-====== */
 
 /* ========
 CompressedSnapshotRepository

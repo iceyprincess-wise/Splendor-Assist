@@ -117,9 +117,6 @@ object TeamClassifier {
         )
     }
 }
-/* ======
-TeamClassifier Anchor
-====== */
 
 /* ========
 TeamShapeEngine

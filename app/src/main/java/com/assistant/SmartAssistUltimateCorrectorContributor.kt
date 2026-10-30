@@ -248,9 +248,6 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
         return null
     }
 }
-/* ======
-SmartAssistUltimateCorrectorContributor Anchor
-====== */
 
 /* ========
 SpeedCompensationContributor

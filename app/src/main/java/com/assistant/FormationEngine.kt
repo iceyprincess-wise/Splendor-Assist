@@ -178,9 +178,6 @@ fun estimate(
     )
 }
 }
-/* ======
-FormationEngine Anchor
-====== */
 
 /* ========
 FormationResult

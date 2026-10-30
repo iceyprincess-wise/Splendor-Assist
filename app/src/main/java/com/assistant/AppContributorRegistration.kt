@@ -183,7 +183,7 @@ object AppContributorRegistration {
     }
     
     // LOW: Live runtime proof
-    fun dumpRuntimeProof(gen: Long = generation.get()): String {
+    fun dumpRuntimeProof(): String {
         val actualCount = GameplayEngineRegistry.getRegisteredNames().size
         return """
             |=== REGISTRATION RUNTIME PROOF [Gen $gen] ===

@@ -98,9 +98,6 @@ data class FormationAdaptationResult(
     val adaptationScore:Float=0f,
     val formationStable:Boolean=false
 )
-/* ======
-FormationAdaptationResult Anchor
-====== */
 
 /* ========
 FormationEngine

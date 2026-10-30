@@ -123,9 +123,6 @@ object ActionWindowEngine {
         return verdict + "(" + held + "s)"
     }
 }
-/* ======
-ActionWindowEngine Anchor
-====== */
 
 /* ========
 CarrierProfileEngine

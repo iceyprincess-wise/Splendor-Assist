@@ -115,9 +115,6 @@ object InputVsyncEliminatorEngine {
 
     fun stop() { running = false }
 }
-/* ======
-InputVsyncEliminatorEngine Anchor
-====== */
 
 /* ========
 OomAdaptiveThrottleEngine

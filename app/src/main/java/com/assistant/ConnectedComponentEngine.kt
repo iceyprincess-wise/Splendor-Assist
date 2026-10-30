@@ -215,9 +215,6 @@ object ConnectedComponentEngine {
         return blobs
     }
 }
-/* ======
-ConnectedComponentEngine Anchor
-====== */
 
 /* ========
 CounterPressRecognitionEngine

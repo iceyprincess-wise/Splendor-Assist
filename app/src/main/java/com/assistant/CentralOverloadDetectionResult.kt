@@ -98,9 +98,6 @@ data class CentralOverloadDetectionResult(
     val overloaded: Boolean = false,
     val confidence: Float = 0f
 )
-/* ======
-CentralOverloadDetectionResult Anchor
-====== */
 
 /* ========
 ClosestPlayerEngine

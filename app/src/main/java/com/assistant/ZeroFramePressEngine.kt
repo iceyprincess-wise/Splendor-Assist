@@ -159,9 +159,6 @@ class ZeroFramePressEngine(
         }
     }
 }
-/* ======
-ZeroFramePressEngine Anchor
-====== */
 
 /* ========
 VisionPreprocessor

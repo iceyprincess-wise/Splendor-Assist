@@ -118,9 +118,6 @@ object FastBreakDetectionEngine{
         )
     }
 }
-/* ======
-FastBreakDetectionEngine Anchor
-====== */
 
 /* ========
 FieldLineDetectionResult

@@ -95,13 +95,7 @@ import org.tensorflow.lite.Interpreter
 
 object TelemetryCoordinator {
 
-    private var networkThread: LowLatencyNetworkThread? = null
 
-    fun initializeTransport(host:String,port:Int){
-        if(networkThread==null){
-            networkThread = LowLatencyNetworkThread(host,port)
-            networkThread?.start()
-        }
     }
 
     fun updatePlayerMotion(
@@ -164,9 +158,6 @@ object TelemetryCoordinator {
         RuntimeLogger.telemetry("goalkeeper=($x,$y)")
     }
 }
-/* ======
-TelemetryCoordinator Anchor
-====== */
 
 /* ========
 TelemetryRepository

@@ -141,9 +141,6 @@ object SharpTouchTimingEngine {
         )
     }
 }
-/* ======
-SharpTouchTimingEngine Anchor
-====== */
 
 /* ========
 PassingLaneGraph

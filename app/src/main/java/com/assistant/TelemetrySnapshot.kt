@@ -115,9 +115,6 @@ data class TelemetrySnapshot(
     val confidence: Float = 0f,
     val currentPingMs: Int = 35 // Included for dynamic network tick evaluation
 )
-/* ======
-TelemetrySnapshot Anchor
-====== */
 
 /* ========
 TouchRecoveryEngine

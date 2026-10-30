@@ -136,9 +136,6 @@ object DefenseContributor : GameplayContributor {
         )
     }
 }
-/* ======
-DefenseContributor Anchor
-====== */
 
 /* ========
 EvadeContributor

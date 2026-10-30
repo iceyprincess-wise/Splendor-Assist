@@ -114,9 +114,6 @@ object PanelWatchEngine {
         listener = null
     }
 }
-/* ======
-PanelWatchEngine Anchor
-====== */
 
 
 /* ========

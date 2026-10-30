@@ -164,9 +164,6 @@ object StutterPulseEngine {
         }
     }
 }
-/* ======
-StutterPulseEngine Anchor
-====== */
 
 
 /* ========

@@ -154,9 +154,6 @@ object SpeedCompensationContributor : GameplayContributor {
         )
     }
 }
-/* ======
-SpeedCompensationContributor Anchor
-====== */
 
 /* ========
 SupportContributor

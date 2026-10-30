@@ -137,9 +137,6 @@ fun injectZeroLatencySwipe(
     CentralExecutionBus.submit(request)
     }
 }
-/* ======
-LatencyDefeatingInputEngine Anchor
-====== */
 
 /* ========
 MemoryStabilityOptimizer

@@ -114,9 +114,6 @@ object PassingContributor : GameplayContributor {
         )
     }
 }
-/* ======
-PassingContributor Anchor
-====== */
 
 /* ========
 ReceiverEngagementContributor

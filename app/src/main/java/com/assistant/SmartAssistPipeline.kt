@@ -203,9 +203,6 @@ class SmartAssistPipeline {
         )
     }
 }
-/* ======
-SmartAssistPipeline Anchor
-====== */
 
 /* ========
 SpaceOccupancyResult

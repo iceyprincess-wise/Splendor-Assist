@@ -114,9 +114,6 @@ object TouchRecoveryEngine {
         )
     }
 }
-/* ======
-TouchRecoveryEngine Anchor
-====== */
 
 /* ========
 TrackingConfiguration

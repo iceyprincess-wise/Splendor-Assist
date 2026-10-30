@@ -129,9 +129,6 @@ object RuntimeOverlayHub {
         refresh()
     }
 }
-/* ======
-RuntimeOverlayHub Anchor
-====== */
 
 /* ========
 ShootingHabitLearningEngine

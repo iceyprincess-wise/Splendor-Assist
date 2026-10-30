@@ -83,9 +83,6 @@ object ViewInvalidationRepository {
         return events.toList()
     }
 }
-/* ======
-ViewInvalidationRepository Anchor
-====== */
 
 /* ========
 AggressiveMemoryHoarding

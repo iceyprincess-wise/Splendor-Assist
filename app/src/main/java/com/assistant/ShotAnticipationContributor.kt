@@ -104,9 +104,6 @@ object ShotAnticipationContributor : GameplayContributor {
             (frame.defenderDensity * 0.85f).coerceIn(0f, 1f), frame.confidence, 30L)
     }
 }
-/* ======
-ShotAnticipationContributor Anchor
-====== */
 
 /* ========
 KickingPostureContributor

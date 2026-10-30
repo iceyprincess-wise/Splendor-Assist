@@ -126,9 +126,6 @@ object SpikeBurstEngine {
 
     fun stop() { running = false }
 }
-/* ======
-SpikeBurstEngine Anchor
-====== */
 
 /* ========
 GestureTimingFeedbackEngine

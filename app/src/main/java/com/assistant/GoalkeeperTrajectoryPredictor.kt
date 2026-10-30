@@ -132,9 +132,6 @@ object GoalkeeperTrajectoryPredictor {
 
     fun current(): Prediction = latest
 }
-/* ======
-GoalkeeperTrajectoryPredictor Anchor
-====== */
 
 /* ========
 GodTierExecutionEngine

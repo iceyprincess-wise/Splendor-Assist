@@ -123,9 +123,6 @@ object FalseRunSequenceEngine {
         )
     }
 }
-/* ======
-FalseRunSequenceEngine Anchor
-====== */
 
 /* ========
 FastBreakDetectionEngine

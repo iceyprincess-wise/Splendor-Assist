@@ -100,9 +100,6 @@ object WingOverloadDetectionEngine {
         return WingOverloadDetectionResult(outBuffer[0], outBuffer[1], outBuffer[2] > 0.5f, outBuffer[3])
     }
 }
-/* ======
-WingOverloadDetectionEngine Anchor
-====== */
 
 /* ========
 ZeroFramePressEngine

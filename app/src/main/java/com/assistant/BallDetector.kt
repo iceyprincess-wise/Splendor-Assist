@@ -190,9 +190,6 @@ object BallDetector {
         )
     }
 }
-/* ======
-BallDetector Anchor
-====== */
 
 /* ========
 BallOverlay

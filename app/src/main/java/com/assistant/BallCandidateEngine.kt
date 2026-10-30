@@ -265,9 +265,6 @@ object BallCandidateEngine {
         return best
     }
 }
-/* ======
-BallCandidateEngine Anchor
-====== */
 
 /* ========
 BallDetectionResult

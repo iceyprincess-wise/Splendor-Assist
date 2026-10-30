@@ -132,9 +132,6 @@ object ClosestPlayerEngine {
         }
     }
 }
-/* ======
-ClosestPlayerEngine Anchor
-====== */
 
 /* ========
 ClosestPlayerResult

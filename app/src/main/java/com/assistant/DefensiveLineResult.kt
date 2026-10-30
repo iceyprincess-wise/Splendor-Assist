@@ -101,9 +101,6 @@ data class DefensiveLineResult(
     val playerCount: Int = 0,
     val confidence: Float = 0f
 )
-/* ======
-DefensiveLineResult Anchor
-====== */
 
 /* ========
 EntityAssociationEngine

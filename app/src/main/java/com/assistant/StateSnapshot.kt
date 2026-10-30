@@ -73,9 +73,6 @@ data class StateSnapshot(
     val memoryPressure: String,
     val details: String
 )
-/* ======
-StateSnapshot Anchor
-====== */
 
 /* ========
 ViewInvalidationEvent

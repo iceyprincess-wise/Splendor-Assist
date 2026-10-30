@@ -162,9 +162,6 @@ class ThroughPassSanitizer(
         )
     }
 }
-/* ======
-ThroughPassSanitizer Anchor
-====== */
 
 /* ========
 TouchStabilizationEngine

@@ -156,9 +156,6 @@ class AdaptiveLoftedThroughEngine(
         )
     }
 }
-/* ======
-AdaptiveLoftedThroughEngine Anchor
-====== */
 
 /* ========
 AgentAction

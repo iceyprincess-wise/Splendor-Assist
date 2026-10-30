@@ -164,9 +164,6 @@ object CrossingLaneAnalysisEngine {
     }
 
 }
-/* ======
-CrossingLaneAnalysisEngine Anchor
-====== */
 
 /* ========
 CrowdingZoneDetector

@@ -110,9 +110,6 @@ data class BallDetectionResult(
     val matchedPixels: Int
 
 )
-/* ======
-BallDetectionResult Anchor
-====== */
 
 /* ========
 BallDetector

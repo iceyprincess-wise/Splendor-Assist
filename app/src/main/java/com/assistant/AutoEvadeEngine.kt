@@ -193,9 +193,6 @@ class AutoEvadeEngine(
         return false
     }
 }
-/* ======
-AutoEvadeEngine Anchor
-====== */
 
 /* ========
 BallCandidate

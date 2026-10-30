@@ -98,9 +98,6 @@ data class ShootingHabitLearningResult(
     val longShotBias:Float=0f,
     val boxShotBias:Float=0f
 )
-/* ======
-ShootingHabitLearningResult Anchor
-====== */
 
 /* ========
 ShotOpportunityAnalysisEngine

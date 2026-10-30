@@ -120,9 +120,6 @@ object CrossContributor : GameplayContributor {
         )
     }
 }
-/* ======
-CrossContributor Anchor
-====== */
 
 /* ========
 DashAnchorContributor

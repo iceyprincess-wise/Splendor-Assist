@@ -124,9 +124,6 @@ object EvadeContributor : GameplayContributor {
         )
     }
 }
-/* ======
-EvadeContributor Anchor
-====== */
 
 /* ========
 ForwardRunContributor

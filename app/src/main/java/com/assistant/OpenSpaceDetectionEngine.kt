@@ -140,9 +140,6 @@ object OpenSpaceDetectionEngine {
         return OpenSpaceDetectionResult(result)
     }
 }
-/* ======
-OpenSpaceDetectionEngine Anchor
-====== */
 
 /* ========
 OpponentBehaviourLearningEngine

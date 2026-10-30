@@ -100,9 +100,6 @@ object CounterPressRecognitionEngine {
         return CounterPressRecognitionResult(outBuffer[0] > 0.5f, outBuffer[1])
     }
 }
-/* ======
-CounterPressRecognitionEngine Anchor
-====== */
 
 /* ========
 CounterPressRecognitionResult

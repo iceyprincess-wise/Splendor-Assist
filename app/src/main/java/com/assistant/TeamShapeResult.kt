@@ -102,9 +102,6 @@ data class TeamShapeResult(
     val compactness: Float = 0f,
     val confidence: Float = 0f
 )
-/* ======
-TeamShapeResult Anchor
-====== */
 
 /* ========
 TelemetrySnapshot

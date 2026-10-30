@@ -119,9 +119,6 @@ object AttackingVectorContributor:GameplayContributor{
     return EngineContribution(engineName,ActionClass.SHOT,point.x.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),point.y.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),authority,frame.confidence,35L)
   }
 }
-/* ======
-AttackingVectorContributor Anchor
-====== */
 
 /* ========
 BallRetentionShieldContributor

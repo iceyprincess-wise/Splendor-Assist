@@ -103,9 +103,6 @@ data class GoalkeeperDetectionResult(
 
     val confidence: Float
 )
-/* ======
-GoalkeeperDetectionResult Anchor
-====== */
 
 /* ========
 GoalkeeperDetector

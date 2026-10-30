@@ -135,9 +135,6 @@ fun updateThresholds(pass: Int, shot: Int, cross: Int) {
         return repository.getCurrentState()
     }
 }
-/* ======
-SmartAssistControlRoomBridge Anchor
-====== */
 
 /* ========
 SmartAssistRepository

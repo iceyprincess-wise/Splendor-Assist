@@ -99,9 +99,6 @@ data class WingOverloadDetectionResult(
     val overloaded: Boolean = false,
     val confidence: Float = 0f
 )
-/* ======
-WingOverloadDetectionResult Anchor
-====== */
 
 /* ========
 SharpTouchTimingEngine

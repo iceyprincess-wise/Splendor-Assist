@@ -131,9 +131,6 @@ object RuntimeDiagnosticsRegistry {
         refresh()
     }
 }
-/* ======
-RuntimeDiagnosticsRegistry Anchor
-====== */
 
 /* ========
 RuntimeOverlayHub

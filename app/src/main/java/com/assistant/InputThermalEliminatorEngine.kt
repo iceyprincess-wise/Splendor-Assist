@@ -123,9 +123,6 @@ object InputThermalEliminatorEngine {
 
     fun stop() { running = false }
 }
-/* ======
-InputThermalEliminatorEngine Anchor
-====== */
 
 /* ========
 InputVsyncEliminatorEngine

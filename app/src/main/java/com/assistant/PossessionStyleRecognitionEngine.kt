@@ -100,9 +100,6 @@ object PossessionStyleRecognitionEngine {
         return PossessionStyleRecognitionResult(outBuffer[0] > 0.5f, outBuffer[1])
     }
 }
-/* ======
-PossessionStyleRecognitionEngine Anchor
-====== */
 
 /* ========
 PossessionStyleRecognitionResult

@@ -130,9 +130,6 @@ object BoundingBoxOverlay {
         refresh()
     }
 }
-/* ======
-BoundingBoxOverlay Anchor
-====== */
 
 /* ========
 BuildUpPressEngine

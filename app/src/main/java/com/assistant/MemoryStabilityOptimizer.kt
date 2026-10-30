@@ -198,9 +198,6 @@ class MemoryStabilityOptimizer(
         }
     }
 }
-/* ======
-MemoryStabilityOptimizer Anchor
-====== */
 
 /* ========
 NativePipelineCache

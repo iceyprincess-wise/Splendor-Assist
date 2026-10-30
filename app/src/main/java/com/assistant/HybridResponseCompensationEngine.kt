@@ -182,9 +182,6 @@ object HybridResponseCompensationEngine {
         )
     }
 }
-/* ======
-HybridResponseCompensationEngine Anchor
-====== */
 
 /* ========
 InAppAgentCore

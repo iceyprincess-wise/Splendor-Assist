@@ -131,9 +131,6 @@ class ReboundCollector {
             System.currentTimeMillis()
     }
 }
-/* ======
-ReboundCollector Anchor
-====== */
 
 /* ========
 SmartAssistPipeline

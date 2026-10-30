@@ -112,7 +112,6 @@ object OnlineParameterAdaptationEngine {
     private const val REFRESH_60HZ_MS = 16.6667f
     private const val REFRESH_120HZ_MS = 8.3333f
     private const val SERVER_TICK_BOUNDARY_MS = 33.333f // Typical 30Hz server tick
-    private const val BASE_HUMAN_VARIANCE = 0.015f // 1.5% base dynamic spread
 
     /**
      * Amplified Input Effectiveness analysis integrating closed-loop temporal feedback,
@@ -168,14 +167,10 @@ object OnlineParameterAdaptationEngine {
     /**
      * Inline, zero-allocation float clamping to maximize coordinate translation speed.
      */
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun fastClamp(value: Float, minVal: Float, maxVal: Float): Float {
+    private fun fastClamp(value: Float, minVal: Float, maxVal: Float): Float {
         return if (value < minVal) minVal else if (value > maxVal) maxVal else value
     }
 }
-/* ======
-OnlineParameterAdaptationEngine Anchor
-====== */
 
 /* ========
 OnlineParameterAdaptationResult

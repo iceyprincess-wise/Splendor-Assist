@@ -136,9 +136,6 @@ object DefenseAuthorityEngine {
         return DefenseAuthorityResult(containment, interception, pressure)
     }
 }
-/* ======
-DefenseAuthorityEngine Anchor
-====== */
 
 /* ========
 DefensiveCompactnessEngine

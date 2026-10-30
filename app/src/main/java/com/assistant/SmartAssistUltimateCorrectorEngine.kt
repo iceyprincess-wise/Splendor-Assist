@@ -119,9 +119,6 @@ object SmartAssistUltimateCorrectorEngine {
         return SmartAssistCorrectionResult(outKeeper[0], outKeeper[1], outKeeper[2], CorrectionType.KEEPER, true)
     }
 }
-/* ======
-SmartAssistUltimateCorrectorEngine Anchor
-====== */
 
 /* ========
 SpeedCompensationEngine

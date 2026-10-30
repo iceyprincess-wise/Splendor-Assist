@@ -144,9 +144,6 @@ object PacketLossProbeEngine {
         return b.toByteArray()
     }
 }
-/* ======
-PacketLossProbeEngine Anchor
-====== */
 
 /* ========
 RadioKeepAliveEngine

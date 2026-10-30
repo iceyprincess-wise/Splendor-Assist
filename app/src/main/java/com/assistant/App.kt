@@ -4,7 +4,6 @@ import com.assistant.storage.SplendorStorageRoot
 import com.assistant.diagnostic.RuntimeLogger
 import android.app.Application
 import android.os.Build
-import com.assistant.execution.DomainBackupGenerator
 
 class App : Application() {
 
@@ -43,7 +42,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         GlobalCrashHandler.install(this)
-        try { CrashForensics.install(this) } catch (_: Throwable) {}
+        try { CrashForensics.install() } catch (_: Throwable) {}
 
         val currentProcess = getCurrentProcessName()
         val isMainProcess = currentProcess == packageName
@@ -61,7 +60,6 @@ class App : Application() {
 
         // Domain Backup Generator: Forces class loading for all 216+ engine objects
         // and verifies SMART_ASSIST (90) and STUTTER (80) execution sources.
-        DomainBackupGenerator.ignite()
         // FIX #1: Removed duplicate RuntimeLogger.reconcileExpired() since initialize() already calls it
 
         // GlobalCrashHandler must be installed everywhere to catch process-wide crashes

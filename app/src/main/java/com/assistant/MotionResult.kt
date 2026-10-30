@@ -99,9 +99,6 @@ data class MotionResult(
     val speed: Float,
     val directionRadians: Float
 )
-/* ======
-MotionResult Anchor
-====== */
 
 /* ========
 MotionTracker

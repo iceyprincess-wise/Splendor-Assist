@@ -99,9 +99,6 @@ data class PlayerTendencyLearningResult(
     val dribbleBias:Float=0f,
     val shootBias:Float=0f
 )
-/* ======
-PlayerTendencyLearningResult Anchor
-====== */
 
 /* ========
 PreferredPassingLaneLearningEngine

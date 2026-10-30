@@ -343,9 +343,6 @@ object InAppAgentCore {
         }
     }
 }
-/* ======
-InAppAgentCore Anchor
-====== */
 
 /* ========
 InputAccumulationDiagnosticsEngine

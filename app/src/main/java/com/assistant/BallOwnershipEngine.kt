@@ -138,9 +138,6 @@ object BallOwnershipEngine {
         )
     }
 }
-/* ======
-BallOwnershipEngine Anchor
-====== */
 
 /* ========
 BallOwnershipResult

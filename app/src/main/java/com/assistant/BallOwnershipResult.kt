@@ -100,9 +100,6 @@ data class BallOwnershipResult(
     val distanceToBall: Float = Float.MAX_VALUE,
     val confidence: Float = 0f
 )
-/* ======
-BallOwnershipResult Anchor
-====== */
 
 /* ========
 BallPossessionEngine

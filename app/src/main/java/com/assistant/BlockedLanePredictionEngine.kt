@@ -157,9 +157,6 @@ object BlockedLanePredictionEngine {
         )
     }
 }
-/* ======
-BlockedLanePredictionEngine Anchor
-====== */
 
 /* ========
 BoundingBoxOverlay

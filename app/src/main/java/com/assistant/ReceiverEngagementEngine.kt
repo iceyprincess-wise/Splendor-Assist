@@ -128,9 +128,6 @@ object ReceiverEngagementEngine {
         )
     }
 }
-/* ======
-ReceiverEngagementEngine Anchor
-====== */
 
 /* ========
 RuntimeHealthMonitor

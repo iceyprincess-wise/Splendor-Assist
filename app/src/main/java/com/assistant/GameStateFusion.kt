@@ -160,9 +160,6 @@ object GameStateFusion {
         )
     }
 }
-/* ======
-GameStateFusion Anchor
-====== */
 
 /* ========
 GameStateSnapshot

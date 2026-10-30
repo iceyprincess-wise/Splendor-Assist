@@ -166,9 +166,6 @@ object RuntimePerformanceCoordinator {
     }
 
 }
-/* ======
-RuntimePerformanceCoordinator Anchor
-====== */
 
 /* ========
 RuntimeSelfHealEngine

@@ -176,9 +176,6 @@ object GoalkeeperDetector {
         )
     }
 }
-/* ======
-GoalkeeperDetector Anchor
-====== */
 
 /* ========
 GoalkeeperTrajectoryPredictor

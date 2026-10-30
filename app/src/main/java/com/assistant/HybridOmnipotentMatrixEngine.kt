@@ -96,8 +96,6 @@ import org.tensorflow.lite.Interpreter
 object HybridOmnipotentMatrixEngine {
 
     private val physicsMatrix = FloatArray(8)
-    private const val ATTACKER_X=0; private const val ATTACKER_Y=1
-    private const val ATTACKER_VX=2; private const val ATTACKER_VY=3
     private const val BALL_X=4; private const val BALL_Y=5
     private const val BALL_VX=6; private const val BALL_YV=7
     @Volatile private var lastMatrixTimestamp = 0L
@@ -148,9 +146,6 @@ object HybridOmnipotentMatrixEngine {
     fun unpackX(packed:Long):Float = Float.fromBits((packed shr 32).toInt())
     fun unpackY(packed:Long):Float = Float.fromBits(packed.toInt())
 }
-/* ======
-HybridOmnipotentMatrixEngine Anchor
-====== */
 
 /* ========
 HybridResponseCompensationEngine

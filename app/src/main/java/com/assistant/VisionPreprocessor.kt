@@ -142,9 +142,6 @@ object VisionPreprocessor {
         return ConnectedComponentEngine.extract(samples)
     }
 }
-/* ======
-VisionPreprocessor Anchor
-====== */
 
 /* ========
 ControlMappingTrainer

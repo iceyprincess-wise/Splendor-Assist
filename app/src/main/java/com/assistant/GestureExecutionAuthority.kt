@@ -302,9 +302,6 @@ object GestureExecutionAuthority {
         lastUpdatedMs = 0L
     }
 }
-/* ======
-GestureExecutionAuthority Anchor
-====== */
 
 /* ========
 GoalDetectionResult

@@ -145,9 +145,6 @@ object ActiveAttackerEngine{
     return ActiveAttackerResult(true,player,index,possession.confidence)
   }
 }
-/* ======
-ActiveAttackerEngine Anchor
-====== */
 
 /* ========
 ActiveAttackerResult

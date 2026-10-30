@@ -199,9 +199,6 @@ object JerseyColorSegmentation {
         )
     }
 }
-/* ======
-JerseyColorSegmentation Anchor
-====== */
 
 /* ========
 JerseySegmentationResult

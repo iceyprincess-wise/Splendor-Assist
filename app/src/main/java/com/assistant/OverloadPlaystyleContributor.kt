@@ -141,9 +141,6 @@ object OverloadPlaystyleContributor : GameplayContributor {
         )
     }
 }
-/* ======
-OverloadPlaystyleContributor Anchor
-====== */
 
 /* ========
 PassingContributor

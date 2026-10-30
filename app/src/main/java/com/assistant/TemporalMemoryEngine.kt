@@ -102,9 +102,6 @@ object TemporalMemoryEngine {
     private const val REFRESH_RATE_60HZ_MS = 16.666f
     private const val REFRESH_RATE_120HZ_MS = 8.333f
     private const val BASE_SERVER_TICK_MS = 33.333f // Typical 30Hz netcode boundary
-    private const val HUMAN_LATENCY_MIN_MS = 12L
-    private const val HUMAN_LATENCY_MAX_MS = 45L
-    private const val NOISE_VARIANCE_SCALE = 0.04f // 4% dynamic micro-variance bounds
 
     /**
      * Updates the temporal state using zero-allocation mathematical models,
@@ -251,9 +248,6 @@ object TemporalMemoryEngine {
     // PHASE8 CLOSED-LOOP TEMPORAL HOOK
     // Wired for ClosedLoopTemporalFeedbackEngine integration with enhanced frame-sync and tick-scaling.
 }
-/* ======
-TemporalMemoryEngine Anchor
-====== */
 
 /* ========
 TrueTargetPassingEngine

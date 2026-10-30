@@ -190,7 +190,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     // V51: Vision Watchdog to prevent LOOP_FROZEN from coroutine death
     private var visionStartTimeMs = 0L
-    private val visionWatchdogJob = kotlinx.coroutines.Job()
 
     private val captureFrameIntervalMs: Long
         get() = com.assistant.MemoryCaptureGateEngine.recommendedIntervalMs()
@@ -477,7 +476,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     override fun onCreate() {
-        com.assistant.CrashForensics.install(applicationContext)
+        com.assistant.CrashForensics.install()
         com.assistant.CrashForensics.mark(1, 4, android.os.Process.myPid().toLong())
         com.assistant.SplendorCaptureRecovery.attach(this)
         // SplendorWatchdog removed: WatchdogAdapterService handles survival process watchdog

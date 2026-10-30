@@ -87,9 +87,6 @@ object SnapshotCompressionEngine {
             .use { it.readText() }
     }
 }
-/* ======
-SnapshotCompressionEngine Anchor
-====== */
 
 /* ========
 StateSnapshot

@@ -130,9 +130,6 @@ data class GameStateSnapshot(
 
     val confidence: Float = 0f
 )
-/* ======
-GameStateSnapshot Anchor
-====== */
 
 /* ========
 GameplayDecisionEngine

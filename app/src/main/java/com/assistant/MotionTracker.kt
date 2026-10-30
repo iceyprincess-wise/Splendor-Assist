@@ -155,9 +155,6 @@ object MotionTracker {
         )
     }
 }
-/* ======
-MotionTracker Anchor
-====== */
 
 /* ========
 NoiseFilter

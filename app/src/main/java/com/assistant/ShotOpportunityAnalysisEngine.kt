@@ -100,9 +100,6 @@ object ShotOpportunityAnalysisEngine {
         return ShotOpportunityResult(outBuffer[0], outBuffer[1], outBuffer[2])
     }
 }
-/* ======
-ShotOpportunityAnalysisEngine Anchor
-====== */
 
 /* ========
 SmartAssistUltimateCorrectorEngine

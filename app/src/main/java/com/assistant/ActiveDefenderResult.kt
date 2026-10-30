@@ -100,9 +100,6 @@ data class ActiveDefenderResult(
     val distanceToAttacker: Float = Float.MAX_VALUE,
     val confidence: Float = 0f
 )
-/* ======
-ActiveDefenderResult Anchor
-====== */
 
 /* ========
 AdaptiveLoftedThroughEngine

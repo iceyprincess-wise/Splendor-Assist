@@ -100,9 +100,6 @@ object BuildUpRecognitionEngine {
         return BuildUpRecognitionResult(outBuffer[0] > 0.5f, outBuffer[1])
     }
 }
-/* ======
-BuildUpRecognitionEngine Anchor
-====== */
 
 /* ========
 BuildUpRecognitionResult

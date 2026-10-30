@@ -147,9 +147,6 @@ object TacticalMapGenerationEngine {
         )
     }
 }
-/* ======
-TacticalMapGenerationEngine Anchor
-====== */
 
 /* ========
 TacticalMapResult

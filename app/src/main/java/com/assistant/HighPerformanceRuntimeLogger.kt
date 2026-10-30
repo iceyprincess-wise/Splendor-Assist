@@ -55,6 +55,3 @@ object HighPerformanceRuntimeLogger {
         return report
     }
 }
-/* ======
-HighPerformanceRuntimeLogger Anchor
-====== */

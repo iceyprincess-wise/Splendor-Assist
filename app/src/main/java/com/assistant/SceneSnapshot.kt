@@ -139,9 +139,6 @@ data class SceneSnapshot(
 
     val confidence: Float = 0f
 )
-/* ======
-SceneSnapshot Anchor
-====== */
 
 /* ========
 SceneTracker

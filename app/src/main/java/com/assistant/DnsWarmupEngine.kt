@@ -106,9 +106,6 @@ object DnsWarmupEngine {
 
     fun stop() { running = false; warmNow() }
 }
-/* ======
-DnsWarmupEngine Anchor
-====== */
 
 
 /* ========

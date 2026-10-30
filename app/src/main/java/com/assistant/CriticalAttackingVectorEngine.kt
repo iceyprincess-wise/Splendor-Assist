@@ -107,9 +107,6 @@ object CriticalAttackingVectorEngine {
         return PointF(outPass[0], outPass[1])
     }
 }
-/* ======
-CriticalAttackingVectorEngine Anchor
-====== */
 
 /* ========
 CrossPrecisionEngine

@@ -133,9 +133,6 @@ object PreferredPassingLaneLearningEngine{
     // PHASE8 CLOSED-LOOP TEMPORAL HOOK
     // Wired for ClosedLoopTemporalFeedbackEngine integration.
 }
-/* ======
-PreferredPassingLaneLearningEngine Anchor
-====== */
 
 /* ========
 PressingRecognitionEngine

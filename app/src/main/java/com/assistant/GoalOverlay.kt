@@ -124,9 +124,6 @@ object GoalOverlay {
         refresh()
     }
 }
-/* ======
-GoalOverlay Anchor
-====== */
 
 /* ========
 GoalkeeperDetectionResult

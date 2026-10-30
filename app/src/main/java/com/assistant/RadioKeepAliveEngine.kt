@@ -98,9 +98,6 @@ object RadioKeepAliveEngine {
 
     fun stop() { running = false }
 }
-/* ======
-RadioKeepAliveEngine Anchor
-====== */
 
 /* ========
 SpikeBurstEngine

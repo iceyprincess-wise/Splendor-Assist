@@ -120,9 +120,6 @@ object InputPriorityEngine {
         }
     }
 }
-/* ======
-InputPriorityEngine Anchor
-====== */
 
 /* ========
 InputThermalEliminatorEngine

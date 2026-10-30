@@ -108,9 +108,6 @@ object ReceiverEngagementContributor : GameplayContributor {
             r.confidence.coerceIn(0f, 1f), 42L)
     }
 }
-/* ======
-ReceiverEngagementContributor Anchor
-====== */
 
 /* ========
 ShotAnticipationContributor

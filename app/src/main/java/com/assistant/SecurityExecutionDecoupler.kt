@@ -123,9 +123,6 @@ class SecurityExecutionDecoupler {
         securityThread.quitSafely()
     }
 }
-/* ======
-SecurityExecutionDecoupler Anchor
-====== */
 
 /* ========
 ShieldAssistEngine

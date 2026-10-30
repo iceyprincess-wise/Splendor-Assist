@@ -105,9 +105,6 @@ data class DecisionResult(
     val humanizedNoiseY: Float = 0f,
     val vectorScaleAmplification: Float = 1f
 )
-/* ======
-DecisionResult Anchor
-====== */
 
 /* ========
 DefenderInterceptionPredictionEngine

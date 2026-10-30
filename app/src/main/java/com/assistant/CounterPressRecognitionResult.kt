@@ -97,9 +97,6 @@ data class CounterPressRecognitionResult(
     val detected:Boolean=false,
     val confidence:Float=0f
 )
-/* ======
-CounterPressRecognitionResult Anchor
-====== */
 
 /* ========
 CounterattackDetectionEngine

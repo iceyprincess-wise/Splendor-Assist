@@ -202,9 +202,6 @@ object FrameScanner {
         return PixelSampleBuffer(samples, sampleCount)
     }
 }
-/* ======
-FrameScanner Anchor
-====== */
 
 /* ========
 GameStateBuilder

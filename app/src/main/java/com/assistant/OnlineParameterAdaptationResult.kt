@@ -99,9 +99,6 @@ data class OnlineParameterAdaptationResult(
     val tickSyncMultiplier: Float = 1.0f,
     val humanizedNoise: Float = 0.0f
 )
-/* ======
-OnlineParameterAdaptationResult Anchor
-====== */
 
 /* ========
 OpenSpaceDetectionEngine

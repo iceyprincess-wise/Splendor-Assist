@@ -225,9 +225,6 @@ object OverloadPlaystyleEngine {
         lastUpdatedMs = 0L
     }
 }
-/* ======
-OverloadPlaystyleEngine Anchor
-====== */
 
 /* ========
 PassingLaneGraphEngine

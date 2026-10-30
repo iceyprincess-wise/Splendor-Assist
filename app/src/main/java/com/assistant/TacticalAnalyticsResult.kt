@@ -96,9 +96,6 @@ import org.tensorflow.lite.Interpreter
 data class TacticalAnalyticsResult(
     val confidence:Float=0f
 )
-/* ======
-TacticalAnalyticsResult Anchor
-====== */
 
 /* ========
 TacticalIntelligenceResult

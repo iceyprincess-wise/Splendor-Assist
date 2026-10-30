@@ -143,9 +143,6 @@ object DefensiveLineEngine {
             keepCount, (sumConfidence / keepCount).toFloat())
     }
 }
-/* ======
-DefensiveLineEngine Anchor
-====== */
 
 /* ========
 DefensiveLineResult

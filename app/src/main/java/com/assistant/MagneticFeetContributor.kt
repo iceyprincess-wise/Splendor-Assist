@@ -465,9 +465,6 @@ object MagneticFeetContributor : GameplayContributor {
         MagneticFeetEngine.reset()
     }
 }
-/* ======
-MagneticFeetContributor Anchor
-====== */
 
 /* ========
 OverloadPlaystyleContributor

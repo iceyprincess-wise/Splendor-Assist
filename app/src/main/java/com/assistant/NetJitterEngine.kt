@@ -87,9 +87,6 @@ object NetJitterEngine {
     }
     fun stop() { running = false }
 }
-/* ======
-LagAdapterService Anchor
-====== */
 
 /* ========
 BurstForensicsEngine

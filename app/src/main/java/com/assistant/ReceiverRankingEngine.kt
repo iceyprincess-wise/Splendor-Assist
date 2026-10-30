@@ -129,9 +129,6 @@ object ReceiverRankingEngine{
         return ReceiverRankingResult(ranked)
     }
 }
-/* ======
-ReceiverRankingEngine Anchor
-====== */
 
 /* ========
 RunPredictionEngine

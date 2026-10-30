@@ -99,9 +99,6 @@ class PlayerDetection(
     var confidence: Float,
     var isUserTeam: Boolean
 )
-/* ======
-PlayerDetection Anchor
-====== */
 
 /* ========
 PlayerDetector

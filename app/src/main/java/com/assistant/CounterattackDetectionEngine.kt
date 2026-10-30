@@ -8,6 +8,3 @@ object CounterattackDetectionEngine{
         return CounterattackDetectionResult(detected = outBuffer[0] > 0.5f, confidence = outBuffer[1])
     }
 }
-/* ======
-CounterattackDetectionEngine Anchor
-====== */

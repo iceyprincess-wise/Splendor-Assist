@@ -121,9 +121,6 @@ object WingBlockEngine {
         return WingBlockResult(blockingAnchorX, blockingAnchorY)
     }
 }
-/* ======
-WingBlockEngine Anchor
-====== */
 
 /* ========
 WingOverloadDetectionResult

@@ -135,9 +135,6 @@ object NetworkStateEngine {
         callback = null
     }
 }
-/* ======
-NetworkStateEngine Anchor
-====== */
 
 /* ========
 PacketLossProbeEngine

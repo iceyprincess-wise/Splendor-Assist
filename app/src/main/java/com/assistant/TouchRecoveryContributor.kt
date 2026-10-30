@@ -126,9 +126,6 @@ object TouchRecoveryContributor : GameplayContributor {
         )
     }
 }
-/* ======
-TouchRecoveryContributor Anchor
-====== */
 
 /* ========
 TrueCrossContributor

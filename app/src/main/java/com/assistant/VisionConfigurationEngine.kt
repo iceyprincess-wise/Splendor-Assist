@@ -110,9 +110,6 @@ object VisionConfigurationEngine {
         configuration = VisionConfiguration()
     }
 }
-/* ======
-VisionConfiguration Anchor
-====== */
 
 /* ========
 WingBlockEngine

@@ -84,9 +84,6 @@ object ViewInvalidationFilter {
         return critical
     }
 }
-/* ======
-ViewInvalidationFilter Anchor
-====== */
 
 /* ========
 ViewInvalidationRepository

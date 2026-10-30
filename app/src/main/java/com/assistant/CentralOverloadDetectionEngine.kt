@@ -101,9 +101,6 @@ object CentralOverloadDetectionEngine {
         return CentralOverloadDetectionResult(outBuffer[0], outBuffer[1] > 0.5f, outBuffer[2])
     }
 }
-/* ======
-CentralOverloadDetectionEngine Anchor
-====== */
 
 /* ========
 CentralOverloadDetectionResult

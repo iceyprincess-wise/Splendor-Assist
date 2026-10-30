@@ -130,9 +130,6 @@ object BallPossessionEngine {
         )
     }
 }
-/* ======
-BallPossessionEngine Anchor
-====== */
 
 /* ========
 BallPossessionResult

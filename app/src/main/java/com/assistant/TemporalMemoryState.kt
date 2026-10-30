@@ -143,9 +143,6 @@ data class TemporalMemoryState(
         return result
     }
 }
-/* ======
-TemporalMemoryState Anchor
-====== */
 
 /* ========
 ThroughPassSanitizer

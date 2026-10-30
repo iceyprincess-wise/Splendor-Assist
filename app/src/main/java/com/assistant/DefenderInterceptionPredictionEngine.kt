@@ -223,9 +223,6 @@ object DefenderInterceptionPredictionEngine {
         return DefenderInterceptionPredictionAnalysis(result)
     }
 }
-/* ======
-DefenderInterceptionPredictionEngine Anchor
-====== */
 
 /* ========
 DefenseAuthorityEngine

@@ -130,9 +130,6 @@ object OffensiveLineEngine {
         )
     }
 }
-/* ======
-OffensiveLineEngine Anchor
-====== */
 
 /* ========
 OffensiveLineResult

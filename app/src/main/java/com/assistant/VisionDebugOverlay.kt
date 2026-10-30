@@ -118,9 +118,6 @@ object VisionDebugOverlay {
         refresh()
     }
 }
-/* ======
-VisionDebugOverlay Anchor
-====== */
 
 /* ========
 VisionLatencyMonitor

@@ -126,9 +126,6 @@ object TrueShotContributor : GameplayContributor {
         )
     }
 }
-/* ======
-TrueShotContributor Anchor
-====== */
 
 /* ========
 WingBlockContributor

@@ -25,8 +25,6 @@ object GameCoexistenceGovernor {
     private var currentPressure = PressureLevel.GREEN
 
     private val frameCounter = AtomicInteger(0)
-    private val isOcrHibernated = AtomicBoolean(false)
-    private val isDiagnosticsHibernated = AtomicBoolean(false)
 
     @Volatile
     private var lastFrameTimeMs = 0L

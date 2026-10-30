@@ -99,9 +99,6 @@ data class DefensiveCompactnessResult(
     val compactness: Float = 0f,
     val confidence: Float = 0f
 )
-/* ======
-DefensiveCompactnessResult Anchor
-====== */
 
 /* ========
 DefensiveLineEngine

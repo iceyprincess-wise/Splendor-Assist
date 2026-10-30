@@ -291,9 +291,6 @@ object FightingSpiritEngine {
         active = false
     }
 }
-/* ======
-FightingSpiritEngine Anchor
-====== */
 
 /* ========
 FormationAdaptationEngine

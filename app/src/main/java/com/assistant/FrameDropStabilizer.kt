@@ -159,9 +159,6 @@ class FrameDropStabilizer : Choreographer.FrameCallback {
         choreographer.postFrameCallback(this)
     }
 }
-/* ======
-FrameDropStabilizer Anchor
-====== */
 
 /* ========
 LatencyDefeatingInputEngine

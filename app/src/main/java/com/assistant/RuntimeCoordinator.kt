@@ -343,9 +343,6 @@ object RuntimeCoordinator {
         }
     }
 }
-/* ======
-RuntimeCoordinator Anchor
-====== */
 
 /* ========
 RuntimeDiagnosticsRegistry

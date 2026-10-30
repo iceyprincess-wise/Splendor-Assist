@@ -112,9 +112,6 @@ object CongestionSentinelEngine {
 
     fun stop() { running = false }
 }
-/* ======
-CongestionSentinelEngine Anchor
-====== */
 
 /* ========
 ConnectionHealEngine

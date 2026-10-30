@@ -98,7 +98,6 @@ object PlayerDetector {
     private const val MIN_PIXEL_COUNT = 10
     private const val MIN_ASPECT_RATIO = 0.15f
     private const val MIN_CANDIDATE_CONFIDENCE = 0.30f
-    private const val NMS_OVERLAP_THRESHOLD = 0.40f
     
     private val rawPool = Array(1000) { PlayerDetection(0f, 0f, 0f, false) }
     private val keptPool = Array(1000) { PlayerDetection(0f, 0f, 0f, false) }
@@ -227,9 +226,6 @@ object PlayerDetector {
         )
     }
 }
-/* ======
-PlayerDetector Anchor
-====== */
 
 /* ========
 RuntimeConfidenceCalibrationResult

@@ -73,9 +73,6 @@ data class RehydratedStateSnapshot(
     val memoryPressure: String,
     val details: String
 )
-/* ======
-RehydratedStateSnapshot Anchor
-====== */
 
 /* ========
 RehydrationEngine

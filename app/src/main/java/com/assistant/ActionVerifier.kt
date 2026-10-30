@@ -154,9 +154,6 @@ object ActionVerifier {
         }
     }
 }
-/* ======
-ActionVerifier Anchor
-====== */
 
 /**
  * Horizontal attack-axis inference for the fixed user team.

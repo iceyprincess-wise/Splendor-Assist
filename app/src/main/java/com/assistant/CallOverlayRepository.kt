@@ -71,9 +71,6 @@ object CallOverlayRepository {
     @Volatile
     var incomingCallVisible: Boolean = false
 }
-/* ======
-CallOverlayRepository Anchor
-====== */
 
 
 

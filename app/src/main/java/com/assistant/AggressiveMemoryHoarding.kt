@@ -152,9 +152,6 @@ object AggressiveMemoryHoarding {
         "lastReclaimedMb" to lastReclaimedMb
     )
 }
-/* ======
-AggressiveMemoryHoarding Anchor
-====== */
 
 
 /* ========

@@ -100,9 +100,6 @@ object SpeedCompensationEngine {
         return SpeedCompensationResult(outBuffer[0], outBuffer[1], outBuffer[2], outBuffer[3], outBuffer[4])
     }
 }
-/* ======
-SpeedCompensationEngine Anchor
-====== */
 
 /* ========
 TacticalAnalyticsEngine

@@ -104,9 +104,6 @@ data class JerseySegmentationResult(
     val confidence: Float
 
 )
-/* ======
-JerseySegmentationResult Anchor
-====== */
 
 /* ========
 LiveVectorResolver

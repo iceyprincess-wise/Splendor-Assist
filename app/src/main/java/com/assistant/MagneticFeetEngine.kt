@@ -291,9 +291,6 @@ object MagneticFeetEngine {
         )
     }
 }
-/* ======
-MagneticFeetEngine Anchor
-====== */
 
 /* ========
 MotionResult

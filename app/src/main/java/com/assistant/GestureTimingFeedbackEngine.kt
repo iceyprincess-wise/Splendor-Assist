@@ -167,9 +167,6 @@ object GestureTimingFeedbackEngine {
         lastDispatchMs = 0L; pendingSubmitMs.set(-1L); pendingSeq.set(-1L)
     }
 }
-/* ======
-GestureTimingFeedbackEngine Anchor
-====== */
 
 
 /* ========

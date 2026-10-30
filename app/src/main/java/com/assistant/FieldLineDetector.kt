@@ -130,9 +130,6 @@ object FieldLineDetector {
     }
 
 }
-/* ======
-FieldLineDetector Anchor
-====== */
 
 /* ========
 FightingSpiritEngine

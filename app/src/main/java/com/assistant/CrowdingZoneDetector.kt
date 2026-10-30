@@ -182,9 +182,6 @@ object CrowdingZoneDetector {
         "enabled" to enabled
     )
 }
-/* ======
-CrowdingZoneDetector Anchor
-====== */
 
 /* ========
 DecisionResult

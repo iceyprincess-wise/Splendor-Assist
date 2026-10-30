@@ -126,9 +126,6 @@ object InstantInterceptContributor : GameplayContributor {
             nativeBuffer[1], nativeBuffer[2], nativeBuffer[3], frame.confidence, 16L)
     }
 }
-/* ======
-InstantInterceptContributor Anchor
-====== */
 
 /* ========
 InterceptMatrixContributor

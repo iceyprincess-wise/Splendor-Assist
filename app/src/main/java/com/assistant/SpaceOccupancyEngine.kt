@@ -134,9 +134,6 @@ object SpaceOccupancyEngine {
         )
     }
 }
-/* ======
-SpaceOccupancyEngine Anchor
-====== */
 
 /* ========
 TacticalAnalyticsResult

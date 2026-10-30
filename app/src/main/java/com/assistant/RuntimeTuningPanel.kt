@@ -127,9 +127,6 @@ object RuntimeTuningPanel {
         reload()
     }
 }
-/* ======
-RuntimeTuningPanel Anchor
-====== */
 
 /* ========
 RuntimeVisualizationRegistry

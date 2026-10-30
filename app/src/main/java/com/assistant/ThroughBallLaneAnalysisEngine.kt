@@ -128,9 +128,6 @@ object ThroughBallLaneAnalysisEngine {
         return ThroughBallLaneAnalysis(result)
     }
 }
-/* ======
-ThroughBallLaneAnalysisEngine Anchor
-====== */
 
 /* ========
 TrainedDetectionEngine

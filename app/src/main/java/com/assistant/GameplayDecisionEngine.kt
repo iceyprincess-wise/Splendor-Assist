@@ -211,17 +211,14 @@ object GameplayDecisionEngine {
     private var previousGoalkeeperY = 0f
 
     // Fast inlined absolute value calculator (bypasses JNI/Math method overheads)
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun fastAbs(v: Float): Float = if (v < 0f) -v else v
+    private fun fastAbs(v: Float): Float = if (v < 0f) -v else v
 
     // Fast inline bounding constraint
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun bound(v: Float, min: Float, max: Float): Float =
+    private fun bound(v: Float, min: Float, max: Float): Float =
         if (v < min) min else if (v > max) max else v
 
     // Organic Adaptive Noise utilizing the native ThreadLocalRandom for max concurrent throughput
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun generateHumanizedNoise(variance: Float): Float =
+    private fun generateHumanizedNoise(variance: Float): Float =
         (ThreadLocalRandom.current().nextFloat() * 2f - 1f) * variance
 
     fun selectVisionAdaptiveMode(
@@ -428,9 +425,6 @@ object GameplayDecisionEngine {
     }
 
 }
-/* ======
-GameplayDecisionEngine Anchor
-====== */
 
 /* ========
 GestureExecutionAuthority

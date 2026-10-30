@@ -140,9 +140,6 @@ object NoiseFilter {
 
     }
 }
-/* ======
-NoiseFilter Anchor
-====== */
 
 /* ========
 OffensiveLineEngine

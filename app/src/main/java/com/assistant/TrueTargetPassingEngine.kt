@@ -211,9 +211,6 @@ object TrueTargetPassingEngine {
     fun currentFastBreakDetectionResult()            = Phase3WorldStateStore.current().fastBreakDetectionResult
     fun currentOffsideRiskEstimationResult()         = Phase3WorldStateStore.current().offsideRiskEstimationResult
 }
-/* ======
-TrueTargetPassingEngine Anchor
-====== */
 
 /* ========
 VisionConfiguration

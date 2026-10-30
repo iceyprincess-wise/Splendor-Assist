@@ -126,9 +126,6 @@ object TouchStabilizationEngine {
         return com.assistant.input.NativeInputBridge.injectSwipe(service, startX, startY, endX, endY, safeDuration)
     }
 }
-/* ======
-TouchStabilizationEngine Anchor
-====== */
 
 /* ========
 TrackedPlayer

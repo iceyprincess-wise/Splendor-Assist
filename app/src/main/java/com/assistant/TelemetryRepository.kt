@@ -106,9 +106,6 @@ object TelemetryRepository {
         return snapshot
     }
 }
-/* ======
-TelemetryRepository Anchor
-====== */
 
 /* ========
 TemporalMemoryState

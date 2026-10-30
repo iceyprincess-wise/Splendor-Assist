@@ -99,9 +99,6 @@ sealed class AgentAction {
     object RefreshPerformance : AgentAction()
     object ReigniteFleet : AgentAction()
 }
-/* ======
-AgentAction Anchor
-====== */
 
 /* ========
 AgentDecision

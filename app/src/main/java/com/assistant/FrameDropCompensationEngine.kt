@@ -176,9 +176,6 @@ object FrameDropCompensationEngine {
         }
     }
 }
-/* ======
-FrameDropCompensationEngine Anchor
-====== */
 
 /* ========
 FrameNormalizer

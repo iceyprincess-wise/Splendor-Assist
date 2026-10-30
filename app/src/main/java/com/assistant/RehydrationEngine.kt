@@ -96,9 +96,6 @@ object RehydrationEngine {
         )
     }
 }
-/* ======
-RehydrationEngine Anchor
-====== */
 
 /* ========
 RehydrationRepository

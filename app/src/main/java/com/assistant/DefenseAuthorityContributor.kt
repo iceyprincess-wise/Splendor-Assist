@@ -171,9 +171,6 @@ object DefenseAuthorityContributor : GameplayContributor {
         )
     }
 }
-/* ======
-DefenseAuthorityContributor Anchor
-====== */
 
 /* ========
 DefenseContributor

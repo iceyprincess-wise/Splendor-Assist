@@ -110,9 +110,6 @@ object TrackingConfigurationEngine {
         configuration = TrackingConfiguration()
     }
 }
-/* ======
-TrackingConfiguration Anchor
-====== */
 
 /* ========
 VisionCore

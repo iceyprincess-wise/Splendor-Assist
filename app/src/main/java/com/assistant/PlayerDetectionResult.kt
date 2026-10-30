@@ -99,9 +99,6 @@ data class PlayerDetectionResult(
     val confidence: Float,
     val detections: List<PlayerDetection>
 )
-/* ======
-PlayerDetectionResult Anchor
-====== */
 
 /* ========
 PlayerTendencyLearningEngine

@@ -428,9 +428,6 @@ object SmartAssistMetrics {
     }
 
 }
-/* ======
-SmartAssistMetrics Anchor
-====== */
 
 /* ========
 TacticalBehaviorRecognitionResult

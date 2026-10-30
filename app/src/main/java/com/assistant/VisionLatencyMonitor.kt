@@ -112,9 +112,6 @@ object VisionLatencyMonitor {
         )
     }
 }
-/* ======
-VisionLatencyMonitor Anchor
-====== */
 
 /* ========
 VisionOverlayRegistry

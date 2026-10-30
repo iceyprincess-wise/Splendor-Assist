@@ -117,9 +117,6 @@ object ForwardRunOpportunityEngine {
         )
     }
 }
-/* ======
-ForwardRunOpportunityEngine Anchor
-====== */
 
 /* ========
 FrameAssembler

@@ -98,7 +98,6 @@ object RuntimeHealthMonitor {
     private const val FRAME_STALE_MS = 3000L
     private const val DECISION_STALE_MS = 3000L
     private const val EXECUTION_STALE_MS = 5000L
-    private const val BOOSTER_FRESH_MS = 120_000L
 
     private val evaluations = AtomicLong(0L)
 
@@ -238,9 +237,6 @@ object RuntimeHealthMonitor {
         framesProgressMs = 0L
     }
 }
-/* ======
-RuntimeHealthMonitor Anchor
-====== */
 
 /* ========
 RuntimePerformanceCoordinator

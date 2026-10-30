@@ -310,9 +310,6 @@ object TrainedDetectionEngine {
         "lastError" to lastError
     )
 }
-/* ======
-TrainedDetectionEngine Anchor
-====== */
 
 /* ========
 TrueCrossEngine

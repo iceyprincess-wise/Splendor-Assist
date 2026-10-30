@@ -105,9 +105,6 @@ object CrossPrecisionEngine {
     fun stunningCrossSwipeDistance(): Float = NativePorts.crossSwipe()
     fun stunningCrossDuration(): Long = NativePorts.crossDuration()
 }
-/* ======
-CrossPrecisionEngine Anchor
-====== */
 
 /* ========
 CrossingLaneAnalysisEngine

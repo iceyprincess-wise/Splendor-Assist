@@ -118,9 +118,6 @@ class AntiCutbackSubEngine(private val inputEngine:LatencyDefeatingInputEngine){
     return false
   }
 }
-/* ======
-AntiCutbackSubEngine Anchor
-====== */
 
 /* ========
 AuthorityArbitrationEngine

@@ -106,9 +106,6 @@ object Phase3WorldStateStore {
 ): Phase3WorldState =
         latest
 }
-/* ======
-Phase3WorldState Anchor
-====== */
 
 /* ========
 PlayerDetectionResult

@@ -124,9 +124,6 @@ object BallOverlay {
         refresh()
     }
 }
-/* ======
-BallOverlay Anchor
-====== */
 
 /* ========
 BallOwnershipEngine

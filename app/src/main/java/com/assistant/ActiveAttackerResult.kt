@@ -99,9 +99,6 @@ data class ActiveAttackerResult(
     val attackerIndex: Int = -1,
     val confidence: Float = 0f
 )
-/* ======
-ActiveAttackerResult Anchor
-====== */
 
 /* ========
 ActiveDefenderEngine

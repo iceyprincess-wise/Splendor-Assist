@@ -112,9 +112,6 @@ object LifecycleSerializationEngine {
         )
     }
 }
-/* ======
-LifecycleSerializationEngine Anchor
-====== */
 
 /* ========
 LifecycleSnapshotRepository

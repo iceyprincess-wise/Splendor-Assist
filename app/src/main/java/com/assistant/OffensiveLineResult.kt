@@ -101,9 +101,6 @@ data class OffensiveLineResult(
     val playerCount: Int = 0,
     val confidence: Float = 0f
 )
-/* ======
-OffensiveLineResult Anchor
-====== */
 
 /* ========
 OffsideRiskEstimationEngine

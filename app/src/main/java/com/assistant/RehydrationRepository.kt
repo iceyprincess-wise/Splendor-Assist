@@ -88,9 +88,6 @@ object RehydrationRepository {
         return restored.values.toList()
     }
 }
-/* ======
-RehydrationRepository Anchor
-====== */
 
 /* ========
 SnapshotCompressionEngine

@@ -128,9 +128,6 @@ object FormationAdaptationEngine {
     // PHASE8 CLOSED-LOOP TEMPORAL HOOK
     // Wired for ClosedLoopTemporalFeedbackEngine integration.
 }
-/* ======
-FormationAdaptationEngine Anchor
-====== */
 
 /* ========
 FormationAdaptationResult

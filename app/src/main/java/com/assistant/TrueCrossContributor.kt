@@ -138,9 +138,6 @@ object TrueCrossContributor : GameplayContributor {
         )
     }
 }
-/* ======
-TrueCrossContributor Anchor
-====== */
 
 /* ========
 TruePassContributor

@@ -174,9 +174,6 @@ object AgilityContributor : GameplayContributor {
         )
     }
 }
-/* ======
-AgilityContributor Anchor
-====== */
 
 /* ========
 AttackingVectorContributor

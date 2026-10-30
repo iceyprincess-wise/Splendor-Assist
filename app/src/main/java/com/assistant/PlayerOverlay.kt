@@ -124,9 +124,6 @@ object PlayerOverlay {
         refresh()
     }
 }
-/* ======
-PlayerOverlay Anchor
-====== */
 
 /* ========
 PossessionStyleRecognitionEngine

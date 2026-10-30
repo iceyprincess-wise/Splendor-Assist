@@ -298,9 +298,6 @@ object RuntimeDecisionLoop {
         "mappingTrainedSlots" to ControlMappingTrainer.trainedSlots()
     )
 }
-/* ======
-RuntimeDecisionLoop Anchor
-====== */
 
 /* ========
 RuntimeObservation

@@ -95,9 +95,6 @@ import org.tensorflow.lite.Interpreter
 
 data class TrueShotResult(val targetX:Float,val targetY:Float,val authority:Float,val onTarget:Boolean)
 // TrueShotEngine migrated to native_true_shot.c (V54)
-/* ======
-TrueShotEngine Anchor
-====== */
 
 /* ========
 VisionTrust

@@ -218,9 +218,6 @@ object ActiveDefenderEngine {
         }
     }
 }
-/* ======
-ActiveDefenderEngine Anchor
-====== */
 
 /* ========
 ActiveDefenderResult

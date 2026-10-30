@@ -173,9 +173,6 @@ object PassingLaneGraphEngine {
         )
     }
 }
-/* ======
-PassingLaneGraphEngine Anchor
-====== */
 
 /* ========
 PlayerTendencyLearningResult

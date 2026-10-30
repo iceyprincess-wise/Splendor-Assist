@@ -108,9 +108,6 @@ object GameStateBuilder {
         return latest
     }
 }
-/* ======
-GameStateBuilder Anchor
-====== */
 
 /* ========
 GameStateFusion

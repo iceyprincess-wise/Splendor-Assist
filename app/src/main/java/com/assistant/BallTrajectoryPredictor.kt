@@ -129,9 +129,6 @@ object BallTrajectoryPredictor {
 
     fun current():Prediction=latest
 }
-/* ======
-BallTrajectoryPredictor Anchor
-====== */
 
 /* ========
 BlockedLanePredictionEngine

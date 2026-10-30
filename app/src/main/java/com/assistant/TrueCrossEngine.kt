@@ -109,9 +109,6 @@ object TrueCrossEngine {
         return TrueCrossResult(tx,ty,predX,predY,(laneScore*0.78f+(1f-dist/MAX_CROSS_DIST)*0.22f).coerceIn(0f,1f))
     }
 }
-/* ======
-TrueCrossEngine Anchor
-====== */
 
 /* ========
 TrueShotEngine

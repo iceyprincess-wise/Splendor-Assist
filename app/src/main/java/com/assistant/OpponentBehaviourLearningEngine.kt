@@ -129,9 +129,6 @@ object OpponentBehaviourLearningEngine{
     // PHASE8 CLOSED-LOOP TEMPORAL HOOK
     // Wired for ClosedLoopTemporalFeedbackEngine integration.
 }
-/* ======
-OpponentBehaviourLearningEngine Anchor
-====== */
 
 /* ========
 OpponentBehaviourLearningResult

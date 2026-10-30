@@ -99,9 +99,6 @@ data class OpponentBehaviourLearningResult(
     val pressFrequency:Float=0f,
     val transitionSpeed:Float=0f
 )
-/* ======
-OpponentBehaviourLearningResult Anchor
-====== */
 
 /* ========
 OverlapDetectionEngine

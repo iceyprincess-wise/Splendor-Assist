@@ -99,9 +99,6 @@ data class ClosestPlayerResult(
     val distance: Float = Float.MAX_VALUE,
     val player: TrackedPlayer? = null
 )
-/* ======
-ClosestPlayerResult Anchor
-====== */
 
 /* ========
 ConfidenceHeatmap

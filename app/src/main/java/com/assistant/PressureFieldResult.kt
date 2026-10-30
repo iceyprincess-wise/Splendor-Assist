@@ -98,9 +98,6 @@ data class PressureFieldResult(
     val rows: Int,
     val pressure: Array<FloatArray>
 )
-/* ======
-PressureFieldResult Anchor
-====== */
 
 /* ========
 ReceiverEngagementEngine

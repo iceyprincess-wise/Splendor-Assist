@@ -281,9 +281,6 @@ object ControlMappingTrainer {
         pendingClass = -1; lastMove = "none"; baseSpeed = 0f
     }
 }
-/* ======
-ControlMappingTrainer Anchor
-====== */
 
 /* ========
 Phase3WorldState

@@ -278,9 +278,6 @@ object FrameAssembler {
         )
     }
 }
-/* ======
-FrameAssembler Anchor
-====== */
 
 /* ========
 FrameDropCompensationEngine

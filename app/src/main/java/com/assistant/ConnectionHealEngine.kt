@@ -125,9 +125,6 @@ object ConnectionHealEngine {
         } catch (_: Throwable) {}
     }
 }
-/* ======
-ConnectionHealEngine Anchor
-====== */
 
 /* ========
 DnsWarmupEngine

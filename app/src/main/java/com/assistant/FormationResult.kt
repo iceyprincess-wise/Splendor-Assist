@@ -98,9 +98,6 @@ data class FormationResult(
     val name: String = "Unknown",
     val confidence: Float = 0f
 )
-/* ======
-FormationResult Anchor
-====== */
 
 /* ========
 ForwardRunOpportunityEngine

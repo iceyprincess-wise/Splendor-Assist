@@ -124,9 +124,6 @@ object MemoryCaptureGateEngine {
      */
     fun shouldSkipFullVision(): Boolean = captureThrottle >= 3
 }
-/* ======
-MemoryCaptureGateEngine Anchor
-====== */
 
 /* ========
 MemoryMonitorEngine

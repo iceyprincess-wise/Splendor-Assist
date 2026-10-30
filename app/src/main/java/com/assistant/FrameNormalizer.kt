@@ -188,9 +188,6 @@ object FrameNormalizer {
         frame.buffer.clear()
     }
 }
-/* ======
-FrameNormalizer Anchor
-====== */
 
 /* ========
 FrameScanner

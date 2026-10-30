@@ -131,9 +131,6 @@ object RuntimeVisualizationRegistry {
         refresh()
     }
 }
-/* ======
-RuntimeVisualizationRegistry Anchor
-====== */
 
 /* ========
 SecurityExecutionDecoupler

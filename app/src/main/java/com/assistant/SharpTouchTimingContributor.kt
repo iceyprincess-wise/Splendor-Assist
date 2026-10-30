@@ -159,9 +159,6 @@ object SharpTouchTimingContributor : GameplayContributor {
         )
     }
 }
-/* ======
-SharpTouchTimingContributor Anchor
-====== */
 
 /* ========
 FrameDropStabilizer

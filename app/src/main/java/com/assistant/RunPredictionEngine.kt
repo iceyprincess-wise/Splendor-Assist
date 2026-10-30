@@ -110,9 +110,6 @@ object RunPredictionEngine{
         return RunPredictionResult(runs)
     }
 }
-/* ======
-RunPredictionEngine Anchor
-====== */
 
 /* ========
 RuntimeConfidenceCalibrationEngine

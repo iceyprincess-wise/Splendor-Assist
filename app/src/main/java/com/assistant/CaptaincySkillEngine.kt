@@ -271,9 +271,6 @@ object CaptaincySkillEngine {
         lastUpdatedMs     = 0L
     }
 }
-/* ======
-CaptaincySkillEngine Anchor
-====== */
 
 /* ========
 CentralOverloadDetectionEngine

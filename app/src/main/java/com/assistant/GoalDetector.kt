@@ -141,9 +141,6 @@ object GoalDetector {
         )
     }
 }
-/* ======
-GoalDetector Anchor
-====== */
 
 /* ========
 GoalOverlay

@@ -142,9 +142,6 @@ object NativePipelineCache {
         return ((packedX shl 32) or (packedY and 0xffffffffL))
     }
 }
-/* ======
-NativePipelineCache Anchor
-====== */
 
 /* ========
 VsyncInputAnchor

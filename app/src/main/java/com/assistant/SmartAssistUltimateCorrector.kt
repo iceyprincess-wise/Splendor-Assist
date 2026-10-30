@@ -249,9 +249,6 @@ object SmartAssistUltimateCorrector {
         }
     }
 }
-/* ======
-InputResponsivenessCoordinator Anchor
-====== */
 
 /* ========
 InstantInterceptEngine

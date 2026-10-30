@@ -106,9 +106,6 @@ object ShotOpportunityContributor : GameplayContributor {
             (r.openSideScore / 10f).coerceIn(0f, 1f), r.confidence.coerceIn(0f, 1f), 35L)
     }
 }
-/* ======
-ShotOpportunityContributor Anchor
-====== */
 
 /* ========
 SmartAssistUltimateCorrectorContributor

@@ -216,9 +216,6 @@ object OmnipotentDashPressureMatrix {
     fun unpackY(packed: Long): Float =
         Float.fromBits(packed.toInt())
 }
-/* ======
-OmnipotentDashPressureMatrix Anchor
-====== */
 
 /* ========
 OnlineParameterAdaptationEngine

@@ -100,9 +100,6 @@ object RuntimeConfidenceCalibrationEngine {
         return RuntimeConfidenceCalibrationResult(calibratedConfidence = outBuffer[0])
     }
 }
-/* ======
-RuntimeConfidenceCalibrationEngine Anchor
-====== */
 
 /* ========
 RuntimeDecisionLoop

@@ -157,9 +157,6 @@ object KickingPostureContributor : GameplayContributor {
         )
     }
 }
-/* ======
-KickingPostureContributor Anchor
-====== */
 
 /* ========
 ShotOpportunityContributor

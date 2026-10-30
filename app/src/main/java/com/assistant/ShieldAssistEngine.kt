@@ -188,9 +188,6 @@ object ShieldAssistEngine {
         return dynamicDuration.coerceAtLeast(40L).coerceAtMost(124L)
     }
 }
-/* ======
-ShieldAssistEngine Anchor
-====== */
 
 /* ========
 ShootingLaneAnalysisEngine

@@ -71,9 +71,6 @@ data class ViewInvalidationEvent(
     val critical: Boolean,
     val timestamp: Long
 )
-/* ======
-ViewInvalidationEvent Anchor
-====== */
 
 /* ========
 ViewInvalidationFilter

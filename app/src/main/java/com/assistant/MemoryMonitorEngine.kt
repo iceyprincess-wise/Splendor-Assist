@@ -101,9 +101,6 @@ object MemoryMonitorEngine {
 
     fun stop() { running = false }
 }
-/* ======
-MemoryMonitorEngine Anchor
-====== */
 
 /* ========
 MemoryPressureBusEngine

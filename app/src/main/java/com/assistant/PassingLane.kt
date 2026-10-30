@@ -101,9 +101,6 @@ data class PassingLane(
     val blocked: Boolean,
     val score: Float
 )
-/* ======
-PassingLane Anchor
-====== */
 
 /* ========
 PlayerOverlay

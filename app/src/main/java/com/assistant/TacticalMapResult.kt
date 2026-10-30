@@ -103,9 +103,6 @@ data class TacticalMapResult(
     val defensiveDepth: Float = 0f,
     val offensiveAdvance: Float = 0f
 )
-/* ======
-TacticalMapResult Anchor
-====== */
 
 /* ========
 ThroughBallLaneAnalysisEngine

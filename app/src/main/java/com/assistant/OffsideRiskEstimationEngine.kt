@@ -172,9 +172,6 @@ object OffsideRiskEstimationEngine {
         return OffsideRiskEstimationResult(result)
     }
 }
-/* ======
-OffsideRiskEstimationEngine Anchor
-====== */
 
 /* ========
 OmnipotentDashPressureMatrix

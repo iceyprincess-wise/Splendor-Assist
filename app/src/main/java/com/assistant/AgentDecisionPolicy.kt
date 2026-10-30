@@ -158,7 +158,4 @@ object AgentDecisionPolicy {
         )
     }
 }
-/* ======
-AgentDecision Anchor
-====== */
 

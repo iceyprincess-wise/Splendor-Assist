@@ -182,9 +182,6 @@ object LowBlockContainmentEngine {
         )
     }
 }
-/* ======
-LowBlockContainmentEngine Anchor
-====== */
 
 /* ========
 LowLatencyNetworkThread

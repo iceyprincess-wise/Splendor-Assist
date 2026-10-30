@@ -147,9 +147,6 @@ object InputLatencyEngine {
         }
     }
 }
-/* ======
-InputLatencyEngine Anchor
-====== */
 
 /* ========
 InputPriorityEngine

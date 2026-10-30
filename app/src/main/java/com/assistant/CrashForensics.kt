@@ -72,7 +72,7 @@ object CrashForensics {
     }
 
     @JvmStatic
-    fun install(context: Context) {
+    fun install() {
         if (installed) return
         installed = true
         handler.removeCallbacks(monitor)

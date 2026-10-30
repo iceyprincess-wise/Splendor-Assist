@@ -136,9 +136,6 @@ data class RuntimeObservation(
         }
     }
 }
-/* ======
-RuntimeObservation Anchor
-====== */
 
 /* ========
 SceneSnapshot

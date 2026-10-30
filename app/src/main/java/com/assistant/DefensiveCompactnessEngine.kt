@@ -100,9 +100,6 @@ object DefensiveCompactnessEngine {
         return DefensiveCompactnessResult(outBuffer[0], outBuffer[1], outBuffer[2], outBuffer[3])
     }
 }
-/* ======
-DefensiveCompactnessEngine Anchor
-====== */
 
 /* ========
 DefensiveCompactnessResult

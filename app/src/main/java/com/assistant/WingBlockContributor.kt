@@ -120,9 +120,6 @@ object WingBlockContributor : GameplayContributor {
         )
     }
 }
-/* ======
-WingBlockContributor Anchor
-====== */
 
 /* ========
 SharpTouchTimingContributor

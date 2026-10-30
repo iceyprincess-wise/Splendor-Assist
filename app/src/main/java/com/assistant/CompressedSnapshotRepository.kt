@@ -86,9 +86,6 @@ object CompressedSnapshotRepository {
         return snapshots.values.toList()
     }
 }
-/* ======
-CompressedSnapshotRepository Anchor
-====== */
 
 /* ========
 LifecycleSerializationEngine

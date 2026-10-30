@@ -143,9 +143,6 @@ object ShootingLaneAnalysisEngine {
         return ShootingLaneAnalysis(result)
     }
 }
-/* ======
-ShootingLaneAnalysisEngine Anchor
-====== */
 
 
 /* ========

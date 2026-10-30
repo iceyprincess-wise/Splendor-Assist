@@ -110,6 +110,3 @@ class VsyncInputAnchor(
         executor.invoke(gesture)
     }
 }
-/* ======
-VsyncInputAnchor Anchor
-====== */

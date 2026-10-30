@@ -101,9 +101,6 @@ data class BallCandidate(
     val brightness: Float,
     val score: Float
 )
-/* ======
-BallCandidate Anchor
-====== */
 
 /* ========
 BallCandidateEngine

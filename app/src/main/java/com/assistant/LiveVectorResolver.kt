@@ -135,9 +135,6 @@ object LiveVectorResolver {
         )
     }
 }
-/* ======
-LiveVectorResolver Anchor
-====== */
 
 /* ========
 LowBlockContainmentEngine

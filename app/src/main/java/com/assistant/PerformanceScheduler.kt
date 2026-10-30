@@ -110,6 +110,3 @@ object PerformanceScheduler {
         schedulerHandler = null
     }
 }
-/* ======
-PerformanceScheduler Anchor
-====== */

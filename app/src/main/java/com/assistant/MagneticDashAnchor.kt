@@ -240,9 +240,6 @@ class MagneticDashAnchor(
         }
     }
 }
-/* ======
-MagneticDashAnchor Anchor
-====== */
 
 /* ========
 MagneticFeetEngine

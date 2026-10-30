@@ -157,9 +157,6 @@ object BurstForensicsEngine {
 
     fun stopDecay() { decayRunning = false }
 }
-/* ======
-BurstForensicsEngine Anchor
-====== */
 
 /* ========
 PanelWatchEngine

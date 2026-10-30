@@ -74,9 +74,6 @@ object MemoryPressureBusEngine {
             RuntimeLogger.log("MemoryPressureBus: CRITICAL (avail=${availMb}MB)", "MEMBUSENGINE")
     }
 }
-/* ======
-MemoryPressureBusEngine Anchor
-====== */
 
 
 

@@ -163,9 +163,6 @@ object PressureFieldEngine {
         )
     }
 }
-/* ======
-PressureFieldEngine Anchor
-====== */
 
 /* ========
 ReboundCollector

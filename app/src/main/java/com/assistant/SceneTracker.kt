@@ -269,9 +269,6 @@ object SceneTracker {
     fun current(): SceneSnapshot =
         latest
 }
-/* ======
-SceneTracker Anchor
-====== */
 
 /* ========
 SmartAssistMetrics

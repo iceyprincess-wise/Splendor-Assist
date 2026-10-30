@@ -100,9 +100,6 @@ data class BallPossessionResult(
     val possessionChanged: Boolean = false,
     val confidence: Float = 0f
 )
-/* ======
-BallPossessionResult Anchor
-====== */
 
 
 

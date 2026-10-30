@@ -139,9 +139,6 @@ object BallRetentionShieldContributor : GameplayContributor {
         )
     }
 }
-/* ======
-BallRetentionShieldContributor Anchor
-====== */
 
 /* ========
 BuildUpPressContributor

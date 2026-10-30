@@ -223,9 +223,6 @@ object EntityAssociationEngine {
         }
     }
 }
-/* ======
-EntityAssociationEngine Anchor
-====== */
 
 /* ========
 FPSMonitor

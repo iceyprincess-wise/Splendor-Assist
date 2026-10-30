@@ -122,9 +122,6 @@ object SupportContributor : GameplayContributor {
         )
     }
 }
-/* ======
-SupportContributor Anchor
-====== */
 
 /* ========
 TouchRecoveryContributor

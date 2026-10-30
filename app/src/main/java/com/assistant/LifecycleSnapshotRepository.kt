@@ -86,9 +86,6 @@ object LifecycleSnapshotRepository {
         return snapshots.values.toList()
     }
 }
-/* ======
-LifecycleSnapshotRepository Anchor
-====== */
 
 
 /* ========

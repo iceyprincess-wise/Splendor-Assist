@@ -46,6 +46,3 @@ object AuthorityArbitrationEngine {
     }
 }
 // SPLENDOR_V31A_AUTHORITY_NO_FALLBACK_END
-/* ======
-AuthorityArbitrationEngine Anchor
-====== */

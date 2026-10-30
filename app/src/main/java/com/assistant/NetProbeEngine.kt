@@ -174,9 +174,6 @@ object NetProbeEngine {
         "% carrier=" + CarrierProfileEngine.current.name +
         " probes=" + probes + " fail=" + failures
 }
-/* ======
-NetProbeEngine Anchor
-====== */
 
 /* ========
 NetworkStateEngine

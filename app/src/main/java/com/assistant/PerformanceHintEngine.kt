@@ -95,9 +95,6 @@ object PerformanceHintEngine {
         session.close()
     }
 }
-/* ======
-PerformanceHintEngine Anchor
-====== */
 
 /* ========
 RehydratedStateSnapshot

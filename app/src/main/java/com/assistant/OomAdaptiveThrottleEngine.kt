@@ -145,9 +145,6 @@ object OomAdaptiveThrottleEngine {
             .use { it.readLine()?.trim()?.toIntOrNull() ?: 0 }
     } catch (_: Throwable) { 0 }
 }
-/* ======
-OomAdaptiveThrottleEngine Anchor
-====== */
 
 /* ========
 TouchQualityEngine

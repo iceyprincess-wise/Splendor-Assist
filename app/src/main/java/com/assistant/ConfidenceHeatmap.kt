@@ -112,9 +112,6 @@ object ConfidenceHeatmap {
         )
     }
 }
-/* ======
-ConfidenceHeatmap Anchor
-====== */
 
 /* ========
 ConnectedComponentEngine

@@ -179,6 +179,3 @@ class AccessibilitySurvivalEngine private constructor(
         return SystemClock.elapsedRealtimeNanos()
     }
 }
-/* ======
-AccessibilitySurvivalEngine Anchor
-====== */

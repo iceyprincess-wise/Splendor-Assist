@@ -106,9 +106,6 @@ data class FieldLineDetectionResult(
     val confidence: Float
 
 )
-/* ======
-FieldLineDetectionResult Anchor
-====== */
 
 /* ========
 FieldLineDetector

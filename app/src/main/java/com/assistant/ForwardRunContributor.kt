@@ -112,9 +112,6 @@ object ForwardRunContributor : GameplayContributor {
             (r.runBoost / 10f).coerceIn(0f, 1f), r.confidence.coerceIn(0f, 1f), 38L)
     }
 }
-/* ======
-ForwardRunContributor Anchor
-====== */
 
 /* ========
 InstantInterceptContributor

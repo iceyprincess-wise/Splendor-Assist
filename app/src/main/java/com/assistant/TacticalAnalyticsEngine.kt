@@ -104,9 +104,6 @@ object TacticalAnalyticsEngine{
         return TacticalAnalyticsResult(confidence = outBuffer[0])
     }
 }
-/* ======
-TacticalAnalyticsEngine Anchor
-====== */
 
 /* ========
 TacticalBehaviorRecognitionEngine

@@ -142,9 +142,6 @@ object TeamShapeEngine {
         )
     }
 }
-/* ======
-TeamShapeEngine Anchor
-====== */
 
 /* ========
 TeamShapeResult

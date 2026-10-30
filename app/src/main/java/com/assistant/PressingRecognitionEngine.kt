@@ -100,9 +100,6 @@ object PressingRecognitionEngine {
         return PressingRecognitionResult(outBuffer[0] > 0.5f, outBuffer[1])
     }
 }
-/* ======
-PressingRecognitionEngine Anchor
-====== */
 
 /* ========
 ReceiverRankingEngine

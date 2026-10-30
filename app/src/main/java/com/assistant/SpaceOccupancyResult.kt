@@ -98,9 +98,6 @@ data class SpaceOccupancyResult(
     val rows: Int,
     val occupancy: Array<IntArray>
 )
-/* ======
-SpaceOccupancyResult Anchor
-====== */
 
 /* ========
 TacticalIntelligenceEngine

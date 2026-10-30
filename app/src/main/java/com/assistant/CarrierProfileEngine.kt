@@ -118,9 +118,6 @@ object CarrierProfileEngine {
 
     fun useWifiProfile() { current = WIFI }
 }
-/* ======
-CarrierProfileEngine Anchor
-====== */
 
 /* ========
 CongestionSentinelEngine

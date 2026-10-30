@@ -285,7 +285,4 @@ object VisionTrust {
         try { com.assistant.diagnostic.RuntimeLogger.log(diagnostics(), "VISIONTRUST") } catch (_: Throwable) { }
     }
 }
-/* ======
-VisionTrust Anchor
-====== */
 

@@ -152,9 +152,6 @@ object TouchQualityEngine {
         if (found) total else -1L
     } catch (_: Throwable) { -1L }
 }
-/* ======
-TouchQualityEngine Anchor
-====== */
 
 /* ========
 CompressedSnapshot
