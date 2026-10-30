@@ -1219,6 +1219,8 @@ object GestureExecutionAuthority {
                     + "app/src/main/java/com/assistant/gameplay_engine.kt dispatch gate",
                 "SMART_ASSIST"
             )
+            // SPLENDOR_F33_GATE_COUNTERS: refusals were invisible in EXEC counters.
+            rejected.incrementAndGet()
             return false
         }
 
@@ -10395,10 +10397,11 @@ object VisionTrust {
         // was inert.
         if (com.assistant.vision.ForegroundGate.ownUiVisible()) return false
         // Cold start: before any window-state change has been observed there is
-        // no evidence either way, so keep the legacy "not our UI" behaviour and
-        // never block dispatch. Once a package has been seen the real flag is
-        // authoritative.
-        if (lastForegroundPkg.isEmpty()) return false
+        // no package evidence, but an EXPLICIT setGameForeground() override from the
+        // self-heal agent or ignition must be honored. Returning false here ignored
+        // the override entirely and starved every gesture at cold start
+        // (SPLENDOR_F33_FOREGROUND_LATCH, found by independent review).
+        if (lastForegroundPkg.isEmpty()) return foregroundIsGame
         return foregroundIsGame
     }
 

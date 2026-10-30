@@ -77,9 +77,15 @@ object AsynchronousGestureQueue {
                     processNext()
                 }
             }
-            GestureExecutionAuthority.execute(
+            val dispatched = GestureExecutionAuthority.execute(
                 accessibilityService!!, gesture, callback, null, origin = "AsynchronousGestureQueue"
             )
+            if (!dispatched) {
+                // SPLENDOR_F33_QUEUE_UNBRICK: a refused dispatch never fires the
+                // callback, so isProcessing must be reset here or the queue wedges forever.
+                isProcessing.set(false)
+                processNext()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Gesture dispatch failed", e)
             isProcessing.set(false)
