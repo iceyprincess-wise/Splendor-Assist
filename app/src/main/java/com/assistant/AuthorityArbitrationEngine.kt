@@ -1,4 +1,5 @@
 package com.assistant
+import com.assistant.diagnostic.RuntimeLogger
 
 object AuthorityArbitrationEngine {
     @Volatile
