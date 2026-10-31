@@ -29,7 +29,16 @@ object CrashForensics {
     private var nativeBreadcrumbCursor = 0
 
     @JvmStatic fun nativeBreadcrumb(entry: String) { synchronized(lock) { nativeBreadcrumbRing[nativeBreadcrumbCursor++ % nativeBreadcrumbRing.size] = entry.take(95) } }
-    private fun nativeBreadcrumbText(): String = synchronized(lock) { val count = minOf(nativeBreadcrumbCursor, nativeBreadcrumbRing.size); (0 until count).joinToString("\n") { nativeBreadcrumbRing[(nativeBreadcrumbCursor-count+it)%nativeBreadcrumbRing.size] } }
+    private fun nativeBreadcrumbText(): String = synchronized(lock) {
+        val jvm = run {
+            val count = minOf(nativeBreadcrumbCursor, nativeBreadcrumbRing.size)
+            (0 until count).joinToString("\n") {
+                nativeBreadcrumbRing[(nativeBreadcrumbCursor - count + it) % nativeBreadcrumbRing.size]
+            }
+        }
+        val native = try { NativeBridge.nativeBreadcrumbDump() } catch (_: Throwable) { "" }
+        listOf(jvm, native).filter { it.isNotBlank() }.joinToString("\n")
+    }
     private val reported = LongArray(5)
     private val cursor = AtomicLong(0L)
     @Volatile private var captureWidth = 0

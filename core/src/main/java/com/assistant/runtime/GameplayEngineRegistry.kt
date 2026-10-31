@@ -82,9 +82,11 @@ object GameplayEngineRegistry {
         collectCycles.incrementAndGet()
         val results = ArrayList<EngineContribution>(contributors.size)
         for (c in contributors) {
-            // SPLENDOR_V43_FAST_GATE: O(1) capability culling before heavy math
-            if (!c.fastGate(frame)) continue
             try {
+                // SPLENDOR_V43_FAST_GATE: O(1) capability culling before heavy math.
+                // Inside the try so a throwing gate counts as that contributor's
+                // failure instead of killing the whole collect loop.
+                if (!c.fastGate(frame)) continue
                 c.update(frame)
                 val contribution = c.contribute(frame) ?: continue
                 lastContribution[c.engineName] = contribution

@@ -276,9 +276,7 @@ SceneTracker.update(
 
   val centralOverloadDetectionResult =
       CentralOverloadDetectionEngine.compute(
-          scene,
-          occupancy,
-          pressure
+          scene
       )
 
   val passingGraph =

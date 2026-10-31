@@ -105,12 +105,6 @@ object RuntimeDecisionLoop {
     @Volatile private var lastWeight: Float = 0f
     @Volatile private var lastUpdatedMs: Long = 0L
 
-    private fun classScale(actionClass: ActionClass, hasTactical: Boolean = false): Float =
-        when (actionClass) {
-            ActionClass.MOVE -> if (hasTactical) 0.35f else 0.85f
-            ActionClass.NONE -> 0f
-            else -> 1f
-        }
 
     /* Called once per assembled frame by OverlayService's capture loop. */
     fun onFrame(frame: RuntimeFrame): Boolean {

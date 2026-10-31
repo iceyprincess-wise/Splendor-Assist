@@ -95,8 +95,7 @@ import org.tensorflow.lite.Interpreter
 
 object CentralOverloadDetectionEngine {
     private val outBuffer = FloatArray(3)
-    @Suppress("UNUSED_PARAMETER")
-    fun compute(scene: SceneSnapshot, occupancy: SpaceOccupancyResult, pressure: PressureFieldResult): CentralOverloadDetectionResult {
+    fun compute(scene: SceneSnapshot): CentralOverloadDetectionResult {
         com.assistant.NativeBridge.nativeCentralOverloadCompute(scene.playerCount, scene.confidence, scene.fieldConfidence, outBuffer)
         return CentralOverloadDetectionResult(outBuffer[0], outBuffer[1] > 0.5f, outBuffer[2])
     }

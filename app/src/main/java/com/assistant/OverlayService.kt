@@ -8,7 +8,6 @@ import com.assistant.survival.OverlaySurvivalEngine
 import com.assistant.overlay.metrics.SmartAssistMetrics
 import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
 import com.assistant.overlay.notification.RuntimeNotificationCoordinator
-import com.assistant.overlay.runtime.PerformanceGovernor
 import com.assistant.memory.MmapStateEngine
 import com.assistant.render.ChoreographerRenderLoop
 import kotlinx.coroutines.CoroutineScope

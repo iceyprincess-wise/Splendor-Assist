@@ -1,6 +1,7 @@
 #include "native_breadcrumb.h"
 #include <android/log.h>
 #include <string.h>
+#include <stdio.h>
 
 // In-memory breadcrumb ring. No disk I/O on the hot path; the ring is
 // flushed to the log (and via the crash handler) only on demand.
@@ -26,4 +27,20 @@ void splendor_native_breadcrumb_flush(JNIEnv *env) {
         int idx = (start + i) % SPLENDOR_BC_SLOTS;
         __android_log_print(ANDROID_LOG_ERROR, "SPLENDOR_BC", "%s", bc_ring[idx]);
     }
+}
+
+/* JNI bridge for crash forensics: hand the ring to the JVM as one string. */
+JNIEXPORT jstring JNICALL Java_com_assistant_NativeBridge_nativeBreadcrumbDump(
+    JNIEnv *env, jclass clazz) {
+    (void)clazz;
+    char out[SPLENDOR_BC_SLOTS * (SPLENDOR_BC_TEXT + 1)];
+    int len = 0;
+    int start = (bc_head - bc_count + SPLENDOR_BC_SLOTS) % SPLENDOR_BC_SLOTS;
+    for (int i = 0; i < bc_count && len < (int)sizeof(out) - SPLENDOR_BC_TEXT - 2; i++) {
+        int idx = (start + i) % SPLENDOR_BC_SLOTS;
+        len += snprintf(out + len, SPLENDOR_BC_TEXT + 2, "%s\n", bc_ring[idx]);
+    }
+    if (len > 0 && out[len - 1] == '\n') out[len - 1] = '\0';
+    else out[len] = '\0';
+    return (*env)->NewStringUTF(env, out);
 }

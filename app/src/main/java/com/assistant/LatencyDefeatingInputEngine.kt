@@ -105,8 +105,7 @@ fun injectZeroLatencySwipe(
     startY: Float,
     endX: Float,
     endY: Float,
-    restrictedDuration: Long,
-    currentPingMs: Int = -1 // legacy parameter; network RTT is not local dispatch latency
+    restrictedDuration: Long
 ) {
     val targetStartX = startX.coerceAtLeast(0f)
     val targetStartY = startY.coerceAtLeast(0f)

@@ -30,7 +30,7 @@ class GlobalCrashHandler(
     override fun uncaughtException(t: Thread, e: Throwable) {
         try { CrashForensics.onUncaught(t, e) } catch (_: Throwable) {}
         try {
-            writeJavaCrashMarker(appContext, t)
+            writeJavaCrashMarker(t)
         } catch (_: Throwable) {}
         try {
             writeCrashReport(appContext, t, e)
@@ -60,8 +60,8 @@ class GlobalCrashHandler(
             } catch (_: Throwable) {}
         }
 
-        @Suppress("UNUSED_PARAMETER")
-        private fun writeJavaCrashMarker(ctx: Context, thread: Thread) {
+        
+        private fun writeJavaCrashMarker(thread: Thread) {
             try {
                 val processName =
                     if (Build.VERSION.SDK_INT >= 28) {

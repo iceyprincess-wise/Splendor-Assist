@@ -1,0 +1,13 @@
+2026-10-31 02:31:02.336 [NativeBridge] source=app/src/main/java/com/assistant/NativeBridge.kt:223 splendor_native loaded; explicit JNI registration available.
+2026-10-31 02:31:07.484 [NATIVE_TRUTH] source=app/src/main/java/com/assistant/NativeBridge.kt:115 NATIVE_TRUTH nativeLoaded=true preprocessAvailable=true authorityAvailable=true lastError=none camera=profile=DYNAMIC_WIDE capture=288x640 source=720x1600
+2026-10-31 02:33:42.976 [AGENT] source=app/src/main/java/com/assistant/RuntimeSelfHealEngine.kt:711 [CRITICAL] COLLECT_STALL: GameplayEngineRegistry.collect() stalled â 0 new collect cycles since the previous health check (total cycles so far: 12
+2026-10-31 02:33:42.983 [AGENT] source=app/src/main/java/com/assistant/RuntimeSelfHealEngine.kt:619 AGENT CRITICAL COLLECT_STALL at cycles=1228 â triggering capture check
+2026-10-31 02:46:45.160 [AGENT] source=app/src/main/java/com/assistant/RuntimeSelfHealEngine.kt:711 [CRITICAL] LOOP_FROZEN: RuntimeDecisionLoop counter frozen at 9305. onFrame() not being called â decision counter did not advance since last che
+2026-10-31 02:46:45.164 [AGENT] source=app/src/main/java/com/assistant/RuntimeSelfHealEngine.kt:530 AGENT CRITICAL LOOP_FROZEN at 9305 â triggering capture check
+2026-10-31 02:46:45.177 [AGENT] source=app/src/main/java/com/assistant/RuntimeSelfHealEngine.kt:711 [CRITICAL] COLLECT_STALL: GameplayEngineRegistry.collect() stalled â 0 new collect cycles since the previous health check (total cycles so far: 79
+2026-10-31 02:46:45.185 [AGENT] source=app/src/main/java/com/assistant/RuntimeSelfHealEngine.kt:619 AGENT CRITICAL COLLECT_STALL at cycles=7992 â triggering capture check
+2026-10-31 02:46:53.670 [AGENT] source=app/src/main/java/com/assistant/RuntimeSelfHealEngine.kt:711 [CRITICAL] LOOP_FROZEN: RuntimeDecisionLoop counter frozen at 9306. onFrame() not being called â decision counter did not advance since last che
+2026-10-31 02:46:53.675 [AGENT] source=app/src/main/java/com/assistant/RuntimeSelfHealEngine.kt:530 AGENT CRITICAL LOOP_FROZEN at 9306 â triggering capture check
+2026-10-31 02:46:53.708 [AGENT] source=app/src/main/java/com/assistant/RuntimeSelfHealEngine.kt:711 [CRITICAL] COLLECT_STALL: GameplayEngineRegistry.collect() stalled â 0 new collect cycles since the previous health check (total cycles so far: 79
+2026-10-31 02:46:53.722 [AGENT] source=app/src/main/java/com/assistant/RuntimeSelfHealEngine.kt:619 AGENT CRITICAL COLLECT_STALL at cycles=7993 â triggering capture check
+2026-10-31 02:46:55.764 [AGENT] source=app/src/main/java/com/assistant/RuntimeSelfHealEngine.kt:711 [CRITICAL] CAPTURE_STALE: Capture stale 6s. Restart attempts: 1/3.
