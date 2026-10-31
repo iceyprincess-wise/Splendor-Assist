@@ -141,16 +141,14 @@ object FrameNormalizer {
 
         // 1. Frame-rate Synchronization & Sub-millisecond Delta Mapping
         val targetFrameTime = if (targetHz >= TARGET_FPS_120) FRAME_TIME_120HZ_NANOS else FRAME_TIME_60HZ_NANOS
-        val frameSyncRatio = if (deltaNanos > 0) targetFrameTime.toFloat() / deltaNanos.toFloat() else 1.0f
-
+        
         // 2. Adaptive Noise Humanization
         // Generates a dynamic micro-variance (+/-2%) to mimic human latency, preventing rigid heuristic flagging
         val jitterVariance = 1.0f + ((Random.nextFloat() * 0.04f) - 0.02f)
 
         // 3. Server-Tick Synchronization Check
         // Determines if this specific frame cycle perfectly aligns with the standard server packet boundary
-        val isTickAligned = (currentTime % SERVER_TICK_RATE_NANOS) < targetFrameTime
-
+        
         // 4. Amplified Input Effectiveness Calculation
         val metadata = FrameMetadata(
             timestampNanos = currentTime,

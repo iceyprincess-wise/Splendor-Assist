@@ -243,6 +243,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private val imageAvailableListener = ImageReader.OnImageAvailableListener { reader ->
         val image = try { reader.acquireLatestImage() } catch (_: Throwable) { null } ?: return@OnImageAvailableListener
         com.assistant.CrashForensics.mark(2, 1, captureFrameCount)
+        com.assistant.DiagnosticSamplers.onCaptureFrame(System.currentTimeMillis())
+        com.assistant.CrashForensics.mark(5, 4, android.os.Process.myPid().toLong())
         val captureNow = System.currentTimeMillis()
         if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
             image.close()

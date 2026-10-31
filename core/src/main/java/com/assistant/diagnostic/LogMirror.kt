@@ -22,8 +22,7 @@ object LogMirror {
     private const val MAX_BYTES = 8L * 1024L * 1024L
     private const val QUEUE_CAPACITY = 4096
     // Tags explicitly discovered in the pinned engine sources. RuntimeLogger hook captures every tag, not only this registry.
-    private val MIRRORED_TAGS = setOf("SPLENDOR", "EXEC", "ROUTED", "NativeBridge", "HybridExecution", "InputLatency", "GestureQueue", "LAGFRAME", "LAGSTALL", "STUTTER", "LAG_BEE", "LAGVERDICT", "NETPROBE", "MEMBUSENGINE", "LAGTHERM", "NETLOSS", "NETSPIKE", "LAGGC", "LAGRENDER", "INPUT", "HEALTH", "WATCHDOG", "ADAPTER", "ENGINE", "ENGINE_FAULT", "F47FPS", "F47NET", "F47MEM", "F47THRM", "F47CRASH")
-    private data class LogRecord(val line: String, val completion: java.util.concurrent.CountDownLatch? = null)
+        private data class LogRecord(val line: String, val completion: java.util.concurrent.CountDownLatch? = null)
     private val queue = LinkedBlockingQueue<LogRecord>(QUEUE_CAPACITY)
     @Volatile private var appContext: Context? = null
     @Volatile private var started = false
@@ -111,8 +110,8 @@ object LogMirror {
                     sinkFile = replacement.third
                     byteCount = replacement.fourth
                 }
-                output!!.write(bytes)
-                output!!.flush()
+                output?.write(bytes)
+                output?.flush()
                 byteCount += bytes.size
                 record.completion?.countDown()
             } catch (_: Throwable) {

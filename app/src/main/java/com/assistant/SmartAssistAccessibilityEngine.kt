@@ -135,7 +135,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             return false
         }
 
-        val isMove = request.phase == com.assistant.runtime.ActionClass.MOVE.ordinal
+        val isMove = (request.phase == com.assistant.runtime.ActionClass.MOVE.ordinal) || (request.source == com.assistant.execution.ExecutionSource.GOALKEEPER)
         
         if (isDispatching) {
             if (!isMove && !latchStuck()) {
