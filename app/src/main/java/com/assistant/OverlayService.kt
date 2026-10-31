@@ -1,12 +1,12 @@
 package com.assistant
 
+// F49_PATCH_V1
+
 import android.annotation.SuppressLint
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.RuntimeMetricsRegistry
 import com.assistant.SmartAssistRepository
 import com.assistant.survival.OverlaySurvivalEngine
-import com.assistant.overlay.metrics.SmartAssistMetrics
-import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
 import com.assistant.overlay.notification.RuntimeNotificationCoordinator
 import com.assistant.memory.MmapStateEngine
 import com.assistant.render.ChoreographerRenderLoop
@@ -40,7 +40,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.Process
-import android.os.PerformanceHintManager
 import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -53,7 +52,6 @@ import androidx.core.app.NotificationCompat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import java.io.File
 import java.io.FileWriter
 import java.io.PrintWriter
 import java.text.SimpleDateFormat

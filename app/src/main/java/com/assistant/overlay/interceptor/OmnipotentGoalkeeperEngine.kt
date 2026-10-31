@@ -338,7 +338,7 @@ object OmnipotentGoalkeeperEngine {
                 val reboundWindowMs =
                     (500L - (GoalkeeperRuntimeState.reactions.coerceIn(0, 100) * 2.5f)).toLong()
                 val finalAction =
-                    if (System.currentTimeMillis() - lastSaveTimestamp < reboundWindowMs) {
+                    if (GoalkeeperRuntimeState.enabled && System.currentTimeMillis() - lastSaveTimestamp < reboundWindowMs) {
                         GoalkeeperAction.REBOUND_SAVE
                     } else {
                         action

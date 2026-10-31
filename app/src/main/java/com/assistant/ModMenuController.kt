@@ -1,5 +1,7 @@
 package com.assistant
 
+// F49_PATCH_V1
+
 import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
@@ -216,8 +218,10 @@ class ModMenuController(private val context: Context) {
         val routed = (decision["routed"] as? Number)?.toLong() ?: 0L
         val statusLine = StringBuilder()
         statusLine.append("GAME=").append(onOff(VisionTrust.isGameForeground()))
+            .append(" [").append(VisionTrust.gameOverrideMode()).append("]")
         statusLine.append(" CAP=").append(onOff(capture))
         statusLine.append(" TRUST=").append(onOff(trusted))
+            .append(" [").append(VisionTrust.trustOverrideMode()).append("]")
         statusLine.append("\n")
         statusLine.append("SA=").append(onOff(SmartAssistRepository.enabled()))
         statusLine.append(" GK=").append(onOff(GoalkeeperRuntimeState.enabled))
@@ -233,6 +237,31 @@ class ModMenuController(private val context: Context) {
     }
 
     private fun onOff(value: Boolean): String = if (value) "ON" else "OFF"
+
+    private fun overrideSelector(flag: String, label: String): View {
+        val row = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, 8, 0, 4)
+        }
+        row.addView(TextView(context).apply { text = label; setTextColor(Color.WHITE); textSize = 12f })
+        val choices = android.widget.RadioGroup(context).apply { orientation = android.widget.RadioGroup.HORIZONTAL }
+        val modes = OverrideStore.Mode.values()
+        modes.forEach { mode ->
+            val button = android.widget.RadioButton(context).apply {
+                text = mode.name
+                tag = mode
+                setTextColor(Color.WHITE)
+                isChecked = OverrideStore.mode(flag) == mode
+            }
+            choices.addView(button)
+        }
+        choices.setOnCheckedChangeListener { group, checkedId ->
+            val selected = group.findViewById<android.widget.RadioButton>(checkedId)?.tag as? OverrideStore.Mode
+            if (selected != null) OverrideStore.setMode(flag, selected)
+        }
+        row.addView(choices)
+        return row
+    }
 
     private fun createView(): View {
         var initialX = 0
@@ -499,6 +528,9 @@ class ModMenuController(private val context: Context) {
             }
         }
         contentContainer.addView(swKeeperAggressive)
+
+        contentContainer.addView(overrideSelector("GAME", "GAME override"))
+        contentContainer.addView(overrideSelector("TRUST", "TRUST override"))
 
         val tvKeeperPositioning = TextView(context).apply {
             text = "Keeper Positioning: " + GoalkeeperRuntimeState.positioning

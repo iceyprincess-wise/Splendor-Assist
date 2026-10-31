@@ -1,4 +1,6 @@
-package com.assistant.vision
+package com.assistant
+
+// F49_PATCH_V1.vision
 
 import android.app.Activity
 import android.app.Application
@@ -46,7 +48,7 @@ object ForegroundGate {
 
     private fun push() {
         try {
-            if (started > 0) com.assistant.VisionTrust.setGameForeground(false)
+            com.assistant.VisionTrust.setGameForeground(started <= 0)
         } catch (_: Throwable) { }
     }
 

@@ -1,5 +1,7 @@
 package com.assistant
 
+// F49_PATCH_V1
+
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.graphics.Path
@@ -56,11 +58,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
     private val windowDispatches = AtomicLong(0L)
     @Volatile private var windowStartMs = 0L
-
-    private fun applyHumanizedNoise(value: Float): Float {
-        val noise = (ThreadLocalRandom.current().nextFloat() * 2 - 1) * NOISE_AMPLITUDE_PX
-        return value + noise
-    }
 
     /**
      * UNCOMPRESSED TICK SYNC: Ensures synchronization never reduces the necessary execution time
@@ -367,8 +364,10 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // typeWindowStateChanged, so these events are delivered.
         if (event == null) return
         when (event.eventType) {
-            AccessibilityEvent.TYPE_TOUCH_INTERACTION_START ->
+            AccessibilityEvent.TYPE_TOUCH_INTERACTION_START -> {
                 UserTouchState.setTouching(true)
+                RuntimeDecisionLoop.invalidateGestureEnvelopeOnManualTouch()
+            }
             AccessibilityEvent.TYPE_TOUCH_INTERACTION_END ->
                 UserTouchState.setTouching(false)
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {

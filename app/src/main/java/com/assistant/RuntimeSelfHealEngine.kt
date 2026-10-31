@@ -1,5 +1,7 @@
 package com.assistant
 
+// F49_PATCH_V1
+
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.app.ActivityManager
@@ -209,6 +211,12 @@ object RuntimeSelfHealEngine {
 
             val fg = VisionTrust.isGameForeground()
             if (!fg) {
+                val before = fgForceCount
+                VisionTrust.setGameForeground(true)
+                val recovered = VisionTrust.isGameForeground()
+                if (!recovered) com.assistant.diagnostic.RuntimeLogger.log(
+                    "FG_OVERRIDE suppressed by GAME override or package policy", "SELF_HEAL")
+
                 fgForceCount++
                 if (shouldLog("FG_OVERRIDE", "forced=$fgForceCount")) {
                     totalHeals++
@@ -218,10 +226,7 @@ object RuntimeSelfHealEngine {
                         detected = "foregroundIsGame=false while capture active (frame ${frameAgeMs}ms old). " +
                             "eFootball child surfaces send empty packageName → VisionTrust resets gate. " +
                             "This has been forced $fgForceCount times this session.",
-                        fix = "FIXED: VisionTrust.setGameForeground(true) applied. Re-applies every 5s as long as " +
-                            "capture is active so accessibility events can never re-block contributors. " +
-                            "PERMANENT CODE FIX: In VisionTrust.onForegroundPackage(), add: " +
-                            "if (p.isEmpty() && foregroundIsGame) return  [already applied in Phase3]",
+                        fix = if (VisionTrust.isGameForeground()) "POLICY APPLIED: VisionTrust accepted foreground recovery" else "SUPPRESSED: GAME override or package policy prevented foreground recovery",
                         severity = "FIXED"
                     ))
                 }
@@ -543,7 +548,7 @@ object RuntimeSelfHealEngine {
                         timestamp = fmt.format(Date()),
                         category = "ZERO_DISPATCH",
                         detected = "0 gestures over ${zeroMs/1000}s despite $newDecisions decision cycles. $reason",
-                        fix = if (trustPct > 50L) "APPLYING: VisionTrust.setGameForeground(true)"
+                        fix = if (trustPct > 50L) "foreground recovery is attempted through VisionTrust policy; see FG_OVERRIDE result"
                             else "MONITORING — contributor arbitration issue",
                         severity = "CRITICAL"
                     ))

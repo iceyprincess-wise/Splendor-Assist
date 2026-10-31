@@ -1,5 +1,7 @@
 package com.assistant
 
+// F49_PATCH_V1
+
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.app.ActivityManager
@@ -79,7 +81,6 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 import kotlin.math.sin
 import kotlin.math.sqrt
-import kotlin.random.Random
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -96,13 +97,6 @@ import org.tensorflow.lite.Interpreter
 object FrameNormalizer {
 
     private const val TARGET_FPS_60 = 60
-    private const val TARGET_FPS_120 = 120
-    private const val NANOS_PER_MS = 1_000_000L
-    
-    // Mathematical Precision Constants
-    private const val FRAME_TIME_60HZ_NANOS = (1000L * NANOS_PER_MS) / TARGET_FPS_60
-    private const val FRAME_TIME_120HZ_NANOS = (1000L * NANOS_PER_MS) / TARGET_FPS_120
-    private const val SERVER_TICK_RATE_NANOS = 33L * NANOS_PER_MS // Approx 30Hz network tick interval
 
     private val lastProcessTimeNanos = AtomicLong(0)
     private val frameCounter = AtomicLong(0)
@@ -139,17 +133,6 @@ object FrameNormalizer {
 
         frameCounter.incrementAndGet()
 
-        // 1. Frame-rate Synchronization & Sub-millisecond Delta Mapping
-        val targetFrameTime = if (targetHz >= TARGET_FPS_120) FRAME_TIME_120HZ_NANOS else FRAME_TIME_60HZ_NANOS
-        
-        // 2. Adaptive Noise Humanization
-        // Generates a dynamic micro-variance (+/-2%) to mimic human latency, preventing rigid heuristic flagging
-        val jitterVariance = 1.0f + ((Random.nextFloat() * 0.04f) - 0.02f)
-
-        // 3. Server-Tick Synchronization Check
-        // Determines if this specific frame cycle perfectly aligns with the standard server packet boundary
-        
-        // 4. Amplified Input Effectiveness Calculation
         val metadata = FrameMetadata(
             timestampNanos = currentTime,
             deltaNanos = deltaNanos

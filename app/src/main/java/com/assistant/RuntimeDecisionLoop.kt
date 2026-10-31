@@ -1,5 +1,7 @@
 package com.assistant
 
+// F49_PATCH_V1
+
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.app.ActivityManager
@@ -104,6 +106,19 @@ object RuntimeDecisionLoop {
     @Volatile private var lastAction: String = "none"
     @Volatile private var lastWeight: Float = 0f
     @Volatile private var lastUpdatedMs: Long = 0L
+    private val gestureIntentIds = AtomicLong(0L)
+    @Volatile private var activeGestureEnvelope: com.assistant.execution.GestureIntentEnvelope? = null
+
+    private fun mintOrRefreshGestureEnvelope(now: Long): com.assistant.execution.GestureIntentEnvelope {
+        val current = activeGestureEnvelope
+        val next = if (current == null || current.isExpired(now)) {
+            com.assistant.execution.GestureIntentEnvelope(gestureIntentIds.incrementAndGet(), now, now)
+        } else current.copy(lastActivityElapsedMs = now)
+        activeGestureEnvelope = next
+        return next
+    }
+
+    @JvmStatic fun invalidateGestureEnvelopeOnManualTouch() { activeGestureEnvelope = null }
 
 
     /* Called once per assembled frame by OverlayService's capture loop. */
@@ -147,7 +162,8 @@ object RuntimeDecisionLoop {
 
         val emergency = ContributionRegistry.drainBest()
 
-        val request = chooseRequest(frame, best, emergency)
+        val rawRequest = chooseRequest(frame, best, emergency)
+        val request = rawRequest?.copy(gestureEnvelope = mintOrRefreshGestureEnvelope(android.os.SystemClock.elapsedRealtime()))
         if (request == null) {
             idleNoContribution.incrementAndGet()
 

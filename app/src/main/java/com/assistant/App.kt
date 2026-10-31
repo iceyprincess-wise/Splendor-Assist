@@ -1,5 +1,7 @@
 package com.assistant
 
+// F49_PATCH_V1
+
 import com.assistant.storage.SplendorStorageRoot
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.LogMirror
@@ -60,6 +62,7 @@ class App : Application() {
         super.onCreate()
         LogMirror.init(this)
         GlobalCrashHandler.install(this)
+        OverrideStore.initialize(this)
         installF47CrashMirror()
         registerComponentCallbacks(object : ComponentCallbacks2 {
             override fun onTrimMemory(level: Int) = DiagnosticSamplers.onTrimMemory(level)

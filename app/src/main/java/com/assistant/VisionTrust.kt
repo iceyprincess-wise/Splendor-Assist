@@ -1,5 +1,7 @@
 package com.assistant
 
+// F49_PATCH_V1
+
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.app.ActivityManager
@@ -112,6 +114,27 @@ object VisionTrust {
     @Volatile private var foregroundIsGame = false
     @Volatile private var lastForegroundPkg = ""
     @Volatile private var gatedFrames = 0L
+    @Volatile private var lastAutoTransitionMs = 0L
+    @Volatile private var lastPackageEventMs = 0L
+    @Volatile private var gameOffSinceMs = 0L
+
+    private fun applyForegroundPolicy(candidate: Boolean, packageEvent: Boolean = false) {
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (packageEvent && now - lastPackageEventMs < 250L) return
+        if (packageEvent) lastPackageEventMs = now
+        when (OverrideStore.mode("GAME")) {
+            OverrideStore.Mode.FORCE_ON -> foregroundIsGame =
+                lastForegroundPkg.isNotEmpty() && GAME_PACKAGES.any { lastForegroundPkg.contains(it, true) }
+            OverrideStore.Mode.FORCE_OFF -> foregroundIsGame = false
+            OverrideStore.Mode.AUTO -> {
+                if (now - lastAutoTransitionMs < 2000L && candidate != foregroundIsGame) return
+                if (candidate != foregroundIsGame) lastAutoTransitionMs = now
+                foregroundIsGame = candidate
+            }
+        }
+        if (foregroundIsGame) gameOffSinceMs = 0L
+        else if (gameOffSinceMs == 0L) gameOffSinceMs = now
+    }
 
     // SPLENDOR_FG_TRUTH_V1 - real eFootball package ids. onForegroundPackage()
     // matched against a caller-supplied set, but no caller ever existed, so the
@@ -122,21 +145,43 @@ object VisionTrust {
     @JvmStatic
     fun onForegroundPackage(pkg: String?, gamePkgs: Set<String>) {
         val p = pkg ?: ""
-        lastForegroundPkg = p
-        if (p.isEmpty()) return  // FIX P3: eFootball 2027 child surface sends empty pkg
-        // SPLENDOR_FG_TRUTH_V2
-        // Every non-empty window-package event is authoritative.
-        // Leaving eFootball immediately clears gameplay execution trust.
-        foregroundIsGame = gamePkgs.any { p.contains(it, true) }
+        if (p.isNotEmpty()) lastForegroundPkg = p
+        if (p.isEmpty()) {
+            applyForegroundPolicy(foregroundIsGame)
+            return
+        }
+        // Package events are debounced, then all writes pass through override/dwell policy.
+        applyForegroundPolicy(gamePkgs.any { p.contains(it, true) }, packageEvent = true)
     }
 
     // F43: package evidence is the ONLY true-writer.
     /** explicit override for callers that already resolved the decision */
     @JvmStatic
-    fun setGameForeground(isGame: Boolean) { foregroundIsGame = isGame }
+    fun setGameForeground(isGame: Boolean) {
+        applyForegroundPolicy(isGame)
+    }
+
+    @JvmStatic fun gameOverrideMode(): String = OverrideStore.modeLabel("GAME")
+    @JvmStatic fun trustOverrideMode(): String = OverrideStore.modeLabel("TRUST")
+
+    /** FORCE_ON never substitutes for an observed allowed game package. */
+    @JvmStatic fun isExecutionPackageAllowed(): Boolean {
+        val pkg = lastForegroundPkg
+        return pkg.isNotEmpty() && GAME_PACKAGES.any { pkg.contains(it, true) }
+    }
+
+    @JvmStatic fun recoverStuckGameOff() {
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (OverrideStore.mode("GAME") == OverrideStore.Mode.AUTO && !foregroundIsGame &&
+            gameOffSinceMs != 0L && now - gameOffSinceMs >= 10_000L && isExecutionPackageAllowed()) {
+            com.assistant.diagnostic.RuntimeLogger.log("FG_AUTO_STUCK_OFF: reapplying allowed foreground package", "VISION")
+            applyForegroundPolicy(true)
+        }
+    }
 
     @JvmStatic
     fun isGameForeground(): Boolean {
+        recoverStuckGameOff()
         // SPLENDOR_FG_TRUTH_V1 - read the REAL game-foreground flag.
         // Returning only !ownUiVisible() discarded foregroundIsGame entirely,
         // so setGameForeground(false) and onForegroundPackage() could never

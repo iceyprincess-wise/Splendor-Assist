@@ -1,4 +1,6 @@
-package com.assistant.execution
+package com.assistant
+
+// F49_PATCH_V1.execution
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +16,15 @@ enum class ExecutionSource {
     STUTTER
 }
 
+data class GestureIntentEnvelope(
+    val gestureId: Long,
+    val createdAtElapsedMs: Long,
+    val lastActivityElapsedMs: Long
+) {
+    fun isExpired(nowElapsedMs: Long): Boolean =
+        nowElapsedMs - lastActivityElapsedMs > 200L || nowElapsedMs - createdAtElapsedMs > 500L
+}
+
 data class ExecutionRequest(
     val source: ExecutionSource,
     val phase: Int,
@@ -22,6 +33,7 @@ data class ExecutionRequest(
     val endX: Float,
     val endY: Float,
     val duration: Long,
+    val gestureEnvelope: GestureIntentEnvelope? = null,
     var timestamp: Long = System.currentTimeMillis(),
     val actionId: String = "ACT-${System.currentTimeMillis()}-${java.util.concurrent.ThreadLocalRandom.current().nextInt(1000, 9999)}",
     var busAccepted: Boolean = false,
@@ -187,6 +199,8 @@ object CentralExecutionBus {
         req.endX.isFinite() && req.endY.isFinite() && req.duration > 0L
 
     private fun requestIsStale(req: ExecutionRequest, now: Long): Boolean {
+        val envelope = req.gestureEnvelope
+        if (envelope != null && envelope.isExpired(android.os.SystemClock.elapsedRealtime())) return true
         val age = now - req.timestamp
         if (age < 0L) return false
         val maxAge = when (req.source) {

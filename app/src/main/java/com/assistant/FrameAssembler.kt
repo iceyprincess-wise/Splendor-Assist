@@ -1,5 +1,7 @@
 package com.assistant
 
+// F49_PATCH_V1
+
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.app.ActivityManager
@@ -200,7 +202,8 @@ object FrameAssembler {
 
         // Confidence follows the fresh ball sighting; lanes can only raise it.
         val rawConfidence = maxOf(bestConf, ballTrustNow).coerceIn(0f, 1f)
-        val isTrustedFrame = VisionTrust.frameTrusted(players.size, opponents)
+        val automaticTrustedFrame = VisionTrust.frameTrusted(players.size, opponents)
+        val isTrustedFrame = OverrideStore.resolve("TRUST", automaticTrustedFrame)
         val confidence = if (isTrustedFrame) {
             if (players.isNotEmpty() || opponents > 0 || bestConf > 0f || ballTrustNow > 0f) {
                 rawConfidence.coerceAtLeast(0.5f)
