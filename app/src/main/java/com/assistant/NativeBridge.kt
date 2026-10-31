@@ -55,6 +55,7 @@ object NativeBridge {
                 "NATIVE_VISION"
             )
         } catch (e: Throwable) {
+            com.assistant.diagnostic.LogMirror.mirror("NativeBridge", android.util.Log.WARN, "RuntimeLogger failed: ${e.message}")
             android.util.Log.w("NativeBridge", "RuntimeLogger failed", e)
         }
     }
@@ -70,6 +71,7 @@ object NativeBridge {
                 "NATIVE_ARBITRATION"
             )
         } catch (e: Throwable) {
+            com.assistant.diagnostic.LogMirror.mirror("NativeBridge", android.util.Log.WARN, "RuntimeLogger failed: ${e.message}")
             android.util.Log.w("NativeBridge", "RuntimeLogger failed", e)
         }
     }
@@ -214,6 +216,7 @@ init {
             nativeLastError = e.toString()
             nativeFailure = e.message ?: "Unknown load error"
             nativeReady.set(false)
+            com.assistant.diagnostic.LogMirror.mirror("NativeBridge", android.util.Log.ERROR, "CRITICAL: Failed to load $LIBRARY: ${e.message}")
             android.util.Log.e("NativeBridge", "CRITICAL: Failed to load $LIBRARY", e)
         }
     }

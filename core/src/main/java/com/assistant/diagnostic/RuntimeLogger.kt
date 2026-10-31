@@ -195,6 +195,7 @@ object RuntimeLogger {
             "$timestamp [$tag] source=${callerLocation()} $message\n"
 
         writeToAll(logEntry)
+        LogMirror.mirror(tag, android.util.Log.INFO, logEntry)
 
         if (FIELD_TEST_MODE) {
             forensic(
@@ -209,6 +210,7 @@ object RuntimeLogger {
         stage:String,
         details:String
     ){
+        LogMirror.mirror(stage, android.util.Log.INFO, details)
         append(
             executionChainLog,
             "${now()} [$stage] source=${callerLocation()} $details\n"

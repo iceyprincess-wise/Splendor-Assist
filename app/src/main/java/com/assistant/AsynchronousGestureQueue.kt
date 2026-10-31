@@ -92,6 +92,7 @@ object AsynchronousGestureQueue {
                 processNext()
             }
         } catch (e: Exception) {
+            com.assistant.diagnostic.LogMirror.mirror(TAG, Log.ERROR, "Gesture dispatch failed: ${e.message}")
             Log.e(TAG, "Gesture dispatch failed", e)
             isProcessing.set(false)
             processNext()

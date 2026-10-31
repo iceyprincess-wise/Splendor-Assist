@@ -2,6 +2,8 @@ package com.assistant
 
 import com.assistant.storage.SplendorStorageRoot
 import com.assistant.diagnostic.RuntimeLogger
+import com.assistant.diagnostic.LogMirror
+import android.content.ComponentCallbacks2
 import android.app.Application
 import android.os.Build
 
@@ -11,6 +13,21 @@ class App : Application() {
         // FIX #5: Centralized process role suffixes to prevent silent role drift
         const val ROLE_SUFFIX_SURVIVAL = ":survival"
         const val ROLE_SUFFIX_TELEMETRY = ":telemetry"
+    }
+
+    private fun installF47CrashMirror() {
+        val previous = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, error ->
+            try {
+                val trace = java.io.StringWriter().also { writer ->
+                    error.printStackTrace(java.io.PrintWriter(writer))
+                }.toString()
+                LogMirror.mirrorCrashAndWait("F47CRASH", "F47CRASH\n$trace")
+            } catch (_: Throwable) {
+                // Crash reporting is best-effort and must not replace the process failure.
+            }
+            try { previous?.uncaughtException(thread, error) } catch (_: Throwable) {}
+        }
     }
 
     private fun getCurrentProcessName(): String {
@@ -41,7 +58,15 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        LogMirror.init(this)
         GlobalCrashHandler.install(this)
+        installF47CrashMirror()
+        registerComponentCallbacks(object : ComponentCallbacks2 {
+            override fun onTrimMemory(level: Int) = DiagnosticSamplers.onTrimMemory(level)
+            override fun onLowMemory() = DiagnosticSamplers.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_COMPLETE)
+            override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {}
+        })
+        DiagnosticSamplers.start(this)
         try { CrashForensics.install() } catch (_: Throwable) {}
 
         val currentProcess = getCurrentProcessName()
