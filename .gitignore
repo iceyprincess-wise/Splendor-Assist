@@ -19,7 +19,5 @@ build/
 
 elf-verify/
 
-# session artifacts (f46): never commit logs or accidental nested copies
-SplendorHealLog.txt
-Truth_logcat.txt
-Splendor-Assist/
+# artifacts
+work/
