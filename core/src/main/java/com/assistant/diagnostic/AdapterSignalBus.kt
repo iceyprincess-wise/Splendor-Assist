@@ -25,7 +25,7 @@ object AdapterSignalBus {
 
     // PHASE3: new adapter signals
     @Volatile var thermalStatus: Int = 0; private set      // 0=NONE 1=LIGHT 2=MODERATE 3=SEVERE 4=CRITICAL 5=EMERGENCY 6=SHUTDOWN
-    @Volatile var batteryLevel: Int = 100; private set
+    @Volatile var batteryLevel: Int = -1; private set
     @Volatile var batteryCharging: Boolean = true; private set
     @Volatile var pingQuality: String = "UNKNOWN"; private set
     @Volatile var deviceBootStable: Boolean = false; private set
@@ -38,7 +38,7 @@ object AdapterSignalBus {
     fun publishFleet(offlineCount: Int) { fleetDegraded = offlineCount > 2 }
 
     val thermalIsSevere: Boolean get() = thermalStatus >= 3
-    val batteryCritical: Boolean get() = batteryLevel < 15 && !batteryCharging
+    val batteryCritical: Boolean get() = batteryLevel in 0..14 && !batteryCharging
     val netIsHold: Boolean    get() = netWindow == "HOLD"
     val lagIsChoking: Boolean get() = lagVerdict == "CHOKING"
     val stutterIsSevere: Boolean get() = stutterState == "SEIZURE"

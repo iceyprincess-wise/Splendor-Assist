@@ -67,10 +67,12 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 object DisplayProfileEngine {
+    // Configured target, not measured game FPS.
+    private const val TARGET_FPS = 60f
 
     // ADMIN-TUNABLE (default = original hard-coded value)
     val gameFps: Float get() {
-        val v = 60f
+        val v = TARGET_FPS
         return if (v > 0f) v else 30f
     }
     val gameBudgetMs: Float get() = 1000f / gameFps

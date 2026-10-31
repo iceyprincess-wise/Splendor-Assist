@@ -95,6 +95,7 @@ import org.tensorflow.lite.Interpreter
 
 object RuntimeDecisionLoop {
 
+    private const val MAX_OPTICAL_VARIANCE_FOR_ACTION = 0.85f
     private val decisions = AtomicLong(0L)
     private val routed = AtomicLong(0L)
     private val idleNoContribution = AtomicLong(0L)
@@ -122,7 +123,7 @@ object RuntimeDecisionLoop {
             return false
         }
 
-        if (!frame.trusted) {
+        if (!frame.trusted || frame.opticalVariance >= MAX_OPTICAL_VARIANCE_FOR_ACTION) {
             idleUntrusted.incrementAndGet()
             lastAction = "idle-untrusted"
             return false

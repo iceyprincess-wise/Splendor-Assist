@@ -5,7 +5,7 @@ project("splendor_native" C CXX)
 add_compile_definitions(SPLENDOR_BREADCRUMBS=1)
 
 add_library(splendor_native SHARED
-  native_quantum_core.c
+  native_breadcrumb.c
   native_input.cpp
   native_kicking_posture.c
   native_agility_physics.c
@@ -15,11 +15,8 @@ add_library(splendor_native SHARED
   native_vision_blob.c
   native_vision_preprocessor.c
   native_frame_analyzer.c
-  native_vector_smoother.c
   native_direct_input_hook.c
   native_predictive_frame_interp.c
-
-  native_system_core.c
   native_dominance_matrix.c
   native_stopper_matrix.c
 
@@ -28,14 +25,10 @@ add_library(splendor_native SHARED
 
   native_true_shot.c
   native_optical_variance.c
-  native_input_strobe.c
-
   native_sa_corrector.c
 
   native_critical_vector.c
   native_cross_precision.c
-
-  native_counterattack.c
   native_speed_compensation.c
   native_shot_opportunity.c
 

@@ -52,7 +52,8 @@ data class RuntimeFrame(
     val goalConfidence: Float = 0f,
     val goalkeeperVisible: Boolean = false,
     val goalkeeperX: Float = 0f,
-    val goalkeeperY: Float = 0f
+    val goalkeeperY: Float = 0f,
+    val opticalVariance: Float = 0f
 ) {
     val trusted: Boolean get() = enabled && confidence > 0f
     val goalCenterX: Float get() = (goalLeftX + goalRightX) * 0.5f

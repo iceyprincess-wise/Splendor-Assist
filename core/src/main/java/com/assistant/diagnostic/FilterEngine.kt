@@ -19,7 +19,7 @@ object FilterEngine {
 
     @Volatile var isActive = false; private set
     
-    // Effectiveness Score: 100 = perfect 60fps, <100 = struggling
+    // Environment health score; retain formula, do not claim FPS measurement
     @Volatile var effectivenessScore: Int? = null; private set
     
     // Aggression Multiplier: 1.0 = baseline, >1.0 = extremist push (forces engines to work harder)
@@ -128,7 +128,7 @@ object FilterEngine {
                 val telemetryMissing = lag == "UNKNOWN" || stutter == "UNKNOWN" ||
                     memoryTier == "UNKNOWN" || memoryAvailMb < 0L || AdapterSignalBus.thermalStatus < 0
                 val scoreText = if (telemetryMissing || effectivenessScore == null)
-                    "score: UNKNOWN (telemetry missing)" else "score: ${effectivenessScore}/100"
+                    "ENV: UNKNOWN (telemetry missing)" else "ENV: ${effectivenessScore}/100"
                 appendLine(scoreText)
                 appendLine("AGGRESSION MULTIPLIER: ${"%.2f".format(aggressionMultiplier)}x")
                 appendLine("")

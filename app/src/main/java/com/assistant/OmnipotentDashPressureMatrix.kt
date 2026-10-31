@@ -172,6 +172,8 @@ object OmnipotentDashPressureMatrix {
             targetY = defHomeY.coerceIn(0f, safeHeight)
         }
 
+        targetX = targetX.coerceIn(0f, safeWidth)
+        targetY = targetY.coerceIn(0f, safeHeight)
         val now = System.currentTimeMillis()
         
         // Dynamic adaptive pacing cooldown window to mask hard 120ms signatures

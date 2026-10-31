@@ -116,14 +116,14 @@ object MagneticFeetContributor : GameplayContributor {
      * RuntimeDecisionLoop currently maps contributor targets to the joystick
      * origin at 250,550.
      */
-    private const val JOYSTICK_ORIGIN_X = 250.0f
-    private const val JOYSTICK_ORIGIN_Y = 550.0f
+    private val JOYSTICK_ORIGIN_X get() = com.assistant.vision.CameraProfile.captureWidthOrFallback() * (250f / 1649f)
+    private val JOYSTICK_ORIGIN_Y get() = com.assistant.vision.CameraProfile.captureHeightOrFallback() * (550f / 719f)
 
     private const val MIN_TRAVEL = 45.0f
     private const val MAX_TRAVEL = 180.0f
 
-    private const val SCREEN_MAX_X = 1649.0f
-    private const val SCREEN_MAX_Y = 719.0f
+    private val SCREEN_MAX_X get() = com.assistant.vision.CameraProfile.captureWidthOrFallback()
+    private val SCREEN_MAX_Y get() = com.assistant.vision.CameraProfile.captureHeightOrFallback()
 
     /*
      * Same live floor used by FrameAssembler for possession confidence.

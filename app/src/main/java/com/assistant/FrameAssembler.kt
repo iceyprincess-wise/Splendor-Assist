@@ -120,7 +120,7 @@ object FrameAssembler {
 
     @Volatile private var lastFrame: RuntimeFrame? = null
 
-    fun assemble(): RuntimeFrame {
+    fun assemble(opticalVariance: Float = 0f): RuntimeFrame {
         val id = frameCounter.incrementAndGet()
 
         val crossing = try {
@@ -246,7 +246,8 @@ object FrameAssembler {
             goalConfidence = scene?.goalConfidence ?: 0f,
             goalkeeperVisible = scene?.goalkeeperVisible ?: false,
             goalkeeperX = scene?.goalkeeperX ?: 0f,
-            goalkeeperY = scene?.goalkeeperY ?: 0f
+            goalkeeperY = scene?.goalkeeperY ?: 0f,
+            opticalVariance = opticalVariance.coerceIn(0f, 1f)
         )
         lastFrame = frame
         return frame

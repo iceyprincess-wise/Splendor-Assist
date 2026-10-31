@@ -113,7 +113,7 @@ data class TelemetrySnapshot(
     val goalkeeperConfidence: Float = 1f,
 
     val confidence: Float = 0f,
-    val currentPingMs: Int = 35 // Included for dynamic network tick evaluation
+    val currentPingMs: Int = -1 // unknown unless measured
 )
 
 /* ========

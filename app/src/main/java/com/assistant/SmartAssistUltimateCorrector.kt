@@ -100,7 +100,7 @@ object SmartAssistUltimateCorrector {
     // High-frequency hardware optimization constants
     private const val DEFAULT_REFRESH_RATE_HZ = 60.0f
     private const val MILLIS_PER_SECOND = 1000.0f
-    private const val BASE_PING_COMPENSATION_MS = 60L
+    private const val BASE_PING_COMPENSATION_MS = 0L // unknown local dispatch latency: no compensation
 
     // Humanization boundary metrics (prevents rigid machine signatures)
     private const val MIN_HUMAN_VARIANCE_MS = -2L
@@ -123,7 +123,7 @@ object SmartAssistUltimateCorrector {
      * @param shootButtonY Center Y coordinate of the directional execution engine.
      * @param targetAngleRad Vector angle in radians for directional translation.
      * @param activeEnginePath Optional background tracking vector to merge into the hardware frame.
-     * @param currentPingMs Network latency metric used to scale possession duration against server ticks.
+     * @param currentPingMs Local dispatch latency in ms; zero means unknown.
      * @return Boolean True if the gesture token successfully entered the system queue; false otherwise.
      */
     fun executePerfectPurpleShot(
@@ -134,7 +134,7 @@ object SmartAssistUltimateCorrector {
         shootButtonY: Float,
         targetAngleRad: Double,
         activeEnginePath: Path? = null,
-        currentPingMs: Long = BASE_PING_COMPENSATION_MS
+        currentPingMs: Long = 0L
     ): Boolean {
         return try {
             val builder = GestureDescription.Builder()

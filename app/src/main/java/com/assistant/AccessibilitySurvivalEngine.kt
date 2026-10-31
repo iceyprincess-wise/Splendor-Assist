@@ -72,8 +72,8 @@ class AccessibilitySurvivalEngine private constructor(
     private var watchdogThread: HandlerThread? = null
     private var watchdogHandler: Handler? = null
 
-    // 8.33ms interval aligns perfectly with 120Hz display refresh cycle for gesture sync
-    private val watchdogIntervalMs = 8L
+    // One 30fps frame is about 33ms; retains watchdog priority with less needless polling.
+    private val watchdogIntervalMs = 33L
 
     private val watchdogTask = object : Runnable {
         override fun run() {

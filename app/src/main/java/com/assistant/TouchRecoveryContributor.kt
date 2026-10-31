@@ -108,7 +108,7 @@ object TouchRecoveryContributor : GameplayContributor {
         // Returning to ballX/ballY (where the player already is) is a no-op.
         val targetX = when {
             frame.viableLaneCount > 0 && frame.passTargetX > 0f -> frame.passTargetX
-            else -> (frame.ballX + 60f).coerceIn(0f, 1920f)
+            else -> (frame.ballX + 60f).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
         }
         val targetY = when {
             frame.viableLaneCount > 0 && frame.passTargetY > 0f -> frame.passTargetY

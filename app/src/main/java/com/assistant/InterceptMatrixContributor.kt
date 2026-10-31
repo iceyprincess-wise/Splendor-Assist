@@ -109,7 +109,7 @@ object InterceptMatrixContributor : GameplayContributor {
 
         // Opponent carrier: where the passing engine projects the ball going
         val oppX = if (frame.passTargetX > 0f) frame.passTargetX
-                   else (frame.ballX + 120f).coerceIn(0f, 1920f)
+                   else (frame.ballX + 120f).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
         val oppY = if (frame.passTargetY > 0f) frame.passTargetY else frame.ballY
 
         // Direction hint for opponent velocity (magnitude kept small)

@@ -209,7 +209,6 @@ object RuntimeSelfHealEngine {
 
             val fg = VisionTrust.isGameForeground()
             if (!fg) {
-                VisionTrust.setGameForeground(true)
                 fgForceCount++
                 if (shouldLog("FG_OVERRIDE", "forced=$fgForceCount")) {
                     totalHeals++
@@ -549,7 +548,6 @@ object RuntimeSelfHealEngine {
                         severity = "CRITICAL"
                     ))
                     if (trustPct > 50L) {
-                        VisionTrust.setGameForeground(true)
                         totalHeals++
                     }
                 }

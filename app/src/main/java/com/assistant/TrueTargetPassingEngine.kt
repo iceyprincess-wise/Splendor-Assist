@@ -94,6 +94,7 @@ import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 
 object TrueTargetPassingEngine {
+    private const val TARGET_FPS = 60f // honest named fallback; no captured interval is exposed
 
     /**
      * @param retention 0..1 fraction along (start->end) to land on.
@@ -127,7 +128,7 @@ object TrueTargetPassingEngine {
             (receiverX - ballX).toDouble(), (receiverY - ballY).toDouble()
         ).toFloat()
         val travelS = (dist / 750f + 0.14f).coerceIn(0f, 0.55f)
-        val fps = 60f
+        val fps = TARGET_FPS // no captured interval available in this scope
         val predX = (receiverX + receiverVx * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
         val predY = (receiverY + receiverVy * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
         return optimize(ballX, ballY, predX, predY, 1.0f)
@@ -144,7 +145,7 @@ object TrueTargetPassingEngine {
     ): PassingAssistResult {
         val dist = hypot((receiverX - ballX).toDouble(), (receiverY - ballY).toDouble()).toFloat()
         val travelS = (dist / 750f + 0.14f).coerceIn(0f, 0.55f)
-        val fps = 60f
+        val fps = TARGET_FPS // no captured interval available in this scope
         
         var predX = (receiverX + receiverVx * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
         var predY = (receiverY + receiverVy * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())

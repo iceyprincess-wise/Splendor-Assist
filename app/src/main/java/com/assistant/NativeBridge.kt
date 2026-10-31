@@ -78,7 +78,6 @@ object NativeBridge {
     fun logNativePreprocessProofOnce() {
         if (!nativePreprocessProofLogged) {
             nativePreprocessProofLogged = true
-            nativeLoaded = true
             try {
                 com.assistant.diagnostic.RuntimeLogger.log("NATIVE_VISION_PREPROCESS_ACTIVE", "NATIVE_VISION")
             } catch (_: Throwable) {
@@ -90,7 +89,6 @@ object NativeBridge {
     fun logNativeAuthorityProofOnce() {
         if (!nativeAuthorityProofLogged) {
             nativeAuthorityProofLogged = true
-            nativeLoaded = true
             try {
                 com.assistant.diagnostic.RuntimeLogger.log("AUTHORITY_NATIVE_ACTIVE", "NATIVE_ARBITRATION")
             } catch (_: Throwable) {
@@ -203,23 +201,11 @@ object NativeBridge {
         pixelStride: Int,
         outBuffer: FloatArray
     )
-
-    @JvmStatic
-    external fun nativeSmoothVector(
-        startX: Float, startY: Float,
-        endX: Float, endY: Float,
-        durationMs: Float,
-        outBuffer: FloatArray
-    )
-
-
-    init {
+init {
         try {
             System.loadLibrary(LIBRARY)
-            // SPLENDOR_V36A_NATIVE_LOAD_TRUTH_BEGIN
-            markNativeLoaded()
-            // SPLENDOR_V36A_NATIVE_LOAD_TRUTH_END
             nativeReady.set(true)
+            markNativeLoaded()
             RuntimeLogger.log("splendor_native loaded; explicit JNI registration available.", "NativeBridge")
         } catch (e: Throwable) {
             nativeLoaded = false
@@ -360,7 +346,7 @@ object NativeBridge {
 
 
     // --- V44/V45: System Core & Dynamic Jitter ---
-    @JvmStatic external fun nativeCompileMotionEvent(startX: Float, startY: Float, endX: Float, endY: Float, durationMs: Long, pitchWidth: Float, pitchHeight: Float, detectedLagSpike: Boolean): Long
+
     // --- V46: Defensive Dominance Matrix ---
     @JvmStatic external fun nativeComputeDominanceVectors(defX: Float, defY: Float, defVx: Float, defVy: Float, targetX: Float, targetY: Float, targetVx: Float, targetVy: Float, isHoldingPressure: Boolean, screenWidth: Float, screenHeight: Float, globalMatchTick: Int, outBuffer: FloatArray)
     // --- V47: Active Aggressive Stopper Matrix ---
@@ -380,10 +366,7 @@ object NativeBridge {
     @JvmStatic external fun nativeTrueShotCompute(ballX: Float, ballY: Float, goalLeftX: Float, goalRightX: Float, goalTopY: Float, goalBottomY: Float, goalkeeperX: Float, goalkeeperVisible: Boolean, goalDetected: Boolean, defenderDensity: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
     // --- V55: Heavy Mutation Engines ---
     @JvmStatic external fun nativeComputeOpticalVariance(currentBuffer: java.nio.ByteBuffer, previousBuffer: java.nio.ByteBuffer, width: Int, height: Int, stride: Int, roiX: Int, roiY: Int, roiW: Int, roiH: Int): Float
-    @JvmStatic external fun nativeInjectStrobePackets(startX: Float, startY: Float, endX: Float, endY: Float, durationMs: Int, pointerCount: Int, outPackets: FloatArray)
-
-
-    // --- V56: SmartAssistUltimateCorrector Native Migration ---
+// --- V56: SmartAssistUltimateCorrector Native Migration ---
     @JvmStatic external fun nativeSACorrectPass(ballX: Float, ballY: Float, intendedX: Float, intendedY: Float, receiverVx: Float, receiverVy: Float, nearestOppX: Float, nearestOppY: Float, pressure: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
     @JvmStatic external fun nativeSACorrectShot(ballX: Float, ballY: Float, glX: Float, grX: Float, gtY: Float, gbY: Float, gkX: Float, gkVis: Boolean, goalDet: Boolean, screenW: Float, screenH: Float, outBuffer: FloatArray)
     @JvmStatic external fun nativeSACorrectCross(ballX: Float, ballY: Float, rx: Float, ry: Float, rvx: Float, rvy: Float, gcx: Float, gcy: Float, laneScore: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
@@ -396,10 +379,7 @@ object NativeBridge {
 
 
     // --- V58: Pure Math Engines Native Migration ---
-    @JvmStatic external fun nativeCounterattackAnalyze(attackers: Int, teamShapeFound: Boolean, teamShapeConf: Float, offensiveLineFound: Boolean, offensiveLineConf: Float, outBuffer: FloatArray)
-
-
-    // --- V59: Tactical & Compactness Pure Math Native Migration ---
+// --- V59: Tactical & Compactness Pure Math Native Migration ---
     @JvmStatic external fun nativeTacticalAnalytics(tacticalMapConf: Float, compactnessConf: Float, compactnessVal: Float, wingConf: Float, wingOverloaded: Boolean, centralConf: Float, centralOverloaded: Boolean, pressingConf: Float, pressingDetected: Boolean, counterPressConf: Float, counterPressDetected: Boolean, buildUpConf: Float, buildUpDetected: Boolean, possessionConf: Float, possessionDetected: Boolean, outBuffer: FloatArray)
     @JvmStatic external fun nativeTacticalBehavior(analyticsConf: Float, formationConf: Float, formationFound: Boolean, teamShapeConf: Float, teamShapeCompactness: Float, outBuffer: FloatArray)
     @JvmStatic external fun nativeRuntimeConfidenceCalibration(tacticalConf: Float, formationConf: Float, passingConf: Float, shootingConf: Float, ema: Float, rollingMean: Float, temporalConf: Float, outBuffer: FloatArray)
@@ -413,16 +393,7 @@ object NativeBridge {
     @JvmStatic external fun nativeCounterPressCompute(sceneConf: Float, hasPossession: Boolean, possessionChanged: Boolean, possessionConf: Float, pressureRows: Int, pressureCols: Int, outBuffer: FloatArray)
     @JvmStatic external fun nativeBuildUpRecognitionCompute(formationFound: Boolean, formationConf: Float, teamShapeConf: Float, lanesNotEmpty: Boolean, outBuffer: FloatArray)
     @JvmStatic external fun nativePossessionStyleCompute(hasPossession: Boolean, possessionFrames: Long, possessionConf: Float, lanesNotEmpty: Boolean, pressureRows: Int, pressureCols: Int, outBuffer: FloatArray)
-
-
-
-
-    @JvmStatic
-    external fun nativeBoostThreadPriority()
-
-
-
-    @JvmStatic
+@JvmStatic
     fun nativeComputeAgilityPhysics(
         playerVelocity: Float,
         opponentDistance: Float,

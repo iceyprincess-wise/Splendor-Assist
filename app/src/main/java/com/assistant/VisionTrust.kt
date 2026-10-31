@@ -130,6 +130,7 @@ object VisionTrust {
         foregroundIsGame = gamePkgs.any { p.contains(it, true) }
     }
 
+    // F43: package evidence is the ONLY true-writer.
     /** explicit override for callers that already resolved the decision */
     @JvmStatic
     fun setGameForeground(isGame: Boolean) { foregroundIsGame = isGame }

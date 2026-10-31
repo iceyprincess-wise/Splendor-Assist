@@ -46,7 +46,7 @@ object ForegroundGate {
 
     private fun push() {
         try {
-            com.assistant.VisionTrust.setGameForeground(started == 0)
+            if (started > 0) com.assistant.VisionTrust.setGameForeground(false)
         } catch (_: Throwable) { }
     }
 

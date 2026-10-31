@@ -106,7 +106,7 @@ fun injectZeroLatencySwipe(
     endX: Float,
     endY: Float,
     restrictedDuration: Long,
-    currentPingMs: Int = 40
+    currentPingMs: Int = -1 // legacy parameter; network RTT is not local dispatch latency
 ) {
     val targetStartX = startX.coerceAtLeast(0f)
     val targetStartY = startY.coerceAtLeast(0f)
@@ -118,11 +118,10 @@ fun injectZeroLatencySwipe(
     // the first measurement lands, so the declared fallback is kept only
     // for that window. The value extends the stroke so a congested device
     // does not drop the swipe inside a server validation frame.
-    val measuredPingMs = InputLatencyEngine.latencyMs
-    val effectivePingMs = (if (measuredPingMs > 0L) measuredPingMs else currentPingMs.toLong())
-        .coerceIn(0L, 250L)
-    val pingCompensatedDuration =
-        restrictedDuration + (effectivePingMs / 4L).coerceAtMost(25L)
+    // Local dispatch latency only. Zero means unknown, so do not compensate.
+    val localDispatchLatencyMs = InputLatencyEngine.latencyMs.coerceIn(0L, 250L)
+    val pingCompensatedDuration = if (localDispatchLatencyMs > 0L)
+        restrictedDuration + (localDispatchLatencyMs / 4L).coerceAtMost(25L) else restrictedDuration
 
     val request = ExecutionRequest(
             source = ExecutionSource.SMART_ASSIST,

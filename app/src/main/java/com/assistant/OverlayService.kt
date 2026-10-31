@@ -319,9 +319,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride)
                 com.assistant.CrashForensics.mark(4, 2, System.currentTimeMillis())
                 val prevBuf = previousVisionBuffer
-                if (prevBuf != null && prevBuf.remaining() == visionBuffer.remaining()) {
-                    com.assistant.NativeBridge.nativeComputeOpticalVariance(visionBuffer, prevBuf, width, height, rowStride, 0, 0, width, height)
-                }
+                val opticalVariance = if (prevBuf != null && prevBuf.remaining() == visionBuffer.remaining()) {
+                    try { com.assistant.NativeBridge.nativeComputeOpticalVariance(visionBuffer, prevBuf, width, height, rowStride, 0, 0, width, height).coerceIn(0f, 1f) } catch (_: Throwable) { 0f }
+                } else 0f
                 val cap = visionBuffer.remaining()
                 val prevStore = previousVisionBuffer
                 val targetBuf = if (prevStore == null || prevStore.capacity() < cap) {
@@ -343,7 +343,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 com.assistant.RuntimeCoordinator.reportCaptureReady()
                 com.assistant.CrashForensics.mark(5, 3, captureFrameCount)
                 com.assistant.CrashForensics.setEngineStage(5)
-                val frame = com.assistant.FrameAssembler.assemble()
+                val frame = com.assistant.FrameAssembler.assemble(opticalVariance)
                 com.assistant.CrashForensics.mark(6, 3, captureFrameCount)
                 com.assistant.RuntimeDecisionLoop.onFrame(frame)
                 com.assistant.CrashForensics.mark(6, 3, captureFrameCount)

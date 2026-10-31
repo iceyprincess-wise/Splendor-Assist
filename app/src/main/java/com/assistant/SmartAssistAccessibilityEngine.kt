@@ -46,7 +46,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         private const val MAX_SAFE_DURATION_MS = 250L     
         private const val NOISE_AMPLITUDE_PX = 1.0f     // Dropped from 3.85f to prevent trajectory deviations
         // SPLENDOR_POLL_FIX: Aligned poll rate from aggressive 2ms wakeup to 16ms frame boundary
-        private const val BUS_POLL_RATE_MS = 2L  // 120fps-aligned polling (fix regression 791cd0a6: 16ms = one full frame of added latency)
+        private const val BUS_POLL_RATE_MS = 9L // bounded 8.33ms event-wake backstop
         private const val DISPATCH_RATE_WINDOW_MS = 10_000L
     }
 

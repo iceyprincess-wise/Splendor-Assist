@@ -110,9 +110,6 @@ object FrameNormalizer {
     data class FrameMetadata(
         val timestampNanos: Long,
         val deltaNanos: Long,
-        val isTickAligned: Boolean,
-        val jitterVariance: Float,
-        val recommendedInputScale: Float
     )
 
     data class NormalizedFrame(
@@ -155,20 +152,9 @@ object FrameNormalizer {
         val isTickAligned = (currentTime % SERVER_TICK_RATE_NANOS) < targetFrameTime
 
         // 4. Amplified Input Effectiveness Calculation
-        // Computes dynamic gesture scaling to force maximal packet payload effectiveness without breaking boundaries
-        val baseScale = max(0.5f, min(2.0f, frameSyncRatio))
-        val recommendedInputScale = if (isTickAligned) {
-            baseScale * jitterVariance * 1.05f // +5% input penetration boost on perfect server tick alignment
-        } else {
-            baseScale * jitterVariance
-        }
-
         val metadata = FrameMetadata(
             timestampNanos = currentTime,
-            deltaNanos = deltaNanos,
-            isTickAligned = isTickAligned,
-            jitterVariance = jitterVariance,
-            recommendedInputScale = recommendedInputScale
+            deltaNanos = deltaNanos
         )
 
         return NormalizedFrame(

@@ -106,7 +106,7 @@ object EvadeContributor : GameplayContributor {
         val targetX = if (frame.viableLaneCount > 0 && frame.passTargetX > 0f)
             frame.passTargetX
         else
-            (frame.ballX + 130f).coerceIn(0f, 1920f) // burst forward if no lane
+            (frame.ballX + 130f).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()) // burst forward if no lane
 
         val targetY = if (frame.viableLaneCount > 0 && frame.passTargetY > 0f)
             frame.passTargetY

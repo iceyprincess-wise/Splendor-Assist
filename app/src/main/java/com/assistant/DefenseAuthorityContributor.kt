@@ -153,7 +153,7 @@ object DefenseAuthorityContributor : GameplayContributor {
             val containOffset = 60f + ((1f - (distance / 1200f)) * 40f)
 
             targetX = (refX + cos(angle).toFloat() * containOffset).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
-            targetY = (refY + sin(angle).toFloat() * containOffset).coerceIn(0f, 1080f)
+            targetY = (refY + sin(angle).toFloat() * containOffset).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
         } else {
             // Direct press / interception targeting
             targetX = ballX

@@ -94,12 +94,13 @@ import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 
 object TrueCrossEngine {
+    private const val TARGET_FPS = 60f // honest named fallback
     private const val CROSS_BALL_SPEED_PX_S=720f; private const val ARRIVAL_BUFFER_S=0.06f
     private const val MAX_CROSS_DIST=900f; private const val BOX_PROXIMITY_PX=230f
     fun compute(ballX:Float,ballY:Float,receiverX:Float,receiverY:Float,receiverVx:Float,receiverVy:Float,goalCenterX:Float,goalCenterY:Float,laneScore:Float):TrueCrossResult?{
         val dist=hypot((receiverX-ballX).toDouble(),(receiverY-ballY).toDouble()).toFloat()
         if(dist>MAX_CROSS_DIST||laneScore<0.04f) return null
-        val travelS=(dist/CROSS_BALL_SPEED_PX_S+ARRIVAL_BUFFER_S).coerceIn(0f,0.60f); val fps=60f
+        val travelS=(dist/CROSS_BALL_SPEED_PX_S+ARRIVAL_BUFFER_S).coerceIn(0f,0.60f); val fps=TARGET_FPS // no captured interval in this scope
         val predX=(receiverX+receiverVx*fps*travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
         val predY=(receiverY+receiverVy*fps*travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
         val dPred=hypot((predX-goalCenterX).toDouble(),(predY-goalCenterY).toDouble()).toFloat()

@@ -25,6 +25,11 @@ object CrashForensics {
     private val locations = Array(CAPACITY) { "unknown:0" }
     private val stageLocations = arrayOfNulls<String>(256)
     private val beats = LongArray(5)
+    private val nativeBreadcrumbRing = Array(64) { "" }
+    private var nativeBreadcrumbCursor = 0
+
+    @JvmStatic fun nativeBreadcrumb(entry: String) { synchronized(lock) { nativeBreadcrumbRing[nativeBreadcrumbCursor++ % nativeBreadcrumbRing.size] = entry.take(95) } }
+    private fun nativeBreadcrumbText(): String = synchronized(lock) { val count = minOf(nativeBreadcrumbCursor, nativeBreadcrumbRing.size); (0 until count).joinToString("\n") { nativeBreadcrumbRing[(nativeBreadcrumbCursor-count+it)%nativeBreadcrumbRing.size] } }
     private val reported = LongArray(5)
     private val cursor = AtomicLong(0L)
     @Volatile private var captureWidth = 0
@@ -89,7 +94,7 @@ object CrashForensics {
             appendReport("[DEATH] uncaught thread=${thread.name} id=${thread.id} " +
                 "${error.javaClass.name}: ${error.message} throwSite=${throwLocation(error)}\n" +
                 "capture=${captureWidth}x${captureHeight} engineStage=${stageName(engineStage)}\n" +
-                trace.toString() + snapshotText())
+                trace.toString() + snapshotText() + "\n--- NATIVE BREADCRUMBS ---\n" + nativeBreadcrumbText())
         } catch (_: Throwable) { }
     }
 
