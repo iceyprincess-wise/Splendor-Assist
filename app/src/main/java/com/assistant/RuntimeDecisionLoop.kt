@@ -162,7 +162,7 @@ object RuntimeDecisionLoop {
 
         val emergency = ContributionRegistry.drainBest()
 
-        val rawRequest = chooseRequest(frame, best, emergency)
+        val rawRequest = chooseRequest(best, emergency)
         val request = rawRequest?.copy(gestureEnvelope = mintOrRefreshGestureEnvelope(android.os.SystemClock.elapsedRealtime()))
         if (request == null) {
             idleNoContribution.incrementAndGet()
@@ -232,9 +232,7 @@ object RuntimeDecisionLoop {
         return accepted
     }
 
-    @Suppress("UNUSED_PARAMETER")
     private fun chooseRequest(
-        _frame: RuntimeFrame,  // reserved — frame context available for future coord use
         best: EngineContribution?,
         emergency: ExecutionRequest?
     ): ExecutionRequest? {

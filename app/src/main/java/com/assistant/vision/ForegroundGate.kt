@@ -1,4 +1,4 @@
-package com.assistant
+package com.assistant.vision
 
 // F49_PATCH_V1.vision
 

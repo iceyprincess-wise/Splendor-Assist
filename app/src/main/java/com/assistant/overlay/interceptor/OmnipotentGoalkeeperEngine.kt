@@ -377,7 +377,25 @@ object OmnipotentGoalkeeperEngine {
 
                 if (accepted) {
                     GoalkeeperMetricsRegistry.saveAttempts.incrementAndGet()
-                    lastSaveTimestamp = System.currentTimeMillis() // Mark save for rebound detection ONLY if bus accepted
+                    if (finalAction in setOf(
+                            GoalkeeperAction.DIVE_LEFT,
+                            GoalkeeperAction.DIVE_RIGHT,
+                            GoalkeeperAction.DIVE_BOTTOM_LEFT,
+                            GoalkeeperAction.DIVE_BOTTOM_RIGHT,
+                            GoalkeeperAction.BLOCK_LEFT,
+                            GoalkeeperAction.BLOCK_RIGHT,
+                            GoalkeeperAction.JUMP_TOP_CENTER,
+                            GoalkeeperAction.JUMP_TOP_LEFT,
+                            GoalkeeperAction.JUMP_TOP_RIGHT,
+                            GoalkeeperAction.REACH_LEFT_CENTER,
+                            GoalkeeperAction.REACH_RIGHT_CENTER,
+                            GoalkeeperAction.CATCH_CENTER,
+                            GoalkeeperAction.REFLEX_CENTER,
+                            GoalkeeperAction.PARRY_BOTTOM_CENTER,
+                            GoalkeeperAction.REBOUND_SAVE
+                        )) {
+                        lastSaveTimestamp = System.currentTimeMillis()
+                    }
                 }
 
                 // Classify the accepted action so the registry interception and

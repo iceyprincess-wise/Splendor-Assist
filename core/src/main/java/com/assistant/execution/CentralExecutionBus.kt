@@ -1,4 +1,4 @@
-package com.assistant
+package com.assistant.execution
 
 // F49_PATCH_V1.execution
 
@@ -170,8 +170,6 @@ object CentralExecutionBus {
 
     fun start() { running.set(true); updateStatistics(force = true) }
     fun stop() { running.set(false); updateStatistics(force = true) }
-    fun acceptedCount(): Long = accepted.get()
-    fun consumedCount(): Long = consumed.get()
     
     fun pendingCount(): Int {
         var count = 0
