@@ -1,0 +1,14 @@
+
+===== ABNORMAL PROCESS DEATH =====
+Detected at   : 2026-11-01 18:45:01
+Dead process  : com.assistant.overlay  (pid 32270)
+Session began : 2026-11-01 18:28:35
+Last heartbeat: 2026-11-01 18:44:52
+Survived      : 976s
+Undetected for: 9s before this restart
+Memory then   : avail=1035MB threshold=216MB lowMemory=false
+Java crash    : NO
+VERDICT       : TERMINATED: OS_REPORTED: REASON_USER_REQUESTED (User force-stop or task swipe) [status=0 importance=100]
+Report source : app/src/main/java/dalvik/system/VMStack.java:-2
+Marker state  : ALIVE
+==================================
