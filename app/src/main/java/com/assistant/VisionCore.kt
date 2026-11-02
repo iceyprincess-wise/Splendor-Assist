@@ -181,10 +181,11 @@ SceneTracker.update(
   if (scene.goalkeeperVisible) {
       TelemetryCoordinator.updateGoalkeeperPosition(
           scene.goalkeeperX,
-          scene.goalkeeperY
+          scene.goalkeeperY,
+          scene.goalkeeperConfidence
       )
   } else {
-      TelemetryCoordinator.updateGoalkeeperPosition(0f, 0f)
+      TelemetryCoordinator.updateGoalkeeperPosition(0f, 0f, 0f)
   }
 
   val closestPlayer =

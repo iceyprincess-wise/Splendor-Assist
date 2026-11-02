@@ -32,14 +32,18 @@ object GameplayEngineRegistry {
                 RuntimeLogger.log("REGISTRY COLLISION: ${contributor.engineName} rejected", "RUNTIME")
                 return false
             }
-            contributors.add(contributor)
-            registrationGeneration.incrementAndGet()
             var initSuccess = true
             try { 
                 contributor.initialize() 
             } catch (t: Throwable) {
                 initSuccess = false
                 RuntimeLogger.log("Engine init failed ${contributor.engineName}: ${t.message}", "RUNTIME")
+            }
+            if (initSuccess) {
+                contributors.add(contributor)
+                registrationGeneration.incrementAndGet()
+            } else {
+                registeredNames.remove(contributor.engineName)
             }
             return initSuccess
         }
@@ -64,6 +68,7 @@ object GameplayEngineRegistry {
     }
 
     fun collect(frame: RuntimeFrame): List<EngineContribution> {
+        collectCycles.incrementAndGet()
         // SPLENDOR_V43_FAST_GATE: Instant exit on untrusted frames (saves 37 engine calls)
         if (!frame.trusted) {
             // SPLENDOR_F31_TRUST_VISIBILITY: trust-blocked frames are now counted and logged
@@ -79,7 +84,6 @@ object GameplayEngineRegistry {
             }
             return emptyList()
         }
-        collectCycles.incrementAndGet()
         val results = ArrayList<EngineContribution>(contributors.size)
         for (c in contributors) {
             try {
@@ -89,6 +93,11 @@ object GameplayEngineRegistry {
                 if (!c.fastGate(frame)) continue
                 c.update(frame)
                 val contribution = c.contribute(frame) ?: continue
+                if (contribution.engine != c.engineName ||
+                    contribution.actionClass == ActionClass.NONE ||
+                    !contribution.targetX.isFinite() || !contribution.targetY.isFinite() ||
+                    !contribution.authority.isFinite() || !contribution.confidence.isFinite() ||
+                    contribution.weight <= 0f || contribution.durationHintMs <= 0L) continue
                 lastContribution[c.engineName] = contribution
                 contributed.compute(c.engineName) { _, v -> (v ?: 0L) + 1L }
                 results.add(contribution)
@@ -115,6 +124,7 @@ object GameplayEngineRegistry {
             registeredNames.clear()
             lastContribution.clear(); contributed.clear(); failures.clear()
             collectCycles.set(0L)
+            untrustedSkipped.set(0L)
             registrationGeneration.set(0L)
             collisions.set(0L)
             warmUpCompletionTimestamp = 0L

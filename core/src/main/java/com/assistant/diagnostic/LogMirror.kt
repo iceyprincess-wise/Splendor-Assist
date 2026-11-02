@@ -99,19 +99,17 @@ object LogMirror {
                 }
                 val bytes = line.toByteArray(Charsets.UTF_8)
                 if (byteCount + bytes.size > MAX_BYTES) {
-                    output?.flush()
-                    output?.close()
-                    output = null
+                    output.flush()
+                    output.close()
                     rotate(context, sinkUri, sinkFile)
-                    sinkUri = null
                     val replacement = openSink(context)
                     output = replacement.first
                     sinkUri = replacement.second
                     sinkFile = replacement.third
                     byteCount = replacement.fourth
                 }
-                output?.write(bytes)
-                output?.flush()
+                output.write(bytes)
+                output.flush()
                 byteCount += bytes.size
                 record.completion?.countDown()
             } catch (_: Throwable) {
@@ -189,6 +187,7 @@ object LogMirror {
     }
 
     private fun findDownload(context: Context, name: String): Uri? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return null
         val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
         context.contentResolver.query(
             collection,

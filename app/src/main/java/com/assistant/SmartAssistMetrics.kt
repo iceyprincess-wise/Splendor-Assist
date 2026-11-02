@@ -223,7 +223,7 @@ object SmartAssistMetrics {
         return mapOf(
             "sequence" to (event?.sequence ?: 0L),
             "source" to (event?.source ?: "none"),
-            "amplification" to (event?.amplification ?: 1000000.0f),
+            "lastAuthority" to (event?.authority ?: 0f),
             "active" to (event != null)
         )
     }
@@ -231,7 +231,6 @@ object SmartAssistMetrics {
     fun gameplayAmplificationRuntimeSnapshot(): Map<String, Number> {
         val snapshot = GameplayDecisionEngine.gameplayAmplificationSnapshot()
         return mapOf(
-            "amplification" to 1000000.0f,
             "decisionCycles" to snapshot.first,
             "lastAuthority" to snapshot.second
         )
@@ -288,7 +287,6 @@ object SmartAssistMetrics {
         val lanes = state?.result?.lanes.orEmpty()
         return mapOf(
             "sequence" to (state?.sequence ?: 0L),
-            "amplification" to (state?.amplification ?: 1.0f),
             "laneCount" to lanes.size,
             "viableLaneCount" to lanes.count { it.viable },
             "bestConfidence" to (lanes.maxOfOrNull { it.confidence } ?: 0.0f)

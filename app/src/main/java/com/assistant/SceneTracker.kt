@@ -190,6 +190,9 @@ object SceneTracker {
 
         // prune the dead: unseen too long or fully faded
         val memory = PLAYER_MEMORY_FRAMES
+        if (trackedGoalkeeper?.let { frameCounter - it.lastSeenFrame > memory } == true) {
+            trackedGoalkeeper = null
+        }
         trackedPlayers.removeAll {
             (frameCounter - it.lastSeenFrame) > memory ||
             it.confidence <= 0f
@@ -260,7 +263,8 @@ object SceneTracker {
 
                 trackedPlayers = trackedPlayers.toList(),
 
-                confidence = state.confidence
+                confidence = state.confidence,
+                goalkeeperConfidence = trackedGoalkeeper?.confidence ?: 0f
             )
 
         latest

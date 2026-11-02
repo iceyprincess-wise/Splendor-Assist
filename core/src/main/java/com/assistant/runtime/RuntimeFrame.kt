@@ -55,7 +55,8 @@ data class RuntimeFrame(
     val goalkeeperY: Float = 0f,
     val opticalVariance: Float = 0f
 ) {
-    val trusted: Boolean get() = enabled && confidence > 0f
+    val trusted: Boolean get() = enabled && confidence.isFinite() && confidence > 0f &&
+        ballX.isFinite() && ballY.isFinite() && opticalVariance.isFinite()
     val goalCenterX: Float get() = (goalLeftX + goalRightX) * 0.5f
     val goalCenterY: Float get() = (goalTopY + goalBottomY) * 0.5f
     val goalWidth: Float get() = (goalRightX - goalLeftX).coerceAtLeast(0f)

@@ -260,7 +260,14 @@ object RuntimeLogger {
     // completely eliminating byte interleaving and forensic ordering problems
     // without requiring an inter-process lock that would block the gameplay thread.
     // SPLENDOR_LOG_ASYNC_FIX: Offload disk append to single background thread executor
-    private val logIoExecutor = java.util.concurrent.Executors.newSingleThreadExecutor()
+    private val logIoExecutor = java.util.concurrent.ThreadPoolExecutor(
+        1, 1, 0L, java.util.concurrent.TimeUnit.MILLISECONDS,
+        java.util.concurrent.ArrayBlockingQueue<Runnable>(256),
+        java.util.concurrent.ThreadFactory { r -> Thread(r, "RuntimeLogIO").apply { isDaemon = true } },
+        java.util.concurrent.RejectedExecutionHandler { _, _ -> droppedWrites.incrementAndGet() }
+    )
+    private val droppedWrites = java.util.concurrent.atomic.AtomicLong()
+    fun droppedWriteCount(): Long = droppedWrites.get()
 
     private fun append(
         file:File?,
@@ -272,24 +279,16 @@ object RuntimeLogger {
                 java.io.FileOutputStream(file, true).use { fos ->
                     fos.write(text.toByteArray(Charsets.UTF_8))
                 }
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                droppedWrites.incrementAndGet()
+                android.util.Log.e("RuntimeLogger", "Log append failed", e)
+            }
         }
     }
 
     private fun writeToAll(
         text: String
     ) {
-        val bytes = text.toByteArray(Charsets.UTF_8)
-        try {
-            // Internal log write skipped
-
-            externalLogFile?.let { file ->
-                java.io.FileOutputStream(file, true).use { fos ->
-                    fos.write(bytes)
-                }
-            }
-        } catch (e: Exception) {
-            // swallow to prevent logging from crashing the app
-        }
+        append(externalLogFile, text)
     }
 }

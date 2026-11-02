@@ -204,6 +204,7 @@ object GestureExecutionAuthority {
                 callback?.onCompleted(gestureDescription)
             }
             override fun onCancelled(gestureDescription: GestureDescription?) {
+                ActionOutcomeVerifier.cancelDispatch(actionId)
                 val curr = currentActionTelemetry
                 if (curr != null && curr.actionId == actionId) {
                     val updated = curr.copy(
@@ -304,6 +305,8 @@ object GestureExecutionAuthority {
         accepted.set(0L)
         rejected.set(0L)
         failed.set(0L)
+        currentActionTelemetry = null
+        lastActionTelemetry = null
         lastOrigin = "none"
         lastAccepted = false
         lastUpdatedMs = 0L

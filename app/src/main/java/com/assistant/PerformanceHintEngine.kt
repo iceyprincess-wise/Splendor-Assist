@@ -75,7 +75,9 @@ object PerformanceHintEngine {
 
     /** Called for each new capture lifetime; a session is created lazily on the vision worker. */
     fun beginCapture() = synchronized(lock) {
-        try { session?.close() } catch (_: Throwable) {}
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try { session?.close() } catch (_: Throwable) {}
+        }
         session = null
         sessionThreadId = -1
         sessionTargetIntervalNanos = -1L
@@ -84,7 +86,9 @@ object PerformanceHintEngine {
 
     fun endCapture() = synchronized(lock) {
         captureActive = false
-        try { session?.close() } catch (_: Throwable) {}
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try { session?.close() } catch (_: Throwable) {}
+        }
         session = null
         sessionThreadId = -1
         sessionTargetIntervalNanos = -1L

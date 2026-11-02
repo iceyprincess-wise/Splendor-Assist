@@ -115,7 +115,8 @@ object TelemetryCoordinator {
         x: Float,
         y: Float,
         velocityX: Float,
-        velocityY: Float
+        velocityY: Float,
+        confidence: Float
     ) {
         val current = TelemetryRepository.current()
 
@@ -124,22 +125,19 @@ object TelemetryCoordinator {
                 ballX = x,
                 ballY = y,
                 ballVelocityX = velocityX,
-                ballVelocityY = velocityY
+                ballVelocityY = velocityY,
+                confidence = confidence.coerceIn(0f, 1f),
+                timestamp = System.currentTimeMillis()
             )
         )
-
-        // GAP2: record WHEN we saw the ball, so confidence can decay with age
-        if (x != 0f || y != 0f) {
-            VisionTrust.stampBall(1f)
-            VisionTrust.pushMotion(velocityX, velocityY)
-        }
 
         RuntimeLogger.telemetry("ball=($x,$y) velocity=($velocityX,$velocityY)")
     }
 
     fun updateGoalkeeperPosition(
         x: Float,
-        y: Float
+        y: Float,
+        confidence: Float
     ) {
         val current = TelemetryRepository.current()
 
@@ -148,7 +146,7 @@ object TelemetryCoordinator {
                 goalkeeperX = x,
                 goalkeeperY = y,
                 goalkeeperConfidence =
-                    if (x != 0f || y != 0f) 1f else 0f
+                    if (confidence.isFinite()) confidence.coerceIn(0f, 1f) else 0f
             )
         )
 

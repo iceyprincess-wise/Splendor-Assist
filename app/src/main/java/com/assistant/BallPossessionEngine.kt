@@ -102,7 +102,7 @@ object BallPossessionEngine {
         ownership: BallOwnershipResult
     ): BallPossessionResult {
 
-        if (!ownership.hasOwner) {
+        if (!ownership.hasOwner || ownership.owner?.isUserTeam != true) {
             previousOwner = -1
             possessionFrames = 0L
 

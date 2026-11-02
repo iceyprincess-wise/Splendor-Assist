@@ -106,7 +106,8 @@ object ConAIEngine {
         metaDecisions.incrementAndGet()
 
         val validCandidates = candidates.filter { c ->
-            !(netHold && c.actionClass != ActionClass.MOVE && c.actionClass != ActionClass.DEFEND)
+            c.weight.isFinite() && c.weight > 0f &&
+                !(netHold && c.actionClass != ActionClass.MOVE && c.actionClass != ActionClass.DEFEND)
         }
         if (validCandidates.isEmpty()) return null
 

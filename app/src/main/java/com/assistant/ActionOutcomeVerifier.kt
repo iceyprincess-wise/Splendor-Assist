@@ -97,87 +97,89 @@ object ActionOutcomeVerifier {
     private data class PendingRecord(
         val request: ExecutionRequest,
         val frame: RuntimeFrame,
-        var dispatchTimestamp: Long = 0L,
-        var confirmed: Boolean = false
+        var dispatchTimestamp: Long = 0L
     )
-
-    private val pendingRecords = java.util.concurrent.ConcurrentHashMap<String, PendingRecord>()
-
+    private val pendingRecords = HashMap<String, PendingRecord>()
     private val totalDispatched = AtomicLong(0L)
     private val effectObservedCount = AtomicLong(0L)
     private val effectNotObservedCount = AtomicLong(0L)
 
+    @Synchronized
     fun recordDispatch(request: ExecutionRequest, frame: RuntimeFrame) {
         pendingRecords[request.actionId] = PendingRecord(request, frame)
-        totalDispatched.incrementAndGet()
     }
 
+    @Synchronized
     fun confirmDispatch(actionId: String) {
         pendingRecords[actionId]?.let {
-            it.dispatchTimestamp = System.currentTimeMillis()
-            it.confirmed = true
+            if (it.dispatchTimestamp == 0L) {
+                it.dispatchTimestamp = System.currentTimeMillis()
+                totalDispatched.incrementAndGet()
+            }
         }
     }
 
+    @Synchronized
+    fun cancelDispatch(actionId: String) { pendingRecords.remove(actionId) }
+
+    @Synchronized
     fun verify(currentFrame: RuntimeFrame) {
-        val iterator = pendingRecords.entries.iterator()
+        val now = System.currentTimeMillis()
+        val iterator = pendingRecords.values.iterator()
         while (iterator.hasNext()) {
-            val entry = iterator.next()
-            val record = entry.value
-            
-            if (!record.confirmed) {
-                if (System.currentTimeMillis() - record.request.timestamp > 500L) {
-                    iterator.remove()
-                }
+            val record = iterator.next()
+            if (record.dispatchTimestamp == 0L) {
+                if (now - record.request.timestamp > 500L) iterator.remove()
                 continue
             }
-
             val age = currentFrame.timestampMs - record.dispatchTimestamp
-
-            if (age < 30L) continue
-            if (age > 350L) {
+            if (now - record.dispatchTimestamp > 350L) {
                 effectNotObservedCount.incrementAndGet()
-                GestureExecutionAuthority.recordEffectObserved(actionId = record.request.actionId, observed = false)
+                GestureExecutionAuthority.recordEffectObserved(record.request.actionId, false)
                 iterator.remove()
                 continue
             }
-
+            if (age < 30L || currentFrame.frameId <= record.frame.frameId || !currentFrame.trusted) continue
+            val displacement = kotlin.math.hypot(currentFrame.ballX - record.frame.ballX,
+                currentFrame.ballY - record.frame.ballY)
             val observed = when (record.request.phase) {
-                ActionClass.PASS.ordinal -> {
-                    val dx = currentFrame.ballX - record.frame.ballX
-                    val dy = currentFrame.ballY - record.frame.ballY
-                    kotlin.math.hypot(dx, dy) > 10f
-                }
-                ActionClass.SHOT.ordinal -> {
-                    currentFrame.goalDetected || kotlin.math.hypot(currentFrame.ballVelocityX, currentFrame.ballVelocityY) > 15f
-                }
-                ActionClass.CROSS.ordinal -> {
-                    kotlin.math.hypot(currentFrame.ballX - record.frame.ballX, currentFrame.ballY - record.frame.ballY) > 20f
-                }
-                ActionClass.DEFEND.ordinal, ActionClass.KEEPER.ordinal -> {
-                    currentFrame.defenderDensity <= record.frame.defenderDensity || !currentFrame.panic
-                }
-                ActionClass.MOVE.ordinal, ActionClass.EVADE.ordinal -> {
-                    kotlin.math.hypot(currentFrame.ballX - record.frame.ballX, currentFrame.ballY - record.frame.ballY) > 3f
-                }
-                else -> true
+                ActionClass.PASS.ordinal -> displacement > 10f
+                ActionClass.SHOT.ordinal -> displacement > 10f &&
+                    kotlin.math.hypot(currentFrame.ballVelocityX, currentFrame.ballVelocityY) >
+                    kotlin.math.hypot(record.frame.ballVelocityX, record.frame.ballVelocityY) + 5f
+                ActionClass.CROSS.ordinal -> displacement > 20f
+                ActionClass.DEFEND.ordinal, ActionClass.KEEPER.ordinal ->
+                    currentFrame.defenderDensity < record.frame.defenderDensity ||
+                        (record.frame.panic && !currentFrame.panic) ||
+                        (!record.frame.hasBall && currentFrame.hasBall)
+                ActionClass.MOVE.ordinal, ActionClass.EVADE.ordinal -> displacement > 3f
+                else -> false
             }
-
+            // Visual change is correlation, not proof of a goal or game-state mutation.
+            // Keep waiting for delayed effects throughout the observation window.
             if (observed) {
                 effectObservedCount.incrementAndGet()
-                GestureExecutionAuthority.recordEffectObserved(actionId = record.request.actionId, observed = true)
-            } else {
-                effectNotObservedCount.incrementAndGet()
-                GestureExecutionAuthority.recordEffectObserved(actionId = record.request.actionId, observed = false)
+                GestureExecutionAuthority.recordEffectObserved(record.request.actionId, true)
+                iterator.remove()
             }
-            iterator.remove()
         }
     }
 
+    @Synchronized
+    fun reset() {
+        pendingRecords.clear()
+        totalDispatched.set(0L)
+        effectObservedCount.set(0L)
+        effectNotObservedCount.set(0L)
+    }
+
+    @Synchronized
     fun diagnostics(): Map<String, Any> = mapOf(
         "dispatched" to totalDispatched.get(),
         "effectObserved" to effectObservedCount.get(),
-        "effectNotObserved" to effectNotObservedCount.get()
+        "effectNotObserved" to effectNotObservedCount.get(),
+        "pending" to pendingRecords.size,
+        "evidenceKind" to "visual-change-correlation"
     )
 }
 

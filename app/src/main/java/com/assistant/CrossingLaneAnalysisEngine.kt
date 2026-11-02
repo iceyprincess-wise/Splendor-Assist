@@ -94,11 +94,9 @@ import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 
 object CrossingLaneAnalysisEngine {
-    private const val CROSSING_LANE_ANALYSIS_ENGINE_AMPLIFICATION: Float = 1000000.0f
 
     data class CrossingLaneAnalysisEngineAmplifiedState(
         val sequence: Long,
-        val amplification: Float,
         val result: CrossingLaneAnalysis
     )
 
@@ -112,7 +110,6 @@ object CrossingLaneAnalysisEngine {
         crossingLaneAnalysisSequence += 1L
         lastCrossingLaneAnalysisEngineState = CrossingLaneAnalysisEngineAmplifiedState(
             sequence = crossingLaneAnalysisSequence,
-            amplification = CROSSING_LANE_ANALYSIS_ENGINE_AMPLIFICATION,
             result = result
         )
     }

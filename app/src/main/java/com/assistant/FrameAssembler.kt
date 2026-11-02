@@ -99,8 +99,6 @@ internal const val GAMEPLAY_DECISION_ENGINE_RAPID_EXECUTION_TAG = "GameplayDecis
 
 internal const val GAMEPLAY_DECISION_ENGINE_PRIME_AUTHORITY_TAG = "GameplayDecisionEngine.prime"
 
-internal const val GAMEPLAY_ENGINE_AMPLIFICATION: Float = 1000000.0f
-
 internal const val MAX_TELEMETRY_AGE_MS = 250L
 
 internal const val SERVER_TICK_RATE_MS = 33.33333f // 30Hz Authoritative Tick Window
@@ -125,24 +123,23 @@ object FrameAssembler {
     fun assemble(opticalVariance: Float = 0f): RuntimeFrame {
         val id = frameCounter.incrementAndGet()
 
-        val crossing = try {
-            CrossingLaneAnalysisEngine.crossingLaneAnalysisEngineSnapshot()
-        } catch (_: Throwable) { null }
-        val lanes = crossing?.result?.lanes.orEmpty()
+        val lanes = Phase3WorldStateStore.current().crossingLaneAnalysis.lanes
         val laneCount = lanes.size
         val viable = lanes.count { it.viable }
         val bestLane = lanes.firstOrNull { it.viable }
         val passTargetX = bestLane?.targetX ?: 0f
         val passTargetY = bestLane?.targetY ?: 0f
-        val bestConf = lanes.maxOfOrNull { it.confidence } ?: 0f
+        val bestConf = bestLane?.confidence ?: 0f
 
-        val telemetry = try { TelemetryRepository.current() } catch (_: Throwable) { null }
+        val telemetry = TelemetryRepository.current().takeIf {
+            System.currentTimeMillis() - it.timestamp in 0L..MAX_TELEMETRY_AGE_MS
+        }
         val ballX = telemetry?.ballX ?: 0f
         val ballY = telemetry?.ballY ?: 0f
         val ballVx = telemetry?.ballVelocityX ?: 0f
         val ballVy = telemetry?.ballVelocityY ?: 0f
         val ballTrustNow = VisionTrust.ballTrust()
-        val ballSeen = ballTrustNow > 0f && (ballX != 0f || ballY != 0f)
+        val ballSeen = telemetry != null && ballTrustNow > 0f && ballX.isFinite() && ballY.isFinite()
 
         /*
          * ROOT-CAUSE FIX (round 2): possession, not visibility.
@@ -157,7 +154,7 @@ object FrameAssembler {
             if (possession != null && possession.confidence >= possessionMinConf) {
                 ballSeen && possession.hasPossession
             } else {
-                ballSeen // cold-start fallback: old fresh-sighting semantics
+                false // Visibility alone does not establish possession.
             }
 
         val scene = try { SceneTracker.current() } catch (_: Throwable) { null }
@@ -201,16 +198,12 @@ object FrameAssembler {
         )
 
         // Confidence follows the fresh ball sighting; lanes can only raise it.
-        val rawConfidence = maxOf(bestConf, ballTrustNow).coerceIn(0f, 1f)
+        val sceneConfidence = scene?.confidence?.takeIf { it.isFinite() } ?: 0f
+        val rawConfidence = maxOf(bestConf, if (ballSeen) ballTrustNow else 0f,
+            if (players.isNotEmpty()) sceneConfidence else 0f).coerceIn(0f, 1f)
         val automaticTrustedFrame = VisionTrust.frameTrusted(players.size, opponents)
         val isTrustedFrame = OverrideStore.resolve("TRUST", automaticTrustedFrame)
-        val confidence = if (isTrustedFrame) {
-            if (players.isNotEmpty() || opponents > 0 || bestConf > 0f || ballTrustNow > 0f) {
-                rawConfidence.coerceAtLeast(0.5f)
-            } else {
-                rawConfidence
-            }
-        } else 0f
+        val confidence = if (isTrustedFrame) rawConfidence else 0f
 
         VisionTrust.tickAndLog()
 

@@ -145,7 +145,7 @@ object GameplayDecisionEngine {
     data class GameplayDownstreamEvent(
         val sequence: Long,
         val source: String,
-        val amplification: Float
+        val authority: Float
     )
 
     private val gameplayDownstreamSequence = AtomicLong(0L)
@@ -156,7 +156,7 @@ object GameplayDecisionEngine {
         lastGameplayDownstreamEvent = GameplayDownstreamEvent(
             sequence = seq,
             source = source,
-            amplification = GAMEPLAY_ENGINE_AMPLIFICATION
+            authority = lastAmplifiedAuthority
         )
     }
 
@@ -169,7 +169,7 @@ object GameplayDecisionEngine {
         amplifiedDecisionCycles.incrementAndGet()
         // Inlined bounding constraint for extreme loop-execution speed
         val bounded = if (authority < 0.0f) 0.0f else if (authority > 1.0f) 1.0f else authority
-        lastAmplifiedAuthority = bounded * GAMEPLAY_ENGINE_AMPLIFICATION
+        lastAmplifiedAuthority = bounded
     }
 
     fun gameplayAmplificationSnapshot(): Pair<Long, Float> =
@@ -295,7 +295,7 @@ object GameplayDecisionEngine {
         temporal: TemporalMemoryState
     ): DecisionResult {
         recordDecisionActivation(mode, strength, "decide called by runtime path")
-        registerAmplifiedDecisionCycle(bound(telemetry.confidence * 0.01f, 0.0f, 1.0f))
+        registerAmplifiedDecisionCycle(if (telemetry.confidence.isFinite()) telemetry.confidence.coerceIn(0f, 1f) else 0f)
         assertGameplayDecisionPrimeAuthority("decide")
 
         val now = System.currentTimeMillis()
@@ -410,6 +410,10 @@ object GameplayDecisionEngine {
     // Wired for ClosedLoopTemporalFeedbackEngine integration.
     @Synchronized
     fun reset() {
+        gameplayDownstreamSequence.set(0L)
+        lastGameplayDownstreamEvent = null
+        amplifiedDecisionCycles.set(0L)
+        lastAmplifiedAuthority = 0f
         previousMode = 0
         previousStrength = 0
         previousConfidence = 0f

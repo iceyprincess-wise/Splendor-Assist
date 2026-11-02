@@ -211,11 +211,13 @@ object RuntimeSelfHealEngine {
 
             val fg = VisionTrust.isGameForeground()
             if (!fg) {
-                val before = fgForceCount
                 VisionTrust.setGameForeground(true)
                 val recovered = VisionTrust.isGameForeground()
-                if (!recovered) com.assistant.diagnostic.RuntimeLogger.log(
-                    "FG_OVERRIDE suppressed by GAME override or package policy", "SELF_HEAL")
+                if (!recovered) {
+                    com.assistant.diagnostic.RuntimeLogger.log(
+                        "FG_OVERRIDE suppressed by GAME override or package policy", "SELF_HEAL")
+                    return
+                }
 
                 fgForceCount++
                 if (shouldLog("FG_OVERRIDE", "forced=$fgForceCount")) {

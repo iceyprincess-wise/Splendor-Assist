@@ -210,6 +210,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             } else {
                 scheduleLatchRelease(startedAt, syncedDuration)
                 recordDispatchForRate()
+                ControlMappingTrainer.recordDispatch(request.phase, request.duration)
             }
 
             accepted

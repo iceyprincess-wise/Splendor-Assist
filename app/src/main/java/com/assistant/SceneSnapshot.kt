@@ -137,7 +137,8 @@ data class SceneSnapshot(
     val centerCircleDetected: Boolean = false,
     val fieldConfidence: Float = 0f,
 
-    val confidence: Float = 0f
+    val confidence: Float = 0f,
+    val goalkeeperConfidence: Float = 0f
 )
 
 /* ========

@@ -125,6 +125,7 @@ object RuntimeDecisionLoop {
     fun onFrame(frame: RuntimeFrame): Boolean {
         decisions.incrementAndGet()
         lastUpdatedMs = System.currentTimeMillis()
+        ActionOutcomeVerifier.verify(frame)
 
         if (!com.assistant.VisionTrust.isGameForeground() || !com.assistant.SmartAssistRepository.enabled()) {
             idleUntrusted.incrementAndGet()
@@ -213,11 +214,12 @@ object RuntimeDecisionLoop {
             resolvedRequest.copy(duration = resolvedRequest.duration.coerceAtMost(45L))
         } else resolvedRequest
 
+        // Register before publishing: the bus consumer runs on another thread.
+        ActionOutcomeVerifier.recordDispatch(terminalRequest, frame)
         val accepted = HybridExecutionTerminal.route(terminalRequest)
+        if (!accepted) ActionOutcomeVerifier.cancelDispatch(terminalRequest.actionId)
         if (accepted) {
             routed.incrementAndGet()
-            ControlMappingTrainer.recordDispatch(terminalRequest.phase, terminalRequest.duration)
-            ActionOutcomeVerifier.recordDispatch(terminalRequest, frame)
             try {
                 com.assistant.events.GameplayEventHub.emit(
                     "routed",
@@ -226,7 +228,6 @@ object RuntimeDecisionLoop {
             } catch (_: Throwable) {
             }
         }
-        ActionOutcomeVerifier.verify(frame)
         lastAction = describe(best, emergency)
         lastWeight = best?.weight ?: 0f
         return accepted
@@ -245,9 +246,9 @@ object RuntimeDecisionLoop {
         }
         if (best == null) return null
 
-        val pred = BallTrajectoryPredictor.current()
-        val leadX = if (pred.speed > 20f) pred.predictedX else best.targetX
-        val leadY = if (pred.speed > 20f) pred.predictedY else best.targetY
+        // Contributor targets carry action-specific intent (goal, receiver, movement).
+        val leadX = best.targetX
+        val leadY = best.targetY
         return ExecutionRequest(
             source = ExecutionSource.SMART_ASSIST,
             phase = best.actionClass.ordinal,
@@ -286,6 +287,8 @@ object RuntimeDecisionLoop {
         }
 
     fun reset() {
+        activeGestureEnvelope = null
+        ActionOutcomeVerifier.reset()
         decisions.set(0L); routed.set(0L)
         FightingSpiritEngine.reset()
         CaptaincySkillEngine.reset()

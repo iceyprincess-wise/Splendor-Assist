@@ -245,7 +245,7 @@ object ControlMappingTrainer {
         if (pendingClass < 0) return
         val age = System.currentTimeMillis() - pendingAt
         if (age > 700L) { pendingClass = -1; return }
-        val spike = mag > baseSpeed * 2.5f + 2f || frame.goalDetected
+        val spike = frame.trusted && mag > baseSpeed * 2.5f + 2f
         if (spike) {
             val i = pendingClass
             emaMs[i] = if (emaN[i] == 0) pendingMs.toFloat() else emaMs[i] * 0.8f + pendingMs * 0.2f

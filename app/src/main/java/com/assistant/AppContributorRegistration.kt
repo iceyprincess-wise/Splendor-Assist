@@ -186,13 +186,15 @@ object AppContributorRegistration {
     fun dumpRuntimeProof(gen: Long = generation.get()): String {
         val actualCount = GameplayEngineRegistry.getRegisteredNames().size
         return """
-            |=== REGISTRATION RUNTIME PROOF [Gen $gen] ===
+            |=== REGISTRATION DIAGNOSTICS [Gen $gen] ===
             |State: ${state.get()}
             |Expected Count: $EXPECTED_CONTRIBUTOR_COUNT | Actual Count: $actualCount
             |Init Failures: ${initFailures.size} ${if(initFailures.isNotEmpty()) "[${initFailures.joinToString()}]" else ""}
             |Warm Failures: ${warmFailures.size} ${if(warmFailures.isNotEmpty()) "[${warmFailures.joinToString()}]" else ""}
             |Omitted/Missing: ${omittedContributors.size} ${if(omittedContributors.isNotEmpty()) "[${omittedContributors.joinToString()}]" else ""}
             |Registry Snapshot: ${GameplayEngineRegistry.registryRuntimeSnapshot()}
+            |Bus acceptance/dispatch: ${SmartAssistMetrics.busExecutionRuntimeSnapshot()}
+            |Visual correlation (not causal proof): ${ActionOutcomeVerifier.diagnostics()}
             |=============================================
         """.trimMargin()
     }

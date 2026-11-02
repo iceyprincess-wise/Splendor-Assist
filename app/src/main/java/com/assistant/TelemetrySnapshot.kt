@@ -110,7 +110,7 @@ data class TelemetrySnapshot(
     val goalkeeperVelocityY: Float = 0f,
     val goalkeeperSpeed: Float = 0f,
     val goalkeeperHeadingRadians: Float = 0f,
-    val goalkeeperConfidence: Float = 1f,
+    val goalkeeperConfidence: Float = 0f,
 
     val confidence: Float = 0f,
     val currentPingMs: Int = -1 // unknown unless measured
