@@ -28,5 +28,9 @@ object OverrideStore {
         Mode.FORCE_ON -> true
         Mode.FORCE_OFF -> false
     }
-    @JvmStatic fun modeLabel(flag: String): String = if (mode(flag) == Mode.AUTO) "AUTO" else "FORCED"
+    @JvmStatic fun modeLabel(flag: String): String = when (mode(flag)) {
+        Mode.AUTO -> "AUTO"
+        Mode.FORCE_ON -> "FORCE_ON"
+        Mode.FORCE_OFF -> "FORCE_OFF"
+    }
 }

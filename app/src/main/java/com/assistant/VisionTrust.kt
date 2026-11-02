@@ -123,9 +123,12 @@ object VisionTrust {
         if (packageEvent && now - lastPackageEventMs < 250L) return
         if (packageEvent) lastPackageEventMs = now
         when (OverrideStore.mode("GAME")) {
-            OverrideStore.Mode.FORCE_ON -> foregroundIsGame =
-                lastForegroundPkg.isNotEmpty() && GAME_PACKAGES.any { lastForegroundPkg.contains(it, true) }
-            OverrideStore.Mode.FORCE_OFF -> foregroundIsGame = false
+            OverrideStore.Mode.FORCE_ON -> {
+                foregroundIsGame = true
+            }
+            OverrideStore.Mode.FORCE_OFF -> {
+                foregroundIsGame = false
+            }
             OverrideStore.Mode.AUTO -> {
                 if (now - lastAutoTransitionMs < 2000L && candidate != foregroundIsGame) return
                 if (candidate != foregroundIsGame) lastAutoTransitionMs = now
@@ -164,10 +167,16 @@ object VisionTrust {
     @JvmStatic fun gameOverrideMode(): String = OverrideStore.modeLabel("GAME")
     @JvmStatic fun trustOverrideMode(): String = OverrideStore.modeLabel("TRUST")
 
-    /** FORCE_ON never substitutes for an observed allowed game package. */
+    /** FORCE_ON is an explicit runtime override and must not be downgraded by package absence. */
     @JvmStatic fun isExecutionPackageAllowed(): Boolean {
-        val pkg = lastForegroundPkg
-        return pkg.isNotEmpty() && GAME_PACKAGES.any { pkg.contains(it, true) }
+        when (OverrideStore.mode("GAME")) {
+            OverrideStore.Mode.FORCE_ON -> return true
+            OverrideStore.Mode.FORCE_OFF -> return false
+            OverrideStore.Mode.AUTO -> {
+                val pkg = lastForegroundPkg
+                return pkg.isNotEmpty() && GAME_PACKAGES.any { pkg.contains(it, true) }
+            }
+        }
     }
 
     @JvmStatic fun recoverStuckGameOff() {
@@ -182,19 +191,13 @@ object VisionTrust {
     @JvmStatic
     fun isGameForeground(): Boolean {
         recoverStuckGameOff()
-        // SPLENDOR_FG_TRUTH_V1 - read the REAL game-foreground flag.
-        // Returning only !ownUiVisible() discarded foregroundIsGame entirely,
-        // so setGameForeground(false) and onForegroundPackage() could never
-        // block a gesture and GestureExecutionAuthority's final execution gate
-        // was inert.
         if (com.assistant.vision.ForegroundGate.ownUiVisible()) return false
-        // Cold start: before any window-state change has been observed there is
-        // no package evidence, but an EXPLICIT setGameForeground() override from the
-        // self-heal agent or ignition must be honored. Returning false here ignored
-        // the override entirely and starved every gesture at cold start
-        // (SPLENDOR_F33_FOREGROUND_LATCH, found by independent review).
-        if (lastForegroundPkg.isEmpty()) return foregroundIsGame
-        return foregroundIsGame
+
+        return when (OverrideStore.mode("GAME")) {
+            OverrideStore.Mode.FORCE_ON -> true
+            OverrideStore.Mode.FORCE_OFF -> false
+            OverrideStore.Mode.AUTO -> foregroundIsGame
+        }
     }
 
     /** true when this frame must not be ingested at all */
