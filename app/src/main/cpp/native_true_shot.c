@@ -1,4 +1,5 @@
 #include "native_breadcrumb.h"
+#include "native_contract.h"
 #include <jni.h>
 #include <fcntl.h>
 #include <string.h>
@@ -22,6 +23,10 @@ Java_com_assistant_NativeBridge_nativeTrueShotCompute(
         jfloat goalkeeperX, jboolean goalkeeperVisible, jboolean goalDetected,
         jfloat defenderDensity, jfloat screenW, jfloat screenH,
         jfloatArray outBuffer) {
+    if (!splendor_array(env, outBuffer, 5)) return;
+    const jfloat contract_values[] = {ballX, ballY, goalLeftX, goalRightX, goalTopY, goalBottomY, goalkeeperX, defenderDensity, screenW, screenH};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeTrueShotCompute");
 #endif

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <limits.h>
 
 static inline int splendor_clamp_max_int(int v, int max) {
     int gt = v > max;
@@ -36,7 +37,8 @@ Java_com_assistant_NativeBridge_nativePreprocessFrame(
         return -1;
     }
 
-    if (width <= 0 || height <= 0 || rowStride <= 0 || inputSize <= 0) {
+    if (width <= 0 || height <= 0 || rowStride <= 0 || inputSize <= 0 || (int64_t)rowStride < (int64_t)width * 4 ||
+        (uint64_t)inputSize > SIZE_MAX / (uint64_t)inputSize / (3u * sizeof(float))) {
         return -3;
     }
 

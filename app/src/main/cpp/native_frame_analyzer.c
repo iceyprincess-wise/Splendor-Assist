@@ -1,4 +1,6 @@
 #include "native_breadcrumb.h"
+#include "native_contract.h"
+#include <pthread.h>
 #include <jni.h>
 #include <fcntl.h>
 #include <string.h>
@@ -32,8 +34,7 @@ typedef struct {
     int32_t team;
 } PlayerCoord;
 
-static PlayerCoord g_players[MAX_PLAYERS];
-static int32_t g_player_count = 0;
+
 
 JNIEXPORT void JNICALL
 Java_com_assistant_NativeBridge_nativeAnalyzeFrame(JNIEnv *env, jclass clazz,
@@ -44,10 +45,21 @@ Java_com_assistant_NativeBridge_nativeAnalyzeFrame(JNIEnv *env, jclass clazz,
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeAnalyzeFrame");
 #endif
 
+    if (!splendor_array(env, outBuffer, 67)) return;
+    if (!byteBuffer || width <= 0 || height <= 0 || pixelStride < 3 || rowStride <= 0 ||
+        (int64_t)rowStride < (int64_t)width * pixelStride ||
+        (*env)->GetDirectBufferCapacity(env, byteBuffer) < (int64_t)(height-1)*rowStride+(int64_t)(width-1)*pixelStride+3) {
+        splendor_reject(env, "Invalid frame layout or truncated direct buffer"); return;
+    }
+    PlayerCoord g_players[MAX_PLAYERS];
+    int32_t g_player_count = 0;
+    static pthread_mutex_t siteLock = PTHREAD_MUTEX_INITIALIZER;
     static int firstFrameSitesLogged = 0;
+    pthread_mutex_lock(&siteLock);
     const int logFirstFrameSites = !firstFrameSitesLogged;
+    firstFrameSitesLogged = 1;
+    pthread_mutex_unlock(&siteLock);
     if (logFirstFrameSites) {
-        firstFrameSitesLogged = 1;
         splendor_log_vision_site(env, __FILE__, __LINE__, "nativeAnalyzeFrame entry");
     }
     uint8_t* pixels = (uint8_t*) (*env)->GetDirectBufferAddress(env, byteBuffer);
@@ -59,9 +71,9 @@ Java_com_assistant_NativeBridge_nativeAnalyzeFrame(JNIEnv *env, jclass clazz,
     g_player_count = 0;
     
     for (int y = 0; y < REGION_RADAR_Y && y < height; y++) {
-        uint8_t* row = pixels + (y * rowStride);
+        uint8_t* row = pixels + ((int64_t)y * rowStride);
         for (int x = 0; x < REGION_RADAR_X && x < width; x++) {
-            uint8_t* pixel = row + (x * pixelStride);
+            uint8_t* pixel = row + ((int64_t)x * pixelStride);
             uint8_t r = pixel[0];
             uint8_t g = pixel[1];
             uint8_t b = pixel[2];

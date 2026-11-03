@@ -1,4 +1,5 @@
 #include "native_breadcrumb.h"
+#include "native_contract.h"
 #include <jni.h>
 #include <fcntl.h>
 #include <string.h>
@@ -34,6 +35,10 @@ Java_com_assistant_NativeBridge_nativeComputeDominanceVectors(
         jfloat targetX, jfloat targetY, jfloat targetVx, jfloat targetVy,
         jboolean isHoldingPressure, jfloat screenWidth, jfloat screenHeight,
         jint globalMatchTick, jfloatArray outBuffer) {
+    if (!splendor_array(env, outBuffer, 4)) return;
+    const jfloat contract_values[] = {defX, defY, defVx, defVy, targetX, targetY, targetVx, targetVy, screenWidth, screenHeight};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeComputeDominanceVectors");
 #endif

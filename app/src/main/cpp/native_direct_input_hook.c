@@ -1,81 +1,28 @@
+#include "native_contract.h"
 #include "native_breadcrumb.h"
-#include <jni.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-
-#include <android/input.h>
-#include <stdint.h>
-
-#define MAX_STROKE_POINTS 64
-
-#pragma pack(push, 1)
-typedef struct {
-    float x;
-    float y;
-    int64_t event_time_ms;
-} NativeStrokePoint;
-#pragma pack(pop)
-
-static NativeStrokePoint g_stroke_buffer[MAX_STROKE_POINTS];
-
-JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeDirectInputHookImpl(
-    JNIEnv *env, jobject thiz,
-    jfloatArray j_x_coords, jfloatArray j_y_coords, 
-    jfloatArray j_event_times, jint point_count,
-    jfloat screen_w, jfloat screen_h,
-    jfloatArray j_out_flat) {
-#ifdef SPLENDOR_BREADCRUMBS
-    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeDirectInputHookImpl");
-#endif
-
-
-    if (point_count > MAX_STROKE_POINTS) point_count = MAX_STROKE_POINTS;
-    if (point_count <= 0) return;
-    
-    float *x_arr = (*env)->GetFloatArrayElements(env, j_x_coords, NULL);
-    float *y_arr = (*env)->GetFloatArrayElements(env, j_y_coords, NULL);
-    float *t_arr = (*env)->GetFloatArrayElements(env, j_event_times, NULL);
-    
-    for (int i = 0; i < point_count; i++) {
-        float x = x_arr[i];
-        float y = y_arr[i];
-        
-        x = x < 0.0f ? 0.0f : x;
-        x = x > screen_w ? screen_w : x;
-        
-        y = y < 0.0f ? 0.0f : y;
-        y = y > screen_h ? screen_h : y;
-        
-        g_stroke_buffer[i].x = x;
-        g_stroke_buffer[i].y = y;
-        g_stroke_buffer[i].event_time_ms = (int64_t)t_arr[i];
+JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeDirectInputHookImpl(
+    JNIEnv *env,jobject thiz,jfloatArray xs,jfloatArray ys,jfloatArray times,jint count,
+    jfloat width,jfloat height,jfloatArray output) {
+    (void)thiz;
+    if (count>64) count=64;
+    if (count<=0) return;
+    if (!isfinite(width) || !isfinite(height) || width<=0 || height<=0) { splendor_reject(env,"Invalid stroke screen dimensions"); return; }
+    if (!splendor_array(env,xs,count) || !splendor_array(env,ys,count) ||
+        !splendor_array(env,times,count) || !splendor_array(env,output,count*3)) return;
+    jfloat x[64],y[64],t[64],out[192];
+    (*env)->GetFloatArrayRegion(env,xs,0,count,x); if ((*env)->ExceptionCheck(env)) return;
+    (*env)->GetFloatArrayRegion(env,ys,0,count,y); if ((*env)->ExceptionCheck(env)) return;
+    (*env)->GetFloatArrayRegion(env,times,0,count,t); if ((*env)->ExceptionCheck(env)) return;
+    if (!splendor_finite(env,x,count) || !splendor_finite(env,y,count) || !splendor_finite(env,t,count)) return;
+    for (int i=0;i<count;i++) {
+        if (t[i]<0) { splendor_reject(env,"Stroke time is negative"); return; }
+        out[i*3]=fminf(fmaxf(x[i],0),width); out[i*3+1]=fminf(fmaxf(y[i],0),height);
+        out[i*3+2]=truncf(t[i]);
     }
-    
-    (*env)->ReleaseFloatArrayElements(env, j_x_coords, x_arr, JNI_ABORT);
-    (*env)->ReleaseFloatArrayElements(env, j_y_coords, y_arr, JNI_ABORT);
-    (*env)->ReleaseFloatArrayElements(env, j_event_times, t_arr, JNI_ABORT);
-    
-    float *out = (*env)->GetFloatArrayElements(env, j_out_flat, NULL);
-    for (int i = 0; i < point_count; i++) {
-        out[i * 3]     = g_stroke_buffer[i].x;
-        out[i * 3 + 1] = g_stroke_buffer[i].y;
-        out[i * 3 + 2] = (float)g_stroke_buffer[i].event_time_ms;
-    }
-    (*env)->ReleaseFloatArrayElements(env, j_out_flat, out, 0);
+    (*env)->SetFloatArrayRegion(env,output,0,count*3,out);
 }
-
-JNIEXPORT void JNICALL
-Java_com_assistant_NativeBridge_nativeDirectInputHookPrepare(
-    JNIEnv *env, jobject thiz,
-    jfloatArray j_x_coords, jfloatArray j_y_coords, 
-    jfloatArray j_event_times, jint point_count,
-    jfloat screen_w, jfloat screen_h,
-    jfloatArray j_out_flat) {
-#ifdef SPLENDOR_BREADCRUMBS
-    splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeDirectInputHookPrepare");
-#endif
-
-    Java_com_assistant_NativeBridge_nativeDirectInputHookImpl(env, thiz, j_x_coords, j_y_coords, j_event_times, point_count, screen_w, screen_h, j_out_flat);
+JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeDirectInputHookPrepare(
+    JNIEnv *env,jobject thiz,jfloatArray x,jfloatArray y,jfloatArray t,jint n,
+    jfloat w,jfloat h,jfloatArray out) {
+    Java_com_assistant_NativeBridge_nativeDirectInputHookImpl(env,thiz,x,y,t,n,w,h,out);
 }

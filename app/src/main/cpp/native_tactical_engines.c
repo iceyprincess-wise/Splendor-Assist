@@ -1,4 +1,5 @@
 #include "native_breadcrumb.h"
+#include "native_contract.h"
 #include <math.h>
 #include <jni.h>
 #include <fcntl.h>
@@ -24,6 +25,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeTacticalAnalytics(
     jfloat buildUpConf, jboolean buildUpDetected,
     jfloat possessionConf, jboolean possessionDetected,
     jfloatArray out) {
+    if (!splendor_array(env, out, 1)) return;
+    const jfloat contract_values[] = {tacticalMapConf, compactnessConf, compactnessVal, wingConf, centralConf, pressingConf, counterPressConf, buildUpConf, possessionConf};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeTacticalAnalytics");
 #endif
@@ -48,6 +53,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeTacticalBehavior(
     jfloat analyticsConf, jfloat formationConf, jboolean formationFound,
     jfloat teamShapeConf, jfloat teamShapeCompactness,
     jfloatArray out) {
+    if (!splendor_array(env, out, 1)) return;
+    const jfloat contract_values[] = {analyticsConf, formationConf, teamShapeConf, teamShapeCompactness};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeTacticalBehavior");
 #endif
@@ -67,6 +76,10 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeRuntimeConfidenceCa
     jfloat passingConf, jfloat shootingConf,
     jfloat ema, jfloat rollingMean, jfloat temporalConf,
     jfloatArray out) {
+    if (!splendor_array(env, out, 1)) return;
+    const jfloat contract_values[] = {tacticalConf, formationConf, passingConf, shootingConf, ema, rollingMean, temporalConf};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeRuntimeConfidenceCalibration");
 #endif
@@ -86,12 +99,20 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeDefensiveCompactnes
     jfloat fieldConf, jfloat defLineConf, jfloat teamShapeConf,
     jfloat teamShapeWidth, jfloat teamShapeDepth, jfloat teamShapeCompactness,
     jfloat screenW, jfloat screenH, jfloatArray out) {
+    if (!splendor_array(env, out, 4)) return;
+    const jfloat contract_values[] = {fieldConf, defLineConf, teamShapeConf, teamShapeWidth, teamShapeDepth, teamShapeCompactness, screenW, screenH};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeDefensiveCompactness");
 #endif
 
     jfloat* r = (*env)->GetPrimitiveArrayCritical(env, out, NULL);
     if (!r) return;
+    if (screenW <= 0 || screenH <= 0) {
+        (*env)->ReleasePrimitiveArrayCritical(env, out, r, JNI_ABORT);
+        splendor_reject(env, "Compactness requires positive frame dimensions"); return;
+    }
     float maxSpread = sqrtf((screenW * screenW) + (screenH * screenH));
     float safeSpread = (maxSpread > 1.0f) ? maxSpread : 1.0f;
     

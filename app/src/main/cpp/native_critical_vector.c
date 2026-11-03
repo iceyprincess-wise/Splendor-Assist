@@ -1,4 +1,5 @@
 #include "native_breadcrumb.h"
+#include "native_contract.h"
 #include <jni.h>
 #include <fcntl.h>
 #include <string.h>
@@ -23,6 +24,10 @@ Java_com_assistant_NativeBridge_nativeCriticalScoringVector(
         jfloat goalRightPostX, jfloat goalRightPostY,
         jfloat controlOriginX, jfloat controlOriginY, jfloat controlRadius,
         jfloatArray outBuffer) {
+    if (!splendor_array(env, outBuffer, 2)) return;
+    const jfloat contract_values[] = {strikerX, strikerY, gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY, controlOriginX, controlOriginY, controlRadius};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeCriticalScoringVector");
 #endif
@@ -57,6 +62,10 @@ Java_com_assistant_NativeBridge_nativeCriticalTrueTargetPass(
         jboolean isLoftedContext,
         jfloat screenWidth, jfloat screenHeight,
         jfloatArray outBuffer) {
+    if (!splendor_array(env, outBuffer, 2)) return;
+    const jfloat contract_values[] = {passButtonX, passButtonY, activeStrikerX, activeStrikerY, strikerVx, strikerVy, screenWidth, screenHeight};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeCriticalTrueTargetPass");
 #endif

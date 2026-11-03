@@ -1,4 +1,5 @@
 #include "native_breadcrumb.h"
+#include "native_contract.h"
 #include <jni.h>
 #include <fcntl.h>
 #include <string.h>
@@ -29,6 +30,10 @@ Java_com_assistant_NativeBridge_nativeSACorrectPass(
         jfloat ballX, jfloat ballY, jfloat intendedX, jfloat intendedY,
         jfloat receiverVx, jfloat receiverVy, jfloat nearestOppX, jfloat nearestOppY,
         jfloat pressure, jfloat screenW, jfloat screenH, jfloatArray outBuffer) {
+    if (!splendor_array(env, outBuffer, 3)) return;
+    const jfloat contract_values[] = {ballX, ballY, intendedX, intendedY, receiverVx, receiverVy, nearestOppX, nearestOppY, pressure, screenW, screenH};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeSACorrectPass");
 #endif
@@ -66,6 +71,10 @@ Java_com_assistant_NativeBridge_nativeSACorrectShot(
         JNIEnv* env, jobject thiz,
         jfloat ballX, jfloat ballY, jfloat glX, jfloat grX, jfloat gtY, jfloat gbY,
         jfloat gkX, jboolean gkVis, jboolean goalDet, jfloat screenW, jfloat screenH, jfloatArray outBuffer) {
+    if (!splendor_array(env, outBuffer, 4)) return;
+    const jfloat contract_values[] = {ballX, ballY, glX, grX, gtY, gbY, gkX, screenW, screenH};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeSACorrectShot");
 #endif
@@ -116,6 +125,10 @@ Java_com_assistant_NativeBridge_nativeSACorrectCross(
         JNIEnv* env, jobject thiz,
         jfloat ballX, jfloat ballY, jfloat rx, jfloat ry, jfloat rvx, jfloat rvy,
         jfloat gcx, jfloat gcy, jfloat laneScore, jfloat screenW, jfloat screenH, jfloatArray outBuffer) {
+    if (!splendor_array(env, outBuffer, 4)) return;
+    const jfloat contract_values[] = {ballX, ballY, rx, ry, rvx, rvy, gcx, gcy, laneScore, screenW, screenH};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeSACorrectCross");
 #endif
@@ -162,6 +175,10 @@ Java_com_assistant_NativeBridge_nativeSACorrectKeeper(
         JNIEnv* env, jobject thiz,
         jfloat ballX, jfloat ballY, jfloat glX, jfloat grX, jfloat gtY, jfloat gbY,
         jfloat screenW, jfloat screenH, jfloatArray outBuffer) {
+    if (!splendor_array(env, outBuffer, 3)) return;
+    const jfloat contract_values[] = {ballX, ballY, glX, grX, gtY, gbY, screenW, screenH};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeSACorrectKeeper");
 #endif

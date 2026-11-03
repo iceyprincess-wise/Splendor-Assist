@@ -1,4 +1,5 @@
 #include "native_breadcrumb.h"
+#include "native_contract.h"
 #include <jni.h>
 #include <fcntl.h>
 #include <string.h>
@@ -14,7 +15,7 @@
 /* SPLENDOR_AGILITY_UNITS_V3 - Unit contract.
  *
  * All unit scales, boost coefficients, duration bases, and thresholds are
- * now supplied by the Java/Kotlin caller as real measured telemetry. The
+ * supplied by the Java/Kotlin caller as explicit model configuration. The
  * native function no longer fabricates unit scales, boost coefficients,
  * duration bases, or confidence floors.
  *
@@ -83,7 +84,12 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
 #endif
 
 
-    if (!outBuffer || (*env)->GetArrayLength(env, outBuffer) < 6) return;
+    if (!splendor_array(env, outBuffer, 6)) return;
+    const jfloat scales[] = {nearUnits,proxUnits,softUnits,farUnits,maxVelocity,distGuard};
+    if (!splendor_finite(env,scales,6)) return;
+    for (int i=0;i<6;i++) if (scales[i]<=0) { splendor_reject(env,"Agility scales must be positive"); return; }
+    const jfloat coefficients[] = {shieldBase,shieldProx,shieldSpeed,shieldConf,durationBase,confFloor};
+    if (!splendor_finite(env,coefficients,6)) return;
 
     jfloat* result = (*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
     if (!result) {
@@ -128,7 +134,7 @@ Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
     float proximity = 1.0f - (opponentDistance / proxUnits);
     proximity = branchless_coerce(proximity, 0.0f, 1.0f);
 
-    float speed = playerVelocity * 0.06666667f;
+    float speed = playerVelocity / maxVelocity;
     speed = branchless_coerce(speed, 0.0f, 1.0f);
 
     float conf = branchless_coerce(possessionConfidence, 0.0f, 1.0f);

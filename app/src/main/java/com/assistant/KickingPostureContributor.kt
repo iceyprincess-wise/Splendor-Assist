@@ -103,6 +103,7 @@ object KickingPostureContributor : GameplayContributor {
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
+        if (!NativeBridge.isNativeReady()) return null
 
         val scene = try { SceneTracker.current() } catch (_: Throwable) { null } ?: return null
         val players = scene.trackedPlayers

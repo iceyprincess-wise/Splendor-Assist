@@ -1,4 +1,5 @@
 #include "native_breadcrumb.h"
+#include "native_contract.h"
 #include <jni.h>
 #include <fcntl.h>
 #include <string.h>
@@ -45,6 +46,10 @@ Java_com_assistant_NativeBridge_nativeKickingPostureImpl(
         jfloat targetX, jfloat targetY,
         jfloat pitchWidth, jfloat pitchHeight,
         jfloatArray outBuffer) {
+    if (!splendor_array(env, outBuffer, 4)) return;
+    const jfloat contract_values[] = {carrierX, carrierY, carrierVx, carrierVy, targetX, targetY, pitchWidth, pitchHeight};
+    if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeKickingPostureImpl");
 #endif
