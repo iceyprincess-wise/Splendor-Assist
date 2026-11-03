@@ -1,0 +1,14 @@
+
+================================================================
+>>> BUILD START
+================================================================
+SPLENDOR-ASSIST BUILD REPORT v3
+Started: 2026-11-03 09:33:00 WAT
+Repository: /data/data/com.termux/files/home/projects/Splendor-Assist
+HEAD before build: dbd526238cf8b4ed60b8083fc891f2046fccfab8
+Toolchain: JAVA_HOME=/data/data/com.termux/files/usr/lib/jvm/java-21-openjdk ANDROID_HOME=/data/data/com.termux/files/home/android-sdk ANDROID_NDK_HOME=/data/data/com.termux/files/home/android-sdk/ndk/25.1.8937393
+
+================================================================
+>>> COMMIT EXISTING WORKTREE CHANGES, ONLY WHEN DIRTY
+================================================================
+?? Build_lint_output.txt
