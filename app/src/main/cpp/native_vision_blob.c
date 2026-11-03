@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include <stdint.h>
+#include <math.h>
 #include <string.h>
 #include <pthread.h>
 
@@ -21,6 +22,14 @@ static int g_sumR[MAX_LABELS];
 static int g_sumG[MAX_LABELS];
 static int g_sumB[MAX_LABELS];
 static int g_labels[MAX_PIXELS];
+static unsigned char g_kinds[MAX_PIXELS];
+
+static inline int foreground_kind(int r, int g, int b) {
+    if (r > 140 && r > g+50 && r > b+50) return 2;
+    if (b > 140 && b > r+50 && b > g+50) return 3;
+    if (g > 160 && g > r+60 && g > b+60) return 4;
+    return 1;
+}
 static int g_temp_blobs[10000 * 8]; // Static temp buffer for critical section decoupling
 
 static pthread_mutex_t g_vision_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -70,7 +79,9 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
     (void)clazz;
     
     // Defensive input validation
-    if (width <= 0 || height <= 0 || pixelStride < 3 || rowStride < width * pixelStride) {
+    if (width <= 0 || height <= 0 || pixelStride < 3 || (jlong)rowStride < (jlong)width * pixelStride ||
+        (jlong)width * height > MAX_PIXELS || !isfinite(threshold) || threshold < 0.0f || threshold > 1.0f ||
+        byteBuffer == NULL || outputBlobs == NULL) {
         return -1;
     }
     
@@ -109,14 +120,16 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
             int lum = (r * 13933 + g * 46871 + b * 4732) >> 16;
             int idx = y * width + x;
             
-            if (lum >= thresholdInt) {
+            const int kind = foreground_kind(r, g, b);
+            g_kinds[idx] = (unsigned char)kind;
+            if (kind != 1 || lum >= thresholdInt) {
                 int label = 0;
                 int leftLabel = 0, topLabel = 0, topLeftLabel = 0, topRightLabel = 0;
                 
-                if (x > 0) leftLabel = g_labels[idx - 1];
-                if (y > 0) topLabel = g_labels[idx - width];
-                if (x > 0 && y > 0) topLeftLabel = g_labels[idx - width - 1];
-                if (x < width - 1 && y > 0) topRightLabel = g_labels[idx - width + 1];
+                if (x > 0 && g_kinds[idx - 1] == kind) leftLabel = g_labels[idx - 1];
+                if (y > 0 && g_kinds[idx - width] == kind) topLabel = g_labels[idx - width];
+                if (x > 0 && y > 0 && g_kinds[idx - width - 1] == kind) topLeftLabel = g_labels[idx - width - 1];
+                if (x < width - 1 && y > 0 && g_kinds[idx - width + 1] == kind) topRightLabel = g_labels[idx - width + 1];
                 
                 int minLabel = 0;
                 if (leftLabel > 0 && (minLabel == 0 || leftLabel < minLabel)) minLabel = leftLabel;
@@ -191,13 +204,12 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
         }
     }
     
-    pthread_mutex_unlock(&g_vision_mutex);
-
-    // FIX 3: Briefly enter critical section ONLY for fast memcpy
+    // Keep the temporary output protected until its JNI copy completes.
     jint* out = (*env)->GetPrimitiveArrayCritical(env, outputBlobs, NULL);
     if (out) {
         memcpy(out, g_temp_blobs, blobCount * 8 * sizeof(jint));
         (*env)->ReleasePrimitiveArrayCritical(env, outputBlobs, out, 0);
     }
-    return blobCount;
+    pthread_mutex_unlock(&g_vision_mutex);
+    return out ? blobCount : -1;
 }

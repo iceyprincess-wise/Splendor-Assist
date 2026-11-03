@@ -94,95 +94,37 @@ import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 
 object ActionOutcomeVerifier {
-    private data class PendingRecord(
-        val request: ExecutionRequest,
-        val frame: RuntimeFrame,
-        var dispatchTimestamp: Long = 0L
-    )
-    private val pendingRecords = HashMap<String, PendingRecord>()
-    private val totalDispatched = AtomicLong(0L)
-    private val effectObservedCount = AtomicLong(0L)
-    private val effectNotObservedCount = AtomicLong(0L)
-
-    @Synchronized
-    fun recordDispatch(request: ExecutionRequest, frame: RuntimeFrame) {
-        pendingRecords[request.actionId] = PendingRecord(request, frame)
+    private data class Pending(val request: ExecutionRequest, val frame: RuntimeFrame, val at: Long = System.nanoTime())
+    private val pending = linkedMapOf<String, Pending>()
+    private val policy = com.assistant.execution.OutcomePolicy()
+    private var dispatched = 0L; private var macroObserved = 0L; private var heuristicFailure = 0L
+    @Synchronized fun recordDispatch(request: ExecutionRequest, frame: RuntimeFrame) {
+        if (pending.size >= 64) cancelDispatch(pending.keys.first())
+        if (!pending.containsKey(request.actionId)) pending[request.actionId] = Pending(request, frame)
     }
-
-    @Synchronized
-    fun confirmDispatch(actionId: String) {
-        pendingRecords[actionId]?.let {
-            if (it.dispatchTimestamp == 0L) {
-                it.dispatchTimestamp = System.currentTimeMillis()
-                totalDispatched.incrementAndGet()
-            }
+    @Synchronized fun confirmDispatch(actionId: String) {
+        val item = pending.remove(actionId) ?: return
+        val phase = item.request.actionClass ?: if (item.request.source == ExecutionSource.GOALKEEPER) ActionClass.KEEPER else return
+        policy.dispatched(actionId, phase, item.frame.ownerId, item.frame.hasBall, System.nanoTime())
+        dispatched++
+    }
+    @Synchronized fun cancelDispatch(actionId: String) { pending.remove(actionId); policy.cancel(actionId) }
+    fun cooling(phase: ActionClass) = policy.cooling(phase, System.nanoTime())
+    fun confidenceFactor(phase: ActionClass) = policy.confidenceFactor(phase)
+    @Synchronized fun verify(currentFrame: RuntimeFrame) {
+        if (com.assistant.execution.UiExecutionGate.blocked()) {
+            pending.clear(); policy.abandonPending(); return
+        }
+        val now = System.nanoTime()
+        pending.entries.removeAll { now - it.value.at > 500_000_000L }
+        for ((id, observed) in policy.observe(currentFrame.ownerId, currentFrame.hasBall, currentFrame.trusted, now, currentFrame.capturedAtNanos)) {
+            if (observed) macroObserved++ else heuristicFailure++
+            GestureExecutionAuthority.recordEffectObserved(id, observed)
+            RuntimeLogger.log("${if (observed) "Macro_State_Correlation" else "Heuristic_Gesture_Failure"} actionId=$id", "FEEDBACK")
         }
     }
-
-    @Synchronized
-    fun cancelDispatch(actionId: String) { pendingRecords.remove(actionId) }
-
-    @Synchronized
-    fun verify(currentFrame: RuntimeFrame) {
-        val now = System.currentTimeMillis()
-        val iterator = pendingRecords.values.iterator()
-        while (iterator.hasNext()) {
-            val record = iterator.next()
-            if (record.dispatchTimestamp == 0L) {
-                if (now - record.request.timestamp > 500L) iterator.remove()
-                continue
-            }
-            val age = currentFrame.timestampMs - record.dispatchTimestamp
-            if (now - record.dispatchTimestamp > 350L) {
-                effectNotObservedCount.incrementAndGet()
-                GestureExecutionAuthority.recordEffectObserved(record.request.actionId, false)
-                iterator.remove()
-                continue
-            }
-            if (age < 30L || currentFrame.frameId <= record.frame.frameId || !currentFrame.trusted) continue
-            val displacement = kotlin.math.hypot(currentFrame.ballX - record.frame.ballX,
-                currentFrame.ballY - record.frame.ballY)
-            val observed = when (record.request.phase) {
-                ActionClass.PASS.ordinal -> displacement > 10f
-                ActionClass.SHOT.ordinal -> displacement > 10f &&
-                    kotlin.math.hypot(currentFrame.ballVelocityX, currentFrame.ballVelocityY) >
-                    kotlin.math.hypot(record.frame.ballVelocityX, record.frame.ballVelocityY) + 5f
-                ActionClass.CROSS.ordinal -> displacement > 20f
-                ActionClass.DEFEND.ordinal, ActionClass.KEEPER.ordinal ->
-                    currentFrame.defenderDensity < record.frame.defenderDensity ||
-                        (record.frame.panic && !currentFrame.panic) ||
-                        (!record.frame.hasBall && currentFrame.hasBall)
-                ActionClass.MOVE.ordinal, ActionClass.EVADE.ordinal -> displacement > 3f
-                else -> false
-            }
-            // Visual change is correlation, not proof of a goal or game-state mutation.
-            // Keep waiting for delayed effects throughout the observation window.
-            if (observed) {
-                effectObservedCount.incrementAndGet()
-                GestureExecutionAuthority.recordEffectObserved(record.request.actionId, true)
-                iterator.remove()
-            }
-        }
-    }
-
-    @Synchronized
-    fun reset() {
-        pendingRecords.clear()
-        totalDispatched.set(0L)
-        effectObservedCount.set(0L)
-        effectNotObservedCount.set(0L)
-    }
-
-    @Synchronized
-    fun diagnostics(): Map<String, Any> = mapOf(
-        "dispatched" to totalDispatched.get(),
-        "effectObserved" to effectObservedCount.get(),
-        "effectNotObserved" to effectNotObservedCount.get(),
-        "pending" to pendingRecords.size,
-        "evidenceKind" to "visual-change-correlation"
-    )
+    @Synchronized fun reset() { pending.clear(); policy.reset(); dispatched = 0; macroObserved = 0; heuristicFailure = 0 }
+    @Synchronized fun diagnostics(): Map<String, Any> = mapOf("dispatched" to dispatched,
+        "macroObserved" to macroObserved, "heuristicFailure" to heuristicFailure,
+        "pending" to pending.size, "evidenceKind" to "macro-state-correlation-not-internal-success")
 }
-
-/* ========
-ConAIEngine Meta-Arbiter
-======== */

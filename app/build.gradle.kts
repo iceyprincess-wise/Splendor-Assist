@@ -98,7 +98,7 @@ dependencies {
     implementation("com.google.mlkit:text-recognition:16.0.1") {
         exclude(group = "org.tensorflow", module = "tensorflow-lite-api")
     }
-    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    implementation("com.google.ai.edge.litert:litert:1.4.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }

@@ -106,7 +106,12 @@ object OpenSpaceDetectionEngine {
             occupancy.columns<=0||
             occupancy.rows<=0||
             pressure.columns<=0||
-            pressure.rows<=0
+            pressure.rows<=0 ||
+            occupancy.rows != pressure.rows || occupancy.columns != pressure.columns ||
+            occupancy.occupancy.size != occupancy.rows ||
+            occupancy.occupancy.any { it.size != occupancy.columns } ||
+            ObservedTactics.pressure(pressure) == null ||
+            !frameWidth.isFinite() || !frameHeight.isFinite() || frameWidth <= 0f || frameHeight <= 0f
         ){
             return OpenSpaceDetectionResult()
         }

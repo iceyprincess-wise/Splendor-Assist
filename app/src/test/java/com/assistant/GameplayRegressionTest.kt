@@ -38,7 +38,7 @@ class GameplayRegressionTest {
     }
     @Test fun bumperUsesObservedMotionAndCarriesTackleIntent() {
         val c = DreadnoughtBumperEngine().contribute(frame())!!
-        assertEquals(103f, c.targetX); assertEquals(2, c.controlSlot)
+        assertEquals(100f, c.targetX); assertEquals(2, c.controlSlot)
         assertEquals(110f, c.aimOriginX!!)
     }
     @Test fun interceptRejectsPathBehindBall() {
@@ -68,14 +68,14 @@ class GameplayRegressionTest {
             PlayerDetectionResult(true, 1, 0.9f, listOf(PlayerDetection(338f, 50f, 0.9f, true))))
         assertEquals(before, first.trackedPlayers.first { it.isUserTeam }.x)
     }
-    @Test fun laserRejectsObstructionAndLeadsMovingReceiver() {
+    @Test fun laserRejectsObstructionAndUsesProvidedReceiver() {
         val passer = RuntimeEntity(1, 100f, 50f, 0f, 0f, 0.9f, true)
         val receiver = RuntimeEntity(3, 200f, 50f, 1f, 0f, 0.9f, true)
         val opponent = RuntimeEntity(2, 150f, 50f, 0f, 0f, 0.9f, false)
         val f = frame().copy(hasBall = true, ownerId = 1, entities = listOf(passer, receiver, opponent))
         assertNull(LaserPassDirectorEngine().contribute(f))
         val c = LaserPassDirectorEngine().contribute(f.copy(entities = listOf(passer, receiver, opponent.copy(y = 120f))))!!
-        assertEquals(205f, c.targetX); assertEquals(1, c.controlSlot)
+        assertEquals(200f, c.targetX); assertEquals(1, c.controlSlot)
     }
     @Test fun finisherAimsAwayFromObservedKeeperAndRequiresVisibleGoal() {
         val f = frame().copy(hasBall = true, ownerId = 1, goalDetected = true,

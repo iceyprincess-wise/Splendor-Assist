@@ -34,6 +34,9 @@ data class ExecutionRequest(
     val endY: Float,
     val duration: Long,
     val gestureEnvelope: GestureIntentEnvelope? = null,
+    val createdAtNanos: Long = System.nanoTime(),
+    val aimMotion: AimMotion? = null,
+    val actionClass: com.assistant.runtime.ActionClass? = null,
     var timestamp: Long = System.currentTimeMillis(),
     val actionId: String = "ACT-${System.currentTimeMillis()}-${java.util.concurrent.ThreadLocalRandom.current().nextInt(1000, 9999)}",
     var busAccepted: Boolean = false,
@@ -84,7 +87,7 @@ object CentralExecutionBus {
     }
 
     @Synchronized fun submit(request: ExecutionRequest): Boolean {
-        if (!running.get()) {
+        if (!running.get() || UiExecutionGate.blocked()) {
             stoppedDrops.incrementAndGet()
             return false
         }
@@ -93,6 +96,9 @@ object CentralExecutionBus {
             return false
         }
 
+        discardStaleHeads(highRing, System.currentTimeMillis())
+        discardStaleHeads(medRing, System.currentTimeMillis())
+        discardStaleHeads(lowRing, System.currentTimeMillis())
         val key = request.source to request.phase
         if (reservations.containsKey(key)) return false
         val ring = when (request.source) {
@@ -112,7 +118,6 @@ object CentralExecutionBus {
 
             if (ring.writeCursor.compareAndSet(writePos, writePos + 1)) {
                 reservations[key] = request.actionId
-                request.timestamp = System.currentTimeMillis()
                 request.busAccepted = true
                 ring.buffer.set((writePos and MASK).toInt(), request)
                 accepted.incrementAndGet()
@@ -123,6 +128,7 @@ object CentralExecutionBus {
     }
 
     @Synchronized fun consume(): ExecutionRequest? {
+        if (UiExecutionGate.blocked()) { clearPending(); return null }
         // Priority Arbitration: High -> Med -> Low
         consumeFrom(highRing)?.let { return it }
         consumeFrom(medRing)?.let { return it }
@@ -149,7 +155,8 @@ object CentralExecutionBus {
                 consumed.incrementAndGet()
                 request.busConsumed = true
                 updateStatistics()
-                return request
+                val point = request.aimMotion?.endpoint(request.startX, request.startY, System.nanoTime())
+                return if (point == null) request else request.copy(endX = point.first, endY = point.second)
             }
         }
     }
@@ -204,6 +211,16 @@ object CentralExecutionBus {
         updateStatistics(force = true)
     }
     
+    @Synchronized fun clearPending() {
+        for (ring in listOf(highRing, medRing, lowRing)) {
+            while (ring.readCursor.get() < ring.writeCursor.get()) {
+                val req = ring.buffer.getAndSet((ring.readCursor.getAndIncrement() and MASK).toInt(), null)
+                if (req != null) complete(req.actionId)
+            }
+        }
+        updateStatistics(force = true)
+    }
+
     fun pendingCount(): Int {
         var count = 0
         count += maxOf(0, (highRing.writeCursor.get() - highRing.readCursor.get()).toInt())
@@ -233,13 +250,13 @@ object CentralExecutionBus {
         val envelope = req.gestureEnvelope
         if (envelope != null && envelope.isExpired(android.os.SystemClock.elapsedRealtime())) return true
         val age = now - req.timestamp
-        if (age < 0L) return false
+        if (age < 0L) return true
         val maxAge = when (req.source) {
             ExecutionSource.GOALKEEPER -> 300L
             ExecutionSource.INTERCEPTION -> 300L
             ExecutionSource.SMART_ASSIST -> 250L
             ExecutionSource.STUTTER -> 350L
         }
-        return age > maxAge
+        return age > maxAge || System.nanoTime() - req.createdAtNanos > maxAge * 1_000_000
     }
 }

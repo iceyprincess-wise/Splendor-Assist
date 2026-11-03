@@ -188,6 +188,7 @@ object GestureExecutionAuthority {
         lastOrigin = origin
         lastUpdatedMs = System.currentTimeMillis()
 
+        if (com.assistant.execution.UiExecutionGate.blocked()) return false
         val actionId = actionIdParam ?: createCorrelationId()
 
         val wrappedCallback = object : AccessibilityService.GestureResultCallback() {

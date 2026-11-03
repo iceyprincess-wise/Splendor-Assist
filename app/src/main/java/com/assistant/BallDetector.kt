@@ -110,7 +110,8 @@ object BallDetector {
         candidate: BallCandidate?
     ): BallDetectionResult {
 
-        if (candidate == null || candidate.score < MIN_CANDIDATE_CONFIDENCE) {
+        if (candidate == null || !candidate.score.isFinite() || !candidate.centerX.isFinite() ||
+            !candidate.centerY.isFinite() || !candidate.radius.isFinite() || candidate.radius <= 0f || candidate.score < MIN_CANDIDATE_CONFIDENCE) {
             lostFrames++
             if (lostFrames > COAST_FRAMES) {
                 initialized = false
@@ -130,7 +131,7 @@ object BallDetector {
                 return BallDetectionResult(
                     detected = true,
                     x = lastBallX, y = lastBallY, radius = lastRadius,
-                    confidence = coastConfidence,
+                    confidence = coastConfidence, observed = false,
                     searchPixels = 0, matchedPixels = 0
                 )
             }
@@ -177,7 +178,7 @@ object BallDetector {
         lastRadius = filteredRadius
         lastConfidence = filteredConfidence
 
-        val pixelArea = (candidate.pixelCount).coerceAtLeast(1)
+        val pixelArea = candidate.pixelCount.coerceAtLeast(0)
 
         return BallDetectionResult(
             detected = true,
@@ -185,8 +186,8 @@ object BallDetector {
             y = filteredY,
             radius = filteredRadius,
             confidence = filteredConfidence.coerceIn(0f, 1f),
-            searchPixels = pixelArea,
-            matchedPixels = (pixelArea * filteredConfidence).toInt().coerceAtLeast(1)
+            searchPixels = 0, // Search area is not supplied by candidate selection.
+            matchedPixels = pixelArea
         )
     }
 }

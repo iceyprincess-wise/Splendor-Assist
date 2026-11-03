@@ -132,9 +132,8 @@ object CaptaincySkillEngine {
         val fatigueProxy: Float,
 
         /**
-         * Confidence multiplier applied post-arbitration [1.00, 1.20].
-         * 1.00 = no lift (low fatigue). 1.20 = panic-level lift.
-         * Applied to lastWeight in RuntimeDecisionLoop for visibility.
+         * Local gesture-duration scale [1.00, 1.20], applied by RuntimeDecisionLoop.
+         * This policy does not measure or modify the game's fatigue attribute.
          */
         val teamLiftFactor: Float,
 

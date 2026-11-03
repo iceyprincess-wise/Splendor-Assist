@@ -106,7 +106,7 @@ object BallTelemetryBridge {
     @Volatile private var lastUpdatedMs = 0L
 
     fun publish(ball: BallDetectionResult) {
-        if (!ball.detected || !ball.x.isFinite() || !ball.y.isFinite() ||
+        if (!ball.detected || !ball.observed || !ball.x.isFinite() || !ball.y.isFinite() ||
             !ball.confidence.isFinite() || ball.confidence <= 0f) {
             skippedUndetected++
             hasPrevious = false

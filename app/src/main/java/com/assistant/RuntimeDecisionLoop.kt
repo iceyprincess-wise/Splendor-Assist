@@ -124,11 +124,12 @@ object RuntimeDecisionLoop {
 
     /* Called once per assembled frame by OverlayService's capture loop. */
     @Synchronized fun onFrame(frame: RuntimeFrame): Boolean {
+        ActionOutcomeVerifier.verify(frame)
+        if (com.assistant.execution.UiExecutionGate.blocked()) { CentralExecutionBus.clearPending(); return false }
         if (frame.frameId <= lastCaptureId) return false
         lastCaptureId = frame.frameId
         decisions.incrementAndGet()
         lastUpdatedMs = System.currentTimeMillis()
-        ActionOutcomeVerifier.verify(frame)
 
         if (!com.assistant.VisionTrust.isGameForeground() || !com.assistant.SmartAssistRepository.enabled()) {
             idleUntrusted.incrementAndGet()
@@ -144,7 +145,9 @@ object RuntimeDecisionLoop {
 
         // CONTROL-MAPPING GATE: the mapping/settings screen must never
         // receive gameplay gestures; trained in-match cluster arms the stack.
-        if (ControlMappingTrainer.uiMode == ControlMappingTrainer.UiMode.SETTINGS) return false
+        if (ControlMappingTrainer.uiMode == ControlMappingTrainer.UiMode.SETTINGS) {
+            com.assistant.execution.UiExecutionGate.block("control-calibration"); return false
+        }
         ControlMappingTrainer.observeOutcome(frame)
 
         // SPLENDOR_AUTHORITY_REACHES_ARBITRATION_V1 - the master authority
@@ -155,6 +158,8 @@ object RuntimeDecisionLoop {
         val authorityFactor =
             RuntimePerformanceCoordinator.authority().coerceIn(0, 100) / 100f
         val collected = GameplayEngineRegistry.collect(frame).filter { c ->
+            !ActionOutcomeVerifier.cooling(c.actionClass)
+        }.map { c -> c.copy(confidence = c.confidence * ActionOutcomeVerifier.confidenceFactor(c.actionClass)) }.filter { c ->
             requiredControlSlot(c) == 0 || (ControlMappingTrainer.matchActive && ControlMappingTrainer.isSlotTrained(requiredControlSlot(c)))
         }
         val contributions = if (authorityFactor >= 1f) collected else collected.map { c ->
@@ -182,24 +187,11 @@ object RuntimeDecisionLoop {
         // AdapterSignalBus.crowdingZone for LagVerdictEngine next poll.
         val inCrowdedZone = CrowdingZoneDetector.evaluate(frame)
 
-        // ── Fighting Spirit amplification ─────────────────────────────────
-        // Evaluate AFTER arbitration so it amplifies the already-chosen
-        // winner rather than competing in arbitration itself.
-        val fs = FightingSpiritEngine.evaluate(frame)
-        val finalRequest = if (fs.active) {
-            request.copy(
-                duration = (request.duration + fs.durationBoostMs)
-                    .coerceIn(15L, 85L)
-            )
-        } else request
-        // Apply authority boost and accuracy retention to the winning contribution's weight
-        if (fs.active && best != null) {
-            lastWeight = (best.weight * fs.authorityBoost * fs.accuracyRetention).coerceIn(0f, 1f)
-        }
+        val finalRequest = request
 
         // ── Captaincy Skill amplification ────────────────────────────────
-        // Captaincy is a passive, continuous team-wide fatigue reduction.
-        // Applied after Fighting Spirit so both effects compound correctly.
+        // Compatibility timing policy driven by a local fatigue proxy.
+        // This changes gesture duration; it cannot modify in-game fatigue.
         val captaincy = CaptaincySkillEngine.evaluate(frame)
         // teamLiftFactor: multiplicative duration scale — real terminal effect.
         // composureBoostMs: additive on top — both reach HybridExecutionTerminal.
@@ -257,8 +249,9 @@ object RuntimeDecisionLoop {
         var startX = com.assistant.vision.CameraProfile.captureWidthOrFallback() * ControlMappingTrainer.joystickCenterX()
         var startY = com.assistant.vision.CameraProfile.captureHeightOrFallback() * ControlMappingTrainer.joystickCenterY()
         val controlSlot = requiredControlSlot(best)
-        val aimOriginX = best.aimOriginX ?: if (controlSlot != 0) frame.ballX else null
-        val aimOriginY = best.aimOriginY ?: if (controlSlot != 0) frame.ballY else null
+        val mover = frame.entities.firstOrNull { it.id == (if (frame.hasBall) frame.ownerId else frame.defenderId) && it.teammate }
+        val aimOriginX = best.aimOriginX ?: if (controlSlot != 0) frame.ballX else mover?.x
+        val aimOriginY = best.aimOriginY ?: if (controlSlot != 0) frame.ballY else mover?.y
         if (aimOriginX != null && aimOriginY != null) {
             if (controlSlot != 0) {
                 if (!ControlMappingTrainer.matchActive || !ControlMappingTrainer.isSlotTrained(controlSlot)) return null
@@ -274,7 +267,20 @@ object RuntimeDecisionLoop {
             leadX = (startX + dx / distance * radius).coerceIn(0f, frameWidth() - 1f)
             leadY = (startY + dy / distance * radius).coerceIn(0f, frameHeight() - 1f)
         }
+        if (aimOriginX == null || aimOriginY == null) return null
+        val targetId = best.targetEntityId ?: frame.passTargetId.takeIf {
+            best.actionClass == ActionClass.PASS && best.targetX == frame.passTargetX && best.targetY == frame.passTargetY
+        }
+        val target = frame.entities.firstOrNull { it.id == targetId }
+        val origin = frame.entities.firstOrNull { it.id == best.aimEntityId } ?: if (controlSlot == 0) mover else null
+        val originVx = origin?.velocityXPerSecond ?: frame.ballVelocityXPerSecond
+        val originVy = origin?.velocityYPerSecond ?: frame.ballVelocityYPerSecond
+        val motion = com.assistant.execution.AimMotion(aimOriginX, aimOriginY, best.targetX, best.targetY,
+            (target?.velocityXPerSecond ?: 0f) - originVx, (target?.velocityYPerSecond ?: 0f) - originVy,
+            frame.predictedAtNanos, minOf(frameWidth(), frameHeight()) * 0.08f, frameWidth(), frameHeight())
         return ExecutionRequest(
+            aimMotion = motion,
+            actionClass = best.actionClass,
             source = ExecutionSource.SMART_ASSIST,
             phase = best.actionClass.ordinal,
             // SPLENDOR_CONTROL_MAP_V1 - derive the joystick origin from the

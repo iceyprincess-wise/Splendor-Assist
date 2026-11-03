@@ -14,10 +14,10 @@ abstract class ObservedGameplayEngine : GameplayContributor {
     protected fun margin(frame: RuntimeFrame) = 5f * (1f - frame.confidence.coerceIn(0f, 1f))
     protected fun entity(frame: RuntimeFrame, id: Int?) = frame.entities.firstOrNull { it.id == id }
     protected fun candidate(frame: RuntimeFrame, action: ActionClass, origin: RuntimeEntity,
-        x: Float, y: Float, authority: Float, duration: Long, slot: Int = 0): EngineContribution? {
+        x: Float, y: Float, authority: Float, duration: Long, slot: Int = 0, targetId: Int? = null): EngineContribution? {
         if (!x.isFinite() || !y.isFinite() || x !in 0f..frame.captureWidth || y !in 0f..frame.captureHeight) return null
         return EngineContribution(engineName, action, x, y, authority,
-            minOf(frame.confidence, origin.confidence), duration, slot, origin.x, origin.y)
+            minOf(frame.confidence, origin.confidence), duration, slot, origin.x, origin.y, origin.id, targetId)
     }
 }
 
@@ -32,8 +32,8 @@ class DreadnoughtBumperEngine : ObservedGameplayEngine() {
         if (distance > 45f + margin(frame)) return null
         val close = distance <= 15f + margin(frame)
         return candidate(frame, ActionClass.DEFEND, defender,
-            opponent.x + opponent.velocityX * 3f, opponent.y + opponent.velocityY * 3f,
-            if (close) 0.95f else 0.85f, if (close) 60L else 120L, if (close) 2 else 4)
+            opponent.x, opponent.y,
+            if (close) 0.95f else 0.85f, if (close) 60L else 120L, if (close) 2 else 4, opponent.id)
     }
 }
 
@@ -83,8 +83,8 @@ class LaserPassDirectorEngine : ObservedGameplayEngine() {
         val targets = frame.entities.filter { it.teammate && it.id != passer.id }
             .sortedByDescending { (it.x - passer.x) * frame.attackDirection }
         for (target in targets) {
-            val x = target.x + target.velocityX * 5f
-            val y = target.y + target.velocityY * 5f
+            val x = target.x
+            val y = target.y
             if ((x - passer.x) * frame.attackDirection <= 0f) continue
             val dx = x - passer.x; val dy = y - passer.y; val length = dx * dx + dy * dy
             if (length <= 0f) continue
@@ -92,7 +92,7 @@ class LaserPassDirectorEngine : ObservedGameplayEngine() {
                 val t = (((opponent.x - passer.x) * dx + (opponent.y - passer.y) * dy) / length).coerceIn(0f, 1f)
                 hypot(opponent.x - passer.x - t * dx, opponent.y - passer.y - t * dy) < 18f + margin(frame)
             }
-            if (!obstructed) return candidate(frame, ActionClass.PASS, passer, x, y, 0.91f, 100L, 1)
+            if (!obstructed) return candidate(frame, ActionClass.PASS, passer, x, y, 0.91f, 100L, 1, target.id)
         }
         return null
     }

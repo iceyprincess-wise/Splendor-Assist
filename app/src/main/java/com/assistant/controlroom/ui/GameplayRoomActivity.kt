@@ -14,7 +14,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.assistant.CaptaincySkillEngine
 import com.assistant.CrowdingZoneDetector
-import com.assistant.FightingSpiritEngine
 import com.assistant.RuntimeDecisionLoop
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
@@ -284,12 +283,6 @@ class GameplayRoomActivity : AppCompatActivity() {
             decisionView?.text = decTxt
 
             // ── Amplifiers: FightingSpirit + Captaincy ───────────────────
-            val fsDiag = FightingSpiritEngine.diagnostics()
-            val fsActive = fsDiag["active"] as? Boolean ?: false
-            val fsActiv  = fsDiag["activations"] ?: 0
-            val fsRet    = fsDiag["lastRetention"] ?: 1f
-            val fsPres   = fsDiag["lastPressure"] ?: 0f
-
             val capDiag  = CaptaincySkillEngine.diagnostics()
             val capDesig = capDiag["captainDesignated"] as? Boolean ?: false
             val capActive= capDiag["active"] as? Boolean ?: false
@@ -299,12 +292,7 @@ class GameplayRoomActivity : AppCompatActivity() {
             val capComp  = capDiag["lastComposureMs"] ?: 0L
 
             // Effectiveness verdict
-            val fsVerdict = when {
-                !fsActive && (fsActiv as Long) == 0L -> "⬜ NOT YET FIRED"
-                fsActive                             -> "🟢 ACTIVE  (retention=${fsRet})"
-                (fsActiv as Long) > 0L               -> "🔵 FIRED ${fsActiv}×  (idle now)"
-                else                                 -> "⬜ INACTIVE"
-            }
+            val fsVerdict = "Model only — no gameplay input applied"
             val capVerdict = when {
                 !capDesig                             -> "⬜ NO CAPTAIN DESIGNATED (toggle above)"
                 !capActive && (capActiv as Long) == 0L -> "🟡 DESIGNATED but not yet firing"
@@ -316,13 +304,12 @@ class GameplayRoomActivity : AppCompatActivity() {
             val ampTxt =
                 "── FightingSpiritEngine ──\n" +
                 "  Status     : $fsVerdict\n" +
-                "  Activations: ${fsActiv}   Pressure: ${fsPres}\n" +
-                "  Accuracy retention: ${fsRet}  (1.0=none, 1.20=max)\n\n" +
+                "  In-game accuracy changes are not observed.\n\n" +
                 "── CaptaincySkillEngine ──\n" +
                 "  Status     : $capVerdict\n" +
                 "  Designated : $capDesig\n" +
                 "  Activations: ${capActiv}   Fatigue proxy: ${capFatigue}\n" +
-                "  Team lift  : ${capLift}×   Composure: +${capComp}ms"
+                "  Input duration scale: ${capLift}×   Added duration: +${capComp}ms"
             amplifierView?.text = ampTxt
 
             // ── Crowding Zone ─────────────────────────────────────────────
@@ -354,7 +341,7 @@ class GameplayRoomActivity : AppCompatActivity() {
 
             // ── Log to file ───────────────────────────────────────────────
             logLine(buildLogEntry(now, decisions, routed, routePct, lastAct,
-                fsActive, fsRet, fsPres, capDesig, capActive, capLift, capComp,
+                capDesig, capActive, capLift, capComp,
                 inZone, crowdLvl))
 
         } catch (_: Throwable) {}
@@ -363,7 +350,6 @@ class GameplayRoomActivity : AppCompatActivity() {
     private fun buildLogEntry(
         ts: String,
         decisions: Any, routed: Any, routePct: String, lastAct: Any,
-        fsActive: Boolean, fsRet: Any, fsPres: Any,
         capDesig: Boolean, capActive: Boolean, capLift: Any, capComp: Any,
         inZone: Boolean, crowdLvl: Any
     ): String {
@@ -387,7 +373,7 @@ class GameplayRoomActivity : AppCompatActivity() {
         val decisionRouted = decisionSnap["routed"] ?: 0L
 
         return "[$ts] dec=$decisions routed=$routed($routePct) act=$lastAct | " +
-               "fs=${if (fsActive) "ON" else "off"}(ret=$fsRet pres=$fsPres) | " +
+               "fs=MODEL_ONLY(no gameplay input) | " +
                "cap=${if (!capDesig) "noDesig" else if (capActive) "ON(lift=$capLift +${capComp}ms)" else "designatedOff"} | " +
                "crowd=${if (inZone) "ZONE(lv=$crowdLvl)" else "clear"} | " +
                "lag=${AdapterSignalBus.lagVerdict} stutter=${AdapterSignalBus.stutterState} | " +

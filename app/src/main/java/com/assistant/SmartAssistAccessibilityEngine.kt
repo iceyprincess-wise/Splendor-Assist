@@ -118,7 +118,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // FINAL EXECUTION GATE
         // Never turn a stale bus request into an Accessibility gesture
         // while the game is not foreground.
-        if (!SmartAssistRepository.enabled()) {
+        if (com.assistant.execution.UiExecutionGate.blocked() || !SmartAssistRepository.enabled()) {
             RuntimeLogger.log(
                 "Direct dispatch blocked: SmartAssist disabled",
                 "SMART_ASSIST"
@@ -134,6 +134,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             return false
         }
 
+        val category = request.actionClass ?: if (request.source == ExecutionSource.GOALKEEPER) com.assistant.runtime.ActionClass.KEEPER else null
+        if (category != null && ActionOutcomeVerifier.cooling(category)) return false
         if (isDispatching) return false // Completion callbacks own the live stroke, not a duration estimate.
 
         currentActionId = request.actionId
@@ -174,6 +176,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 "source=${request.source} phase=${request.phase} duration=$syncedDuration"
             )
 
+            FrameAssembler.current()?.takeIf { it.trusted }?.let { frame ->
+                ActionOutcomeVerifier.recordDispatch(request, frame)
+            }
             val accepted = GestureExecutionAuthority.execute(
                 this,
                 gesture,
@@ -194,6 +199,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             )
 
             if (!accepted) {
+                ActionOutcomeVerifier.cancelDispatch(request.actionId)
                 releaseDispatch()
                 dispatchingSource = null
             } else {
@@ -222,7 +228,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     RuntimeLogger.log("dispatch callback overdue; retaining active stroke until callback or service recovery", "SMART_ASSIST")
                 }
 
-                if (!SmartAssistRepository.enabled()) {
+                if (com.assistant.execution.UiExecutionGate.blocked() || !SmartAssistRepository.enabled()) {
                     busHandler.postDelayed(this, BUS_POLL_RATE_MS)
                     return
                 }
@@ -317,7 +323,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     fun triggerInstantExecution(x1: Float, y1: Float, x2: Float, y2: Float) {
-        if (!SmartAssistRepository.enabled()) {
+        if (com.assistant.execution.UiExecutionGate.blocked() || !SmartAssistRepository.enabled()) {
             RuntimeLogger.log("SmartAssist disabled, trigger dropped", "SMART_ASSIST")
             return
         }
@@ -361,6 +367,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 val pkg = event.packageName?.toString() ?: return
                 try {
                     VisionTrust.onForegroundPackage(pkg, VisionTrust.GAME_PACKAGES)
+                    if (!VisionTrust.GAME_PACKAGES.any { pkg.equals(it, ignoreCase = true) })
+                        com.assistant.execution.UiExecutionGate.block("foreground:$pkg")
                 } catch (_: Throwable) {
                 }
             }

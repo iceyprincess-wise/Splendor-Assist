@@ -94,10 +94,13 @@ import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 
 object CentralOverloadDetectionEngine {
-    private val outBuffer = FloatArray(3)
     fun compute(scene: SceneSnapshot): CentralOverloadDetectionResult {
-        com.assistant.NativeBridge.nativeCentralOverloadCompute(scene.playerCount, scene.confidence, scene.fieldConfidence, outBuffer)
-        return CentralOverloadDetectionResult(outBuffer[0], outBuffer[1] > 0.5f, outBuffer[2])
+        val height = com.assistant.vision.CameraProfile.captureHeight.toFloat()
+        if (height <= 0f) return CentralOverloadDetectionResult()
+        val center = ObservedTactics.players(scene).filter { it.y in height/3f..height*2f/3f }
+        val ours = center.count { it.isUserTeam }; val theirs = center.size - ours
+        return CentralOverloadDetectionResult(ObservedTactics.balance(center), ours >= 3 && ours - theirs >= 2,
+            ObservedTactics.confidence(center))
     }
 }
 

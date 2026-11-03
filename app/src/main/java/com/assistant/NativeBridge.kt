@@ -389,15 +389,8 @@ init {
     @JvmStatic external fun nativeDefensiveCompactness(fieldConf: Float, defLineConf: Float, teamShapeConf: Float, teamShapeWidth: Float, teamShapeDepth: Float, teamShapeCompactness: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
 
 
-    // --- V60: Recognition & Overload Pure Math Native Migration ---
-    @JvmStatic external fun nativeWingOverloadCompute(playerCount: Int, sceneConf: Float, fieldConf: Float, pressureRows: Int, pressureCols: Int, occupancyRows: Int, occupancyCols: Int, outBuffer: FloatArray)
-    @JvmStatic external fun nativeCentralOverloadCompute(playerCount: Int, sceneConf: Float, fieldConf: Float, outBuffer: FloatArray)
-    @JvmStatic external fun nativePressingRecognitionCompute(pressureRows: Int, pressureCols: Int, formationFound: Boolean, formationConf: Float, compactnessCompactness: Float, compactnessConf: Float, outBuffer: FloatArray)
-    @JvmStatic external fun nativeCounterPressCompute(sceneConf: Float, hasPossession: Boolean, possessionChanged: Boolean, possessionConf: Float, pressureRows: Int, pressureCols: Int, outBuffer: FloatArray)
     /** Current native breadcrumb ring, oldest first; empty string when nothing recorded. */
     @JvmStatic external fun nativeBreadcrumbDump(): String
-    @JvmStatic external fun nativeBuildUpRecognitionCompute(formationFound: Boolean, formationConf: Float, teamShapeConf: Float, lanesNotEmpty: Boolean, outBuffer: FloatArray)
-    @JvmStatic external fun nativePossessionStyleCompute(hasPossession: Boolean, possessionFrames: Long, possessionConf: Float, lanesNotEmpty: Boolean, pressureRows: Int, pressureCols: Int, outBuffer: FloatArray)
 @JvmStatic
     fun nativeComputeAgilityPhysics(
         playerVelocity: Float,

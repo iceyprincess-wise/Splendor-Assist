@@ -110,19 +110,16 @@ object PressureFieldEngine {
             return PressureFieldResult(GRID_COLUMNS, GRID_ROWS, grid)
         }
 
+        val opponents = ObservedTactics.players(scene).filter { !it.isUserTeam }
         for (row in 0 until GRID_ROWS) {
             for (col in 0 until GRID_COLUMNS) {
 
-                // Introduce spatial coordinate fuzzing to break up rigid cell tracking borders
-                val horizontalFuzz = Random.nextFloat() * 0.08f - 0.04f // Tiny cell offset bounds
-                val verticalFuzz = Random.nextFloat() * 0.08f - 0.04f
-
-                val x = (col + 0.5f + horizontalFuzz) * frameWidth / GRID_COLUMNS
-                val y = (row + 0.5f + verticalFuzz) * frameHeight / GRID_ROWS
+                val x = (col + 0.5f) * frameWidth / GRID_COLUMNS
+                val y = (row + 0.5f) * frameHeight / GRID_ROWS
 
                 var pressure = 0f
 
-                scene.trackedPlayers.forEach { player ->
+                opponents.forEach { player ->
                     val dx = player.x - x
                     val dy = player.y - y
                     val d = sqrt(dx * dx + dy * dy).coerceAtLeast(1f)
@@ -143,9 +140,7 @@ object PressureFieldEngine {
         }
 
         if (maxValue > 0f) {
-            // Add a minute float variance to disrupt absolute identical mathematical normalized limits
-            val normalizationJitter = Random.nextFloat() * 0.002f - 0.001f
-            val dynamicMax = maxValue + (maxValue * normalizationJitter)
+            val dynamicMax = maxValue
 
             grid.forEachIndexed { r, _ ->
                 grid[r].indices.forEach { c ->

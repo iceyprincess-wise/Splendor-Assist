@@ -94,10 +94,11 @@ import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 
 object PressingRecognitionEngine {
-    private val outBuffer = FloatArray(2)
     fun analyze(pressure: PressureFieldResult, compactness: DefensiveCompactnessResult, formation: FormationResult): PressingRecognitionResult {
-        com.assistant.NativeBridge.nativePressingRecognitionCompute(pressure.rows, pressure.columns, formation.found, formation.confidence, compactness.compactness, compactness.confidence, outBuffer)
-        return PressingRecognitionResult(outBuffer[0] > 0.5f, outBuffer[1])
+        val measuredPressure = ObservedTactics.pressure(pressure) ?: return PressingRecognitionResult()
+        if (!formation.found || !compactness.compactness.isFinite()) return PressingRecognitionResult()
+        val confidence = (formation.confidence.coerceIn(0f,1f) + compactness.confidence.coerceIn(0f,1f) + measuredPressure) / 3f
+        return PressingRecognitionResult(measuredPressure > 0.4f && compactness.compactness > 0.55f, confidence)
     }
 }
 

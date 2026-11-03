@@ -116,6 +116,8 @@ object GoalkeeperDetector {
 
         for (blob in blobs) {
             if (blob.pixelCount < MIN_PIXEL_COUNT) continue
+            val captureArea = com.assistant.vision.CameraProfile.captureWidth.toLong() * com.assistant.vision.CameraProfile.captureHeight
+            if (captureArea > 0 && blob.pixelCount > captureArea * 0.02f) continue
 
             val jersey = JerseyColorSegmentation.classify(
                 blob.averageRed,

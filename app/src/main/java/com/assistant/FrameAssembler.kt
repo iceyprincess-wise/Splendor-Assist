@@ -116,11 +116,13 @@ internal const val OMEGA_TURNING_THRESHOLD = 6.0f     // Joystick displacement s
 
 object FrameAssembler {
 
+    private val predictor = com.assistant.runtime.PredictiveState()
+    private var predictionLayout: Pair<Float, Float>? = null
     private val frameCounter = AtomicLong(0L)
 
     @Volatile private var lastFrame: RuntimeFrame? = null
 
-    fun assemble(opticalVariance: Float = 0f): RuntimeFrame {
+    fun assemble(opticalVariance: Float = 0f, capturedAtNanos: Long = System.nanoTime()): RuntimeFrame {
         val id = frameCounter.incrementAndGet()
 
         val world = Phase3WorldStateStore.current()
@@ -221,7 +223,7 @@ object FrameAssembler {
                 (scene?.goalRightX ?: 0f) > (scene?.goalLeftX ?: 0f) &&
                 (scene?.goalBottomY ?: 0f) > (scene?.goalTopY ?: 0f)
 
-        val frame = RuntimeFrame(
+        val observedFrame = RuntimeFrame(
             frameId = scene?.frameNumber ?: id,
             timestampMs = System.currentTimeMillis(),
             hasBall = hasBall,
@@ -260,6 +262,28 @@ object FrameAssembler {
             captureWidth = com.assistant.vision.CameraProfile.captureWidth.toFloat(),
             captureHeight = com.assistant.vision.CameraProfile.captureHeight.toFloat()
         )
+        val now = System.nanoTime()
+        val leadMs = ((now - capturedAtNanos).coerceAtLeast(0) / 1e6f + 50f).coerceAtMost(100f)
+        val width = observedFrame.captureWidth; val height = observedFrame.captureHeight
+        if (predictionLayout != width to height) {
+            predictor.reset(); predictionLayout = width to height
+        }
+        val ball = if (ballSeen) predictor.project(Int.MIN_VALUE, ballX, ballY, capturedAtNanos, leadMs, width, height)
+            else com.assistant.runtime.PredictedPoint(ballX, ballY, 0f, 0f)
+        val projected = observedFrame.entities.map { entity ->
+            val point = predictor.project(entity.id, entity.x, entity.y, capturedAtNanos, leadMs, width, height)
+            entity.copy(x = point.x, y = point.y, velocityXPerSecond = point.vxPerSecond, velocityYPerSecond = point.vyPerSecond)
+        }
+        predictor.retain(projected.map { it.id }.toSet() + if (ballSeen) setOf(Int.MIN_VALUE) else emptySet())
+        val receiver = bestLane?.lane?.receiver?.id
+        val before = observedFrame.entities.firstOrNull { it.id == receiver }
+        val after = projected.firstOrNull { it.id == receiver }
+        val frame = observedFrame.copy(ballX = ball.x, ballY = ball.y, entities = projected,
+            ballVelocityXPerSecond = ball.vxPerSecond, ballVelocityYPerSecond = ball.vyPerSecond,
+            capturedAtNanos = capturedAtNanos, predictedAtNanos = capturedAtNanos + (leadMs * 1e6f).toLong(),
+            passTargetX = passTargetX + if (before != null && after != null) after.x - before.x else 0f,
+            passTargetY = passTargetY + if (before != null && after != null) after.y - before.y else 0f,
+            passTargetId = receiver)
         lastFrame = frame
         return frame
     }
@@ -267,6 +291,8 @@ object FrameAssembler {
     fun current(): RuntimeFrame? = lastFrame
 
     fun reset() {
+        predictor.reset()
+        predictionLayout = null
         frameCounter.set(0L)
         lastFrame = null
     }

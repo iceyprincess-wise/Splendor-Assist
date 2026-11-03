@@ -107,7 +107,8 @@ data class BallDetectionResult(
 
     val searchPixels: Int,
 
-    val matchedPixels: Int
+    val matchedPixels: Int,
+    val observed: Boolean = detected
 
 )
 

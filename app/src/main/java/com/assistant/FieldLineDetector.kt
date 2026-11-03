@@ -118,13 +118,13 @@ object FieldLineDetector {
         val pixels =
             whiteBlobs.sumOf { it.pixelCount }
 
-        // OMEGA FIX: Dynamic Wide Camera Scaling
-        // Lines are thinner/further in Wide camera. Total white pixels drop by ~60%.
+        // White area alone cannot identify a specific pitch marking.
+        // Preserve the appearance score, but publish semantic geometry as unknown.
         return FieldLineDetectionResult(
-            touchLinesDetected = pixels > 60,
-            penaltyAreaDetected = pixels > 100,
-            centerCircleDetected = pixels > 140,
-            goalAreaDetected = pixels > 80,
+            touchLinesDetected = false,
+            penaltyAreaDetected = false,
+            centerCircleDetected = false,
+            goalAreaDetected = false,
             confidence = (pixels / 400f).coerceIn(0f,1f)
         )
     }

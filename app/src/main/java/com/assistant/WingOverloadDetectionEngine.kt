@@ -94,10 +94,17 @@ import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 
 object WingOverloadDetectionEngine {
-    private val outBuffer = FloatArray(4)
     fun compute(scene: SceneSnapshot, occupancy: SpaceOccupancyResult, pressure: PressureFieldResult): WingOverloadDetectionResult {
-        com.assistant.NativeBridge.nativeWingOverloadCompute(scene.playerCount, scene.confidence, scene.fieldConfidence, pressure.rows, pressure.columns, occupancy.rows, occupancy.columns, outBuffer)
-        return WingOverloadDetectionResult(outBuffer[0], outBuffer[1], outBuffer[2] > 0.5f, outBuffer[3])
+        val height = com.assistant.vision.CameraProfile.captureHeight.toFloat()
+        if (height <= 0f || occupancy.rows <= 0 || occupancy.columns <= 0 || ObservedTactics.pressure(pressure) == null)
+            return WingOverloadDetectionResult()
+        val players = ObservedTactics.players(scene)
+        val left = players.filter { it.y < height/3f }; val right = players.filter { it.y > height*2f/3f }
+        fun overloaded(p: List<TrackedPlayer>): Boolean {
+            val ours = p.count { it.isUserTeam }; return ours >= 3 && 2*ours - p.size >= 2
+        }
+        return WingOverloadDetectionResult(ObservedTactics.balance(left), ObservedTactics.balance(right),
+            overloaded(left) || overloaded(right), ObservedTactics.confidence(left + right))
     }
 }
 

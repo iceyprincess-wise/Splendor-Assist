@@ -152,51 +152,26 @@ object FrameScanner {
         
         var sampleCount = 0
 
-        var index = 0
-        var x = 0
-        var y = 0
-
-        // PHASE 2: HOT-LOOP PROCESSING (1D Traversal)
-        while (index + 3 < limit) {
+        val required = (height - 1L) * frame.rowStride + (width - 1L) * frame.pixelStride + 3
+        if (frame.pixelStride < 3 || frame.rowStride.toLong() < width.toLong() * frame.pixelStride || required > limit)
+            return PixelSampleBuffer(samples, 0)
+        for (y in 0 until height) for (x in 0 until width) {
+            val index = y * frame.rowStride + x * frame.pixelStride
             val r = frameBytes[index].toInt() and 0xFF
             val g = frameBytes[index + 1].toInt() and 0xFF
             val b = frameBytes[index + 2].toInt() and 0xFF
-
-            val lumInt = (r * WEIGHT_R + g * WEIGHT_G + b * WEIGHT_B) shr LUMINANCE_SHIFT
-
-            if (lumInt >= thresholdInt) {
+            if (ForegroundPixel.retained(r, g, b, thresholdInt)) {
                 var finalX = x
                 var finalY = y
-
                 if (adaptiveNoiseVariance > 0 || serverTickSyncScale != 1.0f) {
                     val noiseX = if (adaptiveNoiseVariance > 0) Random.nextInt(-adaptiveNoiseVariance, adaptiveNoiseVariance + 1) else 0
                     val noiseY = if (adaptiveNoiseVariance > 0) Random.nextInt(-adaptiveNoiseVariance, adaptiveNoiseVariance + 1) else 0
-                    
-                    val scaledX = (x + noiseX) * serverTickSyncScale
-                    val scaledY = (y + noiseY) * serverTickSyncScale
-
-                    finalX = scaledX.roundToInt().coerceIn(0, width - 1)
-                    finalY = scaledY.roundToInt().coerceIn(0, height - 1)
+                    finalX = ((x + noiseX) * serverTickSyncScale).roundToInt().coerceIn(0, width - 1)
+                    finalY = ((y + noiseY) * serverTickSyncScale).roundToInt().coerceIn(0, height - 1)
                 }
-
-                // Pack into Long: x(16) | y(16) | r(8) | g(8) | b(8)
-                val packed = (finalX.toLong() shl 40) or 
-                             (finalY.toLong() shl 24) or 
-                             (r.toLong() shl 16) or 
-                             (g.toLong() shl 8) or 
-                             b.toLong()
-                             
-                samples[sampleCount++] = packed
+                samples[sampleCount++] = (finalX.toLong() shl 40) or (finalY.toLong() shl 24) or
+                    (r.toLong() shl 16) or (g.toLong() shl 8) or b.toLong()
             }
-
-            x++
-            if (x >= width) {
-                x = 0
-                y++
-                if (y >= height) break
-            }
-
-            index += 4
         }
 
         return PixelSampleBuffer(samples, sampleCount)

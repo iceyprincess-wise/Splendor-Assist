@@ -123,6 +123,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var interceptionBridge: com.assistant.overlay.bridge.InterceptionControlRoomBridge? = null
     private var processingThread: Thread? = null
     @Volatile private var reusableVisionBuffer: java.nio.ByteBuffer? = null
+    private var previousVisionLayout: Triple<Int, Int, Int>? = null
     @Volatile private var previousVisionBuffer: java.nio.ByteBuffer? = null
     private val emptyVisionBuffer: java.nio.ByteBuffer = java.nio.ByteBuffer.allocateDirect(0)
     private lateinit var windowManager: WindowManager
@@ -243,6 +244,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         com.assistant.CrashForensics.mark(2, 1, captureFrameCount)
         com.assistant.DiagnosticSamplers.onCaptureFrame(System.currentTimeMillis())
         com.assistant.CrashForensics.mark(5, 4, android.os.Process.myPid().toLong())
+        val acquiredAtNanos = System.nanoTime()
         val captureNow = System.currentTimeMillis()
         if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
             image.close()
@@ -316,8 +318,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
             try {
                 com.assistant.CrashForensics.mark(3, 2, System.currentTimeMillis())
                 // Exact byte comparison: repeated capture content must not trigger another action.
-                if (previousVisionBuffer?.let { it == visionBuffer } == true) return@launch
-                val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride)
+                if (previousVisionLayout == Triple(width, height, rowStride) && previousVisionBuffer?.let { prior ->
+                    com.assistant.runtime.CaptureContent.same(visionBuffer, prior, width, height, rowStride, pixelStride) { x, y ->
+                        com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(x, y)
+                    }
+                } == true) {
+                    com.assistant.FrameAssembler.current()?.let { com.assistant.ActionOutcomeVerifier.verify(it) }
+                    return@launch
+                }
+                previousVisionLayout = Triple(width, height, rowStride)
+                val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride, acquiredAtNanos)
                 com.assistant.CrashForensics.mark(4, 2, System.currentTimeMillis())
                 val prevBuf = previousVisionBuffer
                 val opticalVariance = if (prevBuf != null && prevBuf.remaining() == visionBuffer.remaining()) {
@@ -337,7 +347,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 targetBuf.put(visionBuffer)
                 visionBuffer.position(pos)
                 targetBuf.flip()
-                com.assistant.ControlMappingTrainer.observe(visionBuffer, width, height, rowStride)
+                com.assistant.ControlMappingTrainer.observe(visionBuffer, width, height, rowStride, pixelStride)
                 val state = com.assistant.VisionCore.process(normalized)
                 com.assistant.CrashForensics.mark(4, 2, System.currentTimeMillis())
                 com.assistant.BoosterIgnition.ensureIgnited(this@OverlayService)
@@ -345,7 +355,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 com.assistant.RuntimeCoordinator.reportCaptureReady()
                 com.assistant.CrashForensics.mark(5, 3, captureFrameCount)
                 com.assistant.CrashForensics.setEngineStage(5)
-                val frame = com.assistant.FrameAssembler.assemble(opticalVariance)
+                val frame = com.assistant.FrameAssembler.assemble(opticalVariance, acquiredAtNanos)
                 com.assistant.CrashForensics.mark(6, 3, captureFrameCount)
                 com.assistant.RuntimeDecisionLoop.onFrame(frame)
                 com.assistant.CrashForensics.mark(6, 3, captureFrameCount)
@@ -931,15 +941,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             val visionText = task.result
                         val detectedText = visionText.textBlocks.asSequence()
                             .filterNot { com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(it.boundingBox) }
-                            .joinToString("") { it.text }
-                            .replace("\n", "")
-                            .take(120)
+                            .joinToString(" ") { it.text }
+                            .replace("\n", " ")
 
+                        UiStateObserver.observeText(detectedText)
                         com.assistant.vision.OverlaySelfMask.tickAndLog()
 
                         if (detectedText.isNotBlank()) {
                             RuntimeMetricsRegistry.ocrDetections.incrementAndGet()
-                            RuntimeLogger.log("OCR: $detectedText", "OCR")
+                            RuntimeLogger.log("OCR: ${detectedText.take(120)}", "OCR")
                         }
 
                         if (

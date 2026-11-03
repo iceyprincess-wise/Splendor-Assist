@@ -111,11 +111,11 @@ object PassingLaneGraphEngine {
             return PassingLaneGraph(emptyList())
         }
 
-        val cols =
-            pressure.columns.coerceAtLeast(1)
-
-        val rows =
-            pressure.rows.coerceAtLeast(1)
+        val cols = pressure.columns
+        val rows = pressure.rows
+        val width = com.assistant.vision.CameraProfile.captureWidth.toFloat()
+        val height = com.assistant.vision.CameraProfile.captureHeight.toFloat()
+        if (width <= 0f || height <= 0f || ObservedTactics.pressure(pressure) == null) return PassingLaneGraph()
 
         teammates.forEach { passer ->
 
@@ -136,11 +136,11 @@ object PassingLaneGraphEngine {
                     ((passer.y + receiver.y) * 0.5f)
 
                 val col =
-                    (((midX / 1000f) * cols).toInt())
+                    (((midX / width) * cols).toInt())
                         .coerceIn(0, cols - 1)
 
                 val row =
-                    (((midY / 1000f) * rows).toInt())
+                    (((midY / height) * rows).toInt())
                         .coerceIn(0, rows - 1)
 
                 val pressureValue =

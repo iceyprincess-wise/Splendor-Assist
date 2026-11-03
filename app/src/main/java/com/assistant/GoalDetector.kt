@@ -109,18 +109,21 @@ object GoalDetector {
         }
 
         // Estimate screen width from the widest blob span seen this frame.
-        val screenWidth = blobs.maxOf { it.maxX }.toFloat().coerceAtLeast(400f)
+        val screenWidth = com.assistant.vision.CameraProfile.captureWidthOrFallback()
         val goalRegionLeft = screenWidth * GOAL_SCREEN_FRACTION
 
         // White blobs (goalposts/net) confined to the right goal region.
         // This prevents white jerseys anywhere on screen from corrupting the box.
-        val whiteBlobs = blobs.filter {
+        val candidates = blobs.filter {
             it.averageRed   > 220f &&
             it.averageGreen > 220f &&
             it.averageBlue  > 220f &&
-            it.minX.toFloat() >= goalRegionLeft   // must start inside goal region
+            (it.minX.toFloat() >= goalRegionLeft || it.maxX < screenWidth * GOAL_SCREEN_FRACTION)
         }
 
+        val leftCandidates = candidates.filter { it.maxX < screenWidth * GOAL_SCREEN_FRACTION }
+        val rightCandidates = candidates.filter { it.minX >= screenWidth * (1f - GOAL_SCREEN_FRACTION) }
+        val whiteBlobs = if (leftCandidates.sumOf { it.pixelCount } > rightCandidates.sumOf { it.pixelCount }) leftCandidates else rightCandidates
         if (whiteBlobs.isEmpty()) {
             return GoalDetectionResult(false, 0f, 0f, 0f, 0f, 0f)
         }

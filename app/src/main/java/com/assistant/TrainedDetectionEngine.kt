@@ -169,14 +169,15 @@ object TrainedDetectionEngine {
         val src = frame.buffer
         // Assumed RGBA_8888. If the buffer cannot hold that layout, stay
         // silent rather than reading garbage into the model.
-        if (w <= 0 || h <= 0 || src.capacity() < w * h * 4) return null
+        if (w <= 0 || h <= 0 || frame.pixelStride < 3 || frame.rowStride.toLong() < w.toLong() * frame.pixelStride ||
+            (h - 1L) * frame.rowStride + (w - 1L) * frame.pixelStride + 3 > src.limit()) return null
 
         val start = System.nanoTime()
         return try {
             // Nearest-neighbor resample straight from the source buffer -
             // absolute get() so the shared buffer's position is untouched.
             // SPLENDOR_V14A_NATIVE_VISION_PREPROCESS_BEGIN
-            val nativePreprocessOk: Boolean = if (com.assistant.NativeBridge.nativePreprocessAvailable) {
+            val nativePreprocessOk: Boolean = if (frame.pixelStride == 4 && com.assistant.NativeBridge.nativePreprocessAvailable) {
                 try {
                     com.assistant.NativeBridge.nativePreprocessFrame(
                         src,
@@ -207,7 +208,7 @@ object TrainedDetectionEngine {
                     var x = 0
                     while (x < INPUT_SIZE) {
                         val srcX = x * w / INPUT_SIZE
-                        val idx = srcY * frame.rowStride + srcX * 4
+                        val idx = srcY * frame.rowStride + srcX * frame.pixelStride
                         inputBuffer.putFloat((src.get(idx).toInt() and 0xFF) / 255f)
                         inputBuffer.putFloat((src.get(idx + 1).toInt() and 0xFF) / 255f)
                         inputBuffer.putFloat((src.get(idx + 2).toInt() and 0xFF) / 255f)
@@ -245,6 +246,8 @@ object TrainedDetectionEngine {
             // Best ball: class 0, highest score above threshold.
             var best: FloatArray? = null
             for (det in output[0]) {
+                if (det.any { !it.isFinite() } || det[2] <= 0f || det[3] <= 0f ||
+                    det[0] !in 0f..1f || det[1] !in 0f..1f) continue
                 if (det[5].toInt() != 0) continue
                 if (det[4] < MIN_BALL_SCORE) continue
                 if (best == null || det[4] > best[4]) best = det
@@ -278,7 +281,7 @@ object TrainedDetectionEngine {
                 centerX = cx,
                 centerY = cy,
                 radius = radius,
-                pixelCount = (boxW * boxH).toInt().coerceAtLeast(1),
+                pixelCount = 0, // Model box area is not a count of observed matching pixels.
                 brightness = 0f, // not measured by the trained path - never faked
                 score = chosen[4].coerceIn(0f, 1f)
             )

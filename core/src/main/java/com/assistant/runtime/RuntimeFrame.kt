@@ -21,7 +21,9 @@ data class ZoneDistribution(
 data class RuntimeEntity(
     val id: Int, val x: Float, val y: Float,
     val velocityX: Float, val velocityY: Float,
-    val confidence: Float, val teammate: Boolean
+    val confidence: Float, val teammate: Boolean,
+    val velocityXPerSecond: Float = 0f, val velocityYPerSecond: Float = 0f,
+    val observedX: Float = x, val observedY: Float = y
 )
 
 data class RuntimeFrame(
@@ -65,7 +67,14 @@ data class RuntimeFrame(
     val defenderId: Int? = null,
     val attackDirection: Int = 0,
     val captureWidth: Float = 0f,
-    val captureHeight: Float = 0f
+    val captureHeight: Float = 0f,
+    val capturedAtNanos: Long = 0L,
+    val predictedAtNanos: Long = 0L,
+    val observedBallX: Float = ballX,
+    val observedBallY: Float = ballY,
+    val ballVelocityXPerSecond: Float = 0f,
+    val ballVelocityYPerSecond: Float = 0f,
+    val passTargetId: Int? = null
 ) {
     val trusted: Boolean get() = enabled && confidence.isFinite() && confidence > 0f &&
         ballX.isFinite() && ballY.isFinite() && ballVelocityX.isFinite() &&
@@ -86,7 +95,9 @@ data class EngineContribution(
     // Slot 0 preserves legacy routing. Explicit intents require a trained slot.
     val controlSlot: Int = 0,
     val aimOriginX: Float? = null,
-    val aimOriginY: Float? = null
+    val aimOriginY: Float? = null,
+    val aimEntityId: Int? = null,
+    val targetEntityId: Int? = null
 ) {
     val weight: Float
         get() = authority.coerceIn(0f, 1f) * confidence.coerceIn(0f, 1f)

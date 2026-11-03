@@ -94,10 +94,11 @@ import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 
 object BuildUpRecognitionEngine {
-    private val outBuffer = FloatArray(2)
     fun analyze(formation: FormationResult, teamShape: TeamShapeResult, graph: PassingLaneGraph): BuildUpRecognitionResult {
-        com.assistant.NativeBridge.nativeBuildUpRecognitionCompute(formation.found, formation.confidence, teamShape.confidence, graph.lanes.isNotEmpty(), outBuffer)
-        return BuildUpRecognitionResult(outBuffer[0] > 0.5f, outBuffer[1])
+        val laneQuality = ObservedTactics.laneQuality(graph)
+        if (!formation.found || !teamShape.found || laneQuality <= 0f) return BuildUpRecognitionResult()
+        return BuildUpRecognitionResult(laneQuality >= 0.5f,
+            (formation.confidence.coerceIn(0f,1f) + teamShape.confidence.coerceIn(0f,1f) + laneQuality) / 3f)
     }
 }
 

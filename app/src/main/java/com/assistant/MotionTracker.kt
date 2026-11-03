@@ -98,7 +98,7 @@ object MotionTracker {
     private var previousX = 0f
     private var previousY = 0f
 
-    private var previousSpeed = 0f
+    private var initialized = false
 
     private const val LOOK_AHEAD_FRAMES = 6f
 
@@ -106,9 +106,10 @@ object MotionTracker {
         ball: BallDetectionResult
     ): MotionResult {
 
-        if (!ball.detected) {
+        if (!ball.detected || !ball.observed) {
 
-            previousSpeed = 0f
+            initialized = false
+            BallTrajectoryPredictor.update(0f, 0f, 0f, 0f, 0f, 0f, 0f)
 
             return MotionResult(
                 0f,
@@ -119,10 +120,10 @@ object MotionTracker {
         }
 
         val vx =
-            ball.x - previousX
+            if (initialized) ball.x - previousX else 0f
 
         val vy =
-            ball.y - previousY
+            if (initialized) ball.y - previousY else 0f
 
         val speed =
             hypot(vx,vy)
@@ -145,7 +146,7 @@ object MotionTracker {
 
         previousX = ball.x
         previousY = ball.y
-        previousSpeed = speed
+        initialized = true
 
         return MotionResult(
             velocityX = vx,

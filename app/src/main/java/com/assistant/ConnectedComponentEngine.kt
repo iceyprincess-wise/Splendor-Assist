@@ -159,6 +159,7 @@ object ConnectedComponentEngine {
             var maxX = startX
             var maxY = startY
 
+            val startKind = ForegroundPixel.kind((packed shr 16 and 255).toInt(), (packed shr 8 and 255).toInt(), (packed and 255).toInt())
             var pixelCount = 0
             var r = 0f
             var g = 0f
@@ -192,9 +193,11 @@ object ConnectedComponentEngine {
                     val ny = cy + dy
                     val nextKey = (nx shl 16) or ny
 
-                    if (visited.add(nextKey) && lookup.containsKey(nextKey)) {
-                        queue.add(nextKey)
-                    }
+                    if (nx < 0 || ny < 0) continue
+                    val neighbor = lookup[nextKey] ?: continue
+                    val rgb = data[neighbor]
+                    if (ForegroundPixel.kind((rgb shr 16 and 255).toInt(), (rgb shr 8 and 255).toInt(), (rgb and 255).toInt()) != startKind) continue
+                    if (visited.add(nextKey)) queue.add(nextKey)
                 }
             }
 

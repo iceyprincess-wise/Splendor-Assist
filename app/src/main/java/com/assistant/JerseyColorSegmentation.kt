@@ -113,6 +113,7 @@ object JerseyColorSegmentation {
         blue: Float
     ): ClassificationResult {
 
+        if (!red.isFinite() || !green.isFinite() || !blue.isFinite()) return ClassificationResult(Team.UNKNOWN, 0f)
         return when {
 
             red > 140f && red > green + 50f && red > blue + 50f ->
@@ -154,7 +155,7 @@ object JerseyColorSegmentation {
 
             while (x < width) {
 
-                val index = y * stride + x * 4
+                val index = y * stride + x * frame.pixelStride
 
                 if (index + 2 < buffer.limit()) {
 

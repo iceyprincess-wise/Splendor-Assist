@@ -147,7 +147,8 @@ object PlayerDetector {
             val centerY = (blob.minY + blob.maxY) * 0.5f
 
             // OMEGA FIX: Dynamic Wide Camera Depth Scaling
-            val depthFactor = if (centerY < 400f) 0.25f else 1.0f
+            val captureHeight = com.assistant.vision.CameraProfile.captureHeightOrFallback()
+            val depthFactor = if (centerY < captureHeight * 0.5f) 0.25f else 1.0f
             val effectivePixelCount = blob.pixelCount / depthFactor
 
             val jersey = JerseyColorSegmentation.classify(
@@ -156,6 +157,7 @@ object PlayerDetector {
                 blob.averageBlue
             )
 
+            if (jersey.team != JerseyColorSegmentation.Team.USER && jersey.team != JerseyColorSegmentation.Team.OPPONENT) continue
             val sizeScore = (effectivePixelCount / 64f).coerceIn(0f, 1f)
             val densityScore = density.coerceIn(0f, 1f)
             val shapeScore = ((aspectRatio - MIN_ASPECT_RATIO) /
@@ -181,16 +183,7 @@ object PlayerDetector {
             }
         }
 
-        // In-place sort rawPool by confidence descending
-        for (i in 0 until rawCount) {
-            for (j in i + 1 until rawCount) {
-                if (rawPool[j].confidence > rawPool[i].confidence) {
-                    val tempX = rawPool[i].x; val tempY = rawPool[i].y; val tempC = rawPool[i].confidence; val tempT = rawPool[i].isUserTeam
-                    rawPool[i].x = rawPool[j].x; rawPool[i].y = rawPool[j].y; rawPool[i].confidence = rawPool[j].confidence; rawPool[i].isUserTeam = rawPool[j].isUserTeam
-                    rawPool[j].x = tempX; rawPool[j].y = tempY; rawPool[j].confidence = tempC; rawPool[j].isUserTeam = tempT
-                }
-            }
-        }
+        java.util.Arrays.sort(rawPool, 0, rawCount, compareByDescending<PlayerDetection> { it.confidence })
 
         // NMS: suppress lower-confidence detection if it overlaps a better one
         var keptCount = 0
@@ -211,7 +204,8 @@ object PlayerDetector {
                 val dx = abs(pi.x - rawPool[j].x)
                 val dy = abs(pi.y - rawPool[j].y)
                 val distSq = dx * dx + dy * dy
-                if (distSq < 1600f) suppressed[j] = true
+                val radius = (com.assistant.vision.CameraProfile.captureHeightOrFallback() * 0.025f).coerceIn(3f, 12f)
+                if (pi.isUserTeam == rawPool[j].isUserTeam && distSq < radius * radius) suppressed[j] = true
             }
         }
 
@@ -222,7 +216,7 @@ object PlayerDetector {
             detected = keptCount > 0,
             playerCount = keptCount,
             confidence = aggregateConfidence,
-            detections = resultList
+            detections = (0 until keptCount).map { i -> keptPool[i].let { PlayerDetection(it.x, it.y, it.confidence, it.isUserTeam) } }
         )
     }
 }

@@ -34,7 +34,6 @@ add_library(splendor_native SHARED
 
   native_tactical_engines.c
 
-  native_recognition_overload.c
 )
 
 find_library(log-lib log)
