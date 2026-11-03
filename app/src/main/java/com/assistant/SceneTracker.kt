@@ -101,7 +101,7 @@ object SceneTracker {
     private var trackedBallY = 0f
     private var trackedBallSpeed = 0f
 
-    private var latest =
+    @Volatile private var latest =
         SceneSnapshot()
 
     private val trackedPlayers = mutableListOf<TrackedPlayer>()
@@ -237,7 +237,7 @@ object SceneTracker {
                 trackedBallVisible = state.ballDetected,
 
                 goalkeeperVisible =
-                    trackedGoalkeeper != null,
+                    state.goalkeeperDetected && state.goalkeeperConfidence > 0f,
 
                 goalkeeperX =
                     trackedGoalkeeper?.x ?: 0f,
@@ -261,7 +261,7 @@ object SceneTracker {
                 centerCircleDetected = state.centerCircleDetected,
                 fieldConfidence = state.fieldConfidence,
 
-                trackedPlayers = trackedPlayers.toList(),
+                trackedPlayers = trackedPlayers.map { it.copy() },
 
                 confidence = state.confidence,
                 goalkeeperConfidence = trackedGoalkeeper?.confidence ?: 0f

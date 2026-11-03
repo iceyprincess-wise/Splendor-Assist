@@ -104,6 +104,7 @@ object ActiveAttackerEngine{
     val index=possession.ownerIndex
     if(index !in scene.trackedPlayers.indices)return ActiveAttackerResult(found=false)
     val player=scene.trackedPlayers[index]
+    if(!player.isUserTeam)return ActiveAttackerResult(found=false)
     if(player.isUserTeam) AttackAxisModel.observe(scene,possession.hasPossession,com.assistant.vision.CameraProfile.captureWidthOrFallback())
     val result=ActiveAttackerResult(true,player,index,possession.confidence)
     if(result.found&&result.confidence>0.30f){
@@ -142,6 +143,7 @@ object ActiveAttackerEngine{
     val index=possession.ownerIndex
     if(index !in scene.trackedPlayers.indices)return ActiveAttackerResult(found=false)
     val player=scene.trackedPlayers[index]
+    if(!player.isUserTeam)return ActiveAttackerResult(found=false)
     return ActiveAttackerResult(true,player,index,possession.confidence)
   }
 }

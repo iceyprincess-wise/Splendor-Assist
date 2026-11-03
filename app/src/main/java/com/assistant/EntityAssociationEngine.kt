@@ -122,6 +122,8 @@ object EntityAssociationEngine {
         detections: List<PlayerDetection>,
         frameNumber: Long
     ) {
+        trackedPlayers.removeAll { !it.x.isFinite() || !it.y.isFinite() ||
+            !it.velocityX.isFinite() || !it.velocityY.isFinite() || !it.confidence.isFinite() }
         val assigned = mutableSetOf<Int>()
         val maxDist = MAX_ASSOCIATION_DISTANCE
 
@@ -133,6 +135,10 @@ object EntityAssociationEngine {
             var bestD = Float.MAX_VALUE
             for (i in detections.indices) {
                 if (i in assigned) continue
+                val detection = detections[i]
+                if (detection.isUserTeam != track.isUserTeam ||
+                    !detection.x.isFinite() || !detection.y.isFinite() ||
+                    !detection.confidence.isFinite() || detection.confidence <= 0f) continue
                 val d = distance(track.x, track.y, detections[i].x, detections[i].y)
                 if (d < bestD) {
                     bestD = d
@@ -175,6 +181,8 @@ object EntityAssociationEngine {
         for (i in detections.indices) {
             if (i in assigned) continue
             val detection = detections[i]
+            if (!detection.x.isFinite() || !detection.y.isFinite() ||
+                !detection.confidence.isFinite() || detection.confidence <= 0f) continue
             trackedPlayers.add(
                 TrackedPlayer(
                     id = nextTrackId++,
@@ -202,7 +210,7 @@ object EntityAssociationEngine {
             for (j in i + 1 until trackedPlayers.size) {
                 val b = trackedPlayers[j]
                 if (b in doomed) continue
-                if (distance(a.x, a.y, b.x, b.y) < dupDist) {
+                if (a.isUserTeam == b.isUserTeam && distance(a.x, a.y, b.x, b.y) < dupDist) {
                     val loser = when {
                         a.confidence != b.confidence ->
                             if (a.confidence < b.confidence) a else b

@@ -211,11 +211,12 @@ SceneTracker.update(
           possession
       )
 
-  val defender =
-      ActiveDefenderEngine.compute(
-          scene,
-          attacker
-      )
+  // The possession attacker is ours; defense needs the observed opponent owner.
+  val defensiveAttacker = if (ownership.hasOwner && ownership.owner?.isUserTeam == false)
+      ActiveAttackerResult(true, ownership.owner, ownership.ownerIndex, ownership.confidence)
+      else attacker
+  val defender = ActiveDefenderEngine.compute(scene, defensiveAttacker)
+  AttackAxisModel.observe(scene, possession.hasPossession, frame.width.toFloat())
 
   val formation =
       FormationEngine.estimate(

@@ -141,6 +141,8 @@ object ControlMappingTrainer {
 
     fun trainedSlots(): Int = SLOTS.count { slotHits[it.id] >= 3 }
 
+    fun isSlotTrained(id: Int): Boolean = id in 1..4 && slotHits[id] >= 3
+
     fun slotCenter(id: Int): Pair<Float, Float> = Pair(slotX[id], slotY[id])
 
     // SPLENDOR_CONTROL_MAP_V1 - the joystick origin was hard-coded at

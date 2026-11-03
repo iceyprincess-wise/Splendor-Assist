@@ -112,10 +112,10 @@ object BallPossessionEngine {
         }
 
         val changed =
-            ownership.ownerIndex != previousOwner
+            ownership.owner.id != previousOwner
 
         if (changed) {
-            previousOwner = ownership.ownerIndex
+            previousOwner = ownership.owner.id
             possessionFrames = 1L
         } else {
             possessionFrames++

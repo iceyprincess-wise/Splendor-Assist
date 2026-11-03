@@ -147,14 +147,21 @@ class ModMenuController(private val context: Context) {
         var downY = 0f
         var moved = false
 
-        val orb = TextView(context).apply {
+        val orb = object : androidx.appcompat.widget.AppCompatTextView(context) {
+            override fun performClick(): Boolean {
+                super.performClick()
+                hideLauncher()
+                show()
+                return true
+            }
+        }.apply {
             text = "\u2699"
             setTextColor(Color.parseColor(ACCENT))
             textSize = 20f
             setBackgroundColor(Color.parseColor(ORB_BG))
             setPadding(24, 12, 24, 12)
         }
-        orb.setOnTouchListener { _, event ->
+        orb.setOnTouchListener { view, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     dragX = lp.x; dragY = lp.y
@@ -171,10 +178,7 @@ class ModMenuController(private val context: Context) {
                     true
                 }
                 MotionEvent.ACTION_UP -> {
-                    if (!moved) {
-                        hideLauncher()
-                        show()
-                    }
+                    if (!moved) view.performClick()
                     true
                 }
                 else -> false
@@ -275,7 +279,9 @@ class ModMenuController(private val context: Context) {
             setPadding(24, 20, 24, 20)
         }
 
-        val headerLayout = LinearLayout(context).apply {
+        val headerLayout = object : LinearLayout(context) {
+            override fun performClick(): Boolean = super.performClick()
+        }.apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
@@ -639,7 +645,7 @@ class ModMenuController(private val context: Context) {
             showLauncher()
         }
 
-        headerLayout.setOnTouchListener { _, event ->
+        headerLayout.setOnTouchListener { view, event ->
             val lp = mainLayout.layoutParams as? WindowManager.LayoutParams ?: return@setOnTouchListener false
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -655,6 +661,7 @@ class ModMenuController(private val context: Context) {
                     windowManager?.updateViewLayout(mainLayout, lp)
                     true
                 }
+                MotionEvent.ACTION_UP -> { view.performClick(); true }
                 else -> false
             }
         }

@@ -78,7 +78,12 @@ object CentralExecutionBus {
     private val _statistics = MutableStateFlow(BusStatistics())
     val statistics: StateFlow<BusStatistics> = _statistics.asStateFlow()
 
-    fun submit(request: ExecutionRequest): Boolean {
+    private val reservations = mutableMapOf<Pair<ExecutionSource, Int>, String>()
+    @Synchronized fun complete(actionId: String) {
+        reservations.entries.removeAll { it.value == actionId }
+    }
+
+    @Synchronized fun submit(request: ExecutionRequest): Boolean {
         if (!running.get()) {
             stoppedDrops.incrementAndGet()
             return false
@@ -88,6 +93,8 @@ object CentralExecutionBus {
             return false
         }
 
+        val key = request.source to request.phase
+        if (reservations.containsKey(key)) return false
         val ring = when (request.source) {
             ExecutionSource.GOALKEEPER, ExecutionSource.INTERCEPTION -> highRing
             ExecutionSource.SMART_ASSIST -> medRing
@@ -104,6 +111,7 @@ object CentralExecutionBus {
             }
 
             if (ring.writeCursor.compareAndSet(writePos, writePos + 1)) {
+                reservations[key] = request.actionId
                 request.timestamp = System.currentTimeMillis()
                 request.busAccepted = true
                 ring.buffer.set((writePos and MASK).toInt(), request)
@@ -114,7 +122,7 @@ object CentralExecutionBus {
         }
     }
 
-    fun consume(): ExecutionRequest? {
+    @Synchronized fun consume(): ExecutionRequest? {
         // Priority Arbitration: High -> Med -> Low
         consumeFrom(highRing)?.let { return it }
         consumeFrom(medRing)?.let { return it }
@@ -134,6 +142,7 @@ object CentralExecutionBus {
             if (ring.readCursor.compareAndSet(readPos, readPos + 1)) {
                 ring.buffer.compareAndSet(index, request, null)
                 if (requestIsStale(request, System.currentTimeMillis())) {
+                    complete(request.actionId)
                     staleDrops.incrementAndGet()
                     continue // Drop stale and try next
                 }
@@ -145,8 +154,23 @@ object CentralExecutionBus {
         }
     }
 
-    fun peekSource(): ExecutionSource? {
+    private fun discardStaleHeads(ring: LockFreeRing, now: Long) {
+        while (ring.readCursor.get() < ring.writeCursor.get()) {
+            val index = (ring.readCursor.get() and MASK).toInt()
+            val request = ring.buffer.get(index) ?: break
+            if (!requestIsStale(request, now)) break
+            ring.buffer.set(index, null)
+            ring.readCursor.incrementAndGet()
+            complete(request.actionId)
+            staleDrops.incrementAndGet()
+        }
+    }
+
+    @Synchronized fun peekSource(): ExecutionSource? {
         val now = System.currentTimeMillis()
+        discardStaleHeads(highRing, now)
+        discardStaleHeads(medRing, now)
+        discardStaleHeads(lowRing, now)
         // Check High
         val hRead = highRing.readCursor.get()
         if (hRead < highRing.writeCursor.get()) {
@@ -169,7 +193,16 @@ object CentralExecutionBus {
     }
 
     fun start() { running.set(true); updateStatistics(force = true) }
-    fun stop() { running.set(false); updateStatistics(force = true) }
+    @Synchronized fun stop() {
+        running.set(false)
+        for (ring in listOf(highRing, medRing, lowRing)) {
+            while (ring.readCursor.get() < ring.writeCursor.get()) {
+                ring.buffer.set((ring.readCursor.getAndIncrement() and MASK).toInt(), null)
+            }
+        }
+        reservations.clear()
+        updateStatistics(force = true)
+    }
     
     fun pendingCount(): Int {
         var count = 0

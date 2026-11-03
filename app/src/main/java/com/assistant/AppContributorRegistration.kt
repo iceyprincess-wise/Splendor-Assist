@@ -14,7 +14,7 @@ enum class RegistrationState { IDLE, REGISTERING, READY, PARTIAL, FAILED }
 object AppContributorRegistration {
 
     const val ALLOWS_REDUCED_FIRST_FRAMES = true
-    const val EXPECTED_CONTRIBUTOR_COUNT = 39
+    const val EXPECTED_CONTRIBUTOR_COUNT = 44
 
     // HIGH: Completeness invariant - explicit set of expected names
     private val EXPECTED_CONTRIBUTOR_NAMES = setOf(
@@ -23,7 +23,8 @@ object AppContributorRegistration {
         "DashPressure", "InterceptMatrix", "TouchRecovery", "OverloadPlaystyle", "TruePass", "ReceiverEngagement", "ForwardRun",
         "ShotOpportunity", "DefenseAuthority", "ShotAnticipation", "KeeperFeedback", "DashAnchor", "SpeedCompensation",
         "InstantIntercept", "BuildUpPress", "BallRetentionShield", "TrueShot", "TrueCross", "SAUltimateCorrector",
-        "SharpTouchTiming", "KickingPosture"
+        "SharpTouchTiming", "KickingPosture",
+        "DREADNOUGHT_BUMPER", "FORMATIONS_ANCHOR", "MAGNETIC_FEET", "LASER_PASS_DIRECTOR", "APEX_FINISHER"
     )
 
     private val state = AtomicReference(RegistrationState.IDLE)
@@ -122,7 +123,12 @@ object AppContributorRegistration {
                         com.assistant.TrueCrossContributor,
                         com.assistant.SmartAssistUltimateCorrectorContributor,
                         com.assistant.SharpTouchTimingContributor,
-                        com.assistant.KickingPostureContributor
+                        com.assistant.KickingPostureContributor,
+                        com.assistant.gameplay.DreadnoughtBumperEngine(),
+                        com.assistant.gameplay.FormationsAnchorEngine(),
+                        com.assistant.gameplay.AbsoluteMagneticFeetEngine(),
+                        com.assistant.gameplay.LaserPassDirectorEngine(),
+                        com.assistant.gameplay.ApexFinisherEngine()
                     )
                     
                     // MEDIUM: Runtime assertion for 37-contributor contract

@@ -2,6 +2,7 @@
 #include <android/log.h>
 #include <string.h>
 #include <stdio.h>
+#include <pthread.h>
 
 // In-memory breadcrumb ring. No disk I/O on the hot path; the ring is
 // flushed to the log (and via the crash handler) only on demand.
@@ -9,24 +10,29 @@
 #define SPLENDOR_BC_TEXT 96
 
 static char bc_ring[SPLENDOR_BC_SLOTS][SPLENDOR_BC_TEXT];
+static pthread_mutex_t bc_lock = PTHREAD_MUTEX_INITIALIZER;
 static int bc_head = 0;
 static int bc_count = 0;
 
 void splendor_native_breadcrumb(const char *entry) {
     if (entry == NULL) return;
+    pthread_mutex_lock(&bc_lock);
     strncpy(bc_ring[bc_head], entry, SPLENDOR_BC_TEXT - 1);
     bc_ring[bc_head][SPLENDOR_BC_TEXT - 1] = '\0';
     bc_head = (bc_head + 1) % SPLENDOR_BC_SLOTS;
     if (bc_count < SPLENDOR_BC_SLOTS) bc_count++;
+    pthread_mutex_unlock(&bc_lock);
 }
 
 void splendor_native_breadcrumb_flush(JNIEnv *env) {
     (void)env;
+    pthread_mutex_lock(&bc_lock);
     int start = (bc_head - bc_count + SPLENDOR_BC_SLOTS) % SPLENDOR_BC_SLOTS;
     for (int i = 0; i < bc_count; i++) {
         int idx = (start + i) % SPLENDOR_BC_SLOTS;
         __android_log_print(ANDROID_LOG_ERROR, "SPLENDOR_BC", "%s", bc_ring[idx]);
     }
+    pthread_mutex_unlock(&bc_lock);
 }
 
 /* JNI bridge for crash forensics: hand the ring to the JVM as one string. */
@@ -35,6 +41,7 @@ JNIEXPORT jstring JNICALL Java_com_assistant_NativeBridge_nativeBreadcrumbDump(
     (void)clazz;
     char out[SPLENDOR_BC_SLOTS * (SPLENDOR_BC_TEXT + 1)];
     int len = 0;
+    pthread_mutex_lock(&bc_lock);
     int start = (bc_head - bc_count + SPLENDOR_BC_SLOTS) % SPLENDOR_BC_SLOTS;
     for (int i = 0; i < bc_count && len < (int)sizeof(out) - SPLENDOR_BC_TEXT - 2; i++) {
         int idx = (start + i) % SPLENDOR_BC_SLOTS;
@@ -42,5 +49,6 @@ JNIEXPORT jstring JNICALL Java_com_assistant_NativeBridge_nativeBreadcrumbDump(
     }
     if (len > 0 && out[len - 1] == '\n') out[len - 1] = '\0';
     else out[len] = '\0';
+    pthread_mutex_unlock(&bc_lock);
     return (*env)->NewStringUTF(env, out);
 }

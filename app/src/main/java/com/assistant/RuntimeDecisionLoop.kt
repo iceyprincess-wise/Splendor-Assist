@@ -98,6 +98,7 @@ import org.tensorflow.lite.Interpreter
 object RuntimeDecisionLoop {
 
     private const val MAX_OPTICAL_VARIANCE_FOR_ACTION = 0.85f
+    private var lastCaptureId = -1L
     private val decisions = AtomicLong(0L)
     private val routed = AtomicLong(0L)
     private val idleNoContribution = AtomicLong(0L)
@@ -122,7 +123,9 @@ object RuntimeDecisionLoop {
 
 
     /* Called once per assembled frame by OverlayService's capture loop. */
-    fun onFrame(frame: RuntimeFrame): Boolean {
+    @Synchronized fun onFrame(frame: RuntimeFrame): Boolean {
+        if (frame.frameId <= lastCaptureId) return false
+        lastCaptureId = frame.frameId
         decisions.incrementAndGet()
         lastUpdatedMs = System.currentTimeMillis()
         ActionOutcomeVerifier.verify(frame)
@@ -141,8 +144,7 @@ object RuntimeDecisionLoop {
 
         // CONTROL-MAPPING GATE: the mapping/settings screen must never
         // receive gameplay gestures; trained in-match cluster arms the stack.
-        // REMOVED SETTINGS GATE: Button visibility/match MUST NOT be the activation gate for the full gameplay engine.
-        // Gameplay engines must run unconditionally to ensure 0.00ms reaction to live match states.
+        if (ControlMappingTrainer.uiMode == ControlMappingTrainer.UiMode.SETTINGS) return false
         ControlMappingTrainer.observeOutcome(frame)
 
         // SPLENDOR_AUTHORITY_REACHES_ARBITRATION_V1 - the master authority
@@ -152,7 +154,9 @@ object RuntimeDecisionLoop {
         // 100% default the factor is 1.0, so default behaviour is unchanged.
         val authorityFactor =
             RuntimePerformanceCoordinator.authority().coerceIn(0, 100) / 100f
-        val collected = GameplayEngineRegistry.collect(frame)
+        val collected = GameplayEngineRegistry.collect(frame).filter { c ->
+            requiredControlSlot(c) == 0 || (ControlMappingTrainer.matchActive && ControlMappingTrainer.isSlotTrained(requiredControlSlot(c)))
+        }
         val contributions = if (authorityFactor >= 1f) collected else collected.map { c ->
             c.copy(authority = (c.authority * authorityFactor).coerceIn(0f, 1f))
         }
@@ -163,7 +167,7 @@ object RuntimeDecisionLoop {
 
         val emergency = ContributionRegistry.drainBest()
 
-        val rawRequest = chooseRequest(best, emergency)
+        val rawRequest = chooseRequest(best, emergency, frame)
         val request = rawRequest?.copy(gestureEnvelope = mintOrRefreshGestureEnvelope(android.os.SystemClock.elapsedRealtime()))
         if (request == null) {
             idleNoContribution.incrementAndGet()
@@ -235,7 +239,8 @@ object RuntimeDecisionLoop {
 
     private fun chooseRequest(
         best: EngineContribution?,
-        emergency: ExecutionRequest?
+        emergency: ExecutionRequest?,
+        frame: RuntimeFrame
     ): ExecutionRequest? {
         // Emergency (goalkeeper etc.) outranks a normal contribution.
         if (emergency != null) {
@@ -247,8 +252,28 @@ object RuntimeDecisionLoop {
         if (best == null) return null
 
         // Contributor targets carry action-specific intent (goal, receiver, movement).
-        val leadX = best.targetX
-        val leadY = best.targetY
+        var leadX = best.targetX
+        var leadY = best.targetY
+        var startX = com.assistant.vision.CameraProfile.captureWidthOrFallback() * ControlMappingTrainer.joystickCenterX()
+        var startY = com.assistant.vision.CameraProfile.captureHeightOrFallback() * ControlMappingTrainer.joystickCenterY()
+        val controlSlot = requiredControlSlot(best)
+        val aimOriginX = best.aimOriginX ?: if (controlSlot != 0) frame.ballX else null
+        val aimOriginY = best.aimOriginY ?: if (controlSlot != 0) frame.ballY else null
+        if (aimOriginX != null && aimOriginY != null) {
+            if (controlSlot != 0) {
+                if (!ControlMappingTrainer.matchActive || !ControlMappingTrainer.isSlotTrained(controlSlot)) return null
+                val center = ControlMappingTrainer.slotCenter(controlSlot)
+                startX = center.first * frameWidth()
+                startY = center.second * frameHeight()
+            }
+            val dx = best.targetX - aimOriginX
+            val dy = best.targetY - aimOriginY
+            val distance = hypot(dx, dy)
+            if (!distance.isFinite() || distance <= 0f) return null
+            val radius = minOf(frameWidth(), frameHeight()) * 0.08f
+            leadX = (startX + dx / distance * radius).coerceIn(0f, frameWidth() - 1f)
+            leadY = (startY + dy / distance * radius).coerceIn(0f, frameHeight() - 1f)
+        }
         return ExecutionRequest(
             source = ExecutionSource.SMART_ASSIST,
             phase = best.actionClass.ordinal,
@@ -256,10 +281,8 @@ object RuntimeDecisionLoop {
             // trainer's live normalised control map instead of a fixed point.
             // All request coordinates live in the capture frame's space, so the
             // normalised centre is scaled by the capture dimensions.
-            startX = com.assistant.vision.CameraProfile.captureWidthOrFallback() *
-                ControlMappingTrainer.joystickCenterX(),
-            startY = com.assistant.vision.CameraProfile.captureHeightOrFallback() *
-                ControlMappingTrainer.joystickCenterY(),
+            startX = startX,
+            startY = startY,
             endX = leadX.coerceAtLeast(0f),
             endY = leadY.coerceAtLeast(0f),
             duration = (ControlMappingTrainer.personalDuration(best.actionClass, best.durationHintMs) * executionBias(best.actionClass)).toLong().coerceIn(15L, 85L)
@@ -268,6 +291,16 @@ object RuntimeDecisionLoop {
 
     /* f5: Pass/Shot/Cross threshold slider -> live duration factor. 50 = 1.0 (unchanged),
        0 = 0.0, 100 = 2.0. DEFEND/EVADE/other classes are not biased. */
+    internal fun requiredControlSlot(contribution: EngineContribution): Int =
+        if (contribution.controlSlot != 0) contribution.controlSlot else when (contribution.actionClass) {
+            ActionClass.PASS, ActionClass.CROSS -> 3
+            ActionClass.SHOT -> 2
+            else -> 0
+        }
+
+    private fun frameWidth() = com.assistant.vision.CameraProfile.captureWidthOrFallback()
+    private fun frameHeight() = com.assistant.vision.CameraProfile.captureHeightOrFallback()
+
     private fun executionBias(actionClass: ActionClass): Float {
         val cfg = SmartAssistRepository.configuration()
         val threshold = when (actionClass) {
@@ -287,6 +320,7 @@ object RuntimeDecisionLoop {
         }
 
     fun reset() {
+        lastCaptureId = -1L
         activeGestureEnvelope = null
         ActionOutcomeVerifier.reset()
         decisions.set(0L); routed.set(0L)

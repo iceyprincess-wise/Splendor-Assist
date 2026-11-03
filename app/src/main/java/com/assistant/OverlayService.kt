@@ -315,6 +315,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
             val visionStartedNanos = System.nanoTime()
             try {
                 com.assistant.CrashForensics.mark(3, 2, System.currentTimeMillis())
+                // Exact byte comparison: repeated capture content must not trigger another action.
+                if (previousVisionBuffer?.let { it == visionBuffer } == true) return@launch
                 val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride)
                 com.assistant.CrashForensics.mark(4, 2, System.currentTimeMillis())
                 val prevBuf = previousVisionBuffer
@@ -335,6 +337,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 targetBuf.put(visionBuffer)
                 visionBuffer.position(pos)
                 targetBuf.flip()
+                com.assistant.ControlMappingTrainer.observe(visionBuffer, width, height, rowStride)
                 val state = com.assistant.VisionCore.process(normalized)
                 com.assistant.CrashForensics.mark(4, 2, System.currentTimeMillis())
                 com.assistant.BoosterIgnition.ensureIgnited(this@OverlayService)
@@ -349,7 +352,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 // WIRE SILOED GK ENGINES: Activate Dive, Claim, Rush, and Block action engines
                 com.assistant.GameStateBuilder.update(state)
                 com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(visionBuffer, width, height, rowStride)
-                com.assistant.ControlMappingTrainer.observe(visionBuffer, width, height, rowStride)
             } catch (t: Throwable) {
                 val now = System.currentTimeMillis()
                 if (now - lastCaptureFaultLog > 1000L) {

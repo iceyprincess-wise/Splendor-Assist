@@ -76,7 +76,7 @@
             <TextView android:id="@+id/tvSmartAssistBulb" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="@string/auto_extracted_11" android:textSize="12sp" android:textColor="#00E676"/>
             <TextView android:id="@+id/tvSmartAssistState" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/auto_extracted_12" android:textSize="10sp" android:textColor="#9FB3D1" android:letterSpacing="0.1" android:layout_marginTop="2dp"/>
+                android:text="@string/auto_extracted_12" android:textSize="11sp" android:textColor="#9FB3D1" android:letterSpacing="0.1" android:layout_marginTop="2dp"/>
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="@string/auto_extracted_13" android:textSize="26sp" android:layout_marginTop="4dp"/>
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -95,7 +95,7 @@
             <TextView android:id="@+id/tvGoalkeeperBulb" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="@string/auto_extracted_15" android:textSize="12sp" android:textColor="#00E676"/>
             <TextView android:id="@+id/tvGoalkeeperState" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/auto_extracted_16" android:textSize="10sp" android:textColor="#9FB3D1" android:letterSpacing="0.1" android:layout_marginTop="2dp"/>
+                android:text="@string/auto_extracted_16" android:textSize="11sp" android:textColor="#9FB3D1" android:letterSpacing="0.1" android:layout_marginTop="2dp"/>
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="@string/auto_extracted_17" android:textSize="26sp" android:layout_marginTop="4dp"/>
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -114,7 +114,7 @@
             <TextView android:id="@+id/tvInterceptionBulb" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="@string/auto_extracted_19" android:textSize="12sp" android:textColor="#00E676"/>
             <TextView android:id="@+id/tvInterceptionState" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/auto_extracted_20" android:textSize="10sp" android:textColor="#9FB3D1" android:letterSpacing="0.1" android:layout_marginTop="2dp"/>
+                android:text="@string/auto_extracted_20" android:textSize="11sp" android:textColor="#9FB3D1" android:letterSpacing="0.1" android:layout_marginTop="2dp"/>
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="@string/auto_extracted_21" android:textSize="26sp" android:layout_marginTop="4dp"/>
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -214,7 +214,7 @@
             <TextView android:id="@+id/tvFutureBulb" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="@string/auto_extracted_33" android:textSize="12sp" android:textColor="#00E676"/>
             <TextView android:id="@+id/tvFutureState" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/auto_extracted_34" android:textSize="10sp" android:textColor="#9FB3D1" android:letterSpacing="0.1" android:layout_marginTop="2dp"/>
+                android:text="@string/auto_extracted_34" android:textSize="11sp" android:textColor="#9FB3D1" android:letterSpacing="0.1" android:layout_marginTop="2dp"/>
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="@string/auto_extracted_35" android:textSize="26sp" android:layout_marginTop="4dp"/>
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"

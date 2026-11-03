@@ -18,6 +18,12 @@ data class ZoneDistribution(
     }
 }
 
+data class RuntimeEntity(
+    val id: Int, val x: Float, val y: Float,
+    val velocityX: Float, val velocityY: Float,
+    val confidence: Float, val teammate: Boolean
+)
+
 data class RuntimeFrame(
     val frameId: Long,
     val timestampMs: Long,
@@ -53,10 +59,17 @@ data class RuntimeFrame(
     val goalkeeperVisible: Boolean = false,
     val goalkeeperX: Float = 0f,
     val goalkeeperY: Float = 0f,
-    val opticalVariance: Float = 0f
+    val opticalVariance: Float = 0f,
+    val entities: List<RuntimeEntity> = emptyList(),
+    val ownerId: Int? = null,
+    val defenderId: Int? = null,
+    val attackDirection: Int = 0,
+    val captureWidth: Float = 0f,
+    val captureHeight: Float = 0f
 ) {
     val trusted: Boolean get() = enabled && confidence.isFinite() && confidence > 0f &&
-        ballX.isFinite() && ballY.isFinite() && opticalVariance.isFinite()
+        ballX.isFinite() && ballY.isFinite() && ballVelocityX.isFinite() &&
+        ballVelocityY.isFinite() && opticalVariance.isFinite()
     val goalCenterX: Float get() = (goalLeftX + goalRightX) * 0.5f
     val goalCenterY: Float get() = (goalTopY + goalBottomY) * 0.5f
     val goalWidth: Float get() = (goalRightX - goalLeftX).coerceAtLeast(0f)
@@ -69,7 +82,11 @@ data class EngineContribution(
     val targetY: Float,
     val authority: Float,
     val confidence: Float,
-    val durationHintMs: Long
+    val durationHintMs: Long,
+    // Slot 0 preserves legacy routing. Explicit intents require a trained slot.
+    val controlSlot: Int = 0,
+    val aimOriginX: Float? = null,
+    val aimOriginY: Float? = null
 ) {
     val weight: Float
         get() = authority.coerceIn(0f, 1f) * confidence.coerceIn(0f, 1f)

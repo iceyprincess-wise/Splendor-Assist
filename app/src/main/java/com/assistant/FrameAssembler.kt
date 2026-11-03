@@ -123,7 +123,11 @@ object FrameAssembler {
     fun assemble(opticalVariance: Float = 0f): RuntimeFrame {
         val id = frameCounter.incrementAndGet()
 
-        val lanes = Phase3WorldStateStore.current().crossingLaneAnalysis.lanes
+        val world = Phase3WorldStateStore.current()
+        val scene = SceneTracker.current().takeIf {
+            System.currentTimeMillis() - it.timestamp in 0L..MAX_TELEMETRY_AGE_MS
+        }
+        val lanes = if (scene != null) world.crossingLaneAnalysis.lanes else emptyList()
         val laneCount = lanes.size
         val viable = lanes.count { it.viable }
         val bestLane = lanes.firstOrNull { it.viable }
@@ -139,7 +143,8 @@ object FrameAssembler {
         val ballVx = telemetry?.ballVelocityX ?: 0f
         val ballVy = telemetry?.ballVelocityY ?: 0f
         val ballTrustNow = VisionTrust.ballTrust()
-        val ballSeen = telemetry != null && ballTrustNow > 0f && ballX.isFinite() && ballY.isFinite()
+        val ballSeen = telemetry != null && telemetry.confidence > 0f &&
+            scene?.trackedBallVisible == true && ballTrustNow > 0f && ballX.isFinite() && ballY.isFinite()
 
         /*
          * ROOT-CAUSE FIX (round 2): possession, not visibility.
@@ -157,8 +162,11 @@ object FrameAssembler {
                 false // Visibility alone does not establish possession.
             }
 
-        val scene = try { SceneTracker.current() } catch (_: Throwable) { null }
-        val rawPlayers = scene?.trackedPlayers.orEmpty()
+        val rawPlayers = scene?.trackedPlayers.orEmpty().filter {
+            it.lastSeenFrame == scene?.frameNumber && it.x.isFinite() && it.y.isFinite() &&
+                it.velocityX.isFinite() && it.velocityY.isFinite() &&
+                it.confidence.isFinite() && it.confidence > 0f
+        }
 
         // V6 VISION GUARD (field-proven over-count: players=30/opponents=30):
         // cap each side to 11 before zones/density/trust so downstream engines
@@ -203,7 +211,7 @@ object FrameAssembler {
             if (players.isNotEmpty()) sceneConfidence else 0f).coerceIn(0f, 1f)
         val automaticTrustedFrame = VisionTrust.frameTrusted(players.size, opponents)
         val isTrustedFrame = OverrideStore.resolve("TRUST", automaticTrustedFrame)
-        val confidence = if (isTrustedFrame) rawConfidence else 0f
+        val confidence = if (isTrustedFrame && ballSeen) rawConfidence else 0f
 
         VisionTrust.tickAndLog()
 
@@ -214,7 +222,7 @@ object FrameAssembler {
                 (scene?.goalBottomY ?: 0f) > (scene?.goalTopY ?: 0f)
 
         val frame = RuntimeFrame(
-            frameId = id,
+            frameId = scene?.frameNumber ?: id,
             timestampMs = System.currentTimeMillis(),
             hasBall = hasBall,
             ballX = ballX,
@@ -243,7 +251,14 @@ object FrameAssembler {
             goalkeeperVisible = scene?.goalkeeperVisible ?: false,
             goalkeeperX = scene?.goalkeeperX ?: 0f,
             goalkeeperY = scene?.goalkeeperY ?: 0f,
-            opticalVariance = opticalVariance.coerceIn(0f, 1f)
+            opticalVariance = opticalVariance.coerceIn(0f, 1f),
+            entities = players.map { com.assistant.runtime.RuntimeEntity(it.id, it.x, it.y,
+                it.velocityX, it.velocityY, it.confidence, it.isUserTeam) },
+            ownerId = world.ownership.takeIf { scene != null && it.hasOwner && it.confidence >= 0.2f }?.owner?.id,
+            defenderId = world.defender.takeIf { scene != null && it.found }?.defender?.id,
+            attackDirection = AttackAxisModel.directionIfConfident(),
+            captureWidth = com.assistant.vision.CameraProfile.captureWidth.toFloat(),
+            captureHeight = com.assistant.vision.CameraProfile.captureHeight.toFloat()
         )
         lastFrame = frame
         return frame

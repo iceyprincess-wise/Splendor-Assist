@@ -35,7 +35,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         @Volatile
         private var dispatchingSource: com.assistant.execution.ExecutionSource? = null
         private const val DISPATCH_LATCH_TIMEOUT_MS = 250L
-        private const val LATCH_RELEASE_MARGIN_MS = 0L  
 
         private fun latchStuck(): Boolean =
             isDispatching &&
@@ -50,6 +49,19 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // SPLENDOR_POLL_FIX: Aligned poll rate from aggressive 2ms wakeup to 16ms frame boundary
         private const val BUS_POLL_RATE_MS = 9L // bounded 8.33ms event-wake backstop
         private const val DISPATCH_RATE_WINDOW_MS = 10_000L
+    }
+
+    @Volatile private var currentActionId: String? = null
+    private var reportedStallActionId: String? = null
+    @Synchronized private fun completeDispatch(actionId: String) {
+        if (currentActionId == actionId) releaseDispatch()
+    }
+    @Synchronized private fun releaseDispatch() {
+        currentActionId?.let { CentralExecutionBus.complete(it) }
+        currentActionId = null
+        reportedStallActionId = null
+        isDispatching = false
+        dispatchingSource = null
     }
 
     private lateinit var dispatcher: ActiveGestureController
@@ -86,16 +98,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         return path
     }
 
-    private fun scheduleLatchRelease(startedAt: Long, durationMs: Long) {
-        val h = if (::busHandler.isInitialized) busHandler else Handler(mainLooper)
-        h.postDelayed({
-            if (isDispatching && dispatchStartedMs == startedAt) {
-                isDispatching = false
-                dispatchingSource = null
-            }
-        }, durationMs + LATCH_RELEASE_MARGIN_MS)
-    }
-
     private fun recordDispatchForRate() {
         val now = System.currentTimeMillis()
         if (windowStartMs == 0L) windowStartMs = now
@@ -112,7 +114,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         }
     }
 
-    fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
+    @Synchronized fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
         // FINAL EXECUTION GATE
         // Never turn a stale bus request into an Accessibility gesture
         // while the game is not foreground.
@@ -132,20 +134,13 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             return false
         }
 
-        val isMove = (request.phase == com.assistant.runtime.ActionClass.MOVE.ordinal) || (request.source == com.assistant.execution.ExecutionSource.GOALKEEPER)
-        
-        if (isDispatching) {
-            if (!isMove && !latchStuck()) {
-                return false
-            }
-            isDispatching = false // Allow MOVE requests to preempt and continuously update joystick vector
-        }
+        if (isDispatching) return false // Completion callbacks own the live stroke, not a duration estimate.
 
+        currentActionId = request.actionId
         isDispatching = true
         dispatchStartedMs = System.currentTimeMillis()
         dispatchingPriority = HybridExecutionTerminal.priority(request.source)
         dispatchingSource = request.source
-        val startedAt = dispatchStartedMs
 
         return try {
             // SPLENDOR_CAPTURE_TO_SCREEN_V1 - every ExecutionRequest is built in
@@ -184,17 +179,11 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 gesture,
                 object : GestureResultCallback() {
                     override fun onCompleted(gestureDescription: GestureDescription?) {
-                        if (dispatchStartedMs == startedAt) {
-                            isDispatching = false
-                            dispatchingSource = null
-                        }
+                        completeDispatch(request.actionId)
                     }
 
                     override fun onCancelled(gestureDescription: GestureDescription?) {
-                        if (dispatchStartedMs == startedAt) {
-                            isDispatching = false
-                            dispatchingSource = null
-                        }
+                        completeDispatch(request.actionId)
                     }
                 },
                 null,
@@ -205,17 +194,16 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             )
 
             if (!accepted) {
-                isDispatching = false
+                releaseDispatch()
                 dispatchingSource = null
             } else {
-                scheduleLatchRelease(startedAt, syncedDuration)
                 recordDispatchForRate()
                 ControlMappingTrainer.recordDispatch(request.phase, request.duration)
             }
 
             accepted
         } catch (e: Exception) {
-            isDispatching = false
+            releaseDispatch()
             dispatchingSource = null
             RuntimeLogger.log(
                 "Direct dispatch vector crash: ${e.message}",
@@ -227,14 +215,11 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
     private val busRunnable = object : Runnable {
         override fun run() {
+            synchronized(this@SmartAssistAccessibilityEngine) {
             try {
-                if (latchStuck()) {
-                    isDispatching = false
-                    dispatchingSource = null
-                    RuntimeLogger.log(
-                        "dispatch latch watchdog: backstop fired (anomaly)",
-                        "SMART_ASSIST"
-                    )
+                if (latchStuck() && reportedStallActionId != currentActionId) {
+                    reportedStallActionId = currentActionId
+                    RuntimeLogger.log("dispatch callback overdue; retaining active stroke until callback or service recovery", "SMART_ASSIST")
                 }
 
                 if (!SmartAssistRepository.enabled()) {
@@ -247,13 +232,12 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     val headPriority = if (headSource != null) HybridExecutionTerminal.priority(headSource) else Int.MIN_VALUE
                     val preempt =
                         headSource != null &&
-                            (headPriority > dispatchingPriority || 
-                             (headSource == com.assistant.execution.ExecutionSource.GOALKEEPER && dispatchingSource == com.assistant.execution.ExecutionSource.GOALKEEPER))
+                            headPriority > dispatchingPriority
                     if (!preempt) {
                         busHandler.postDelayed(this, BUS_POLL_RATE_MS)
                         return
                     }
-                    isDispatching = false
+                    releaseDispatch()
                     dispatchingSource = null
                     RuntimeLogger.execution(
                         "BUS_PREEMPT",
@@ -266,6 +250,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     SmartAssistMetrics.recordBusConsumed(request)
 
                     val accepted = executeDirectRequest(request)
+                    if (!accepted) CentralExecutionBus.complete(request.actionId)
 
                     SmartAssistMetrics.recordBusDispatchResult(request, accepted)
                     if (accepted) {
@@ -282,6 +267,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             }
 
             busHandler.postDelayed(this, BUS_POLL_RATE_MS)
+            }
         }
     }
 
@@ -378,6 +364,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 } catch (_: Throwable) {
                 }
             }
+            else -> Unit
         }
     }
 
@@ -388,7 +375,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         if (::busThread.isInitialized) {
             busThread.quitSafely()
         }
-        isDispatching = false
+        releaseDispatch()
         dispatchingSource = null
         if (globalInstance === this) {
             globalInstance = null

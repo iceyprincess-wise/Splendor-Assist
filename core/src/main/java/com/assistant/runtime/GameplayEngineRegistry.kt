@@ -97,7 +97,11 @@ object GameplayEngineRegistry {
                     contribution.actionClass == ActionClass.NONE ||
                     !contribution.targetX.isFinite() || !contribution.targetY.isFinite() ||
                     !contribution.authority.isFinite() || !contribution.confidence.isFinite() ||
-                    contribution.weight <= 0f || contribution.durationHintMs <= 0L) continue
+                    contribution.weight <= 0f || contribution.durationHintMs <= 0L ||
+                    contribution.controlSlot !in 0..4 ||
+                    (contribution.aimOriginX == null) != (contribution.aimOriginY == null) ||
+                    contribution.aimOriginX?.isFinite() == false ||
+                    contribution.aimOriginY?.isFinite() == false) continue
                 lastContribution[c.engineName] = contribution
                 contributed.compute(c.engineName) { _, v -> (v ?: 0L) + 1L }
                 results.add(contribution)

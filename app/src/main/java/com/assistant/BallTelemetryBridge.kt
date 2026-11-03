@@ -98,6 +98,7 @@ object BallTelemetryBridge {
     @Volatile private var previousX = 0f
     @Volatile private var previousY = 0f
     @Volatile private var hasPrevious = false
+    private var previousAtMs = 0L
 
     @Volatile private var published = 0L
     @Volatile private var skippedUndetected = 0L
@@ -109,6 +110,8 @@ object BallTelemetryBridge {
             !ball.confidence.isFinite() || ball.confidence <= 0f) {
             skippedUndetected++
             hasPrevious = false
+            val old = TelemetryRepository.current()
+            TelemetryRepository.update(old.copy(confidence = 0f, ballVelocityX = 0f, ballVelocityY = 0f))
             return
         }
 
@@ -117,6 +120,9 @@ object BallTelemetryBridge {
         // contributor stack out no matter what the detectors see.
         try { VisionTrust.stampBall(ball.confidence) } catch (e: Throwable) { android.util.Log.w("BallTelemetryBridge", "stampBall failed", e) }
 
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (now - previousAtMs !in 1L..MAX_TELEMETRY_AGE_MS) hasPrevious = false
+        previousAtMs = now
         val vx = if (hasPrevious) ball.x - previousX else 0f
         val vy = if (hasPrevious) ball.y - previousY else 0f
 
@@ -144,6 +150,7 @@ object BallTelemetryBridge {
         previousX = 0f
         previousY = 0f
         hasPrevious = false
+        previousAtMs = 0L
         published = 0L
         skippedUndetected = 0L
         lastConfidence = 0f
