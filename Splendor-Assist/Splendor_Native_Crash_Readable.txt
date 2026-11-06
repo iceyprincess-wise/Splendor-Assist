@@ -1,0 +1,90 @@
+============================================================
+SPLENDOR-ASSIST NATIVE CRASH FORENSIC REPORT
+============================================================
+PROCESS
+  package        : com.assistant.overlay
+  process        : com.assistant.overlay
+  PID            : 20997
+  crash timestamp: ?
+  process start  : 2026-11-04 03:52:10
+  process uptime : 2642s
+
+SIGNAL
+  signal         : SIGSEGV
+  signal code    : SEGV_MAPERR@
+  fault address  : 0x0
+  errno/status   : status=11
+
+CRASHING THREAD
+  TID            : ?
+  thread name    : [anon:stack_and_tls:main]
+  thread state   : FATAL_SIGNAL_RECEIVED
+
+CRASH LOCATION
+  top symbol     : void* std::__1::__thread_proxy[abi:nn220000]<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, ArtPlugin_Initialize::$_7>>(void*)(
+  library path   : a47994c420371ffbd05d16fc9a15ac9f"
+  build ID       : ?
+
+NATIVE BACKTRACE
+  #00: void* std::__1::__thread_proxy[abi:nn220000]<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, ArtPlugin_Initialize::$_7>>(void*)(
+  #01: "Kstd::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&)(
+  #02: "(android::gui::FenceMonitor::threadLoop()(
+  #03: ""android::gui::FenceMonitor::loop()(
+  #04: void* std::__1::__thread_proxy[abi:nn200000]<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, void (android::gui::FenceMonitor::*)(), android::gui::FenceMonitor*>>(void*)(42
+  #05: "6art::ConditionVariable::WaitHoldingLocks(art::Thread*)(
+  #06: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+  #07: "eart::Monitor::Wait(art::Thread*, art::ObjPtr<art::mirror::Object>, long, int, bool, art::ThreadState)(
+  #08: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+  #09: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"S
+  #10: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+  #11: bool art::interpreter::DoCall<false>(art::ArtMethod*, art::Thread*, art::ShadowFrame&, art::Instruction const*, unsigned short, bool, art::JValue*)(
+  #12: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+  #13: "Xvoid art::interpreter::ExecuteSwitchImplCpp<false>(art::interpreter::SwitchImplContext*)(
+  #14: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"t
+  #15: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"^
+  #16: bool art::interpreter::DoCall<false>(art::ArtMethod*, art::Thread*, art::ShadowFrame&, art::Instruction const*, unsigned short, bool, art::JValue*)(
+  #17: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+  #18: "Xvoid art::interpreter::ExecuteSwitchImplCpp<false>(art::interpreter::SwitchImplContext*)(
+  #19: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"t
+  #20: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"Y
+  #21: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+  #22: art_quick_to_interpreter_bridge(X2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"v
+  #23: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+  #24: "\art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)(
+  #25: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+  #26: ""art::Thread::CreateCallback(void*)(
+  #27: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+  #28: ",art::Thread::CreateCallbackWithUffdGc(void*)(
+  #29: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+  #30: "2android::Looper::pollOnce(int, int*, int*, void**)(
+  #31: "Oandroid::android_os_MessageQueue_nativePollOnce(_JNIEnv*, _jobject*, long, int)(,2#/system/lib64/libandroid_runtime.soB 558ea36c234aaa113fc5d0698b8d19f6"R
+  #32: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+  #33: bool art::interpreter::DoCall<false>(art::ArtMethod*, art::Thread*, art::ShadowFrame&, art::Instruction const*, unsigned short, bool, art::JValue*)(
+  #34: 2%/apex/com.android.art/lib64/libart.soB a47994c420371ffbd05d16fc9a15ac9f"
+
+APPLICATION NATIVE FRAMES
+  [None observed in top backtrace; execution was inside system library / ART GC]
+
+JNI / NATIVE FORENSIC CONTEXT
+  target JVM     : Android 16 ART Compacting GC (MarkCompact)
+  JNI status     : Active JNI operations / memory array access under GC scanning
+
+RECENT NATIVE EVENTS
+  [Correlated from recent runtime activity before SIGSEGV]
+
+MEMORY STATE
+  available RAM  : 626MB
+  RAM threshold  : 216MB
+  low-memory     : false
+
+OS EXIT RECORD
+  reason         : REASON_CRASH_NATIVE
+  status         : 11
+  importance     : 125
+
+DIAGNOSTIC CONCLUSION
+  crash class    : Native Memory Corruption / SIGSEGV
+  crashing entity: [anon:stack_and_tls:main] (void* std::__1::__thread_proxy[abi:nn220000]<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, ArtPlugin_Initialize::$_7>>(void*)()
+  root cause type: Corrupted reference/heap state scanned during ART MarkCompact GC
+  recommendation : Audit JNI array writes, boundary lengths, and direct pointer lifetimes
+============================================================
