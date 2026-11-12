@@ -125,6 +125,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
     @Volatile private var reusableVisionBuffer: java.nio.ByteBuffer? = null
     private var previousVisionLayout: Triple<Int, Int, Int>? = null
     @Volatile private var previousVisionBuffer: java.nio.ByteBuffer? = null
+    // SPLENDOR_P6_DEDUP_DIAG_FIELDS_BEGIN
+    // Duplicate-frame early-return counter for LOOP_FROZEN triage.
+    @Volatile private var duplicateFrameCount = 0L
+    @Volatile private var lastDuplicateLogMs = 0L
+    // SPLENDOR_P6_DEDUP_DIAG_FIELDS_END
     private val emptyVisionBuffer: java.nio.ByteBuffer = java.nio.ByteBuffer.allocateDirect(0)
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: View
@@ -323,6 +328,18 @@ class OverlayService : Service(), ComponentCallbacks2 {
                         com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(x, y)
                     }
                 } == true) {
+                    // SPLENDOR_P6_DEDUP_DIAG_BEGIN
+                    // A duplicate frame skips VisionCore/FrameAssembler/onFrame,
+                    // so the decision counter does not advance even though
+                    // capture is alive: prime suspect for LOOP_FROZEN. Log
+                    // throttled (first + every 300th + at most every 5 min).
+                    duplicateFrameCount++
+                    val dupNow = System.currentTimeMillis()
+                    if (duplicateFrameCount == 1L || duplicateFrameCount % 300L == 0L || dupNow - lastDuplicateLogMs > 300_000L) {
+                        lastDuplicateLogMs = dupNow
+                        RuntimeLogger.log("DEDUP_SKIP count=$duplicateFrameCount layout=" + width + "x" + height + " stride=$rowStride (identical frame: onFrame skipped, decision counter not advanced)", "OVERLAY")
+                    }
+                    // SPLENDOR_P6_DEDUP_DIAG_END
                     com.assistant.FrameAssembler.current()?.let { com.assistant.ActionOutcomeVerifier.verify(it) }
                     return@launch
                 }
@@ -561,13 +578,38 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 }
             } catch (e: Exception) {
                 logSilentFailure(e)
-                stopSelf()
+                // SPLENDOR_P6_NO_STOPSELF_BEGIN
+                // Do NOT stopSelf(): a dead service + a still-running agent
+                // is the session-2 zombie. Try auto-heal, else show the
+                // recovery prompt and stay alive for a fresh token.
+                val healedAfterFault = try { autoHealCapture() } catch (_: Throwable) { false }
+                if (!healedAfterFault) {
+                    try { showCaptureRecoveryPrompt() } catch (_: Throwable) {}
+                }
+                // SPLENDOR_P6_NO_STOPSELF_END
             }
         } else {
-            logSilentFailure(Exception("Intent Data Null or Result Code Invalid: $resultCode"))
-            stopSelf()
+            // SPLENDOR_P6_STICKY_RESTART_BEGIN
+            // A sticky restart after process death arrives with a null intent
+            // and EngineData empty (code=0): the old code logged and called
+            // stopSelf(), destroying the service while the self-heal agent
+            // kept running -> session-2 zombie (0 frames, 5,205x COLLECT_ZERO
+            // over 2h25m). Stay alive instead: try token reuse first (works
+            // when the service object survived), otherwise show the capture
+            // recovery prompt so a fresh consent can be delivered via
+            // applyFreshProjection on this live instance.
+            RuntimeLogger.log("onStartCommand: no valid projection token (resultCode=$resultCode); attempting auto-heal, else recovery prompt", "OVERLAY")
+            val healed = try { autoHealCapture() } catch (_: Throwable) { false }
+            if (healed) {
+                if (!isRunning) {
+                    initializeProcessingEngine()
+                }
+            } else {
+                try { showCaptureRecoveryPrompt() } catch (_: Throwable) {}
+            }
+            // SPLENDOR_P6_STICKY_RESTART_END
         }
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     private fun logSilentFailure(e: Exception) {
@@ -854,6 +896,14 @@ class OverlayService : Service(), ComponentCallbacks2 {
         val isInitial = virtualDisplay == null
         val dimensionsChanged = finalWidth != currentWidth || finalHeight != currentHeight || metrics.densityDpi != currentDpi
 
+        // SPLENDOR_P6_GEOMETRY_LOG_BEGIN
+        // Log live geometry + orientation on every (re)create so the
+        // 288x640-vs-640x288 question is answerable from the log alone.
+        if (isInitial || dimensionsChanged) {
+            RuntimeLogger.log("CAPTURE_GEOMETRY " + finalWidth + "x" + finalHeight + " orientation=" + (if (finalWidth < finalHeight) "PORTRAIT" else "LANDSCAPE") + " source=" + (if (scale > 0f) (finalWidth / scale).toInt() else finalWidth) + "x" + (if (scale > 0f) (finalHeight / scale).toInt() else finalHeight), "OVERLAY")
+        }
+        // SPLENDOR_P6_GEOMETRY_LOG_END
+
         if (isInitial) {
             val reader = ImageReader.newInstance(finalWidth, finalHeight, PixelFormat.RGBA_8888, 2)
             reader.setOnImageAvailableListener(imageAvailableListener, ocrIoHandler ?: ocrIoThread?.looper?.let { Handler(it) } ?: Handler(Looper.getMainLooper()))
@@ -919,6 +969,36 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             RuntimeLogger.log("KEEPALIVE replace failed: ${e.message}", "OVERLAY")
                         }
                     }
+                    // SPLENDOR_P6_ORIENTATION_BEGIN
+                    // Capture geometry is sampled once at (re)create time and
+                    // never re-checked on rotation: a service started in
+                    // portrait keeps a 288x640 virtual display after the game
+                    // rotates to landscape (live 288x640 vs expected 640x288).
+                    // Recreate when the window bounds no longer match the live
+                    // capture size, so geometry follows the display. Same 0.4
+                    // scale as recreateCaptureSurfacesInternal.
+                    try {
+                        val orientW: Int
+                        val orientH: Int
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            val orientBounds = windowManager.currentWindowMetrics.bounds
+                            orientW = (orientBounds.width() * 0.4f).toInt() and 0xFFFFFFFE.toInt()
+                            orientH = (orientBounds.height() * 0.4f).toInt() and 0xFFFFFFFE.toInt()
+                        } else {
+                            val orientMetrics = DisplayMetrics()
+                            @Suppress("DEPRECATION")
+                            windowManager.defaultDisplay.getRealMetrics(orientMetrics)
+                            orientW = (orientMetrics.widthPixels * 0.4f).toInt() and 0xFFFFFFFE.toInt()
+                            orientH = (orientMetrics.heightPixels * 0.4f).toInt() and 0xFFFFFFFE.toInt()
+                        }
+                        if (orientW > 0 && orientH > 0 && (orientW != currentWidth || orientH != currentHeight)) {
+                            RuntimeLogger.log("KEEPALIVE: display size changed " + currentWidth + "x" + currentHeight + " -> " + orientW + "x" + orientH + "; recreating capture surfaces (orientation change)", "OVERLAY")
+                            recreateCaptureSurfaces()
+                        }
+                    } catch (e: Exception) {
+                        RuntimeLogger.log("KEEPALIVE orientation check failed: " + e.message, "OVERLAY")
+                    }
+                    // SPLENDOR_P6_ORIENTATION_END
                 }
                 keepAliveHandler.postDelayed(this, 45000L)
             }
@@ -1108,6 +1188,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
             wakeLock?.let { if (it.isHeld) it.release() }
             wifiLock?.let { if (it.isHeld) it.release() }
         } catch (_: Throwable) {}
+
+        // SPLENDOR_P6_ZOMBIE_CLEANUP_BEGIN
+        // The self-heal agent is started in onCreate but was never stopped
+        // here, and the static instance was never cleared: after stopSelf
+        // the agent kept running against a destroyed service (session-2
+        // zombie: 5,205x COLLECT_ZERO over 2h25m). Stop the agent and clear
+        // the instance so later captureState()/deliver() calls cannot act
+        // on a dead service. onCreate re-inits both on the next start.
+        try { com.assistant.RuntimeSelfHealEngine.stop() } catch (_: Throwable) {}
+        instance = null
+        // SPLENDOR_P6_ZOMBIE_CLEANUP_END
 
         super.onDestroy()
     }

@@ -281,7 +281,48 @@ object RuntimeSelfHealEngine {
                                 "CAPTURE RESTART FAILED — capture state " + com.assistant.OverlayService.captureState() + ".",
                             severity = if (restarted) "FIXED" else "CRITICAL"
                         ))
+                    } else if (shouldLog("CAPTURE_RESTART_EXHAUSTED", "attempts=$captureRestartAttempts")) {
+                        // SPLENDOR_P6_RESTART_EXHAUSTED_BEGIN
+                        // Restart budget spent (3 failed attempts) with still no
+                        // frame: escalate to auto-heal instead of going silent.
+                        totalHeals++
+                        try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
+                        record(HealEvent(
+                            timestamp = fmt.format(Date()),
+                            category = "CAPTURE_RESTART_EXHAUSTED",
+                            detected = "No frame ever assembled; 3 capture restart attempts failed (capture=" + com.assistant.vision.CameraProfile.diagnostics() + ").",
+                            fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog).",
+                            severity = "CRITICAL"
+                        ))
+                        // SPLENDOR_P6_RESTART_EXHAUSTED_END
                     }
+                } else {
+                    // SPLENDOR_P6_NEVER_STARTED_BEGIN
+                    // Session-2 zombie (2026-11-12 17:21-19:46): no frame ever
+                    // assembled + capture IDLE -> this branch returned silently,
+                    // so COLLECT_ZERO fired 5,205x with zero CAPTURE_IDLE lines.
+                    // IDLE/FAILED/REVOKED with no frame means capture never
+                    // started (or died before the first frame): log it, record
+                    // it, and attempt auto-heal instead of returning silently.
+                    // Throttled to one attempt per 30s; autoHealCapture has its
+                    // own 15s cooldown. restartCaptureIfAlive is NOT used here:
+                    // it returns false when mediaProjection is null / revoked.
+                    if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
+                        lastRestartAttemptMs = now
+                        totalHeals++
+                        try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
+                        val neverStartedCategory = "CAPTURE_" + state.name
+                        if (shouldLog(neverStartedCategory, "never_started state=$state")) {
+                            record(HealEvent(
+                                timestamp = fmt.format(Date()),
+                                category = neverStartedCategory,
+                                detected = "No frame ever assembled and capture is $state (never started, or died before the first frame). capture=" + com.assistant.vision.CameraProfile.diagnostics() + ".",
+                                fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog). If the service was restarted without a token, tap the capture recovery prompt.",
+                                severity = "CRITICAL"
+                            ))
+                        }
+                    }
+                    // SPLENDOR_P6_NEVER_STARTED_END
                 }
                 return
             }
@@ -335,12 +376,18 @@ object RuntimeSelfHealEngine {
             } else if (state == com.assistant.OverlayService.CaptureState.FAILED) {
                 if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
                     lastRestartAttemptMs = now
+                    // SPLENDOR_P6_STALE_FAILED_AUTOHEAL_BEGIN
+                    // Was log-only ("AI Agent handling autonomously") while
+                    // doing nothing: same silent no-op class as the f==null
+                    // IDLE branch. Attempt auto-heal like the REVOKED branch.
+                    try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
+                    // SPLENDOR_P6_STALE_FAILED_AUTOHEAL_END
                     if (shouldLog("CAPTURE_FAILED", "failed")) {
                         record(HealEvent(
                             timestamp = fmt.format(Date()),
                             category = "CAPTURE_FAILED",
-                            detected = "MediaProjection setup failed; AI Agent handling autonomously without interrupting gameplay.",
-                            fix = "Capture resources invalidated. AI Agent operates silently in background.",
+                            detected = "MediaProjection setup failed; capture stale with no fresh frame.",
+                            fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog).",
                             severity = "CRITICAL"
                         ))
                     }
@@ -349,12 +396,18 @@ object RuntimeSelfHealEngine {
             } else if (state == com.assistant.OverlayService.CaptureState.IDLE) {
                 if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
                     lastRestartAttemptMs = now
+                    // SPLENDOR_P6_STALE_IDLE_AUTOHEAL_BEGIN
+                    // Was log-only ("AI Agent handling autonomously") while
+                    // doing nothing: same silent no-op class as the f==null
+                    // IDLE branch. Attempt auto-heal like the REVOKED branch.
+                    try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
+                    // SPLENDOR_P6_STALE_IDLE_AUTOHEAL_END
                     if (shouldLog("CAPTURE_IDLE", "idle")) {
                         record(HealEvent(
                             timestamp = fmt.format(Date()),
                             category = "CAPTURE_IDLE",
-                            detected = "MediaProjection idle; AI Agent handling autonomously without interrupting gameplay.",
-                            fix = "Capture resources uninitialized. AI Agent operates silently in background.",
+                            detected = "MediaProjection idle; capture stale with no fresh frame.",
+                            fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog).",
                             severity = "WARNING"
                         ))
                     }
@@ -506,6 +559,11 @@ object RuntimeSelfHealEngine {
     // ─────────────────────────────────────────────────────────────────────
     @Volatile private var prevDecisions: Long = 0L
     @Volatile private var prevRouted: Long = 0L
+    // SPLENDOR_P6_DEDUP_TRIAGE_FIELD_BEGIN
+    // Last assembled frameId seen by checkDispatchRate; used to tell a real
+    // capture death (frameId frozen) from dedup-suppressed onFrame calls.
+    @Volatile private var prevDispatchFrameId: Long = -1L
+    // SPLENDOR_P6_DEDUP_TRIAGE_FIELD_END
     @Volatile private var zeroDispatchSinceMs: Long = 0L
 
     private fun checkDispatchRate() {
@@ -522,7 +580,29 @@ object RuntimeSelfHealEngine {
 
             if (newDecisions == 0L && decisions > 50L) {
                 // Decision loop stopped — counter frozen
-                if (shouldLog("LOOP_FROZEN", "frozen_at=$decisions")) {
+                // SPLENDOR_P6_DEDUP_TRIAGE_BEGIN
+                // Distinguish "capture dead" from "frames arriving but
+                // identical": the OverlayService dedup path skips onFrame
+                // for byte-identical frames, so the decision counter can
+                // freeze while capture is alive. If the assembled frame
+                // advanced since the last frozen check, this is a downstream
+                // stall, not a capture death: record LOOP_STATIC and do NOT
+                // trigger a capture restart.
+                val dispatchFrameId = try { FrameAssembler.current()?.frameId ?: -1L } catch (_: Throwable) { -1L }
+                val frameAdvanced = dispatchFrameId != -1L && prevDispatchFrameId != -1L && dispatchFrameId != prevDispatchFrameId
+                prevDispatchFrameId = dispatchFrameId
+                if (frameAdvanced) {
+                    if (shouldLog("LOOP_STATIC", "static_at=$decisions frame=$dispatchFrameId")) {
+                        record(HealEvent(
+                            timestamp = fmt.format(Date()),
+                            category = "LOOP_STATIC",
+                            detected = "RuntimeDecisionLoop counter frozen at $decisions but assembled frames are still advancing (frameId=$dispatchFrameId). Capture is delivering; onFrame is being skipped downstream (identical-frame dedup or VisionCore stall), not a capture death.",
+                            fix = "No capture restart triggered. Check DEDUP_SKIP lines: if duplicates dominate, the freeze is the dedup path on a static screen.",
+                            severity = "WARNING"
+                        ))
+                    }
+                } else if (shouldLog("LOOP_FROZEN", "frozen_at=$decisions")) {
+                // SPLENDOR_P6_DEDUP_TRIAGE_END
                     record(HealEvent(
                         timestamp = fmt.format(Date()),
                         category = "LOOP_FROZEN",
