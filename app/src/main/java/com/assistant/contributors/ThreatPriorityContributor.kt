@@ -16,12 +16,18 @@ object ThreatPriorityContributor : GameplayContributor {
     override val engineName = "ThreatPriority"
     override val capabilities = setOf(EngineCapability.DEFENSE, EngineCapability.KEEPER)
 
-    internal fun zoneOf(frame: RuntimeFrame): ThreatZone = when {
-        frame.ballX > 1450f -> ThreatZone.GOAL_AREA
-        frame.ballX > 1250f -> ThreatZone.BOX
-        frame.ballY < 240f  -> ThreatZone.LEFT
-        frame.ballY > 480f  -> ThreatZone.RIGHT
-        else                -> ThreatZone.CENTER
+    internal fun zoneOf(frame: RuntimeFrame): ThreatZone {
+        val w = if (frame.captureWidth > 0f) frame.captureWidth
+            else com.assistant.vision.CameraProfile.captureWidthOrFallback()
+        val h = if (frame.captureHeight > 0f) frame.captureHeight
+            else com.assistant.vision.CameraProfile.captureHeightOrFallback()
+        return when {
+            frame.ballX > w * 0.88f -> ThreatZone.GOAL_AREA
+            frame.ballX > w * 0.76f -> ThreatZone.BOX
+            frame.ballY < h * 0.33f -> ThreatZone.LEFT
+            frame.ballY > h * 0.67f -> ThreatZone.RIGHT
+            else -> ThreatZone.CENTER
+        }
     }
 
     internal fun threatOf(frame: RuntimeFrame): ThreatType {
@@ -41,7 +47,16 @@ object ThreatPriorityContributor : GameplayContributor {
         val threat = threatOf(frame)
         if (threat == ThreatType.NONE) return null
         return try {
-            ThreatPriorityEngine.evaluate(threat, zoneOf(frame))
+            ThreatPriorityEngine.evaluate(
+                threat,
+                zoneOf(frame),
+                frame.ballX.toInt(),
+                frame.ballY.toInt(),
+                frame.captureWidth.toInt().takeIf { it > 0 }
+                    ?: com.assistant.vision.CameraProfile.captureWidthOrFallback().toInt(),
+                frame.captureHeight.toInt().takeIf { it > 0 }
+                    ?: com.assistant.vision.CameraProfile.captureHeightOrFallback().toInt()
+            )
         } catch (_: Throwable) { null }
     }
 

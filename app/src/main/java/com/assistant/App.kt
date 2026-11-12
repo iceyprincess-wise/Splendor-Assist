@@ -70,7 +70,7 @@ class App : Application() {
             override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {}
         })
         DiagnosticSamplers.start(this)
-        try { CrashForensics.install() } catch (_: Throwable) {}
+        try { CrashForensics.install() } catch (t: Throwable) { android.util.Log.e("App", "CrashForensics.install failed, no crash forensics this session", t) }
 
         val currentProcess = getCurrentProcessName()
         val isMainProcess = currentProcess == packageName

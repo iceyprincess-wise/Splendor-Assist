@@ -79,7 +79,6 @@ import kotlin.math.*
 import kotlin.math.roundToLong
 
 
-import kotlin.random.Random
 
 
 
@@ -150,8 +149,7 @@ object FrameDropCompensationEngine {
         }
 
         if (optimizedDuration < safeMinBound) {
-            // Keep minimal micro-variance even at extreme lower boundaries
-            optimizedDuration = safeMinBound + Random.nextLong(0L, 3L)
+            optimizedDuration = safeMinBound
         }
 
         return optimizedDuration

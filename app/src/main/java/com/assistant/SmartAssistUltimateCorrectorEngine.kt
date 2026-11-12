@@ -117,9 +117,9 @@ object SmartAssistUltimateCorrectorEngine {
         else SmartAssistCorrectionResult(receiverX, receiverY, 0f, CorrectionType.CROSS, false)
     }
 
-    fun correctKeeper(ballX: Float, ballY: Float, goalLeftX: Float, goalRightX: Float, goalTopY: Float, goalBottomY: Float): SmartAssistCorrectionResult {
+    fun correctKeeper(ballX: Float, ballY: Float, goalLeftX: Float, goalRightX: Float, goalTopY: Float, goalBottomY: Float, goalConfidence: Float = 0f): SmartAssistCorrectionResult {
         val applied = com.assistant.NativeBridge.nativeComputeSACorrectKeeper(ballX, ballY, goalLeftX, goalRightX, goalTopY, goalBottomY, com.assistant.vision.CameraProfile.captureWidthOrFallback(), com.assistant.vision.CameraProfile.captureHeightOrFallback(), outKeeper)
-        return if (applied) SmartAssistCorrectionResult(outKeeper[0], outKeeper[1], outKeeper[2], CorrectionType.KEEPER, true)
+        return if (applied) SmartAssistCorrectionResult(outKeeper[0], outKeeper[1], goalConfidence.coerceIn(0f, 1f), CorrectionType.KEEPER, true)
         else SmartAssistCorrectionResult(ballX, ballY, 0f, CorrectionType.KEEPER, false)
     }
 }

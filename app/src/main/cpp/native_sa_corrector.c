@@ -194,6 +194,6 @@ Java_com_assistant_NativeBridge_nativeSACorrectKeeper(
     
     r[0] = interceptX; 
     r[1] = goalMidY; 
-    r[2] = 0.92f;
+    r[2] = 0.0f; /* No keeper-correction confidence is measured here: this function is pure geometry (clamp + goal mid-Y). Callers must use the goal detector's real confidence instead of this slot. */
     (*env)->ReleasePrimitiveArrayCritical(env, outBuffer, r, 0);
 }

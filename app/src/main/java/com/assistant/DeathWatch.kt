@@ -74,7 +74,7 @@ object DeathWatch {
 
         // previous session never removed its marker -> it was killed
         if (m.exists()) {
-            try { reportDeath(m.readText()) } catch (_: Throwable) { }
+            try { reportDeath(m.readText()) } catch (t: Throwable) { android.util.Log.e("DeathWatch", "previous death marker unreadable, death report lost", t) }
         }
 
         marker = m
@@ -97,7 +97,7 @@ object DeathWatch {
         }
         t.isDaemon = true
         t.name = "deathwatch"
-        try { t.start() } catch (_: Throwable) { }
+        try { t.start() } catch (t: Throwable) { android.util.Log.e("DeathWatch", "watcher thread failed to start, DeathWatch NOT armed", t); return }
 
         log("DeathWatch armed proc=" + procName + " pid=" + pidStr)
     }
@@ -194,7 +194,7 @@ object DeathWatch {
 
         val text = sb.toString()
 
-        try { reportFile()?.appendText(text) } catch (_: Throwable) { }
+        try { reportFile()?.appendText(text) } catch (t: Throwable) { android.util.Log.e("DeathWatch", "death report write failed, report lost", t) }
         try { CrashForensics.reportDetectedDeath(deadProc, deadPid, verdict) } catch (_: Throwable) { }
 
         if (javaCrash) {
@@ -322,7 +322,7 @@ object DeathWatch {
                                     txtFileExt.writeText(parsedForensics.fullReport)
                                     extPath = rawFileExt.absolutePath
                                 }
-                            } catch (_: Throwable) {}
+                            } catch (t: Throwable) { android.util.Log.e("DeathWatch", "native crash forensic copy failed", t) }
                             
                             traceNote = " [Tombstone saved to ${if(extPath.isNotEmpty()) extPath else SplendorStorageRoot.ROOT_PATH}]"
                         }

@@ -1,27 +1,20 @@
-/* [SECURITY GUARD LOCK ACTIVE] - PHYSICAL ISOLATION ENFORCED */
+// Guard header removed under Ed's explicit override for this file only
+// (2026-11-12, Patch 5): Ed overrode the guard lock so the fabricated
+// goalkeeper fallbacks, the back-to-back recovery calls and the missing
+// centre-recovery count in this file can be fixed truthfully.
 package com.assistant.overlay.interceptor
 
-import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.GestureDescription
-import android.graphics.Path
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Process
-import android.os.PerformanceHintManager
-import android.os.Build
 
 import java.nio.ByteBuffer
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.atan2
 import kotlin.math.hypot
-import kotlin.random.Random
 
 import com.assistant.overlay.interceptor.GoalkeeperMetricsRegistry
 import com.assistant.overlay.interceptor.GoalkeeperStateMachine
 import com.assistant.overlay.interceptor.GoalkeeperState
 
-import com.assistant.overlay.interceptor.RecoveryPositionEngine
 
 import com.assistant.overlay.interceptor.ThreatType
 import com.assistant.overlay.interceptor.ThreatZone
@@ -32,7 +25,6 @@ import com.assistant.overlay.interceptor.GoalkeeperExecutionEngine
 import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
-import com.assistant.SmartAssistAccessibilityEngine
 import com.assistant.overlay.repository.GoalkeeperRuntimeState
 import com.assistant.TelemetryCoordinator
 import com.assistant.TelemetryRepository
@@ -47,23 +39,8 @@ object OmnipotentGoalkeeperEngine {
     
     @Volatile private var lastGkLayerTimestamp = 0L
 
-    // [UPGRADE CORE] - Adaptive Noise & Server-Tick Synchronization Constraints
-    private const val SERVER_TICK_RATE_MS = 33L // ~30Hz typical network simulation boundary
-    private const val DISPLAY_REFRESH_RATE_MS = 8L // ~120Hz display target alignment
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun applyHumanizedNoise(value: Float, baseVariance: Float = 3.5f): Float {
-        // Adaptive noise mimicking human hand latency boundary to prevent bot footprint
-        val noise = (Random.nextFloat() * 2f - 1f) * baseVariance
-        return value + noise
-    }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun syncDurationToTick(baseDuration: Long): Long {
-        // Server-tick sync forcing max possession effectiveness without dropped inputs
-        val jitter = Random.nextLong(-2L, 3L)
-        return (baseDuration + jitter).coerceAtLeast(DISPLAY_REFRESH_RATE_MS)
-    }
 
     fun processGoalkeeperDefensiveLayer(
         ballX: Float, ballY: Float,
@@ -101,11 +78,11 @@ object OmnipotentGoalkeeperEngine {
                 val rushRequest = ExecutionRequest(
                     source = ExecutionSource.GOALKEEPER,
                     phase = 5,
-                    startX = applyHumanizedNoise(pressureButtonX, 2.5f),
-                    startY = applyHumanizedNoise(pressureButtonY, 2.5f),
-                    endX = applyHumanizedNoise(pressureButtonX, 2.5f),
-                    endY = applyHumanizedNoise(targetRushY, 4.0f),
-                    duration = syncDurationToTick(55L)
+                    startX = pressureButtonX,
+                    startY = pressureButtonY,
+                    endX = pressureButtonX,
+                    endY = targetRushY,
+                    duration = 55L
                 )
 
                 if (CentralExecutionBus.submit(rushRequest)) {
@@ -137,11 +114,11 @@ object OmnipotentGoalkeeperEngine {
             val reflexRequest = ExecutionRequest(
                 source = ExecutionSource.GOALKEEPER,
                 phase = 6,
-                startX = applyHumanizedNoise(joystickX, 1.5f),
-                startY = applyHumanizedNoise(joystickY, 1.5f),
-                endX = applyHumanizedNoise(joyTargetX, 3.0f),
-                endY = applyHumanizedNoise(joyTargetY, 3.0f),
-                duration = syncDurationToTick(20L)
+                startX = joystickX,
+                startY = joystickY,
+                endX = joyTargetX,
+                endY = joyTargetY,
+                duration = 20L
             )
 
             if (CentralExecutionBus.submit(reflexRequest)) {
@@ -158,7 +135,6 @@ object OmnipotentGoalkeeperEngine {
         return false
     }
 
-    private const val TAG = "OmnipotentGK"
     @Volatile private var capturedWidth = 1650.0f
     @Volatile private var capturedHeight = 720.0f
     private val executionCoordinates = FloatArray(4)
@@ -217,8 +193,8 @@ object OmnipotentGoalkeeperEngine {
                 if (anomalyDetected) break
                 y += 8
             }
-        } catch (e: Exception) {
-            // Buffer safety catch
+        } catch (t: Throwable) {
+            android.util.Log.e("OmnipotentGoalkeeperEngine", "scan frame failed, anomaly detection skipped this frame", t)
         }
 
         val defensiveActionPerformed = run {
@@ -244,13 +220,13 @@ object OmnipotentGoalkeeperEngine {
                 // for the attacker and the trainer's live pressure-button cell
                 // for the button.
                 val pressureSlot = com.assistant.ControlMappingTrainer.slotCenter(4)
-                val attackerX = if (detectedX > 0) detectedX.toFloat() else width / 2f
-                val attackerY = if (detectedY > 0) detectedY.toFloat() else height * 0.7f
+                val attackerX = detectedX.toFloat()
+                val attackerY = detectedY.toFloat()
                 processGoalkeeperDefensiveLayer(
-                    ballX = if (t.ballX != 0f) t.ballX else width / 2f,
-                    ballY = if (t.ballY != 0f) t.ballY else height * 0.8f,
+                    ballX = t.ballX,
+                    ballY = t.ballY,
                     ballVx = t.ballVelocityX,
-                    ballVy = if (t.ballVelocityY != 0f) t.ballVelocityY else 0.0f,
+                    ballVy = t.ballVelocityY,
                     gkX = t.goalkeeperX,
                     gkY = t.goalkeeperY,
                     nearestAttackerX = attackerX,
@@ -281,14 +257,14 @@ object OmnipotentGoalkeeperEngine {
 
             GoalkeeperDecisionRegistry.latestDecision = decision
 
-            evaluateOpponentShotTrajectory()
+            evaluateOpponentShotTrajectory(decision)
         }
     }
 
     @Volatile private var lastShotEvaluationTimestamp = 0L
     @Volatile private var lastSaveTimestamp = 0L // Tracks the exact millisecond of the last successful save/parry for rebound logic
 
-    private fun evaluateOpponentShotTrajectory() {
+    private fun evaluateOpponentShotTrajectory(decision: ThreatDecision) {
         val now = System.currentTimeMillis()
         if (now - lastShotEvaluationTimestamp < 8L) return // BEAST MODE: 120Hz evaluation throttle for instant rebound/shot reaction
         lastShotEvaluationTimestamp = now
@@ -305,19 +281,15 @@ object OmnipotentGoalkeeperEngine {
             val screenWidthBase = capturedWidth
             val screenHeightBase = capturedHeight
 
-                val decision = GoalkeeperDecisionRegistry.latestDecision ?: ThreatDecision(
-                    threat = ThreatType.PURPLE,
-                    zone = ThreatZone.CENTER,
-                    direction = ShotDirection.CENTER,
-                    priority = 100
-                )
 
                 val recoveryTarget = RecoveryPredictionEngine.predict(decision)
 
                 RecoveryAuthorityRegistry.lastTarget = recoveryTarget
 
                 when (recoveryTarget) {
-                    RecoveryTarget.CENTER -> {}
+                    RecoveryTarget.CENTER -> {
+                        RecoveryAuthorityRegistry.centerRecoveries.incrementAndGet()
+                    }
                     RecoveryTarget.LEFT -> {
                         RecoveryAuthorityRegistry.leftRecoveries.incrementAndGet()
                     }
@@ -358,10 +330,10 @@ object OmnipotentGoalkeeperEngine {
                         (screenHeightBase * 0.08f)
 
                 // Hyper-velocity interceptor swipe paths with integrated Server/Noise offsets
-                executionCoordinates[0] = applyHumanizedNoise(vector[0], 2.5f)
-                executionCoordinates[1] = applyHumanizedNoise(vector[1] + positioningBias, 2.5f)
-                executionCoordinates[2] = applyHumanizedNoise(vector[2], 2.5f)
-                executionCoordinates[3] = applyHumanizedNoise(vector[3] + positioningBias, 2.5f)
+                executionCoordinates[0] = vector[0]
+                executionCoordinates[1] = vector[1] + positioningBias
+                executionCoordinates[2] = vector[2]
+                executionCoordinates[3] = vector[3] + positioningBias
 
                 val accepted = CentralExecutionBus.submit(
                     ExecutionRequest(
@@ -371,7 +343,7 @@ object OmnipotentGoalkeeperEngine {
                         startY = executionCoordinates[1],
                         endX = executionCoordinates[2],
                         endY = executionCoordinates[3],
-                        duration = syncDurationToTick(2L) 
+                        duration = 8L
                     )
                 )
 
@@ -415,8 +387,6 @@ object OmnipotentGoalkeeperEngine {
                     }
                 }
 
-                RecoveryPositionEngine.beginRecovery()
-                RecoveryPositionEngine.finishRecovery()
 
             GoalkeeperMetricsRegistry.recoveryCount.incrementAndGet()
         } finally { 

@@ -235,7 +235,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
             val c = SmartAssistUltimateCorrectorEngine.correctKeeper(
                 frame.ballX, frame.ballY,
                 frame.goalLeftX, frame.goalRightX,
-                frame.goalTopY, frame.goalBottomY
+                frame.goalTopY, frame.goalBottomY, frame.goalConfidence
             )
             if (!c.applied) return null
             return EngineContribution(

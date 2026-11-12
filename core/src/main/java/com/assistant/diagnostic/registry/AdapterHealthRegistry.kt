@@ -73,7 +73,8 @@ object AdapterHealthRegistry {
                 HealthPersistenceStore.readAll(ctx).forEach {
                     merged[it.adapterName] = it
                 }
-            } catch (_: Throwable) {
+            } catch (t: Throwable) {
+                com.assistant.diagnostic.RuntimeLogger.log("getAllLive: persisted health snapshots unreadable: " + t.message, "ADAPTER_HEALTH")
             }
         }
 

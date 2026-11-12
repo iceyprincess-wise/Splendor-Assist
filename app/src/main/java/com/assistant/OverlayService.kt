@@ -581,7 +581,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     pw.println("=========================================\n")
                 }
             }
-        } catch (ignored: Exception) {}
+        } catch (t: Throwable) { android.util.Log.e("OverlayService", "silent-fault log failed, fault record lost", t) }
     }
 
     private fun startForegroundSafely() {

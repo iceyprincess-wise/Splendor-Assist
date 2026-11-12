@@ -24,7 +24,7 @@ object ThreatPriorityEngine {
     ): ThreatDecision {
         val direction = ShotDirectionEngine.detect(zone, threat)
         
-        // Delegate heavy compute to bare-metal C standard
+        // Kotlin port (NativePorts.threat): no C threat function exists in app/src/main/cpp.
         com.assistant.NativePorts.threat(
             threat.score, zone.ordinal, direction.ordinal,
             InterceptionRuntimeRegistry.awareness, InterceptionRuntimeRegistry.prediction,

@@ -102,18 +102,14 @@ object TemporalMemoryEngine {
 
     /**
      * Updates the temporal state using zero-allocation mathematical models,
-     * applying Server-Tick Sync and Adaptive Noise Humanization for Gesture descriptions.
+     * using zero-allocation history statistics (mean, variance, EMA, trend).
      *
      * @param previous The previous memory state
      * @param confidence The raw input confidence/probability scalar
-     * @param pingMs Current estimated network latency to scale packet boundaries
-     * @param is120Hz Whether to target 120Hz (8.33ms) or 60Hz (16.66ms) kinematics
      */
     fun update(
         previous: TemporalMemoryState,
-        confidence: Float,
-        pingMs: Float = 50f,
-        is120Hz: Boolean = false
+        confidence: Float
     ): TemporalMemoryState {
         
         val window = previous.historyWindow
@@ -171,8 +167,6 @@ object TemporalMemoryEngine {
 
         val historyStability = (varBounded * 0.50f + trendBounded * 0.30f + emaBounded * 0.20f).coerceIn(0f, 1f)
 
-        // --- 4. ADAPTIVE NOISE HUMANIZATION & SERVER-TICK SYNC ---
-        // Dynamically scale gesture path lengths and hold durations to match network packet boundaries
         
         
 

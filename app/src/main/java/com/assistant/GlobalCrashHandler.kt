@@ -29,13 +29,13 @@ class GlobalCrashHandler(
     }
 
     override fun uncaughtException(t: Thread, e: Throwable) {
-        try { CrashForensics.onUncaught(t, e) } catch (_: Throwable) {}
+        try { CrashForensics.onUncaught(t, e) } catch (t2: Throwable) { android.util.Log.e("GlobalCrashHandler", "CrashForensics.onUncaught failed", t2) }
         try {
             writeJavaCrashMarker(t)
-        } catch (_: Throwable) {}
+        } catch (t2: Throwable) { android.util.Log.e("GlobalCrashHandler", "writeJavaCrashMarker failed", t2) }
         try {
             writeCrashReport(appContext, t, e)
-        } catch (_: Throwable) {}
+        } catch (t2: Throwable) { android.util.Log.e("GlobalCrashHandler", "writeCrashReport failed", t2) }
         defaultHandler?.uncaughtException(t, e) ?: run {
             android.os.Process.killProcess(android.os.Process.myPid())
             System.exit(10)
@@ -58,7 +58,7 @@ class GlobalCrashHandler(
                 val f = getLogFile("splendor_health.log", true)
                 val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
                 f.appendText("[$ts] $feature: $message\n")
-            } catch (_: Throwable) {}
+            } catch (t2: Throwable) { android.util.Log.e("GlobalCrashHandler", "logFeatureFault write failed", t2) }
         }
 
         
@@ -86,7 +86,7 @@ class GlobalCrashHandler(
                         "pid=${android.os.Process.myPid()}|" +
                         "thread=${thread.name}"
                 )
-            } catch (_: Throwable) {}
+            } catch (t2: Throwable) { android.util.Log.e("GlobalCrashHandler", "java crash marker write failed", t2) }
         }
 
         private fun writeCrashReport(ctx: Context, thread: Thread, e: Throwable) {
@@ -99,7 +99,7 @@ class GlobalCrashHandler(
                     fos.flush()
                     try { fos.fd.sync() } catch (_: Throwable) {}
                 }
-            } catch (_: Throwable) {}
+            } catch (t2: Throwable) { android.util.Log.e("GlobalCrashHandler", "writeCrashReport file write failed", t2) }
             // Per-crash file copy: CrashInspector.saveLog was dead (zero
             // callers). The same full report is also saved as one
             // crash_log_<millis>.txt so a single crash can be listed,

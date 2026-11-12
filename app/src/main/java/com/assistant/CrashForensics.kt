@@ -105,7 +105,7 @@ object CrashForensics {
                 "${error.javaClass.name}: ${error.message} throwSite=${throwLocation(error)}\n" +
                 "capture=${captureWidth}x${captureHeight} engineStage=${stageName(engineStage)}\n" +
                 trace.toString() + snapshotText() + "\n--- NATIVE BREADCRUMBS ---\n" + nativeBreadcrumbText())
-        } catch (_: Throwable) { }
+        } catch (t: Throwable) { android.util.Log.e("CrashForensics", "onUncaught report failed, crash evidence lost", t) }
     }
 
     /** Resolve JVM frames to an app/core repository-relative path and source line. */
@@ -156,7 +156,7 @@ object CrashForensics {
         try {
             appendReport("[DEATH DETECTED] process=$process pid=$pid verdict=$verdict source=${sourceFromCurrentStack()} " +
                 "capture=${captureWidth}x$captureHeight engineStage=${stageName(engineStage)}\n" + snapshotText())
-        } catch (_: Throwable) { }
+        } catch (t: Throwable) { android.util.Log.e("CrashForensics", "reportDetectedDeath failed, death verdict lost", t) }
     }
 
     private fun checkStalls(now: Long) {
@@ -205,14 +205,14 @@ object CrashForensics {
     }
 
     private fun appendReport(text: String) {
-        val file = try { SplendorStorageRoot.file(REPORT_NAME) } catch (_: Throwable) { return }
+        val file = try { SplendorStorageRoot.file(REPORT_NAME) } catch (t: Throwable) { android.util.Log.e("CrashForensics", "appendReport storage lookup failed, report dropped", t); return }
         try {
             FileOutputStream(file, true).use { stream ->
                 stream.write(("\n" + text).toByteArray(Charsets.UTF_8))
                 stream.flush()
                 try { stream.fd.sync() } catch (_: Throwable) { }
             }
-        } catch (_: Throwable) { }
+        } catch (t: Throwable) { android.util.Log.e("CrashForensics", "appendReport failed, death evidence lost", t) }
     }
 
     private fun stageName(stage: Int): String = when (stage) {

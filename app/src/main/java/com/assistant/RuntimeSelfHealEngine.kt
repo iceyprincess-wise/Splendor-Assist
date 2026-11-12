@@ -639,7 +639,7 @@ object RuntimeSelfHealEngine {
                 ))
             }
             // SPLENDOR_V18_CONTRIB_HEALTH_END
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) { try { com.assistant.diagnostic.RuntimeLogger.log("SelfHeal checkContributors failed: " + t.javaClass.simpleName + ": " + t.message, "AGENT") } catch (_: Throwable) {} }
     }
 
     // ─────────────────────────────────────────────────────────────────────
