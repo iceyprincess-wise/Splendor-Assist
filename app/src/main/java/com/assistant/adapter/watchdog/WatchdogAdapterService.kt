@@ -5,7 +5,7 @@ import com.assistant.diagnostic.notification.NodeNotificationHub
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 import com.assistant.diagnostic.AdapterSignalBus
-import com.assistant.survival.ProcessSurvivalRegistry
+import com.assistant.survival.AdapterStatusRegistry
 
 import android.app.Service
 import android.content.Context
@@ -56,7 +56,7 @@ class WatchdogAdapterService : Service() {
 
     private val watchdogRunnable = object : Runnable {
         override fun run() {
-            var offline = 0; var degraded = 0; var restarted = 0
+            var offline = 0; var degraded = 0; var active = 0; var restarted = 0
             val liveSnapshots = AdapterHealthRegistry.getAllLive().associateBy { it.adapterName }
             val checked = mutableSetOf<String>()
 
@@ -66,8 +66,8 @@ class WatchdogAdapterService : Service() {
                 // Missing snapshot means "never heard from", not "dead": a
                 // crashed service leaves a stale snapshot, which
                 // effectiveStatus() reports OFFLINE. Never restart on UNKNOWN.
-                val status = if (snapshot == null) "UNKNOWN" else AdapterHealthRegistry.effectiveStatus(name)
-                ProcessSurvivalRegistry.update(name, status)
+                val status = if (snapshot == null) "UNKNOWN" else AdapterHealthRegistry.effectiveStatus(snapshot)
+                AdapterStatusRegistry.update(name, status)
 
                 when (status) {
                     "OFFLINE" -> {
@@ -81,20 +81,28 @@ class WatchdogAdapterService : Service() {
                         degraded++
                         RuntimeLogger.log("WATCHDOG DEGRADED: $name", "WATCHDOG")
                     }
+                    "ACTIVE" -> active++
                 }
             }
 
             liveSnapshots.values.forEach { snapshot ->
                 if (!checked.contains(snapshot.adapterName)) {
-                    val status = AdapterHealthRegistry.effectiveStatus(snapshot.adapterName)
-                    ProcessSurvivalRegistry.update(snapshot.adapterName, status)
-                    if (status == "OFFLINE") offline++
-                    else if (status == "DEGRADED") degraded++
+                    val status = AdapterHealthRegistry.effectiveStatus(snapshot)
+                    AdapterStatusRegistry.update(snapshot.adapterName, status)
+                    when (status) {
+                        "OFFLINE" -> offline++
+                        "DEGRADED" -> degraded++
+                        "ACTIVE" -> active++
+                    }
                 }
             }
             AdapterSignalBus.publishFleet(offline)
-            lastScan = "offline=$offline degraded=$degraded restarted=$restarted"
-            com.assistant.survival.ResourceBudgetRegistry.update(maxOf(0, adapterMap.size - offline - degraded), degraded, offline)
+            lastScan = "offline=$offline degraded=$degraded restarted=$restarted active=$active"
+            // Fleet-wide counts from the merged live set. The old formula
+            // maxOf(0, adapterMap.size(2) - offline - degraded) undercounted
+            // active whenever the fleet held more than the 2 restartable
+            // adapters (offline/degraded already counted fleet-wide).
+            com.assistant.survival.AdapterHealthCounts.update(active, degraded, offline)
             watchdogHandler.postDelayed(this, 15000)
             // HYPEROS LMK SURVIVAL: Renew WakeLock timeout on every successful scan cycle
             wakeLock?.acquire(10 * 60 * 1000L)

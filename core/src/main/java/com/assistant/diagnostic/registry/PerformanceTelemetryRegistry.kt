@@ -1,6 +1,7 @@
 package com.assistant.diagnostic.registry
 
 import android.content.Context
+import com.assistant.storage.SplendorStorageRoot
 import java.io.File
 
 /**
@@ -30,7 +31,9 @@ object PerformanceTelemetryRegistry {
     @JvmStatic
     @Suppress("UNUSED_PARAMETER")
     fun initialize(context: Context) {
-        if (file == null) file = File("/sdcard/Splendor-Assist", "perf_telemetry.txt").also { it.parentFile?.mkdirs() }
+        // Canonical root only; stays null when storage is not ready and
+        // every publisher already null-guards `file`.
+        if (file == null) file = try { SplendorStorageRoot.file("perf_telemetry.txt") } catch (_: Throwable) { null }
     }
 
     @JvmStatic

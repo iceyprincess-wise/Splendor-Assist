@@ -22,7 +22,7 @@ object TruthLogcatEngine {
         if (running.getAndSet(true)) return
         tailThread = Thread({
             try {
-                val sourceFile = File("/sdcard/Splendor-Assist", "Splendor_Field_Logs.txt")
+                val sourceFile = SplendorStorageRoot.file("Splendor_Field_Logs.txt")
                 if (!sourceFile.exists()) sourceFile.createNewFile()
                 
                 var filePointer = sourceFile.length()

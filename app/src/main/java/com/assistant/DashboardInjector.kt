@@ -13,8 +13,8 @@ import android.widget.TextView
 import com.assistant.audit.SelfAuditRegistry
 import com.assistant.compliance.ComplianceState
 import com.assistant.diagnostic.RuntimeMetricsRegistry
-import com.assistant.survival.ProcessSurvivalRegistry
-import com.assistant.survival.ResourceBudgetRegistry
+import com.assistant.survival.AdapterHealthCounts
+import com.assistant.survival.AdapterStatusRegistry
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executors
 
@@ -159,8 +159,8 @@ object DashboardInjector {
             bgExecutor.execute {
                 val metricsText = buildString {
                     append(RuntimeMetricsRegistry.snapshot()).append("\n\n")
-                    append(ProcessSurvivalRegistry.snapshot()).append("\n\n")
-                    append(ResourceBudgetRegistry.snapshot()).append("\n\n")
+                    append(AdapterStatusRegistry.snapshot()).append("\n\n")
+                    append(AdapterHealthCounts.snapshot()).append("\n\n")
                     append(SelfAuditRegistry.snapshot())
                 }
                 

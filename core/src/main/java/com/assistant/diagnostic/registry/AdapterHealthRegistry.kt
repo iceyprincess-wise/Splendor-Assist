@@ -102,6 +102,16 @@ object AdapterHealthRegistry {
         val snapshot =
             getAllLive().firstOrNull { it.adapterName == name } ?: return "OFFLINE"
 
+        return effectiveStatus(snapshot)
+    }
+
+    /*
+     * Pure snapshot form: no map lookup, no persistence read. Callers
+     * that already hold a merged live snapshot (WatchdogAdapterService)
+     * must use this so one scan does not re-read the persistence file
+     * once per adapter.
+     */
+    fun effectiveStatus(snapshot: AdapterHealthSnapshot): String {
         val age =
             System.currentTimeMillis() -
             snapshot.lastHeartbeat

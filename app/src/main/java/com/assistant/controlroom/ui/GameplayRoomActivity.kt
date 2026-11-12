@@ -1,5 +1,6 @@
 package com.assistant.controlroom.ui
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -14,8 +15,11 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.assistant.CaptaincySkillEngine
 import com.assistant.CrowdingZoneDetector
+import com.assistant.DashboardInjector
 import com.assistant.RuntimeDecisionLoop
 import com.assistant.diagnostic.AdapterSignalBus
+import com.assistant.diagnostic.AnalyticsTheaterActivity
+import com.assistant.diagnostic.CrashInspectorActivity
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.storage.SplendorStorageRoot
 import java.io.File
@@ -107,6 +111,7 @@ class GameplayRoomActivity : AppCompatActivity() {
         refreshRunnable?.let { refreshHandler.removeCallbacks(it) }
         decisionView = null; amplifierView = null; busView = null; crowdView = null
         logExecutor.shutdown()
+        DashboardInjector.detach()
         super.onDestroy()
     }
 
@@ -211,6 +216,15 @@ class GameplayRoomActivity : AppCompatActivity() {
         toggleRow.addView(toggleLabel)
         toggleRow.addView(sw)
         root.addView(toggleRow)
+
+        // ── DIAGNOSTIC ROOMS ────────────────────────────────────────────
+        // Patch 3: CrashInspectorActivity, AnalyticsTheaterActivity and
+        // DashboardInjector.attach() had zero launchers/callers repo-wide.
+        // They are wired here, in the live diagnostics room, user-triggered.
+        section(root, "DIAGNOSTIC ROOMS  (crash + analytics + live dashboard)")
+        btn(root, "🔍  Crash Inspector") { startActivity(Intent(this, CrashInspectorActivity::class.java)) }
+        btn(root, "📊  Analytics Theater") { startActivity(Intent(this, AnalyticsTheaterActivity::class.java)) }
+        btn(root, "📈  Live Dashboard Overlay") { DashboardInjector.attach(this) }
 
         // ── CONTROLS ──────────────────────────────────────────────────────
         section(root, "CONTROLS")

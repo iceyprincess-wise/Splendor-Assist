@@ -22,8 +22,7 @@ data class RuntimeEntity(
     val id: Int, val x: Float, val y: Float,
     val velocityX: Float, val velocityY: Float,
     val confidence: Float, val teammate: Boolean,
-    val velocityXPerSecond: Float = 0f, val velocityYPerSecond: Float = 0f,
-    val observedX: Float = x, val observedY: Float = y
+    val velocityXPerSecond: Float = 0f, val velocityYPerSecond: Float = 0f
 )
 
 data class RuntimeFrame(
@@ -70,8 +69,6 @@ data class RuntimeFrame(
     val captureHeight: Float = 0f,
     val capturedAtNanos: Long = 0L,
     val predictedAtNanos: Long = 0L,
-    val observedBallX: Float = ballX,
-    val observedBallY: Float = ballY,
     val ballVelocityXPerSecond: Float = 0f,
     val ballVelocityYPerSecond: Float = 0f,
     val passTargetId: Int? = null

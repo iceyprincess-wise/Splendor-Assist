@@ -1,6 +1,7 @@
 package com.assistant.diagnostic
 
 import android.content.Context
+import com.assistant.storage.SplendorStorageRoot
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -42,41 +43,22 @@ object RuntimeLogger {
 
         if (isMainProcess) {
             if (externalLogFile == null) {
-                externalLogFile = File("/sdcard/Splendor-Assist", "Splendor_Field_Logs.txt").also { it.parentFile?.mkdirs() }
+                // Canonical root only: file() throws when storage is not
+                // ready; a null log file degrades to a no-op append (the
+                // same behaviour background processes already have).
+                externalLogFile = try { SplendorStorageRoot.file("Splendor_Field_Logs.txt") } catch (_: Throwable) { null }
             }
 
             if (forensicDir == null) {
 
-                forensicDir =
-                    File(
-                        "/sdcard/Splendor-Assist/Forensics"
-                    ).apply {
-                        mkdirs()
-                    }
+                forensicDir = try { SplendorStorageRoot.subdirectory("Forensics") } catch (_: Throwable) { null }
 
-                executionChainLog =
-                    File(
-                        forensicDir,
-                        "execution_chain.log"
-                    )
-
-                telemetryLog =
-                    File(
-                        forensicDir,
-                        "telemetry.log"
-                    )
-
-                heartbeatLog =
-                    File(
-                        forensicDir,
-                        "heartbeat.log"
-                    )
-
-                fieldTestLog =
-                    File(
-                        forensicDir,
-                        "fieldtest.log"
-                    )
+                forensicDir?.let { dir ->
+                    executionChainLog = File(dir, "execution_chain.log")
+                    telemetryLog = File(dir, "telemetry.log")
+                    heartbeatLog = File(dir, "heartbeat.log")
+                    fieldTestLog = File(dir, "fieldtest.log")
+                }
             }
         }
 

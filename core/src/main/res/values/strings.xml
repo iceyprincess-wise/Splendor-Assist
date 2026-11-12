@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="splendor_analytics_save">Save</string>
+    <string name="splendor_analytics_delete">Delete</string>
+    <string name="splendor_crash_logs_placeholder">Crash Logs...</string>
+    <string name="splendor_copy_full_error_report">Copy Full Error Report</string>
+</resources>
