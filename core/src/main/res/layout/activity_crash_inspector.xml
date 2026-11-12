@@ -11,6 +11,23 @@
         android:layout_weight="1"
         android:scrollbars="vertical"
         android:text="@string/splendor_crash_logs_placeholder" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btnPrevLog"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/splendor_prev_log" />
+        <Button
+            android:id="@+id/btnNextLog"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/splendor_next_log" />
+    </LinearLayout>
     <Button
         android:id="@+id/copyButton"
         android:layout_width="match_parent"

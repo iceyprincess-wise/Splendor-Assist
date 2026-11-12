@@ -158,11 +158,22 @@ class MainActivity : AppCompatActivity() {
 
     // UPGRADE: Replaces updateLiveRuntimeMetrics, refreshDashboardStatus, 
     // refreshRuntimeDashboard, and updateRuntimeDashboardCards.
+    // Patch 4: the three labels used to be unconditional literals set once
+    // in onCreate. They now read live state every time this runs (and this
+    // runs on the 3s hub tick): RuntimeCoordinator for runtime readiness,
+    // RuntimeHealthMonitor for vision (frame flow) and diagnostics health.
     private fun refreshStaticUI() {
         runCatching {
-            findViewById<android.widget.TextView>(com.assistant.overlay.R.id.txtRuntimeStatus).text = "Runtime Online"
-            findViewById<android.widget.TextView>(com.assistant.overlay.R.id.txtVisionStatus).text = "Vision Ready"
-            findViewById<android.widget.TextView>(com.assistant.overlay.R.id.txtDiagnosticsStatus).text = "Diagnostics Active"
+            val health = com.assistant.RuntimeHealthMonitor.snapshot()
+            val runtime = com.assistant.RuntimeCoordinator.runtimeState()
+            val runtimeReady = runtime["runtimeReady"] as? Boolean ?: false
+            findViewById<android.widget.TextView>(com.assistant.overlay.R.id.txtRuntimeStatus).text =
+                if (runtimeReady) "Runtime Online" else "Runtime Offline"
+            findViewById<android.widget.TextView>(com.assistant.overlay.R.id.txtVisionStatus).text =
+                if (health.frameAlive) "Vision Ready" else "Vision Idle"
+            findViewById<android.widget.TextView>(com.assistant.overlay.R.id.txtDiagnosticsStatus).text =
+                if (health.degradedReasons.isEmpty()) "Diagnostics Active"
+                else "Diagnostics Degraded: ${health.degradedReasons.joinToString(",")}"
         }
     }
 
@@ -523,6 +534,9 @@ class MainActivity : AppCompatActivity() {
             append("\n=== EVENTS ===\n")
             com.assistant.events.EventHubs.eventRuntimeSnapshot().forEach { (k, v) -> append("$k = $v\n") }
         }
+        // Patch 4: keep the three status labels live on the 3s tick instead
+        // of frozen at their onCreate values.
+        refreshStaticUI()
     }
 
     override fun onPause() {

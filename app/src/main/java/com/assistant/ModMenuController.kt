@@ -17,7 +17,7 @@ import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
-import com.assistant.overlay.bridge.InterceptionControlRoomBridge
+
 import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
 import com.assistant.overlay.repository.GoalkeeperRepository
 import com.assistant.overlay.repository.GoalkeeperRuntimeState

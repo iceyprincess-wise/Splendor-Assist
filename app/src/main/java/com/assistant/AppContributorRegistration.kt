@@ -13,7 +13,6 @@ enum class RegistrationState { IDLE, REGISTERING, READY, PARTIAL, FAILED }
 
 object AppContributorRegistration {
 
-    const val ALLOWS_REDUCED_FIRST_FRAMES = true
     const val EXPECTED_CONTRIBUTOR_COUNT = 44
 
     // HIGH: Completeness invariant - explicit set of expected names

@@ -1,6 +1,6 @@
 package com.assistant.overlay.interceptor
 
-import com.assistant.NativeBridge
+
 
 enum class CrossAction {
     HOLD,

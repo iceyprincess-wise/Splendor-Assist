@@ -21,7 +21,7 @@ object CrossClaimContributor : GameplayContributor {
             CollisionAvoidanceEngine.allowClaim(
                 CollisionAvoidanceEngine.evaluate(decision)
             )
-        } catch (_: Throwable) { true }
+        } catch (_: Throwable) { false }
         if (!claimAllowed) return null
 
         return EngineContribution(

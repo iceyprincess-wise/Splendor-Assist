@@ -1,97 +1,97 @@
 package com.assistant
 
-import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.GestureDescription
-import android.app.ActivityManager
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
-import android.content.ComponentCallbacks2
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
-import android.content.res.Configuration
-import android.graphics.Path
-import android.graphics.PointF
-import android.os.Build
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.IBinder
-import android.os.Looper
-import android.os.Messenger
-import android.os.PowerManager
-import android.os.Process
-import android.os.SystemClock
-import android.util.Log
-import android.view.Choreographer
-import android.view.WindowManager
-import com.assistant.diagnostic.AdapterSignalBus
-import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.diagnostic.registry.AdapterHealthRegistry
-import com.assistant.diagnostic.registry.AdapterHealthSnapshot
-import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
-import com.assistant.execution.CentralExecutionBus
-import com.assistant.execution.ContributionRegistry
-import com.assistant.execution.ExecutionRequest
-import com.assistant.execution.ExecutionSource
-import com.assistant.execution.HybridExecutionTerminal
-import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
-import com.assistant.runtime.*
-import com.assistant.runtime.ActionClass
-import com.assistant.runtime.EngineCapability
-import com.assistant.runtime.EngineContribution
-import com.assistant.runtime.GameplayContributor
-import com.assistant.runtime.GameplayEngineRegistry
-import com.assistant.runtime.RuntimeFrame
-import com.assistant.runtime.ZoneDistribution
 
-import java.io.File
-import java.io.FileWriter
-import java.lang.ref.WeakReference
-import java.net.Socket
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.ThreadLocalRandom
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.locks.ReentrantLock
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import com.assistant.runtime.*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import kotlin.math.*
-import kotlin.math.PI
+
 import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.ceil
-import kotlin.math.cos
-import kotlin.math.hypot
-import kotlin.math.ln
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.roundToInt
-import kotlin.math.roundToLong
-import kotlin.math.sin
+
+
+
+
+
+
+
+
+
+
+
 import kotlin.math.sqrt
-import kotlin.random.Random
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import org.tensorflow.lite.Interpreter
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 object ActiveDefenderEngine {
 
@@ -100,8 +100,6 @@ object ActiveDefenderEngine {
     private const val BASE_TICK_RATE_MS = 16L
     private const val SERVER_TICK_COMPENSATION = 1.05f
     
-    // Tightened Gaussian micro-variance for organic human emulation
-    private const val HUMANIZATION_NOISE_MAX = 0.015f
     private const val MAX_TRACKING_DISTANCE = 1200.0f
     
     // Predictive look-ahead scaling based on packet transmission boundaries
@@ -112,23 +110,6 @@ object ActiveDefenderEngine {
     private var lastAttackerX = -1f
     private var lastAttackerY = -1f
 
-    /**
-     * Generates a statistically accurate normal distribution (Gaussian) noise
-     * for realistic human hand latency simulation using the Box-Muller transform.
-     * Prevents machine pattern footprint detection.
-     */
-    private fun nextGaussianNoise(): Float {
-        var v1: Float
-        var v2: Float
-        var s: Float
-        do {
-            v1 = 2f * Random.nextFloat() - 1f
-            v2 = 2f * Random.nextFloat() - 1f
-            s = v1 * v1 + v2 * v2
-        } while (s >= 1f || s == 0f)
-        val multiplier = sqrt(-2f * ln(s) / s)
-        return v1 * multiplier
-    }
 
     /**
      * Computes the optimal defender to track an attacker using 
@@ -164,10 +145,6 @@ object ActiveDefenderEngine {
         var optimalDefenderIndex = -1
         var minimalEffectiveScore = Float.MAX_VALUE
 
-        // --- ADAPTIVE NOISE HUMANIZATION ---
-        // Generates organic micro-drifts that easily bypass latency tracking heuristics
-        val humanVarianceX = nextGaussianNoise() * HUMANIZATION_NOISE_MAX
-        val humanVarianceY = nextGaussianNoise() * HUMANIZATION_NOISE_MAX
 
         for (index in scene.trackedPlayers.indices) {
             if (index == attacker.attackerIndex) continue
@@ -176,9 +153,9 @@ object ActiveDefenderEngine {
             // We only track players of the opposing team
             if (player.isUserTeam == attackerTeam) continue
 
-            // Apply variance and compute relative offset to the *predicted* location
-            val dx = (player.x - predictedAttackerX) + humanVarianceX
-            val dy = (player.y - predictedAttackerY) + humanVarianceY
+            // Compute relative offset to the *predicted* location
+            val dx = player.x - predictedAttackerX
+            val dy = player.y - predictedAttackerY
 
             // Fast culling using Manhattan distance to eliminate heavy sqrt calls per frame
             val manhattanDist = abs(dx) + abs(dy)

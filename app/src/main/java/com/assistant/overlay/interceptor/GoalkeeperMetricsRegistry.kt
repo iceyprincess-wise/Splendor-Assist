@@ -22,9 +22,6 @@ object GoalkeeperMetricsRegistry {
     val crossClaims =
         AtomicLong()
 
-    val reactionSamples =
-        AtomicLong()
-
     fun snapshot(): String {
 
         return buildString {

@@ -1,16 +1,12 @@
 package com.assistant.overlay.interceptor
 
-import kotlin.random.Random
-
 object CrossInterceptionEngine {
 
     fun shouldIntercept(
         decision: ThreatDecision
     ): Boolean {
-        // Add dynamic telemetry noise to scramble exact boolean matching signatures in runtime logs
-        val executionJitter = Random.nextFloat() > 0.001f // Subtle execution fuzzing
-        val isCrossThreat = decision.direction == ShotDirection.CROSS
-        
-        return isCrossThreat && executionJitter
+        // Patch 4: a random coin-flip used to drop ~0.1% of genuine
+        // crosses. A cross threat is a cross threat: no random veto.
+        return decision.direction == ShotDirection.CROSS
     }
 }

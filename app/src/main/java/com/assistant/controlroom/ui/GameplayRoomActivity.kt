@@ -20,7 +20,7 @@ import com.assistant.RuntimeDecisionLoop
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.AnalyticsTheaterActivity
 import com.assistant.diagnostic.CrashInspectorActivity
-import com.assistant.diagnostic.RuntimeLogger
+
 import com.assistant.storage.SplendorStorageRoot
 import java.io.File
 import java.io.FileWriter
@@ -294,7 +294,15 @@ class GameplayRoomActivity : AppCompatActivity() {
                 "Last action: $lastAct\n" +
                 "Last weight: $lastWt\n" +
                 "Freshness  : $freshness"
-            decisionView?.text = decTxt
+            // ── Decision mirror (root SmartAssistMetrics) ───────────────
+            // Wired in patch 4: the root mirror counters were never
+            // incremented and decisionRuntimeSnapshot() had no readers.
+            val mirror = com.assistant.SmartAssistMetrics.decisionRuntimeSnapshot()
+            val mirrorTxt =
+                "Mirror made  : ${mirror["decisionsMade"] ?: 0L}\n" +
+                "Mirror avg ms: ${mirror["avgDecisionTimeMs"] ?: 0L}\n" +
+                "Mirror last  : ${mirror["lastDecisionTimeMs"] ?: 0L}ms"
+            decisionView?.text = decTxt + "\n" + mirrorTxt
 
             // ── Amplifiers: FightingSpirit + Captaincy ───────────────────
             val capDiag  = CaptaincySkillEngine.diagnostics()

@@ -60,7 +60,7 @@ object ThreatPriorityContributor : GameplayContributor {
             CollisionAvoidanceEngine.allowRush(
                 CollisionAvoidanceEngine.evaluate(decision)
             )
-        } catch (_: Throwable) { true }
+        } catch (_: Throwable) { false }
         if (!rushAllowed) return null
 
         // GATE 2: own-goal safety may veto execution entirely.
@@ -68,7 +68,7 @@ object ThreatPriorityContributor : GameplayContributor {
             OwnGoalAvoidanceEngine.allowExecution(
                 OwnGoalAvoidanceEngine.evaluate(decision.direction, decision.zone)
             )
-        } catch (_: Throwable) { true }
+        } catch (_: Throwable) { false }
         if (!safeToExecute) return null
 
         return EngineContribution(

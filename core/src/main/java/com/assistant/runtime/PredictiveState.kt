@@ -1,6 +1,6 @@
 package com.assistant.runtime
 
-import kotlin.math.hypot
+
 
 data class MotionSample(val x: Float, val y: Float, val atNanos: Long)
 data class PredictedPoint(val x: Float, val y: Float, val vxPerSecond: Float, val vyPerSecond: Float)

@@ -8,7 +8,7 @@ import android.os.Handler
 import android.os.Looper
 
 import com.assistant.diagnostic.RuntimeLogger
-import com.assistant.audit.SelfAuditRegistry
+
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
 
 object AdapterRecoveryEngine {

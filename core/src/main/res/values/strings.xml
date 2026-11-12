@@ -4,4 +4,21 @@
     <string name="splendor_analytics_delete">Delete</string>
     <string name="splendor_crash_logs_placeholder">Crash Logs...</string>
     <string name="splendor_copy_full_error_report">Copy Full Error Report</string>
+    <string name="splendor_storage_not_ready">Storage not ready — data unavailable.</string>
+    <string name="splendor_no_crash_logs">No crash logs yet.</string>
+    <string name="splendor_crash_log_unreadable">Could not read this crash log.</string>
+    <string name="splendor_crash_log_position">Crash log %1$d of %2$d — %3$s</string>
+    <string name="splendor_crash_truncated_lines">… [truncated: showing first %1$d of %2$d lines]</string>
+    <string name="splendor_crash_truncated_bytes">… [truncated: showing first 256 KB of %1$d KB]</string>
+    <string name="splendor_crash_log_copied">Crash log copied to clipboard.</string>
+    <string name="splendor_copy_failed">Copy failed.</string>
+    <string name="splendor_prev_log">Previous log</string>
+    <string name="splendor_next_log">Next log</string>
+    <string name="splendor_no_adapter_data">No adapter data yet — engines have not reported.</string>
+    <string name="splendor_analytics_load_failed">Could not load analytics.</string>
+    <string name="splendor_analytics_saved">Analytics snapshot saved.</string>
+    <string name="splendor_analytics_save_failed">Could not save analytics snapshot.</string>
+    <string name="splendor_analytics_deleted">Deleted %1$d of %2$d saved snapshot(s).</string>
+    <string name="splendor_analytics_nothing_to_delete">No saved snapshots to delete.</string>
+    <string name="splendor_analytics_delete_failed">Could not delete saved snapshots.</string>
 </resources>

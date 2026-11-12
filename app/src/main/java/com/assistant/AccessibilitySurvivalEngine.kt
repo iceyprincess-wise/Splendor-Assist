@@ -8,7 +8,7 @@ import android.os.Process
 import android.os.SystemClock
 import android.util.Log
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.random.Random
+
 
 /**
  * 99.9% MAX IMPACT - ACCESSIBILITY SURVIVAL ENGINE

@@ -1,6 +1,6 @@
 package com.assistant.controlroom.ui
 
-import android.content.Intent
+
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle

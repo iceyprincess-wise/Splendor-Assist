@@ -30,7 +30,7 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
-import android.media.Image
+
 import android.media.ImageReader
 import java.nio.ByteBuffer
 import android.media.projection.MediaProjection
@@ -514,7 +514,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
             wifiLock?.acquire()
             
             com.assistant.diagnostic.RuntimeLogger.log("V53 WAKE_LOCK & WIFI_LOCK acquired: Preventing HyperOS pipeline suspension.", "PERFORMANCE")
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("WAKE/WIFI LOCK acquire failed: ${t.message}", "OVERLAY") }
 
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         com.assistant.vision.ForegroundGate.install(application)
@@ -522,12 +522,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // so its logical-pitch -> screen mapping was permanently at its default
         // 1080x2340 with unit scales. Calibrate from the real display once the
         // service is up so the mapping is usable and not dead infrastructure.
-        try { com.assistant.RadarScaleCalibrator.calibrate(applicationContext) } catch (_: Throwable) {}
+        try { com.assistant.RadarScaleCalibrator.calibrate(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("RadarScaleCalibrator.calibrate failed: ${t.message}", "OVERLAY") }
 
         try { com.assistant.RuntimeSelfHealEngine.init(applicationContext)
-              com.assistant.RuntimeSelfHealEngine.start() } catch (_: Throwable) {}
-        try { com.assistant.CaptaincySkillEngine.init(applicationContext) } catch (_: Throwable) {}
-        try { com.assistant.CrowdingZoneDetector.init(applicationContext) } catch (_: Throwable) {}
+              com.assistant.RuntimeSelfHealEngine.start() } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("RuntimeSelfHealEngine init/start failed: ${t.message}", "OVERLAY") }
+        try { com.assistant.CaptaincySkillEngine.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CaptaincySkillEngine.init failed: ${t.message}", "OVERLAY") }
+        try { com.assistant.CrowdingZoneDetector.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CrowdingZoneDetector.init failed: ${t.message}", "OVERLAY") }
 
         instance = this
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

@@ -1,7 +1,7 @@
 package com.assistant.contributors
 import com.assistant.NativePorts
 
-import com.assistant.NativeBridge
+
 import com.assistant.overlay.interceptor.*
 import com.assistant.runtime.*
 
@@ -31,7 +31,7 @@ object PanicSaveContributor : GameplayContributor {
             OwnGoalAvoidanceEngine.allowExecution(
                 OwnGoalAvoidanceEngine.evaluate(decision.direction, decision.zone)
             )
-        } catch (_: Throwable) { true }
+        } catch (_: Throwable) { false }
         if (!safeToExecute) return null
 
         return EngineContribution(

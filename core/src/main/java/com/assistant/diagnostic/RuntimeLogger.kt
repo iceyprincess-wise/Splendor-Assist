@@ -3,7 +3,7 @@ package com.assistant.diagnostic
 import android.content.Context
 import com.assistant.storage.SplendorStorageRoot
 import java.io.File
-import java.io.IOException
+
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

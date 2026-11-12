@@ -1,7 +1,7 @@
 package com.assistant.gameplay
 
 import com.assistant.runtime.*
-import kotlin.math.abs
+
 import kotlin.math.hypot
 
 /** All distances and velocities are capture pixels and pixels per observed frame.

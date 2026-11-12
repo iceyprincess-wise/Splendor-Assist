@@ -18,21 +18,6 @@ object RecoveryPredictionEngine {
             GoalkeeperBiasRegistry.currentBias
 
 
-        when (
-            RecoveryAuthorityRegistry.lastTarget
-        ) {
-
-            RecoveryTarget.LEFT ->
-                return RecoveryTarget.LEFT
-
-            RecoveryTarget.RIGHT ->
-                return RecoveryTarget.RIGHT
-
-            RecoveryTarget.GOAL_AREA ->
-                return RecoveryTarget.GOAL_AREA
-
-            else -> {}
-        }
 
         return when {
 
