@@ -116,7 +116,10 @@ object ActionOutcomeVerifier {
             pending.clear(); policy.abandonPending(); return
         }
         val now = System.nanoTime()
-        pending.entries.removeAll { now - it.value.at > 500_000_000L }
+        // 800ms matches the OutcomePolicy observe window: dropping at 500ms
+        // discarded entries the policy could still judge, so confirmDispatch
+        // after the drop never reached the policy (no cooling / no update).
+        pending.entries.removeAll { now - it.value.at > 800_000_000L }
         for ((id, observed) in policy.observe(currentFrame.ownerId, currentFrame.hasBall, currentFrame.trusted, now, currentFrame.capturedAtNanos)) {
             if (observed) macroObserved++ else heuristicFailure++
             GestureExecutionAuthority.recordEffectObserved(id, observed)

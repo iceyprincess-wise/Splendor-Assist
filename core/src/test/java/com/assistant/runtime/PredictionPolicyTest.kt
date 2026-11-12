@@ -89,8 +89,8 @@ class PredictionPolicyTest {
     }
     @Test fun stalePhaseDoesNotBlockFreshReplacementBeforeConsumption() {
         UiExecutionGate.reset(); CentralExecutionBus.stop(); CentralExecutionBus.start()
-        val old = ExecutionRequest(ExecutionSource.SMART_ASSIST, 1, 1f, 1f, 2f, 2f, 50L, timestamp = System.currentTimeMillis()-1000L)
-        assertTrue(CentralExecutionBus.submit(old))
+        val old = ExecutionRequest(ExecutionSource.SMART_ASSIST, 1, 1f, 1f, 2f, 2f, 50L, timestamp = System.currentTimeMillis()-1000L, createdAtNanos = System.nanoTime() - 1_000_000_000L)
+        assertFalse(CentralExecutionBus.submit(old))
         val fresh = old.copy(timestamp = System.currentTimeMillis(), createdAtNanos = System.nanoTime(), actionId = "fresh")
         assertTrue(CentralExecutionBus.submit(fresh)); assertEquals("fresh",CentralExecutionBus.consume()!!.actionId)
         CentralExecutionBus.stop()

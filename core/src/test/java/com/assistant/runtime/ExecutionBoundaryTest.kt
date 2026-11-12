@@ -33,8 +33,13 @@ class ExecutionBoundaryTest {
         assertEquals(high, CentralExecutionBus.consume()); assertEquals(normal, CentralExecutionBus.consume())
     }
     @Test fun staleHeadReleasesReservation() {
-        val old = request(); CentralExecutionBus.submit(old); old.timestamp -= 1000L
-        assertNull(CentralExecutionBus.peekSource()); assertEquals(0, CentralExecutionBus.pendingCount())
+        // A stale-at-arrival request is now rejected at submit (it used to
+        // be accepted and only discarded by the next submit), so it can
+        // never hold a reservation that blocks a fresh request.
+        val old = ExecutionRequest(ExecutionSource.SMART_ASSIST, 0, 10f, 10f, 20f, 20f, 60L,
+            createdAtNanos = System.nanoTime() - 1_000_000_000L)
+        assertFalse(CentralExecutionBus.submit(old))
+        assertEquals(0, CentralExecutionBus.pendingCount())
         assertTrue(CentralExecutionBus.submit(request()))
     }
     @Test fun stopPurgesPreviousSession() {

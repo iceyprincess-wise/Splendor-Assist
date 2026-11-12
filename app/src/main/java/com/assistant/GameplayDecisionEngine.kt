@@ -217,10 +217,6 @@ object GameplayDecisionEngine {
     private fun bound(v: Float, min: Float, max: Float): Float =
         if (v < min) min else if (v > max) max else v
 
-    // Organic Adaptive Noise utilizing the native ThreadLocalRandom for max concurrent throughput
-    private fun generateHumanizedNoise(variance: Float): Float =
-        (ThreadLocalRandom.current().nextFloat() * 2f - 1f) * variance
-
     fun selectVisionAdaptiveMode(
         hasBall: Boolean,
         shotAuthority: Float,
@@ -338,23 +334,10 @@ object GameplayDecisionEngine {
         val priorityRaw = (visionAuthority * 0.55f + decisionClamped * 0.30f + adaptiveAuthority * 0.15f) * 100f
         val priority = bound(priorityRaw, 0f, 100f).toInt()
 
-        // --- OMEGA UPGRADE: HARDWARE & NETWORK SYNCHRONIZATION ---
-        // 1. Calculate optimal hold length to span authoritative server network packets (prevent ping drop-outs)
-        val rawCalculatedHoldMs = strength * 2.2f // Baseline physical conversion mapped to internal screen logic
-        val tickMultiplier = ceil(rawCalculatedHoldMs / SERVER_TICK_RATE_MS).coerceAtLeast(1f)
-        val synchronizedHoldMs = (SERVER_TICK_RATE_MS * tickMultiplier).toLong()
-
-        // 2. Calculate display refresh frame offsets to minimize touch dispatch latency pipeline delays
-        val frameOffsetMs = (DISPLAY_REFRESH_120HZ_MS - (now % DISPLAY_REFRESH_120HZ_MS)).toLong()
-
-        // 3. Calculate Humanized Adaptive Noise (Mimics organic thumb-roll bounds to avoid anti-cheat flag)
-        val injectionNoiseX = generateHumanizedNoise(3.4f)
-        val injectionNoiseY = generateHumanizedNoise(3.4f)
-
-        // 4. Dynamic Path Scaling (Adapts stride vector based on organic gameplay velocity)
-        val safeVelocity = if (telemetry.playerVelocity > 0f) telemetry.playerVelocity else 1f
-        val vectorScale = 1.0f + (generateHumanizedNoise(0.018f) * (1f / safeVelocity.coerceAtLeast(0.1f)))
-        // ---------------------------------------------------------
+        // OMEGA fields removed: the tick-aligned hold, frame offset,
+        // humanized noise and vector scale were computed here but no
+        // caller ever read them, so the random noise never reached any
+        // gesture and could not do the anti-cheat job its comment claimed.
 
         decisionStateLock.lock()
         val stableMode: Int
@@ -397,12 +380,7 @@ object GameplayDecisionEngine {
             mode = stableMode,
             strength = strength,
             confidence = confidence,
-            priority = priority,
-            tickAlignedHoldMs = synchronizedHoldMs,
-            frameAlignedOffsetMs = frameOffsetMs,
-            humanizedNoiseX = injectionNoiseX,
-            humanizedNoiseY = injectionNoiseY,
-            vectorScaleAmplification = vectorScale
+            priority = priority
         )
     }
 

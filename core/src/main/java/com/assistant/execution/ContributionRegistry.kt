@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicLong
  * not guaranteed to occur inside those lifetimes; a save opportunity could
  * expire in the map without ever reaching the bus. Those two sources now
  * bypass the map and go straight to HybridExecutionTerminal.route(), where
- * bus priority (GK=100, INT=90) already outranks every other source.
+ * bus priority (GK=100, INT=100) already outranks every other source.
  *
  * They are deliberately NOT also left in the pending map - one submission
  * path per request, so the same action can never dispatch twice.
@@ -41,6 +41,7 @@ object ContributionRegistry {
     private val superseded = AtomicLong(0L)
     private val drained = AtomicLong(0L)
     private val expired = AtomicLong(0L)
+    private val droppedNonBest = AtomicLong(0L)
 
     private val emergencyOffered = AtomicLong(0L)
     private val emergencyAccepted = AtomicLong(0L)
@@ -87,12 +88,14 @@ object ContributionRegistry {
         for (entry in snapshot) pending.remove(entry.key, entry.value)
 
         var best: ExecutionRequest? = null
+        var freshCount = 0
         for (entry in snapshot) {
             val candidate = entry.value
             if (now - candidate.timestamp > MAX_AGE_MS) {
                 expired.incrementAndGet()
                 continue
             }
+            freshCount++
             val current = best
             if (current == null ||
                 HybridExecutionTerminal.priority(candidate.source) >
@@ -102,6 +105,9 @@ object ContributionRegistry {
             }
         }
 
+        // Fresh entries that lost arbitration are dropped, not re-queued;
+        // count them so a lost contribution is visible instead of silent.
+        if (freshCount > 1) droppedNonBest.addAndGet((freshCount - 1).toLong())
         if (best != null) {
             drained.incrementAndGet()
         }
@@ -117,7 +123,18 @@ object ContributionRegistry {
         "superseded" to superseded.get(),
         "drained" to drained.get(),
         "expired" to expired.get(),
+        "droppedNonBest" to droppedNonBest.get(),
         "pending" to pending.size,
+        // Bus statistics are read here so the CentralExecutionBus flow has
+        // a live consumer (MainActivity / RuntimeHealthMonitor / control
+        // rooms read this snapshot); previously the flow was never collected.
+        "busAccepted" to CentralExecutionBus.statistics.value.acceptedCount,
+        "busConsumed" to CentralExecutionBus.statistics.value.consumedCount,
+        "busPending" to CentralExecutionBus.statistics.value.pendingCount,
+        "busStoppedDrops" to CentralExecutionBus.statistics.value.stoppedDrops,
+        "busInvalidDrops" to CentralExecutionBus.statistics.value.invalidDrops,
+        "busStaleDrops" to CentralExecutionBus.statistics.value.staleDrops,
+        "busCapacityDrops" to CentralExecutionBus.statistics.value.capacityDrops,
         "emergencyOffered" to emergencyOffered.get(),
         "emergencyAccepted" to emergencyAccepted.get(),
         "emergencyRejected" to emergencyRejected.get()

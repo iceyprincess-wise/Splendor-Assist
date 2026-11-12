@@ -1,5 +1,6 @@
 package com.assistant.execution
 
+import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.runtime.ActionClass
 import kotlin.math.hypot
 
@@ -26,6 +27,7 @@ object UiExecutionGate {
     fun blocked(now: Long = System.nanoTime()) = now < blockedUntilNanos
     @Synchronized fun block(reason: String, now: Long = System.nanoTime(), durationMs: Long = 1500L) {
         this.reason = reason
+        RuntimeLogger.log("UiExecutionGate blocked: $reason", "UiExecutionGate")
         blockedUntilNanos = maxOf(blockedUntilNanos, now + durationMs.coerceIn(1, 5000) * 1_000_000)
         CentralExecutionBus.clearPending()
     }

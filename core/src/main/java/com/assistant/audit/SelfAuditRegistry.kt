@@ -14,12 +14,18 @@ object SelfAuditRegistry {
     private val nodeStates =
         java.util.concurrent.ConcurrentHashMap<String, String>()
 
+    // "Verified" is defined from the only status vocabulary the sole
+    // caller reports (OverlaySurvivalEngine): ATTACHED is the healthy
+    // state; DETACHED / DESTROYED are not verified. Previously both
+    // counters stayed 0/0 forever because update() never wrote them.
     @Synchronized
     fun update(
         node: String,
         status: String
     ) {
         nodeStates[node] = status
+        totalNodes = nodeStates.size
+        verifiedNodes = nodeStates.values.count { it == "ATTACHED" }
     }
 
     @Synchronized

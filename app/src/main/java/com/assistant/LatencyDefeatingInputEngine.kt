@@ -98,6 +98,11 @@ class LatencyDefeatingInputEngine(
 ) {
     private companion object {
         const val MIN_STROKE_DURATION_MS = 1L
+        // Phase 100 is a dedicated zero-latency reservation key, NOT an
+        // ActionClass ordinal (those are 0-7). The phase namespace is
+        // ad-hoc across the repo; 100 only has to be distinct, and the bus
+        // validity check (phase >= 0) accepts it.
+        const val ZERO_LATENCY_PHASE = 100
     }
 
 fun injectZeroLatencySwipe(
@@ -106,7 +111,7 @@ fun injectZeroLatencySwipe(
     endX: Float,
     endY: Float,
     restrictedDuration: Long
-) {
+): Boolean {
     val targetStartX = startX.coerceAtLeast(0f)
     val targetStartY = startY.coerceAtLeast(0f)
     val targetEndX = endX.coerceAtLeast(0f)
@@ -124,7 +129,7 @@ fun injectZeroLatencySwipe(
 
     val request = ExecutionRequest(
             source = ExecutionSource.SMART_ASSIST,
-            phase = 100, 
+            phase = ZERO_LATENCY_PHASE, 
             startX = targetStartX,
             startY = targetStartY,
             endX = targetEndX,
@@ -132,7 +137,9 @@ fun injectZeroLatencySwipe(
             duration = pingCompensatedDuration.coerceAtLeast(MIN_STROKE_DURATION_MS)
         )
         
-    CentralExecutionBus.submit(request)
+    val accepted = CentralExecutionBus.submit(request)
+    if (!accepted) RuntimeLogger.log("injectZeroLatencySwipe rejected by bus, swipe lost", "LatencyDefeatingInputEngine")
+    return accepted
     }
 }
 

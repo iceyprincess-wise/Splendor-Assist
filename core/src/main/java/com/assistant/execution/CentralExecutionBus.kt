@@ -2,6 +2,7 @@ package com.assistant.execution
 
 // F49_PATCH_V1.execution
 
+import com.assistant.diagnostic.RuntimeLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,8 +38,8 @@ data class ExecutionRequest(
     val createdAtNanos: Long = System.nanoTime(),
     val aimMotion: AimMotion? = null,
     val actionClass: com.assistant.runtime.ActionClass? = null,
-    var timestamp: Long = System.currentTimeMillis(),
-    val actionId: String = "ACT-${System.currentTimeMillis()}-${java.util.concurrent.ThreadLocalRandom.current().nextInt(1000, 9999)}",
+    val timestamp: Long = System.currentTimeMillis(),
+    val actionId: String = "ACT-${java.util.UUID.randomUUID()}",
     var busAccepted: Boolean = false,
     var busConsumed: Boolean = false
 )
@@ -47,25 +48,34 @@ data class BusStatistics(
     val acceptedCount: Long = 0,
     val consumedCount: Long = 0,
     val pendingCount: Int = 0,
-    val isRunning: Boolean = false
+    val isRunning: Boolean = false,
+    val stoppedDrops: Long = 0,
+    val invalidDrops: Long = 0,
+    val staleDrops: Long = 0,
+    val capacityDrops: Long = 0
 )
 
 object CentralExecutionBus {
 
-    // Disruptor Pattern: 3 Rings for Priority Levels (High=100, Med=90, Low=80)
+    // 3 rings for priority levels (High=100, Med=90, Low=80).
+    // NOTE: this is NOT lock-free despite the earlier "Disruptor" label:
+    // submit/consume/complete/stop/clearPending/peekSource are all
+    // @Synchronized on this object, so the CAS loop below can never
+    // contend. The CAS is kept only as a defensive check; do not remove
+    // @Synchronized to "make it lock-free" without a full re-audit.
     // Capacity must be power of 2 for fast bitwise AND masking
     private const val RING_CAPACITY = 1024L
     private const val MASK = RING_CAPACITY - 1L
 
-    private class LockFreeRing {
+    private class RingBuffer {
         val buffer = AtomicReferenceArray<ExecutionRequest>(RING_CAPACITY.toInt())
         val writeCursor = AtomicLong(0)
         val readCursor = AtomicLong(0)
     }
 
-    private val highRing = LockFreeRing() // GK, Intercept
-    private val medRing = LockFreeRing()  // SmartAssist
-    private val lowRing = LockFreeRing()  // Stutter
+    private val highRing = RingBuffer() // GK, Intercept
+    private val medRing = RingBuffer()  // SmartAssist
+    private val lowRing = RingBuffer()  // Stutter
 
     private val accepted = AtomicLong(0L)
     private val consumed = AtomicLong(0L)
@@ -95,10 +105,14 @@ object CentralExecutionBus {
             invalidDrops.incrementAndGet()
             return false
         }
+        if (requestIsStale(request)) {
+            staleDrops.incrementAndGet()
+            return false
+        }
 
-        discardStaleHeads(highRing, System.currentTimeMillis())
-        discardStaleHeads(medRing, System.currentTimeMillis())
-        discardStaleHeads(lowRing, System.currentTimeMillis())
+        discardStaleHeads(highRing)
+        discardStaleHeads(medRing)
+        discardStaleHeads(lowRing)
         val key = request.source to request.phase
         if (reservations.containsKey(key)) return false
         val ring = when (request.source) {
@@ -135,7 +149,7 @@ object CentralExecutionBus {
         return consumeFrom(lowRing)
     }
 
-    private fun consumeFrom(ring: LockFreeRing): ExecutionRequest? {
+    private fun consumeFrom(ring: RingBuffer): ExecutionRequest? {
         while (true) {
             val readPos = ring.readCursor.get()
             val writePos = ring.writeCursor.get()
@@ -143,11 +157,13 @@ object CentralExecutionBus {
 
             val index = (readPos and MASK).toInt()
             val request = ring.buffer.get(index)
+            // Defensive guard only: every bus entry point is @Synchronized,
+            // so a slot can never hold a half-written request in practice.
             if (request == null) return null // In-flight write, do not skip slot
 
             if (ring.readCursor.compareAndSet(readPos, readPos + 1)) {
                 ring.buffer.compareAndSet(index, request, null)
-                if (requestIsStale(request, System.currentTimeMillis())) {
+                if (requestIsStale(request)) {
                     complete(request.actionId)
                     staleDrops.incrementAndGet()
                     continue // Drop stale and try next
@@ -156,16 +172,25 @@ object CentralExecutionBus {
                 request.busConsumed = true
                 updateStatistics()
                 val point = request.aimMotion?.endpoint(request.startX, request.startY, System.nanoTime())
+                if (point == null && request.aimMotion != null) {
+                    invalidDrops.incrementAndGet()
+                    RuntimeLogger.log("CentralExecutionBus: AimMotion.endpoint returned null, executing uncompensated actionId=${request.actionId}", "CentralExecutionBus")
+                }
                 return if (point == null) request else request.copy(endX = point.first, endY = point.second)
             }
         }
     }
 
-    private fun discardStaleHeads(ring: LockFreeRing, now: Long) {
+    // Head-only by design: a stale entry behind a fresh head keeps its
+    // reservation until the head is consumed, so a fresh same-phase submit
+    // can stall for at most one queue drain. A full-ring sweep was NOT
+    // done: nulling a middle slot would make consumeFrom() return null
+    // (it treats null as an in-flight write) and stall the whole ring.
+    private fun discardStaleHeads(ring: RingBuffer) {
         while (ring.readCursor.get() < ring.writeCursor.get()) {
             val index = (ring.readCursor.get() and MASK).toInt()
             val request = ring.buffer.get(index) ?: break
-            if (!requestIsStale(request, now)) break
+            if (!requestIsStale(request)) break
             ring.buffer.set(index, null)
             ring.readCursor.incrementAndGet()
             complete(request.actionId)
@@ -174,27 +199,26 @@ object CentralExecutionBus {
     }
 
     @Synchronized fun peekSource(): ExecutionSource? {
-        val now = System.currentTimeMillis()
-        discardStaleHeads(highRing, now)
-        discardStaleHeads(medRing, now)
-        discardStaleHeads(lowRing, now)
+        discardStaleHeads(highRing)
+        discardStaleHeads(medRing)
+        discardStaleHeads(lowRing)
         // Check High
         val hRead = highRing.readCursor.get()
         if (hRead < highRing.writeCursor.get()) {
             val req = highRing.buffer.get((hRead and MASK).toInt())
-            if (req != null && !requestIsStale(req, now)) return req.source
+            if (req != null && !requestIsStale(req)) return req.source
         }
         // Check Med
         val mRead = medRing.readCursor.get()
         if (mRead < medRing.writeCursor.get()) {
             val req = medRing.buffer.get((mRead and MASK).toInt())
-            if (req != null && !requestIsStale(req, now)) return req.source
+            if (req != null && !requestIsStale(req)) return req.source
         }
         // Check Low
         val lRead = lowRing.readCursor.get()
         if (lRead < lowRing.writeCursor.get()) {
             val req = lowRing.buffer.get((lRead and MASK).toInt())
-            if (req != null && !requestIsStale(req, now)) return req.source
+            if (req != null && !requestIsStale(req)) return req.source
         }
         return null
     }
@@ -204,7 +228,8 @@ object CentralExecutionBus {
         running.set(false)
         for (ring in listOf(highRing, medRing, lowRing)) {
             while (ring.readCursor.get() < ring.writeCursor.get()) {
-                ring.buffer.set((ring.readCursor.getAndIncrement() and MASK).toInt(), null)
+                val req = ring.buffer.getAndSet((ring.readCursor.getAndIncrement() and MASK).toInt(), null)
+                if (req != null) stoppedDrops.incrementAndGet()
             }
         }
         reservations.clear()
@@ -215,7 +240,7 @@ object CentralExecutionBus {
         for (ring in listOf(highRing, medRing, lowRing)) {
             while (ring.readCursor.get() < ring.writeCursor.get()) {
                 val req = ring.buffer.getAndSet((ring.readCursor.getAndIncrement() and MASK).toInt(), null)
-                if (req != null) complete(req.actionId)
+                if (req != null) { complete(req.actionId); stoppedDrops.incrementAndGet() }
             }
         }
         updateStatistics(force = true)
@@ -236,7 +261,9 @@ object CentralExecutionBus {
             if (force || lastStatsUpdate.compareAndSet(last, now)) {
                 _statistics.value = BusStatistics(
                     acceptedCount = accepted.get(), consumedCount = consumed.get(),
-                    pendingCount = pendingCount(), isRunning = running.get()
+                    pendingCount = pendingCount(), isRunning = running.get(),
+                    stoppedDrops = stoppedDrops.get(), invalidDrops = invalidDrops.get(),
+                    staleDrops = staleDrops.get(), capacityDrops = capacityDrops.get()
                 )
             }
         }
@@ -246,17 +273,19 @@ object CentralExecutionBus {
         req.phase >= 0 && req.startX.isFinite() && req.startY.isFinite() && 
         req.endX.isFinite() && req.endY.isFinite() && req.duration > 0L
 
-    private fun requestIsStale(req: ExecutionRequest, now: Long): Boolean {
+    // Staleness is monotonic-clock only (System.nanoTime() vs createdAtNanos).
+    // The previous wall-clock term (now - timestamp) could stale a fresh
+    // request on a clock jump forward, or on a jump backward (age < 0).
+    // timestamp is kept as a record field only; it no longer decides staleness.
+    private fun requestIsStale(req: ExecutionRequest): Boolean {
         val envelope = req.gestureEnvelope
         if (envelope != null && envelope.isExpired(android.os.SystemClock.elapsedRealtime())) return true
-        val age = now - req.timestamp
-        if (age < 0L) return true
         val maxAge = when (req.source) {
             ExecutionSource.GOALKEEPER -> 300L
             ExecutionSource.INTERCEPTION -> 300L
             ExecutionSource.SMART_ASSIST -> 250L
             ExecutionSource.STUTTER -> 350L
         }
-        return age > maxAge || System.nanoTime() - req.createdAtNanos > maxAge * 1_000_000
+        return System.nanoTime() - req.createdAtNanos > maxAge * 1_000_000
     }
 }

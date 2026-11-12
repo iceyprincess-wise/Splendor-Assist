@@ -132,7 +132,10 @@ object KickingPostureContributor : GameplayContributor {
         val targetY = if (frame.passTargetY > 0f) frame.passTargetY else frame.ballY
 
         val kickingBuffer = FloatArray(4)
-        NativeBridge.nativeKickingPosture(userX, userY, userVx, userVy, targetX, targetY, com.assistant.vision.CameraProfile.captureWidthOrFallback(), com.assistant.vision.CameraProfile.captureHeightOrFallback(), kickingBuffer)
+        // Do not read the buffer when the native library is not loaded:
+        // it would still be all zeros, and the code below would emit a
+        // live PASS/SHOT at (0, 0) with 0.85 authority from fabricated data.
+        if (!NativeBridge.nativeKickingPosture(userX, userY, userVx, userVy, targetX, targetY, com.assistant.vision.CameraProfile.captureWidthOrFallback(), com.assistant.vision.CameraProfile.captureHeightOrFallback(), kickingBuffer)) return null
         val result = PostureCorrectionResult(
             correctedX = kickingBuffer[0],
             correctedY = kickingBuffer[1],

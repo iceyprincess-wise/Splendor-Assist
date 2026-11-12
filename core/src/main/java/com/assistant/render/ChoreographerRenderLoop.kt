@@ -1,6 +1,7 @@
 package com.assistant.render
 
 import android.view.Choreographer
+import com.assistant.diagnostic.RuntimeLogger
 
 object ChoreographerRenderLoop : Choreographer.FrameCallback {
     private var choreographer: Choreographer? = null
@@ -33,7 +34,9 @@ object ChoreographerRenderLoop : Choreographer.FrameCallback {
             copy
         }
         for (update in updatesToRun) {
-            try { update() } catch (_: Throwable) {}
+            try { update() } catch (e: Throwable) {
+                RuntimeLogger.log("ChoreographerRenderLoop dropped failing overlay update: ${e.message}", "ChoreographerRenderLoop")
+            }
         }
         choreographer?.postFrameCallback(this)
     }

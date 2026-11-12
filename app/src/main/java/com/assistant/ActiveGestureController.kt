@@ -494,7 +494,10 @@ class ActiveGestureController(
             }
         val agilityVelocityUnits =
             (((safeExecutionBoost - 10f) / 25f) * 15f).coerceIn(0f, 15f)
-        NativeBridge.nativeAgilityPhysics(
+        // Gate on native readiness: with the library unloaded the buffer
+        // stays all zeros. Use an explicit neutral result instead of
+        // reading fabricated zeros as a real measurement.
+        val agilityReady = NativeBridge.nativeAgilityPhysics(
             agilityVelocityUnits, agilityOpponentDistance, movementAngleDegrees,
             safeConfidence, safeAngleRatio,
             agilityPlayerX, agilityPlayerY, agilityOppX, agilityOppY,
@@ -503,7 +506,7 @@ class ActiveGestureController(
             15.0f, 4.0f, 6.0f, 3.0f, 2.0f,
             45.0f, 0.3f, 0.5f
         )
-        val agility = AgilityResult(
+        val agility = if (agilityReady) AgilityResult(
             // SPLENDOR_AGILITY_VELOCITY_UNITS_V1 - align with the other caller
             // (AgilityContributor gates on < 0.1f). Two different thresholds on
             // the same native signal made the shield behave differently
@@ -514,6 +517,13 @@ class ActiveGestureController(
             turnAssist = agilityBuffer[2],
             shieldAngleDegrees = agilityBuffer[3],
             shieldDurationMs = agilityBuffer[4].toLong()
+        ) else AgilityResult(
+            shieldActive = false,
+            stabilityBoost = 0f,
+            controlRetentionBoost = 0f,
+            turnAssist = 0f,
+            shieldAngleDegrees = 0f,
+            shieldDurationMs = 0L
         )
 
         val agilityShieldRad =

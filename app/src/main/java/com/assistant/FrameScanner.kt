@@ -117,9 +117,7 @@ object FrameScanner {
 
     fun scan(
         frame: FrameNormalizer.NormalizedFrame,
-        threshold: Float = 0.50f,
-        adaptiveNoiseVariance: Int = 0,
-        serverTickSyncScale: Float = 1.0f
+        threshold: Float = 0.50f
     ): PixelSampleBuffer {
         val width = frame.width
         val height = frame.height
@@ -161,15 +159,11 @@ object FrameScanner {
             val g = frameBytes[index + 1].toInt() and 0xFF
             val b = frameBytes[index + 2].toInt() and 0xFF
             if (ForegroundPixel.retained(r, g, b, thresholdInt)) {
-                var finalX = x
-                var finalY = y
-                if (adaptiveNoiseVariance > 0 || serverTickSyncScale != 1.0f) {
-                    val noiseX = if (adaptiveNoiseVariance > 0) Random.nextInt(-adaptiveNoiseVariance, adaptiveNoiseVariance + 1) else 0
-                    val noiseY = if (adaptiveNoiseVariance > 0) Random.nextInt(-adaptiveNoiseVariance, adaptiveNoiseVariance + 1) else 0
-                    finalX = ((x + noiseX) * serverTickSyncScale).roundToInt().coerceIn(0, width - 1)
-                    finalY = ((y + noiseY) * serverTickSyncScale).roundToInt().coerceIn(0, height - 1)
-                }
-                samples[sampleCount++] = (finalX.toLong() shl 40) or (finalY.toLong() shl 24) or
+                // The adaptive-noise / server-tick-sync parameters were
+                // removed: no production or test caller ever passed them,
+                // so pixel coordinates were never actually jittered or
+                // rescaled despite the code implying otherwise.
+                samples[sampleCount++] = (x.toLong() shl 40) or (y.toLong() shl 24) or
                     (r.toLong() shl 16) or (g.toLong() shl 8) or b.toLong()
             }
         }

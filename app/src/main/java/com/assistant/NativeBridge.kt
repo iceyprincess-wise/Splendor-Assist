@@ -238,15 +238,16 @@ init {
         targetX: Float, targetY: Float,
         pitchWidth: Float, pitchHeight: Float,
         outBuffer: FloatArray
-    ) {
+    ): Boolean {
         if (!nativeReady.get()) {
             logFailureOnce()
-            return
+            return false
         }
         nativeKickingPostureImpl(
             carrierX, carrierY, carrierVx, carrierVy,
             targetX, targetY, pitchWidth, pitchHeight, outBuffer
         )
+        return true
     }
 
     @JvmStatic
@@ -259,10 +260,10 @@ init {
         maxVelocity: Float, shieldBase: Float, shieldProx: Float,
         shieldSpeed: Float, shieldConf: Float, durationBase: Float,
         confFloor: Float, distGuard: Float
-    ) {
+    ): Boolean {
         if (!nativeReady.get()) {
             logFailureOnce()
-            return
+            return false
         }
         nativeAgilityPhysicsImpl(
             playerVelocity, opponentDistance, movementAngleDegrees, possessionConfidence,
@@ -271,6 +272,7 @@ init {
             maxVelocity, shieldBase, shieldProx, shieldSpeed,
             shieldConf, durationBase, confFloor, distGuard
         )
+        return true
     }
 
     @JvmStatic
