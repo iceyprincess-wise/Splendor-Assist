@@ -122,9 +122,20 @@ object LagVerdictEngine {
                         lastHeartbeat = now
                         
                         // MASSIVE POWER: Performance Bee Intervention
-                        val aggro = com.assistant.diagnostic.AdapterSignalBus.filterAggression
+                        // SPLENDOR_P7_AGGRO_READ_LAG_BEGIN
+                        // Task 2C: read the cross-process registry value, not
+                        // the bus. FilterEngine runs in the main process, so
+                        // the bus copy here was always 1.0f and the "despite
+                        // Filter Extremist Push" branch below could never fire.
+                        val aggro = com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentFilterAggression()
+                        // SPLENDOR_P7_AGGRO_READ_LAG_END
                         if (candidate == "CHOKING") {
                             try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(2) } catch (_: Throwable) {}
+                            // SPLENDOR_P7_DEVICE_BRAKE_LAG_BEGIN
+                            // Mirror into the cross-process device snapshot so
+                            // main-process FilterEngine reports the real brake.
+                            try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceBrake(2) } catch (_: Throwable) {}
+                            // SPLENDOR_P7_DEVICE_BRAKE_LAG_END
                             if (aggro > 1.5f) {
                                 RuntimeLogger.log("LAG CHOKING: Execution brake applied despite Filter Extremist Push (${"%.2f".format(aggro)}x)", "LAG_BEE")
                             } else {
@@ -132,6 +143,8 @@ object LagVerdictEngine {
                             }
                         } else if (candidate == "SMOOTH") {
                             try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(0) } catch (_: Throwable) {}
+                            // SPLENDOR_P7_DEVICE_BRAKE_LAG_SMOOTH
+                            try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceBrake(0) } catch (_: Throwable) {}
                         }
                     } else if (now - lastHeartbeat >= 60_000L) {
                         lastHeartbeat = now

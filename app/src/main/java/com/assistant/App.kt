@@ -98,6 +98,31 @@ class App : Application() {
             com.assistant.controlroom.ControlRoomBootstrap.initialize()
             com.assistant.controlroom.AdapterControlRoomSync.start(this)
 
+            // SPLENDOR_P7_APP_START_BEGIN
+            // Task 2B: start FilterEngine here, in the main process, not
+            // from the frame-gated BoosterIgnition path. App.onCreate runs
+            // on every process start, so after a restart FilterEngine runs
+            // even when no capture frame ever arrives (the old sole start
+            // path lived inside OverlayService's per-frame block). The
+            // :survival process must NOT start one: App.onCreate runs
+            // there too, and two FilterEngines would interleave writes to
+            // the same report file. Registry initialize first: without it
+            // the file fallbacks (currentNet / currentLoadShed /
+            // currentDeviceState) can never resolve their files in this
+            // process and every read stays at its UNKNOWN default (2A-b).
+            try {
+                com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.initialize(applicationContext)
+            } catch (t: Throwable) {
+                logSafe("App.onCreate: PerformanceTelemetryRegistry init failed: ${t.message}", "BOOT")
+            }
+            try {
+                com.assistant.diagnostic.FilterEngine.start()
+                logSafe("App.onCreate: FilterEngine started (main process)", "BOOT")
+            } catch (t: Throwable) {
+                faultSafe("FilterEngine.start", "${t.javaClass.simpleName}: ${t.message ?: "unknown"}")
+            }
+            // SPLENDOR_P7_APP_START_END
+
             if (!storageReady) {
                 logSafe("App.onCreate: IN-APP AGENT SKIPPED - Storage not ready", "BOOT")
             } else {

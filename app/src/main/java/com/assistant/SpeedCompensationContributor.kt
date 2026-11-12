@@ -132,7 +132,11 @@ object SpeedCompensationContributor : GameplayContributor {
             confidence = frame.confidence,
             durationHintMs = run {
                 // PHASE3: thermal + battery now properly wired into duration scaling
-                val aggro = AdapterSignalBus.filterAggression
+                // SPLENDOR_P7_AGGRO_READ_SPEED_BEGIN
+                // Task 2C: read the cross-process registry value, the same
+                // channel every other aggression consumer uses.
+                val aggro = com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentFilterAggression()
+                // SPLENDOR_P7_AGGRO_READ_SPEED_END
                 val p = when {
                     AdapterSignalBus.thermalIsSevere -> 0.4f          // severe heat: very short gestures
                     AdapterSignalBus.batteryCritical -> 0.5f          // critical battery: reduce load

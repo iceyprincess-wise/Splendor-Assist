@@ -103,6 +103,11 @@ object LoadShedCaptureBrakeEngine {
         lastLevel = level
 
         AdapterSignalBus.publishExecutionBrake(brake)
+        // SPLENDOR_P7_DEVICE_BRAKE_SHED_BEGIN
+        // Mirror into the cross-process device snapshot so main-process
+        // FilterEngine reports the real brake.
+        try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceBrake(brake) } catch (_: Throwable) {}
+        // SPLENDOR_P7_DEVICE_BRAKE_SHED_END
 
         if (changed) {
             RuntimeLogger.log(

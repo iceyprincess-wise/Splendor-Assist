@@ -84,6 +84,11 @@ object PerformanceScheduler {
                     val charging = intent?.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) == android.os.BatteryManager.BATTERY_STATUS_CHARGING
                     val pct = if (scale > 0) (level * 100) / scale else level
                     com.assistant.diagnostic.AdapterSignalBus.publishBattery(pct, charging)
+                    // SPLENDOR_P7_DEVICE_BATTERY_BEGIN
+                    // Mirror into the cross-process device snapshot so
+                    // main-process FilterEngine reads real battery values.
+                    try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceBattery(pct, charging) } catch (_: Throwable) {}
+                    // SPLENDOR_P7_DEVICE_BATTERY_END
                 } catch (_: Throwable) {}
                 val cadence = if (com.assistant.VisionTrust.isGameForeground()) 30_000L else 5_000L
                 schedulerHandler?.postDelayed(this, cadence)
@@ -97,6 +102,11 @@ object PerformanceScheduler {
                         val pm = context.getSystemService(android.content.Context.POWER_SERVICE) as? android.os.PowerManager
                         val status = pm?.currentThermalStatus ?: -1
                         com.assistant.diagnostic.AdapterSignalBus.publishThermal(status)
+                        // SPLENDOR_P7_DEVICE_THERMAL_BEGIN
+                        // Mirror into the cross-process device snapshot so
+                        // main-process FilterEngine reads real thermal values.
+                        try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceThermal(status) } catch (_: Throwable) {}
+                        // SPLENDOR_P7_DEVICE_THERMAL_END
                     }
                 } catch (_: Throwable) {}
                 val cadence = if (com.assistant.VisionTrust.isGameForeground()) 60_000L else 30_000L

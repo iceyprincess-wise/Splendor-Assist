@@ -3,6 +3,11 @@ package com.assistant.diagnostic
 /**
  * AdapterSignalBus — hive cross-adapter signal channel.
  * Bodyguard adapters publish here. SmartAssist reads non-blocking every frame.
+ * IN-PROCESS ONLY (SPLENDOR_P7_BUS_XPROC_NOTE): this is a plain in-process
+ * object, so each Android process has its own copy. Publishers in :survival
+ * are invisible to readers in the main process and vice versa. Anything a
+ * different process must read goes through PerformanceTelemetryRegistry
+ * files (perf_device.txt / perf_aggression.txt) instead.
  */
 object AdapterSignalBus {
 
