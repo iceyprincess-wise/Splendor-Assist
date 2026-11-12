@@ -45,6 +45,11 @@ object PerformanceTelemetryRegistry {
             file?.writeText(t.rttMs.toString() + "|" + t.jitterMs + "|" + t.quality + "|" +
                 t.carrier + "|" + t.transport + "|" + t.updatedMs)
         } catch (_: Throwable) { }
+        // SPLENDOR_P8_HIST_NET
+        // Task 3: keep the single-line current value above AND append the
+        // same sample to the bounded history file (trend analysis).
+        appendHistory("perf_telemetry_history.txt", t.rttMs.toString() + "|" + t.jitterMs + "|" + t.quality + "|" +
+            t.carrier + "|" + t.transport + "|" + t.updatedMs)
     }
 
     /** Non-blocking. Never touches the network, never waits on an adapter. */
@@ -76,6 +81,12 @@ object PerformanceTelemetryRegistry {
             if (wfile == null) wfile = file?.parentFile?.let { File(it, "perf_window.txt") }
             wfile?.writeText(verdict + "|" + detail + "|" + windowMs)
         } catch (_: Throwable) { }
+        // SPLENDOR_P8_HIST_WINDOW
+        // Task 3: keep the single-line current value above AND append the
+        // same sample to the bounded history file (trend analysis). This
+        // also gives perf_window.txt its first registry reader (via the
+        // history reader below); previously no reader existed at all.
+        appendHistory("perf_window_history.txt", verdict + "|" + detail + "|" + windowMs)
     }
 
     // ---- DISPLAY / DEVICE-SIDE (lag stack verdict: SMOOTH / STRAINED / CHOKING) ----
@@ -94,6 +105,12 @@ object PerformanceTelemetryRegistry {
             if (dfile == null) dfile = file?.parentFile?.let { File(it, "perf_display.txt") }
             dfile?.writeText(frameGapMs.toString() + "|" + jankPerMin + "|" + stallMs + "|" + verdict + "|" + dMs)
         } catch (_: Throwable) { }
+        // SPLENDOR_P8_HIST_DISPLAY
+        // Task 3: keep the single-line current value above AND append the
+        // same sample to the bounded history file (trend analysis). This
+        // also gives perf_display.txt its first registry reader (via the
+        // history reader below); previously no reader existed at all.
+        appendHistory("perf_display_history.txt", frameGapMs.toString() + "|" + jankPerMin + "|" + stallMs + "|" + verdict + "|" + dMs)
         // SPLENDOR_P7_DEVICE_LAG_BEGIN
         // LagVerdictEngine already reports this verdict to the registry
         // (publishDisplay, every 500ms); mirror it into the merged
@@ -117,6 +134,10 @@ object PerformanceTelemetryRegistry {
             if (sfile == null) sfile = file?.parentFile?.let { File(it, "perf_loadshed.txt") }
             sfile?.writeText(level + "|" + shedMs)
         } catch (_: Throwable) { }
+        // SPLENDOR_P8_HIST_SHED
+        // Task 3: keep the single-line current value above AND append the
+        // same sample to the bounded history file (trend analysis).
+        appendHistory("perf_loadshed_history.txt", level + "|" + shedMs)
     }
 
     /** Stale-aware: advice older than 15s means the governor is gone - run full. */
@@ -165,6 +186,106 @@ object PerformanceTelemetryRegistry {
     @JvmStatic
     fun currentStutterState(): String =
         if (System.currentTimeMillis() - stMs < 15_000L) stState else "CALM"
+
+    // ---- HISTORY (bounded append-only samples; trend analysis) ----
+    // SPLENDOR_P8_HIST_BEGIN
+    // Task 3: publishNet / publishActionWindow / publishDisplay /
+    // publishLoadShed overwrote their single-line files with writeText,
+    // so only the latest sample ever existed and trend analysis was
+    // impossible (each perf_*.txt exactly one line, no trailing newline,
+    // 2026-11-12 logs). The single-line files CANNOT simply be appended
+    // to: currentNet() / currentLoadShed() / currentDeviceState() read
+    // the WHOLE file with readText().split("|") and parse the LAST field
+    // as the timestamp, so a second line would corrupt the timestamp
+    // parse (p[5]/p[8] would become "<ts>\n<next value>" ->
+    // toLongOrNull() null -> 0L) and the reader would keep returning the
+    // OLDEST sample as if current. Fix: keep the single-line
+    // current-value file byte-identical, and append the same line to a
+    // sibling <name>_history.txt, rotated when it exceeds
+    // HISTORY_MAX_BYTES (oldest lines dropped, newest kept). Readers
+    // below parse the history files; FilterEngine's report consumes
+    // them, so history is read, not merely written.
+    private const val HISTORY_MAX_BYTES = 32_768L
+    private const val HISTORY_KEEP_LINES = 200
+
+    data class DisplayTelemetry(
+        val frameGapMs: Float, val jankPerMin: Float, val stallMs: Float,
+        val verdict: String, val updatedMs: Long
+    )
+
+    data class ActionWindowSample(val verdict: String, val detail: String, val updatedMs: Long)
+    data class LoadShedSample(val level: String, val updatedMs: Long)
+
+    /**
+     * Append one sample line to a history file, rotating when over the cap.
+     * Synchronized: publishers run on different threads (net probe,
+     * lag-verdict, net-window, load-shed) and rotation rewrites the file.
+     * Never throws: history must never break the live publish path.
+     */
+    @Synchronized
+    private fun appendHistory(historyName: String, line: String) {
+        try {
+            val dir = file?.parentFile ?: return
+            val hist = File(dir, historyName)
+            hist.appendText(line + "\n")
+            if (hist.length() > HISTORY_MAX_BYTES) {
+                val lines = hist.readLines().filter { it.isNotBlank() }
+                val keep = if (lines.size > HISTORY_KEEP_LINES) lines.takeLast(HISTORY_KEEP_LINES) else lines
+                hist.writeText(keep.joinToString("\n", postfix = "\n"))
+            }
+        } catch (_: Throwable) { }
+    }
+
+    /** Last [maxLines] non-blank lines of a history file, oldest first. Empty when storage is not ready. */
+    private fun readHistoryLines(historyName: String, maxLines: Int): List<String> {
+        val n = if (maxLines < 1) 1 else maxLines
+        return try {
+            val dir = file?.parentFile ?: return emptyList()
+            val hist = File(dir, historyName)
+            if (!hist.exists()) return emptyList()
+            hist.readLines().filter { it.isNotBlank() }.takeLast(n)
+        } catch (_: Throwable) { emptyList() }
+    }
+
+    /** Recent net samples, oldest first. Skips malformed lines. */
+    @JvmStatic
+    fun recentNetHistory(maxLines: Int = 10): List<NetTelemetry> =
+        readHistoryLines("perf_telemetry_history.txt", maxLines).mapNotNull { line ->
+            val p = line.split("|")
+            if (p.size < 6) null else NetTelemetry(
+                p[0].toFloatOrNull() ?: return@mapNotNull null,
+                p[1].toFloatOrNull() ?: return@mapNotNull null,
+                p[2], p[3], p[4], p[5].toLongOrNull() ?: 0L)
+        }
+
+    /** Recent display samples, oldest first. Skips malformed lines. */
+    @JvmStatic
+    fun recentDisplayHistory(maxLines: Int = 10): List<DisplayTelemetry> =
+        readHistoryLines("perf_display_history.txt", maxLines).mapNotNull { line ->
+            val p = line.split("|")
+            if (p.size < 5) null else DisplayTelemetry(
+                p[0].toFloatOrNull() ?: return@mapNotNull null,
+                p[1].toFloatOrNull() ?: return@mapNotNull null,
+                p[2].toFloatOrNull() ?: return@mapNotNull null,
+                p[3], p[4].toLongOrNull() ?: 0L)
+        }
+
+    /** Recent action-window samples, oldest first. Skips malformed lines. */
+    @JvmStatic
+    fun recentActionWindowHistory(maxLines: Int = 10): List<ActionWindowSample> =
+        readHistoryLines("perf_window_history.txt", maxLines).mapNotNull { line ->
+            val p = line.split("|")
+            if (p.size < 3) null else ActionWindowSample(p[0], p[1], p[2].toLongOrNull() ?: 0L)
+        }
+
+    /** Recent load-shed samples, oldest first. Skips malformed lines. */
+    @JvmStatic
+    fun recentLoadShedHistory(maxLines: Int = 10): List<LoadShedSample> =
+        readHistoryLines("perf_loadshed_history.txt", maxLines).mapNotNull { line ->
+            val p = line.split("|")
+            if (p.size < 2) null else LoadShedSample(p[0], p[1].toLongOrNull() ?: 0L)
+        }
+    // SPLENDOR_P8_HIST_END
 
     // ---- DEVICE STATE (lag/stutter/thermal/memory/battery/brake, cross-process) ----
     // SPLENDOR_P7_XPROC_DEVICE_BEGIN

@@ -128,6 +128,32 @@ object FilterEngine {
         // SPLENDOR_P7_XPROC_AGGRO_END
     }
 
+    // SPLENDOR_P8_HIST_TREND_HELPERS_BEGIN
+    // Trend helpers for the history-backed report lines. Pure functions
+    // over the registry's parsed history lists; "n/a" when fewer than 2
+    // samples exist, so an empty history never fabricates a trend.
+    private fun netRttTrend(): String {
+        val samples = PerformanceTelemetryRegistry.recentNetHistory(10)
+        if (samples.size < 2) return "n/a (fewer than 2 samples)"
+        val rtts = samples.map { it.rttMs }
+        val half = rtts.size / 2
+        val firstAvg = rtts.take(half).average()
+        val secondAvg = rtts.drop(half).average()
+        val direction = when {
+            secondAvg > firstAvg * 1.1 -> "rising"
+            secondAvg < firstAvg * 0.9 -> "falling"
+            else -> "stable"
+        }
+        return "avg ${"%.0f".format(rtts.average())}ms (min ${"%.0f".format(rtts.min())} - max ${"%.0f".format(rtts.max())}) $direction"
+    }
+
+    private fun verdictCounts(samples: List<String>): String {
+        if (samples.isEmpty()) return "n/a (no samples yet)"
+        val counts = samples.groupingBy { it }.eachCount()
+        return counts.entries.joinToString(" ") { (v, c) -> "${c}x$v" } + " (n=${samples.size})"
+    }
+    // SPLENDOR_P8_HIST_TREND_HELPERS_END
+
     private fun writeReport() {
         val now = System.currentTimeMillis()
         if (now - lastReportWrite < REPORT_INTERVAL_MS) return
@@ -169,6 +195,15 @@ object FilterEngine {
                 appendLine("  Network RTT    : ${net.rttMs}ms")
                 appendLine("  Load Shed      : ${PerformanceTelemetryRegistry.currentLoadShed()}")
                 appendLine("  Execution Brake: ${dev.executionBrake}")
+                // SPLENDOR_P8_HIST_TREND_BEGIN
+                // Task 3: history is read, not merely written -- the last
+                // 10 samples of each channel are summarised here, so a
+                // trend is visible in every report block.
+                appendLine("  NET RTT TREND (last 10): ${netRttTrend()}")
+                appendLine("  DISPLAY TREND (last 10): ${verdictCounts(PerformanceTelemetryRegistry.recentDisplayHistory(10).map { it.verdict })}")
+                appendLine("  ACTION WINDOW (last 10): ${verdictCounts(PerformanceTelemetryRegistry.recentActionWindowHistory(10).map { it.verdict })}")
+                appendLine("  LOAD SHED (last 10): ${verdictCounts(PerformanceTelemetryRegistry.recentLoadShedHistory(10).map { it.level })}")
+                // SPLENDOR_P8_HIST_TREND_END
                 // SPLENDOR_P7_XPROC_REPORT_BRAKE
                 appendLine("")
                 appendLine("FILTER ACTION:")
