@@ -1,5 +1,6 @@
 package com.assistant
 
+import com.assistant.diagnostic.CrashInspector
 import com.assistant.storage.SplendorStorageRoot
 import android.app.Application
 import android.content.Context
@@ -99,6 +100,13 @@ class GlobalCrashHandler(
                     try { fos.fd.sync() } catch (_: Throwable) {}
                 }
             } catch (_: Throwable) {}
+            // Per-crash file copy: CrashInspector.saveLog was dead (zero
+            // callers). The same full report is also saved as one
+            // crash_log_<millis>.txt so a single crash can be listed,
+            // attached or shared without parsing the appended mega-file.
+            // saveLog never throws; a false return only means the copy
+            // was dropped (storage not ready / write failed).
+            CrashInspector.saveLog(report)
         }
 
         private fun getLogFile(baseName: String, append: Boolean): File {

@@ -10,12 +10,38 @@ import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 class PerformanceEngineService : Service() {
 
+    // Heartbeat for the watchdog: this service never reported health, so
+    // the watchdog saw a missing snapshot as OFFLINE and restarted it
+    // every 15s forever. Report ACTIVE every 10s (same cadence as the
+    // watchdog's own heartbeat); a real crash leaves a stale snapshot,
+    // which effectiveStatus() then reports OFFLINE.
+    private val healthHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val healthHeartbeat = object : Runnable {
+        override fun run() {
+            try {
+                com.assistant.diagnostic.registry.AdapterHealthRegistry.update(
+                    com.assistant.diagnostic.registry.AdapterHealthSnapshot(
+                        adapterName = "performance_engine",
+                        status = "ACTIVE",
+                        lastHeartbeat = System.currentTimeMillis(),
+                        errorCount = 0,
+                        recoveryCount = 0,
+                        details = "service alive"
+                    )
+                )
+            } catch (_: Throwable) {}
+            healthHandler.postDelayed(this, 10000L)
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
         RuntimeLogger.log("PerformanceEngineService started (Consolidated domain)", "ENGINE")
 
         NodeNotificationHub.attach(this, "performance_engine")
+        com.assistant.diagnostic.registry.AdapterHealthRegistry.initialize(this)
+        healthHandler.post(healthHeartbeat)
 
         // IGNITE CONSOLIDATED PERFORMANCE ENGINES
         try { PerformanceTelemetryRegistry.initialize(this) } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
@@ -51,6 +77,7 @@ class PerformanceEngineService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        healthHandler.removeCallbacksAndMessages(null)
         try { PerformanceScheduler.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
         try { NetProbeEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
         try { InputLatencyEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }

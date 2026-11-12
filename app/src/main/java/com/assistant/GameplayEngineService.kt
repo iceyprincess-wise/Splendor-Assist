@@ -9,12 +9,34 @@ import com.assistant.diagnostic.notification.NodeNotificationHub
 
 class GameplayEngineService : Service() {
 
+    // Heartbeat for the watchdog: see PerformanceEngineService.
+    private val healthHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val healthHeartbeat = object : Runnable {
+        override fun run() {
+            try {
+                com.assistant.diagnostic.registry.AdapterHealthRegistry.update(
+                    com.assistant.diagnostic.registry.AdapterHealthSnapshot(
+                        adapterName = "gameplay_engine",
+                        status = "ACTIVE",
+                        lastHeartbeat = System.currentTimeMillis(),
+                        errorCount = 0,
+                        recoveryCount = 0,
+                        details = "service alive"
+                    )
+                )
+            } catch (_: Throwable) {}
+            healthHandler.postDelayed(this, 10000L)
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
         RuntimeLogger.log("GameplayEngineService started (Consolidated domain)", "ENGINE")
 
         NodeNotificationHub.attach(this, "gameplay_engine")
+        com.assistant.diagnostic.registry.AdapterHealthRegistry.initialize(this)
+        healthHandler.post(healthHeartbeat)
 
         // IGNITE CONSOLIDATED GAMEPLAY ENGINES & STATE STORES
         // SPLENDOR_F34_ERRORS: report registration failures loudly instead of swallowing.
@@ -40,6 +62,7 @@ class GameplayEngineService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        healthHandler.removeCallbacksAndMessages(null)
         try { AccessibilitySurvivalEngine.getInstance(this).release() } catch (_: Throwable) {}
         NodeNotificationHub.detach(this, "gameplay_engine")
         RuntimeLogger.log("GameplayEngineService destroyed", "ENGINE")

@@ -377,10 +377,7 @@ object GameplayDecisionEngine {
         publishGameplayDownstream("decide")
 
         return DecisionResult(
-            mode = stableMode,
-            strength = strength,
-            confidence = confidence,
-            priority = priority
+            mode = stableMode
         )
     }
 

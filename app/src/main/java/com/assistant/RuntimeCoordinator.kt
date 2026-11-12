@@ -161,8 +161,11 @@ object RuntimeCoordinator {
         // P0 FIX: BoosterIgnition.isFleetReady() is the SINGLE authority for G3.
         // PREVIOUS BUG: AdapterHealthRegistry.getAllLive().any { heartbeat <= 120s }
         //   -- one stale adapter heartbeat opened the gate, bypassing fleet quorum.
-        // FIXED: fleet quorum (>=9/16 ACTIVE) AND ignited latch confirmed by
-        //   IgnitionEngine.verifyFleetHealth() via BoosterIgnition.isFleetReady().
+        // FIXED: the gate is the ignited latch AND the fleet-health check in
+        //   IgnitionEngine.verifyFleetHealth() via BoosterIgnition.isFleetReady()
+        //   (fleetState READY only when ignited and AdapterSignalBus.fleetDegraded
+        //   is false, i.e. at most 2 adapters offline). There is no 9/16 count:
+        //   no such quorum is computed anywhere; the earlier claim was fictional.
         // DEGRADED re-opening: isFleetReady() resets ignited=false on DEGRADED,
         //   so boosterReady is forced false here too, keeping the display accurate.
         // NOTE: once busEnabled=true, evaluateInner() returns early on the
@@ -185,7 +188,7 @@ object RuntimeCoordinator {
 
         if (healthy) {
             if (boosterReady.compareAndSet(false, true)) {
-                transition("G3 BOOSTER_READY [fleet-quorum confirmed by BoosterIgnition]")
+                transition("G3 BOOSTER_READY [fleet health confirmed by BoosterIgnition]")
             }
         } else {
             // Fleet not ready (COLD/WARMING/DEGRADED) -- re-open gate to reflect reality.

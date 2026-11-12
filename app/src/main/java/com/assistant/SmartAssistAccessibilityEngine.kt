@@ -35,6 +35,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         @Volatile
         private var dispatchingSource: com.assistant.execution.ExecutionSource? = null
         private const val DISPATCH_LATCH_TIMEOUT_MS = 250L
+        private const val LATCH_STUCK_GRACE_MS = 500L // grace after first stuck report before force-release
 
         private fun latchStuck(): Boolean =
             isDispatching &&
@@ -53,6 +54,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
     @Volatile private var currentActionId: String? = null
     private var reportedStallActionId: String? = null
+    @Volatile private var latchStuckSinceMs = 0L
     @Synchronized private fun completeDispatch(actionId: String) {
         if (currentActionId == actionId) releaseDispatch()
     }
@@ -60,6 +62,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         currentActionId?.let { CentralExecutionBus.complete(it) }
         currentActionId = null
         reportedStallActionId = null
+        latchStuckSinceMs = 0L
         isDispatching = false
         dispatchingSource = null
     }
@@ -223,9 +226,15 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         override fun run() {
             synchronized(this@SmartAssistAccessibilityEngine) {
             try {
-                if (latchStuck() && reportedStallActionId != currentActionId) {
-                    reportedStallActionId = currentActionId
-                    RuntimeLogger.log("dispatch callback overdue; retaining active stroke until callback or service recovery", "SMART_ASSIST")
+                if (latchStuck()) {
+                    if (reportedStallActionId != currentActionId) {
+                        reportedStallActionId = currentActionId
+                        latchStuckSinceMs = System.currentTimeMillis()
+                        RuntimeLogger.log("dispatch callback overdue; retaining active stroke until callback or service recovery", "SMART_ASSIST")
+                    } else if (System.currentTimeMillis() - latchStuckSinceMs > LATCH_STUCK_GRACE_MS) {
+                        RuntimeLogger.log("dispatch callback lost; force-releasing stuck dispatch $currentActionId", "SMART_ASSIST")
+                        releaseDispatch()
+                    }
                 }
 
                 if (com.assistant.execution.UiExecutionGate.blocked() || !SmartAssistRepository.enabled()) {

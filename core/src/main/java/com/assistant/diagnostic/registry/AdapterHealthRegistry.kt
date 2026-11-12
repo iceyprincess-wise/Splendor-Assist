@@ -95,8 +95,12 @@ object AdapterHealthRegistry {
     @Synchronized
     fun effectiveStatus(name: String): String {
 
+        // Cross-process truth: consult the merged live list (persisted +
+        // local, freshest heartbeat wins), not only this process's map.
+        // A snapshot that exists only in another process's persistence
+        // file used to read as OFFLINE here.
         val snapshot =
-            snapshots[name] ?: return "OFFLINE"
+            getAllLive().firstOrNull { it.adapterName == name } ?: return "OFFLINE"
 
         val age =
             System.currentTimeMillis() -

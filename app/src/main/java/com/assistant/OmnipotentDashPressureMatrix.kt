@@ -177,14 +177,14 @@ object OmnipotentDashPressureMatrix {
         val now = System.currentTimeMillis()
         
         // Dynamic adaptive pacing cooldown window to mask hard 120ms signatures
-        val adaptiveCooldownMs = 40L + Random.nextLong(-4, 5) // FIX: 120ms->40ms, was missing 7 frames per counter
+        val adaptiveCooldownMs = 40L // Fixed 40ms: was 40ms +/- 4ms random jitter feeding a live request
 
         if (
             isPlayerHoldingPressure &&
             now - lastMatrixTimestamp >= adaptiveCooldownMs
         ) {
             // Humanize gesture duration subtly by +/- 2ms to blend into normal touch timelines
-            val adaptiveDuration = (42L + Random.nextLong(-2, 3)).coerceAtLeast(35L)
+            val adaptiveDuration = 42L
 
             val request = ExecutionRequest(
                 source = ExecutionSource.INTERCEPTION,

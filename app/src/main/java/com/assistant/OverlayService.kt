@@ -242,7 +242,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private val imageAvailableListener = ImageReader.OnImageAvailableListener { reader ->
         val image = try { reader.acquireLatestImage() } catch (_: Throwable) { null } ?: return@OnImageAvailableListener
         com.assistant.CrashForensics.mark(2, 1, captureFrameCount)
-        com.assistant.DiagnosticSamplers.onCaptureFrame(System.currentTimeMillis())
+        com.assistant.DiagnosticSamplers.onCaptureFrame(System.nanoTime())
         com.assistant.CrashForensics.mark(5, 4, android.os.Process.myPid().toLong())
         val acquiredAtNanos = System.nanoTime()
         val captureNow = System.currentTimeMillis()
@@ -988,7 +988,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             } else {
                                 null
                             }
-                            val submitted = dec?.shouldAct == true
+                            // The OCR decision used to be only logged ("submitted" was
+                            // just a boolean). Route it into the bus when shouldAct:
+                            // the bus still gates it (reservations, UiExecutionGate),
+                            // and the 5s match-detection cooldown above limits the rate.
+                            val submitted = if (dec?.shouldAct == true) {
+                                com.assistant.execution.HybridExecutionTerminal.route(pipe.createExecutionRequest(dec))
+                            } else {
+                                false
+                            }
                             RuntimeLogger.log(
                                 "SMART_ASSIST_GATE real=${lv.hasRealData} distance=${vectorDistance.toInt()} duration=${lv.duration} action=${dec?.actionType ?: "NO_REAL_DATA"} shouldAct=${dec?.shouldAct ?: false} submitted=$submitted",
                                 "SMART_ASSIST"

@@ -103,9 +103,6 @@ class SmartAssistPipeline {
         duration: Long
     ): VectorDecision {
 
-        NativePipelineCache.cacheNode(0,startX,startY)
-        NativePipelineCache.cacheNode(1,endX,endY)
-
         val dx = endX - startX
         val dy = endY - startY
 

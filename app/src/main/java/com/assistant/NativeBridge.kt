@@ -377,6 +377,33 @@ init {
     @JvmStatic external fun nativeSACorrectCross(ballX: Float, ballY: Float, rx: Float, ry: Float, rvx: Float, rvy: Float, gcx: Float, gcy: Float, laneScore: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
     @JvmStatic external fun nativeSACorrectKeeper(ballX: Float, ballY: Float, glX: Float, grX: Float, gtY: Float, gbY: Float, screenW: Float, screenH: Float, outBuffer: FloatArray)
 
+    // Boolean wrappers (F1/F2 pattern): the bare externals above do not
+    // check native readiness, so a call with the library unloaded throws
+    // UnsatisfiedLinkError, and a C validation failure leaves the previous
+    // frame's values in the buffer. Callers must use these wrappers.
+    // NOTE: the externals keep their JNI names on purpose -- the C exports
+    // are named after them, so they cannot be renamed to *Impl.
+    @JvmStatic fun nativeComputeSACorrectPass(ballX: Float, ballY: Float, intendedX: Float, intendedY: Float, receiverVx: Float, receiverVy: Float, nearestOppX: Float, nearestOppY: Float, pressure: Float, screenW: Float, screenH: Float, outBuffer: FloatArray): Boolean {
+        if (!nativeReady.get()) { logFailureOnce(); return false }
+        nativeSACorrectPass(ballX, ballY, intendedX, intendedY, receiverVx, receiverVy, nearestOppX, nearestOppY, pressure, screenW, screenH, outBuffer)
+        return true
+    }
+    @JvmStatic fun nativeComputeSACorrectShot(ballX: Float, ballY: Float, glX: Float, grX: Float, gtY: Float, gbY: Float, gkX: Float, gkVis: Boolean, goalDet: Boolean, screenW: Float, screenH: Float, outBuffer: FloatArray): Boolean {
+        if (!nativeReady.get()) { logFailureOnce(); return false }
+        nativeSACorrectShot(ballX, ballY, glX, grX, gtY, gbY, gkX, gkVis, goalDet, screenW, screenH, outBuffer)
+        return true
+    }
+    @JvmStatic fun nativeComputeSACorrectCross(ballX: Float, ballY: Float, rx: Float, ry: Float, rvx: Float, rvy: Float, gcx: Float, gcy: Float, laneScore: Float, screenW: Float, screenH: Float, outBuffer: FloatArray): Boolean {
+        if (!nativeReady.get()) { logFailureOnce(); return false }
+        nativeSACorrectCross(ballX, ballY, rx, ry, rvx, rvy, gcx, gcy, laneScore, screenW, screenH, outBuffer)
+        return true
+    }
+    @JvmStatic fun nativeComputeSACorrectKeeper(ballX: Float, ballY: Float, glX: Float, grX: Float, gtY: Float, gbY: Float, screenW: Float, screenH: Float, outBuffer: FloatArray): Boolean {
+        if (!nativeReady.get()) { logFailureOnce(); return false }
+        nativeSACorrectKeeper(ballX, ballY, glX, grX, gtY, gbY, screenW, screenH, outBuffer)
+        return true
+    }
+
 
     // --- V57: CriticalAttackingVector & CrossPrecision Native Migration ---
     @JvmStatic external fun nativeCriticalScoringVector(strikerX: Float, strikerY: Float, gkX: Float, gkY: Float, goalLeftPostX: Float, goalLeftPostY: Float, goalRightPostX: Float, goalRightPostY: Float, controlOriginX: Float, controlOriginY: Float, controlRadius: Float, outBuffer: FloatArray)

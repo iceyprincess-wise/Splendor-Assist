@@ -135,6 +135,7 @@ object ContributionRegistry {
         "busInvalidDrops" to CentralExecutionBus.statistics.value.invalidDrops,
         "busStaleDrops" to CentralExecutionBus.statistics.value.staleDrops,
         "busCapacityDrops" to CentralExecutionBus.statistics.value.capacityDrops,
+        "busReservationDrops" to CentralExecutionBus.statistics.value.reservationDrops,
         "emergencyOffered" to emergencyOffered.get(),
         "emergencyAccepted" to emergencyAccepted.get(),
         "emergencyRejected" to emergencyRejected.get()

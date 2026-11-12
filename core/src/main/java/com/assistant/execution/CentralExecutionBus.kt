@@ -52,7 +52,8 @@ data class BusStatistics(
     val stoppedDrops: Long = 0,
     val invalidDrops: Long = 0,
     val staleDrops: Long = 0,
-    val capacityDrops: Long = 0
+    val capacityDrops: Long = 0,
+    val reservationDrops: Long = 0
 )
 
 object CentralExecutionBus {
@@ -83,6 +84,7 @@ object CentralExecutionBus {
     private val invalidDrops = AtomicLong(0L)
     private val staleDrops = AtomicLong(0L)
     private val capacityDrops = AtomicLong(0L)
+    private val reservationDrops = AtomicLong(0L)
     private val running = AtomicBoolean(true)
 
     private const val STATS_UPDATE_INTERVAL_MS = 100L
@@ -114,7 +116,7 @@ object CentralExecutionBus {
         discardStaleHeads(medRing)
         discardStaleHeads(lowRing)
         val key = request.source to request.phase
-        if (reservations.containsKey(key)) return false
+        if (reservations.containsKey(key)) { reservationDrops.incrementAndGet(); return false }
         val ring = when (request.source) {
             ExecutionSource.GOALKEEPER, ExecutionSource.INTERCEPTION -> highRing
             ExecutionSource.SMART_ASSIST -> medRing
@@ -263,7 +265,8 @@ object CentralExecutionBus {
                     acceptedCount = accepted.get(), consumedCount = consumed.get(),
                     pendingCount = pendingCount(), isRunning = running.get(),
                     stoppedDrops = stoppedDrops.get(), invalidDrops = invalidDrops.get(),
-                    staleDrops = staleDrops.get(), capacityDrops = capacityDrops.get()
+                    staleDrops = staleDrops.get(), capacityDrops = capacityDrops.get(),
+                    reservationDrops = reservationDrops.get()
                 )
             }
         }

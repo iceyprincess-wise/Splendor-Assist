@@ -63,7 +63,10 @@ class WatchdogAdapterService : Service() {
             adapterMap.keys.forEach { name ->
                 checked.add(name)
                 val snapshot = liveSnapshots[name]
-                val status = if (snapshot == null) "OFFLINE" else AdapterHealthRegistry.effectiveStatus(name)
+                // Missing snapshot means "never heard from", not "dead": a
+                // crashed service leaves a stale snapshot, which
+                // effectiveStatus() reports OFFLINE. Never restart on UNKNOWN.
+                val status = if (snapshot == null) "UNKNOWN" else AdapterHealthRegistry.effectiveStatus(name)
                 ProcessSurvivalRegistry.update(name, status)
 
                 when (status) {

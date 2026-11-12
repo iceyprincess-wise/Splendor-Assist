@@ -124,6 +124,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                     frame.goalDetected
                 )
 
+                if (!c.applied) return null
                 return EngineContribution(
                     engine = engineName,
                     actionClass = ActionClass.SHOT,
@@ -173,6 +174,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                 frame.defenderDensity
             )
             
+            if (!c.applied) return null
             val authority = (c.correctionStrength * frame.bestLaneConfidence.coerceAtLeast(0.4f)).coerceIn(0f, 1f)
             return EngineContribution(
                 engine = engineName,
@@ -216,6 +218,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                 frame.bestLaneConfidence
             )
 
+            if (!c.applied) return null
             return EngineContribution(
                 engine = engineName,
                 actionClass = ActionClass.CROSS,
@@ -234,6 +237,7 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                 frame.goalLeftX, frame.goalRightX,
                 frame.goalTopY, frame.goalBottomY
             )
+            if (!c.applied) return null
             return EngineContribution(
                 engine = engineName,
                 actionClass = ActionClass.KEEPER,

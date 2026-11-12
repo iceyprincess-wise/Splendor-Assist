@@ -93,10 +93,6 @@ object PerformanceTelemetryRegistry {
         } catch (_: Throwable) { }
     }
 
-    // ---- GESTURE TIMING ADVICE (lag stack -> execution authority) ----
-    @Volatile private var holdMs = 0L
-    @Volatile private var holdStampMs = 0L
-
     // ---- LOAD SHED (lag governor -> main-process capture pipeline) ----
     @Volatile private var shed = "NONE"
     @Volatile private var shedMs = 0L

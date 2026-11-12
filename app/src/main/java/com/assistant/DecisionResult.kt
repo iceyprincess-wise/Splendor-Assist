@@ -94,10 +94,7 @@ import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 
 data class DecisionResult(
-    val mode: Int,
-    val strength: Int,
-    val confidence: Float,
-    val priority: Int
+    val mode: Int
 )
 
 /* ========
