@@ -112,6 +112,10 @@ object MagneticFeetEngine {
     @Volatile
     private var lastReason = "none"
 
+    // SPLENDOR_P10_TRAP_DIAG_FIELD: last trap window seen by contribute().
+    @Volatile
+    private var lastTrapWindow = "none"
+
     @Volatile
     private var lastUpdatedMs = 0L
 
@@ -133,11 +137,13 @@ object MagneticFeetEngine {
         val result: MagneticFeetResult = MagneticFeetResult()
     )
 
+    // SPLENDOR_P10_TRAP_DIAG_CLASS: lastTrapWindow surfaced here.
     data class MagneticFeetDiagnostics(
         val calls: Long = 0L,
         val lastPressure: Int = 0,
         val lastStrength: Int = 0,
         val lastReason: String = "none",
+        val lastTrapWindow: String = "none",
         val lastUpdatedMs: Long = 0L
     )
 
@@ -252,11 +258,19 @@ object MagneticFeetEngine {
         return result
     }
 
+    // SPLENDOR_P10_TRAP_DIAG_RECORD: records the trap window computed by
+    // MagneticFeetContributor.contribute(). Read-only for diagnostics;
+    // it never feeds back into stabilize().
+    fun recordTrapWindow(window: String) {
+        lastTrapWindow = window
+    }
+
     fun reset() {
         calls.set(0L)
         lastPressure = 0
         lastStrength = 0
         lastReason = "none"
+        lastTrapWindow = "none"
         lastUpdatedMs = 0L
         lastAmplification = 1.0f
         lastResult = MagneticFeetResult()
@@ -287,6 +301,8 @@ object MagneticFeetEngine {
             lastPressure = lastPressure,
             lastStrength = lastStrength,
             lastReason = lastReason,
+            // SPLENDOR_P10_TRAP_DIAG_SNAPSHOT
+            lastTrapWindow = lastTrapWindow,
             lastUpdatedMs = lastUpdatedMs
         )
     }

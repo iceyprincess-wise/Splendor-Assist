@@ -21,9 +21,26 @@ object ThreatPriorityContributor : GameplayContributor {
             else com.assistant.vision.CameraProfile.captureWidthOrFallback()
         val h = if (frame.captureHeight > 0f) frame.captureHeight
             else com.assistant.vision.CameraProfile.captureHeightOrFallback()
+        // SPLENDOR_P10_ZONE: the goal sits at an X end of the frame
+        // (GoalDetector searches the left/right ends; attack direction
+        // is X everywhere it is consumed). Prefer the detected goal
+        // span when present; the BOX band extends one old band-width
+        // (0.12 of width: 0.88 - 0.76) beyond each end of the span.
+        // Fall back to either-end width fractions when no goal is
+        // detected -- the old code only covered the right end, so in
+        // halves defending the left goal GOAL_AREA/BOX never fired.
+        // LEFT/RIGHT stay by ballY (far/near side). ThreatZoneEngine
+        // .detect(), the scan strip and the six-yard box are deliberately
+        // UNCHANGED (gauge-pixel input, not ball position).
+        if (frame.goalDetected && frame.goalRightX > frame.goalLeftX) {
+            if (frame.ballX >= frame.goalLeftX && frame.ballX <= frame.goalRightX) return ThreatZone.GOAL_AREA
+            val boxMargin = w * 0.12f
+            if (frame.ballX >= frame.goalLeftX - boxMargin && frame.ballX <= frame.goalRightX + boxMargin) return ThreatZone.BOX
+        } else {
+            if (frame.ballX > w * 0.88f || frame.ballX < w * 0.12f) return ThreatZone.GOAL_AREA
+            if (frame.ballX > w * 0.76f || frame.ballX < w * 0.24f) return ThreatZone.BOX
+        }
         return when {
-            frame.ballX > w * 0.88f -> ThreatZone.GOAL_AREA
-            frame.ballX > w * 0.76f -> ThreatZone.BOX
             frame.ballY < h * 0.33f -> ThreatZone.LEFT
             frame.ballY > h * 0.67f -> ThreatZone.RIGHT
             else -> ThreatZone.CENTER
@@ -46,10 +63,29 @@ object ThreatPriorityContributor : GameplayContributor {
     internal fun decisionOf(frame: RuntimeFrame): ThreatDecision? {
         val threat = threatOf(frame)
         if (threat == ThreatType.NONE) return null
+        // SPLENDOR_P10_ZONE_LOG: temporary, remove after live
+        // confirmation. Compares the fixed ball-based zone against
+        // ThreatZoneEngine.detect for the same frame, so one live
+        // session decides the axis (ballX clustering near 0 or W with
+        // the goal detected at that end confirms Model X).
+        val p10Zone = zoneOf(frame)
+        val p10CapW = frame.captureWidth.toInt().takeIf { it > 0 }
+            ?: com.assistant.vision.CameraProfile.captureWidthOrFallback().toInt()
+        val p10CapH = frame.captureHeight.toInt().takeIf { it > 0 }
+            ?: com.assistant.vision.CameraProfile.captureHeightOrFallback().toInt()
+        try {
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "GK_ZONE_BALL zoneOf=" + p10Zone +
+                    " detect=" + ThreatZoneEngine.detect(frame.ballX.toInt(), frame.ballY.toInt(), p10CapW, p10CapH) +
+                    " ball=(" + frame.ballX + "," + frame.ballY + ")" +
+                    " goalDet=" + frame.goalDetected + " goalCX=" + frame.goalCenterX +
+                    " goalConf=" + frame.goalConfidence + " atkDir=" + frame.attackDirection +
+                    " cap=" + frame.captureWidth + "x" + frame.captureHeight, "GOALKEEPER")
+        } catch (_: Throwable) { }
         return try {
             ThreatPriorityEngine.evaluate(
                 threat,
-                zoneOf(frame),
+                p10Zone,
                 frame.ballX.toInt(),
                 frame.ballY.toInt(),
                 frame.captureWidth.toInt().takeIf { it > 0 }

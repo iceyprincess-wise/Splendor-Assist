@@ -300,6 +300,8 @@ object SmartAssistMetrics {
             "lastPressure" to state.lastPressure,
             "lastStrength" to state.lastStrength,
             "lastReason" to state.lastReason,
+            // SPLENDOR_P10_TRAP_DIAG_METRICS
+            "lastTrapWindow" to state.lastTrapWindow,
             "lastUpdatedMs" to state.lastUpdatedMs
         )
     }

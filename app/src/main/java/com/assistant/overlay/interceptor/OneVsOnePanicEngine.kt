@@ -13,7 +13,8 @@ object OneVsOnePanicEngine {
         decision: ThreatDecision
     ): PanicAction {
 
-        if (decision.priority < 130) {
+        // SPLENDOR_P10_SAT_PANIC: PANIC 130 -> 150.
+        if (decision.priority < 150) {
             return PanicAction.HOLD
         }
 

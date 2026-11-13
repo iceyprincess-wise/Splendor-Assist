@@ -130,6 +130,11 @@ object MagneticFeetContributor : GameplayContributor {
      */
     private const val POSSESSION_MIN_CONFIDENCE = 0.20f
 
+    // SPLENDOR_P10_TRAP_STATE: last trap window, for the window-enter
+    // TRAP log (one line per CLOSING entry, not per frame).
+    @Volatile
+    private var prevTrapWindow = "none"
+
     fun getMagneticRadius(): Float =
         MAGNETIC_RADIUS
 
@@ -253,6 +258,51 @@ object MagneticFeetContributor : GameplayContributor {
         ) {
             return null
         }
+
+        /*
+         * SPLENDOR_P10_TRAP_GATE: first-touch gate. Ball velocity toward the
+         * owner (closing speed) plus nearest-defender distance, in
+         * px/frame and px throughout. frame.ballVelocityX/Y are per-frame
+         * deltas (BallTelemetryBridge publishes x - previousX, no time
+         * division), so they are NEVER multiplied by seconds here.
+         * Nearest-defender distance is derived from frame.entities --
+         * TelemetrySnapshot.opponentDistance is a goalkeeper pixel-scan
+         * value, not a distance to the owner, and never reaches
+         * RuntimeFrame. Bands reuse repo constants only: 5 px/frame
+         * intercept floor (ObservedGameplayEngines), 18-38 px sweet spot
+         * (SharpTouchTimingEngine), 15/45 px Dreadnought bands, 0..6
+         * frame intercept horizon.
+         */
+        val trapUx = deltaX / distance
+        val trapUy = deltaY / distance
+        val closingSpeed = frame.ballVelocityX * trapUx + frame.ballVelocityY * trapUy
+        val trapBallSpeed = hypot(frame.ballVelocityX.toDouble(), frame.ballVelocityY.toDouble()).toFloat()
+        val nearestDefenderDist = frame.entities.filter { !it.teammate }
+            .minOfOrNull { e -> hypot((e.x - owner.x).toDouble(), (e.y - owner.y).toDouble()).toFloat() }
+            ?: Float.MAX_VALUE
+        val trapMargin = 5f * (1f - frame.confidence.coerceIn(0f, 1f))
+        val trapBandWeight = when {
+            nearestDefenderDist <= 15f + trapMargin -> 1.0f
+            nearestDefenderDist <= 45f + trapMargin -> 0.6f
+            else -> 0.25f
+        }
+        val trapBand = when {
+            nearestDefenderDist <= 15f + trapMargin -> "HOT"
+            nearestDefenderDist <= 45f + trapMargin -> "PRESS"
+            else -> "LOOSE"
+        }
+        val trapWindow = when {
+            closingSpeed >= 5f -> "CLOSING"
+            trapBallSpeed < 5f -> "SETTLED"
+            else -> "LEAVING"
+        }
+        val timeToContactF = if (closingSpeed > 0f) (distance - 18f) / closingSpeed else Float.POSITIVE_INFINITY
+        val trapBoost = if (closingSpeed >= 5f && timeToContactF in 0f..6f) 1.0f + 0.25f * trapBandWeight else 1.0f
+        val prePosition = closingSpeed >= 5f && timeToContactF > 6f
+        val enteredTrapWindow = trapWindow == "CLOSING" && prevTrapWindow != "CLOSING"
+        prevTrapWindow = trapWindow
+        MagneticFeetEngine.recordTrapWindow(trapWindow)
+        if (trapWindow == "LEAVING") return null
 
         /*
          * Stronger magnetic behavior is associated with a closer ball.
@@ -381,8 +431,13 @@ object MagneticFeetContributor : GameplayContributor {
         // into [0.9, 1.0] on every contribution, so arbitration could
         // never rank it -- fabricated inflation. Floor 0.0f: authority
         // now reflects live proximity/confidence.
+        // SPLENDOR_P10_TRAP_BOOST: trap boost multiplies the shaped
+        // authority BEFORE the P9 coerceIn(0.0f, cap), so the P9
+        // unsaturation is preserved and the boost can never re-saturate
+        // past the 1.2 cap / 1.0 weight clamp. trapBoost is 1.0 outside
+        // the CLOSING 0..6-frame window.
         val authority =
-            shapedAuthority
+            (shapedAuthority * trapBoost)
                 .coerceIn(
                     0.0f,
                     cap
@@ -419,12 +474,17 @@ object MagneticFeetContributor : GameplayContributor {
                     ) * proximity
                 ) // UPGRADE: Inverted logic fixed. Far = long swipe (fast approach), Close = short swipe (fine magnetic correction)
 
+        // SPLENDOR_P10_TRAP_TRAVEL: pre-position (ball incoming but
+        // outside the 0..6-frame trap window) halves the swipe toward
+        // MIN_TRAVEL instead of a long chase swipe.
+        val trapTravel = if (prePosition) MIN_TRAVEL + (travel - MIN_TRAVEL) * 0.5f else travel
+
         val targetX =
             (
                 JOYSTICK_ORIGIN_X +
                     (
                         directionX *
-                            travel
+                            trapTravel
                     )
             ).coerceIn(
                 0.0f,
@@ -436,7 +496,7 @@ object MagneticFeetContributor : GameplayContributor {
                 JOYSTICK_ORIGIN_Y +
                     (
                         directionY *
-                            travel
+                            trapTravel
                     )
             ).coerceIn(
                 0.0f,
@@ -453,6 +513,20 @@ object MagneticFeetContributor : GameplayContributor {
                 proximity >= 0.45f -> 20L
                 else -> 24L
             }
+
+        // SPLENDOR_P10_TRAP_LOG: one line on CLOSING window-enter
+        // only (not per frame); authority here is the final boosted
+        // value, so the log proves the boost that arbitration saw.
+        if (enteredTrapWindow) {
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "TRAP window=CLOSING closingPxF=" + "%.1f".format(closingSpeed) +
+                    " dist=" + "%.0f".format(distance) +
+                    " defDist=" + "%.0f".format(nearestDefenderDist) +
+                    " band=" + trapBand +
+                    " ttcF=" + "%.1f".format(timeToContactF) +
+                    " auth=" + "%.2f".format(authority),
+                "MagneticFeet")
+        }
 
         return EngineContribution(
             engine = engineName,

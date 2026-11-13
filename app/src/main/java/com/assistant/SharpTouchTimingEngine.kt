@@ -97,7 +97,8 @@ object SharpTouchTimingEngine {
 
     private const val MIN_SWEET_SPOT_PX = 18f
     private const val MAX_SWEET_SPOT_PX = 38f
-    private const val FRAME_MS = 16.666666f
+    // SPLENDOR_P10_TOUCH_CONST: FRAME_MS removed with the seconds
+    // projection (T3); no remaining use in this file.
 
     fun evaluateTiming(
         ballX: Float, ballY: Float,
@@ -108,12 +109,16 @@ object SharpTouchTimingEngine {
         var minDistance = Float.MAX_VALUE
         var bestFrame = 0
 
+        // SPLENDOR_P10_TOUCH_UNITS: ball/player velocities are
+        // px/frame deltas (BallTelemetryBridge publishes x - previousX,
+        // no time division), so the horizon is projected in frames, not
+        // seconds. The old code multiplied px/frame by tSec (<= 0.05 s),
+        // under-projecting the 3-frame lookahead ~30x.
         for (f in 0..3) {
-            val tSec = (f * FRAME_MS) / 1000f
-            val pBallX = ballX + ballVx * tSec
-            val pBallY = ballY + ballVy * tSec
-            val pPlayerX = playerX + playerVx * tSec
-            val pPlayerY = playerY + playerVy * tSec
+            val pBallX = ballX + ballVx * f.toFloat()
+            val pBallY = ballY + ballVy * f.toFloat()
+            val pPlayerX = playerX + playerVx * f.toFloat()
+            val pPlayerY = playerY + playerVy * f.toFloat()
 
             val d = hypot((pBallX - pPlayerX).toDouble(), (pBallY - pPlayerY).toDouble()).toFloat()
             if (d < minDistance) {

@@ -531,6 +531,15 @@ class MainActivity : AppCompatActivity() {
             execution.forEach { (k, v) -> append("$k = $v\n") }
             append("\n=== REGISTRY ===\n")
             registry.forEach { (k, v) -> append("$k = $v\n") }
+            // SPLENDOR_P10_SLOTS: control-slot training decides
+            // whether PASS/CROSS/SHOT contributions survive the
+            // RuntimeDecisionLoop slot filter at all (untrained slots
+            // discard them before arbitration). The filter report.txt
+            // writer (core FilterEngine) cannot read this app-module
+            // trainer, so the values surface here in the routine live
+            // Runtime Hub diagnostics dump (3s tick) instead.
+            append("\n=== CONTROL MAPPING ===\n")
+            ControlMappingTrainer.mappingRuntimeSnapshot().forEach { (k, v) -> append("$k = $v\n") }
             append("\n=== EVENTS ===\n")
             com.assistant.events.EventHubs.eventRuntimeSnapshot().forEach { (k, v) -> append("$k = $v\n") }
         }

@@ -22,7 +22,8 @@ object ShotAnticipationEngine {
             decision.direction == ShotDirection.LONG_BALL && predictionBonus >= 70 -> AnticipationResult.INTERCEPT
             decision.direction == ShotDirection.CROSS && decision.priority >= 90 -> AnticipationResult.INTERCEPT
             decision.direction == ShotDirection.LONG_BALL && decision.priority >= 85 -> AnticipationResult.INTERCEPT
-            decision.priority >= 130 -> AnticipationResult.PANIC
+            // SPLENDOR_P10_SAT_PANIC: PANIC 130 -> 150; SAVE [100,150).
+            decision.priority >= 150 -> AnticipationResult.PANIC
             decision.priority >= 100 -> AnticipationResult.SAVE
             decision.priority >= 75 -> AnticipationResult.INTERCEPT
             else -> AnticipationResult.TRACK

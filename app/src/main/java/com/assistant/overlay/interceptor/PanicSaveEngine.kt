@@ -6,6 +6,7 @@ object PanicSaveEngine {
         decision: ThreatDecision
     ): Boolean {
 
-        return decision.priority >= 130
+        // SPLENDOR_P10_SAT_PANIC: PANIC 130 -> 150.
+        return decision.priority >= 150
     }
 }

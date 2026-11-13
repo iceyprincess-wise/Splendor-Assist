@@ -29,7 +29,9 @@ object NativePorts {
     }
     fun panic(direction: Int, priority: Int, out: FloatArray) {
         var action = 0
-        if (priority >= 130) { if (direction == 0) action = 2 else if (direction == 1) action = 1 else action = 3 }
+        // SPLENDOR_P10_SAT_PANIC: PANIC 130 -> 150 (with K2/K3/K4);
+        // SAVE band becomes [100,150). claim() 140/100 unchanged.
+        if (priority >= 150) { if (direction == 0) action = 2 else if (direction == 1) action = 1 else action = 3 }
         out[0] = action.toFloat()
     }
     fun shot(distance: Float, pressure: Float, out: FloatArray) {
@@ -42,7 +44,13 @@ object NativePorts {
         val db=(d1*35f)+(d2*30f)
         val z1=if(z==1)1f else 0f; val z2=if(z==2)1f else 0f; val z3=if(z==3)1f else 0f
         val zb=(z1*40f)+(z2*25f)+(z3*10f)
-        val priority=ts+db.toInt()+(aw shr 1)+(pr shr 1)+ib+rb+zb.toInt()
+        // SPLENDOR_P10_SAT_BONUS: (aw shr 1)+(pr shr 1) added +100 at
+        // the default sliders (100/100), so every detected threat scored
+        // >= 145 and always PANIC; SAVE [100,130) was unreachable and
+        // authority (priority/150) was saturated ~1.0 everywhere.
+        // (aw/10)+(pr/10) is +20 at defaults; sliders stay live (0->0,
+        // 50->5, 100->10) and authority spans 0.43-1.0 again.
+        val priority=ts+db.toInt()+(aw/10)+(pr/10)+ib+rb+zb.toInt()
         val ih=if(h>0)1f/h.toFloat() else 0f; val iw=if(w>0)1f/w.toFloat() else 0f
         val ny=y.toFloat()*ih; val nx=x.toFloat()*iw
         val hm=coerce((ny-0.80f)*10f,0f,1f); val lm=coerce((0.40f-ny)*10f,0f,1f)

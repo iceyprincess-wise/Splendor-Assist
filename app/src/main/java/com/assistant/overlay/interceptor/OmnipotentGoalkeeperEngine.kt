@@ -257,6 +257,25 @@ object OmnipotentGoalkeeperEngine {
 
             GoalkeeperDecisionRegistry.latestDecision = decision
 
+            // SPLENDOR_P10_ZONE_LOG: temporary, remove after live
+            // confirmation. ADAPTATION vs the trace sketch: TelemetrySnapshot
+            // has NO goalDetected/goalLeftX/goalRightX fields (only ball /
+            // keeper telemetry), so the goal comes from SceneTracker
+            // (guarded; "n/a" when unavailable) and the ball is re-read
+            // from TelemetryRepository (the local `t` above is scoped
+            // inside the run{} block and is not visible here).
+            val p10Tele = TelemetryRepository.current()
+            val p10Scene = try { com.assistant.SceneTracker.current() } catch (_: Throwable) { null }
+            val p10GoalDet = p10Scene?.goalDetected ?: false
+            val p10GoalCx = if (p10Scene != null && p10Scene.goalDetected) ((p10Scene.goalLeftX + p10Scene.goalRightX) * 0.5f).toString() else "n/a"
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "GK_ZONE_SCAN zone=" + decision.zone + " dir=" + decision.direction +
+                    " pri=" + decision.priority + " band=" + decision.heightBand + " normX=" + decision.normX +
+                    " px=(" + detectedX + "," + detectedY + ") cap=" + width + "x" + height +
+                    " ball=(" + p10Tele.ballX + "," + p10Tele.ballY + ")" +
+                    " goalDet=" + p10GoalDet + " goalCX=" + p10GoalCx,
+                "GOALKEEPER")
+
             evaluateOpponentShotTrajectory(decision)
         }
     }
