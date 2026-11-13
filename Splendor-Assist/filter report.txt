@@ -1,0 +1,3366 @@
+[2026-11-13 07:52:23] FILTER ENGINE REPORT
+-----------------------------------
+ENV: UNKNOWN (telemetry missing)
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : UNKNOWN
+  Thermal Status : -1
+  Memory Tier    : UNKNOWN (-1MB)
+  Battery        : -1% charging=true
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): n/a (fewer than 2 samples)
+  DISPLAY TREND (last 10): n/a (no samples yet)
+  ACTION WINDOW (last 10): n/a (no samples yet)
+  LOAD SHED (last 10): n/a (no samples yet)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:52:28] FILTER ENGINE REPORT
+-----------------------------------
+ENV: UNKNOWN (telemetry missing)
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : UNKNOWN
+  Thermal Status : -1
+  Memory Tier    : UNKNOWN (-1MB)
+  Battery        : -1% charging=true
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): n/a (fewer than 2 samples)
+  DISPLAY TREND (last 10): n/a (no samples yet)
+  ACTION WINDOW (last 10): n/a (no samples yet)
+  LOAD SHED (last 10): n/a (no samples yet)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:52:33] FILTER ENGINE REPORT
+-----------------------------------
+ENV: UNKNOWN (telemetry missing)
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : UNKNOWN
+  Thermal Status : -1
+  Memory Tier    : UNKNOWN (-1MB)
+  Battery        : -1% charging=true
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): n/a (fewer than 2 samples)
+  DISPLAY TREND (last 10): n/a (no samples yet)
+  ACTION WINDOW (last 10): n/a (no samples yet)
+  LOAD SHED (last 10): n/a (no samples yet)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:52:38] FILTER ENGINE REPORT
+-----------------------------------
+ENV: UNKNOWN (telemetry missing)
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : UNKNOWN
+  Thermal Status : -1
+  Memory Tier    : UNKNOWN (-1MB)
+  Battery        : -1% charging=true
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): n/a (fewer than 2 samples)
+  DISPLAY TREND (last 10): n/a (no samples yet)
+  ACTION WINDOW (last 10): n/a (no samples yet)
+  LOAD SHED (last 10): n/a (no samples yet)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:52:43] FILTER ENGINE REPORT
+-----------------------------------
+ENV: UNKNOWN (telemetry missing)
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : UNKNOWN
+  Thermal Status : -1
+  Memory Tier    : UNKNOWN (-1MB)
+  Battery        : -1% charging=true
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): n/a (fewer than 2 samples)
+  DISPLAY TREND (last 10): n/a (no samples yet)
+  ACTION WINDOW (last 10): n/a (no samples yet)
+  LOAD SHED (last 10): n/a (no samples yet)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:52:48] FILTER ENGINE REPORT
+-----------------------------------
+ENV: UNKNOWN (telemetry missing)
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : UNKNOWN
+  Thermal Status : -1
+  Memory Tier    : UNKNOWN (-1MB)
+  Battery        : -1% charging=true
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): n/a (fewer than 2 samples)
+  DISPLAY TREND (last 10): n/a (no samples yet)
+  ACTION WINDOW (last 10): n/a (no samples yet)
+  LOAD SHED (last 10): n/a (no samples yet)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:52:53] FILTER ENGINE REPORT
+-----------------------------------
+ENV: UNKNOWN (telemetry missing)
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : UNKNOWN
+  Thermal Status : -1
+  Memory Tier    : UNKNOWN (-1MB)
+  Battery        : -1% charging=true
+  Network RTT    : 0.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): n/a (fewer than 2 samples)
+  DISPLAY TREND (last 10): n/a (no samples yet)
+  ACTION WINDOW (last 10): n/a (no samples yet)
+  LOAD SHED (last 10): n/a (no samples yet)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:52:58] FILTER ENGINE REPORT
+-----------------------------------
+ENV: UNKNOWN (telemetry missing)
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : UNKNOWN
+  Stutter State  : CALM
+  Thermal Status : -1
+  Memory Tier    : PRESSURE (1086MB)
+  Battery        : 46% charging=false
+  Network RTT    : 36.0ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): n/a (fewer than 2 samples)
+  DISPLAY TREND (last 10): 1xUNKNOWN 3xSMOOTH (n=4)
+  ACTION WINDOW (last 10): 1xCAUTION (n=1)
+  LOAD SHED (last 10): n/a (no samples yet)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:53:03] FILTER ENGINE REPORT
+-----------------------------------
+ENV: UNKNOWN (telemetry missing)
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : -1
+  Memory Tier    : PRESSURE (1094MB)
+  Battery        : 46% charging=false
+  Network RTT    : 38.8ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 37ms (min 36 - max 39) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 1xCAUTION 3xGO (n=4)
+  LOAD SHED (last 10): n/a (no samples yet)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:53:09] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (1084MB)
+  Battery        : 46% charging=false
+  Network RTT    : 37.47ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 37ms (min 36 - max 39) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 1xCAUTION 5xGO (n=6)
+  LOAD SHED (last 10): 2xNONE (n=2)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:53:14] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (763MB)
+  Battery        : 46% charging=false
+  Network RTT    : 43.6055ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 39ms (min 36 - max 44) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 1xCAUTION 8xGO (n=9)
+  LOAD SHED (last 10): 4xNONE (n=4)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:53:19] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (786MB)
+  Battery        : 46% charging=false
+  Network RTT    : 52.14357ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 42ms (min 36 - max 52) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 7xNONE (n=7)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:53:24] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (698MB)
+  Battery        : 46% charging=false
+  Network RTT    : 54.193317ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 44ms (min 36 - max 54) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 9xNONE (n=9)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:53:30] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (716MB)
+  Battery        : 46% charging=false
+  Network RTT    : 51.325653ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 45ms (min 36 - max 54) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:53:35] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (609MB)
+  Battery        : 46% charging=false
+  Network RTT    : 48.761673ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 45ms (min 36 - max 54) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:53:40] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (662MB)
+  Battery        : 46% charging=false
+  Network RTT    : 48.761673ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 45ms (min 36 - max 54) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:53:45] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (552MB)
+  Battery        : 46% charging=false
+  Network RTT    : 51.645084ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 46ms (min 36 - max 54) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:53:50] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (608MB)
+  Battery        : 46% charging=false
+  Network RTT    : 50.019302ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 46ms (min 36 - max 54) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:53:56] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (655MB)
+  Battery        : 46% charging=false
+  Network RTT    : 57.712547ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 37 - max 58) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:01] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (663MB)
+  Battery        : 46% charging=false
+  Network RTT    : 56.413155ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 50ms (min 37 - max 58) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:06] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (666MB)
+  Battery        : 46% charging=false
+  Network RTT    : 54.868546ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 52ms (min 44 - max 58) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:11] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (590MB)
+  Battery        : 46% charging=false
+  Network RTT    : 60.864555ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 49 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:16] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (580MB)
+  Battery        : 46% charging=false
+  Network RTT    : 52.861958ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 49 - max 61) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:21] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.23x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (517MB)
+  Battery        : 46% charging=false
+  Network RTT    : 49.76027ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 53ms (min 49 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:27] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.29x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (471MB)
+  Battery        : 46% charging=false
+  Network RTT    : 47.394173ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 53ms (min 47 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:32] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (499MB)
+  Battery        : 46% charging=false
+  Network RTT    : 44.45621ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 53ms (min 44 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:37] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (524MB)
+  Battery        : 46% charging=false
+  Network RTT    : 42.196537ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 52ms (min 42 - max 61) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:42] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (501MB)
+  Battery        : 46% charging=false
+  Network RTT    : 41.42775ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 51ms (min 41 - max 61) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:47] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (535MB)
+  Battery        : 46% charging=false
+  Network RTT    : 42.328033ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 41 - max 61) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:52] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (513MB)
+  Battery        : 46% charging=false
+  Network RTT    : 42.91322ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 41 - max 61) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:54:57] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (538MB)
+  Battery        : 46% charging=false
+  Network RTT    : 43.29359ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 47ms (min 41 - max 61) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:02] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.07x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (550MB)
+  Battery        : 45% charging=false
+  Network RTT    : 46.690834ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 45ms (min 41 - max 53) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:08] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.01x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (549MB)
+  Battery        : 45% charging=false
+  Network RTT    : 46.449043ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 45ms (min 41 - max 50) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:13] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.00x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (549MB)
+  Battery        : 45% charging=false
+  Network RTT    : 44.19188ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 44ms (min 41 - max 47) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:18] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.25x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (516MB)
+  Battery        : 45% charging=false
+  Network RTT    : 43.42472ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 44ms (min 41 - max 47) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:23] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.29x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (516MB)
+  Battery        : 45% charging=false
+  Network RTT    : 43.62607ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 44ms (min 41 - max 47) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:28] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (527MB)
+  Battery        : 45% charging=false
+  Network RTT    : 43.056942ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 44ms (min 41 - max 47) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:33] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (527MB)
+  Battery        : 45% charging=false
+  Network RTT    : 44.43701ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 44ms (min 42 - max 47) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:38] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (409MB)
+  Battery        : 45% charging=false
+  Network RTT    : 43.584057ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 44ms (min 43 - max 47) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:44] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (386MB)
+  Battery        : 45% charging=false
+  Network RTT    : 44.779633ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 44ms (min 43 - max 47) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:49] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (348MB)
+  Battery        : 45% charging=false
+  Network RTT    : 46.60676ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 45ms (min 43 - max 47) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:54] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (354MB)
+  Battery        : 45% charging=false
+  Network RTT    : 46.60676ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 45ms (min 43 - max 47) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:55:59] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (358MB)
+  Battery        : 45% charging=false
+  Network RTT    : 45.34439ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 45ms (min 43 - max 47) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:56:04] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (370MB)
+  Battery        : 45% charging=false
+  Network RTT    : 46.973854ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 45ms (min 43 - max 47) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:56:09] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (374MB)
+  Battery        : 45% charging=false
+  Network RTT    : 47.683006ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 45ms (min 43 - max 48) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:56:14] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (406MB)
+  Battery        : 45% charging=false
+  Network RTT    : 49.193954ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 46ms (min 43 - max 49) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:56:20] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (407MB)
+  Battery        : 45% charging=false
+  Network RTT    : 54.02607ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 47ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:56:25] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (426MB)
+  Battery        : 45% charging=false
+  Network RTT    : 48.766945ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 47ms (min 44 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:56:30] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (447MB)
+  Battery        : 45% charging=false
+  Network RTT    : 48.498512ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 44 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:56:35] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (429MB)
+  Battery        : 45% charging=false
+  Network RTT    : 45.524033ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 45 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:56:40] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (441MB)
+  Battery        : 45% charging=false
+  Network RTT    : 42.54062ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:56:45] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (432MB)
+  Battery        : 45% charging=false
+  Network RTT    : 43.4014ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 47ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:56:50] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (439MB)
+  Battery        : 45% charging=false
+  Network RTT    : 53.060913ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:56:55] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (442MB)
+  Battery        : 45% charging=false
+  Network RTT    : 48.839592ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:01] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (441MB)
+  Battery        : 45% charging=false
+  Network RTT    : 51.695732ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:06] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (411MB)
+  Battery        : 45% charging=false
+  Network RTT    : 54.602226ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 43 - max 55) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:11] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (401MB)
+  Battery        : 45% charging=false
+  Network RTT    : 51.591446ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 43 - max 55) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:16] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (411MB)
+  Battery        : 45% charging=false
+  Network RTT    : 55.234436ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 43 - max 55) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:21] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (390MB)
+  Battery        : 45% charging=false
+  Network RTT    : 50.95238ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 50ms (min 43 - max 55) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:26] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (339MB)
+  Battery        : 45% charging=false
+  Network RTT    : 50.619045ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 50ms (min 43 - max 55) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:32] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (344MB)
+  Battery        : 45% charging=false
+  Network RTT    : 47.252377ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 51ms (min 43 - max 55) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:37] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (338MB)
+  Battery        : 45% charging=false
+  Network RTT    : 45.064045ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 51ms (min 45 - max 55) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:42] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (348MB)
+  Battery        : 45% charging=false
+  Network RTT    : 45.741627ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 50ms (min 45 - max 55) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:47] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (328MB)
+  Battery        : 45% charging=false
+  Network RTT    : 46.182053ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 50ms (min 45 - max 55) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:52] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (334MB)
+  Battery        : 45% charging=false
+  Network RTT    : 46.182053ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 50ms (min 45 - max 55) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:57:57] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (321MB)
+  Battery        : 45% charging=false
+  Network RTT    : 45.068333ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 45 - max 55) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:02] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (328MB)
+  Battery        : 44% charging=false
+  Network RTT    : 45.744415ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 45 - max 55) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:07] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (371MB)
+  Battery        : 44% charging=false
+  Network RTT    : 48.98387ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 45 - max 55) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:13] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (384MB)
+  Battery        : 44% charging=false
+  Network RTT    : 44.089516ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 47ms (min 44 - max 51) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:18] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (377MB)
+  Battery        : 44% charging=false
+  Network RTT    : 43.358185ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 46ms (min 43 - max 51) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:23] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (365MB)
+  Battery        : 44% charging=false
+  Network RTT    : 44.28282ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 46ms (min 43 - max 49) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:28] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (365MB)
+  Battery        : 44% charging=false
+  Network RTT    : 44.533833ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 45ms (min 43 - max 49) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:33] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (397MB)
+  Battery        : 44% charging=false
+  Network RTT    : 48.54699ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 46ms (min 43 - max 49) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:38] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (397MB)
+  Battery        : 44% charging=false
+  Network RTT    : 46.60554ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 46ms (min 43 - max 49) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:43] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (358MB)
+  Battery        : 44% charging=false
+  Network RTT    : 49.1936ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 46ms (min 43 - max 49) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:49] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (358MB)
+  Battery        : 44% charging=false
+  Network RTT    : 47.725838ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 46ms (min 43 - max 49) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:54] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (380MB)
+  Battery        : 44% charging=false
+  Network RTT    : 45.37179ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 46ms (min 43 - max 49) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:58:59] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (380MB)
+  Battery        : 44% charging=false
+  Network RTT    : 47.341663ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 46ms (min 43 - max 49) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:59:04] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (395MB)
+  Battery        : 44% charging=false
+  Network RTT    : 51.07208ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 47ms (min 43 - max 51) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:59:09] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (445MB)
+  Battery        : 44% charging=false
+  Network RTT    : 50.346848ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 44 - max 51) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:59:14] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (428MB)
+  Battery        : 44% charging=false
+  Network RTT    : 49.175446ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 45 - max 51) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:59:19] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (436MB)
+  Battery        : 44% charging=false
+  Network RTT    : 53.66404ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 45 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:59:25] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (415MB)
+  Battery        : 44% charging=false
+  Network RTT    : 50.631626ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 45 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:59:30] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (425MB)
+  Battery        : 44% charging=false
+  Network RTT    : 47.610558ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 45 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:59:35] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (406MB)
+  Battery        : 44% charging=false
+  Network RTT    : 45.29686ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 45 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:59:40] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (409MB)
+  Battery        : 44% charging=false
+  Network RTT    : 43.442955ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:59:45] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (396MB)
+  Battery        : 44% charging=false
+  Network RTT    : 43.637917ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:59:50] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (440MB)
+  Battery        : 44% charging=false
+  Network RTT    : 43.637917ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 07:59:55] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (423MB)
+  Battery        : 44% charging=false
+  Network RTT    : 45.164642ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 54) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:00] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (422MB)
+  Battery        : 44% charging=false
+  Network RTT    : 49.657013ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:06] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (406MB)
+  Battery        : 44% charging=false
+  Network RTT    : 50.12706ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:11] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (394MB)
+  Battery        : 44% charging=false
+  Network RTT    : 52.182587ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 54) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:16] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (402MB)
+  Battery        : 44% charging=false
+  Network RTT    : 49.66868ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 52) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:21] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (416MB)
+  Battery        : 44% charging=false
+  Network RTT    : 56.78464ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 48ms (min 43 - max 57) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:26] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (424MB)
+  Battery        : 44% charging=false
+  Network RTT    : 55.810013ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 49ms (min 43 - max 57) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:31] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (435MB)
+  Battery        : 44% charging=false
+  Network RTT    : 56.926506ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 50ms (min 43 - max 57) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:36] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (439MB)
+  Battery        : 44% charging=false
+  Network RTT    : 54.852226ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 51ms (min 44 - max 57) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:42] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (426MB)
+  Battery        : 44% charging=false
+  Network RTT    : 55.953945ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 53ms (min 45 - max 57) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:47] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (421MB)
+  Battery        : 44% charging=false
+  Network RTT    : 53.520065ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 50 - max 57) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:52] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (453MB)
+  Battery        : 44% charging=false
+  Network RTT    : 63.488037ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 55ms (min 50 - max 63) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:00:57] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (470MB)
+  Battery        : 44% charging=false
+  Network RTT    : 62.267223ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 56ms (min 50 - max 63) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:02] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (465MB)
+  Battery        : 44% charging=false
+  Network RTT    : 58.323692ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 57ms (min 50 - max 63) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:07] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (479MB)
+  Battery        : 44% charging=false
+  Network RTT    : 56.810402ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 57ms (min 54 - max 63) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:12] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (467MB)
+  Battery        : 44% charging=false
+  Network RTT    : 53.026764ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 57ms (min 53 - max 63) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:18] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (459MB)
+  Battery        : 44% charging=false
+  Network RTT    : 50.917397ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 57ms (min 51 - max 63) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:23] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (431MB)
+  Battery        : 44% charging=false
+  Network RTT    : 49.896305ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 56ms (min 50 - max 63) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:28] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (426MB)
+  Battery        : 44% charging=false
+  Network RTT    : 49.582596ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 55ms (min 50 - max 63) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:33] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (420MB)
+  Battery        : 43% charging=false
+  Network RTT    : 66.52869ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 56ms (min 50 - max 67) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:38] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (425MB)
+  Battery        : 43% charging=false
+  Network RTT    : 66.52869ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 56ms (min 50 - max 67) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:43] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (437MB)
+  Battery        : 43% charging=false
+  Network RTT    : 65.64365ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 58ms (min 50 - max 67) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:48] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (417MB)
+  Battery        : 43% charging=false
+  Network RTT    : 62.26837ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 58ms (min 50 - max 67) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:53] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (408MB)
+  Battery        : 43% charging=false
+  Network RTT    : 55.874443ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 57ms (min 50 - max 67) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:01:59] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (409MB)
+  Battery        : 43% charging=false
+  Network RTT    : 55.568386ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 57ms (min 50 - max 67) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:02:04] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (421MB)
+  Battery        : 43% charging=false
+  Network RTT    : 49.769447ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 56ms (min 50 - max 67) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:02:09] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (416MB)
+  Battery        : 43% charging=false
+  Network RTT    : 54.05014ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 56ms (min 50 - max 67) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:02:14] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (427MB)
+  Battery        : 43% charging=false
+  Network RTT    : 57.88259ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 57ms (min 50 - max 67) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:02:19] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (438MB)
+  Battery        : 43% charging=false
+  Network RTT    : 53.373684ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 57ms (min 50 - max 67) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:02:24] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (438MB)
+  Battery        : 43% charging=false
+  Network RTT    : 56.39289ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 58ms (min 50 - max 67) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:02:29] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (425MB)
+  Battery        : 43% charging=false
+  Network RTT    : 52.75538ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 56ms (min 50 - max 66) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:02:35] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (425MB)
+  Battery        : 43% charging=false
+  Network RTT    : 54.240997ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 55ms (min 50 - max 62) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:02:40] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (485MB)
+  Battery        : 43% charging=false
+  Network RTT    : 61.156647ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 55ms (min 50 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:02:45] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (485MB)
+  Battery        : 43% charging=false
+  Network RTT    : 54.80182ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 55ms (min 50 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:02:50] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (484MB)
+  Battery        : 43% charging=false
+  Network RTT    : 52.42118ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 55ms (min 50 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:02:55] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (484MB)
+  Battery        : 43% charging=false
+  Network RTT    : 50.873764ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 55ms (min 51 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:00] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (464MB)
+  Battery        : 43% charging=false
+  Network RTT    : 54.067944ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 55ms (min 51 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:05] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (464MB)
+  Battery        : 43% charging=false
+  Network RTT    : 51.594162ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 51 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:11] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (500MB)
+  Battery        : 43% charging=false
+  Network RTT    : 51.386208ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 51 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:16] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (482MB)
+  Battery        : 43% charging=false
+  Network RTT    : 56.851036ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 51 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:21] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (484MB)
+  Battery        : 43% charging=false
+  Network RTT    : 56.903168ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 51 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:26] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (454MB)
+  Battery        : 43% charging=false
+  Network RTT    : 54.487057ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 51 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:31] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (467MB)
+  Battery        : 43% charging=false
+  Network RTT    : 54.487057ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 51 - max 61) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:36] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (470MB)
+  Battery        : 43% charging=false
+  Network RTT    : 51.866585ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 51 - max 57) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:41] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (481MB)
+  Battery        : 43% charging=false
+  Network RTT    : 47.71328ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 53ms (min 48 - max 57) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:47] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (481MB)
+  Battery        : 43% charging=false
+  Network RTT    : 65.66363ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 48 - max 66) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:52] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (497MB)
+  Battery        : 43% charging=false
+  Network RTT    : 56.331352ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 55ms (min 48 - max 66) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:03:57] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (460MB)
+  Battery        : 43% charging=false
+  Network RTT    : 50.965378ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 48 - max 66) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:02] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (435MB)
+  Battery        : 43% charging=false
+  Network RTT    : 48.527496ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 48 - max 66) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:07] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (426MB)
+  Battery        : 43% charging=false
+  Network RTT    : 51.14287ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 48 - max 66) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:13] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (414MB)
+  Battery        : 43% charging=false
+  Network RTT    : 55.642868ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 48 - max 66) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:18] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (402MB)
+  Battery        : 43% charging=false
+  Network RTT    : 62.417862ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 54ms (min 48 - max 66) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:23] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (398MB)
+  Battery        : 43% charging=false
+  Network RTT    : 66.12161ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 56ms (min 48 - max 66) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:28] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (386MB)
+  Battery        : 43% charging=false
+  Network RTT    : 66.07905ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 57ms (min 48 - max 66) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:33] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (392MB)
+  Battery        : 43% charging=false
+  Network RTT    : 68.85138ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 59ms (min 49 - max 69) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:38] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (407MB)
+  Battery        : 43% charging=false
+  Network RTT    : 61.203392ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 59ms (min 49 - max 69) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:43] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (395MB)
+  Battery        : 43% charging=false
+  Network RTT    : 94.3822ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 63ms (min 49 - max 94) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:49] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (386MB)
+  Battery        : 43% charging=false
+  Network RTT    : 82.348434ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 66ms (min 49 - max 94) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 9xGO 1xCAUTION (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:54] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (426MB)
+  Battery        : 43% charging=false
+  Network RTT    : 68.92648ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 68ms (min 51 - max 94) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 9xGO 1xCAUTION (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:04:59] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (451MB)
+  Battery        : 43% charging=false
+  Network RTT    : 62.652214ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 69ms (min 56 - max 94) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 9xGO 1xCAUTION (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:05:04] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (501MB)
+  Battery        : 42% charging=false
+  Network RTT    : 56.12394ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 69ms (min 56 - max 94) rising
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 1xCAUTION 9xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:05:09] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (488MB)
+  Battery        : 42% charging=false
+  Network RTT    : 51.53056ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 68ms (min 52 - max 94) stable
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:05:14] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (519MB)
+  Battery        : 42% charging=false
+  Network RTT    : 50.64486ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 66ms (min 51 - max 94) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:05:19] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 80/100
+AGGRESSION MULTIPLIER: 1.30x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : CRITICAL (544MB)
+  Battery        : 42% charging=false
+  Network RTT    : 46.91916ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 64ms (min 47 - max 94) falling
+  DISPLAY TREND (last 10): 10xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
+[2026-11-13 08:05:25] FILTER ENGINE REPORT
+-----------------------------------
+ENV: 90/100
+AGGRESSION MULTIPLIER: 1.05x
+
+DEVICE STATE (Helio G81-Ultra / 4GB RAM):
+  Lag Verdict    : SMOOTH
+  Stutter State  : CALM
+  Thermal Status : 0
+  Memory Tier    : PRESSURE (845MB)
+  Battery        : 42% charging=false
+  Network RTT    : 48.34745ms
+  Load Shed      : NONE
+  Execution Brake: 0
+  NET RTT TREND (last 10): avg 62ms (min 47 - max 94) falling
+  DISPLAY TREND (last 10): 1xJITTERY 9xSMOOTH (n=10)
+  ACTION WINDOW (last 10): 10xGO (n=10)
+  LOAD SHED (last 10): 10xNONE (n=10)
+
+FILTER ACTION:
+  Nominal operation.
+-----------------------------------
