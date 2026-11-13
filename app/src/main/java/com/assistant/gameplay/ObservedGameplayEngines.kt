@@ -67,8 +67,17 @@ class AbsoluteMagneticFeetEngine : ObservedGameplayEngine() {
         val t = ((defender.x - frame.ballX) * vx + (defender.y - frame.ballY) * vy) / speedSquared
         if (t !in 0f..6f) return null // forward ray, bounded prediction horizon
         val x = frame.ballX + vx * t; val y = frame.ballY + vy * t
-        if (hypot(defender.x - x, defender.y - y) > 25f + margin(frame)) return null
-        return candidate(frame, ActionClass.DEFEND, defender, x, y, 0.94f, 90L)
+        // SPLENDOR_P9_MAGNETIC_AUTHORITY: authority was a constant 0.94f
+        // regardless of intercept quality. Derive it from the observed
+        // geometry instead: how close the defender gets to the predicted
+        // intercept point, and how soon the interception happens.
+        val miss = hypot(defender.x - x, defender.y - y)
+        val allowed = 25f + margin(frame)
+        if (miss > allowed) return null
+        val interceptQuality = (1f - miss / allowed).coerceIn(0f, 1f)
+        val horizonQuality = (1f - t / 6f).coerceIn(0f, 1f)
+        val interceptAuthority = (0.55f + 0.45f * interceptQuality * horizonQuality).coerceIn(0f, 1f)
+        return candidate(frame, ActionClass.DEFEND, defender, x, y, interceptAuthority, 90L)
     }
 }
 

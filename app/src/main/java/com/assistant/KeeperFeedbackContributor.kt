@@ -125,22 +125,7 @@ object KeeperFeedbackContributor : GameplayContributor {
     }
 }
 
-/* ========
-MagneticFeetContributor
-======== */
-/**
- * Vision-backed Magnetic Feet contributor.
- *
- * The previous version depended on unimplemented native-memory pointers.
- * This version consumes the already-live runtime sources:
- *
- *   RuntimeFrame
- *     -> possession verdict
- *     -> tracked owner
- *     -> ball/player distance
- *     -> bounded joystick vector
- *
- * The contributor does not own input dispatch. It emits a MOVE contribution
- * which follows the repository's normal RuntimeDecisionLoop -> execution bus
- * -> accessibility gesture path.
- */
+/* SPLENDOR_P9_ORPHAN_DOC: a trailing MagneticFeet doc block stood here
+ * describing a contributor whose code does not exist in this file (the
+ * live MagneticFeetContributor is MagneticFeetContributor.kt). Removed:
+ * a doc with no code after it is decorative and misleading. */

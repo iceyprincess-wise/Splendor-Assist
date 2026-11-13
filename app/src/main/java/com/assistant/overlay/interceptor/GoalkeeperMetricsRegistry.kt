@@ -40,6 +40,12 @@ object GoalkeeperMetricsRegistry {
 
             append(" Recovery=")
             append(recoveryCount.get())
+
+            // SPLENDOR_P9_KEEPER_STATE: GoalkeeperStateMachine.state() had
+            // zero readers -- keeper state was tracked but never consumed.
+            // Surface it here so the live state is observable in logs.
+            append(" State=")
+            append(GoalkeeperStateMachine.state().name)
         }
     }
 }

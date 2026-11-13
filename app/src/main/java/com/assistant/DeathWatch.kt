@@ -154,12 +154,29 @@ object DeathWatch {
         val avail = availMb.toIntOrNull() ?: -1
         val thresh = threshMb.toIntOrNull() ?: 0
 
-        val (osExitReason, nativeCrashDetails) = getHistoricalExitReasonDetails(
+        // SPLENDOR_P9_DW_VERDICT: the OS exit record is ground truth and
+        // must be consulted BEFORE the memory heuristic. Previously the
+        // avail-range branch fired first, so a SIGSEGV kill (status 11)
+        // was mislabelled LIKELY LMK, and a REASON_LOW_MEMORY death with
+        // high avail fell through to EARLY DEATH. The LOW_MEMORY branch
+        // keeps the exact old wording, so a corroborated LMK verdict
+        // (e.g. 313MB, REASON_LOW_MEMORY) is byte-identical.
+        val (osExitReason, nativeCrashDetails, exitInfo) = getHistoricalExitReasonDetails(
             deadPid.toIntOrNull() ?: 0, deadProc, began, lastBeat, availMb, threshMb, lowMem
         )
+        val osReason = exitInfo?.reason
+        val osStatus = exitInfo?.status
         val verdict = when {
             javaCrash ->
                 "JAVA EXCEPTION - a crash report exists for this session ($osExitReason)"
+            osReason == ApplicationExitInfo.REASON_CRASH_NATIVE ->
+                "NATIVE CRASH - native crash (SIGSEGV/SIGABRT) [status=" + osStatus + "] ($osExitReason)"
+            osReason == ApplicationExitInfo.REASON_SIGNALED && osStatus == 11 ->
+                "NATIVE CRASH - killed by OS signal 11 (SIGSEGV) ($osExitReason)"
+            osReason == ApplicationExitInfo.REASON_SIGNALED ->
+                "SIGNAL KILL - killed by OS signal " + osStatus + " ($osExitReason)"
+            osReason == ApplicationExitInfo.REASON_LOW_MEMORY ->
+                "LIKELY LMK - " + availMb + "MB free vs " + threshMb + "MB threshold ($osExitReason)"
             lowMem == "true" ->
                 "LOW MEMORY KILL - system reported lowMemory at " + availMb + "MB (threshold " + threshMb + "MB) ($osExitReason)"
             thresh > 0 && avail in 0..(thresh * 2) ->
@@ -276,15 +293,21 @@ object DeathWatch {
     private fun getHistoricalExitReasonDetails(
         deadPid: Int, deadProc: String,
         beganMs: Long, lastBeatMs: Long, availMb: String, threshMb: String, lowMem: String
-    ): Pair<String, String> {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return Pair("SDK_LESS_THAN_30", "")
-        val ctx = appContext ?: return Pair("NO_CONTEXT", "")
+    ): Triple<String, String, ApplicationExitInfo?> {
+        // SPLENDOR_P9_DW_TRIPLE: the third element is the structured OS
+        // exit record (reason/status/importance) so the verdict code can
+        // branch on ground truth instead of parsing a formatted string.
+        // Null when no OS record exists for this death.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return Triple("SDK_LESS_THAN_30", "", null)
+        val ctx = appContext ?: return Triple("NO_CONTEXT", "", null)
         return try {
             val am = ctx.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             val exitInfos = am.getHistoricalProcessExitReasons(ctx.packageName, deadPid, 5)
+            // SPLENDOR_P9_DW_FALLBACK: no bare firstOrNull() fallback --
+            // attaching the most recent exit record when neither pid nor
+            // process matches misattributes another session's death.
             val info = exitInfos.firstOrNull { deadPid != 0 && it.pid == deadPid }
                 ?: exitInfos.firstOrNull { deadProc.isNotBlank() && it.processName == deadProc }
-                ?: exitInfos.firstOrNull()
 
             if (info != null) {
                 var traceNote = ""
@@ -349,12 +372,12 @@ object DeathWatch {
                     else -> "REASON_CODE_${info.reason}"
                 }
                 val osReport = "OS_REPORTED: $reasonStr [status=${info.status} importance=${info.importance}]$traceNote"
-                Pair(osReport, nativeDetails)
+                Triple(osReport, nativeDetails, info) /* SPLENDOR_P9_DW_TRIPLE_OK */
             } else {
-                Pair("NO_OS_RECORD_FOUND", "")
+                Triple("NO_OS_RECORD_FOUND", "", null) /* SPLENDOR_P9_DW_TRIPLE_NO */
             }
         } catch (t: Throwable) {
-            Pair("QUERY_FAILED: ${t.javaClass.simpleName}: ${t.message}", "")
+            Triple("QUERY_FAILED: ${t.javaClass.simpleName}: ${t.message}", "", null) /* SPLENDOR_P9_DW_TRIPLE_QF */
         }
     }
 
@@ -390,10 +413,14 @@ object DeathWatch {
         if (curr.length >= 3) extractedStrings.add(curr.toString())
 
         var timestampStr = "?"
-        var signalStr = "SIGSEGV"
-        var signalCodeStr = "SEGV_MAPERR"
-        var faultAddrStr = "0x0"
-        var crashingThreadStr = "HeapTaskDaemon"
+        // SPLENDOR_P9_DW_TOMBSTONE: these were fabricated defaults
+        // ("SIGSEGV"/"SEGV_MAPERR"/"0x0"/"HeapTaskDaemon") printed as if
+        // parsed whenever the tombstone contained no matching string.
+        // Unknown until the parse proves otherwise.
+        var signalStr = "?"
+        var signalCodeStr = "?"
+        var faultAddrStr = "?"
+        var crashingThreadStr = "?"
         var crashingTidStr = "?"
         val backtraceFrames = mutableListOf<String>()
         val appNativeFrames = mutableListOf<String>()
@@ -409,7 +436,9 @@ object DeathWatch {
                 signalCodeStr = s
             } else if (s.startsWith("0x") && s.length in 3..18) {
                 faultAddrStr = s
-            } else if (s.contains("HeapTaskDaemon") || s.contains("RenderThread") || s.contains("main")) {
+            // SPLENDOR_P9_DW_TOMB_THREAD: first match wins -- previously
+            // the last string containing "main" overwrote the thread name.
+            } else if (crashingThreadStr == "?" && (s.contains("HeapTaskDaemon") || s.contains("RenderThread") || s.contains("main"))) {
                 crashingThreadStr = s
             } else if (s.contains("libart.so") || s.contains("libsplendor") || s.contains("libnative") || s.contains("::") || s.contains("art::")) {
                 if (backtraceFrames.size < 35 && s.length > 5) {
@@ -453,7 +482,10 @@ object DeathWatch {
         fullSb.appendLine("CRASHING THREAD")
         fullSb.appendLine("  TID            : $crashingTidStr")
         fullSb.appendLine("  thread name    : $crashingThreadStr")
-        fullSb.appendLine("  thread state   : FATAL_SIGNAL_RECEIVED")
+        // SPLENDOR_P9_DW_TOMB_STATE: only assert a fatal signal when one
+        // was actually parsed from the tombstone.
+        if (signalStr != "?") fullSb.appendLine("  thread state   : FATAL_SIGNAL_RECEIVED")
+        else fullSb.appendLine("  thread state   : Unknown (no signal parsed from tombstone)")
         fullSb.appendLine()
         fullSb.appendLine("CRASH LOCATION")
         fullSb.appendLine("  top symbol     : $topFrame")
@@ -480,10 +512,14 @@ object DeathWatch {
         fullSb.appendLine()
         fullSb.appendLine("JNI / NATIVE FORENSIC CONTEXT")
         fullSb.appendLine("  target JVM     : Android 16 ART Compacting GC (MarkCompact)")
-        fullSb.appendLine("  JNI status     : Active JNI operations / memory array access under GC scanning")
+        // SPLENDOR_P9_DW_TOMB_JNI: the old line asserted active JNI
+        // operations / GC scanning regardless of evidence.
+        fullSb.appendLine("  JNI status     : Unknown (tombstone parse does not evidence JNI activity)")
         fullSb.appendLine()
         fullSb.appendLine("RECENT NATIVE EVENTS")
-        fullSb.appendLine("  [Correlated from recent runtime activity before SIGSEGV]")
+        // SPLENDOR_P9_DW_TOMB_EVENT: the old line claimed a correlation
+        // with recent runtime activity that was never performed.
+        fullSb.appendLine("  [No correlated native events recorded -- none inferred]")
         fullSb.appendLine()
         fullSb.appendLine("MEMORY STATE")
         fullSb.appendLine("  available RAM  : ${availMb}MB")
@@ -496,9 +532,14 @@ object DeathWatch {
         fullSb.appendLine("  importance     : $importance")
         fullSb.appendLine()
         fullSb.appendLine("DIAGNOSTIC CONCLUSION")
-        fullSb.appendLine("  crash class    : Native Memory Corruption / SIGSEGV")
+        // SPLENDOR_P9_DW_TOMB_CONCL: the crash class / root cause were
+        // hardcoded conclusions. Report only what was parsed; a GC cause
+        // must never be inferred from an unparsed tombstone.
+        if (signalStr != "?") fullSb.appendLine("  crash class    : Native crash ($signalStr)")
+        else fullSb.appendLine("  crash class    : Unknown (no signal parsed from tombstone)")
         fullSb.appendLine("  crashing entity: $crashingThreadStr ($topFrame)")
-        fullSb.appendLine("  root cause type: Corrupted reference/heap state scanned during ART MarkCompact GC")
+        if (signalStr != "?") fullSb.appendLine("  root cause type: Undetermined from tombstone strings -- audit JNI array writes, boundary lengths, and direct pointer lifetimes")
+        else fullSb.appendLine("  root cause type: Undetermined (no signal/thread parsed from tombstone; do not infer a GC cause)")
         fullSb.appendLine("  recommendation : Audit JNI array writes, boundary lengths, and direct pointer lifetimes")
         fullSb.appendLine("============================================================")
 

@@ -119,10 +119,19 @@ object CrashForensics {
     }
 
     private fun sourceFromCurrentStack(): String {
+        // SPLENDOR_P9_CF_VMSTACK: on ART the first stack element is the
+        // native dalvik.system.VMStack.getThreadStackTrace frame (line
+        // -2). The old filter excluded only Thread/CrashForensics, so
+        // that synthetic frame was selected and every Report source
+        // read "VMStack.java:-2". Exclude dalvik.system.* frames and
+        // require a real source line, mirroring throwLocation().
         val frame = Thread.currentThread().stackTrace.firstOrNull {
             it.className != Thread::class.java.name &&
                 it.className != CrashForensics::class.java.name &&
-                !it.className.startsWith("java.lang.Thread")
+                !it.className.startsWith("java.lang.Thread") &&
+                it.className != "dalvik.system.VMStack" &&
+                !it.className.startsWith("dalvik.system.") &&
+                it.lineNumber > 0
         }
         return if (frame == null) "unknown:0" else frameLocation(frame)
     }

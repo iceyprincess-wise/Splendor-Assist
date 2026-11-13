@@ -238,12 +238,19 @@ object SmartAssistUltimateCorrectorContributor : GameplayContributor {
                 frame.goalTopY, frame.goalBottomY, frame.goalConfidence
             )
             if (!c.applied) return null
+            // SPLENDOR_P9_KPR_AUTHORITY: authority was c.correctionStrength,
+            // which correctKeeper() fills with goalConfidence -- 0 whenever
+            // the goal is not detected -- so weight was 0 and this keeper
+            // positioning contribution was filtered out of arbitration
+            // entirely (Patch 5 regression). The native correction is pure
+            // geometry; authority is frame trust when it applied. The old
+            // 0.92f constant is NOT restored (it was fabrication).
             return EngineContribution(
                 engine = engineName,
                 actionClass = ActionClass.KEEPER,
                 targetX = c.correctedX,
                 targetY = c.correctedY,
-                authority = c.correctionStrength.coerceIn(0f, 1f),
+                authority = frame.confidence.coerceIn(0f, 1f),
                 confidence = frame.confidence,
                 durationHintMs = 24L
             )

@@ -290,7 +290,7 @@ class GlobalCrashHandler(
                     val players = snap["players"]
                     val lanes = snap["viableLanes"]
                     out.appendLine("  frames assembled  : ${snap["frames"]}")
-                    out.appendLine("  frame trusted     : $trusted ${if (!trusted) "← UNTRUSTED: all 38 contributors blocked this frame" else ""}")
+                    out.appendLine("  frame trusted     : $trusted ${if (!trusted) "← UNTRUSTED: all ${AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT} contributors blocked this frame" else ""}") /* SPLENDOR_P9_GCH_38A */
                     out.appendLine("  hasBall           : $hasBall ${if (!hasBall) "← no possession: defense-only contributors active" else ""}")
                     out.appendLine("  confidence        : $conf")
                     out.appendLine("  players tracked   : $players")
@@ -336,7 +336,7 @@ class GlobalCrashHandler(
             }
             out.appendLine()
 
-            out.appendLine("═══ CONTRIBUTOR REGISTRY (38 total = 29 adapter + 9 app) ═══")
+            out.appendLine("═══ CONTRIBUTOR REGISTRY (${AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT} total, single source: AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT) ═══") /* SPLENDOR_P9_GCH_38B */
             try {
                 val gr = Class.forName("com.assistant.runtime.GameplayEngineRegistry")
                 val snap = gr.getMethod("registryRuntimeSnapshot").invoke(null) as? Map<*, *>
@@ -345,13 +345,13 @@ class GlobalCrashHandler(
                     val cycles = snap["collectCycles"]
                     val names = snap["names"]
                     val contributed = snap["contributed"]
-                    out.appendLine("  registered engines: $engines (expected 38)")
+                    out.appendLine("  registered engines: $engines (expected ${AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT})") /* SPLENDOR_P9_GCH_38C */
                     out.appendLine("  collect cycles    : $cycles")
                     out.appendLine("  contributors list : $names")
                     out.appendLine("  contributed       : $contributed")
                     val eng = (engines as? Int) ?: 0
-                    if (eng < 29) {
-                        out.appendLine("  *** WARNING: only $eng contributors registered (expected ≥29) ***")
+                    if (eng < AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT) {
+                        out.appendLine("  *** WARNING: only $eng contributors registered (expected ≥${AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT}) ***") /* SPLENDOR_P9_GCH_38D */
                         out.appendLine("      RuntimeCoordinator.warmUpEngines() may not have run yet")
                     }
                 } else {

@@ -271,9 +271,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
         com.assistant.CrashForensics.setCaptureSize(width, height)
         com.assistant.CrashForensics.mark(7, 1, (width.toLong() shl 32) or (height.toLong() and 0xffffffffL))
         val plane = try { image.planes[0] } catch (_: Throwable) { try { image.close() } catch (_: Throwable) {}; return@OnImageAvailableListener }
-        val rowStride = plane.rowStride
-        val pixelStride = plane.pixelStride
-        val originalBuffer = plane.buffer
+        // SPLENDOR_P9_OS_PLANE_GUARD: same close-and-return guard as
+        // width/height/planes[0] above -- an "Image is already closed"
+        // fault here would otherwise escape onImageAvailable on the OCR
+        // HandlerThread and silently stop all future frames.
+        val rowStride = try { plane.rowStride } catch (_: Throwable) { try { image.close() } catch (_: Throwable) {}; return@OnImageAvailableListener }
+        val pixelStride = try { plane.pixelStride } catch (_: Throwable) { try { image.close() } catch (_: Throwable) {}; return@OnImageAvailableListener }
+        val originalBuffer = try { plane.buffer } catch (_: Throwable) { try { image.close() } catch (_: Throwable) {}; return@OnImageAvailableListener }
         
         // SPLENDOR_V23B_VISION_BUFFER_REUSE_BEGIN
         val startVision = visionInFlight.compareAndSet(false, true)

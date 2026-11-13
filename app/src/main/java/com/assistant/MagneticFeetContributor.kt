@@ -377,10 +377,14 @@ object MagneticFeetContributor : GameplayContributor {
          * Keep the requested 1.2 internal cap but do not pretend values above
          * one survive the runtime contract.
          */
+        // SPLENDOR_P9_MF_AUTHORITY: the old 0.9f floor forced authority
+        // into [0.9, 1.0] on every contribution, so arbitration could
+        // never rank it -- fabricated inflation. Floor 0.0f: authority
+        // now reflects live proximity/confidence.
         val authority =
             shapedAuthority
                 .coerceIn(
-                    0.9f,
+                    0.0f,
                     cap
                 )
                 .coerceIn(

@@ -660,7 +660,7 @@ object RuntimeSelfHealEngine {
             com.assistant.NativeBridge.logNativeTruthOnce()
             val ageMs = agentAgeMs()
 
-            if (engines == 0 && ageMs > 5_000L && shouldLog("REGISTRY_EMPTY", "engines=0 age=${ageMs / 1000}s")) {
+            if (engines == 0 && ageMs > 5_000L && shouldLog("REGISTRY_EMPTY", "engines=0") /* SPLENDOR_P9_RSE_DEDUP: no per-second age token -- it defeated the 5-min dedup */) {
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
                     category = "REGISTRY_EMPTY",
@@ -677,7 +677,7 @@ object RuntimeSelfHealEngine {
             }
 
             val assistEnabled = try { com.assistant.SmartAssistRepository.enabled() } catch (_: Throwable) { false }
-            if (assistEnabled && engines >= 39 && cycles == 0L && ageMs > 10_000L && shouldLog("COLLECT_ZERO", "engines=$engines cycles=0 age=${ageMs / 1000}s")) {
+            if (assistEnabled && engines >= com.assistant.AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT /* SPLENDOR_P9_RSE_39A */ && cycles == 0L && ageMs > 10_000L && shouldLog("COLLECT_ZERO", "engines=$engines cycles=0") /* SPLENDOR_P9_RSE_DEDUP_CZ: no per-second age token -- it defeated the 5-min dedup */) {
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
                     category = "COLLECT_ZERO",
@@ -705,11 +705,11 @@ object RuntimeSelfHealEngine {
                 checkCaptureThread()
             }
 
-            if (engines < 39 && warmed && shouldLog("REGISTRY_GAP", "engines=$engines")) {
+            if (engines < com.assistant.AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT && warmed && shouldLog("REGISTRY_GAP", "engines=$engines")) { /* SPLENDOR_P9_RSE_39B */
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
                     category = "REGISTRY_GAP",
-                    detected = "Only $engines/39 contributors registered. Missing ${39 - engines}. " +
+                    detected = "Only $engines/${com.assistant.AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT} contributors registered. Missing ${com.assistant.AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT - engines}. " + /* SPLENDOR_P9_RSE_39C */
                         "Collect cycles since last health check: $delta (0 = no cycles since the previous check, " +
                         "not proof of a frozen collector). " +
                         "Registration is asynchronous from the image-frame path; recheck after registration completes.",
