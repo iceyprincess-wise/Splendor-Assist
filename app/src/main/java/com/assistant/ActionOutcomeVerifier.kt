@@ -104,7 +104,18 @@ object ActionOutcomeVerifier {
     }
     @Synchronized fun confirmDispatch(actionId: String) {
         val item = pending.remove(actionId) ?: return
-        val phase = item.request.actionClass ?: if (item.request.source == ExecutionSource.GOALKEEPER) ActionClass.KEEPER else return
+        // SPLENDOR_P11_D09: a null actionClass used to drop the confirmation
+        // silently — all 4 accepted INTERCEPTION gestures in the 2026-11-12
+        // session were never verified. Fall back by source (INTERCEPTION
+        // builders now also set DEFEND at the source); anything still
+        // unclassifiable is logged, never silently dropped.
+        val phase = item.request.actionClass
+            ?: if (item.request.source == ExecutionSource.GOALKEEPER) ActionClass.KEEPER
+            else if (item.request.source == ExecutionSource.INTERCEPTION) ActionClass.DEFEND
+            else {
+                RuntimeLogger.log("ActionOutcomeVerifier confirmDispatch dropped: no actionClass source=${item.request.source} phase=${item.request.phase} actionId=$actionId", "FEEDBACK")
+                return
+            }
         policy.dispatched(actionId, phase, item.frame.ownerId, item.frame.hasBall, System.nanoTime())
         dispatched++
     }
@@ -112,8 +123,13 @@ object ActionOutcomeVerifier {
     fun cooling(phase: ActionClass) = policy.cooling(phase, System.nanoTime())
     fun confidenceFactor(phase: ActionClass) = policy.confidenceFactor(phase)
     @Synchronized fun verify(currentFrame: RuntimeFrame) {
+        // SPLENDOR_P11_D07: a blocked frame used to wipe both the pre-confirm
+        // pending map and the policy's confirmed entries, destroying
+        // legitimately-dispatched verifications inside their 800ms window.
+        // Skip verification for this frame instead; entries stay for the next
+        // unblocked verify, and the 800ms sweep below ages them out.
         if (com.assistant.execution.UiExecutionGate.blocked()) {
-            pending.clear(); policy.abandonPending(); return
+            return
         }
         val now = System.nanoTime()
         // 800ms matches the OutcomePolicy observe window: dropping at 500ms

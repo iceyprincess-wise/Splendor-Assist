@@ -132,6 +132,7 @@ object HybridOmnipotentMatrixEngine {
         if (now - lastMatrixTimestamp >= 16L) {
             val req = ExecutionRequest(
                 source=ExecutionSource.INTERCEPTION, phase=9,
+                actionClass=com.assistant.runtime.ActionClass.DEFEND,
                 startX=joystickX, startY=joystickY,
                 endX=targetX, endY=targetY, duration=40L)
             if (ContributionRegistry.offer(req)) {

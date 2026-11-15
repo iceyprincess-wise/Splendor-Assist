@@ -28,8 +28,14 @@ object UiExecutionGate {
     @Synchronized fun block(reason: String, now: Long = System.nanoTime(), durationMs: Long = 1500L) {
         this.reason = reason
         RuntimeLogger.log("UiExecutionGate blocked: $reason", "UiExecutionGate")
+        // SPLENDOR_P11_D04: wipe the bus queue only on a genuine transition
+        // (first block after an unblocked period). The old unconditional
+        // clearPending() wiped the queue on every re-block — 858 wipes in
+        // the 2026-11-12 session, most of them re-blocks for the same
+        // foreground app while the bus was already empty.
+        val wasBlocked = now < blockedUntilNanos
         blockedUntilNanos = maxOf(blockedUntilNanos, now + durationMs.coerceIn(1, 5000) * 1_000_000)
-        CentralExecutionBus.clearPending()
+        if (!wasBlocked) CentralExecutionBus.clearPending()
     }
     @Synchronized fun reset() { blockedUntilNanos = 0; reason = "none" }
 }

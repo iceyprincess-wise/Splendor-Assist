@@ -53,7 +53,11 @@ object TruthLogcatEngine {
                     raf.close()
                     Thread.sleep(500) // Poll every 500ms
                 }
-            } catch (_: Throwable) {
+            } catch (t: Throwable) {
+                // SPLENDOR_P11_D7: was a silent death — if the field-log file
+                // became unreadable, the tailer stopped with no log and
+                // Truth_logcat.txt froze while the process lived.
+                android.util.Log.e("TruthLogcatEngine", "tail thread died; Truth_logcat.txt will freeze", t)
                 running.set(false)
             }
         }, "TruthLogcat-Tail-Thread").apply {

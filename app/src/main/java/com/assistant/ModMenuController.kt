@@ -23,6 +23,7 @@ import com.assistant.overlay.repository.GoalkeeperRepository
 import com.assistant.overlay.repository.GoalkeeperRuntimeState
 import com.assistant.overlay.repository.InterceptionRepository
 import com.assistant.controlroom.ui.ThemeTokens
+import com.assistant.diagnostic.RuntimeLogger
 
 class ModMenuController(private val context: Context) {
 
@@ -31,6 +32,15 @@ class ModMenuController(private val context: Context) {
     init {
         val saved = fpsPreferences.getInt("target_fps", 60)
         com.assistant.MemoryCaptureGateEngine.setTargetFps(saved)
+        // SPLENDOR_P11_D15: restore the persisted bypass flag before the
+        // switch is built (createView reads the registry value). The flag
+        // used to reset to `true` on every process start with no record of
+        // what it had been, and an unlogged tap could flip it to false and
+        // silently kill all gesture dispatch. (InterceptionRepository was
+        // read first: its state/bridge sync exactly 4 fields and carry no
+        // bypass field, so the in-file SharedPreferences pattern already
+        // used here for target_fps is the fitting store.)
+        InterceptionRuntimeRegistry.bypassTouchGate = fpsPreferences.getBoolean("bypass_touch_gate", true)
     }
 
     /* Colour tokens: accent #7C4DFF, background #070B14, muted text #9FB3D1 (same values
@@ -371,6 +381,8 @@ class ModMenuController(private val context: Context) {
             isChecked = InterceptionRuntimeRegistry.bypassTouchGate
             setOnCheckedChangeListener { _, isChecked ->
                 InterceptionRuntimeRegistry.bypassTouchGate = isChecked
+                fpsPreferences.edit().putBoolean("bypass_touch_gate", isChecked).apply()
+                RuntimeLogger.log("ModMenu bypassTouchGate toggled source=ModMenu switch value=$isChecked", "SMART_ASSIST")
             }
         }
         contentContainer.addView(swTouchGateBypass)

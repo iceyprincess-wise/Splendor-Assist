@@ -16,11 +16,6 @@ object UserTouchState {
         }
     }
 
-    fun registerTouchActivity() {
-        touching.set(true)
-        lastTouchTimeMs.set(System.currentTimeMillis())
-    }
-
     fun isTouching(): Boolean {
         if (touching.get()) return true
         val elapsed = System.currentTimeMillis() - lastTouchTimeMs.get()

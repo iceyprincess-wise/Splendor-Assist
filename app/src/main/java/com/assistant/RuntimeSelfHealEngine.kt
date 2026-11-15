@@ -117,10 +117,11 @@ object RuntimeSelfHealEngine {
     private var contextRef: WeakReference<android.content.Context>? = null
     private val fmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
 
-    // Deduplication: category → last logged details hash + last log time
+    // Deduplication: category → last log time (max 1 per 5 min per category).
+    // SPLENDOR_P11_RSE_DEDUP: the per-detail hash bookkeeping
+    // (lastLoggedDetail) and the write-only repeatCount are deleted: the hash
+    // bypass they fed is removed from shouldLog(), so they have no readers.
     private val lastLoggedMs = HashMap<String, Long>()
-    private val lastLoggedDetail = HashMap<String, Int>()
-    private val repeatCount = HashMap<String, Int>()
     private val DEDUP_MIN_MS = 5 * 60 * 1000L  // max 1 per 5 min per category
 
     fun init(ctx: android.content.Context) {
@@ -242,7 +243,6 @@ object RuntimeSelfHealEngine {
     // Agent has FULL AUTHORITY to restart via OverlayService.restartCapture()
     // ─────────────────────────────────────────────────────────────────────
     @Volatile private var lastKnownFrameId: Long = -1L
-    @Volatile private var captureStaleMs: Long = 0L
     @Volatile private var captureRestartAttempts = 0
     @Volatile private var lastRestartAttemptMs = 0L
 
@@ -281,20 +281,28 @@ object RuntimeSelfHealEngine {
                                 "CAPTURE RESTART FAILED — capture state " + com.assistant.OverlayService.captureState() + ".",
                             severity = if (restarted) "FIXED" else "CRITICAL"
                         ))
-                    } else if (shouldLog("CAPTURE_RESTART_EXHAUSTED", "attempts=$captureRestartAttempts")) {
-                        // SPLENDOR_P6_RESTART_EXHAUSTED_BEGIN
-                        // Restart budget spent (3 failed attempts) with still no
-                        // frame: escalate to auto-heal instead of going silent.
-                        totalHeals++
+                    } else {
+                        // SPLENDOR_P11_D4: heal first, log second. The
+                        // auto-heal request used to sit inside the shouldLog()
+                        // block, so recovery was throttled by the 5-min log
+                        // dedup. requestAutoHeal() is safe to call every
+                        // cycle: OverlayService.autoHealCapture() has its own
+                        // 15s anti-spam cooldown.
                         try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
-                        record(HealEvent(
-                            timestamp = fmt.format(Date()),
-                            category = "CAPTURE_RESTART_EXHAUSTED",
-                            detected = "No frame ever assembled; 3 capture restart attempts failed (capture=" + com.assistant.vision.CameraProfile.diagnostics() + ").",
-                            fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog).",
-                            severity = "CRITICAL"
-                        ))
-                        // SPLENDOR_P6_RESTART_EXHAUSTED_END
+                        if (shouldLog("CAPTURE_RESTART_EXHAUSTED", "attempts=$captureRestartAttempts")) {
+                            // SPLENDOR_P6_RESTART_EXHAUSTED_BEGIN
+                            // Restart budget spent (3 failed attempts) with still no
+                            // frame: escalate to auto-heal instead of going silent.
+                            totalHeals++
+                            record(HealEvent(
+                                timestamp = fmt.format(Date()),
+                                category = "CAPTURE_RESTART_EXHAUSTED",
+                                detected = "No frame ever assembled; 3 capture restart attempts failed (capture=" + com.assistant.vision.CameraProfile.diagnostics() + ").",
+                                fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog).",
+                                severity = "CRITICAL"
+                            ))
+                            // SPLENDOR_P6_RESTART_EXHAUSTED_END
+                        }
                     }
                 } else {
                     // SPLENDOR_P6_NEVER_STARTED_BEGIN
@@ -330,7 +338,6 @@ object RuntimeSelfHealEngine {
 
             if (f.frameId != lastKnownFrameId) {
                 lastKnownFrameId = f.frameId
-                captureStaleMs = 0L
                 // Reset attempt counter when capture recovers so a later
                 // projection kill in the same session gets fresh 3 attempts.
                 if (captureRestartAttempts > 0) {
@@ -344,7 +351,6 @@ object RuntimeSelfHealEngine {
             if (staleMs < 5000L) return  // not stale yet
 
             // Capture IS stale
-            captureStaleMs = staleMs
 
             // ROOT-CAUSE FIX (HealLog 2026-08-25): when the projection is revoked,
             // restartCaptureIfAlive() can NEVER succeed (first branch returns false).
@@ -499,7 +505,8 @@ object RuntimeSelfHealEngine {
                 val stuckMs = System.currentTimeMillis() - busUnknownSinceMs
                 if (stuckMs > 30_000L && shouldLog("BUS_ALL_UNKNOWN", "stuck")) {
                     // no fabricated signals: stuck UNKNOWN is reported, not replaced
-                    totalHeals++
+                    // SPLENDOR_P11_D3: report-only event — do not totalHeals++
+                    // for it (the old increment inflated the heal counter).
                     record(HealEvent(
                         timestamp = fmt.format(Date()),
                         category = "BUS_ALL_UNKNOWN",
@@ -508,7 +515,7 @@ object RuntimeSelfHealEngine {
                         fix = "REPORTED: signals stuck UNKNOWN; no values were injected.",
                         severity = "WARN"
                     ))
-                    RuntimeLogger.log("AGENT HEAL #$totalHeals BUS: safe defaults published", "AGENT")
+                    RuntimeLogger.log("AGENT BUS: all signals stuck UNKNOWN — reported, no values injected", "AGENT")
                     busUnknownSinceMs = 0L
                 }
             } else {
@@ -660,20 +667,27 @@ object RuntimeSelfHealEngine {
             com.assistant.NativeBridge.logNativeTruthOnce()
             val ageMs = agentAgeMs()
 
-            if (engines == 0 && ageMs > 5_000L && shouldLog("REGISTRY_EMPTY", "engines=0") /* SPLENDOR_P9_RSE_DEDUP: no per-second age token -- it defeated the 5-min dedup */) {
-                record(HealEvent(
-                    timestamp = fmt.format(Date()),
-                    category = "REGISTRY_EMPTY",
-                    detected = "RuntimeSelfHealAgent observed 0 registered contributors after warm grace. collectCycles=$cycles. " +
-                            "Snapshot: ${GameplayEngineRegistry.registryRuntimeSnapshot()}. " +
-                            "Registration is asynchronous (AppContributorRegistration.ensureRegistered() runs from the image-frame path); " +
-                            "this may be a point-in-time count before registration completes, not necessarily drift.",
-                    fix = "Forcing AppContributorRegistration.reset()+ensureRegistered() and capture health check.",
-                    severity = "CRITICAL"
-                ))
+            if (engines == 0 && ageMs > 5_000L) {
+                // SPLENDOR_P11_D4: heal first, log second. reset() +
+                // ensureRegistered() used to sit inside the shouldLog()
+                // block, so recovery was throttled by the 5-min log dedup.
+                // (Matches the REVOKED/FAILED/IDLE branches, which heal
+                // before they log.)
                 try { com.assistant.AppContributorRegistration.reset() } catch (_: Throwable) {}
                 try { com.assistant.AppContributorRegistration.ensureRegistered() } catch (_: Throwable) {}
                 checkCaptureThread()
+                if (shouldLog("REGISTRY_EMPTY", "engines=0") /* SPLENDOR_P9_RSE_DEDUP: no per-second age token -- it defeated the 5-min dedup */) {
+                    record(HealEvent(
+                        timestamp = fmt.format(Date()),
+                        category = "REGISTRY_EMPTY",
+                        detected = "RuntimeSelfHealAgent observed 0 registered contributors after warm grace. collectCycles=$cycles. " +
+                                "Snapshot: ${GameplayEngineRegistry.registryRuntimeSnapshot()}. " +
+                                "Registration is asynchronous (AppContributorRegistration.ensureRegistered() runs from the image-frame path); " +
+                                "this may be a point-in-time count before registration completes, not necessarily drift.",
+                        fix = "Forcing AppContributorRegistration.reset()+ensureRegistered() and capture health check.",
+                        severity = "CRITICAL"
+                    ))
+                }
             }
 
             val assistEnabled = try { com.assistant.SmartAssistRepository.enabled() } catch (_: Throwable) { false }
@@ -748,19 +762,19 @@ object RuntimeSelfHealEngine {
     // Deduplication — same category can only log once per DEDUP_MIN_MS
     // ─────────────────────────────────────────────────────────────────────
     @Synchronized
+    @Suppress("UNUSED_PARAMETER") // P11: `detail` kept for the 17 call sites; no longer affects the dedup decision
     private fun shouldLog(category: String, detail: String): Boolean {
+        // SPLENDOR_P11_RSE_DEDUP: purely per-category time-based (max 1 per
+        // 5 min per category, as documented at DEDUP_MIN_MS). The old
+        // `|| lastHash != currentHash` clause let ANY detail change re-log
+        // immediately, defeating the dedup: LOOP_FROZEN fired 8x and
+        // COLLECT_STALL 7x inside 6.4 min in the 2026-11-12 log. `detail` is
+        // kept as a parameter (all 17 call sites pass it) but no longer
+        // affects the decision; it is hashed by nothing and printed nowhere.
         val now = System.currentTimeMillis()
         val lastMs = lastLoggedMs[category] ?: 0L
-        val lastHash = lastLoggedDetail[category] ?: -1
-        val currentHash = detail.hashCode()
-        val count = (repeatCount[category] ?: 0) + 1
-        repeatCount[category] = count
-
-        // Allow if: never logged, or enough time passed, or detail changed significantly
-        if (now - lastMs > DEDUP_MIN_MS || lastHash != currentHash) {
+        if (now - lastMs > DEDUP_MIN_MS) {
             lastLoggedMs[category] = now
-            lastLoggedDetail[category] = currentHash
-            repeatCount[category] = 0
             return true
         }
         return false

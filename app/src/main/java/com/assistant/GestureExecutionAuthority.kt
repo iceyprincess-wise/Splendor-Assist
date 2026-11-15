@@ -188,11 +188,19 @@ object GestureExecutionAuthority {
         lastOrigin = origin
         lastUpdatedMs = System.currentTimeMillis()
 
-        if (com.assistant.execution.UiExecutionGate.blocked()) return false
+        if (com.assistant.execution.UiExecutionGate.blocked()) {
+            // SPLENDOR_P11_D01: was a silent discard — requested was counted
+            // but neither accepted nor rejected, so execution counters
+            // under-reported rejections.
+            rejected.incrementAndGet()
+            RuntimeLogger.log("GestureExecutionAuthority rejected: UiExecutionGate blocked", "SMART_ASSIST")
+            return false
+        }
         val actionId = actionIdParam ?: createCorrelationId()
 
         val wrappedCallback = object : AccessibilityService.GestureResultCallback() {
             override fun onCompleted(gestureDescription: GestureDescription?) {
+                RuntimeLogger.log("GestureExecutionAuthority gesture completed actionId=$actionId", "SMART_ASSIST")
                 val curr = currentActionTelemetry
                 if (curr != null && curr.actionId == actionId) {
                     val updated = curr.copy(
@@ -205,6 +213,7 @@ object GestureExecutionAuthority {
                 callback?.onCompleted(gestureDescription)
             }
             override fun onCancelled(gestureDescription: GestureDescription?) {
+                RuntimeLogger.log("GestureExecutionAuthority gesture cancelled actionId=$actionId; cancelling outcome verification", "SMART_ASSIST")
                 ActionOutcomeVerifier.cancelDispatch(actionId)
                 val curr = currentActionTelemetry
                 if (curr != null && curr.actionId == actionId) {

@@ -34,6 +34,8 @@ import java.util.Locale
 object DeathWatch {
 
     private const val REPORT_NAME = "Splendor_Crash_Reports.txt"
+    // SPLENDOR_P11_D8: cap for the single shared report file (see reportFile()).
+    private const val REPORT_MAX_BYTES = 256L * 1024L
     
     // UPGRADE: 5000L -> 15000L. On the Helio G81-Ultra (4GB RAM), 5s heartbeats 
     // cause excessive Binder IPC to ActivityManager and Disk I/O. 15s is plenty 
@@ -50,6 +52,19 @@ object DeathWatch {
     // UPGRADE: Cache the static parts of the heartbeat string to prevent garbage collection.
     @Volatile private var beatPrefix = ""
 
+    // SPLENDOR_P11_D1: last heartbeat write failure, if any (null while beats are healthy).
+    @Volatile private var lastHeartbeatFailure: Throwable? = null
+    @Volatile private var lastHeartbeatFailureLogMs: Long = 0L
+
+    // SPLENDOR_P11_D2: retained watcher thread so its liveness is observable.
+    @Volatile private var watcherThread: Thread? = null
+
+    @JvmStatic
+    fun isWatcherAlive(): Boolean = watcherThread?.isAlive == true
+
+    @JvmStatic
+    fun lastHeartbeatFailure(): Throwable? = lastHeartbeatFailure
+
     @JvmStatic
     fun install(ctx: Context) {
         if (installed) return
@@ -61,7 +76,6 @@ object DeathWatch {
             return
         }
 
-        installed = true
         appContext = c
         procName = resolveProcessName(c)
         startedMs = System.currentTimeMillis()
@@ -92,20 +106,29 @@ object DeathWatch {
                 try {
                     Thread.sleep(HEARTBEAT_MS)
                     beat(c, "ALIVE")
-                } catch (_: Throwable) { return@Thread }
+                } catch (t: Throwable) {
+                    // SPLENDOR_P11_D2: never exit silently. Log the failure
+                    // and keep beating; a lone watcher death must not go
+                    // unnoticed while the process lives. (No in-repo code
+                    // interrupts this thread, and beat() already swallows its
+                    // own failures, so this is a safety net, not an expected
+                    // event — but the old silent return@Thread made even a
+                    // real exit invisible.)
+                    android.util.Log.e("DeathWatch", "deathwatch heartbeat loop failed, continuing", t)
+                }
             }
         }
         t.isDaemon = true
         t.name = "deathwatch"
+        watcherThread = t
         try { t.start() } catch (t: Throwable) { android.util.Log.e("DeathWatch", "watcher thread failed to start, DeathWatch NOT armed", t); return }
+        // SPLENDOR_P11_D3: installed only after the watcher thread actually
+        // started. The old early assignment meant a start failure left
+        // installed=true forever, so a later install() returned immediately
+        // and DeathWatch was never armed for the process lifetime.
+        installed = true
 
         log("DeathWatch armed proc=" + procName + " pid=" + pidStr)
-    }
-
-    /** call on an intentional shutdown so it is not reported as a kill */
-    @JvmStatic
-    fun markCleanExit() {
-        try { marker?.delete() } catch (_: Throwable) { }
     }
 
     // ---------------- heartbeat ----------------
@@ -120,7 +143,18 @@ object DeathWatch {
             FileOutputStream(m, false).use { fos ->
                 fos.write(text.toByteArray(Charsets.US_ASCII))
             }
-        } catch (_: Throwable) { }
+        } catch (t: Throwable) {
+            // SPLENDOR_P11_D1: a failed beat used to vanish silently, so a
+            // storage outage looked exactly like a process death. Keep the
+            // last failure for diagnostics and log it to logcat (not
+            // RuntimeLogger, which needs the same storage) at most once a minute.
+            lastHeartbeatFailure = t
+            val now = System.currentTimeMillis()
+            if (now - lastHeartbeatFailureLogMs > 60_000L) {
+                lastHeartbeatFailureLogMs = now
+                android.util.Log.e("DeathWatch", "heartbeat write failed", t)
+            }
+        }
     }
 
     /** returns "availMB|lowMemory|thresholdMB" */
@@ -217,6 +251,12 @@ object DeathWatch {
         val text = sb.toString()
 
         try { reportFile()?.appendText(text) } catch (t: Throwable) { android.util.Log.e("DeathWatch", "death report write failed, report lost", t) }
+        // SPLENDOR_P11_D8: mirror every death entry to a monthly file so a
+        // single delete of Splendor_Crash_Reports.txt cannot erase all
+        // history (the Nov 3-7 entries were lost exactly that way). The
+        // other two writers (GlobalCrashHandler, OverlayService) are
+        // untouched; only DeathWatch death entries are mirrored.
+        try { monthlyReportFile(detectedMs)?.appendText(text) } catch (t: Throwable) { android.util.Log.e("DeathWatch", "monthly death mirror write failed", t) }
         try { CrashForensics.reportDetectedDeath(deadProc, deadPid, verdict) } catch (_: Throwable) { }
 
         if (javaCrash) {
@@ -259,9 +299,43 @@ object DeathWatch {
         }
     }
 
+    // SPLENDOR_P11_D8: cap the single shared report file so it cannot grow
+    // without bound; oversize content moves to Splendor_Crash_Reports(1).txt
+    // (same naming as GlobalCrashHandler.getLogFile's rotation branch). The
+    // other two writers (GlobalCrashHandler, OverlayService.logSilentFailure)
+    // append to the base file directly and are unaffected; rotation here is
+    // best-effort (a failed rename just keeps appending to the base file).
     private fun reportFile(): File? {
         return try {
-            SplendorStorageRoot.file(REPORT_NAME)
+            val f = SplendorStorageRoot.file(REPORT_NAME)
+            rotateReportIfOversize(f)
+            f
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    private fun rotateReportIfOversize(f: File) {
+        try {
+            if (!f.exists() || f.length() <= REPORT_MAX_BYTES) return
+            val dir = f.parentFile ?: return
+            val dot = REPORT_NAME.lastIndexOf('.')
+            val name = REPORT_NAME.substring(0, dot)
+            val ext = REPORT_NAME.substring(dot)
+            for (i in 1..99) {
+                val target = File(dir, "$name($i)$ext")
+                if (!target.exists()) {
+                    if (f.renameTo(target)) android.util.Log.e("DeathWatch", "rotated oversize crash report to ${target.name}")
+                    return
+                }
+            }
+        } catch (_: Throwable) { }
+    }
+
+    private fun monthlyReportFile(detectedMs: Long): File? {
+        return try {
+            val month = SimpleDateFormat("yyyy-MM", Locale.US).format(Date(detectedMs))
+            SplendorStorageRoot.file("Splendor_Death_Reports_$month.txt")
         } catch (_: Throwable) {
             null
         }

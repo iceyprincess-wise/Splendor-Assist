@@ -189,6 +189,7 @@ object OmnipotentDashPressureMatrix {
             val request = ExecutionRequest(
                 source = ExecutionSource.INTERCEPTION,
                 phase = 8,
+                actionClass = com.assistant.runtime.ActionClass.DEFEND,
                 startX = joystickX,
                 startY = joystickY,
                 endX = targetX,

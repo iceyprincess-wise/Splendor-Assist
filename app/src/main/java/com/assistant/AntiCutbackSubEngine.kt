@@ -112,7 +112,7 @@ class AntiCutbackSubEngine(private val inputEngine:LatencyDefeatingInputEngine){
     val swipeRadius=screenHeight*0.22f
     val runX=(joystickX+(cos(targetAngle)*swipeRadius).toFloat()).coerceIn(0f,screenWidth)
     val runY=(joystickY+(sin(targetAngle)*swipeRadius).toFloat()).coerceIn(0f,screenHeight)
-    val request=ExecutionRequest(source=ExecutionSource.INTERCEPTION,phase=4,startX=joystickX,startY=joystickY,endX=runX,endY=runY,duration=18L)
+    val request=ExecutionRequest(source=ExecutionSource.INTERCEPTION,phase=4,actionClass=com.assistant.runtime.ActionClass.DEFEND,startX=joystickX,startY=joystickY,endX=runX,endY=runY,duration=18L)
     val submitted=ContributionRegistry.offer(request)
     if(submitted){lastExecutionTimestamp=now;RuntimeLogger.log("ANTI_CUTBACK lane blocked vector=(\$runX,\$runY)","DEFENSE");return true}
     return false

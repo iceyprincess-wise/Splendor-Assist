@@ -119,6 +119,13 @@ object InAppAgentCore {
     @Volatile
     private var lastReigniteMs: Long = 0L
 
+    // SPLENDOR_P11_STARVATION: consecutive RunSelfHealCheck selections with
+    // no verified recovery. At 5 the next cycle runs ReigniteFleet instead,
+    // so a dead capture cannot starve the booster branch forever (4,328
+    // self-heal cycles / 0 reignitions in the 2026-11-12 log).
+    @Volatile
+    private var consecutiveSelfHealCycles: Int = 0
+
     /**
      * Existing public API preserved.
      * It no longer throws bootstrap failures outward.
@@ -266,7 +273,33 @@ object InAppAgentCore {
 
         try {
             val before = RuntimeObservation.capture()
-            val decision = AgentDecisionPolicy.decide(before)
+            val decided = AgentDecisionPolicy.decide(before)
+
+            // SPLENDOR_P11_STARVATION: RunSelfHealCheck cannot restore
+            // boosterAlive (it never touches BoosterIgnition), so while the
+            // capture is dead the agent selects it forever and ReigniteFleet
+            // starves. After 5 consecutive selections with no verified
+            // recovery, run ReigniteFleet on this cycle instead, then reset.
+            // A verified recovery (ActionVerifier, honest since P11 D-06)
+            // also resets the count. Single action per cycle is preserved.
+            val decision = if (decided.action == AgentAction.RunSelfHealCheck) {
+                if (lastVerification?.verified == true) consecutiveSelfHealCycles = 0
+                consecutiveSelfHealCycles++
+                if (consecutiveSelfHealCycles >= 5) {
+                    consecutiveSelfHealCycles = 0
+                    RuntimeLogger.log(
+                        "AGENT STARVATION INTERLEAVE: RunSelfHealCheck selected 5 consecutive cycles with no verified recovery; running ReigniteFleet this cycle instead",
+                        "AGENT"
+                    )
+                    decided.copy(
+                        action = AgentAction.ReigniteFleet,
+                        reason = decided.reason + " [P11 interleave: ReigniteFleet substituted after 5 consecutive self-heal cycles]"
+                    )
+                } else decided
+            } else {
+                consecutiveSelfHealCycles = 0
+                decided
+            }
 
             lastObservation = before
             lastDecision = decision
@@ -337,7 +370,21 @@ object InAppAgentCore {
                             "AGENT ACTION ReigniteFleet: booster reset + re-ignited + G3 re-verified",
                             "AGENT"
                         )
+                    } else {
+                        // SPLENDOR_P11_D05: was a silent skip — no log
+                        // distinguished "reignition attempted" from "skipped".
+                        RuntimeLogger.log(
+                            "AGENT ACTION ReigniteFleet skipped: appContext()==null",
+                            "AGENT"
+                        )
                     }
+                } else {
+                    // SPLENDOR_P11_D05: was a silent skip — no log
+                    // distinguished "reignition attempted" from "skipped".
+                    RuntimeLogger.log(
+                        "AGENT ACTION ReigniteFleet skipped: cooldown ${60_000L - (nowMs - lastReigniteMs)}ms remaining",
+                        "AGENT"
+                    )
                 }
             }
         }

@@ -121,7 +121,16 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // FINAL EXECUTION GATE
         // Never turn a stale bus request into an Accessibility gesture
         // while the game is not foreground.
-        if (com.assistant.execution.UiExecutionGate.blocked() || !SmartAssistRepository.enabled()) {
+        if (com.assistant.execution.UiExecutionGate.blocked()) {
+            // SPLENDOR_P11_D12: was mislabelled "SmartAssist disabled" when
+            // the cause was the UI gate, not the SmartAssist toggle.
+            RuntimeLogger.log(
+                "Direct dispatch blocked: UiExecutionGate blocked reason=${com.assistant.execution.UiExecutionGate.reason}",
+                "SMART_ASSIST"
+            )
+            return false
+        }
+        if (!SmartAssistRepository.enabled()) {
             RuntimeLogger.log(
                 "Direct dispatch blocked: SmartAssist disabled",
                 "SMART_ASSIST"
@@ -138,8 +147,19 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         }
 
         val category = request.actionClass ?: if (request.source == ExecutionSource.GOALKEEPER) com.assistant.runtime.ActionClass.KEEPER else null
-        if (category != null && ActionOutcomeVerifier.cooling(category)) return false
-        if (isDispatching) return false // Completion callbacks own the live stroke, not a duration estimate.
+        if (category != null && ActionOutcomeVerifier.cooling(category)) {
+            // SPLENDOR_P11_D02: was a silent early return — the only trace
+            // of a cooling-dropped dispatch was the absence of a
+            // DIRECT_DISPATCH line.
+            RuntimeLogger.log("Direct dispatch dropped: cooling actionClass=$category actionId=${request.actionId}", "SMART_ASSIST")
+            return false
+        }
+        if (isDispatching) {
+            // SPLENDOR_P11_D02: was a silent early return — a dispatch
+            // dropped while a stroke is live left no trace.
+            RuntimeLogger.log("Direct dispatch dropped: dispatch latch held by actionId=$currentActionId actionId=${request.actionId}", "SMART_ASSIST")
+            return false // Completion callbacks own the live stroke, not a duration estimate.
+        }
 
         currentActionId = request.actionId
         isDispatching = true
@@ -187,10 +207,12 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 gesture,
                 object : GestureResultCallback() {
                     override fun onCompleted(gestureDescription: GestureDescription?) {
+                        RuntimeLogger.log("Direct dispatch gesture completed actionId=${request.actionId}", "SMART_ASSIST")
                         completeDispatch(request.actionId)
                     }
 
                     override fun onCancelled(gestureDescription: GestureDescription?) {
+                        RuntimeLogger.log("Direct dispatch gesture cancelled actionId=${request.actionId}", "SMART_ASSIST")
                         completeDispatch(request.actionId)
                     }
                 },
@@ -230,7 +252,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     if (reportedStallActionId != currentActionId) {
                         reportedStallActionId = currentActionId
                         latchStuckSinceMs = System.currentTimeMillis()
-                        RuntimeLogger.log("dispatch callback overdue; retaining active stroke until callback or service recovery", "SMART_ASSIST")
+                        RuntimeLogger.log("dispatch callback overdue actionId=$currentActionId; retaining active stroke until callback or service recovery", "SMART_ASSIST")
                     } else if (System.currentTimeMillis() - latchStuckSinceMs > LATCH_STUCK_GRACE_MS) {
                         RuntimeLogger.log("dispatch callback lost; force-releasing stuck dispatch $currentActionId", "SMART_ASSIST")
                         releaseDispatch()
@@ -357,6 +379,24 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         }
     }
 
+    // SPLENDOR_P11_D03: system UI, the app's own overlay window and the
+    // keyboard are not gameplay apps: their window-state events must not
+    // block execution (and wipe the bus queue). Only foreign *apps* block.
+    // Provenance (2026-11-12 session, 858 blocks): systemui 139,
+    // miui.systemui.plugin 14, keyboard (com.touchtype.swiftkey) 17, own
+    // overlay (com.assistant.overlay) 8 — all side-effects of the missing
+    // allowlist, none of them a foreign app. WhatsApp (434) and the other
+    // foreign apps still block, as designed.
+    private fun isNonBlockingForegroundPackage(pkg: String): Boolean {
+        if (pkg.equals(packageName, ignoreCase = true)) return true
+        if (pkg.equals("com.android.systemui", ignoreCase = true)) return true
+        if (pkg.equals("miui.systemui.plugin", ignoreCase = true)) return true
+        return try {
+            val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+            imm?.inputMethodList?.any { it.packageName.equals(pkg, ignoreCase = true) } == true
+        } catch (_: Throwable) { false }
+    }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         // SPLENDOR_FG_TRUTH_V1 - feed the REAL foreground package into the
         // vision trust gate. This callback was empty, so VisionTrust.
@@ -376,7 +416,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 val pkg = event.packageName?.toString() ?: return
                 try {
                     VisionTrust.onForegroundPackage(pkg, VisionTrust.GAME_PACKAGES)
-                    if (!VisionTrust.GAME_PACKAGES.any { pkg.equals(it, ignoreCase = true) })
+                    if (!VisionTrust.GAME_PACKAGES.any { pkg.equals(it, ignoreCase = true) } && !isNonBlockingForegroundPackage(pkg))
                         com.assistant.execution.UiExecutionGate.block("foreground:$pkg")
                 } catch (_: Throwable) {
                 }

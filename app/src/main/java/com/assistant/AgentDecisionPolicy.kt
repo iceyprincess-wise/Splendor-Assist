@@ -95,6 +95,12 @@ import kotlin.math.*
 
 object AgentDecisionPolicy {
 
+    // SPLENDOR_P11_D13: decide() is first-match-wins — the if/else ORDER is
+    // the priority. The `priority` numbers are labels only, never compared,
+    // and must descend in checked order (100, 90, 60, 50, 10); the old
+    // RefreshPerformance 70 contradicted the order (checked AFTER
+    // ReigniteFleet 60). See also the starvation interleave in
+    // InAppAgentCore.tickSafely: one branch must not monopolise cycles.
     fun decide(observation: RuntimeObservation): AgentDecision {
         val health = observation.health
 
@@ -139,7 +145,7 @@ object AgentDecisionPolicy {
         if (observation.loadShed == "HEAVY") {
             return AgentDecision(
                 action = AgentAction.RefreshPerformance,
-                priority = 70,
+                priority = 50,
                 reason =
                     "Runtime load-shed is HEAVY; " +
                     "refresh performance telemetry and state."
