@@ -23,8 +23,3 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativePredictiveFrameInte
     (*env)->SetFloatArrayRegion(env,j_out_x,0,player_count,ox); if ((*env)->ExceptionCheck(env)) return;
     (*env)->SetFloatArrayRegion(env,j_out_y,0,player_count,oy);
 }
-JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativePredictiveFrameInterp(
-    JNIEnv *env, jobject thiz, jfloatArray px,jfloatArray py,jfloatArray cx,jfloatArray cy,
-    jfloat dt,jint count,jfloatArray ox,jfloatArray oy) {
-    Java_com_assistant_NativeBridge_nativePredictiveFrameInterpImpl(env,thiz,px,py,cx,cy,dt,count,ox,oy);
-}

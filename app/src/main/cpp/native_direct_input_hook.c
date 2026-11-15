@@ -21,8 +21,3 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeDirectInputHookImpl
     }
     (*env)->SetFloatArrayRegion(env,output,0,count*3,out);
 }
-JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeDirectInputHookPrepare(
-    JNIEnv *env,jobject thiz,jfloatArray x,jfloatArray y,jfloatArray t,jint n,
-    jfloat w,jfloat h,jfloatArray out) {
-    Java_com_assistant_NativeBridge_nativeDirectInputHookImpl(env,thiz,x,y,t,n,w,h,out);
-}

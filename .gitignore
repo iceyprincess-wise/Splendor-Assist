@@ -24,3 +24,4 @@ elf-verify/
 # artifacts
 work/
 work/libart.so
+Build_lint_output.txt
