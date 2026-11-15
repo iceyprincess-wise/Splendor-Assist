@@ -87,7 +87,16 @@ APP_BASE_NAME=${0##*/}
 APP_HOME=$( cd "${APP_HOME:-./}" > /dev/null && pwd -P ) || exit
 
 # Select the Termux host executable before AGP reads Gradle properties.
-. "$APP_HOME/tools/termux-aapt2.sh"
+# Guard: if the wrapper is ever deleted, fail loudly on Termux instead of
+# building without the aapt2 fix and dying later with a confusing aapt2 error.
+if [ -f "$APP_HOME/tools/termux-aapt2.sh" ]; then
+    . "$APP_HOME/tools/termux-aapt2.sh"
+elif [ -n "${TERMUX_VERSION:-}" ] || [ "${PREFIX:-}" = /data/data/com.termux/files/usr ] || [ "${PREFIX:-}" = /data/user/0/com.termux/files/usr ]; then
+    echo "ERROR: $APP_HOME/tools/termux-aapt2.sh is missing; the Termux aapt2 fix cannot be applied." >&2
+    exit 1
+else
+    echo "WARNING: $APP_HOME/tools/termux-aapt2.sh is missing; continuing without the Termux aapt2 fix." >&2
+fi
 
 # Use the maximum available, or set MAX_FD != -1 to use that value.
 MAX_FD=maximum
