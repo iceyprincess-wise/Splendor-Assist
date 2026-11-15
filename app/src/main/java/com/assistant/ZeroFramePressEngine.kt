@@ -79,7 +79,7 @@ import kotlin.math.*
 
 
 
-import kotlin.random.Random
+
 
 
 
@@ -133,15 +133,15 @@ class ZeroFramePressEngine(
         if (distanceSqr < ENGAGEMENT_DISTANCE_SQR) {
             
             // Adaptive Noise Humanization: Dynamic micro-variance mimicking human hand latency boundaries
-            val microVarianceX = NOISE_VARIANCE_MIN + (Random.nextFloat() * (NOISE_VARIANCE_MAX - NOISE_VARIANCE_MIN))
-            val microVarianceY = NOISE_VARIANCE_MIN + (Random.nextFloat() * (NOISE_VARIANCE_MAX - NOISE_VARIANCE_MIN))
+            // SPLENDOR_P12_T4_RANDOM: fixed mid-range values (was live Random).
+            val microVarianceX = 0f
+            val microVarianceY = 0f
 
             // Server-Tick Sync: Dynamically scale gesture path lengths and hold durations to match packet boundaries
-            val dynamicPathLength = (PATH_SCALAR_BASE * TICK_RATE_MULTIPLIER) + (Random.nextFloat() * 1.5f)
+            val dynamicPathLength = (PATH_SCALAR_BASE * TICK_RATE_MULTIPLIER) + 0.75f // fixed mid-range of the old 0..1.5 random term
             
             // Modulating hold duration to register maximum possession effectiveness
-            val randomHoldVariance = Random.nextLong(3L, 9L)
-            val dynamicHoldDuration = (BASE_HOLD_DURATION_MS * TICK_RATE_MULTIPLIER).toLong() + randomHoldVariance
+            val dynamicHoldDuration = (BASE_HOLD_DURATION_MS * TICK_RATE_MULTIPLIER).toLong() + 6L // fixed mid-range of the old 3..9 random term
 
             val originX = dashButtonX + microVarianceX
             val originY = dashButtonY + microVarianceY

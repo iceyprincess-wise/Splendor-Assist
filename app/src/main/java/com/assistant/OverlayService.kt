@@ -8,7 +8,6 @@ import com.assistant.diagnostic.RuntimeMetricsRegistry
 import com.assistant.SmartAssistRepository
 import com.assistant.survival.OverlaySurvivalEngine
 import com.assistant.overlay.notification.RuntimeNotificationCoordinator
-import com.assistant.memory.MmapStateEngine
 import com.assistant.render.ChoreographerRenderLoop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -177,6 +176,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var ocrIoThread: android.os.HandlerThread? = null
     private var ocrIoHandler: android.os.Handler? = null
     private var lastOcrTime = 0L
+    // SPLENDOR_P12_T4_OCR_SPAM: the last OCR text logged, so identical
+    // text is not re-logged on every 1.5s OCR tick.
+    @Volatile private var lastLoggedOcrText = ""
     private var lastMatchDetectionTime = 0L
     private val OCR_INTERVAL_MS = 1500L
     private var reusableBitmap: Bitmap? = null
@@ -248,7 +250,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         val image = try { reader.acquireLatestImage() } catch (_: Throwable) { null } ?: return@OnImageAvailableListener
         com.assistant.CrashForensics.mark(2, 1, captureFrameCount)
         com.assistant.DiagnosticSamplers.onCaptureFrame(System.nanoTime())
-        com.assistant.CrashForensics.mark(5, 4, android.os.Process.myPid().toLong())
+        com.assistant.CrashForensics.mark(5, 4, captureFrameCount)
         val acquiredAtNanos = System.nanoTime()
         val captureNow = System.currentTimeMillis()
         if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
@@ -325,7 +327,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         if (startVision) visionScope.launch {
             val visionStartedNanos = System.nanoTime()
             try {
-                com.assistant.CrashForensics.mark(3, 2, System.currentTimeMillis())
+                com.assistant.CrashForensics.mark(3, 2, captureFrameCount)
                 // Exact byte comparison: repeated capture content must not trigger another action.
                 if (previousVisionLayout == Triple(width, height, rowStride) && previousVisionBuffer?.let { prior ->
                     com.assistant.runtime.CaptureContent.same(visionBuffer, prior, width, height, rowStride, pixelStride) { x, y ->
@@ -349,7 +351,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 }
                 previousVisionLayout = Triple(width, height, rowStride)
                 val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride, acquiredAtNanos)
-                com.assistant.CrashForensics.mark(4, 2, System.currentTimeMillis())
+                com.assistant.CrashForensics.mark(4, 2, captureFrameCount)
                 val prevBuf = previousVisionBuffer
                 val opticalVariance = if (prevBuf != null && prevBuf.remaining() == visionBuffer.remaining()) {
                     try { com.assistant.NativeBridge.nativeComputeOpticalVariance(visionBuffer, prevBuf, width, height, rowStride, 0, 0, width, height).coerceIn(0f, 1f) } catch (_: Throwable) { 0f }
@@ -370,7 +372,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 targetBuf.flip()
                 com.assistant.ControlMappingTrainer.observe(visionBuffer, width, height, rowStride, pixelStride)
                 val state = com.assistant.VisionCore.process(normalized)
-                com.assistant.CrashForensics.mark(4, 2, System.currentTimeMillis())
+                com.assistant.CrashForensics.mark(4, 2, captureFrameCount)
                 com.assistant.BoosterIgnition.ensureIgnited(this@OverlayService)
                 com.assistant.AppContributorRegistration.ensureRegistered()
                 com.assistant.RuntimeCoordinator.reportCaptureReady()
@@ -514,7 +516,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     override fun onCreate() {
         com.assistant.CrashForensics.install()
-        com.assistant.CrashForensics.mark(1, 4, android.os.Process.myPid().toLong())
         com.assistant.SplendorCaptureRecovery.attach(this)
         // SplendorWatchdog removed: WatchdogAdapterService handles survival process watchdog
         if(runtimeInitialized) return
@@ -552,7 +553,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         instance = this
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        MmapStateEngine.initialize(cacheDir)
+
         ChoreographerRenderLoop.start()
         ocrIoThread = android.os.HandlerThread("OverlayOCRThread", android.os.Process.THREAD_PRIORITY_DEFAULT).apply { start() }
         ocrIoHandler = android.os.Handler(ocrIoThread!!.looper)
@@ -1031,7 +1032,8 @@ class OverlayService : Service(), ComponentCallbacks2 {
                         UiStateObserver.observeText(detectedText)
                         com.assistant.vision.OverlaySelfMask.tickAndLog()
 
-                        if (detectedText.isNotBlank()) {
+                        if (detectedText.isNotBlank() && detectedText != lastLoggedOcrText) {
+                            lastLoggedOcrText = detectedText
                             RuntimeMetricsRegistry.ocrDetections.incrementAndGet()
                             RuntimeLogger.log("OCR: ${detectedText.take(120)}", "OCR")
                         }
@@ -1093,7 +1095,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                 recording = false,
                                 saved = false
                             )
-                            RuntimeLogger.log("🕶️", "SMART_ASSIST")
+                            RuntimeLogger.log("SMART_ASSIST_GATE match detected, overlay active", "SMART_ASSIST")
                             updateOverlayVisuals("🕶️", Color.GREEN)
                             // Delayed empty runnable removed
                         }
@@ -1182,7 +1184,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         reusableBitmap = null
 
         ChoreographerRenderLoop.stop()
-        MmapStateEngine.release()
+
         ocrIoThread?.quitSafely()
         ocrIoThread = null
 

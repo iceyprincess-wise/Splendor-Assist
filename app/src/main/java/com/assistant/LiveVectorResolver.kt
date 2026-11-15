@@ -107,9 +107,13 @@ object LiveVectorResolver {
     fun resolve(frameWidth: Float, frameHeight: Float): LiveVector {
         val t = TelemetryRepository.current()
 
-        val hasReal = t.ballX != 0f || t.ballY != 0f ||
+        // SPLENDOR_P12_T2_STALE: a frozen snapshot used to read as real data
+        // (any nonzero ball coordinate counted), so a stale point produced a
+        // "real" vector. Require a fresh snapshot.
+        val snapshotFresh = System.currentTimeMillis() - t.timestamp <= MAX_TELEMETRY_AGE_MS
+        val hasReal = snapshotFresh && (t.ballX != 0f || t.ballY != 0f ||
                       t.playerVelocity != 0f ||
-                      t.opponentDistance != Float.MAX_VALUE
+                      t.opponentDistance != Float.MAX_VALUE)
 
         // Anchor: real goalkeeper/player position, else lower-left attacking zone.
         val startX = if (t.goalkeeperX != 0f) t.goalkeeperX else frameWidth * 0.30f

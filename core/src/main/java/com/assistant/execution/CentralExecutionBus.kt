@@ -101,14 +101,17 @@ object CentralExecutionBus {
     @Synchronized fun submit(request: ExecutionRequest): Boolean {
         if (!running.get() || UiExecutionGate.blocked()) {
             stoppedDrops.incrementAndGet()
+            RuntimeLogger.log("CentralExecutionBus submit dropped: stopped running=${running.get()} uiBlocked=${UiExecutionGate.blocked()} source=${request.source} phase=${request.phase} actionId=${request.actionId}", "CentralExecutionBus")
             return false
         }
         if (!requestIsValid(request)) {
             invalidDrops.incrementAndGet()
+            RuntimeLogger.log("CentralExecutionBus submit dropped: invalid source=${request.source} phase=${request.phase} actionId=${request.actionId}", "CentralExecutionBus")
             return false
         }
         if (requestIsStale(request)) {
             staleDrops.incrementAndGet()
+            RuntimeLogger.log("CentralExecutionBus submit dropped: stale source=${request.source} phase=${request.phase} actionId=${request.actionId}", "CentralExecutionBus")
             return false
         }
 
@@ -116,7 +119,7 @@ object CentralExecutionBus {
         discardStaleHeads(medRing)
         discardStaleHeads(lowRing)
         val key = request.source to request.phase
-        if (reservations.containsKey(key)) { reservationDrops.incrementAndGet(); return false }
+        if (reservations.containsKey(key)) { reservationDrops.incrementAndGet(); RuntimeLogger.log("CentralExecutionBus submit dropped: reservation source=${request.source} phase=${request.phase} actionId=${request.actionId}", "CentralExecutionBus"); return false }
         val ring = when (request.source) {
             ExecutionSource.GOALKEEPER, ExecutionSource.INTERCEPTION -> highRing
             ExecutionSource.SMART_ASSIST -> medRing
@@ -129,6 +132,7 @@ object CentralExecutionBus {
 
             if (writePos - readPos >= RING_CAPACITY) {
                 capacityDrops.incrementAndGet()
+                RuntimeLogger.log("CentralExecutionBus submit dropped: capacity source=${request.source} phase=${request.phase} actionId=${request.actionId}", "CentralExecutionBus")
                 return false
             }
 

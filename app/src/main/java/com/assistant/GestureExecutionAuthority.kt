@@ -233,7 +233,7 @@ object GestureExecutionAuthority {
                 "Gesture blocked: no active user touch "
                     + "(bypassTouchGate=${InterceptionRuntimeRegistry.bypassTouchGate}, "
                     + "isTouching=${UserTouchState.isTouching()}) "
-                    + "app/src/main/java/com/assistant/gameplay_engine.kt dispatch gate",
+                    + "GestureExecutionAuthority.kt dispatch gate",
                 "SMART_ASSIST"
             )
             // SPLENDOR_F33_GATE_COUNTERS: refusals were invisible in EXEC counters.
@@ -248,7 +248,7 @@ object GestureExecutionAuthority {
                 "dispatchGesture result=$result actionId=$actionId "
                     + "bypassTouchGate=${InterceptionRuntimeRegistry.bypassTouchGate} "
                     + "isTouching=${UserTouchState.isTouching()} "
-                    + "app/src/main/java/com/assistant/gameplay_engine.kt dispatchGesture boundary",
+                    + "GestureExecutionAuthority.kt dispatchGesture boundary",
                 "SMART_ASSIST"
             )
             if (result) {

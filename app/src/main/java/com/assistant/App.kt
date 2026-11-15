@@ -84,7 +84,7 @@ class App : Application() {
         }
 
         RuntimeLogger.initialize(this)
-        com.assistant.memory.MmapStateEngine.initialize(cacheDir)
+
 
         // Domain Backup Generator: Forces class loading for all 216+ engine objects
         // and verifies SMART_ASSIST (90) and STUTTER (80) execution sources.
@@ -149,6 +149,11 @@ class App : Application() {
                 }
             }
         } else if (isBackgroundProcess) {
+            // SPLENDOR_P12_B8_SURVIVAL: DeathWatch was armed in the main
+            // process only, so a :survival-only LMK kill was invisible
+            // (no marker, no heartbeat, no death report). Markers are
+            // per-process files, so arming here cannot collide with main.
+            DeathWatch.install(this)
             logSafe("App.onCreate: Headless process initialized [$currentProcess]", "BOOT")
         }
     }

@@ -73,7 +73,10 @@ object OmnipotentGoalkeeperEngine {
 
         if (attackerToGkDistance < 200.0) {
                 // Route GK RUSH through CentralExecutionBus (Downward swipe on Pressure Button)
-                val targetRushY = pressureButtonY + (screenHeight * 0.12f)
+                // SPLENDOR_P12_T3_RUSH: the rush was identical at distance 31
+                // and 185 (fixed swipe + 55ms). Scale by the computed distance.
+                val rushScale = (attackerToGkDistance / 200.0).toFloat().coerceIn(0f, 1f)
+                val targetRushY = pressureButtonY + (screenHeight * 0.12f * rushScale)
                 
                 val rushRequest = ExecutionRequest(
                     source = ExecutionSource.GOALKEEPER,
@@ -82,7 +85,7 @@ object OmnipotentGoalkeeperEngine {
                     startY = pressureButtonY,
                     endX = pressureButtonX,
                     endY = targetRushY,
-                    duration = 55L
+                    duration = (30L + (25L * rushScale).toLong())
                 )
 
                 if (CentralExecutionBus.submit(rushRequest)) {
@@ -91,7 +94,7 @@ object OmnipotentGoalkeeperEngine {
                         "phase-5 goalkeeper rush submitted unchanged as shadow-observed emergency gesture"
                     )
                     lastGkLayerTimestamp = now
-                    com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER 1v1 rush triggered dist=${attackerToGkDistance.toInt()}", "GOALKEEPER")
+                    com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER 1v1 rush bus-accepted actionId=${rushRequest.actionId} dist=${attackerToGkDistance.toInt()}", "GOALKEEPER")
                     return true
                 }
         }
@@ -127,7 +130,7 @@ object OmnipotentGoalkeeperEngine {
                     "phase-6 goalkeeper reflex submitted unchanged as shadow-observed emergency gesture"
                 )
                 lastGkLayerTimestamp = now
-                com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER close-range reflex pulse triggered", "GOALKEEPER")
+                com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER close-range reflex pulse bus-accepted actionId=${reflexRequest.actionId}", "GOALKEEPER")
                 return true
             }
         }
@@ -179,11 +182,14 @@ object OmnipotentGoalkeeperEngine {
                             detectedX = x
                             detectedY = y
 
-                            TelemetryCoordinator.updatePlayerMotion(
-                                velocity = ((height - y).toFloat() / height.toFloat()),
-                                opponentDistance = kotlin.math.abs((width / 2f) - x)
-                            )
-
+                            // SPLENDOR_P12_T2_SCAN_GEOMETRY: the scan row
+                            // fraction and pixel offset used to be written into
+                            // playerVelocity/opponentDistance, so consumers
+                            // read scan geometry as a player's speed and
+                            // distance (pv=0.25 on the first row, distances
+                            // always multiples of 8.0). Not published any
+                            // more; those fields stay at honest defaults
+                            // until a real tracker writes them.
                             anomalyDetected = true
                             break
                         }

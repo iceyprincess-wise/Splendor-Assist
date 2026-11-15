@@ -127,7 +127,9 @@ object TelemetryCoordinator {
                 ballVelocityX = velocityX,
                 ballVelocityY = velocityY,
                 confidence = confidence.coerceIn(0f, 1f),
-                timestamp = System.currentTimeMillis()
+                timestamp = System.currentTimeMillis(),
+                captureWidth = com.assistant.vision.CameraProfile.captureWidth,
+                captureHeight = com.assistant.vision.CameraProfile.captureHeight
             )
         )
 
@@ -146,7 +148,13 @@ object TelemetryCoordinator {
                 goalkeeperX = x,
                 goalkeeperY = y,
                 goalkeeperConfidence =
-                    if (confidence.isFinite()) confidence.coerceIn(0f, 1f) else 0f
+                    if (confidence.isFinite()) confidence.coerceIn(0f, 1f) else 0f,
+                // SPLENDOR_P12_T2_TIMESTAMP: only the ball updater stamped
+                // the snapshot, so GK-only frames read as stale. Any real
+                // telemetry write refreshes freshness.
+                timestamp = System.currentTimeMillis(),
+                captureWidth = com.assistant.vision.CameraProfile.captureWidth,
+                captureHeight = com.assistant.vision.CameraProfile.captureHeight
             )
         )
 

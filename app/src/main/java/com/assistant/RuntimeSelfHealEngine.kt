@@ -102,7 +102,10 @@ object RuntimeSelfHealEngine {
         val category: String,
         val detected: String,
         val fix: String,
-        val severity: String   // FIXED / CRITICAL / WARNING / INFO / CODE_FIX_NEEDED
+        val severity: String,  // FIXED / CRITICAL / WARNING / INFO / CODE_FIX_NEEDED
+        // SPLENDOR_P12_T4_SOURCE: call-site location captured by record();
+        // empty when the event predates this patch.
+        val source: String = ""
     )
 
     val healEvents: CopyOnWriteArrayList<HealEvent> = CopyOnWriteArrayList()
@@ -210,6 +213,11 @@ object RuntimeSelfHealEngine {
             val frameAgeMs = System.currentTimeMillis() - frame.timestampMs
             if (frameAgeMs > 3000L) return  // capture stale — don't force
 
+            // SPLENDOR_P12_T4_FG: forcing foreground=true with a known
+            // non-game app in front made fg=true for non-game packages.
+            // Empty package (eFootball child surfaces) still forces.
+            if (VisionTrust.isKnownNonGameForeground()) return
+
             val fg = VisionTrust.isGameForeground()
             if (!fg) {
                 VisionTrust.setGameForeground(true)
@@ -234,7 +242,7 @@ object RuntimeSelfHealEngine {
                     ))
                 }
             }
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) { android.util.Log.e("RuntimeSelfHealEngine", "suppressed error in self-heal check", t) }
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -277,9 +285,9 @@ object RuntimeSelfHealEngine {
                             category = "CAPTURE_RESTART",
                             detected = "No frame ever assembled (capture=" + com.assistant.vision.CameraProfile.diagnostics() + "). " +
                                 "Attempt #$captureRestartAttempts of 3.",
-                            fix = if (restarted) "RESTART SENT to OverlayService.restartCapture()." else
+                            fix = if (restarted) "RESTART SENT to OverlayService.restartCapture(); awaiting frame resumption for verification." else
                                 "CAPTURE RESTART FAILED — capture state " + com.assistant.OverlayService.captureState() + ".",
-                            severity = if (restarted) "FIXED" else "CRITICAL"
+                            severity = if (restarted) "INFO" else "CRITICAL"
                         ))
                     } else {
                         // SPLENDOR_P11_D4: heal first, log second. The
@@ -450,16 +458,15 @@ object RuntimeSelfHealEngine {
                     timestamp = fmt.format(Date()),
                     category = "CAPTURE_RESTART",
                     detected = "ImageReader capture thread STALE for ${staleMs / 1000}s. " +
-                        "Root cause: HyperOS silent kill of media projection (3 kills seen in crash report). " +
+                        "Root cause: HyperOS silent kill of media projection (unverified hypothesis — no kill count is tracked). " +
                         "decisions counter frozen at frameId=${f.frameId}. " +
                         "Attempt #$captureRestartAttempts of 3.",
-                    fix = if (restarted) "RESTART SENT to OverlayService.restartCapture(). " +
-                        "Watch for new GAMEPLAY_EVENT entries to confirm success." else
+                    fix = if (restarted) "RESTART SENT to OverlayService.restartCapture(); awaiting frame resumption for verification." else
                         "CAPTURE RESTART FAILED because the current projection may be " +
                         "invalid or revoked. OverlayService remains the recovery owner. " +
                         "If MediaProjection.onStop() fired, fresh user authorization " +
                         "is required; the old projection token cannot be reused.",
-                    severity = if (restarted) "FIXED" else "CRITICAL"
+                    severity = if (restarted) "INFO" else "CRITICAL"
                 ))
 
                 if (!restarted) {
@@ -480,12 +487,12 @@ object RuntimeSelfHealEngine {
                     category = "CAPTURE_STALE",
                     detected = "Capture stale ${staleMs / 1000}s. Restart attempts: $captureRestartAttempts/3.",
                     fix = if (captureRestartAttempts >= 3)
-                        "Max restart attempts reached. FORCE-STOP app and reopen."
+                        "Max restart attempts reached. If still frozen, re-grant MediaProjection via the capture recovery prompt; no automatic force-stop exists."
                         else "Next restart attempt in ${(30_000L - (System.currentTimeMillis() - lastRestartAttemptMs)) / 1000}s.",
                     severity = "CRITICAL"
                 ))
             }
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) { android.util.Log.e("RuntimeSelfHealEngine", "suppressed error in self-heal check", t) }
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -513,7 +520,7 @@ object RuntimeSelfHealEngine {
                         detected = "ALL bus signals stuck at UNKNOWN for ${stuckMs / 1000}s. " +
                             "Adapter services not publishing. SpeedCompensationContributor + RuntimeDecisionLoop blind.",
                         fix = "REPORTED: signals stuck UNKNOWN; no values were injected.",
-                        severity = "WARN"
+                        severity = "WARNING"
                     ))
                     RuntimeLogger.log("AGENT BUS: all signals stuck UNKNOWN — reported, no values injected", "AGENT")
                     busUnknownSinceMs = 0L
@@ -521,7 +528,7 @@ object RuntimeSelfHealEngine {
             } else {
                 busUnknownSinceMs = 0L
             }
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) { android.util.Log.e("RuntimeSelfHealEngine", "suppressed error in self-heal check", t) }
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -536,6 +543,10 @@ object RuntimeSelfHealEngine {
                 if (heavySinceMs == 0L) heavySinceMs = System.currentTimeMillis()
                 val heavyMs = System.currentTimeMillis() - heavySinceMs
                 if (heavyMs > 20_000L && shouldLog("LOAD_SHED_HEAVY", "heavy=${heavyMs/1000}s")) {
+                    // SPLENDOR_P12_T4_PURGE: AggressiveMemoryHoarding.executePurge
+                    // existed with zero callers while HEAVY only logged. Run
+                    // it (its own 60s cooldown is the spam guard).
+                    try { appContext()?.let { com.assistant.AggressiveMemoryHoarding.executePurge(it) } } catch (_: Throwable) {}
                     val lag = AdapterSignalBus.lagVerdict
                     val stutter = AdapterSignalBus.stutterState
                     val cause = when {
@@ -558,7 +569,7 @@ object RuntimeSelfHealEngine {
             } else {
                 heavySinceMs = 0L
             }
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) { android.util.Log.e("RuntimeSelfHealEngine", "suppressed error in self-heal check", t) }
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -617,7 +628,7 @@ object RuntimeSelfHealEngine {
                             "onFrame() not being called — decision counter did not advance since last check. " +
                             "Most likely ImageReader stopped delivering; unverified until the capture check reports.",
                         fix = "AGENT will attempt capture restart. If max attempts reached: " +
-                            "force-stop app and reopen. No code change needed — this is an OS kill issue.",
+                            "re-grant MediaProjection via the capture recovery prompt; no automatic force-stop exists.",
                         severity = "CRITICAL"
                     ))
                     RuntimeLogger.log("AGENT CRITICAL LOOP_FROZEN at $decisions — triggering capture check", "AGENT")
@@ -648,19 +659,23 @@ object RuntimeSelfHealEngine {
             } else {
                 zeroDispatchSinceMs = 0L
             }
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) { android.util.Log.e("RuntimeSelfHealEngine", "suppressed error in self-heal check", t) }
     }
 
     // ─────────────────────────────────────────────────────────────────────
     // CONTRIBUTOR MONITOR — detects if any contributor is dead/never firing
     // ─────────────────────────────────────────────────────────────────────
     @Volatile private var prevCollectCycles: Long = 0L
+    // SPLENDOR_P12_T4_REGISTRY_PERSIST: first-seen time of an empty registry
+    // read; reset() is only safe once the empty read has persisted.
+    @Volatile private var registryEmptySinceMs: Long = 0L
 
     private fun checkContributors(warmed: Boolean) {
         if (!warmed) return
         try {
             // SPLENDOR_V18_CONTRIB_HEALTH_BEGIN
             val engines = GameplayEngineRegistry.contributorCount()
+            if (engines > 0) registryEmptySinceMs = 0L
             val cycles = GameplayEngineRegistry.collectCycleCount()
             val delta = cycles - prevCollectCycles
             prevCollectCycles = cycles
@@ -668,13 +683,15 @@ object RuntimeSelfHealEngine {
             val ageMs = agentAgeMs()
 
             if (engines == 0 && ageMs > 5_000L) {
-                // SPLENDOR_P11_D4: heal first, log second. reset() +
-                // ensureRegistered() used to sit inside the shouldLog()
-                // block, so recovery was throttled by the 5-min log dedup.
-                // (Matches the REVOKED/FAILED/IDLE branches, which heal
-                // before they log.)
-                try { com.assistant.AppContributorRegistration.reset() } catch (_: Throwable) {}
-                try { com.assistant.AppContributorRegistration.ensureRegistered() } catch (_: Throwable) {}
+                // SPLENDOR_P12_T4_REGISTRY_PERSIST: a single 0 read used to
+                // reset() immediately, cancelling the in-flight async
+                // registration and wiping the registry (REGISTRY_EMPTY/GAP
+                // race). Require the empty read to persist 10s first.
+                if (registryEmptySinceMs == 0L) registryEmptySinceMs = System.currentTimeMillis()
+                if (System.currentTimeMillis() - registryEmptySinceMs > 10_000L) {
+                    try { com.assistant.AppContributorRegistration.reset() } catch (_: Throwable) {}
+                    try { com.assistant.AppContributorRegistration.ensureRegistered() } catch (_: Throwable) {}
+                }
                 checkCaptureThread()
                 if (shouldLog("REGISTRY_EMPTY", "engines=0") /* SPLENDOR_P9_RSE_DEDUP: no per-second age token -- it defeated the 5-min dedup */) {
                     record(HealEvent(
@@ -755,7 +772,7 @@ object RuntimeSelfHealEngine {
                     severity = "WARNING"
                 ))
             }
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) { android.util.Log.e("RuntimeSelfHealEngine", "suppressed error in self-heal check", t) }
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -795,7 +812,7 @@ object RuntimeSelfHealEngine {
         try {
             val file = healLogFile() ?: return
             FileWriter(file, true).use { it.write(text) }
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) { android.util.Log.e("RuntimeSelfHealEngine", "suppressed error in self-heal check", t) }
         try { RuntimeLogger.log("CODE_FIX_NEEDED: $issueId — see HealLog", "AGENT") } catch (_: Throwable) {}
     }
 
@@ -803,12 +820,17 @@ object RuntimeSelfHealEngine {
     // File + memory logging
     // ─────────────────────────────────────────────────────────────────────
     private fun record(ev: HealEvent) {
-        healEvents.add(ev)
+        // SPLENDOR_P12_T4_SOURCE: writeToFile() used to call currentLocation()
+        // itself, so every HealEvent SOURCE pointed at the writer, never the
+        // detecting check. Capture the call site here, where the first
+        // surviving frame is the check that called record().
+        val sourced = if (ev.source.isEmpty()) ev.copy(source = CrashForensics.currentLocation()) else ev
+        healEvents.add(sourced)
         while (healEvents.size > 100) try { healEvents.removeAt(0) } catch (_: Throwable) {}
-        writeToFile(ev)
+        writeToFile(sourced)
         try {
-            RuntimeLogger.log("[${ev.severity}] ${ev.category}: ${ev.detected.take(120)}", "AGENT")
-        } catch (_: Throwable) {}
+            RuntimeLogger.log("[${sourced.severity}] ${sourced.category}: ${sourced.detected.take(120)}", "AGENT")
+        } catch (t: Throwable) { android.util.Log.e("RuntimeSelfHealEngine", "suppressed error in self-heal check", t) }
     }
 
     private fun healLogFile(): File? {
@@ -836,11 +858,11 @@ object RuntimeSelfHealEngine {
                 }
                 if (ev == null) return
                 w.write("[${ev.timestamp}] [${ev.severity}] [${ev.category}]\n")
-                w.write("  SOURCE: ${CrashForensics.currentLocation()}\n")
+                w.write("  SOURCE: ${ev.source}\n")
                 w.write("  DETECTED: ${ev.detected}\n")
                 w.write("  FIX:      ${ev.fix}\n\n")
             }
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) { android.util.Log.e("RuntimeSelfHealEngine", "suppressed error in self-heal check", t) }
     }
 
     // ─────────────────────────────────────────────────────────────────────

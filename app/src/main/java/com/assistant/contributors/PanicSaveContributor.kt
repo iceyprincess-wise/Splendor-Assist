@@ -39,7 +39,7 @@ object PanicSaveContributor : GameplayContributor {
             actionClass = ActionClass.KEEPER,
             targetX = frame.ballX.coerceAtLeast(0f),
             targetY = frame.ballY.coerceAtLeast(0f),
-            authority = (((decision.priority / 150f) * 0.95f) * fluidMultiplier).coerceIn(0f, 1f),
+            authority = ((decision.priority / 150f) * fluidMultiplier).coerceIn(0f, 1f), // SPLENDOR_P12_T4_PANIC: the unexplained 0.95 haircut on the highest-urgency keeper action is removed.
             confidence = frame.confidence,
             durationHintMs = 26L
         )

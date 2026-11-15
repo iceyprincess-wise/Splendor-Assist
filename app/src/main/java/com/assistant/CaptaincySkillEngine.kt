@@ -101,7 +101,7 @@ object CaptaincySkillEngine {
     // Team lift range
     private const val MIN_TEAM_LIFT   = 1.00f
     private const val MAX_TEAM_LIFT   = 1.15f
-    private const val PANIC_TEAM_LIFT = 1.20f   // peak: captain in full crisis
+
 
     // Composure gesture bonus range (ms)
     private const val MIN_COMPOSURE_MS = 0L
@@ -132,7 +132,7 @@ object CaptaincySkillEngine {
         val fatigueProxy: Float,
 
         /**
-         * Local gesture-duration scale [1.00, 1.20], applied by RuntimeDecisionLoop.
+         * Local gesture-duration scale [1.00, 1.15], applied by RuntimeDecisionLoop.
          * This policy does not measure or modify the game's fatigue attribute.
          */
         val teamLiftFactor: Float,
@@ -183,7 +183,7 @@ object CaptaincySkillEngine {
         // Panic → fixed peak lift (captain most vocal in a crisis).
         // Otherwise → linear scale with fatigue above activation floor.
         val teamLiftFactor: Float = when {
-            frame.panic -> PANIC_TEAM_LIFT
+            frame.panic -> MAX_TEAM_LIFT // SPLENDOR_P12_T2_LIFT: panic used to exceed the documented lift range (1.20 > MAX 1.15); capped.
             else -> {
                 val normalized = ((fatigueProxy - FATIGUE_ACTIVATION_FLOOR) /
                     (1f - FATIGUE_ACTIVATION_FLOOR)).coerceIn(0f, 1f)

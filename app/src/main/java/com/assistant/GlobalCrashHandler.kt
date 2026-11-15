@@ -260,7 +260,7 @@ class GlobalCrashHandler(
             out.appendLine("  G0=permissions G1=accessibility G2=capture G3=booster G4=engines G5=bus G6=ready")
             try {
                 val rc = Class.forName("com.assistant.RuntimeCoordinator")
-                val snap = rc.getMethod("runtimeState").invoke(null) as? Map<*, *>
+                val snap = rc.getMethod("runtimeState").invoke(rc.getField("INSTANCE").get(null)) as? Map<*, *>
                 if (snap != null) {
                     val ready = snap["runtimeReady"] as? Boolean ?: false
                     out.appendLine("  runtimeReady      : $ready ${if (!ready) "← ENGINES NOT RUNNING — check gates below" else ""}")
@@ -282,7 +282,7 @@ class GlobalCrashHandler(
             out.appendLine("═══ FRAME / VISION TRUST ═══")
             try {
                 val fa = Class.forName("com.assistant.FrameAssembler")
-                val snap = fa.getMethod("frameRuntimeSnapshot").invoke(null) as? Map<*, *>
+                val snap = fa.getMethod("frameRuntimeSnapshot").invoke(fa.getField("INSTANCE").get(null)) as? Map<*, *>
                 if (snap != null) {
                     val trusted = snap["trusted"] as? Boolean ?: false
                     val hasBall = snap["hasBall"] as? Boolean ?: false
@@ -313,7 +313,7 @@ class GlobalCrashHandler(
             out.appendLine("═══ RUNTIME DECISION LOOP ═══")
             try {
                 val rdl = Class.forName("com.assistant.RuntimeDecisionLoop")
-                val snap = rdl.getMethod("decisionRuntimeSnapshot").invoke(null) as? Map<*, *>
+                val snap = rdl.getMethod("decisionRuntimeSnapshot").invoke(rdl.getField("INSTANCE").get(null)) as? Map<*, *>
                 if (snap != null) {
                     val routed = (snap["routed"] as? Long) ?: 0L
                     val decisions = (snap["decisions"] as? Long) ?: 0L
@@ -339,7 +339,7 @@ class GlobalCrashHandler(
             out.appendLine("═══ CONTRIBUTOR REGISTRY (${AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT} total, single source: AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT) ═══") /* SPLENDOR_P9_GCH_38B */
             try {
                 val gr = Class.forName("com.assistant.runtime.GameplayEngineRegistry")
-                val snap = gr.getMethod("registryRuntimeSnapshot").invoke(null) as? Map<*, *>
+                val snap = gr.getMethod("registryRuntimeSnapshot").invoke(gr.getField("INSTANCE").get(null)) as? Map<*, *>
                 if (snap != null) {
                     val engines = snap["engines"]
                     val cycles = snap["collectCycles"]

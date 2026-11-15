@@ -151,7 +151,7 @@ class WatchdogAdapterService : Service() {
                     "Dead process  : " + (p.getOrNull(1) ?: "?") + "  (pid " + (p.getOrNull(2) ?: "?") + ")\n" +
                     "Session began : " + began + "\n" +
                     "Last heartbeat: " + fmt.format(java.util.Date(lastBeat)) + "\n" +
-                    "Undetected for: " + ((now - lastBeat) / 1000L) + "s before this watchdog report\n" +
+                    "Last beat age at detection: " + ((now - lastBeat) / 1000L) + "s (includes the delay before this watchdog report)\n" +
                     "VERDICT       : WATCHDOG — main process not in runningAppProcesses and marker stale > 60s; no restart observed to report the death\n" +
                     "Report source : WatchdogAdapterService.checkMainProcessMarker (:survival)\n" +
                     "==================================\n"

@@ -24,7 +24,7 @@ object CrashForensics {
     private val details = LongArray(CAPACITY)
     // Cache source location once per stage to keep hot breadcrumb writes cheap.
     private val locations = Array(CAPACITY) { "unknown:0" }
-    private val stageLocations = arrayOfNulls<String>(256)
+
     private val beats = LongArray(5)
     private val nativeBreadcrumbRing = Array(64) { "" }
     private var nativeBreadcrumbCursor = 0
@@ -51,8 +51,11 @@ object CrashForensics {
         override fun run() {
             try {
                 checkStalls(System.currentTimeMillis())
-                flushSnapshot(false)
-            } catch (_: Throwable) { }
+                // SPLENDOR_P12_T4_BLOAT: a no-capture session flushed a
+                // full capture=0/vision=0/engine=0 snapshot every 10s
+                // forever. Only flush once a loop has actually beaten.
+                if (beats.any { it > 0L }) flushSnapshot(false)
+            } catch (t: Throwable) { android.util.Log.e("CrashForensics", "monitor tick failed", t) }
             handler.postDelayed(this, SNAPSHOT_MS)
         }
     }
@@ -67,10 +70,10 @@ object CrashForensics {
             times[slot] = now
             stages[slot] = stage
             details[slot] = detail
-            val location = if (stage in stageLocations.indices) stageLocations[stage] else null
-            locations[slot] = location ?: sourceFromCurrentStack().also { captured ->
-                if (stage in stageLocations.indices) stageLocations[stage] = captured
-            }
+            // SPLENDOR_P12_T4_SOURCE: the per-stage cache froze every
+            // breadcrumb's source at its first caller forever. Resolve the
+            // real caller on every mark.
+            locations[slot] = sourceFromCurrentStack()
             if (loop in CAPTURE..OVERLAY) beats[loop] = now
         }
     }
@@ -92,7 +95,10 @@ object CrashForensics {
         installed = true
         handler.removeCallbacks(monitor)
         handler.post(monitor)
-        mark(1, OVERLAY, android.os.Process.myPid().toLong())
+        // SPLENDOR_P12_T4_OVERLAY_BEAT: arming the OVERLAY beat here (and in
+        // OverlayService.onCreate) tripped one spurious [STALLED] OVERLAY
+        // 15s after install in sessions where capture never started. The
+        // beat is armed only by the first arriving image now.
     }
 
     /** Called before the platform handler, while the VM can still write a report. */
@@ -156,7 +162,7 @@ object CrashForensics {
                 val slot = ((cursor.get() - 1L) % CAPACITY).toInt()
                 locations[slot] = "app/src/main/cpp/$relative:$line native=$phase"
             }
-        } catch (_: Throwable) { }
+        } catch (t: Throwable) { android.util.Log.e("CrashForensics", "nativeBreadcrumb failed", t) }
     }
 
     /** A restarted survivor records the OS death verdict; previous snapshots remain in this log. */
@@ -188,7 +194,7 @@ object CrashForensics {
         synchronized(lock) {
             val end = cursor.get()
             val start = (end - CAPACITY).coerceAtLeast(0L)
-            out.append("--- BREADCRUMBS newest-first-window count=").append(end - start).append(" ---\n")
+            out.append("--- BREADCRUMBS oldest-first-window count=").append(end - start).append(" ---\n")
             var n = start
             while (n < end) {
                 val slot = (n % CAPACITY).toInt()
@@ -219,7 +225,7 @@ object CrashForensics {
             FileOutputStream(file, true).use { stream ->
                 stream.write(("\n" + text).toByteArray(Charsets.UTF_8))
                 stream.flush()
-                try { stream.fd.sync() } catch (_: Throwable) { }
+                try { stream.fd.sync() } catch (t: Throwable) { android.util.Log.e("CrashForensics", "report fsync failed", t) }
             }
         } catch (t: Throwable) { android.util.Log.e("CrashForensics", "appendReport failed, death evidence lost", t) }
     }

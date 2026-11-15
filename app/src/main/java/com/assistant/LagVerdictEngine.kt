@@ -84,6 +84,14 @@ object LagVerdictEngine {
     @Volatile private var streak = 0
     @Volatile private var lastHeartbeat = 0L
 
+    // SPLENDOR_P12_T4_LAGVERDICT: Choreographer keeps firing with capture
+    // dead, so "DEVICE SMOOTH" was printed for a dead engine. The verdict
+    // is only meaningful while capture is delivering frames.
+    private fun captureAlive(): Boolean = try {
+        val f = FrameAssembler.current()
+        f != null && System.currentTimeMillis() - f.timestampMs < 3000L
+    } catch (_: Throwable) { false }
+
     fun start() {
         if (running) return
         running = true
@@ -99,7 +107,7 @@ object LagVerdictEngine {
                         stallRate > CHOKE_STALLS || mtStall > CHOKE_MTSTALL_MS ||
                             spm > CHOKE_SPIKES -> "CHOKING"
                         jit > JITTER_MS || stab < STABILITY_PCT -> "JITTERY"
-                        FramePacingEngine.avgGapMs > 0f -> "SMOOTH"
+                        FramePacingEngine.avgGapMs > 0f && captureAlive() -> "SMOOTH"
                         else -> "UNKNOWN"
                     }
                     if (raw == candidate) streak++ else { candidate = raw; streak = 1 }

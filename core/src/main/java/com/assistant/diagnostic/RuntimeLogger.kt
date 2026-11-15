@@ -193,7 +193,10 @@ object RuntimeLogger {
         details:String
     ){
         LogMirror.mirror(stage, android.util.Log.INFO, details)
-        append(
+        // SPLENDOR_P12_A6_SYNC: the chain log is the death-window record; the
+        // async queue (256 deep, daemon thread, no flush) drops its tail on a
+        // kill. Chain lines write synchronously on the calling thread instead.
+        appendSync(
             executionChainLog,
             "${now()} [$stage] source=${callerLocation()} $details\n"
         )
@@ -265,6 +268,21 @@ object RuntimeLogger {
                 droppedWrites.incrementAndGet()
                 android.util.Log.e("RuntimeLogger", "Log append failed", e)
             }
+        }
+    }
+
+    private fun appendSync(
+        file: File?,
+        text: String
+    ) {
+        if (file == null) return
+        try {
+            java.io.FileOutputStream(file, true).use { fos ->
+                fos.write(text.toByteArray(Charsets.UTF_8))
+            }
+        } catch (e: Exception) {
+            droppedWrites.incrementAndGet()
+            android.util.Log.e("RuntimeLogger", "Log appendSync failed", e)
         }
     }
 

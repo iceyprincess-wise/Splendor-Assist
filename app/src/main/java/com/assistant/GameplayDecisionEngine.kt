@@ -296,14 +296,22 @@ object GameplayDecisionEngine {
         assertGameplayDecisionPrimeAuthority("decide")
 
         val now = System.currentTimeMillis()
-        val telemetryFresh = (now - telemetry.timestamp) <= MAX_TELEMETRY_AGE_MS
+        // SPLENDOR_P12_T2_SIZE: a capture restart/rotation changes the
+        // geometry the coordinates were measured in; treat telemetry from
+        // a different capture size as stale instead of deciding on it.
+        val captureSizeChanged = telemetry.captureWidth != 0 && telemetry.captureHeight != 0 &&
+            (telemetry.captureWidth != com.assistant.vision.CameraProfile.captureWidth ||
+                telemetry.captureHeight != com.assistant.vision.CameraProfile.captureHeight)
+        val telemetryFresh = (now - telemetry.timestamp) <= MAX_TELEMETRY_AGE_MS && !captureSizeChanged
 
+        // SPLENDOR_P12_T2_GATE: 500f let a 334px teleport pass on a 288-wide
+        // capture, and the playerVelocity<0 clause could never fire (the
+        // only writer produced [0, 0.25]). 150f is ~half the capture width.
         val impossibleTelemetry =
-            fastAbs(telemetry.ballX - previousBallX) > 500f ||
-            fastAbs(telemetry.ballY - previousBallY) > 500f ||
+            fastAbs(telemetry.ballX - previousBallX) > 150f ||
+            fastAbs(telemetry.ballY - previousBallY) > 150f ||
             fastAbs(telemetry.goalkeeperX - previousGoalkeeperX) > 300f ||
-            fastAbs(telemetry.goalkeeperY - previousGoalkeeperY) > 300f ||
-            telemetry.playerVelocity < 0f
+            fastAbs(telemetry.goalkeeperY - previousGoalkeeperY) > 300f
 
         val normalizedShotAuthority = bound(shotAuthority, 0f, 1f)
         val normalizedPassAuthority = bound(passAuthority, 0f, 1f)
@@ -362,10 +370,16 @@ object GameplayDecisionEngine {
                 lastStableMode = stableMode
             }
 
-            previousBallX = telemetry.ballX
-            previousBallY = telemetry.ballY
-            previousGoalkeeperX = telemetry.goalkeeperX
-            previousGoalkeeperY = telemetry.goalkeeperY
+            // SPLENDOR_P12_T2_GATE: absorbing a rejected (stale/impossible)
+            // reading into the baseline let a teleport pass the gate once
+            // and never trip it again. Only trusted readings become the
+            // baseline.
+            if (telemetryFresh && !impossibleTelemetry) {
+                previousBallX = telemetry.ballX
+                previousBallY = telemetry.ballY
+                previousGoalkeeperX = telemetry.goalkeeperX
+                previousGoalkeeperY = telemetry.goalkeeperY
+            }
             previousMode = stableMode
             previousStrength = strength
             previousConfidence = confidence

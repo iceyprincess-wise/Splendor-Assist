@@ -146,17 +146,31 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             return false
         }
 
+        // SPLENDOR_P12_A2_PACKAGE: the package-deny gate was only checked
+        // downstream in GestureExecutionAuthority, so attempts passed every
+        // pre-check, logged DIRECT_DISPATCH, then died on package-deny.
+        // Pre-check it here (the authority's own check stays: TOCTOU).
+        if (!VisionTrust.isExecutionPackageAllowed()) {
+            RuntimeLogger.log(
+                "Direct dispatch blocked: package deny pkg=${VisionTrust.diagnostics()}",
+                "SMART_ASSIST"
+            )
+            return false
+        }
+
         val category = request.actionClass ?: if (request.source == ExecutionSource.GOALKEEPER) com.assistant.runtime.ActionClass.KEEPER else null
         if (category != null && ActionOutcomeVerifier.cooling(category)) {
             // SPLENDOR_P11_D02: was a silent early return — the only trace
             // of a cooling-dropped dispatch was the absence of a
             // DIRECT_DISPATCH line.
+            RuntimeLogger.execution("BUS_DROPPED", "reason=cooling actionClass=$category actionId=${request.actionId}")
             RuntimeLogger.log("Direct dispatch dropped: cooling actionClass=$category actionId=${request.actionId}", "SMART_ASSIST")
             return false
         }
         if (isDispatching) {
             // SPLENDOR_P11_D02: was a silent early return — a dispatch
             // dropped while a stroke is live left no trace.
+            RuntimeLogger.execution("BUS_DROPPED", "reason=latch-held heldBy=$currentActionId actionId=${request.actionId}")
             RuntimeLogger.log("Direct dispatch dropped: dispatch latch held by actionId=$currentActionId actionId=${request.actionId}", "SMART_ASSIST")
             return false // Completion callbacks own the live stroke, not a duration estimate.
         }
@@ -196,7 +210,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
             RuntimeLogger.execution(
                 "DIRECT_DISPATCH",
-                "source=${request.source} phase=${request.phase} duration=$syncedDuration"
+                "actionId=${request.actionId} source=${request.source} phase=${request.phase} duration=$syncedDuration start=(${request.startX},${request.startY}) end=(${request.endX},${request.endY})"
             )
 
             FrameAssembler.current()?.takeIf { it.trusted }?.let { frame ->
@@ -296,7 +310,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
                     RuntimeLogger.execution(
                         "BUS_DISPATCH",
-                        "source=${request.source} phase=${request.phase} accepted=$accepted"
+                        "actionId=${request.actionId} source=${request.source} phase=${request.phase} accepted=$accepted start=(${request.startX},${request.startY}) end=(${request.endX},${request.endY})"
                     )
                 }
             } catch (e: Exception) {

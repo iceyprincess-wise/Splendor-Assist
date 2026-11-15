@@ -108,6 +108,10 @@ class ModMenuController(private val context: Context) {
         try {
             windowManager?.addView(menuView, layoutParams)
             isShown = true
+            // SPLENDOR_P12_T4_SELFMASK: the menu overlay was never
+            // published, so OCR read the app's own MOD MENU. Publish
+            // after layout (post) so the view has real bounds.
+            menuView?.post { com.assistant.vision.OverlaySelfMask.publishView("modmenu", menuView) }
         } catch (_: Throwable) {
             isShown = false
         }
@@ -122,6 +126,7 @@ class ModMenuController(private val context: Context) {
         try {
             windowManager?.removeView(menuView)
         } catch (_: Throwable) {}
+        com.assistant.vision.OverlaySelfMask.clear("modmenu")
         menuView = null
         isShown = false
     }

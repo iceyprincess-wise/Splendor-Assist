@@ -79,7 +79,7 @@ import kotlin.math.max
 
 
 
-import kotlin.random.Random
+
 
 
 
@@ -150,8 +150,10 @@ object ShieldAssistEngine {
         val normalizedDistance = opponentDistance / 100.0f
 
         // Fuzz boundaries subtly to prevent instant, pixel-perfect activation triggers across matches
-        val upperTriggerFuzz = 2.2f + (Random.nextFloat() * 0.04f - 0.02f) // +/- 0.02 range
-        val lowerOverrideFuzz = 1.0f + (Random.nextFloat() * 0.02f - 0.01f)
+        // SPLENDOR_P12_T4_RANDOM: live Random fuzz made the trigger
+        // thresholds non-deterministic. Fixed mid-range values.
+        val upperTriggerFuzz = 2.2f
+        val lowerOverrideFuzz = 1.0f
 
         // Dynamic Threat Evaluation:
         // 1. Dynamic trigger if opponent is inside 220 coordinate points (2.2f) and player velocity is active.

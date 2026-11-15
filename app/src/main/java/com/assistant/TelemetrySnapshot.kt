@@ -106,14 +106,18 @@ data class TelemetrySnapshot(
 
     val goalkeeperX: Float = 0f,
     val goalkeeperY: Float = 0f,
-    val goalkeeperVelocityX: Float = 0f,
-    val goalkeeperVelocityY: Float = 0f,
-    val goalkeeperSpeed: Float = 0f,
-    val goalkeeperHeadingRadians: Float = 0f,
     val goalkeeperConfidence: Float = 0f,
 
     val confidence: Float = 0f,
-    val currentPingMs: Int = -1 // unknown unless measured
+
+    // SPLENDOR_P12_T2_SIZE: capture geometry the snapshot was published
+    // against (real CameraProfile values; 0 = unset). Lets consumers detect
+    // a mid-session rotation/restart instead of deciding on coordinates
+    // from a geometry that no longer exists. The deleted fields above
+    // (GK velocity/speed/heading, currentPingMs) had no writer anywhere in
+    // the repo — the struct advertised measurements it never made.
+    val captureWidth: Int = 0,
+    val captureHeight: Int = 0
 )
 
 /* ========

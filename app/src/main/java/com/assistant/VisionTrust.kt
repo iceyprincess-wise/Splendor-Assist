@@ -103,7 +103,7 @@ object VisionTrust {
     // Fix: FRESH_MS=200ms (3 frames), STALE_MS=600ms (9 frames) for 15fps operation
     private val FRESH_MS: Long get() = 200L
     private val STALE_MS: Long get() = 600L
-    private val LATENCY_LIMIT_MS: Float get() = 300f  // PHASE4B: 15fps main-thread spikes up to 250ms are normal
+
     private val TRUST_FLOOR: Float get() = 0.55f
     private val LANE_FLOOR: Float get() = 0.35f
 
@@ -179,6 +179,12 @@ object VisionTrust {
         }
     }
 
+    // SPLENDOR_P12_T4_FG: the self-heal foreground force used to set
+    // foregroundIsGame=true whenever capture was fresh, even with a known
+    // non-game app in front. This is the package-aware guard for it.
+    @JvmStatic fun isKnownNonGameForeground(): Boolean =
+        lastForegroundPkg.isNotEmpty() && !isExecutionPackageAllowed()
+
     @JvmStatic fun recoverStuckGameOff() {
         val now = android.os.SystemClock.elapsedRealtime()
         if (OverrideStore.mode("GAME") == OverrideStore.Mode.AUTO && !foregroundIsGame &&
@@ -210,7 +216,7 @@ object VisionTrust {
     // ---------------- gap 2: age-decayed ball trust ----------------
     @Volatile private var lastBallStampMs = 0L
     @Volatile private var lastBallConfidence = 0f
-    @Volatile private var lastLatencyMs = 0f
+
     @Volatile private var insaneRejects = 0L
 
     @JvmStatic
@@ -219,8 +225,7 @@ object VisionTrust {
         lastBallConfidence = confidence.coerceIn(0f, 1f)
     }
 
-    @JvmStatic
-    fun stampLatency(ms: Float) { lastLatencyMs = ms }
+
 
     /** confidence faded by how long ago we actually saw the ball */
     @JvmStatic
@@ -260,7 +265,7 @@ object VisionTrust {
         if (players > 0 || opponents > 0) {
             if (!entityCountSane(players, opponents)) return false
         }
-        if (lastLatencyMs > LATENCY_LIMIT_MS) return false
+
         return (players > 0 || opponents > 0 || ballTrust() >= TRUST_FLOOR)
     }
 
@@ -320,11 +325,10 @@ object VisionTrust {
     fun diagnostics(): String =
         "fg=" + foregroundIsGame + " pkg=" + lastForegroundPkg +
         " gated=" + gatedFrames +
-        " ballTrust=" + String.format("%.3f", ballTrust()) +
+        " ballTrust=" + (if (isGameForeground()) String.format("%.3f", ballTrust()) else "n/a(non-game)") +
         " lane=" + String.format("%.3f", laneConfidence()) +
         " stability=" + String.format("%.3f", directionStability()) +
         " spread=" + String.format("%.3f", laneSpread) +
-        " latency=" + lastLatencyMs +
         " insaneRejects=" + insaneRejects
 
     @JvmStatic

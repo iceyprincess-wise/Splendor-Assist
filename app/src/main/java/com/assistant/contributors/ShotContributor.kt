@@ -23,7 +23,10 @@ object ShotContributor : GameplayContributor {
     override val capabilities = setOf(EngineCapability.ATTACK)
 
     private const val MIN_GOAL_CONFIDENCE = 0.30f
-    private const val MAX_SHOT_RANGE_PX = 620f
+    // SPLENDOR_P12_T4_SHOT_RANGE: 620px was never normalized, so the
+    // effective shooting range changed with capture size. Same 620px at a
+    // 1080px-wide capture, scaled by the live capture width.
+    private const val MAX_SHOT_RANGE_FRACTION_OF_WIDTH = 620f / 1080f
     private const val MOUTH_INSET = 0.18f // keep the aim inside the posts
 
         // SPLENDOR_V43_FAST_GATE
@@ -42,7 +45,8 @@ object ShotContributor : GameplayContributor {
             frame.goalCenterX - frame.ballX,
             frame.goalCenterY - frame.ballY
         )
-        if (range > MAX_SHOT_RANGE_PX) return null
+        val maxRange = if (frame.captureWidth > 0f) MAX_SHOT_RANGE_FRACTION_OF_WIDTH * frame.captureWidth else 620f
+        if (range > maxRange) return null
 
         // Aim inside the mouth, away from the keeper if we can see one.
         val inset = frame.goalWidth * MOUTH_INSET
@@ -57,7 +61,7 @@ object ShotContributor : GameplayContributor {
 
         // Closer shot + clearer goal sighting = more authority. A keeper we
         // can actually see (and aim around) is worth more than a blind shot.
-        val proximity = (1f - range / MAX_SHOT_RANGE_PX).coerceIn(0f, 1f)
+        val proximity = (1f - range / maxRange).coerceIn(0f, 1f)
         val keeperBonus = if (frame.goalkeeperVisible) 0.15f else 0f
         val authority = fluidMultiplier *
             (0.35f + 0.35f * proximity + 0.15f * frame.goalConfidence + keeperBonus)

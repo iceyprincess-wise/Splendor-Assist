@@ -36,12 +36,15 @@ object FilterEngine {
 
     fun start() {
         if (isActive) return
+        // SPLENDOR_P12_B3_ROOT: the hardcoded /storage/emulated/0 path
+        // bypassed SplendorStorageRoot's readiness/permission gate, so a
+        // not-ready start failed silently on every write. Canonical root
+        // only; a not-ready start stays retryable (isActive untouched).
+        if (!com.assistant.storage.SplendorStorageRoot.isReady()) return
+        val resolved = try { com.assistant.storage.SplendorStorageRoot.file("filter report.txt") } catch (_: Throwable) { return }
         isActive = true
         
-        // Initialize report file in external storage root for user accessibility
-        val splendorDir = File("/storage/emulated/0/Splendor-Assist")
-        if (!splendorDir.exists()) splendorDir.mkdirs()
-        reportFile = File(splendorDir, "filter report.txt")
+        reportFile = resolved
         
         Thread {
             while (isActive) {
@@ -56,14 +59,12 @@ object FilterEngine {
         }.apply {
             isDaemon = true
             name = "filter-engine-admin"
-            priority = Thread.MAX_PRIORITY
+            priority = Thread.NORM_PRIORITY
             start()
         }
     }
 
-    fun stop() {
-        isActive = false
-    }
+
 
     private fun calculateEffectivenessAndPush() {
         // SPLENDOR_P7_XPROC_READ_BEGIN
@@ -207,12 +208,12 @@ object FilterEngine {
                 // SPLENDOR_P7_XPROC_REPORT_BRAKE
                 appendLine("")
                 appendLine("FILTER ACTION:")
-                val action = if (aggressionMultiplier > 1.5f) "EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins." else "Nominal operation."
+                val action = if (telemetryMissing) "NO TELEMETRY — blind; no push applied." else if (aggressionMultiplier > 1.5f) "EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins." else "Nominal operation."
                 appendLine("  $action")
                 appendLine("-----------------------------------")
             }
             
             file.appendText(report)
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("FilterEngine report write failed: " + t, "FILTER") }
     }
 }

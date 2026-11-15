@@ -97,9 +97,9 @@ object DeathWatch {
         // orderly VM exit removes the marker; SIGKILL cannot
         try {
             Runtime.getRuntime().addShutdownHook(Thread {
-                try { m.delete() } catch (_: Throwable) { }
+                try { m.delete() } catch (t: Throwable) { android.util.Log.e("DeathWatch", "marker delete on shutdown failed", t) }
             })
-        } catch (_: Throwable) { }
+        } catch (t: Throwable) { android.util.Log.e("DeathWatch", "shutdown hook install failed", t) }
 
         val t = Thread {
             while (true) {
@@ -140,9 +140,16 @@ object DeathWatch {
             // UPGRADE: Use cached prefix and US_ASCII to skip UTF-8 encoding overhead.
             val text = "$state|$beatPrefix${System.currentTimeMillis()}|$memStr"
             
-            FileOutputStream(m, false).use { fos ->
+            // SPLENDOR_P12_B9_ATOMIC: truncating the marker in place left a
+            // 0-byte/partial marker if the process died mid-write. Write to
+            // a temp file, fsync, then atomically rename; a failed rename
+            // leaves the previous beat intact.
+            val tmp = File(m.parentFile, m.name + ".tmp")
+            FileOutputStream(tmp, false).use { fos ->
                 fos.write(text.toByteArray(Charsets.US_ASCII))
+                fos.fd.sync()
             }
+            tmp.renameTo(m)
         } catch (t: Throwable) {
             // SPLENDOR_P11_D1: a failed beat used to vanish silently, so a
             // storage outage looked exactly like a process death. Keep the
@@ -235,12 +242,12 @@ object DeathWatch {
         sb.appendLine("Session began : " + (if (began > 0) ts.format(Date(began)) else "?"))
         sb.appendLine("Last heartbeat: " + (if (lastBeat > 0) ts.format(Date(lastBeat)) else "?"))
         sb.appendLine("Survived      : " + lived + "s")
-        sb.appendLine("Undetected for: " + gap + "s before this restart")
+        sb.appendLine("Last beat age at detection: " + gap + "s (death occurred after the last beat; the gap includes the delay before this restart)")
         sb.appendLine("Memory then   : avail=" + availMb + "MB threshold=" + threshMb + "MB lowMemory=" + lowMem)
         sb.appendLine("Java crash    : " + (if (javaCrash) "YES" else "NO"))
         sb.appendLine("VERDICT       : " + verdict)
         sb.appendLine("Report source : " + CrashForensics.currentLocation())
-        sb.appendLine("Marker state  : " + at(0))
+        sb.appendLine("Marker state  : last beat " + at(0) + " (heartbeat every " + (HEARTBEAT_MS / 1000L) + "s; marker present means no clean exit)")
         if (nativeCrashDetails.isNotBlank()) {
             sb.appendLine()
             sb.appendLine("--- NATIVE CRASH DETAILED FORENSICS ---")
@@ -257,10 +264,10 @@ object DeathWatch {
         // other two writers (GlobalCrashHandler, OverlayService) are
         // untouched; only DeathWatch death entries are mirrored.
         try { monthlyReportFile(detectedMs)?.appendText(text) } catch (t: Throwable) { android.util.Log.e("DeathWatch", "monthly death mirror write failed", t) }
-        try { CrashForensics.reportDetectedDeath(deadProc, deadPid, verdict) } catch (_: Throwable) { }
+        try { CrashForensics.reportDetectedDeath(deadProc, deadPid, verdict) } catch (t: Throwable) { android.util.Log.e("DeathWatch", "reportDetectedDeath failed", t) }
 
         if (javaCrash) {
-            try { javaCrashMarkerFile()?.delete() } catch (_: Throwable) { }
+            try { javaCrashMarkerFile()?.delete() } catch (t: Throwable) { android.util.Log.e("DeathWatch", "java crash marker delete failed", t) }
         }
 
         log("ABNORMAL DEATH proc=" + deadProc + " lived=" + lived + "s avail=" +
@@ -329,7 +336,7 @@ object DeathWatch {
                     return
                 }
             }
-        } catch (_: Throwable) { }
+        } catch (t: Throwable) { android.util.Log.e("DeathWatch", "crash report rotation failed", t) }
     }
 
     private fun monthlyReportFile(detectedMs: Long): File? {
@@ -366,7 +373,7 @@ object DeathWatch {
         s.replace(':', '_').replace('.', '_').replace('/', '_')
 
     private fun log(m: String) {
-        try { com.assistant.diagnostic.RuntimeLogger.log(m, "DEATHWATCH") } catch (_: Throwable) { }
+        try { com.assistant.diagnostic.RuntimeLogger.log(m, "DEATHWATCH") } catch (t: Throwable) { android.util.Log.e("DeathWatch", "deathwatch log failed", t) }
     }
 
     private fun getHistoricalExitReasonDetails(
@@ -387,8 +394,13 @@ object DeathWatch {
             // SPLENDOR_P9_DW_FALLBACK: no bare firstOrNull() fallback --
             // attaching the most recent exit record when neither pid nor
             // process matches misattributes another session's death.
-            val info = exitInfos.firstOrNull { deadPid != 0 && it.pid == deadPid }
+            val rawInfo = exitInfos.firstOrNull { deadPid != 0 && it.pid == deadPid }
                 ?: exitInfos.firstOrNull { deadProc.isNotBlank() && it.processName == deadProc }
+            // SPLENDOR_P12_B12_FRESH: the record must belong to this session,
+            // not an earlier session reusing the pid/process name. A guarded-out
+            // record falls back to the existing NO_OS_RECORD_FOUND path.
+            val earliest = if (beganMs > 0L) beganMs else lastBeatMs
+            val info = rawInfo?.takeIf { it.timestamp >= earliest && it.timestamp <= detectedMs }
 
             if (info != null) {
                 var traceNote = ""
