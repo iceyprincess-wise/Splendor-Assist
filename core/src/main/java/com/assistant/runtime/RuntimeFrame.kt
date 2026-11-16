@@ -3,15 +3,19 @@ package com.assistant.runtime
 enum class ActionClass { PASS, SHOT, CROSS, DEFEND, EVADE, KEEPER, MOVE, NONE }
 enum class EngineCapability { ATTACK, DEFENSE, MOVEMENT, PASSING, KEEPER, SUPPORT }
 
-/* Immutable per-capture snapshot. The ONLY input a gameplay engine may read. */
+/* Immutable per-capture snapshot. The only frame input a gameplay engine may read; engines may also consult world state and device buses. */
 /* Per-zone body count. Owned by FrameAssembler; read-only to engines. */
 data class ZoneDistribution(
     val leftOurs: Int = 0,  val leftTheirs: Int = 0,
     val midOurs: Int = 0,   val midTheirs: Int = 0,
     val rightOurs: Int = 0, val rightTheirs: Int = 0
 ) {
-    fun oursIn(z: Int) = when (z) { 0 -> leftOurs; 1 -> midOurs; else -> rightOurs }
-    fun theirsIn(z: Int) = when (z) { 0 -> leftTheirs; 1 -> midTheirs; else -> rightTheirs }
+    // RF-D5: the old else-branch mapped ANY z outside {0, 1} to the right
+    // zone. No caller passes out-of-range today (OverloadPlaystyleContributor
+    // and PressEvadeContributor only pass 0..2), so this is a no-op for live
+    // data - but a stray zone must read as empty, not as the right zone.
+    fun oursIn(z: Int) = when (z) { 0 -> leftOurs; 1 -> midOurs; 2 -> rightOurs; else -> 0 }
+    fun theirsIn(z: Int) = when (z) { 0 -> leftTheirs; 1 -> midTheirs; 2 -> rightTheirs; else -> 0 }
     fun balanceIn(z: Int): Float {
         val o = oursIn(z); val x = theirsIn(z); val tot = o + x
         return if (tot > 0) ((o - x).toFloat() / tot).coerceIn(-1f, 1f) else 0f
@@ -48,8 +52,11 @@ data class RuntimeFrame(
     /*
      * Task C item (d): REAL goal-frame data from the goal detector, carried
      * through the frame so SHOT/CROSS contributors never have to fabricate
-     * a target. All zeros + goalDetected=false when the detector has no
-     * goal in view - contributors gate on goalDetected, not on coordinates.
+     * a target. Coords may be NON-ZERO when goalDetected=false: GoalDetector
+     * returns the best blob's box even below MIN_GOAL_PIXELS, and
+     * FrameAssembler copies the coords unconditionally - contributors must
+     * gate on goalDetected, never on the coordinates. (RF-D3: the old
+     * "All zeros + goalDetected=false" comment was false.)
      */
     val goalDetected: Boolean = false,
     val goalLeftX: Float = 0f,
@@ -73,11 +80,24 @@ data class RuntimeFrame(
     val ballVelocityYPerSecond: Float = 0f,
     val passTargetId: Int? = null
 ) {
-    val trusted: Boolean get() = enabled && confidence.isFinite() && confidence > 0f &&
+    // RF-D1/RF-D2: the old gate trusted a frame with a 0x0 capture size
+    // (reachable before the camera profile populates), a confidence above
+    // 1, a NaN entity, or NaN goal coords on a detected goal. Timestamps
+    // stay unchecked on purpose: 0 reads as ancient and stale-rejects,
+    // which is the safe direction.
+    val trusted: Boolean get() = enabled && confidence.isFinite() && confidence > 0f && confidence <= 1f &&
         ballX.isFinite() && ballY.isFinite() && ballVelocityX.isFinite() &&
-        ballVelocityY.isFinite() && opticalVariance.isFinite()
+        ballVelocityY.isFinite() && opticalVariance.isFinite() &&
+        captureWidth.isFinite() && captureWidth > 0f &&
+        captureHeight.isFinite() && captureHeight > 0f &&
+        entities.all { it.x.isFinite() && it.y.isFinite() && it.velocityX.isFinite() &&
+            it.velocityY.isFinite() && it.velocityXPerSecond.isFinite() &&
+            it.velocityYPerSecond.isFinite() && it.confidence.isFinite() } &&
+        (!goalDetected || (goalLeftX.isFinite() && goalRightX.isFinite() &&
+            goalTopY.isFinite() && goalBottomY.isFinite() && goalConfidence.isFinite()))
     val goalCenterX: Float get() = (goalLeftX + goalRightX) * 0.5f
     val goalCenterY: Float get() = (goalTopY + goalBottomY) * 0.5f
+    // RF-D4: width 0 means "no usable box" (inverted or empty box fails safe).
     val goalWidth: Float get() = (goalRightX - goalLeftX).coerceAtLeast(0f)
 }
 
