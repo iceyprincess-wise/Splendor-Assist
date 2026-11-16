@@ -207,5 +207,24 @@ class PredictionPolicyTest {
         assertNotNull(point)
         assertEquals(0f, point!!.first, 0.001f); assertEquals(0f, point.second, 0.001f)
     }
+    // B24-10 pin: an untrusted frame must not record an age-out
+    // failure. The deadline-crossing frame is not trustworthy
+    // evidence, so the entry drops with no reliability update - and
+    // stays dropped when a fresh frame arrives later (its pixels
+    // are past the window and can never confirm success).
+    @Test fun untrustedFrameAgeOutDropsWithoutPenalty() {
+        val p = OutcomePolicy(); p.dispatched("s", ActionClass.SHOT, 1, true, 1L)
+        assertTrue(p.observe(2, true, false, 900_000_001L).isEmpty())
+        assertTrue(p.observe(2, true, true, 950_000_001L).isEmpty())
+        assertEquals(1f, p.confidenceFactor(ActionClass.SHOT))
+    }
+    // B24-10 guard: an untrusted frame inside the window only
+    // defers judgement - the entry stays pending and a later fresh
+    // frame can still confirm the macro.
+    @Test fun untrustedFrameWithinWindowStaysPending() {
+        val p = OutcomePolicy(); p.dispatched("p", ActionClass.PASS, 1, true, 1L)
+        assertTrue(p.observe(2, true, false, 500_000_001L).isEmpty())
+        assertEquals(listOf("p" to true), p.observe(2, true, true, 600_000_001L))
+    }
 
 }

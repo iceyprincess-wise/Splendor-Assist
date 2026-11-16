@@ -40,6 +40,11 @@ import com.assistant.diagnostic.RuntimeLogger
 
 
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
+import com.assistant.execution.CentralExecutionBus
+import com.assistant.execution.ExecutionRequest
+import com.assistant.execution.ExecutionSource
+import com.assistant.execution.HybridExecutionTerminal
+import com.assistant.runtime.ActionClass
 
 
 
@@ -67,6 +72,18 @@ import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 
 object BurstForensicsEngine {
+    // D-27-STUTTER producer (wires the STUTTER low ring, D-26-03):
+    // a SEIZURE transition re-asserts the most recent fresh MOVE
+    // stroke through HybridExecutionTerminal.route() — see
+    // tryReassertMove() below. This object is the producer's live
+    // trigger: StutterPulseEngine calls record() from the
+    // Choreographer frame callback whenever a real burst closes a
+    // 1s slice, so the producer fires on measured frame loss, never
+    // on a timer or a guess.
+    @Volatile private var reassertOffered = 0L
+    @Volatile private var reassertAccepted = 0L
+    @Volatile private var reassertRejected = 0L
+    @Volatile private var reassertNoFreshMove = 0L
     init {
         // PHASE3 FIX: Publish CALM immediately so bus is not stuck at UNKNOWN
         try { AdapterSignalBus.publishStutter("CALM") } catch (_: Throwable) {}
@@ -127,6 +144,10 @@ object BurstForensicsEngine {
             } else {
                 RuntimeLogger.log("STUTTER SEIZURE: Execution brake applied to protect SmartAssist", "STUTTER_BEE")
             }
+            // D-27-STUTTER: one re-assert per SEIZURE transition, never
+            // per record() call — a sustained seizure re-asserts once,
+            // at onset, and only while a fresh MOVE exists to re-issue.
+            if (changed) tryReassertMove()
         } else if (next == "CALM") {
             try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(0) } catch (_: Throwable) {}
             // SPLENDOR_P7_DEVICE_BRAKE_BURST_CALM
@@ -139,6 +160,89 @@ object BurstForensicsEngine {
             RuntimeLogger.log("burst " + state + " frames=" + frames +
                 " worst=" + String.format("%.0f", worstMs) +
                 "ms bursts60s=" + recent.size + " inWindow=" + inWindow, "STUTTER")
+        }
+    }
+
+    /**
+     * D-27-STUTTER — the STUTTER producer (D-26-03 wired).
+     *
+     * What it submits: a fresh ExecutionRequest with source STUTTER,
+     * phase ActionClass.MOVE.ordinal and actionClass MOVE, whose
+     * start/end/duration are COPIED from the most recent
+     * still-unconfirmed MOVE stroke in ActionOutcomeVerifier — the
+     * coordinates of a gesture this system itself decided and
+     * dispatched. No coordinate is invented here. aimMotion is NOT
+     * copied: the source's motion model was predicted for a frame up
+     * to 350ms old, and consume() would re-run that stale prediction
+     * against the endpoint; the re-assert re-issues the exact
+     * dispatched coords instead.
+     *
+     * Why MOVE only: a MOVE stroke is a joystick hold, so re-issuing
+     * it extends the hold in the same direction for one short stroke
+     * (15-85ms, the source's own duration). Any other class would
+     * re-fire an action (shot, pass, save) from a single decision.
+     *
+     * Why route(), not ContributionRegistry.offer(): offer() PARKS
+     * non-emergency sources, and the only drainBest() caller is
+     * RuntimeDecisionLoop (per-frame) — during a seizure frames
+     * stall, so the parked entry would sit past its 350ms budget and
+     * expire in the map. route() submits straight to the bus, whose
+     * low ring is consumed by the accessibility engine's 9ms poll
+     * whenever no higher ring and no live stroke holds the latch.
+     *
+     * Freshness: the new request is constructed here, so its age on
+     * arrival is ~0ms against the 350ms STUTTER budget
+     * (CentralExecutionBus.maxAgeMs). The SOURCE direction is bounded
+     * by the same 350ms (lastFreshMove), so a direction older than
+     * the bus would accept is never re-asserted.
+     *
+     * UNVERIFIED premise (stated, not assumed): a display seizure
+     * (Choreographer gap >= 45ms) does not PROVABLY drop an
+     * in-flight Accessibility gesture — once dispatched, a gesture
+     * runs in the system. What a seizure provably does is stall the
+     * frame pipeline, so no fresh MOVE decision arrives until frames
+     * resume; this re-assert bridges that gap with the last decided
+     * direction. If the stroke already landed, the re-assert is one
+     * redundant same-direction hold — bounded, never a new action.
+     * On-device log lines (STUTTER tag, cumulative counts) are the
+     * verification surface: offered/accepted/rejected per episode.
+     */
+    private fun tryReassertMove() {
+        val budgetNanos = CentralExecutionBus.maxAgeMs(ExecutionSource.STUTTER) * 1_000_000L
+        val source = try {
+            ActionOutcomeVerifier.lastFreshMove(budgetNanos)
+        } catch (_: Throwable) { null }
+        if (source == null) {
+            reassertNoFreshMove++
+            RuntimeLogger.log("STUTTER re-assert skipped: no MOVE dispatched in the last 350ms (skipped=$reassertNoFreshMove)", "STUTTER")
+            return
+        }
+        if (!source.startX.isFinite() || !source.startY.isFinite() ||
+            !source.endX.isFinite() || !source.endY.isFinite() || source.duration <= 0L) {
+            reassertRejected++
+            RuntimeLogger.log("STUTTER re-assert dropped: source request not finite/positive actionId=${source.actionId} (rejected=$reassertRejected)", "STUTTER")
+            return
+        }
+        val reassert = ExecutionRequest(
+            source = ExecutionSource.STUTTER,
+            phase = ActionClass.MOVE.ordinal,
+            actionClass = ActionClass.MOVE,
+            startX = source.startX,
+            startY = source.startY,
+            endX = source.endX,
+            endY = source.endY,
+            duration = source.duration
+        )
+        reassertOffered++
+        val accepted = try {
+            HybridExecutionTerminal.route(reassert)
+        } catch (_: Throwable) { false }
+        if (accepted) {
+            reassertAccepted++
+            RuntimeLogger.log("STUTTER re-assert bus-accepted actionId=${reassert.actionId} sourceActionId=${source.actionId} offered=$reassertOffered accepted=$reassertAccepted", "STUTTER")
+        } else {
+            reassertRejected++
+            RuntimeLogger.log("STUTTER re-assert bus-rejected actionId=${reassert.actionId} sourceActionId=${source.actionId} offered=$reassertOffered rejected=$reassertRejected", "STUTTER")
         }
     }
 

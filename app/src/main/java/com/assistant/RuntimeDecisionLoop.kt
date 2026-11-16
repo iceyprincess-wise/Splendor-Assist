@@ -99,6 +99,11 @@ object RuntimeDecisionLoop {
 
     private const val MAX_OPTICAL_VARIANCE_FOR_ACTION = 0.85f
     private var lastCaptureId = -1L
+    // PARKED-LANE WIRING (D11): floor between triggerInstantExecution
+    // calls. The trigger runs the whole legacy injectWinningVector (heavy)
+    // and routes a direct legacy request, so it must not run every frame.
+    private const val PARKED_TRIGGER_MIN_INTERVAL_MS = 250L
+    private var lastParkedTriggerMs = 0L
     private val decisions = AtomicLong(0L)
     private val routed = AtomicLong(0L)
     private val idleNoContribution = AtomicLong(0L)
@@ -169,6 +174,23 @@ object RuntimeDecisionLoop {
         
         // ConAI Meta-Arbiter decision loop
         val best = ConAIEngine.arbitrate(frame, contributions, netHold)
+
+        // PARKED-LANE WIRING (D11): first live caller of
+        // SmartAssistAccessibilityEngine.triggerInstantExecution (it had
+        // zero call sites, so the sole parked offerer AutoEvade, inside
+        // ActiveGestureController.injectWinningVector, never ran and
+        // ContributionRegistry.pending never filled). Live chain:
+        // OverlayService capture loop -> onFrame(frame) -> here ->
+        // SmartAssistAccessibilityEngine.globalInstance (set in
+        // onServiceConnected, SmartAssistAccessibilityEngine.kt:343) ->
+        // triggerInstantExecution -> injectWinningVector ->
+        // AutoEvadeEngine.monitorAttackingSpace parks (SMART_ASSIST ph7)
+        // -> drainBest() below returns it in this same frame.
+        // Fired only when best == null: a parked entry is fallback-only
+        // (f23 precedence — it never outranks a live best), and the legacy
+        // direct request the trigger also routes must never compete with
+        // one. The threat + rate gates live in maybeTriggerParkedLane.
+        if (best == null) maybeTriggerParkedLane(frame)
 
         val parked = ContributionRegistry.drainBest()
 
@@ -298,6 +320,99 @@ object RuntimeDecisionLoop {
         )
     }
 
+    /*
+     * PARKED-LANE WIRING (D11) — the trigger hook.
+     *
+     * Gates, cheapest first (onFrame runs per assembled frame; the trigger
+     * itself is heavy — full legacy arbitration incl. native agility — and
+     * routes a direct legacy request, so it must stay rare):
+     *  1. Rate: at most one trigger per 250ms while the loop is idle.
+     *  2. Service: globalInstance is null until the accessibility service
+     *     connects (onServiceConnected sets it); skip silently until then.
+     *  3. Threat: the nearest opponent must be closing on the joystick
+     *     inside AutoEvade's threat radius (evadeTriggerPlausible — a
+     *     superset filter; the monitor inside the trigger is the authority).
+     *
+     * Coordinates passed to the trigger mirror the legacy call's meaning:
+     * start = joystick centre (same derivation chooseRequest uses for its
+     * startX/startY), end = ball position (the carrier the vector acts on).
+     *
+     * Known consequences of firing (not hidden):
+     *  - The trigger ALSO routes injectWinningVector's own SMART_ASSIST
+     *    request straight to the bus, and revives AntiCutback's INT offer
+     *    (emergency lane, direct route) — both ride the same call. On a
+     *    trigger frame the bus can therefore receive two submissions (the
+     *    legacy direct one, then the drained parked evade via chooseRequest
+     *    below); both are short joystick drags from the same origin and the
+     *    bus serialises them through the dispatch latch.
+     *  - AutoEvade's 132ms cooldown never engages for parked offers
+     *    (offer() returns false for non-emergency, so lastEvadeTimestamp is
+     *    never set); re-parking while a threat persists relies on the
+     *    registry's latest-per-(source, phase) replacement plus this
+     *    hook's 250ms floor.
+     *  - The trigger re-checks UiExecutionGate / enabled / foreground
+     *    itself; onFrame's own gates above already passed, so this is
+     *    defence-in-depth, not the live gate.
+     */
+    private fun maybeTriggerParkedLane(frame: RuntimeFrame) {
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastParkedTriggerMs < PARKED_TRIGGER_MIN_INTERVAL_MS) return
+        val service = SmartAssistAccessibilityEngine.globalInstance ?: return
+        val joystickX =
+            com.assistant.vision.CameraProfile.captureWidthOrFallback() *
+                ControlMappingTrainer.joystickCenterX()
+        val joystickY =
+            com.assistant.vision.CameraProfile.captureHeightOrFallback() *
+                ControlMappingTrainer.joystickCenterY()
+        val nearestOpp = frame.entities.filter { !it.teammate }.minByOrNull { e ->
+            val dx = e.x - joystickX
+            val dy = e.y - joystickY
+            dx * dx + dy * dy
+        } ?: return
+        if (!evadeTriggerPlausible(
+                joystickX, joystickY,
+                nearestOpp.x, nearestOpp.y,
+                frameHeight()
+            )
+        ) return
+        lastParkedTriggerMs = now
+        service.triggerInstantExecution(joystickX, joystickY, frame.ballX, frame.ballY)
+    }
+
+    /*
+     * Threat pre-gate for the parked-lane trigger: a cheap mirror of
+     * AutoEvadeEngine.monitorAttackingSpace's threat test, so the trigger
+     * only fires when the monitor inside it plausibly would park.
+     *
+     * Velocity source matters: the monitor is fed
+     * BallTrajectoryPredictor.current().velocityX/Y (px per FRAME —
+     * MotionTracker.kt: ball.x - previousX, no dt division), NOT
+     * frame.ballVelocityXPerSecond (px per SECOND). Reading the predictor
+     * here keeps the gate's projection identical to the monitor's; using
+     * the frame velocity would project the opponent ~fps-times too far.
+     *
+     * Superset radius: the monitor scales its 8.5%-of-height radius by
+     * 1.0 + (|v| * 0.05 capped at 0.4); the gate uses the 1.4 maximum, so
+     * it never rejects a threat the monitor would take. The constants
+     * 0.085f / 1.4f are duplicated from AutoEvadeEngine (its consts are
+     * private); the monitor stays the authority and this gate is only a
+     * filter — a borderline miss re-evaluates on the next frame.
+     */
+    internal fun evadeTriggerPlausible(
+        joystickX: Float,
+        joystickY: Float,
+        nearestOppX: Float,
+        nearestOppY: Float,
+        frameHeight: Float
+    ): Boolean {
+        val traj = BallTrajectoryPredictor.current()
+        val predictionScale = (33.33f * 2f) / 1000f // 2 server ticks, as in AutoEvadeEngine
+        val predictedOppX = nearestOppX + traj.velocityX * predictionScale
+        val predictedOppY = nearestOppY + traj.velocityY * predictionScale
+        val closing = hypot(predictedOppX - joystickX, predictedOppY - joystickY)
+        return closing < frameHeight * 0.085f * 1.4f
+    }
+
     /* f5: Pass/Shot/Cross threshold slider -> live duration factor. 50 = 1.0 (unchanged),
        0 = 0.0, 100 = 2.0. DEFEND/EVADE/other classes are not biased. */
     internal fun requiredControlSlot(contribution: EngineContribution): Int =
@@ -336,6 +451,7 @@ object RuntimeDecisionLoop {
         FightingSpiritEngine.reset()
         CaptaincySkillEngine.reset()
         CrowdingZoneDetector.reset()
+        lastParkedTriggerMs = 0L
         idleNoContribution.set(0L); idleUntrusted.set(0L)
         lastAction = "none"; lastWeight = 0f; lastUpdatedMs = 0L
     }

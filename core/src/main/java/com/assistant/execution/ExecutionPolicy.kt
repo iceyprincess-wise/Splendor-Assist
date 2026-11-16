@@ -99,6 +99,30 @@ class OutcomePolicy {
                 else -> false // Macro correlation never authenticates a goal or internal action success.
             }
             if (!macro && age <= 800_000_000L) continue
+            // B24-10: the failure branch requires a trusted frame,
+            // exactly as the macro-success branch already does (macro
+            // starts `fresh && ...`). An untrusted frame can neither
+            // confirm nor deny an outcome: its owner/ball state is not
+            // trustworthy, so the age-out below would punish the engine
+            // for the sensor's failure, not the action's - and in a fast
+            // game a stale frame is common (lag, dropped frames), so the
+            // -0.05 would systematically drag reliability down for
+            // actions that may have succeeded, scaling future
+            // confidences down via confidenceFactor. Holding the entry
+            // instead would only defer the same penalty to the first
+            // later fresh frame, whose pixels are past the 800ms window
+            // and can never confirm success - so the entry is dropped
+            // with NO reliability update, like cancel/abandonPending/
+            // cap-64 eviction. A genuinely-failed action in a stale
+            // window escapes judgement; that is the accepted cost - one
+            // missed -0.05 is bounded and recoverable (+0.02 per later
+            // success, floor 0.6), while systematic false penalties
+            // compound. The deadline-crossing frame must be trusted.
+            if (!macro && !fresh) {
+                RuntimeLogger.log("OutcomePolicy age-out dropped without judgement actionId=$id phase=${item.phase} (untrusted frame)", "OutcomePolicy")
+                iterator.remove()
+                continue
+            }
             val factor = confidenceFactor(item.phase)
             reliability[item.phase] = (factor + if (macro) 0.02f else -0.05f).coerceIn(0.6f, 1f)
             outcomes.add(id to macro); iterator.remove()

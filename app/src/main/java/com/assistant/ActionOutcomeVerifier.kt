@@ -102,6 +102,27 @@ object ActionOutcomeVerifier {
         if (pending.size >= 64) cancelDispatch(pending.keys.first())
         if (!pending.containsKey(request.actionId)) pending[request.actionId] = Pending(request, frame)
     }
+    // D-27-STUTTER: the re-assert source for BurstForensicsEngine.
+    // Returns the most recently recorded still-unconfirmed MOVE
+    // request whose dispatch is at most maxAgeNanos old, or null.
+    // MOVE-only: a MOVE stroke is a joystick hold — re-issuing it
+    // extends the hold in the same direction. PASS / SHOT / CROSS /
+    // KEEPER / DEFEND must never be re-fired (a second shot, pass or
+    // save from one decision), and OutcomePolicy never cools or
+    // judges MOVE, so a re-asserted MOVE cannot double-count an
+    // outcome. The caller bounds maxAgeNanos by the bus STUTTER
+    // budget (350ms), so the re-asserted direction is never older
+    // than a request the bus itself would still accept.
+    // A request recorded by RuntimeDecisionLoop before route() can be
+    // returned in the microsecond window before a bus rejection
+    // cancels it; its coordinates are still a genuine decision, and
+    // the re-assert carries its own fresh actionId.
+    @Synchronized fun lastFreshMove(maxAgeNanos: Long): ExecutionRequest? {
+        val now = System.nanoTime()
+        return pending.values.lastOrNull {
+            it.request.actionClass == ActionClass.MOVE && now - it.at <= maxAgeNanos
+        }?.request
+    }
     @Synchronized fun confirmDispatch(actionId: String) {
         val item = pending.remove(actionId) ?: return
         // SPLENDOR_P11_D09: a null actionClass used to drop the confirmation

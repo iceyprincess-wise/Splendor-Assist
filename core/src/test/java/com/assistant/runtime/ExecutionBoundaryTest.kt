@@ -101,14 +101,37 @@ class ExecutionBoundaryTest {
         assertTrue(r.busConsumed)
     }
     // D-26-03 pin: the STUTTER low ring exists and orders after the
-    // medium ring, even though no production producer submits STUTTER
-    // today (wire a producer, or record it as intentionally reserved -
-    // do not delete the ring without Ed's call).
+    // medium ring. D-27-STUTTER wired the producer: BurstForensicsEngine
+    // re-asserts the most recent fresh MOVE stroke through
+    // HybridExecutionTerminal.route() on a SEIZURE transition, so the
+    // low ring is live in production now, not test-pinned only. The
+    // test below pins the exact request shape that producer submits.
     @Test fun lowRingOrdersAfterMediumRing() {
         val low = request(source = ExecutionSource.STUTTER)
         val med = request()
         assertTrue(CentralExecutionBus.submit(low)); assertTrue(CentralExecutionBus.submit(med))
         assertEquals(med, CentralExecutionBus.consume()); assertEquals(low, CentralExecutionBus.consume())
+    }
+    // D-27-STUTTER pin: the exact request shape the producer submits
+    // (BurstForensicsEngine.tryReassertMove) — STUTTER source, MOVE
+    // phase/actionClass, copied MOVE coords, no AimMotion (the
+    // re-assert re-issues dispatched coords; a stale re-prediction
+    // must not move the endpoint). It must submit and consume after
+    // the medium ring, like any low-ring request.
+    @Test fun stutterReassertShapeSubmitsAndConsumesAfterMedium() {
+        val med = request()
+        val reassert = ExecutionRequest(
+            ExecutionSource.STUTTER, ActionClass.MOVE.ordinal,
+            250f, 550f, 300f, 550f, 30L, actionClass = ActionClass.MOVE
+        )
+        assertEquals(ActionClass.MOVE.ordinal, reassert.phase)
+        assertNull(reassert.aimMotion)
+        assertTrue(CentralExecutionBus.submit(reassert))
+        assertTrue(CentralExecutionBus.submit(med))
+        assertEquals(med, CentralExecutionBus.consume())
+        assertEquals(reassert, CentralExecutionBus.consume())
+        assertTrue(reassert.busAccepted)
+        assertTrue(reassert.busConsumed)
     }
     // D-26-04 pin: degenerate motion (radius 0) cannot be compensated;
     // the bus executes the raw request and counts it under
