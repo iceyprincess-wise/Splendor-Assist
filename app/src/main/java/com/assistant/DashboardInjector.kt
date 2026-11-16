@@ -52,7 +52,16 @@ object DashboardInjector {
         }
 
         val runtime = TextView(activity).apply {
-            // P0 FIX: Use BoosterIgnition.fleetSnapshot() instead of deleted AdapterHealthRegistry
+            // F36-D1: AdapterHealthRegistry is NOT deleted - it lives at
+            // core/src/main/java/com/assistant/diagnostic/registry/
+            // AdapterHealthRegistry.kt and holds per-adapter snapshots
+            // (getAllLive(), effectiveStatus()). This label needs only the
+            // fleet lifecycle state (COLD/WARMING/READY/DEGRADED) plus the
+            // ignited flag, which is what BoosterIgnition.fleetSnapshot()
+            // returns; per-adapter health is already shown by the refresh
+            // runnable below via AdapterStatusRegistry / AdapterHealthCounts
+            // (both fed by the watchdog from the registry), so this
+            // function does not read the registry directly.
             val snapshot = BoosterIgnition.fleetSnapshot()
             val state = snapshot["state"] ?: "COLD"
             val ignited = snapshot["ignited"] ?: false
