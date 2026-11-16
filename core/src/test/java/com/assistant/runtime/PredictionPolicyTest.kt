@@ -12,7 +12,7 @@ class PredictionPolicyTest {
         val next = p.project(1, 15f, 10f, 1_050_000_000L, 50f, 640f, 288f)
         assertEquals(100f, next.vxPerSecond, 0.01f); assertEquals(20f, next.x, 0.01f)
     }
-    @Test fun staleAndReorderedSamplesDoNotCreateVelocity() {
+    @Test fun staleReorderedAndOutdatedSamplesDoNotCreateVelocity() {
         val p = PredictiveState(); p.project(1, 10f, 10f, 100L, 50f, 640f, 288f)
         assertEquals(0f, p.project(1, 20f, 10f, 100L, 50f, 640f, 288f).vxPerSecond)
         assertEquals(0f, p.project(1, 30f, 10f, 500_000_000L, 50f, 640f, 288f).vxPerSecond)
@@ -64,6 +64,8 @@ class PredictionPolicyTest {
         fun request() = ExecutionRequest(ExecutionSource.SMART_ASSIST, 0, 1f, 1f, 2f, 2f, 50L)
         assertTrue(CentralExecutionBus.submit(request()))
         UiExecutionGate.block("pause")
+        assertTrue(UiExecutionGate.blocked())
+        assertEquals("pause", UiExecutionGate.reason)
         assertEquals(0, CentralExecutionBus.pendingCount()); assertFalse(CentralExecutionBus.submit(request()))
         assertNull(CentralExecutionBus.consume()); UiExecutionGate.reset(); CentralExecutionBus.stop()
     }
@@ -82,9 +84,9 @@ class PredictionPolicyTest {
         val consumed = CentralExecutionBus.consume()!!
         assertTrue(consumed.endY > 200f); assertEquals(ActionClass.PASS, consumed.actionClass)
         assertEquals(request.actionId, consumed.actionId)
-        assertFalse(CentralExecutionBus.submit(request.copy(actionId = "next")))
+        assertFalse(CentralExecutionBus.submit(request.copy(actionId = "next", createdAtNanos = System.nanoTime())))
         CentralExecutionBus.complete(request.actionId)
-        assertTrue(CentralExecutionBus.submit(request.copy(actionId = "next")))
+        assertTrue(CentralExecutionBus.submit(request.copy(actionId = "next", createdAtNanos = System.nanoTime())))
         CentralExecutionBus.stop()
     }
     @Test fun stalePhaseDoesNotBlockFreshReplacementBeforeConsumption() {
@@ -103,6 +105,83 @@ class PredictionPolicyTest {
         val p=OutcomePolicy();p.dispatched("p",ActionClass.PASS,1,true,1L);p.abandonPending()
         assertTrue(p.observe(2,true,true,900_000_000L).isEmpty())
         assertEquals(1f,p.confidenceFactor(ActionClass.PASS))
+    }
+    @Test fun macroSucceedsAtExactly800msDeadline() {
+        val p = OutcomePolicy(); p.dispatched("p", ActionClass.PASS, 1, true, 1L)
+        assertEquals(listOf("p" to true), p.observe(2, true, true, 800_000_001L))
+    }
+    @Test fun coolingWindowEndsAt800ms() {
+        val p = OutcomePolicy(); p.dispatched("p", ActionClass.PASS, 1, true, 1L)
+        assertTrue(p.cooling(ActionClass.PASS, 800_000_001L))
+        assertFalse(p.cooling(ActionClass.PASS, 800_000_002L))
+    }
+    @Test fun macroTooEarlyStaysPendingThenSucceeds() {
+        val p = OutcomePolicy(); p.dispatched("p", ActionClass.PASS, 1, true, 1L)
+        assertTrue(p.observe(2, true, true, 29_000_001L).isEmpty())
+        assertEquals(listOf("p" to true), p.observe(2, true, true, 60_000_001L))
+    }
+    @Test fun moveAndNoneDispatchesAreIgnored() {
+        val p = OutcomePolicy(); p.dispatched("m", ActionClass.MOVE, 1, true, 1L)
+        p.dispatched("n", ActionClass.NONE, 1, true, 1L)
+        assertFalse(p.cooling(ActionClass.MOVE, 50_000_000L))
+        assertFalse(p.cooling(ActionClass.NONE, 50_000_000L))
+        assertTrue(p.observe(2, true, true, 60_000_000L).isEmpty())
+        assertEquals(1f, p.confidenceFactor(ActionClass.MOVE))
+        assertEquals(1f, p.confidenceFactor(ActionClass.NONE))
+    }
+    @Test fun defendMacroSucceedsWhenBallIsWon() {
+        val p = OutcomePolicy(); p.dispatched("d", ActionClass.DEFEND, 1, false, 1L)
+        assertEquals(listOf("d" to true), p.observe(2, true, true, 60_000_001L))
+    }
+    @Test fun keeperMacroSucceedsWhenBallIsWon() {
+        val p = OutcomePolicy(); p.dispatched("k", ActionClass.KEEPER, 1, false, 1L)
+        assertEquals(listOf("k" to true), p.observe(2, true, true, 60_000_001L))
+    }
+    @Test fun crossMacroSucceedsOnDifferentTeammate() {
+        val p = OutcomePolicy(); p.dispatched("c", ActionClass.CROSS, 1, true, 1L)
+        assertEquals(listOf("c" to true), p.observe(2, true, true, 60_000_001L))
+    }
+    @Test fun repeatedFailuresStopAtReliabilityFloor() {
+        val p = OutcomePolicy()
+        repeat(9) { i ->
+            p.dispatched("s$i", ActionClass.SHOT, 1, true, 1L)
+            assertEquals(listOf("s$i" to false), p.observe(2, true, true, 900_000_000L))
+        }
+        assertEquals(0.6f, p.confidenceFactor(ActionClass.SHOT), 0.001f)
+    }
+    @Test fun leadBeyond100msIsClamped() {
+        val p = PredictiveState()
+        p.project(1, 10f, 10f, 1_000_000_000L, 500f, 640f, 288f)
+        val next = p.project(1, 15f, 10f, 1_050_000_000L, 500f, 640f, 288f)
+        assertEquals(100f, next.vxPerSecond, 0.01f); assertEquals(25f, next.x, 0.01f)
+    }
+    @Test fun aimEndpointReturnsNullOnInvalidMotion() {
+        val zeroRadius = AimMotion(0f, 0f, 100f, 0f, 0f, 100f, 1_000_000_000L, 0f, 640f, 288f)
+        assertNull(zeroRadius.endpoint(200f, 200f, 1_000_000_000L))
+        val nanTarget = AimMotion(0f, 0f, Float.NaN, 0f, 0f, 100f, 1_000_000_000L, 20f, 640f, 288f)
+        assertNull(nanTarget.endpoint(200f, 200f, 1_000_000_000L))
+    }
+    @Test fun captureContentRejectsInvalidGeometry() {
+        val a = ByteBuffer.allocate(24); val b = ByteBuffer.allocate(24)
+        assertFalse(CaptureContent.same(a, b, 0, 2, 12, 4) { _, _ -> false })
+        assertFalse(CaptureContent.same(a, b, 2, 2, 12, 2) { _, _ -> false })
+    }
+    @Test fun predictiveStateResetClearsHistory() {
+        val p = PredictiveState()
+        p.project(1, 10f, 10f, 1_000_000_000L, 50f, 640f, 288f)
+        p.reset()
+        val next = p.project(1, 15f, 10f, 1_050_000_000L, 50f, 640f, 288f)
+        assertEquals(0f, next.vxPerSecond, 0.01f); assertEquals(15f, next.x, 0.01f)
+    }
+    @Test fun predictiveStateRetainDropsForgottenIds() {
+        val p = PredictiveState()
+        p.project(1, 10f, 10f, 1_000_000_000L, 50f, 640f, 288f)
+        p.project(2, 10f, 10f, 1_000_000_000L, 50f, 640f, 288f)
+        p.retain(setOf(2))
+        val dropped = p.project(1, 15f, 10f, 1_050_000_000L, 50f, 640f, 288f)
+        assertEquals(0f, dropped.vxPerSecond, 0.01f)
+        val kept = p.project(2, 15f, 10f, 1_050_000_000L, 50f, 640f, 288f)
+        assertEquals(100f, kept.vxPerSecond, 0.01f)
     }
 
 }

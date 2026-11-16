@@ -27,12 +27,12 @@ class ExecutionBoundaryTest {
         CentralExecutionBus.complete(old.actionId)
         assertFalse(CentralExecutionBus.submit(request()))
     }
-    @Test fun priorityAndIndependentPhasesRemainAvailable() {
+    @Test fun priorityAndIndependentSourcesRemainAvailable() {
         val normal = request(); val high = request(source = ExecutionSource.INTERCEPTION)
         assertTrue(CentralExecutionBus.submit(normal)); assertTrue(CentralExecutionBus.submit(high))
         assertEquals(high, CentralExecutionBus.consume()); assertEquals(normal, CentralExecutionBus.consume())
     }
-    @Test fun staleHeadReleasesReservation() {
+    @Test fun staleAtArrivalIsRejectedAndNeverReserves() {
         // A stale-at-arrival request is now rejected at submit (it used to
         // be accepted and only discarded by the next submit), so it can
         // never hold a reservation that blocks a fresh request.
@@ -57,5 +57,47 @@ class ExecutionBoundaryTest {
             CentralExecutionBus.complete(r.actionId)
         }
         assertEquals(0, CentralExecutionBus.pendingCount())
+    }
+    @Test fun independentPhasesOfSameSourceRemainAvailable() {
+        val p0 = request(phase = 0)
+        val p1 = request(phase = 1)
+        assertTrue(CentralExecutionBus.submit(p0))
+        assertTrue(CentralExecutionBus.submit(p1))
+        assertEquals(p0, CentralExecutionBus.consume())
+        assertEquals(p1, CentralExecutionBus.consume())
+    }
+    @Test fun peekSourceReportsHighestPriorityPending() {
+        val normal = request()
+        val high = request(source = ExecutionSource.INTERCEPTION)
+        assertTrue(CentralExecutionBus.submit(normal))
+        assertEquals(ExecutionSource.SMART_ASSIST, CentralExecutionBus.peekSource())
+        assertTrue(CentralExecutionBus.submit(high))
+        assertEquals(ExecutionSource.INTERCEPTION, CentralExecutionBus.peekSource())
+        assertEquals(high, CentralExecutionBus.consume())
+        assertEquals(ExecutionSource.SMART_ASSIST, CentralExecutionBus.peekSource())
+    }
+    @Test fun invalidRequestsAreRejected() {
+        assertFalse(CentralExecutionBus.submit(request().copy(phase = -1)))
+        assertFalse(CentralExecutionBus.submit(request().copy(duration = 0L)))
+        assertFalse(CentralExecutionBus.submit(request().copy(startX = Float.POSITIVE_INFINITY)))
+        assertFalse(CentralExecutionBus.submit(request().copy(endY = Float.NaN)))
+        assertEquals(0, CentralExecutionBus.pendingCount())
+    }
+    @Test fun ringRejectsAtCapacityAndRecovers() {
+        for (i in 0 until 1024) {
+            assertTrue(CentralExecutionBus.submit(request(phase = i)))
+        }
+        assertFalse(CentralExecutionBus.submit(request(phase = 1024)))
+        assertEquals(1024, CentralExecutionBus.pendingCount())
+        assertNotNull(CentralExecutionBus.consume())
+        assertTrue(CentralExecutionBus.submit(request(phase = 1024)))
+        assertEquals(1024, CentralExecutionBus.pendingCount())
+    }
+    @Test fun busFlagsTrackAcceptanceAndConsumption() {
+        val r = request()
+        assertTrue(CentralExecutionBus.submit(r))
+        assertTrue(r.busAccepted)
+        assertEquals(r, CentralExecutionBus.consume())
+        assertTrue(r.busConsumed)
     }
 }

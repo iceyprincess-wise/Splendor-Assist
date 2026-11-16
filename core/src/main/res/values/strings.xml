@@ -3,7 +3,7 @@
     <string name="splendor_analytics_save">Save</string>
     <string name="splendor_analytics_delete">Delete</string>
     <string name="splendor_crash_logs_placeholder">Crash Logs...</string>
-    <string name="splendor_copy_full_error_report">Copy Full Error Report</string>
+    <string name="splendor_copy_crash_log">Copy Crash Log</string>
     <string name="splendor_storage_not_ready">Storage not ready — data unavailable.</string>
     <string name="splendor_no_crash_logs">No crash logs yet.</string>
     <string name="splendor_crash_log_unreadable">Could not read this crash log.</string>
