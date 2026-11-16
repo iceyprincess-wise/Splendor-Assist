@@ -16,7 +16,7 @@ object GameplayEngineRegistry {
     private val collectCycles = AtomicLong(0L)
     // SPLENDOR_F31_TRUST_VISIBILITY: count frames rejected before contributors ever run.
     private val untrustedSkipped = AtomicLong(0L)
-    
+
     private val registrationGeneration = AtomicLong(0L)
     private val collisions = AtomicLong(0L)
     private val sessionEpoch = AtomicLong(0L)
@@ -33,8 +33,8 @@ object GameplayEngineRegistry {
                 return false
             }
             var initSuccess = true
-            try { 
-                contributor.initialize() 
+            try {
+                contributor.initialize()
             } catch (t: Throwable) {
                 initSuccess = false
                 RuntimeLogger.log("Engine init failed ${contributor.engineName}: ${t.message}", "RUNTIME")
@@ -52,24 +52,41 @@ object GameplayEngineRegistry {
     fun warmAll(): List<String> {
         // MEDIUM FIX: Removed full-lock around warmUp(). CopyOnWriteArrayList allows safe iteration.
         // This prevents serializing the lifecycle activity for the entire warm-up duration on Helio G81.
+        // GER-D4: warmAll runs lock-free by design, so a concurrent resetAll()
+        // can clear the registry mid-warm. sessionEpoch is bumped by resetAll()
+        // only; if it moved, the warm-up this call performed belongs to a dead
+        // session, so the completion timestamp must not be published for the
+        // (now empty) registry.
+        val epochAtStart = sessionEpoch.get()
         val failed = mutableListOf<String>()
         val snapshot = contributors.toList()
         for (c in snapshot) {
-            try { 
-                c.warmUp() 
+            try {
+                c.warmUp()
             } catch (t: Throwable) {
                 failed.add(c.engineName)
                 RuntimeLogger.log("Engine warmUp failed ${c.engineName}: ${t.message}", "RUNTIME")
-            } 
+            }
         }
-        warmUpCompletionTimestamp = System.currentTimeMillis()
-        RuntimeLogger.log("REGISTRY WARM COMPLETE: ${snapshot.size} engines. Failures: ${failed.size}", "RUNTIME")
+        if (sessionEpoch.get() == epochAtStart) {
+            warmUpCompletionTimestamp = System.currentTimeMillis()
+            RuntimeLogger.log("REGISTRY WARM COMPLETE: ${snapshot.size} engines. Failures: ${failed.size}", "RUNTIME")
+        } else {
+            RuntimeLogger.log("REGISTRY WARM SUPERSEDED: reset during warm-up; timestamp not published (${snapshot.size} engines attempted, ${failed.size} failures)", "RUNTIME")
+        }
         return failed
     }
 
     fun collect(frame: RuntimeFrame): List<EngineContribution> {
         collectCycles.incrementAndGet()
-        // SPLENDOR_V43_FAST_GATE: Instant exit on untrusted frames (saves 37 engine calls)
+        // GER-D7: same epoch guard as warmAll (GER-D4). resetAll() clears the
+        // bookkeeping maps under registrationLock while collect() runs
+        // lock-free; a reset landing mid-collect must not let the writes below
+        // resurrect entries for engines that are no longer registered.
+        val epochAtStart = sessionEpoch.get()
+        // SPLENDOR_V43_FAST_GATE: Instant exit on untrusted frames (saves 44 engine calls)
+        // GER-D2: was 37; 44 contributors are registered
+        // (AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT).
         if (!frame.trusted) {
             // SPLENDOR_F31_TRUST_VISIBILITY: trust-blocked frames are now counted and logged
             // instead of vanishing. The empty return is unchanged on purpose: an untrusted
@@ -102,8 +119,10 @@ object GameplayEngineRegistry {
                     (contribution.aimOriginX == null) != (contribution.aimOriginY == null) ||
                     contribution.aimOriginX?.isFinite() == false ||
                     contribution.aimOriginY?.isFinite() == false) continue
-                lastContribution[c.engineName] = contribution
-                contributed.compute(c.engineName) { _, v -> (v ?: 0L) + 1L }
+                if (sessionEpoch.get() == epochAtStart) {
+                    lastContribution[c.engineName] = contribution
+                    contributed.compute(c.engineName) { _, v -> (v ?: 0L) + 1L }
+                }
                 results.add(contribution)
             } catch (t: Throwable) {
                 var currentFailures = 1L
@@ -123,7 +142,9 @@ object GameplayEngineRegistry {
     fun resetAll() {
         synchronized(registrationLock) {
             sessionEpoch.incrementAndGet()
-            contributors.forEach { c -> try { c.reset() } catch (_: Throwable) {} }
+            // GER-D3: a throwing reset() used to vanish inside an empty catch.
+            // Log it like warmUp/collect failures so a broken engine reset is visible.
+            contributors.forEach { c -> try { c.reset() } catch (t: Throwable) { RuntimeLogger.log("Engine reset failed ${c.engineName}: ${t.message}", "RUNTIME") } }
             contributors.clear()
             registeredNames.clear()
             lastContribution.clear(); contributed.clear(); failures.clear()
@@ -149,6 +170,11 @@ object GameplayEngineRegistry {
     fun registryRuntimeSnapshot(): Map<String, Any> = mapOf(
         "engines" to contributors.size,
         "collectCycles" to collectCycles.get(),
+        // GER-D1: "contributed" was maintained but never exposed, while
+        // GlobalCrashHandler and SmartAssistControlRoomActivity both read
+        // snap["contributed"] and printed null. Total accepted contributions
+        // since the last reset.
+        "contributed" to contributed.values.sum(),
         "names" to contributors.joinToString(",") { it.engineName },
         "generation" to registrationGeneration.get(),
         "collisions" to collisions.get(),

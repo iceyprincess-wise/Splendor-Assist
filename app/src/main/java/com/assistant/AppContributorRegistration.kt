@@ -50,7 +50,9 @@ object AppContributorRegistration {
         // HIGH: Recovery semantics - allow retry from PARTIAL or FAILED
         if (currentState == RegistrationState.READY) {
             // SPLENDOR_V18_READY_DRIFT_BEGIN
-            if (GameplayEngineRegistry.contributorCount() == EXPECTED_CONTRIBUTOR_COUNT) return
+            // GER-D5: use the registry's own health check instead of
+            // duplicating its logic inline (isExpectedRegistered had no callers).
+            if (GameplayEngineRegistry.isExpectedRegistered(EXPECTED_CONTRIBUTOR_COUNT)) return
             state.set(RegistrationState.IDLE)
             // SPLENDOR_V18_READY_DRIFT_END
         }
@@ -130,7 +132,7 @@ object AppContributorRegistration {
                         com.assistant.gameplay.ApexFinisherEngine()
                     )
                     
-                    // MEDIUM: Runtime assertion for 37-contributor contract
+                    // MEDIUM: Runtime assertion for 44-contributor contract
                     check(allContributors.size == EXPECTED_CONTRIBUTOR_COUNT) {
                         "CRITICAL: Hardcoded contributor list size (${allContributors.size}) != expected ($EXPECTED_CONTRIBUTOR_COUNT)"
                     }
