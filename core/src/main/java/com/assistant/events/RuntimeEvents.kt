@@ -12,7 +12,10 @@ import java.util.concurrent.atomic.AtomicLong
  *
  *   SystemEventHub    - Android/component lifecycle (owned by services)
  *   RuntimeEventHub   - coordinator gates + health (owned by RuntimeCoordinator)
- *   GameplayEventHub  - frame -> decision -> dispatch (owned by the decision loop)
+ *   GameplayEventHub  - frame -> decision -> dispatch (owned by the decision
+ *                       loop and the dispatch authority: RuntimeDecisionLoop
+ *                       emits "routed", GestureExecutionAuthority emits
+ *                       "dispatch-accepted" / "dispatch-rejected")
  *
  * Each hub keeps a bounded in-memory ring so diagnostics can read recent
  * history per channel, and still mirrors to RuntimeLogger so existing field
@@ -48,14 +51,23 @@ abstract class EventHub(
             timestampMs = System.currentTimeMillis()
         )
 
-        history.addLast(event)
-        while (history.size > MAX_HISTORY) {
-            history.pollFirst()
-        }
+        // D29-1: the state commit is one atomic step under the hub monitor,
+        // so a concurrent reset() or channelRuntimeSnapshot() can never see
+        // a half-updated hub (history cleared but emitted still counting,
+        // or lastName from one event with lastUpdatedMs from another).
+        // The RuntimeLogger mirror runs AFTER the commit and OUTSIDE the
+        // lock, so no lock is held across logging and no new lock order
+        // is introduced (RuntimeLogger never calls back into a hub).
+        synchronized(this) {
+            history.addLast(event)
+            while (history.size > MAX_HISTORY) {
+                history.pollFirst()
+            }
 
-        emitted.incrementAndGet()
-        lastName = name
-        lastUpdatedMs = event.timestampMs
+            emitted.incrementAndGet()
+            lastName = name
+            lastUpdatedMs = event.timestampMs
+        }
 
         try {
             RuntimeLogger.log(
@@ -67,22 +79,33 @@ abstract class EventHub(
     }
 
     fun recent(limit: Int = 20): List<RuntimeEvent> =
-        history.toList().takeLast(limit)
+        // D29-2: takeLast(negative) throws IllegalArgumentException
+        // (verified against kotlin-stdlib 1.9.22); clamp so a bad limit
+        // yields an empty list instead of crashing a diagnostics caller.
+        // D29-1: read under the hub monitor, so the list is one instant.
+        synchronized(this) { history.toList().takeLast(limit.coerceAtLeast(0)) }
 
     fun reset() {
-        history.clear()
-        emitted.set(0L)
-        lastName = "none"
-        lastUpdatedMs = 0L
+        // D29-1: clear + counters + last-event fields as one atomic step;
+        // a concurrent emit can no longer land between history.clear()
+        // and emitted.set(0L) and be silently erased from the counters.
+        synchronized(this) {
+            history.clear()
+            emitted.set(0L)
+            lastName = "none"
+            lastUpdatedMs = 0L
+        }
     }
 
-    fun channelRuntimeSnapshot(): Map<String, Any> = mapOf(
-        "channel" to channel.name,
-        "emitted" to emitted.get(),
-        "lastName" to lastName,
-        "lastUpdatedMs" to lastUpdatedMs,
-        "history" to history.size
-    )
+    fun channelRuntimeSnapshot(): Map<String, Any> = synchronized(this) {
+        mapOf(
+            "channel" to channel.name,
+            "emitted" to emitted.get(),
+            "lastName" to lastName,
+            "lastUpdatedMs" to lastUpdatedMs,
+            "history" to history.size
+        )
+    }
 }
 
 object SystemEventHub : EventHub(EventChannel.SYSTEM, "SYSTEM_EVENT")

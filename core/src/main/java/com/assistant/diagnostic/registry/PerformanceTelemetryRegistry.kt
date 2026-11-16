@@ -36,10 +36,45 @@ object PerformanceTelemetryRegistry {
         if (file == null) file = try { SplendorStorageRoot.file("perf_telemetry.txt") } catch (_: Throwable) { null }
     }
 
+    // B30-D4: initialize() runs only at process start (App.onCreate,
+    // PerformanceEngineService, NetProbeEngine.start). If storage was not
+    // ready at those moments, `file` stayed null for the whole process
+    // lifetime: no publisher ever re-entered SplendorStorageRoot, so the
+    // cross-process file channel was dead until restart even after the
+    // All Files grant arrived (S17-D1 lazy retry exists in the root but
+    // nothing in this registry called it again). Re-enter it here,
+    // throttled: directory() fails fast at the permission gate when
+    // storage is not ready, and the retry is skipped entirely once
+    // `file` resolves. Needs no Context: the canonical root is fixed.
+    @Volatile private var lastFileRetryMs = 0L
+    private const val FILE_RETRY_THROTTLE_MS = 5_000L
+
+    private fun ensureFile() {
+        if (file != null) return
+        val now = System.currentTimeMillis()
+        if (now - lastFileRetryMs < FILE_RETRY_THROTTLE_MS) return
+        lastFileRetryMs = now
+        try { file = SplendorStorageRoot.file("perf_telemetry.txt") } catch (_: Throwable) { }
+    }
+
+    // B30-D5: the pipe-delimited single-line format has no escaping, so a
+    // "|" inside a string field shifts every later field (the p.size >= 6
+    // check still passes, but p[5] becomes the transport string and the
+    // timestamp parses to 0L). Quality/transport are internal constants
+    // and safe today; carrier is NOT -- CarrierProfileEngine passes the
+    // raw TelephonyManager networkOperatorName through (GENERIC.copy(name
+    // = op.uppercase())), an arbitrary system string. Strip "|" and
+    // newlines at the writer so a hostile/odd operator name can never
+    // corrupt the parse.
+    private fun pipeSafe(s: String): String =
+        s.replace('|', '?').replace('\n', '?').replace('\r', '?')
+
     @JvmStatic
     @Synchronized
     fun publishNet(rttMs: Float, jitterMs: Float, quality: String, carrier: String, transport: String) {
-        val t = NetTelemetry(rttMs, jitterMs, quality, carrier, transport, System.currentTimeMillis())
+        ensureFile()
+        val q = pipeSafe(quality); val c = pipeSafe(carrier); val tr = pipeSafe(transport)
+        val t = NetTelemetry(rttMs, jitterMs, q, c, tr, System.currentTimeMillis())
         net = t
         try {
             file?.writeText(t.rttMs.toString() + "|" + t.jitterMs + "|" + t.quality + "|" +
@@ -57,15 +92,29 @@ object PerformanceTelemetryRegistry {
     fun currentNet(): NetTelemetry {
         val now = System.currentTimeMillis()
         if (now - net.updatedMs < 15000L) return net
-        if (now - lastRead < 2000L) return readCache
+        if (now - lastRead < 2000L) return if (now - readCache.updatedMs < 15_000L) readCache else EMPTY
         lastRead = now
+        ensureFile()
         try {
-            val p = (file?.takeIf { it.exists() }?.readText() ?: return readCache).split("|")
-            if (p.size >= 6) readCache = NetTelemetry(
-                p[0].toFloatOrNull() ?: 0f, p[1].toFloatOrNull() ?: 0f,
-                p[2], p[3], p[4], p[5].toLongOrNull() ?: 0L)
+            val p = (file?.takeIf { it.exists() }?.readText() ?: return if (now - readCache.updatedMs < 15_000L) readCache else EMPTY).split("|")
+            if (p.size >= 6) {
+                // B30-D2: the file timestamp was never checked, so a sample
+                // written hours ago (probe / :survival dead) was served as
+                // if live, and FilterEngine prints net.rttMs with no
+                // updatedMs check of its own. Adopt the file sample only
+                // when its own timestamp is fresh (<15s, mirroring the
+                // in-memory rule and the currentFilterAggression pattern);
+                // otherwise report EMPTY. A torn read also lands here: a
+                // truncated tail makes the timestamp unparseable (0L) and
+                // the torn sample is rejected instead of poisoning the
+                // cache with 0f/0L fallbacks.
+                val ts = p[5].toLongOrNull() ?: 0L
+                readCache = if (ts > 0L && now - ts < 15_000L) NetTelemetry(
+                    p[0].toFloatOrNull() ?: 0f, p[1].toFloatOrNull() ?: 0f,
+                    p[2], p[3], p[4], ts) else EMPTY
+            }
         } catch (_: Throwable) { }
-        return readCache
+        return if (now - readCache.updatedMs < 15_000L) readCache else EMPTY
     }
 
     // ---- ACTION WINDOW (net stack verdict: GO / CAUTION / HOLD) ----
@@ -76,17 +125,22 @@ object PerformanceTelemetryRegistry {
 
     @JvmStatic
     fun publishActionWindow(verdict: String, detail: String) {
-        window = verdict; windowDetail = detail; windowMs = System.currentTimeMillis()
+        // B30-D5: detail is a free-form string in the pipe format; keep it
+        // pipe-safe the same way publishNet does (today's only caller
+        // builds it from numbers, but the format must not depend on that).
+        val v = pipeSafe(verdict); val d = pipeSafe(detail)
+        window = v; windowDetail = d; windowMs = System.currentTimeMillis()
+        ensureFile()
         try {
             if (wfile == null) wfile = file?.parentFile?.let { File(it, "perf_window.txt") }
-            wfile?.writeText(verdict + "|" + detail + "|" + windowMs)
+            wfile?.writeText(v + "|" + d + "|" + windowMs)
         } catch (_: Throwable) { }
         // SPLENDOR_P8_HIST_WINDOW
         // Task 3: keep the single-line current value above AND append the
         // same sample to the bounded history file (trend analysis). This
         // also gives perf_window.txt its first registry reader (via the
         // history reader below); previously no reader existed at all.
-        appendHistory("perf_window_history.txt", verdict + "|" + detail + "|" + windowMs)
+        appendHistory("perf_window_history.txt", v + "|" + d + "|" + windowMs)
     }
 
     // ---- DISPLAY / DEVICE-SIDE (lag stack verdict: SMOOTH / STRAINED / CHOKING) ----
@@ -101,6 +155,7 @@ object PerformanceTelemetryRegistry {
     fun publishDisplay(frameGapMs: Float, jankPerMin: Float, stallMs: Float, verdict: String) {
         dGap = frameGapMs; dJank = jankPerMin; dStall = stallMs; dVerdict = verdict
         dMs = System.currentTimeMillis()
+        ensureFile()
         try {
             if (dfile == null) dfile = file?.parentFile?.let { File(it, "perf_display.txt") }
             dfile?.writeText(frameGapMs.toString() + "|" + jankPerMin + "|" + stallMs + "|" + verdict + "|" + dMs)
@@ -126,10 +181,12 @@ object PerformanceTelemetryRegistry {
     @Volatile private var sfile: File? = null
     @Volatile private var shedReadAt = 0L
     @Volatile private var shedReadCache = "NONE"
+    @Volatile private var shedReadCacheMs = 0L
 
     @JvmStatic
     fun publishLoadShed(level: String) {
         shed = level; shedMs = System.currentTimeMillis()
+        ensureFile()
         try {
             if (sfile == null) sfile = file?.parentFile?.let { File(it, "perf_loadshed.txt") }
             sfile?.writeText(level + "|" + shedMs)
@@ -151,16 +208,34 @@ object PerformanceTelemetryRegistry {
     fun currentLoadShed(): String {
         val now = System.currentTimeMillis()
         if (now - shedMs < 15_000L) return shed
-        if (now - shedReadAt < 2_000L) return shedReadCache
+        if (now - shedReadAt < 2_000L) return if (now - shedReadCacheMs < 15_000L) shedReadCache else "NONE"
         shedReadAt = now
+        ensureFile()
         try {
             if (sfile == null) sfile = file?.parentFile?.let { File(it, "perf_loadshed.txt") }
-            val f = sfile?.takeIf { it.exists() } ?: return shedReadCache
+            val f = sfile?.takeIf { it.exists() } ?: return if (now - shedReadCacheMs < 15_000L) shedReadCache else "NONE"
             val p = f.readText().split("|")
-            if (p.isNotEmpty() && p[0].isNotEmpty()) shedReadCache = p[0]
+            // B30-D1: the file timestamp (p[1]) was written but never
+            // read, so the "stale-aware: older than 15s means the
+            // governor is gone - run full" comment was false: once the
+            // :survival governor died while shedding, the main process
+            // kept its last HEAVY/LIGHT level FOREVER (OverlayService
+            // quarters OCR on HEAVY, RuntimeSelfHeal purges on HEAVY).
+            // Adopt the file level only when its own timestamp is fresh;
+            // a stale file resets to NONE. A torn read also lands here:
+            // a truncated tail makes the timestamp unparseable (0L), so
+            // a torn level is never adopted.
+            if (p.isNotEmpty() && p[0].isNotEmpty()) {
+                val ts = if (p.size >= 2) p[1].toLongOrNull() ?: 0L else 0L
+                if (ts > 0L && now - ts < 15_000L) {
+                    shedReadCache = p[0]; shedReadCacheMs = ts
+                } else {
+                    shedReadCache = "NONE"; shedReadCacheMs = 0L
+                }
+            }
         } catch (_: Throwable) {
         }
-        return shedReadCache
+        return if (now - shedReadCacheMs < 15_000L) shedReadCache else "NONE"
     }
 
     // ---- STUTTER (sub-second burst state: CALM / HICCUP / OSCILLATION / SEIZURE) ----
@@ -224,6 +299,7 @@ object PerformanceTelemetryRegistry {
      */
     @Synchronized
     private fun appendHistory(historyName: String, line: String) {
+        ensureFile()
         try {
             val dir = file?.parentFile ?: return
             val hist = File(dir, historyName)
@@ -237,7 +313,21 @@ object PerformanceTelemetryRegistry {
     }
 
     /** Last [maxLines] non-blank lines of a history file, oldest first. Empty when storage is not ready. */
+    // B30-D3: this was the only history path NOT synchronized, while
+    // appendHistory (same object monitor) rewrites the file with
+    // writeText during rotation -- a concurrent readLines during the
+    // truncate-and-rewrite could see an empty / half-written file and
+    // the FilterEngine report would print a truncated trend for that
+    // tick. Same monitor as appendHistory now, so a read either sees
+    // the pre-rotation or the post-rotation file, never a torn one.
+    // (Report path only -- never called from the frame path -- so the
+    // lock cannot stall capture. The single-line current* readers stay
+    // lock-free by design; their torn reads are neutralised by the
+    // timestamp validation in B30-D1/B30-D2 plus the size/toXOrNull
+    // guards, instead of taking the same lock on the frame path.)
+    @Synchronized
     private fun readHistoryLines(historyName: String, maxLines: Int): List<String> {
+        ensureFile()
         val n = if (maxLines < 1) 1 else maxLines
         return try {
             val dir = file?.parentFile ?: return emptyList()
@@ -308,7 +398,14 @@ object PerformanceTelemetryRegistry {
         val executionBrake: Int, val updatedMs: Long
     )
 
-    private val DEVICE_EMPTY = DeviceState("UNKNOWN", "UNKNOWN", -1, "UNKNOWN", -1L, -1, true, 0, 0L)
+    // B30-D6: batteryCharging was `true` in the unknown sentinel, so a
+    // device that never published battery was reported as charging
+    // (FilterEngine prints "Battery: -1% charging=true"). Unknown is
+    // not charging: `false` is the conservative side -- nothing in the
+    // repo acts on the charging flag (report line only), and the
+    // CpuGovernorEngine default is also false. No tri-state Boolean
+    // exists here; the -1 level already marks the reading unknown.
+    private val DEVICE_EMPTY = DeviceState("UNKNOWN", "UNKNOWN", -1, "UNKNOWN", -1L, -1, false, 0, 0L)
 
     @Volatile private var device: DeviceState = DEVICE_EMPTY
     @Volatile private var devFile: File? = null
@@ -326,6 +423,7 @@ object PerformanceTelemetryRegistry {
         batteryLevel: Int? = null, batteryCharging: Boolean? = null,
         executionBrake: Int? = null
     ) {
+        ensureFile()
         val now = System.currentTimeMillis()
         // Stutter is event-driven (BurstForensicsEngine.record fires only
         // on a real burst), so on a calm device no stutter publish ever
@@ -363,6 +461,7 @@ object PerformanceTelemetryRegistry {
         if (now - device.updatedMs < DEVICE_STALE_MS) return device
         if (now - devReadAt < DEVICE_READ_THROTTLE_MS) return devReadCache
         devReadAt = now
+        ensureFile()
         try {
             if (devFile == null) devFile = file?.parentFile?.let { File(it, "perf_device.txt") }
             val p = (devFile?.takeIf { it.exists() }?.readText() ?: return devReadCache).split("|")
@@ -396,6 +495,7 @@ object PerformanceTelemetryRegistry {
     @JvmStatic
     @Synchronized
     fun publishFilterAggression(multiplier: Float) {
+        ensureFile()
         val v = multiplier.coerceIn(1.0f, 3.0f)
         aggro = v
         aggroMs = System.currentTimeMillis()
@@ -413,6 +513,7 @@ object PerformanceTelemetryRegistry {
         if (now - aggroMs < 15_000L) return aggro
         if (now - aggroReadAt < 2_000L) return if (now - aggroReadCacheMs < 15_000L) aggroReadCache else 1.0f
         aggroReadAt = now
+        ensureFile()
         try {
             if (aggroFile == null) aggroFile = file?.parentFile?.let { File(it, "perf_aggression.txt") }
             val p = (aggroFile?.takeIf { it.exists() }?.readText() ?: return 1.0f).split("|")

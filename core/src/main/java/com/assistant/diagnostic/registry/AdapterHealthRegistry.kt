@@ -23,8 +23,29 @@ object AdapterHealthRegistry {
     fun initialize(
         context: Context
     ) {
-        applicationContext =
+        val appContext =
             context.applicationContext
+        applicationContext =
+            appContext
+        // D31-1: restore() had no callers, so the local map started empty
+        // in every process and getAll()/get(name) read empty until this
+        // process's own adapters heartbeated - and the main process never
+        // heartbeats at all (all three update() writers run in
+        // :survival), so its local list was permanently empty. Seed the
+        // map from the persisted file at startup so the local readers
+        // report the last-known fleet state. restore() merges
+        // freshest-wins, so a re-initialise can never regress live
+        // entries. readAll() itself swallows file errors (empty list),
+        // the catch here covers only Errors escaping it.
+        try {
+            restore(
+                HealthPersistenceStore.readAll(
+                    appContext
+                )
+            )
+        } catch (t: Throwable) {
+            com.assistant.diagnostic.RuntimeLogger.log("initialize: persisted health snapshots unrestorable: " + t.message, "ADAPTER_HEALTH")
+        }
     }
 
     @Synchronized
@@ -45,24 +66,47 @@ object AdapterHealthRegistry {
     fun restore(
         persisted: List<AdapterHealthSnapshot>
     ) {
+        // D31-2: freshest heartbeat wins, the same rule as getAllLive().
+        // The old blind overwrite could regress a live local snapshot
+        // with a stale persisted one if restore() ever ran after
+        // heartbeats had arrived; with the D31-1 initialise wiring that
+        // is now a real path, so the merge must be safe to call twice.
         persisted.forEach {
-            snapshots[it.adapterName] = it
+            val existing = snapshots[it.adapterName]
+            if (existing == null || it.lastHeartbeat > existing.lastHeartbeat) {
+                snapshots[it.adapterName] = it
+            }
         }
     }
 
+    /*
+     * Local-process snapshots only. Callers that gate on adapter health
+     * must use getAllLive(): a snapshot that lives only in another
+     * process's persistence file is invisible here. (Since the D31-1
+     * initialise wiring this list is seeded from the persisted file at
+     * startup, so it holds the last-known fleet state rather than
+     * nothing - but it still goes stale between restarts, while
+     * getAllLive() re-reads the file on every call.)
+     */
     @Synchronized
     fun getAll(): List<AdapterHealthSnapshot> {
         return snapshots.values.toList()
     }
 
     /*
-     * Cross-process truth. The adapters (net / lag / stutter ...) heartbeat
-     * from their OWN processes: their updates land in their process's
-     * in-memory map and in the shared persistence file - never in this
-     * process's map. Anything that gates on adapter health from the main
-     * runtime (booster gate, health monitor) must therefore merge the
-     * persisted snapshots with the local ones, preferring the freshest
-     * heartbeat per adapter.
+     * Cross-process truth. The three heartbeat writers
+     * (gameplay_engine, performance_engine, adapter_watchdog) all run in
+     * the :survival process, while the main process never heartbeats: a
+     * main-process reader's in-memory map therefore holds only what
+     * initialize() restored from the shared persistence file. Anything
+     * that gates on adapter health from the main runtime (booster gate,
+     * health monitor) must therefore merge the persisted snapshots with
+     * the local ones, preferring the freshest heartbeat per adapter.
+     * (D31-3: the old comment claimed the adapters heartbeat "from
+     * their OWN processes" and named net / lag / stutter adapters -
+     * neither is true. All three writers share :survival per the
+     * manifest, and no net/lag/stutter adapter ever calls update();
+     * the cross-process split that matters is main vs :survival.)
      */
     @Synchronized
     fun getAllLive(): List<AdapterHealthSnapshot> {
