@@ -217,7 +217,16 @@ class GlobalCrashHandler(
                 } else {
                     for (snap in snapshots.sortedBy { it.adapterName }) {
                         val age = if (snap.lastHeartbeat > 0) (now - snap.lastHeartbeat) / 1000L else -1L
-                        val effective = com.assistant.diagnostic.registry.AdapterHealthRegistry.effectiveStatus(snap.adapterName)
+                        // D31-4: pure snapshot form. The name form re-reads
+                        // the persistence file via getAllLive() on EVERY
+                        // call, so this loop re-read it once per adapter
+                        // (N reads for N adapters) on the crash-report
+                        // path. The pure form applies the same thresholds
+                        // (30s ACTIVE / 120s DEGRADED / else OFFLINE) to
+                        // the same lastHeartbeat of the snapshot this loop
+                        // already holds, so the status produced is
+                        // identical; only the N re-reads are gone.
+                        val effective = com.assistant.diagnostic.registry.AdapterHealthRegistry.effectiveStatus(snap)
                         val status = when (effective) {
                             "ACTIVE"   -> "[ACTIVE  ]"
                             "DEGRADED" -> "[DEGRADED]"

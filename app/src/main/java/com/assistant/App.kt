@@ -121,6 +121,23 @@ class App : Application() {
             } catch (t: Throwable) {
                 faultSafe("FilterEngine.start", "${t.javaClass.simpleName}: ${t.message ?: "unknown"}")
             }
+            // D31-5: start the adapter recovery engine here, in the main
+            // process only, next to FilterEngine.start() - same reason:
+            // App.onCreate runs on every process start, so recovery runs
+            // even when no capture frame ever arrives (the BoosterIgnition
+            // path is frame-gated). Main-process-only is load-bearing:
+            // the engine's unique job is restarting adapter_watchdog,
+            // which the :survival watchdog cannot do for itself, so the
+            // engine must live in a process that outlives :survival.
+            // start() is idempotent (started flag) and self-schedules
+            // its 30s scan; the try/catch mirrors the FilterEngine block
+            // above so a recovery-engine failure can never fail boot.
+            try {
+                com.assistant.recovery.AdapterRecoveryEngine.start(this)
+                logSafe("App.onCreate: AdapterRecoveryEngine started (main process)", "BOOT")
+            } catch (t: Throwable) {
+                faultSafe("AdapterRecoveryEngine.start", "${t.javaClass.simpleName}: ${t.message ?: "unknown"}")
+            }
             // SPLENDOR_P7_APP_START_END
 
             if (!storageReady) {
