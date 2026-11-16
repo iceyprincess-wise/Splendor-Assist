@@ -22,7 +22,7 @@ import com.assistant.overlay.interceptor.ThreatDecision
 
 import com.assistant.overlay.interceptor.GoalkeeperActionRouter
 import com.assistant.overlay.interceptor.GoalkeeperExecutionEngine
-import com.assistant.execution.CentralExecutionBus
+import com.assistant.execution.ContributionRegistry
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
 import com.assistant.overlay.repository.GoalkeeperRuntimeState
@@ -72,7 +72,7 @@ object OmnipotentGoalkeeperEngine {
         val attackerToGkDistance = hypot((nearestAttackerX - gkX).toDouble(), (nearestAttackerY - gkY).toDouble())
 
         if (attackerToGkDistance < 200.0) {
-                // Route GK RUSH through CentralExecutionBus (Downward swipe on Pressure Button)
+                // Route GK RUSH through ContributionRegistry.offer - the emergency lane (Downward swipe on Pressure Button)
                 // SPLENDOR_P12_T3_RUSH: the rush was identical at distance 31
                 // and 185 (fixed swipe + 55ms). Scale by the computed distance.
                 val rushScale = (attackerToGkDistance / 200.0).toFloat().coerceIn(0f, 1f)
@@ -88,7 +88,7 @@ object OmnipotentGoalkeeperEngine {
                     duration = (30L + (25L * rushScale).toLong())
                 )
 
-                if (CentralExecutionBus.submit(rushRequest)) {
+                if (ContributionRegistry.offer(rushRequest)) {
                     com.assistant.SmartAssistMetrics.recordGoalkeeperShadow(
                         rushRequest,
                         "phase-5 goalkeeper rush submitted unchanged as shadow-observed emergency gesture"
@@ -124,7 +124,7 @@ object OmnipotentGoalkeeperEngine {
                 duration = 20L
             )
 
-            if (CentralExecutionBus.submit(reflexRequest)) {
+            if (ContributionRegistry.offer(reflexRequest)) {
                 com.assistant.SmartAssistMetrics.recordGoalkeeperShadow(
                     reflexRequest,
                     "phase-6 goalkeeper reflex submitted unchanged as shadow-observed emergency gesture"
@@ -360,7 +360,7 @@ object OmnipotentGoalkeeperEngine {
                 executionCoordinates[2] = vector[2]
                 executionCoordinates[3] = vector[3] + positioningBias
 
-                val accepted = CentralExecutionBus.submit(
+                val accepted = ContributionRegistry.offer(
                     ExecutionRequest(
                         source = ExecutionSource.GOALKEEPER,
                         phase = finalAction.ordinal,

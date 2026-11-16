@@ -8,15 +8,25 @@ data class AimMotion(val originX: Float, val originY: Float, val targetX: Float,
     val relativeVx: Float, val relativeVy: Float, val predictedAtNanos: Long,
     val radius: Float, val width: Float, val height: Float) {
     fun endpoint(startX: Float, startY: Float, nowNanos: Long): Pair<Float, Float>? {
+        // B24-01: the start point is copied into the compensated request
+        // verbatim, so a non-finite start must reject here - the bus
+        // requestIsValid check never sees it (the compensation path
+        // bypasses submit-time validation). B24-04: the width/height guard
+        // is <= 0, matching PredictiveState - a sub-pixel frame (0 < size
+        // < 1) passes both and clamps to 0f below instead of returning null.
         if (listOf(originX, originY, targetX, targetY, relativeVx, relativeVy, radius, width, height).any { !it.isFinite() } ||
-            radius <= 0f || width <= 1f || height <= 1f) return null
+            !startX.isFinite() || !startY.isFinite() ||
+            radius <= 0f || width <= 0f || height <= 0f) return null
         val dt = ((nowNanos - predictedAtNanos).coerceIn(0L, 100_000_000L)) / 1e9f
         val dx = targetX - originX + relativeVx * dt
         val dy = targetY - originY + relativeVy * dt
         val length = hypot(dx, dy)
         if (!length.isFinite() || length <= 0f) return null
-        return (startX + dx / length * radius).coerceIn(0f, width - 1f) to
-            (startY + dy / length * radius).coerceIn(0f, height - 1f)
+        // B24-04: a sub-pixel frame (0 < size < 1) has no interior pixel,
+        // so the upper bound clamps to 0f instead of throwing on an empty
+        // coerce range - the same rule PredictiveState uses (PS-D2).
+        return (startX + dx / length * radius).coerceIn(0f, (width - 1f).coerceAtLeast(0f)) to
+            (startY + dy / length * radius).coerceIn(0f, (height - 1f).coerceAtLeast(0f))
     }
 }
 
@@ -25,14 +35,24 @@ object UiExecutionGate {
     @Volatile private var blockedUntilNanos = 0L
     @Volatile var reason: String = "none"; private set
     fun blocked(now: Long = System.nanoTime()) = now < blockedUntilNanos
+    // B24-02: the gate and the bus use separate monitors, so check-then-act
+    // is not atomic across them. A submit that passed the gate check before
+    // this block runs is wiped by clearPending() below (its verifier entry
+    // is swept at 800ms with no reliability update - it never reaches the
+    // policy), and a request already returned by consume() can still
+    // execute after the block. Both are bounded (one in-flight request,
+    // one phantom verifier entry) and no lock change can close the window,
+    // because execution happens after consume() returns; the gate
+    // guarantees only that no NEW queued request executes after a block.
     @Synchronized fun block(reason: String, now: Long = System.nanoTime(), durationMs: Long = 1500L) {
         this.reason = reason
         RuntimeLogger.log("UiExecutionGate blocked: $reason", "UiExecutionGate")
         // SPLENDOR_P11_D04: wipe the bus queue only on a genuine transition
         // (first block after an unblocked period). The old unconditional
-        // clearPending() wiped the queue on every re-block — 858 wipes in
-        // the 2026-11-12 session, most of them re-blocks for the same
-        // foreground app while the bus was already empty.
+        // clearPending() wiped the queue on every re-block - including
+        // re-blocks for the same foreground app while the bus was already
+        // empty. (The 2026-11-12 session total quoted here before could not
+        // be reproduced from repo evidence, so no count is stated.)
         val wasBlocked = now < blockedUntilNanos
         blockedUntilNanos = maxOf(blockedUntilNanos, now + durationMs.coerceIn(1, 5000) * 1_000_000)
         if (!wasBlocked) CentralExecutionBus.clearPending()
@@ -47,7 +67,15 @@ class OutcomePolicy {
     private val reliability = mutableMapOf<ActionClass, Float>()
     @Synchronized fun dispatched(id: String, phase: ActionClass, ownerId: Int?, hasBall: Boolean, now: Long) {
         if (phase == ActionClass.MOVE || phase == ActionClass.EVADE || phase == ActionClass.NONE) return
-        if (pending.size >= 64) pending.remove(pending.keys.first())
+        // B24-05: the cap-64 eviction used to drop the oldest outcome
+        // silently (no outcome, no reliability update). Log it so a
+        // dropped verification is visible instead of silent.
+        if (pending.size >= 64) {
+            val evicted = pending.keys.first()
+            val evictedPhase = pending[evicted]?.phase
+            pending.remove(evicted)
+            RuntimeLogger.log("OutcomePolicy cap evicted oldest outcome actionId=$evicted phase=$evictedPhase", "OutcomePolicy")
+        }
         pending[id] = Waiting(phase, ownerId, hasBall, now)
     }
     @Synchronized fun cooling(phase: ActionClass, now: Long) = pending.values.any { it.phase == phase && now - it.at in 0L..800_000_000L }
@@ -59,7 +87,12 @@ class OutcomePolicy {
         while (iterator.hasNext()) {
             val (id, item) = iterator.next()
             val age = now - item.at
-            val macro = fresh && observedAtNanos > item.at && age in 30_000_000L..800_000_000L && when(item.phase) {
+            // B24-03: the 800ms deadline judges the PIXELS, not the verify
+            // call. A frame captured in-window but verified after the
+            // deadline (pipeline latency) is in-window evidence. The
+            // timeout below still uses verify-time age.
+            val pixelAge = observedAtNanos - item.at
+            val macro = fresh && observedAtNanos > item.at && pixelAge in 30_000_000L..800_000_000L && when(item.phase) {
                 ActionClass.PASS, ActionClass.CROSS -> item.hasBall && hasBall && item.ownerId != null && ownerId != null && ownerId != item.ownerId
                 ActionClass.DEFEND, ActionClass.KEEPER -> !item.hasBall && hasBall
                 ActionClass.SHOT -> item.hasBall && !hasBall

@@ -131,6 +131,12 @@ object RuntimeHealthMonitor {
         val decision = RuntimeDecisionLoop.decisionRuntimeSnapshot()
         val contributions =
             com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot()
+        // D6: a rejected emergency submission (a save that never reached
+        // the bus) is surfaced here as a degraded reason, so the
+        // "impossible to miss" claim in ContributionRegistry is true in a
+        // decision path, not only in the MainActivity raw dump.
+        val emergencyRejected =
+            (contributions["emergencyRejected"] as? Number)?.toLong() ?: 0L
         val execution = GestureExecutionAuthority.executionRuntimeSnapshot()
         val registry = GameplayEngineRegistry.registryRuntimeSnapshot()
 
@@ -198,6 +204,7 @@ object RuntimeHealthMonitor {
         if (!dispatchAlive) degraded += "dispatch-stale"
         if (!gameplayAlive) degraded += "gameplay-idle"
         if (!boosterAlive) degraded += "booster-not-ready"
+        if (emergencyRejected > 0L) degraded += "emergency-rejected"
 
         return HealthState(
             accessibilityAlive = accessibilityAlive,

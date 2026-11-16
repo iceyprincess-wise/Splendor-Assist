@@ -100,4 +100,31 @@ class ExecutionBoundaryTest {
         assertEquals(r, CentralExecutionBus.consume())
         assertTrue(r.busConsumed)
     }
+    // D-26-03 pin: the STUTTER low ring exists and orders after the
+    // medium ring, even though no production producer submits STUTTER
+    // today (wire a producer, or record it as intentionally reserved -
+    // do not delete the ring without Ed's call).
+    @Test fun lowRingOrdersAfterMediumRing() {
+        val low = request(source = ExecutionSource.STUTTER)
+        val med = request()
+        assertTrue(CentralExecutionBus.submit(low)); assertTrue(CentralExecutionBus.submit(med))
+        assertEquals(med, CentralExecutionBus.consume()); assertEquals(low, CentralExecutionBus.consume())
+    }
+    // D-26-04 pin: degenerate motion (radius 0) cannot be compensated;
+    // the bus executes the raw request and counts it under
+    // aimNullCompensations, not invalidDrops. Counter deltas are used
+    // because the bus counters are cumulative across tests in one run.
+    @Test fun aimNullConsumeExecutesUncompensatedAndCountsSeparately() {
+        CentralExecutionBus.start() // force a statistics refresh past the 100ms throttle
+        val before = CentralExecutionBus.statistics.value
+        val motion = AimMotion(0f, 0f, 100f, 0f, 0f, 100f, System.nanoTime(), 0f, 640f, 288f)
+        val request = ExecutionRequest(ExecutionSource.SMART_ASSIST, 0, 200f, 200f, 220f, 200f, 50L, aimMotion = motion)
+        assertTrue(CentralExecutionBus.submit(request))
+        val consumed = CentralExecutionBus.consume()!!
+        assertEquals(220f, consumed.endX, 0.001f); assertEquals(200f, consumed.endY, 0.001f)
+        CentralExecutionBus.start()
+        val after = CentralExecutionBus.statistics.value
+        assertEquals(before.aimNullCompensations + 1, after.aimNullCompensations)
+        assertEquals(before.invalidDrops, after.invalidDrops)
+    }
 }

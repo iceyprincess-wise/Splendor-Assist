@@ -183,5 +183,29 @@ class PredictionPolicyTest {
         val kept = p.project(2, 15f, 10f, 1_050_000_000L, 50f, 640f, 288f)
         assertEquals(100f, kept.vxPerSecond, 0.01f)
     }
+    // B24-01 pin: a non-finite start point must reject here, because the
+    // bus requestIsValid check never sees it (the compensation path
+    // bypasses submit-time validation).
+    @Test fun aimEndpointRejectsNonFiniteStart() {
+        val motion = AimMotion(0f, 0f, 100f, 0f, 0f, 100f, 1_000_000_000L, 20f, 640f, 288f)
+        assertNull(motion.endpoint(Float.NaN, 200f, 1_000_000_000L))
+        assertNull(motion.endpoint(200f, Float.POSITIVE_INFINITY, 1_000_000_000L))
+        assertNotNull(motion.endpoint(200f, 200f, 1_000_000_000L))
+    }
+    // B24-03 pin: the 800ms deadline judges the PIXELS, not the verify
+    // call. Pixels captured 790ms after dispatch are in-window even
+    // though the verify call runs at 810ms.
+    @Test fun macroJudgedByCaptureTimeNotVerifyTime() {
+        val p = OutcomePolicy(); p.dispatched("p", ActionClass.PASS, 1, true, 1L)
+        assertEquals(listOf("p" to true), p.observe(2, true, true, 810_000_001L, 790_000_001L))
+    }
+    // B24-04 pin: a sub-pixel frame (0 < size < 1) passes PredictiveState
+    // and must pass AimMotion too; the point clamps to 0f instead of null.
+    @Test fun aimEndpointAcceptsSubPixelFrameAndClamps() {
+        val motion = AimMotion(0f, 0f, 100f, 0f, 0f, 100f, 1_000_000_000L, 20f, 0.5f, 0.5f)
+        val point = motion.endpoint(200f, 200f, 1_000_000_000L)
+        assertNotNull(point)
+        assertEquals(0f, point!!.first, 0.001f); assertEquals(0f, point.second, 0.001f)
+    }
 
 }

@@ -170,9 +170,9 @@ object RuntimeDecisionLoop {
         // ConAI Meta-Arbiter decision loop
         val best = ConAIEngine.arbitrate(frame, contributions, netHold)
 
-        val emergency = ContributionRegistry.drainBest()
+        val parked = ContributionRegistry.drainBest()
 
-        val rawRequest = chooseRequest(best, emergency, frame)
+        val rawRequest = chooseRequest(best, parked, frame)
         val request = rawRequest?.copy(gestureEnvelope = mintOrRefreshGestureEnvelope(android.os.SystemClock.elapsedRealtime()))
         if (request == null) {
             idleNoContribution.incrementAndGet()
@@ -224,23 +224,26 @@ object RuntimeDecisionLoop {
             } catch (_: Throwable) {
             }
         }
-        lastAction = describe(best, emergency)
+        lastAction = describe(best, parked)
         lastWeight = best?.weight ?: 0f
         return accepted
     }
 
     private fun chooseRequest(
         best: EngineContribution?,
-        emergency: ExecutionRequest?,
+        parked: ExecutionRequest?,
         frame: RuntimeFrame
     ): ExecutionRequest? {
-        // Emergency (goalkeeper etc.) outranks a normal contribution.
-        if (emergency != null) {
-            if (best == null) return emergency
-            val emergencyPriority = HybridExecutionTerminal.priority(emergency.source)
-            val normalPriority = HybridExecutionTerminal.priority(ExecutionSource.SMART_ASSIST)
-            if (emergencyPriority > normalPriority) return emergency
-        }
+        // D-23-02/D3: the drained entry is a PARKED contribution (the only
+        // source that parks is SMART_ASSIST), not an emergency - emergency
+        // sources (GK/INT) bypass the map entirely. The old code compared
+        // its priority against SMART_ASSIST's (90 > 90), which could never
+        // be true, so the branch was dead and the drained entry was
+        // silently dropped whenever a ConAI best existed. Precedence is
+        // now explicit: a parked entry is the fallback when arbitration
+        // has no best; it never outranks a live best (bus rings already
+        // give GK/INT priority over SMART_ASSIST).
+        if (parked != null && best == null) return parked
         if (best == null) return null
 
         // Contributor targets carry action-specific intent (goal, receiver, movement).
@@ -318,9 +321,9 @@ object RuntimeDecisionLoop {
         return threshold.coerceIn(0, 100) / 50f
     }
 
-    private fun describe(best: EngineContribution?, emergency: ExecutionRequest?): String =
+    private fun describe(best: EngineContribution?, parked: ExecutionRequest?): String =
         when {
-            emergency != null && best == null -> "emergency:${emergency.source}"
+            parked != null && best == null -> "parked:${parked.source}"
             best != null -> "${best.engine}:${best.actionClass}"
             else -> "none"
         }

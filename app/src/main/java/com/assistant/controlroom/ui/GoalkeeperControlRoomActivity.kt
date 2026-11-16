@@ -147,7 +147,14 @@ class GoalkeeperControlRoomActivity : AppCompatActivity() {
             append("Decisions=").append(decision["decisions"])
                 .append(" routed=").append(decision["routed"])
                 .append(" lastAction=").append(decision["lastAction"]).append('\n')
-            append("Emergency lane (keeper outranks): offered=").append(contributions["offered"])
+            // D7: the emergency lane is the emergencyOffered/Accepted/
+            // Rejected counters, not the parked-map counters - drained can
+            // never include GK/INT (they bypass the map) and pending is the
+            // map size. Show both lanes under their own labels.
+            append("Emergency lane (keeper outranks): offered=").append(contributions["emergencyOffered"])
+                .append(" accepted=").append(contributions["emergencyAccepted"])
+                .append(" rejected=").append(contributions["emergencyRejected"]).append('\n')
+            append("Parked (map): offered=").append(contributions["offered"])
                 .append(" drained=").append(contributions["drained"])
                 .append(" pending=").append(contributions["pending"]).append('\n')
             append("Execution: requested=").append(execution["requested"])

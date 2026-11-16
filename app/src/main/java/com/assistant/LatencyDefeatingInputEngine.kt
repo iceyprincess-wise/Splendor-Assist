@@ -31,7 +31,7 @@ import com.assistant.diagnostic.RuntimeLogger
 
 
 
-import com.assistant.execution.CentralExecutionBus
+import com.assistant.execution.HybridExecutionTerminal
 
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
@@ -137,7 +137,10 @@ fun injectZeroLatencySwipe(
             duration = pingCompensatedDuration.coerceAtLeast(MIN_STROKE_DURATION_MS)
         )
         
-    val accepted = CentralExecutionBus.submit(request)
+    // D-23-03: route through the terminal (single entry point); route()
+    // is a pure passthrough to CentralExecutionBus.submit, so this is
+    // behaviour-identical.
+    val accepted = HybridExecutionTerminal.route(request)
     if (!accepted) RuntimeLogger.log("injectZeroLatencySwipe rejected by bus, swipe lost", "LatencyDefeatingInputEngine")
     return accepted
     }
