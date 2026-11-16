@@ -102,6 +102,11 @@ object CentralExecutionBus {
     val statistics: StateFlow<BusStatistics> = _statistics.asStateFlow()
 
     private val reservations = mutableMapOf<Pair<ExecutionSource, Int>, String>()
+    // F38-D2: reservation timestamps, keyed exactly like reservations.
+    // The drop log used to name only the rejected request, so a wedged
+    // (source, phase) never named its holder. Pruned wherever
+    // reservations is pruned (complete/stop).
+    private val reservationSinceNanos = mutableMapOf<Pair<ExecutionSource, Int>, Long>()
     // D-26-05: removal is by actionId VALUE, not by (source, phase) key,
     // so it releases every reservation holding that actionId. That is
     // correct only because an actionId is unique per logical action:
@@ -111,7 +116,8 @@ object CentralExecutionBus {
     // request across sources/phases; if one ever does, complete() by key
     // is required instead.
     @Synchronized fun complete(actionId: String) {
-        reservations.entries.removeAll { it.value == actionId }
+        val keys = reservations.filterValues { it == actionId }.keys.toList()
+        keys.forEach { reservations.remove(it); reservationSinceNanos.remove(it) }
     }
 
     @Synchronized fun submit(request: ExecutionRequest): Boolean {
@@ -141,7 +147,17 @@ object CentralExecutionBus {
         discardStaleHeads(medRing)
         discardStaleHeads(lowRing)
         val key = request.source to request.phase
-        if (reservations.containsKey(key)) { reservationDrops.incrementAndGet(); RuntimeLogger.log("CentralExecutionBus submit dropped: reservation source=${request.source} phase=${request.phase} actionId=${request.actionId}", "CentralExecutionBus"); return false }
+        if (reservations.containsKey(key)) {
+            reservationDrops.incrementAndGet()
+            // F38-D2: name the holder and its age — the 2026-11-16 live
+            // session's GK phase-4 wedge (no dispatch after 21:56:13,
+            // drops to 22:39:51) could not be attributed because the
+            // drop named only the rejected request.
+            val holderActionId = reservations[key]
+            val holderAgeMs = (nowNanos - (reservationSinceNanos[key] ?: nowNanos)) / 1_000_000L
+            RuntimeLogger.log("CentralExecutionBus submit dropped: reservation source=${request.source} phase=${request.phase} actionId=${request.actionId} holder=$holderActionId holderAgeMs=$holderAgeMs", "CentralExecutionBus")
+            return false
+        }
         val ring = when (request.source) {
             ExecutionSource.GOALKEEPER, ExecutionSource.INTERCEPTION -> highRing
             ExecutionSource.SMART_ASSIST -> medRing
@@ -160,6 +176,7 @@ object CentralExecutionBus {
 
             if (ring.writeCursor.compareAndSet(writePos, writePos + 1)) {
                 reservations[key] = request.actionId
+                reservationSinceNanos[key] = nowNanos
                 request.busAccepted = true
                 ring.buffer.set((writePos and MASK).toInt(), request)
                 accepted.incrementAndGet()
@@ -284,6 +301,7 @@ object CentralExecutionBus {
             }
         }
         reservations.clear()
+        reservationSinceNanos.clear()
         updateStatistics(force = true)
     }
     

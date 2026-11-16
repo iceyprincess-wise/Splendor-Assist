@@ -54,6 +54,14 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
     @Volatile private var currentActionId: String? = null
     private var reportedStallActionId: String? = null
+    // F38-D1: bus-loop liveness. The 2026-11-16 live session's dispatch
+    // consumer died at 22:09:48 with no trace: the busRunnable catch was
+    // Exception-only (an Error skipped the re-post and killed the loop
+    // silently) and the gate/enabled idle branch returned silently.
+    // lastBusHeartbeatMs paces the BUS_ALIVE line (1/min);
+    // lastBusIdleReason logs each idle reason once, and once when it clears.
+    @Volatile private var lastBusHeartbeatMs = 0L
+    @Volatile private var lastBusIdleReason: String? = null
     @Volatile private var latchStuckSinceMs = 0L
     @Synchronized private fun completeDispatch(actionId: String) {
         if (currentActionId == actionId) releaseDispatch()
@@ -262,6 +270,15 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         override fun run() {
             synchronized(this@SmartAssistAccessibilityEngine) {
             try {
+                // F38-D1: heartbeat — one line per minute proving the bus
+                // loop is alive, with live bus counts. A dead loop leaves
+                // no trace today; the heartbeat makes its absence provable.
+                val nowMs = System.currentTimeMillis()
+                if (nowMs - lastBusHeartbeatMs >= 60_000L) {
+                    lastBusHeartbeatMs = nowMs
+                    val busStats = CentralExecutionBus.statistics.value
+                    RuntimeLogger.log("BUS_ALIVE pending=${CentralExecutionBus.pendingCount()} accepted=${busStats.acceptedCount} consumed=${busStats.consumedCount} reservationDrops=${busStats.reservationDrops}", "SMART_ASSIST")
+                }
                 if (latchStuck()) {
                     if (reportedStallActionId != currentActionId) {
                         reportedStallActionId = currentActionId
@@ -273,9 +290,25 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     }
                 }
 
-                if (com.assistant.execution.UiExecutionGate.blocked() || !SmartAssistRepository.enabled()) {
+                // F38-D1: the idle branch used to return silently, so a
+                // loop parked here looked identical to a dead loop. Log
+                // once per reason, and once when it clears.
+                val busIdleReason = when {
+                    com.assistant.execution.UiExecutionGate.blocked() -> "uiGate:${com.assistant.execution.UiExecutionGate.reason}"
+                    !SmartAssistRepository.enabled() -> "smartAssistDisabled"
+                    else -> null
+                }
+                if (busIdleReason != null) {
+                    if (busIdleReason != lastBusIdleReason) {
+                        lastBusIdleReason = busIdleReason
+                        RuntimeLogger.log("Bus loop idle: $busIdleReason", "SMART_ASSIST")
+                    }
                     busHandler.postDelayed(this, BUS_POLL_RATE_MS)
                     return
+                }
+                if (lastBusIdleReason != null) {
+                    lastBusIdleReason = null
+                    RuntimeLogger.log("Bus loop idle cleared - resuming", "SMART_ASSIST")
                 }
 
                 if (isDispatching) {
@@ -313,8 +346,14 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                         "actionId=${request.actionId} source=${request.source} phase=${request.phase} accepted=$accepted start=(${request.startX},${request.startY}) end=(${request.endX},${request.endY})"
                     )
                 }
-            } catch (e: Exception) {
-                RuntimeLogger.log("Bus execution constraint violation: ${e.message}", "SMART_ASSIST")
+            } catch (e: Throwable) {
+                // F38-D1: the catch was Exception-only, so an Error
+                // (OOM, stack overflow, linkage) escaped, skipped the
+                // re-post below, and killed the bus loop silently — the
+                // 2026-11-16 session's 22:09:48 consumer death matches
+                // this shape exactly. Log the Error; the re-post below
+                // keeps the loop alive.
+                RuntimeLogger.log("Bus execution FATAL ${e::class.simpleName}: ${e.message}", "SMART_ASSIST")
             }
 
             busHandler.postDelayed(this, BUS_POLL_RATE_MS)

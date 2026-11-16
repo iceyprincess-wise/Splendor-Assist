@@ -605,6 +605,26 @@ object RuntimeSelfHealEngine {
     // SPLENDOR_P6_DEDUP_TRIAGE_FIELD_END
     @Volatile private var zeroDispatchSinceMs: Long = 0L
 
+    // F38-D3: decision-exit counters as one log line, so a stall firing
+    // attributes itself in the log file. The snapshot previously lived
+    // only in the control-room UI — in the 2026-11-16 live session the
+    // counters appeared in NO log file, so collect() frozen at 2,071
+    // could not be attributed to any onFrame exit.
+    private fun decisionExitCounters(): String {
+        return try {
+            val snap = RuntimeDecisionLoop.decisionRuntimeSnapshot()
+            "decisions=${snap["decisions"] as? Long ?: 0L} " +
+                "routed=${snap["routed"] as? Long ?: 0L} " +
+                "gateBlocked=${snap["gateBlocked"] as? Long ?: 0L} " +
+                "staleFrame=${snap["staleFrame"] as? Long ?: 0L} " +
+                "settingsExit=${snap["settingsExit"] as? Long ?: 0L} " +
+                "routeRejected=${snap["routeRejected"] as? Long ?: 0L} " +
+                "chooseNull=${snap["chooseNull"] as? Long ?: 0L} " +
+                "idleUntrusted=${snap["idleUntrusted"] as? Long ?: 0L} " +
+                "idleNoContribution=${snap["idleNoContribution"] as? Long ?: 0L}"
+        } catch (_: Throwable) { "decisionExitCounters=unavailable" }
+    }
+
     private fun checkDispatchRate() {
         try {
             val snap = RuntimeDecisionLoop.decisionRuntimeSnapshot()
@@ -646,8 +666,8 @@ object RuntimeSelfHealEngine {
                         record(HealEvent(
                             timestamp = fmt.format(Date()),
                             category = "LOOP_STATIC",
-                            detected = "RuntimeDecisionLoop counter frozen at $decisions but assembled frames are still advancing (frameId=$dispatchFrameId, gap=$staticGap). Capture is delivering; onFrame is being skipped downstream (UiExecutionGate-blocked, stale-frame, SETTINGS, or route-rejected exits — see the decision snapshot counters), not a capture death.",
-                            fix = "No capture restart triggered. Read the gateBlocked/staleFrame/settingsExit/routeRejected counters in the decision snapshot to attribute the skip.",
+                            detected = "RuntimeDecisionLoop counter frozen at $decisions but assembled frames are still advancing (frameId=$dispatchFrameId, gap=$staticGap). Capture is delivering; onFrame is being skipped downstream (UiExecutionGate-blocked, stale-frame, SETTINGS, or route-rejected exits — see the decision snapshot counters), not a capture death. Decision exits: ${decisionExitCounters()}",
+                            fix = "No capture restart triggered. Decision exits are in the detected line above.",
                             severity = "WARNING"
                         ))
                     }
@@ -658,12 +678,12 @@ object RuntimeSelfHealEngine {
                         category = "LOOP_FROZEN",
                         detected = "RuntimeDecisionLoop counter frozen at $decisions. " +
                             "onFrame() not being called — decision counter did not advance since last check. " +
-                            "Most likely ImageReader stopped delivering; unverified until the capture check reports.",
+                            "Most likely ImageReader stopped delivering; unverified until the capture check reports. Decision exits: ${decisionExitCounters()}",
                         fix = "AGENT will attempt capture restart. If max attempts reached: " +
                             "re-grant MediaProjection via the capture recovery prompt; no automatic force-stop exists.",
                         severity = "CRITICAL"
                     ))
-                    RuntimeLogger.log("AGENT CRITICAL LOOP_FROZEN at $decisions — triggering capture check", "AGENT")
+                    RuntimeLogger.log("AGENT CRITICAL LOOP_FROZEN at $decisions — triggering capture check. Decision exits: ${decisionExitCounters()}", "AGENT")
                     // Trigger capture check immediately
                     checkCaptureThread()
                 }
@@ -764,11 +784,11 @@ object RuntimeSelfHealEngine {
                         "since the previous health check (total cycles so far: $cycles, " +
                         "untrustedSkipped: ${GameplayEngineRegistry.untrustedSkippedCount()}). " +
                         "$engines contributors registered but idle this interval. " +
-                        "No progress since the last check; ImageReader death is a hypothesis, not verified.",
+                        "No progress since the last check; ImageReader death is a hypothesis, not verified. Decision exits: ${decisionExitCounters()}",
                     fix = "Triggering capture restart check via checkCaptureThread().",
                     severity = "CRITICAL"
                 ))
-                RuntimeLogger.log("AGENT CRITICAL COLLECT_STALL at cycles=$cycles — triggering capture check", "AGENT")
+                RuntimeLogger.log("AGENT CRITICAL COLLECT_STALL at cycles=$cycles — triggering capture check. Decision exits: ${decisionExitCounters()}", "AGENT")
                 checkCaptureThread()
             }
 

@@ -63,25 +63,14 @@ object ThreatPriorityContributor : GameplayContributor {
     internal fun decisionOf(frame: RuntimeFrame): ThreatDecision? {
         val threat = threatOf(frame)
         if (threat == ThreatType.NONE) return null
-        // SPLENDOR_P10_ZONE_LOG: temporary, remove after live
-        // confirmation. Compares the fixed ball-based zone against
-        // ThreatZoneEngine.detect for the same frame, so one live
-        // session decides the axis (ballX clustering near 0 or W with
-        // the goal detected at that end confirms Model X).
+        // F38-D4: SPLENDOR_P10_ZONE_LOG removed — the experiment is
+        // decided. The 2026-11-16 live session (8,018 zoneOf/detect
+        // pairs, goalCX at the X ends) proved Model X: the goal sits at
+        // an X end of the frame. ThreatZoneEngine.detect() is KEPT
+        // unchanged: its only remaining caller is the GK scan strip
+        // (OmnipotentGoalkeeperEngine), which feeds it gauge-animation
+        // pixels in the bottom 25% of the frame, not ball position.
         val p10Zone = zoneOf(frame)
-        val p10CapW = frame.captureWidth.toInt().takeIf { it > 0 }
-            ?: com.assistant.vision.CameraProfile.captureWidthOrFallback().toInt()
-        val p10CapH = frame.captureHeight.toInt().takeIf { it > 0 }
-            ?: com.assistant.vision.CameraProfile.captureHeightOrFallback().toInt()
-        try {
-            com.assistant.diagnostic.RuntimeLogger.log(
-                "GK_ZONE_BALL zoneOf=" + p10Zone +
-                    " detect=" + ThreatZoneEngine.detect(frame.ballX.toInt(), frame.ballY.toInt(), p10CapW, p10CapH) +
-                    " ball=(" + frame.ballX + "," + frame.ballY + ")" +
-                    " goalDet=" + frame.goalDetected + " goalCX=" + frame.goalCenterX +
-                    " goalConf=" + frame.goalConfidence + " atkDir=" + frame.attackDirection +
-                    " cap=" + frame.captureWidth + "x" + frame.captureHeight, "GOALKEEPER")
-        } catch (_: Throwable) { }
         return try {
             ThreatPriorityEngine.evaluate(
                 threat,
