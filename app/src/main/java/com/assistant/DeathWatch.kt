@@ -229,7 +229,7 @@ object DeathWatch {
             lived in 0..10 ->
                 "EARLY DEATH - died " + lived + "s after start ($osExitReason)"
             else ->
-                "TERMINATED: $osExitReason"
+                "UNKNOWN: $osExitReason"
         }
 
         val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)

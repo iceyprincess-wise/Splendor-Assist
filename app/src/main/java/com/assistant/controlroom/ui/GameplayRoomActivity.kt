@@ -274,6 +274,11 @@ class GameplayRoomActivity : AppCompatActivity() {
             val routed    = (snap["routed"] as? Number)?.toLong() ?: 0L
             val idle_unt  = snap["idleUntrusted"] ?: 0
             val idle_none = snap["idleNoContribution"] ?: 0
+            val gate_blk  = snap["gateBlocked"] ?: 0
+            val stale_frm = snap["staleFrame"] ?: 0
+            val settings  = snap["settingsExit"] ?: 0
+            val route_rej = snap["routeRejected"] ?: 0
+            val choose_nl = snap["chooseNull"] ?: 0
             val lastAct   = snap["lastAction"] ?: "none"
             val lastWt    = snap["lastWeight"] ?: 0f
             val updMs     = snap["lastUpdatedMs"] as? Long ?: 0L
@@ -291,6 +296,8 @@ class GameplayRoomActivity : AppCompatActivity() {
                 "Decisions  : $decisions\n" +
                 "Routed     : $routed ($routePct)\n" +
                 "Idle/untrust: $idle_unt    Idle/noContrib: $idle_none\n" +
+                "GateBlocked: $gate_blk  StaleFrame: $stale_frm  Settings: $settings\n" +
+                "RouteRejected: $route_rej  ChooseNull: $choose_nl\n" +
                 "Last action: $lastAct\n" +
                 "Last weight: $lastWt\n" +
                 "Freshness  : $freshness"

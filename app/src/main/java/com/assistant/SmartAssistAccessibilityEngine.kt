@@ -356,6 +356,20 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 RuntimeLogger.log("Seeded foreground package on connect: $seedPkg", "SMART_ASSIST")
             }
         } catch (_: Throwable) {}
+        // F37-D3: the seed above is single-shot — if the service connected
+        // while Settings/a transient UI was foreground, the flag stays
+        // non-game until a later pesam event arrives. Re-seed once after 5s.
+        try {
+            busHandler.postDelayed({
+                try {
+                    val pkg = rootInActiveWindow?.packageName?.toString()
+                    if (!pkg.isNullOrEmpty() && pkg != packageName && !pkg.contains("systemui", true)) {
+                        VisionTrust.onForegroundPackage(pkg, VisionTrust.GAME_PACKAGES)
+                        RuntimeLogger.log("Re-seeded foreground package after connect: $pkg", "SMART_ASSIST")
+                    }
+                } catch (_: Throwable) {}
+            }, 5_000L)
+        } catch (_: Throwable) {}
 
         RuntimeCoordinator.attachExecutionLoop(
             start = { busHandler.post(busRunnable) },
@@ -414,8 +428,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         // SPLENDOR_FG_TRUTH_V1 - feed the REAL foreground package into the
         // vision trust gate. This callback was empty, so VisionTrust.
-        // onForegroundPackage() (the only writer of the real game-foreground
-        // flag) was dead code and the execution gate had no real input.
+        // onForegroundPackage() was dead code and the execution gate had no
+        // real input. (F37-D3: it is not the only writer — setGameForeground
+        // is also written by RuntimeSelfHealEngine and ForegroundGate.)
         // accessibility_service_config.xml already declares
         // typeWindowStateChanged, so these events are delivered.
         if (event == null) return
@@ -429,7 +444,12 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
                 val pkg = event.packageName?.toString() ?: return
                 try {
-                    VisionTrust.onForegroundPackage(pkg, VisionTrust.GAME_PACKAGES)
+                    // F37-D3: transient overlays (systemui, keyboard) used to
+                    // write foregroundIsGame=false on every window change,
+                    // then the 2s dwell delayed the flip back. Only genuine
+                    // app switches write the trust flag now.
+                    if (!isNonBlockingForegroundPackage(pkg))
+                        VisionTrust.onForegroundPackage(pkg, VisionTrust.GAME_PACKAGES)
                     if (!VisionTrust.GAME_PACKAGES.any { pkg.equals(it, ignoreCase = true) } && !isNonBlockingForegroundPackage(pkg))
                         com.assistant.execution.UiExecutionGate.block("foreground:$pkg")
                 } catch (_: Throwable) {

@@ -132,7 +132,10 @@ object ActiveAttackerEngine{
         val stroke=GestureDescription.StrokeDescription(path,0L,20L)
         val gesture=GestureDescription.Builder().addStroke(stroke).build()
         synchronized(this){computeCalls++;lastConfidence=result.confidence;lastTargetX=targetX;lastTargetY=targetY;lastUpdatedMs=System.currentTimeMillis()}
-        GestureExecutionAuthority.execute(service,gesture,null,null)
+        // F37-D2: the execute() result was discarded — a refusal here left
+        // no trace at this call site.
+        val dispatched = GestureExecutionAuthority.execute(service,gesture,null,null)
+        if (!dispatched) Log.w("ActiveAttackerEngine", "Directed push dispatch refused (see SMART_ASSIST gate log)")
       }catch(e:Exception){Log.e("ActiveAttackerEngine","Directed push skipped: \${e.message}")}
     }
     return result

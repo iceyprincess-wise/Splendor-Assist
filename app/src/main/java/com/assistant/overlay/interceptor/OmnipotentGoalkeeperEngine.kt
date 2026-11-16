@@ -94,7 +94,7 @@ object OmnipotentGoalkeeperEngine {
                         "phase-5 goalkeeper rush submitted unchanged as shadow-observed emergency gesture"
                     )
                     lastGkLayerTimestamp = now
-                    com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER 1v1 rush bus-accepted actionId=${rushRequest.actionId} dist=${attackerToGkDistance.toInt()}", "GOALKEEPER")
+                    com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER 1v1 rush bus-enqueued actionId=${rushRequest.actionId} dist=${attackerToGkDistance.toInt()}", "GOALKEEPER")
                     return true
                 }
         }
@@ -130,7 +130,7 @@ object OmnipotentGoalkeeperEngine {
                     "phase-6 goalkeeper reflex submitted unchanged as shadow-observed emergency gesture"
                 )
                 lastGkLayerTimestamp = now
-                com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER close-range reflex pulse bus-accepted actionId=${reflexRequest.actionId}", "GOALKEEPER")
+                com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER close-range reflex pulse bus-enqueued actionId=${reflexRequest.actionId}", "GOALKEEPER")
                 return true
             }
         }

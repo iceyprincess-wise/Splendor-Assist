@@ -170,7 +170,8 @@ object DashboardInjector {
                     append(RuntimeMetricsRegistry.snapshot()).append("\n\n")
                     append(AdapterStatusRegistry.snapshot()).append("\n\n")
                     append(AdapterHealthCounts.snapshot()).append("\n\n")
-                    append(SelfAuditRegistry.snapshot())
+                    append(SelfAuditRegistry.snapshot()).append("\n\n")
+                    append(com.assistant.recovery.RecoveryMetricsRegistry.snapshot())
                 }
                 
                 val statusText = ComplianceState.summary(activity)

@@ -33,7 +33,10 @@ object TruthLogcatEngine {
                         filePointer = 0L // File rotated/truncated
                     }
                     raf.seek(filePointer)
-                    var line = raf.readLine()
+                    // F37-D11: readLine() decodes bytes as Latin-1, so a
+                    // UTF-8 em-dash became 3 chars and Truth lines ran long.
+                    // Round-trip through Latin-1 bytes to restore UTF-8.
+                    var line = raf.readLine()?.let { String(it.toByteArray(Charsets.ISO_8859_1), Charsets.UTF_8) }
                     while (line != null) {
                         if (line.contains("NativeBridge") || 
                             line.contains("AsynchronousGestureQueue") || 
@@ -47,7 +50,7 @@ object TruthLogcatEngine {
                             line.contains("TruthLogcat")) {
                             writeTruth(line)
                         }
-                        line = raf.readLine()
+                        line = raf.readLine()?.let { String(it.toByteArray(Charsets.ISO_8859_1), Charsets.UTF_8) }
                     }
                     filePointer = raf.filePointer
                     raf.close()

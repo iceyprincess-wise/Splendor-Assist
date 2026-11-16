@@ -89,11 +89,11 @@ object RecoveryMetricsRegistry {
                 "Recovery Rate : "
             )
 
+            // F37-T3: recoveryRate() returns 100 with zero attempts — a
+            // fabricated 100% on a fresh dashboard. Render "n/a" instead.
             append(
-                recoveryRate()
+                if (recoveryAttempts <= 0) "n/a" else "${recoveryRate()}%"
             )
-
-            append("%")
         }
     }
 }

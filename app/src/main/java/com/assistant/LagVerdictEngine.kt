@@ -87,9 +87,14 @@ object LagVerdictEngine {
     // SPLENDOR_P12_T4_LAGVERDICT: Choreographer keeps firing with capture
     // dead, so "DEVICE SMOOTH" was printed for a dead engine. The verdict
     // is only meaningful while capture is delivering frames.
+    // F37-D7: FrameAssembler lives in the MAIN process, but this engine
+    // runs in :survival, so the old read was always null and SMOOTH was
+    // structurally unreachable. Read the cross-process heartbeat file
+    // published by OverlayService after every assembled frame instead.
+    // The 3s freshness keeps the P12_T4 guard: a dead capture still reads
+    // UNKNOWN, never a false SMOOTH.
     private fun captureAlive(): Boolean = try {
-        val f = FrameAssembler.current()
-        f != null && System.currentTimeMillis() - f.timestampMs < 3000L
+        PerformanceTelemetryRegistry.currentCaptureAlive()
     } catch (_: Throwable) { false }
 
     fun start() {

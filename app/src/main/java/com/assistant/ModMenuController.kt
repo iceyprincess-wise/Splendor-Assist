@@ -249,6 +249,7 @@ class ModMenuController(private val context: Context) {
         statusLine.append("DEC=").append(decisions)
         statusLine.append(" ROUTED=").append(routed)
         statusLine.append(" EXEC=").append(accepted).append("/").append(rejected)
+        statusLine.append(" BYP=").append(onOff(InterceptionRuntimeRegistry.bypassTouchGate))
         statusLine.append("\n")
         statusLine.append("AWR=").append(InterceptionRuntimeRegistry.awareness)
         statusLine.append(" AUTH=").append(SmartAssistRepository.configuration().authority)
@@ -267,6 +268,7 @@ class ModMenuController(private val context: Context) {
         val modes = OverrideStore.Mode.values()
         modes.forEach { mode ->
             val button = android.widget.RadioButton(context).apply {
+                id = View.generateViewId()
                 text = mode.name
                 tag = mode
                 setTextColor(Color.WHITE)

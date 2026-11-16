@@ -43,6 +43,15 @@
         </activity>
         
         <activity android:name="com.assistant.SplendorReauthActivity" android:exported="false" android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- F37-D10: receiver for the capture-recovery prompt tap
+             (com.assistant.REQUEST_PROJECTION). Previously no receiver
+             existed, so the tap did nothing. -->
+        <receiver android:name=".ProjectionRequestReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.assistant.REQUEST_PROJECTION" />
+            </intent-filter>
+        </receiver>
         
         
         

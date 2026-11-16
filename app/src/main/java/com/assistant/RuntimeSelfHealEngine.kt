@@ -253,6 +253,13 @@ object RuntimeSelfHealEngine {
     @Volatile private var lastKnownFrameId: Long = -1L
     @Volatile private var captureRestartAttempts = 0
     @Volatile private var lastRestartAttemptMs = 0L
+    // F37-D5: idle/auto-heal branches spend no attempt, so they throttle on
+    // their own clock (lastIdleHealMs) instead of the attempt budget.
+    @Volatile private var lastIdleHealMs = 0L
+    // F37-D12: session-scoped restart count — the budget counter above
+    // resets on any new frame, so "Attempt #1 of 3" could repeat in one
+    // session. This one never resets except on process start.
+    @Volatile private var captureRestartSessionTotal = 0
 
     private fun checkCaptureThread() {
         try {
@@ -270,6 +277,7 @@ object RuntimeSelfHealEngine {
                         (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L)
                     if (canRetry) {
                         captureRestartAttempts++
+                        captureRestartSessionTotal++
                         lastRestartAttemptMs = now
                         totalHeals++
                         val restarted = try {
@@ -284,7 +292,7 @@ object RuntimeSelfHealEngine {
                             timestamp = fmt.format(Date()),
                             category = "CAPTURE_RESTART",
                             detected = "No frame ever assembled (capture=" + com.assistant.vision.CameraProfile.diagnostics() + "). " +
-                                "Attempt #$captureRestartAttempts of 3.",
+                                "Attempt #$captureRestartAttempts of 3 (session #$captureRestartSessionTotal).",
                             fix = if (restarted) "RESTART SENT to OverlayService.restartCapture(); awaiting frame resumption for verification." else
                                 "CAPTURE RESTART FAILED — capture state " + com.assistant.OverlayService.captureState() + ".",
                             severity = if (restarted) "INFO" else "CRITICAL"
@@ -297,7 +305,11 @@ object RuntimeSelfHealEngine {
                         // cycle: OverlayService.autoHealCapture() has its own
                         // 15s anti-spam cooldown.
                         try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
-                        if (shouldLog("CAPTURE_RESTART_EXHAUSTED", "attempts=$captureRestartAttempts")) {
+                        // F37-D5: EXHAUSTED used to fire whenever the 30s
+                        // throttle blocked a retry — with 0 attempts spent —
+                        // and hardcoded "3 attempts failed". Gate it on the
+                        // real budget and report the real count.
+                        if (captureRestartAttempts >= 3 && shouldLog("CAPTURE_RESTART_EXHAUSTED", "attempts=$captureRestartAttempts")) {
                             // SPLENDOR_P6_RESTART_EXHAUSTED_BEGIN
                             // Restart budget spent (3 failed attempts) with still no
                             // frame: escalate to auto-heal instead of going silent.
@@ -305,7 +317,7 @@ object RuntimeSelfHealEngine {
                             record(HealEvent(
                                 timestamp = fmt.format(Date()),
                                 category = "CAPTURE_RESTART_EXHAUSTED",
-                                detected = "No frame ever assembled; 3 capture restart attempts failed (capture=" + com.assistant.vision.CameraProfile.diagnostics() + ").",
+                                detected = "No frame ever assembled; $captureRestartAttempts capture restart attempts failed (capture=" + com.assistant.vision.CameraProfile.diagnostics() + ").",
                                 fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog).",
                                 severity = "CRITICAL"
                             ))
@@ -323,8 +335,11 @@ object RuntimeSelfHealEngine {
                     // Throttled to one attempt per 30s; autoHealCapture has its
                     // own 15s cooldown. restartCaptureIfAlive is NOT used here:
                     // it returns false when mediaProjection is null / revoked.
-                    if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
-                        lastRestartAttemptMs = now
+                    // F37-D5: this branch spends no attempt, so it must not
+                    // consume the attempt-budget throttle (lastRestartAttemptMs)
+                    // — doing so poisoned canRetry and fired a false EXHAUSTED.
+                    if (now - lastIdleHealMs > 30_000L || lastIdleHealMs == 0L) {
+                        lastIdleHealMs = now
                         totalHeals++
                         try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
                         val neverStartedCategory = "CAPTURE_" + state.name
@@ -366,8 +381,8 @@ object RuntimeSelfHealEngine {
             // user-visible recovery prompt (tap = BAL exemption = fresh token).
             val state = com.assistant.OverlayService.captureState()
             if (state == com.assistant.OverlayService.CaptureState.REVOKED) {
-                if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
-                    lastRestartAttemptMs = now
+                if (now - lastIdleHealMs > 30_000L || lastIdleHealMs == 0L) {
+                    lastIdleHealMs = now
                     // SPLENDOR_V42_AUTOHEAL_FIX_BEGIN
                     // v2 (2026-10-02): automatic recovery — no manual tap.
                     // 1) token reuse (zero interaction) if the projection session
@@ -388,8 +403,8 @@ object RuntimeSelfHealEngine {
                 }
                 return
             } else if (state == com.assistant.OverlayService.CaptureState.FAILED) {
-                if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
-                    lastRestartAttemptMs = now
+                if (now - lastIdleHealMs > 30_000L || lastIdleHealMs == 0L) {
+                    lastIdleHealMs = now
                     // SPLENDOR_P6_STALE_FAILED_AUTOHEAL_BEGIN
                     // Was log-only ("AI Agent handling autonomously") while
                     // doing nothing: same silent no-op class as the f==null
@@ -408,8 +423,8 @@ object RuntimeSelfHealEngine {
                 }
                 return
             } else if (state == com.assistant.OverlayService.CaptureState.IDLE) {
-                if (now - lastRestartAttemptMs > 30_000L || lastRestartAttemptMs == 0L) {
-                    lastRestartAttemptMs = now
+                if (now - lastIdleHealMs > 30_000L || lastIdleHealMs == 0L) {
+                    lastIdleHealMs = now
                     // SPLENDOR_P6_STALE_IDLE_AUTOHEAL_BEGIN
                     // Was log-only ("AI Agent handling autonomously") while
                     // doing nothing: same silent no-op class as the f==null
@@ -435,6 +450,7 @@ object RuntimeSelfHealEngine {
 
             if (canRetry) {
                 captureRestartAttempts++
+                captureRestartSessionTotal++
                 lastRestartAttemptMs = now
                 totalHeals++
 
@@ -460,7 +476,7 @@ object RuntimeSelfHealEngine {
                     detected = "ImageReader capture thread STALE for ${staleMs / 1000}s. " +
                         "Root cause: HyperOS silent kill of media projection (unverified hypothesis — no kill count is tracked). " +
                         "decisions counter frozen at frameId=${f.frameId}. " +
-                        "Attempt #$captureRestartAttempts of 3.",
+                        "Attempt #$captureRestartAttempts of 3 (session #$captureRestartSessionTotal).",
                     fix = if (restarted) "RESTART SENT to OverlayService.restartCapture(); awaiting frame resumption for verification." else
                         "CAPTURE RESTART FAILED because the current projection may be " +
                         "invalid or revoked. OverlayService remains the recovery owner. " +
@@ -523,7 +539,10 @@ object RuntimeSelfHealEngine {
                         severity = "WARNING"
                     ))
                     RuntimeLogger.log("AGENT BUS: all signals stuck UNKNOWN — reported, no values injected", "AGENT")
-                    busUnknownSinceMs = 0L
+                    // F37-D12: do NOT reset busUnknownSinceMs here — the old
+                    // reset made every report read ~295s (time since the last
+                    // report) instead of the true continuous UNKNOWN time.
+                    // The start now clears only when a signal recovers (below).
                 }
             } else {
                 busUnknownSinceMs = 0L
@@ -581,6 +600,8 @@ object RuntimeSelfHealEngine {
     // Last assembled frameId seen by checkDispatchRate; used to tell a real
     // capture death (frameId frozen) from dedup-suppressed onFrame calls.
     @Volatile private var prevDispatchFrameId: Long = -1L
+    // F37-D6: previous decisions-vs-frameId gap, for gap-growth gating.
+    @Volatile private var prevStaticGap: Long = -1L
     // SPLENDOR_P6_DEDUP_TRIAGE_FIELD_END
     @Volatile private var zeroDispatchSinceMs: Long = 0L
 
@@ -595,6 +616,9 @@ object RuntimeSelfHealEngine {
             val newRouted = routed - prevRouted
             prevDecisions = decisions
             prevRouted = routed
+            // F37-D6: the loop is healthy again — reset the static-gap
+            // baseline so the next freeze is judged on fresh growth.
+            if (newDecisions != 0L) prevStaticGap = -1L
 
             if (newDecisions == 0L && decisions > 50L) {
                 // Decision loop stopped — counter frozen
@@ -610,12 +634,20 @@ object RuntimeSelfHealEngine {
                 val frameAdvanced = dispatchFrameId != -1L && prevDispatchFrameId != -1L && dispatchFrameId != prevDispatchFrameId
                 prevDispatchFrameId = dispatchFrameId
                 if (frameAdvanced) {
-                    if (shouldLog("LOOP_STATIC", "static_at=$decisions frame=$dispatchFrameId")) {
+                    // F37-D6: STATIC must fire on gap GROWTH, not on the
+                    // cumulative historic gap (decisions vs frameId differ by
+                    // a stable ~9 frames for the whole session), and dedup
+                    // cannot cause this: it skips assemble(), so frameId
+                    // would not advance.
+                    val staticGap = dispatchFrameId - decisions
+                    val gapGrew = prevStaticGap < 0L || staticGap > prevStaticGap
+                    prevStaticGap = staticGap
+                    if (gapGrew && shouldLog("LOOP_STATIC", "static_at=$decisions frame=$dispatchFrameId gap=$staticGap")) {
                         record(HealEvent(
                             timestamp = fmt.format(Date()),
                             category = "LOOP_STATIC",
-                            detected = "RuntimeDecisionLoop counter frozen at $decisions but assembled frames are still advancing (frameId=$dispatchFrameId). Capture is delivering; onFrame is being skipped downstream (identical-frame dedup or VisionCore stall), not a capture death.",
-                            fix = "No capture restart triggered. Check DEDUP_SKIP lines: if duplicates dominate, the freeze is the dedup path on a static screen.",
+                            detected = "RuntimeDecisionLoop counter frozen at $decisions but assembled frames are still advancing (frameId=$dispatchFrameId, gap=$staticGap). Capture is delivering; onFrame is being skipped downstream (UiExecutionGate-blocked, stale-frame, SETTINGS, or route-rejected exits — see the decision snapshot counters), not a capture death.",
+                            fix = "No capture restart triggered. Read the gateBlocked/staleFrame/settingsExit/routeRejected counters in the decision snapshot to attribute the skip.",
                             severity = "WARNING"
                         ))
                     }
@@ -691,20 +723,24 @@ object RuntimeSelfHealEngine {
                 if (System.currentTimeMillis() - registryEmptySinceMs > 10_000L) {
                     try { com.assistant.AppContributorRegistration.reset() } catch (_: Throwable) {}
                     try { com.assistant.AppContributorRegistration.ensureRegistered() } catch (_: Throwable) {}
+                    // F37-D5: the REGISTRY_EMPTY record used to fire on the
+                    // first warmed cycle with 0 engines — before the 10s
+                    // persist guard above elapsed — i.e. during normal async
+                    // warmup. It now fires only after the empty read persists.
+                    if (shouldLog("REGISTRY_EMPTY", "engines=0") /* SPLENDOR_P9_RSE_DEDUP: no per-second age token -- it defeated the 5-min dedup */) {
+                        record(HealEvent(
+                            timestamp = fmt.format(Date()),
+                            category = "REGISTRY_EMPTY",
+                            detected = "RuntimeSelfHealAgent observed 0 registered contributors after warm grace. collectCycles=$cycles. " +
+                                    "Snapshot: ${GameplayEngineRegistry.registryRuntimeSnapshot()}. " +
+                                    "Registration is asynchronous (AppContributorRegistration.ensureRegistered() runs from the image-frame path); " +
+                                    "this may be a point-in-time count before registration completes, not necessarily drift.",
+                            fix = "Forcing AppContributorRegistration.reset()+ensureRegistered() and capture health check.",
+                            severity = "CRITICAL"
+                        ))
+                    }
                 }
                 checkCaptureThread()
-                if (shouldLog("REGISTRY_EMPTY", "engines=0") /* SPLENDOR_P9_RSE_DEDUP: no per-second age token -- it defeated the 5-min dedup */) {
-                    record(HealEvent(
-                        timestamp = fmt.format(Date()),
-                        category = "REGISTRY_EMPTY",
-                        detected = "RuntimeSelfHealAgent observed 0 registered contributors after warm grace. collectCycles=$cycles. " +
-                                "Snapshot: ${GameplayEngineRegistry.registryRuntimeSnapshot()}. " +
-                                "Registration is asynchronous (AppContributorRegistration.ensureRegistered() runs from the image-frame path); " +
-                                "this may be a point-in-time count before registration completes, not necessarily drift.",
-                        fix = "Forcing AppContributorRegistration.reset()+ensureRegistered() and capture health check.",
-                        severity = "CRITICAL"
-                    ))
-                }
             }
 
             val assistEnabled = try { com.assistant.SmartAssistRepository.enabled() } catch (_: Throwable) { false }
@@ -829,7 +865,10 @@ object RuntimeSelfHealEngine {
         while (healEvents.size > 100) try { healEvents.removeAt(0) } catch (_: Throwable) {}
         writeToFile(sourced)
         try {
-            RuntimeLogger.log("[${sourced.severity}] ${sourced.category}: ${sourced.detected.take(120)}", "AGENT")
+            // F37-D11: the old .take(120) cut every CRITICAL line
+            // mid-word (COLLECT_STALL "80" for 800, "43" for 4378). The
+            // HealLog stores the full text; the mirror must too.
+            RuntimeLogger.log("[${sourced.severity}] ${sourced.category}: ${sourced.detected}", "AGENT")
         } catch (t: Throwable) { android.util.Log.e("RuntimeSelfHealEngine", "suppressed error in self-heal check", t) }
     }
 

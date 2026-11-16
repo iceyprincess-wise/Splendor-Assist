@@ -324,7 +324,8 @@ object InAppAgentCore {
                     "action=${decision.action.javaClass.simpleName} " +
                     "priority=${decision.priority} " +
                     "verified=${verification.verified} " +
-                    "reason=${decision.reason}",
+                    "reason=${decision.reason} " +
+                    "degraded=${before.health.degradedReasons}",
                 "AGENT"
             )
 

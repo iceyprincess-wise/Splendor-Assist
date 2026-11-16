@@ -176,11 +176,15 @@ object GestureExecutionAuthority {
         // F49 hard package deny: FORCE_ON cannot authorize gestures outside the game package.
         if (!com.assistant.VisionTrust.isExecutionPackageAllowed()) {
             com.assistant.diagnostic.RuntimeLogger.log("GestureExecutionAuthority rejected: package deny gate", "SMART_ASSIST")
+            // F37-D2: was a silent return — deaths invisible in EXEC.
+            rejected.incrementAndGet()
             return false
         }
         // FINAL EXECUTION GATE: preserve own-UI and central foreground policy checks.
         if (!com.assistant.VisionTrust.isGameForeground()) {
             com.assistant.diagnostic.RuntimeLogger.log("GestureExecutionAuthority rejected: game not foreground", "SMART_ASSIST")
+            // F37-D2: was a silent return — deaths invisible in EXEC.
+            rejected.incrementAndGet()
             return false
         }
 

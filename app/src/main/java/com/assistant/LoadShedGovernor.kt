@@ -88,8 +88,9 @@ object LoadShedGovernor {
         val t = Thread {
             while (running) {
                 try {
-                    // FAST PATH: a SEIZURE burst escalates immediately -
-                    // sub-second truth beats the report window when a freeze hits
+                    // SEIZURE sets want=HEAVY, but it still goes through the
+                    // same 4-poll arm + 8s hold as every other level (F37-D13:
+                    // the old "escalates immediately" comment was false).
                     val burst = PerformanceTelemetryRegistry.currentStutterState()
                     val bootAge=System.currentTimeMillis()-startTimeMs
                     if(startTimeMs>0L&&bootAge<10_000L){try{Thread.sleep(POLL_MS.coerceAtLeast(1L))}catch(_:Throwable){return@Thread};continue}

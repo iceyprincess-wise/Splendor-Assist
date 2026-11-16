@@ -105,6 +105,9 @@ object ContributionRegistry {
         val snapshot = pending.entries.toList()
         for (entry in snapshot) pending.remove(entry.key, entry.value)
 
+        // F37-D8: per-call loss deltas, for the drain log below.
+        val expiredBefore = expired.get()
+        val droppedBefore = droppedNonBest.get()
         var best: ExecutionRequest? = null
         var freshCount = 0
         for (entry in snapshot) {
@@ -126,6 +129,15 @@ object ContributionRegistry {
         // Fresh entries that lost arbitration are dropped, not re-queued;
         // count them so a lost contribution is visible instead of silent.
         if (freshCount > 1) droppedNonBest.addAndGet((freshCount - 1).toLong())
+        // F37-D8: expiry/arbitration losses were counted but never logged,
+        // so a parked request could vanish with no trace in the bundle.
+        val expiredNow = expired.get() - expiredBefore
+        val droppedNow = droppedNonBest.get() - droppedBefore
+        if (expiredNow > 0L || droppedNow > 0L) {
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "ContributionRegistry drain dropped expired=$expiredNow nonBest=$droppedNow", "CONTRIBUTION"
+            )
+        }
         if (best != null) {
             drained.incrementAndGet()
         }

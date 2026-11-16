@@ -152,6 +152,20 @@ object AgentDecisionPolicy {
             )
         }
 
+        // F37-D9: bus-idle / dispatch-stale / gameplay-idle /
+        // emergency-rejected used to fall through to a terminal ObserveOnly
+        // with no recovery action (400 cycles in the 2026-11-16 session).
+        // Route them to the existing self-heal check instead; the P11
+        // interleave already escalates repeated self-heal to ReigniteFleet.
+        if (!health.busAlive || !health.gameplayAlive || !health.dispatchAlive ||
+            health.degradedReasons.contains("emergency-rejected")) {
+            return AgentDecision(
+                action = AgentAction.RunSelfHealCheck,
+                priority = 55,
+                reason = "Bus/gameplay/dispatch degraded (${health.degradedReasons}); running self-heal check."
+            )
+        }
+
         return AgentDecision(
             action = AgentAction.ObserveOnly,
             priority = 10,

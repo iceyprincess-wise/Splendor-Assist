@@ -66,6 +66,15 @@ object FilterEngine {
 
 
 
+    // F37-D7: the telemetry-missing test lived in two places (calc +
+    // report) and could drift; one function now owns it.
+    private fun isTelemetryMissing(
+        lagVerdict: String, stutterState: String, memoryTier: String,
+        memoryAvailMb: Long, thermalStatus: Int, updatedMs: Long, nowMs: Long
+    ): Boolean = lagVerdict == "UNKNOWN" || stutterState == "UNKNOWN" ||
+        memoryTier == "UNKNOWN" || memoryAvailMb < 0L || thermalStatus < 0 ||
+        nowMs - updatedMs > 15_000L
+
     private fun calculateEffectivenessAndPush() {
         // SPLENDOR_P7_XPROC_READ_BEGIN
         // Task 2A: read the cross-process registry snapshot, NOT the
@@ -80,9 +89,10 @@ object FilterEngine {
         // snapshot older than 15s is treated as missing, never as fresh.
         val state = PerformanceTelemetryRegistry.currentDeviceState()
         val nowMs = System.currentTimeMillis()
-        val telemetryMissing = state.lagVerdict == "UNKNOWN" || state.stutterState == "UNKNOWN" ||
-            state.memoryTier == "UNKNOWN" || state.memoryAvailMb < 0L || state.thermalStatus < 0 ||
-            nowMs - state.updatedMs > 15_000L
+        val telemetryMissing = isTelemetryMissing(
+            state.lagVerdict, state.stutterState, state.memoryTier,
+            state.memoryAvailMb, state.thermalStatus, state.updatedMs, nowMs
+        )
         // SPLENDOR_P7_XPROC_READ_END
 
         if (telemetryMissing) {
@@ -177,9 +187,10 @@ object FilterEngine {
                 val stutter = dev.stutterState
                 val memoryTier = dev.memoryTier
                 val memoryAvailMb = dev.memoryAvailMb
-                val telemetryMissing = lag == "UNKNOWN" || stutter == "UNKNOWN" ||
-                    memoryTier == "UNKNOWN" || memoryAvailMb < 0L || dev.thermalStatus < 0 ||
-                    now - dev.updatedMs > 15_000L
+                val telemetryMissing = isTelemetryMissing(
+                    lag, stutter, memoryTier, memoryAvailMb,
+                    dev.thermalStatus, dev.updatedMs, now
+                )
                 // SPLENDOR_P7_XPROC_REPORT_END
                 val scoreText = if (telemetryMissing || effectivenessScore == null)
                     "ENV: UNKNOWN (telemetry missing)" else "ENV: ${effectivenessScore}/100"

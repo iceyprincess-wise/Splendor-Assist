@@ -108,6 +108,14 @@ object RuntimeDecisionLoop {
     private val routed = AtomicLong(0L)
     private val idleNoContribution = AtomicLong(0L)
     private val idleUntrusted = AtomicLong(0L)
+    // F37-D4/D6: the four loss exits below had no counter, so a DEC/ROUTED
+    // gap could not be attributed. chooseNull splits the silent
+    // chooseRequest() nulls out of idleNoContribution.
+    private val gateBlocked = AtomicLong(0L)
+    private val staleFrame = AtomicLong(0L)
+    private val settingsExit = AtomicLong(0L)
+    private val routeRejected = AtomicLong(0L)
+    private val chooseNull = AtomicLong(0L)
 
     @Volatile private var lastAction: String = "none"
     @Volatile private var lastWeight: Float = 0f
@@ -130,8 +138,8 @@ object RuntimeDecisionLoop {
     /* Called once per assembled frame by OverlayService's capture loop. */
     @Synchronized fun onFrame(frame: RuntimeFrame): Boolean {
         ActionOutcomeVerifier.verify(frame)
-        if (com.assistant.execution.UiExecutionGate.blocked()) { CentralExecutionBus.clearPending(); return false }
-        if (frame.frameId <= lastCaptureId) return false
+        if (com.assistant.execution.UiExecutionGate.blocked()) { gateBlocked.incrementAndGet(); CentralExecutionBus.clearPending(); return false }
+        if (frame.frameId <= lastCaptureId) { staleFrame.incrementAndGet(); return false }
         lastCaptureId = frame.frameId
         decisions.incrementAndGet()
         lastUpdatedMs = System.currentTimeMillis()
@@ -151,7 +159,7 @@ object RuntimeDecisionLoop {
         // CONTROL-MAPPING GATE: the mapping/settings screen must never
         // receive gameplay gestures; trained in-match cluster arms the stack.
         if (ControlMappingTrainer.uiMode == ControlMappingTrainer.UiMode.SETTINGS) {
-            com.assistant.execution.UiExecutionGate.block("control-calibration"); return false
+            settingsExit.incrementAndGet(); com.assistant.execution.UiExecutionGate.block("control-calibration"); return false
         }
         ControlMappingTrainer.observeOutcome(frame)
 
@@ -235,7 +243,7 @@ object RuntimeDecisionLoop {
         // Register before publishing: the bus consumer runs on another thread.
         ActionOutcomeVerifier.recordDispatch(terminalRequest, frame)
         val accepted = HybridExecutionTerminal.route(terminalRequest)
-        if (!accepted) ActionOutcomeVerifier.cancelDispatch(terminalRequest.actionId)
+        if (!accepted) { routeRejected.incrementAndGet(); ActionOutcomeVerifier.cancelDispatch(terminalRequest.actionId) }
         if (accepted) {
             routed.incrementAndGet()
             try {
@@ -279,7 +287,7 @@ object RuntimeDecisionLoop {
         val aimOriginY = best.aimOriginY ?: if (controlSlot != 0) frame.ballY else mover?.y
         if (aimOriginX != null && aimOriginY != null) {
             if (controlSlot != 0) {
-                if (!ControlMappingTrainer.matchActive || !ControlMappingTrainer.isSlotTrained(controlSlot)) return null
+                if (!ControlMappingTrainer.matchActive || !ControlMappingTrainer.isSlotTrained(controlSlot)) { chooseNull.incrementAndGet(); return null }
                 val center = ControlMappingTrainer.slotCenter(controlSlot)
                 startX = center.first * frameWidth()
                 startY = center.second * frameHeight()
@@ -287,12 +295,12 @@ object RuntimeDecisionLoop {
             val dx = best.targetX - aimOriginX
             val dy = best.targetY - aimOriginY
             val distance = hypot(dx, dy)
-            if (!distance.isFinite() || distance <= 0f) return null
+            if (!distance.isFinite() || distance <= 0f) { chooseNull.incrementAndGet(); return null }
             val radius = minOf(frameWidth(), frameHeight()) * 0.08f
             leadX = (startX + dx / distance * radius).coerceIn(0f, frameWidth() - 1f)
             leadY = (startY + dy / distance * radius).coerceIn(0f, frameHeight() - 1f)
         }
-        if (aimOriginX == null || aimOriginY == null) return null
+        if (aimOriginX == null || aimOriginY == null) { chooseNull.incrementAndGet(); return null }
         val targetId = best.targetEntityId ?: frame.passTargetId.takeIf {
             best.actionClass == ActionClass.PASS && best.targetX == frame.passTargetX && best.targetY == frame.passTargetY
         }
@@ -453,6 +461,7 @@ object RuntimeDecisionLoop {
         CrowdingZoneDetector.reset()
         lastParkedTriggerMs = 0L
         idleNoContribution.set(0L); idleUntrusted.set(0L)
+        gateBlocked.set(0L); staleFrame.set(0L); settingsExit.set(0L); routeRejected.set(0L); chooseNull.set(0L)
         lastAction = "none"; lastWeight = 0f; lastUpdatedMs = 0L
     }
 
@@ -461,6 +470,11 @@ object RuntimeDecisionLoop {
         "routed" to routed.get(),
         "idleUntrusted" to idleUntrusted.get(),
         "idleNoContribution" to idleNoContribution.get(),
+        "gateBlocked" to gateBlocked.get(),
+        "staleFrame" to staleFrame.get(),
+        "settingsExit" to settingsExit.get(),
+        "routeRejected" to routeRejected.get(),
+        "chooseNull" to chooseNull.get(),
         "lastAction" to lastAction,
         "lastWeight" to lastWeight,
         "lastUpdatedMs" to lastUpdatedMs,

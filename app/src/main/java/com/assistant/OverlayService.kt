@@ -128,6 +128,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
     // Duplicate-frame early-return counter for LOOP_FROZEN triage.
     @Volatile private var duplicateFrameCount = 0L
     @Volatile private var lastDuplicateLogMs = 0L
+    // F37-D6: throttled counter/log for vision-busy frame drops (see below).
+    @Volatile private var visionBusySkips = 0L
+    @Volatile private var lastVisionBusyLogMs = 0L
     // SPLENDOR_P6_DEDUP_DIAG_FIELDS_END
     private val emptyVisionBuffer: java.nio.ByteBuffer = java.nio.ByteBuffer.allocateDirect(0)
     private lateinit var windowManager: WindowManager
@@ -287,6 +290,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
             if (startVision) {
                 visionStartTimeMs = System.currentTimeMillis()
                 // REMOVED: 500ms Watchdog caused data-race by unblocking frame pump while coroutine was still reading reusableVisionBuffer
+            } else {
+                // F37-D6: a stuck vision coroutine used to drop every later
+                // frame silently here, with no log at all. Throttled log so
+                // the stall becomes observable instead of silent.
+                visionBusySkips++
+                val busyNow = System.currentTimeMillis()
+                if (visionBusySkips == 1L || visionBusySkips % 100L == 0L || busyNow - lastVisionBusyLogMs > 300_000L) {
+                    lastVisionBusyLogMs = busyNow
+                    RuntimeLogger.log("VISION_BUSY_SKIP count=$visionBusySkips (vision coroutine still in flight; frame dropped)", "OVERLAY")
+                }
             }
 
         val visionBuffer: java.nio.ByteBuffer = if (startVision) {
@@ -379,6 +392,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 com.assistant.CrashForensics.mark(5, 3, captureFrameCount)
                 com.assistant.CrashForensics.setEngineStage(5)
                 val frame = com.assistant.FrameAssembler.assemble(opticalVariance, acquiredAtNanos)
+                // F37-D7: cross-process capture heartbeat for LagVerdictEngine
+                // (:survival cannot see FrameAssembler — a main-process object).
+                try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishCaptureHeartbeat() } catch (_: Throwable) {}
                 com.assistant.CrashForensics.mark(6, 3, captureFrameCount)
                 com.assistant.RuntimeDecisionLoop.onFrame(frame)
                 com.assistant.CrashForensics.mark(6, 3, captureFrameCount)
@@ -548,6 +564,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         try { com.assistant.RuntimeSelfHealEngine.init(applicationContext)
               com.assistant.RuntimeSelfHealEngine.start() } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("RuntimeSelfHealEngine init/start failed: ${t.message}", "OVERLAY") }
+        // F37-D5: register contributors at service start, not only after the
+        // first assembled frame — otherwise a never-started capture leaves
+        // the registry at 0/44 forever. The frame-path call stays as well.
+        try { com.assistant.AppContributorRegistration.ensureRegistered() } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("AppContributorRegistration.ensureRegistered at startup failed: ${t.message}", "OVERLAY") }
         try { com.assistant.CaptaincySkillEngine.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CaptaincySkillEngine.init failed: ${t.message}", "OVERLAY") }
         try { com.assistant.CrowdingZoneDetector.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CrowdingZoneDetector.init failed: ${t.message}", "OVERLAY") }
 
@@ -740,7 +760,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         try {
             val intent = Intent("com.assistant.REQUEST_PROJECTION").setPackage(packageName)
             sendBroadcast(intent)
-            RuntimeLogger.log("Requested fresh MediaProjection authorization from MainActivity", "AGENT")
+            RuntimeLogger.log("Requested fresh MediaProjection authorization (broadcast com.assistant.REQUEST_PROJECTION)", "AGENT")
         } catch (t: Throwable) {
             RuntimeLogger.log("Failed to request fresh projection: ${t.message}", "AGENT")
         }

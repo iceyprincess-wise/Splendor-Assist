@@ -183,6 +183,16 @@ object PerformanceTelemetryRegistry {
     @Volatile private var shedReadCache = "NONE"
     @Volatile private var shedReadCacheMs = 0L
 
+    // ---- CAPTURE HEARTBEAT (F37-D7) ----
+    // LagVerdictEngine runs in :survival but FrameAssembler lives in the
+    // main process, so captureAlive() there was always false and SMOOTH was
+    // structurally unreachable. The capture loop publishes a heartbeat here
+    // (in-memory + perf_capture.txt, mirroring currentLoadShed); the
+    // :survival reader adopts it only while fresher than 3000 ms.
+    @Volatile private var captureBeatMs = 0L
+    @Volatile private var captureBeatFileMs = 0L
+    @Volatile private var captureFile: File? = null
+
     @JvmStatic
     fun publishLoadShed(level: String) {
         shed = level; shedMs = System.currentTimeMillis()
@@ -236,6 +246,34 @@ object PerformanceTelemetryRegistry {
         } catch (_: Throwable) {
         }
         return if (now - shedReadCacheMs < 15_000L) shedReadCache else "NONE"
+    }
+
+    // ---- CAPTURE HEARTBEAT (F37-D7) ----
+    @JvmStatic
+    fun publishCaptureHeartbeat() {
+        val now = System.currentTimeMillis()
+        captureBeatMs = now
+        // File write throttled to 1 per 500 ms; the reader's freshness
+        // window is 3000 ms, so a dead capture still goes stale on time.
+        if (now - captureBeatFileMs < 500L) return
+        captureBeatFileMs = now
+        ensureFile()
+        try {
+            if (captureFile == null) captureFile = file?.parentFile?.let { File(it, "perf_capture.txt") }
+            captureFile?.writeText("$now")
+        } catch (_: Throwable) { }
+    }
+
+    @JvmStatic
+    fun currentCaptureAlive(): Boolean {
+        val now = System.currentTimeMillis()
+        if (now - captureBeatMs < 3000L) return true
+        return try {
+            ensureFile()
+            if (captureFile == null) captureFile = file?.parentFile?.let { File(it, "perf_capture.txt") }
+            val ts = captureFile?.takeIf { it.exists() }?.readText()?.trim()?.toLongOrNull() ?: 0L
+            ts > 0L && now - ts < 3000L
+        } catch (_: Throwable) { false }
     }
 
     // ---- STUTTER (sub-second burst state: CALM / HICCUP / OSCILLATION / SEIZURE) ----
