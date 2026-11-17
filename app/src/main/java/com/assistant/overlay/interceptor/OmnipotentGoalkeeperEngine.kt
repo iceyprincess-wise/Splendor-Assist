@@ -149,6 +149,18 @@ object OmnipotentGoalkeeperEngine {
 
     // [ACTIVE TELEMETRY BRIDGE] - 1000% Capacity Hardware Heuristic Scanner
     fun scanFrameForOpponentAnimation(buffer: ByteBuffer, width: Int, height: Int, rowStride: Int = width * 4) {
+        // No63-D26: the keeper ENABLED toggle did not gate this path.
+        // processGoalkeeperDefensiveLayer() checks
+        // GoalkeeperRuntimeState.enabled (:57), but
+        // evaluateOpponentShotTrajectory() — the save path — never did:
+        // with the keeper switch OFF, a gauge-pixel anomaly still
+        // produced a save dispatch. The scan is the single choke point
+        // (sole caller OverlayService:406), so gate here; when disabled
+        // the scan does nothing at all (no decision write, no
+        // GK_ZONE_SCAN line). This is a different gate from the
+        // accessibility-connectivity note below, which is about dispatch
+        // availability, not the user's keeper switch.
+        if (!GoalkeeperRuntimeState.enabled) return
         capturedWidth = width.toFloat()
         capturedHeight = height.toFloat()
         // Accessibility connectivity is a dispatch prerequisite, not a detection gate.

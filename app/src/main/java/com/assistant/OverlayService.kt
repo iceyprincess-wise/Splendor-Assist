@@ -1111,12 +1111,14 @@ class OverlayService : Service(), ComponentCallbacks2 {
                                 "SMART_ASSIST"
                             )
                             RuntimeMetricsRegistry.matchDetections.incrementAndGet()
+                            // No63-D19: recording/saved parameters removed
+                            // — no recording/saved state exists in the repo,
+                            // so they were always false here and their text
+                            // segments could never appear.
                             RuntimeNotificationCoordinator.update(
                                 context = applicationContext,
                                 antiban = true,
-                                matchDetected = true,
-                                recording = false,
-                                saved = false
+                                matchDetected = true
                             )
                             RuntimeLogger.log("SMART_ASSIST_GATE match detected, overlay active", "SMART_ASSIST")
                             updateOverlayVisuals("🕶️", Color.GREEN)

@@ -32,6 +32,12 @@ object AdapterRecoveryEngine {
     private val handler =
         Handler(Looper.getMainLooper())
 
+    // No63-D10: `started` was a plain var and start() unsynchronised;
+    // two concurrent start() calls could both pass the guard and post
+    // the scan runnable twice. App.onCreate calls it once on the main
+    // thread today, but the guard is the only thing stopping a double
+    // scan — make it airtight.
+    @Volatile
     private var started = false
 
     private var appContext: Context? = null
@@ -47,6 +53,11 @@ object AdapterRecoveryEngine {
 
     private const val COOLDOWN_MS =
         120000L
+
+    // No63-D11: the 30s scan interval was a bare literal in the re-post;
+    // named alongside COOLDOWN_MS so both scan timings read as policy.
+    private const val SCAN_INTERVAL_MS =
+        30000L
 
         private val adapterMap =
         mapOf(
@@ -65,6 +76,16 @@ object AdapterRecoveryEngine {
         adapterName: String
     ) {
 
+        // No63-D8: the className lookup used to sit AFTER the
+        // activeLaunches.add() below — an unknown name (a 4th adapter
+        // name in the persisted store) returned early with its entry
+        // still in the set, so every future launch of that name was
+        // refused forever. Resolve first; only a launchable name is
+        // guarded.
+        val className =
+            adapterMap[adapterName]
+                ?: return
+
         synchronized(activeLaunches) {
 
             if (
@@ -79,10 +100,6 @@ object AdapterRecoveryEngine {
                 adapterName
             )
         }
-
-        val className =
-            adapterMap[adapterName]
-                ?: return
 
         val intent =
             Intent().apply {
@@ -117,10 +134,15 @@ object AdapterRecoveryEngine {
                 "RECOVERY"
             )
 
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
 
+            // No63-D9 (launchAdapter arm): this used to catch Exception
+            // only. An Error escaping startForegroundService left the
+            // activeLaunches entry in place with no removal — the adapter
+            // could never be launched again. Catch Throwable so the
+            // guard is always released on failure.
             RuntimeLogger.log(
-                "Recovery failed :: $adapterName :: ${e.javaClass.simpleName}",
+                "Recovery failed :: $adapterName :: ${t.javaClass.simpleName}",
                 "RECOVERY"
             )
 
@@ -233,16 +255,31 @@ object AdapterRecoveryEngine {
                             )
                     }
 
-                } catch (_: Exception) {
+                } catch (t: Throwable) {
+                    // No63-D9 (runnable arm): this used to catch Exception
+                    // only, and silently. An Error escaping the scan
+                    // skipped the postDelayed() re-post below and killed
+                    // the 30s scan loop permanently — the same class of
+                    // death as the F38-D1 busRunnable failure. The loop
+                    // must survive anything the scan throws, and the
+                    // failure is logged instead of swallowed.
+                    RuntimeLogger.log(
+                        "Recovery scan failed :: ${t.javaClass.simpleName}",
+                        "RECOVERY"
+                    )
                 }
 
                 handler.postDelayed(
                     this,
-                    30000L
+                    SCAN_INTERVAL_MS
                 )
             }
         }
 
+    // No63-D10: start() is @Synchronized with the @Volatile `started`
+    // guard above, so two concurrent callers cannot both post the scan
+    // runnable.
+    @Synchronized
     fun start(
         context: Context
     ) {

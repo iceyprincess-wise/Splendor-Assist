@@ -43,7 +43,11 @@ class GoalkeeperControlRoomActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_goalkeeper_control_room)
 
-        repository = GoalkeeperRepository(this)
+        // No63-D16: shared() — a direct construction here used to create
+        // a third GoalkeeperRepository instance with its own flow; a save
+        // from one instance could be reverted by the next save from
+        // another instance's stale flow (lost update).
+        repository = GoalkeeperRepository.shared(this)
 
         val switchEnabled = findViewById<MaterialSwitch>(R.id.switch_enabled)
         val switchAggressive = findViewById<MaterialSwitch>(R.id.switch_aggressive)

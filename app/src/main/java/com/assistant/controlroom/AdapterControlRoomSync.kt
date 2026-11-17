@@ -29,7 +29,9 @@ object AdapterControlRoomSync {
         started = true
         val app = context.applicationContext
 
-        val goalkeeperRepository = GoalkeeperRepository(app)
+        // No63-D16: shared() — see GoalkeeperRepository; direct
+        // construction used to create a second instance with its own flow.
+        val goalkeeperRepository = GoalkeeperRepository.shared(app)
         val interceptionRepository = InterceptionRepository.shared(app)
         val smartAssistRepository = SmartAssistRepository(app)
 

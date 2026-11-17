@@ -32,8 +32,12 @@ class GoalkeeperRepository(context: Context) {
         return GoalkeeperState(
             enabled = prefs.getBoolean("enabled", true),
             aggressiveMode = prefs.getBoolean("aggressive", false),
-            positioning = prefs.getInt("positioning", 50),
-            reactions = prefs.getInt("reactions", 50)
+            // No63-D17: persisted ints were read verbatim — a stale or
+            // out-of-range value in prefs flowed straight into the flow
+            // and, via sync(), into the runtime state. Clamp at the read
+            // site.
+            positioning = clampSlider(prefs.getInt("positioning", 50)),
+            reactions = clampSlider(prefs.getInt("reactions", 50))
         )
     }
     
@@ -57,6 +61,33 @@ class GoalkeeperRepository(context: Context) {
     
     fun updateEnabled(enabled: Boolean) = save(_state.value.copy(enabled = enabled))
     fun updateAggressiveMode(aggressive: Boolean) = save(_state.value.copy(aggressiveMode = aggressive))
-    fun updatePositioning(positioning: Int) = save(_state.value.copy(positioning = positioning))
-    fun updateReactions(reactions: Int) = save(_state.value.copy(reactions = reactions))
+    // No63-D18: updatePositioning/updateReactions accepted any Int with
+    // no clamp — the values flow through sync() into the runtime state
+    // and into the keeper math. The control-room sliders clamp at the UI
+    // only; the repo is the choke point, so clamp here.
+    fun updatePositioning(positioning: Int) = save(_state.value.copy(positioning = clampSlider(positioning)))
+    fun updateReactions(reactions: Int) = save(_state.value.copy(reactions = clampSlider(reactions)))
+
+    companion object {
+        @Volatile private var instance: GoalkeeperRepository? = null
+
+        // No63-D16: this repo had NO shared() singleton (unlike
+        // InterceptionRepository next door) — three live instances
+        // (ModMenuController, AdapterControlRoomSync, the control-room
+        // activity), each with its own MutableStateFlow. A save in one
+        // instance left the others' flows stale, and the next save from
+        // a stale instance reverted the other instance's field values
+        // (lost update: instance A sets positioning=80, instance B still
+        // holds 50, B's next toggle writes 50 back to prefs). One shared
+        // instance, mirroring InterceptionRepository.shared().
+        fun shared(context: Context): GoalkeeperRepository =
+            instance ?: synchronized(this) {
+                instance ?: GoalkeeperRepository(context.applicationContext).also { instance = it }
+            }
+
+        // No63-D17/D18: the clamp the load/update sites share. Internal
+        // (not private) so the harness can pin it — the repo itself
+        // needs a Context, so the clamp is the testable unit.
+        internal fun clampSlider(value: Int): Int = value.coerceIn(0, 100)
+    }
 }

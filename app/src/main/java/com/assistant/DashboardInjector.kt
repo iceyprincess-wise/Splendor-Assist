@@ -183,6 +183,18 @@ object DashboardInjector {
                     append("Overlay survival: ").append(com.assistant.survival.OverlaySurvivalRegistry.state())
                         .append(" | selfMask rects: ").append(com.assistant.vision.OverlaySelfMask.count()).append("\n\n")
                     append(com.assistant.recovery.RecoveryMetricsRegistry.snapshot())
+                    // No63-D1/D27/D28: the accessibility-survival state
+                    // (wired this round — it had zero readers before),
+                    // the latest keeper decision (written only, no reader
+                    // before) and the keeper metrics snapshot (likewise
+                    // unread before) join the metrics block. All three are
+                    // point-in-time reads on the background refresh
+                    // thread; the registries are @Volatile/@Synchronized
+                    // and snapshot() reads AtomicLongs.
+                    append("\nAccessibility survival: ").append(com.assistant.survival.AccessibilitySurvivalRegistry.state()).append("\n")
+                    val gkDecision = com.assistant.overlay.interceptor.GoalkeeperDecisionRegistry.latestDecision
+                    append("GK decision: ").append(if (gkDecision == null) "none" else "${gkDecision.threat} ${gkDecision.zone} ${gkDecision.direction} pri=${gkDecision.priority}").append("\n")
+                    append(com.assistant.overlay.interceptor.GoalkeeperMetricsRegistry.snapshot()).append("\n")
                 }
                 
                 val statusText = ComplianceState.summary(activity)

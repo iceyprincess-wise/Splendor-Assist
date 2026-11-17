@@ -87,7 +87,9 @@ class ModMenuController(private val context: Context) {
     private var statusView: TextView? = null
 
     private val smartRepo by lazy { SmartAssistRepository(context) }
-    private val goalkeeperRepo by lazy { GoalkeeperRepository(context) }
+    // No63-D16: shared() — see GoalkeeperRepository; direct construction
+    // used to create a second instance with its own stale flow.
+    private val goalkeeperRepo by lazy { GoalkeeperRepository.shared(context) }
     private val interceptionRepo by lazy { InterceptionRepository.shared(context) }
 
     fun show() {

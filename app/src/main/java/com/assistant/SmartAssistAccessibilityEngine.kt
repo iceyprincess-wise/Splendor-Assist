@@ -384,6 +384,13 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         AsynchronousGestureQueue.bindService(this)
         AccessibilitySurvivalEngine.connected()
 
+        // No63-D1: feed the accessibility-survival registry — it was dead
+        // (zero callers) before this round; DashboardInjector reads its
+        // state() into the metrics block.
+        com.assistant.survival.AccessibilitySurvivalRegistry.update(
+            com.assistant.survival.AccessibilitySurvivalRegistry.STATUS_CONNECTED
+        )
+
         // SPLENDOR_F34_SEED_FG: seed foreground package from rootInActiveWindow on connect.
         // If the game was already running when the service came up, this breaks the
         // cold-start dead lock without waiting for a new window-state-changed event.
@@ -527,12 +534,21 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     override fun onUnbind(intent: android.content.Intent?): Boolean {
         stopExecutionLoop()
         AccessibilitySurvivalEngine.getInstance(this).release()
+        // No63-D1: the service is unbound — the registry ages from here
+        // (CONNECTED for 30s, then DEGRADED, then OFFLINE).
+        com.assistant.survival.AccessibilitySurvivalRegistry.update(
+            com.assistant.survival.AccessibilitySurvivalRegistry.STATUS_DISCONNECTED
+        )
         return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
         stopExecutionLoop()
         AccessibilitySurvivalEngine.getInstance(this).release()
+        // No63-D1: same as onUnbind — the service is gone.
+        com.assistant.survival.AccessibilitySurvivalRegistry.update(
+            com.assistant.survival.AccessibilitySurvivalRegistry.STATUS_DISCONNECTED
+        )
         super.onDestroy()
     }
 }

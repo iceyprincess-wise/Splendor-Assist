@@ -36,14 +36,23 @@ object RecoveryMetricsRegistry {
     fun setOfflineAdapters(
         count: Int
     ) {
-        offlineAdapters = count
+        // No63-D7: a negative count is meaningless (offline is a count of
+        // adapters); clamp at the write site so the stored state can never
+        // hold garbage the dashboard would print.
+        offlineAdapters = count.coerceAtLeast(0)
     }
 
     @Synchronized
     fun recoveryRate(): Int {
 
+        // No63-D6: returning 100 with zero attempts was a fabricated 100%
+        // on a fresh dashboard. F37-T3 papered over it in snapshot()'s
+        // render ("n/a"), but the function itself still lied to any other
+        // caller. The rate of zero attempts is 0; snapshot() still
+        // renders "n/a" for the zero-attempt case (its branch below is
+        // unchanged).
         if (recoveryAttempts <= 0)
-            return 100
+            return 0
 
         return (
             successfulRecoveries * 100
@@ -93,6 +102,22 @@ object RecoveryMetricsRegistry {
             // fabricated 100% on a fresh dashboard. Render "n/a" instead.
             append(
                 if (recoveryAttempts <= 0) "n/a" else "${recoveryRate()}%"
+            )
+
+            append("\n")
+
+            append(
+                "Last Recovery : "
+            )
+
+            // No63-D5: lastRecoveryTimestamp was write-only — recorded on
+            // every attempt/success but never read by anyone. Rendered
+            // here so DashboardInjector (the live snapshot() reader)
+            // shows it: "never" on a fresh registry, seconds-since
+            // otherwise.
+            append(
+                if (lastRecoveryTimestamp <= 0L) "never"
+                else "${(System.currentTimeMillis() - lastRecoveryTimestamp) / 1000}s ago"
             )
         }
     }
