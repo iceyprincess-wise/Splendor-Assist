@@ -316,6 +316,12 @@ object RuntimeDecisionLoop {
             actionClass = best.actionClass,
             source = ExecutionSource.SMART_ASSIST,
             phase = best.actionClass.ordinal,
+            // no59 ITEM 1: carry the winning engine's name through the
+            // terminal. Without this the dispatch log at route() could only
+            // say SMART_ASSIST — the engine name lives on the contribution
+            // (best.engine) and dies here if it is not copied onto the
+            // request.
+            engine = best.engine,
             // SPLENDOR_CONTROL_MAP_V1 - derive the joystick origin from the
             // trainer's live normalised control map instead of a fixed point.
             // All request coordinates live in the capture frame's space, so the
@@ -446,7 +452,10 @@ object RuntimeDecisionLoop {
 
     private fun describe(best: EngineContribution?, parked: ExecutionRequest?): String =
         when {
-            parked != null && best == null -> "parked:${parked.source}"
+            // no59 ITEM 1: a drained parked request now carries its
+            // engine (offer sites set it); show the engine when claimed,
+            // the source when not — never a guessed name.
+            parked != null && best == null -> "parked:${parked.engine.ifBlank { parked.source.toString() }}"
             best != null -> "${best.engine}:${best.actionClass}"
             else -> "none"
         }

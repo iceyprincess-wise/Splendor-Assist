@@ -187,6 +187,10 @@ class SmartAssistPipeline {
 
                     else -> 0
                 },
+            // no59 ITEM 1: the OCR pipe builds this request — it is the
+            // owning producer, so its name is the honest engine label.
+            engine =
+                "SmartAssistPipeline",
             startX =
                 decision.startX,
             startY =

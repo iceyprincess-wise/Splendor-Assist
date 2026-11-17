@@ -999,6 +999,11 @@ class ActiveGestureController(
             ExecutionRequest(
                 source = ExecutionSource.SMART_ASSIST,
                 phase = decision.mode,
+                // no59 ITEM 1: the legacy injectWinningVector path has no
+                // contributing engine (it arbitrates inside this controller
+                // from the legacy decision) — the controller itself is the
+                // honest producer label for the dispatch log.
+                engine = "ActiveGestureController",
                 startX = startX,
                 startY = startY,
                 endX = safeRoutedEndX,

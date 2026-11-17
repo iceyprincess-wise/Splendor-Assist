@@ -41,7 +41,19 @@ data class ExecutionRequest(
     val timestamp: Long = System.currentTimeMillis(),
     val actionId: String = "ACT-${java.util.UUID.randomUUID()}",
     var busAccepted: Boolean = false,
-    var busConsumed: Boolean = false
+    var busConsumed: Boolean = false,
+    // no59 ITEM 1: which engine produced this request. The name is lost
+    // unless it travels with the request: arbitration knows it
+    // (EngineContribution.engine) but the parked lane (offer/drainBest)
+    // and the emergency lane only ever carried source/phase/actionClass,
+    // so a drained or emergency dispatch could only be logged as
+    // "parked:SMART_ASSIST" — the engine was unknowable at the terminal.
+    // Every offer site and chooseRequest() now set this; the legacy
+    // injectWinningVector and the OCR pipe set their owning class name.
+    // "" means "no engine claimed it" — the dispatch log prints "?" for
+    // that, never a guessed name. Appended last with a default so every
+    // existing positional construction keeps compiling unchanged.
+    val engine: String = ""
 )
 
 data class BusStatistics(

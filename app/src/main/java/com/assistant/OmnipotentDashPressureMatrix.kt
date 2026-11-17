@@ -190,6 +190,8 @@ object OmnipotentDashPressureMatrix {
                 source = ExecutionSource.INTERCEPTION,
                 phase = 8,
                 actionClass = com.assistant.runtime.ActionClass.DEFEND,
+                // no59 ITEM 1: carry the engine name to the dispatch log.
+                engine = "OmnipotentDashPressureMatrix",
                 startX = joystickX,
                 startY = joystickY,
                 endX = targetX,

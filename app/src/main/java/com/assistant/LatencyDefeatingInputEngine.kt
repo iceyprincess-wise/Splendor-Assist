@@ -130,6 +130,8 @@ fun injectZeroLatencySwipe(
     val request = ExecutionRequest(
             source = ExecutionSource.SMART_ASSIST,
             phase = ZERO_LATENCY_PHASE, 
+            // no59 ITEM 1: carry the engine name to the dispatch log.
+            engine = "LatencyDefeatingInputEngine",
             startX = targetStartX,
             startY = targetStartY,
             endX = targetEndX,

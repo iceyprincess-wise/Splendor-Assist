@@ -59,7 +59,14 @@ class MainActivity : AppCompatActivity() {
             // Polling 8 engine registries every 1 second creates massive String/Map 
             // allocations on the Main Thread, triggering GC pauses that stutter 
             // eFootball 2027. 3 seconds provides smooth UI updates without CPU theft.
-            hubRefreshHandler.postDelayed(this, 3000L)
+            // no59 ITEM 4: STOPPED — the 3s live refresh no longer re-arms.
+            // InAppLiveDisplay is the single switch (default OFF): with it
+            // off the hub refreshes exactly once, when the tick is first
+            // posted, and then only when the user re-opens the screen.
+            // File logging is untouched by this flag.
+            if (com.assistant.diagnostic.InAppLiveDisplay.liveRefreshAllowed()) {
+                hubRefreshHandler.postDelayed(this, 3000L)
+            }
         }
     }
 

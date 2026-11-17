@@ -81,6 +81,8 @@ object OmnipotentGoalkeeperEngine {
                 val rushRequest = ExecutionRequest(
                     source = ExecutionSource.GOALKEEPER,
                     phase = 5,
+                    // no59 ITEM 1: carry the engine name to the dispatch log.
+                    engine = "OmnipotentGoalkeeperEngine",
                     startX = pressureButtonX,
                     startY = pressureButtonY,
                     endX = pressureButtonX,
@@ -117,6 +119,8 @@ object OmnipotentGoalkeeperEngine {
             val reflexRequest = ExecutionRequest(
                 source = ExecutionSource.GOALKEEPER,
                 phase = 6,
+                // no59 ITEM 1: carry the engine name to the dispatch log.
+                engine = "OmnipotentGoalkeeperEngine",
                 startX = joystickX,
                 startY = joystickY,
                 endX = joyTargetX,
@@ -364,6 +368,8 @@ object OmnipotentGoalkeeperEngine {
                     ExecutionRequest(
                         source = ExecutionSource.GOALKEEPER,
                         phase = finalAction.ordinal,
+                        // no59 ITEM 1: carry the engine name to the dispatch log.
+                        engine = "OmnipotentGoalkeeperEngine",
                         startX = executionCoordinates[0],
                         startY = executionCoordinates[1],
                         endX = executionCoordinates[2],

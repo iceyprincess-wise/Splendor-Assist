@@ -231,6 +231,12 @@ object RuntimeLogger {
      * no package-prefix map can place those exactly; diagnostic keeps its
      * core mapping (the majority of its classes are core) and the other
      * two keep the app mapping.
+     *
+     * no59 ITEM 2: the location is now SHORT — "<module>/<File>.<ext>:<line>"
+     * (LogFormat.shortLocation) — and is printed ONCE per location run,
+     * not on every line (LogFormat.Grouper, one per destination stream
+     * below). The frame-skipping, the positive-line-number guard and
+     * this core-package map are unchanged: only the rendering changed.
      */
     private val CORE_PACKAGES = arrayOf(
         "com.assistant.diagnostic.",
@@ -241,6 +247,27 @@ object RuntimeLogger {
         "com.assistant.render.",
         "com.assistant.runtime."
     )
+
+    // no59 ITEM 2: one Grouper per destination stream. Each stream
+    // re-headers independently (see LogFormat): a location change in the
+    // main field log never forces a header in the telemetry log, and
+    // vice versa. All five are touched only under this object's
+    // @Synchronized monitor, except mainGrouper.reset() from the
+    // rotation check on the RuntimeLogIO thread (see rotateFieldLogIfOversize).
+    private val mainGrouper = LogFormat.Grouper()
+    private val executionGrouper = LogFormat.Grouper()
+    private val telemetryGrouper = LogFormat.Grouper()
+    private val heartbeatGrouper = LogFormat.Grouper()
+    private val forensicGrouper = LogFormat.Grouper()
+
+    // no59 ITEM 4 (file-logging load): Splendor_Field_Logs.txt used to
+    // grow WITHOUT BOUND — every RuntimeLogger.log() appended forever
+    // (88 caller files repo-wide) and nothing ever rotated it. LogMirror
+    // (8MB) and FilterEngine (1MB) already rotate; the field log is now
+    // capped the same way. TruthLogcatEngine's tailer already handles a
+    // shrunk/rotated source file (it resets its pointer to 0), so a
+    // rotation mid-session does not freeze Truth_logcat.txt.
+    private const val FIELD_LOG_MAX_BYTES = 8L * 1024L * 1024L
 
     /** Caller location for field, watchdog, deathwatch and agent diagnostics. */
     private fun callerLocation(): String {
@@ -261,10 +288,11 @@ object RuntimeLogger {
         } ?: return "unknown:0"
         val file = frame.fileName ?: return "unknown:0"
         val className = frame.className.substringBefore('$')
-        val pkg = className.substringBeforeLast('.', "").replace('.', '/')
-        val root = if (CORE_PACKAGES.any { className.startsWith(it) })
-            "core/src/main/java" else "app/src/main/java"
-        return "$root/$pkg/$file:${frame.lineNumber}"
+        // no59 ITEM 2: short "<module>/<File>.<ext>:<line>" — the package
+        // path is dropped; only the module (core/app) and the file name
+        // survive. The callerLocation() contract (first real frame,
+        // positive line, "unknown:0" fallback) is unchanged.
+        return LogFormat.shortLocation(className, file, frame.lineNumber, CORE_PACKAGES)
     }
 
     @Synchronized
@@ -277,8 +305,13 @@ object RuntimeLogger {
         date.time = System.currentTimeMillis()
         val timestamp = dateFormat.get()!!.format(date)
 
-        val logEntry =
-            "$timestamp [$tag] source=${callerLocation()} $message\n"
+        // no59 ITEM 2: grouped short-location format. The header
+        // "<timestamp>: <location>:" is printed only when the location
+        // changed since the last main-log line; a repeat prints just
+        // "[$tag] $message". The same grouped entry goes to LogMirror,
+        // whose enqueue escapes the "\n" to a literal "\n" (one mirror
+        // line per entry, header included when present).
+        val logEntry = mainGrouper.format(timestamp, callerLocation(), "[$tag] $message\n")
 
         writeToAll(logEntry)
         LogMirror.mirror(tag, android.util.Log.INFO, logEntry)
@@ -300,9 +333,11 @@ object RuntimeLogger {
         // SPLENDOR_P12_A6_SYNC: the chain log is the death-window record; the
         // async queue (256 deep, daemon thread, no flush) drops its tail on a
         // kill. Chain lines write synchronously on the calling thread instead.
+        // no59 ITEM 2: grouped short-location format (own Grouper: the
+        // chain log is its own stream — see the Grouper comment above).
         appendSync(
             executionChainLog,
-            "${now()} [$stage] source=${callerLocation()} $details\n"
+            executionGrouper.format(now(), callerLocation(), "[$stage] $details\n")
         )
     }
 
@@ -310,9 +345,10 @@ object RuntimeLogger {
     fun telemetry(
         details:String
     ){
+        // no59 ITEM 2: grouped short-location format (own Grouper).
         append(
             telemetryLog,
-            "${now()} source=${callerLocation()} $details\n"
+            telemetryGrouper.format(now(), callerLocation(), "$details\n")
         )
     }
 
@@ -320,9 +356,10 @@ object RuntimeLogger {
     fun heartbeat(
         details:String
     ){
+        // no59 ITEM 2: grouped short-location format (own Grouper).
         append(
             heartbeatLog,
-            "${now()} source=${callerLocation()} $details\n"
+            heartbeatGrouper.format(now(), callerLocation(), "$details\n")
         )
     }
 
@@ -331,9 +368,10 @@ object RuntimeLogger {
         tag:String,
         details:String
     ){
+        // no59 ITEM 2: grouped short-location format (own Grouper).
         append(
             fieldTestLog,
-            "${now()} [$tag] source=${callerLocation()} $details\n"
+            forensicGrouper.format(now(), callerLocation(), "[$tag] $details\n")
         )
     }
 
@@ -376,6 +414,14 @@ object RuntimeLogger {
         if (file == null) return
         logIoExecutor.execute {
             try {
+                // no59 ITEM 4: rotate the field log (external main log and
+                // the process-private internal fallback) before it grows
+                // without bound. Forensic/telemetry/heartbeat files never
+                // reach here as the field log (identity check), and the
+                // retention sweep owns their lifecycle instead.
+                if (file === externalLogFile || file === internalLogFile) {
+                    rotateFieldLogIfOversize(file)
+                }
                 java.io.FileOutputStream(file, true).use { fos ->
                     fos.write(text.toByteArray(Charsets.UTF_8))
                 }
@@ -383,6 +429,26 @@ object RuntimeLogger {
                 droppedWrites.incrementAndGet()
                 android.util.Log.e("RuntimeLogger", "Log append failed", e)
             }
+        }
+    }
+
+    // Runs on the single RuntimeLogIO thread, so no two appends can race
+    // the rename. Best-effort: a failed rotate never loses the line —
+    // the append below still runs against the oversize file.
+    private fun rotateFieldLogIfOversize(file: File) {
+        try {
+            if (!file.exists() || file.length() <= FIELD_LOG_MAX_BYTES) return
+            val oldName = if (file.name == "Splendor_Field_Logs.txt") "Splendor_Field_Logs.old.txt"
+                else "internal-field-log.old.txt"
+            val old = File(file.parentFile, oldName)
+            if (old.exists()) old.delete()
+            if (file.renameTo(old)) {
+                // The new file starts clean: the next line re-headers
+                // instead of continuing a run from the rotated-away file.
+                mainGrouper.reset()
+            }
+        } catch (_: Throwable) {
+            try { android.util.Log.w("RuntimeLogger", "field log rotation failed for ${file.name}") } catch (_: Throwable) {}
         }
     }
 

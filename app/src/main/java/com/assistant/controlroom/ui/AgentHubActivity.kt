@@ -188,7 +188,13 @@ class AgentHubActivity : AppCompatActivity() {
                         }
                     }
                 } catch (_: Throwable) {}
-                refreshHandler.postDelayed(this, 3_000L)
+                // no59 ITEM 4: STOPPED — the 3s agent refresh no longer
+                // re-arms. InAppLiveDisplay is the single switch (default
+                // OFF): with it off the room refreshes exactly once, when
+                // startRefresh() posts it. File logging is untouched.
+                if (com.assistant.diagnostic.InAppLiveDisplay.liveRefreshAllowed()) {
+                    refreshHandler.postDelayed(this, 3_000L)
+                }
             }
         }
         refreshRunnable = r

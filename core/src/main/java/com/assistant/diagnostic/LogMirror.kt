@@ -1,11 +1,7 @@
 package com.assistant.diagnostic
 
-import android.content.ContentValues
 import android.content.Context
-import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
+import com.assistant.storage.SplendorStorageRoot
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -15,7 +11,28 @@ import java.util.Locale
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
-/** Temporary, best-effort app log mirror. Producer calls only enqueue bounded strings. */
+/**
+ * Temporary, best-effort app log mirror. Producer calls only enqueue bounded strings.
+ *
+ * no59 ITEM 3 — ONE PATH: this was the stray writer Ed saw ("Strike.log
+ * in /downloads"). There is no file named Strike.log anywhere in the
+ * repo (git grep finds nothing); this is the writer he meant — its file
+ * is stroke_log.txt, and it wrote to the shared Downloads collection
+ * via MediaStore (API 31+) or getExternalFilesDir(DIRECTORY_DOWNLOADS)
+ * below it, outside the canonical root every other logger uses. The
+ * sink is now a plain file under SplendorStorageRoot, i.e.
+ * /sdcard/Splendor-Assist/stroke_log.txt (rotation to
+ * stroke_log.old.txt, same 8MB cap). The file NAME is unchanged — only
+ * the path moved — so anything that already reads stroke_log.txt keeps
+ * working. The old MediaStore entry in Downloads is left alone (the
+ * mirror never deletes user-visible files it did not just rotate); the
+ * new file is the live one from this round on.
+ *
+ * The enqueue/mirror API is unchanged (mirror, mirrorCrashAndWait,
+ * droppedCount, init); RuntimeLogger.log() still feeds it every entry.
+ * The writer thread, the bounded queue, the per-record flush and the
+ * rotation rule are unchanged — only the sink moved.
+ */
 object LogMirror {
     private const val FILE_NAME = "stroke_log.txt"
     private const val OLD_FILE_NAME = "stroke_log.old.txt"
@@ -37,19 +54,20 @@ object LogMirror {
     private val enqueueDateFormat = ThreadLocal.withInitial {
         SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US)
     }
-    @Volatile private var appContext: Context? = null
     @Volatile private var started = false
     @Synchronized
     fun init(context: Context) {
         if (started) return
-        appContext = context.applicationContext
+        // no59: the sink no longer needs the Context (no MediaStore, no
+        // getExternalFilesDir) — the parameter stays so App.onCreate's
+        // LogMirror.init(this) call is unchanged.
         // F42-D2: the probe below used to throw straight out of init(), and
         // App.onCreate calls init() unguarded - a MediaStore failure at
         // boot crashed the app before anything else ran. The probe only
         // validates writability; the writer thread opens the sink lazily
         // on the first record anyway, so a probe failure is non-fatal.
         try {
-            val initialSink = openSink(context.applicationContext)
+            val initialSink = openSink()
             try { initialSink.first.close() } catch (_: Throwable) {}
         } catch (t: Throwable) {
             try { android.util.Log.w("LogMirror", "initial sink probe failed; writer will retry lazily", t) } catch (_: Throwable) {}
@@ -123,9 +141,7 @@ object LogMirror {
     }
 
     private fun writerLoop() {
-        val context = appContext ?: return
         var output: OutputStream? = null
-        var sinkUri: Uri? = null
         var sinkFile: File? = null
         var byteCount = 0L
         while (!Thread.currentThread().isInterrupted) {
@@ -143,22 +159,20 @@ object LogMirror {
             try {
                 val line = record.line
                 if (output == null) {
-                    val opened = openSink(context)
+                    val opened = openSink()
                     output = opened.first
-                    sinkUri = opened.second
-                    sinkFile = opened.third
-                    byteCount = opened.fourth
+                    sinkFile = opened.second
+                    byteCount = opened.third
                 }
                 val bytes = line.toByteArray(Charsets.UTF_8)
                 if (byteCount + bytes.size > MAX_BYTES) {
                     output.flush()
                     output.close()
-                    rotate(context, sinkUri, sinkFile)
-                    val replacement = openSink(context)
+                    rotate(sinkFile)
+                    val replacement = openSink()
                     output = replacement.first
-                    sinkUri = replacement.second
-                    sinkFile = replacement.third
-                    byteCount = replacement.fourth
+                    sinkFile = replacement.second
+                    byteCount = replacement.third
                 }
                 output.write(bytes)
                 output.flush()
@@ -167,7 +181,6 @@ object LogMirror {
             } catch (_: Throwable) {
                 try { output?.close() } catch (_: Throwable) {}
                 output = null
-                sinkUri = null
                 sinkFile = null
                 byteCount = 0L
                 record.completion?.countDown()
@@ -179,93 +192,29 @@ object LogMirror {
 
     private data class OpenedSink(
         val first: OutputStream,
-        val second: Uri?,
-        val third: File?,
-        val fourth: Long
+        val second: File?,
+        val third: Long
     )
 
-    private fun openSink(context: Context): OpenedSink {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val resolver = context.contentResolver
-            val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-            val uri = findDownload(context, FILE_NAME) ?: run {
-                val values = ContentValues().apply {
-                    put(MediaStore.MediaColumns.DISPLAY_NAME, FILE_NAME)
-                    put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-                    put(MediaStore.MediaColumns.IS_PENDING, 0)
-                }
-                resolver.insert(collection, values) ?: throw IllegalStateException("MediaStore insert failed")
-            }
-            val size = querySize(context, uri)
-            val stream = resolver.openOutputStream(uri, if (size == 0L) "w" else "wa") ?: throw IllegalStateException("MediaStore open failed")
-            return OpenedSink(stream, uri, null, size)
-        }
-        val dir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-            ?: throw IllegalStateException("external files directory unavailable")
-        if (!dir.exists() && !dir.mkdirs()) throw IllegalStateException("cannot create log directory")
-        val file = File(dir, FILE_NAME)
-        return OpenedSink(FileOutputStream(file, true), null, file, if (file.exists()) file.length() else 0L)
+    // no59 ITEM 3: one path. The sink is the canonical root file
+    // /sdcard/Splendor-Assist/stroke_log.txt — no MediaStore, no
+    // Downloads collection, no getExternalFilesDir. SplendorStorageRoot
+    // throws when storage is not ready; the writer loop treats that like
+    // any other open failure and retries on the next queued record.
+    private fun openSink(): OpenedSink {
+        val file = SplendorStorageRoot.file(FILE_NAME)
+        return OpenedSink(FileOutputStream(file, true), file, if (file.exists()) file.length() else 0L)
     }
 
-    private fun rotate(context: Context, uri: Uri?, file: File?) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && uri != null) {
-            val resolver = context.contentResolver
-            val old = findDownload(context, OLD_FILE_NAME)
-            val oldValues = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, OLD_FILE_NAME)
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-            }
-            // F42-D1: when the old file already existed, the old code
-            // updated OLD with its own name (a no-op) and never renamed
-            // the current uri to old - then inserted a NEW file named
-            // stroke_log.txt. Result: TWO stroke_log.txt entries, and
-            // findDownload (no ORDER BY) returns an arbitrary one, so
-            // openSink could keep appending to the rotated-away file or
-            // the new one unpredictably. Delete the stale old file first,
-            // then rename the current uri to old - exactly one of each.
-            if (old != null) {
-                if (resolver.delete(old, null, null) <= 0) throw IllegalStateException("MediaStore old-log delete failed")
-            }
-            if (resolver.update(uri, oldValues, null, null) <= 0) {
-                throw IllegalStateException("MediaStore rotate failed")
-            }
-            val replacement = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, FILE_NAME)
-                put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-                put(MediaStore.MediaColumns.IS_PENDING, 0)
-            }
-            if (resolver.insert(MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), replacement) == null) {
-                throw IllegalStateException("MediaStore replacement insert failed")
-            }
-            return
-        }
+    // no59 ITEM 3: rotation is the plain-file version of the old
+    // MediaStore rotate (F42-D1: delete the stale old file first, then
+    // rename the current file to old — exactly one of each, never two
+    // stroke_log.txt entries). The MediaStore rename/delete calls are
+    // gone with the sink.
+    private fun rotate(file: File?) {
         val current = file ?: throw IllegalStateException("log file unavailable")
         val old = File(current.parentFile, OLD_FILE_NAME)
         if (old.exists() && !old.delete()) throw IllegalStateException("cannot remove old log")
         if (current.exists() && !current.renameTo(old)) throw IllegalStateException("cannot rotate log")
-    }
-
-    private fun findDownload(context: Context, name: String): Uri? {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return null
-        val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        context.contentResolver.query(
-            collection,
-            arrayOf(MediaStore.MediaColumns._ID),
-            "${MediaStore.MediaColumns.DISPLAY_NAME}=? AND ${MediaStore.MediaColumns.RELATIVE_PATH}=?",
-            arrayOf(name, Environment.DIRECTORY_DOWNLOADS + "/"),
-            null
-        )?.use { cursor ->
-            if (cursor.moveToFirst()) return Uri.withAppendedPath(collection, cursor.getLong(0).toString())
-        }
-        return null
-    }
-
-    private fun querySize(context: Context, uri: Uri): Long {
-        context.contentResolver.query(uri, arrayOf(MediaStore.MediaColumns.SIZE), null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) return cursor.getLong(0)
-        }
-        return 0L
     }
 }

@@ -39,7 +39,10 @@ import java.util.Locale
  * Also exposes the Captaincy designation toggle (Item 6 integration spec):
  *   CaptaincySkillEngine.setCaptainDesignated(true/false)
  *
- * Logs to /sdcard/Splendor-Assist/gameplaylogs.txt on every refresh cycle.
+ * Logs to /sdcard/Splendor-Assist/gameplaylogs.txt on every refresh.
+ * no59 ITEM 4: the 2s periodic refresh is STOPPED (InAppLiveDisplay,
+ * default OFF), so the log line is now written once per manual
+ * "Refresh Now" tap instead of every 2 seconds while the room is open.
  */
 class GameplayRoomActivity : AppCompatActivity() {
 
@@ -257,7 +260,17 @@ class GameplayRoomActivity : AppCompatActivity() {
         val r = object : Runnable {
             override fun run() {
                 refreshNow()
-                refreshHandler.postDelayed(this, 2_000L)
+                // no59 ITEM 4: STOPPED — the 2s refresh no longer re-arms.
+                // InAppLiveDisplay is the single switch (default OFF):
+                // with it off the room refreshes exactly once, when
+                // startRefresh() posts it, and then only on the manual
+                // "Refresh Now" button. Stopping the cycle also stops
+                // the gameplaylogs.txt append in refreshNow() (logLine
+                // runs once per manual refresh instead of every 2s).
+                // File logging is untouched by this flag.
+                if (com.assistant.diagnostic.InAppLiveDisplay.liveRefreshAllowed()) {
+                    refreshHandler.postDelayed(this, 2_000L)
+                }
             }
         }
         refreshRunnable = r

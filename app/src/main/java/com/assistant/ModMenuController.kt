@@ -23,6 +23,7 @@ import com.assistant.overlay.repository.GoalkeeperRepository
 import com.assistant.overlay.repository.GoalkeeperRuntimeState
 import com.assistant.overlay.repository.InterceptionRepository
 import com.assistant.controlroom.ui.ThemeTokens
+import com.assistant.diagnostic.InAppLiveDisplay
 import com.assistant.diagnostic.RuntimeLogger
 
 class ModMenuController(private val context: Context) {
@@ -61,7 +62,14 @@ class ModMenuController(private val context: Context) {
             try {
                 statusView?.text = liveStatusLine()
             } catch (_: Throwable) {}
-            statusHandler.postDelayed(this, 1000L)
+            // no59 ITEM 4: STOPPED — the 1s status ticker no longer
+            // re-arms. InAppLiveDisplay is the single switch (default
+            // OFF): with it off the line updates once, when
+            // startStatusTicker() posts this runnable, and then only on
+            // the next show(). File logging is untouched by this flag.
+            if (InAppLiveDisplay.liveRefreshAllowed()) {
+                statusHandler.postDelayed(this, 1000L)
+            }
         }
     }
     private fun startStatusTicker() {

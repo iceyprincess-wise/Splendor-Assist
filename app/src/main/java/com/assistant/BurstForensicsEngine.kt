@@ -227,6 +227,10 @@ object BurstForensicsEngine {
             source = ExecutionSource.STUTTER,
             phase = ActionClass.MOVE.ordinal,
             actionClass = ActionClass.MOVE,
+            // no59 ITEM 1: the re-assert rebuilds the request from the
+            // source — carry the source's engine name with it, or the
+            // dispatch log would lose the engine on this lane.
+            engine = source.engine,
             startX = source.startX,
             startY = source.startY,
             endX = source.endX,

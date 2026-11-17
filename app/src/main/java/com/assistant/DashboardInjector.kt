@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.assistant.audit.SelfAuditRegistry
 import com.assistant.compliance.ComplianceState
+import com.assistant.diagnostic.InAppLiveDisplay
 import com.assistant.diagnostic.RuntimeMetricsRegistry
 import com.assistant.survival.AdapterHealthCounts
 import com.assistant.survival.AdapterStatusRegistry
@@ -201,7 +202,16 @@ object DashboardInjector {
                             else -> runtimeView.setTextColor(Color.WHITE)
                         }
                         
-                        handler.postDelayed(this@DashboardRefreshRunnable, 1000L)
+                        // no59 ITEM 4: STOPPED — the 1s live refresh no
+                        // longer re-arms. InAppLiveDisplay is the single
+                        // switch (default OFF): with it off this runnable
+                        // runs exactly once, when attach() posts it, and
+                        // the overlay then shows that one snapshot until
+                        // the user re-attaches or taps ACTIVATE. File
+                        // logging is untouched by this flag.
+                        if (InAppLiveDisplay.liveRefreshAllowed()) {
+                            handler.postDelayed(this@DashboardRefreshRunnable, 1000L)
+                        }
                     }
                 }
             }

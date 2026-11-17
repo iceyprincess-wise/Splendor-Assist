@@ -133,6 +133,8 @@ object HybridOmnipotentMatrixEngine {
             val req = ExecutionRequest(
                 source=ExecutionSource.INTERCEPTION, phase=9,
                 actionClass=com.assistant.runtime.ActionClass.DEFEND,
+                // no59 ITEM 1: carry the engine name to the dispatch log.
+                engine="HybridOmnipotentMatrixEngine",
                 startX=joystickX, startY=joystickY,
                 endX=targetX, endY=targetY, duration=40L)
             if (ContributionRegistry.offer(req)) {

@@ -174,6 +174,9 @@ class AutoEvadeEngine(
         val evadeRequest = ExecutionRequest(
             source = ExecutionSource.SMART_ASSIST,
             phase = 7,
+            // no59 ITEM 1: carry the engine name so the dispatch log at
+            // HybridExecutionTerminal.route() can name this request.
+            engine = "AutoEvadeEngine",
             startX = joystickX,
             startY = joystickY,
             endX = evadeTargetX,
