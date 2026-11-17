@@ -134,28 +134,17 @@ object VisionOverlayRegistry {
         refresh()
     }
 
-    // ---- SELF-MASK (GAP1A): overlays we drew ourselves, excluded from ingestion ----
-    private val selfRects = java.util.concurrent.ConcurrentHashMap<String, android.graphics.Rect>()
-
-    fun publishBounds(tag: String, r: android.graphics.Rect) {
-        selfRects[tag] = android.graphics.Rect(r)
-    }
-
-    fun clearBounds(tag: String) {
-        selfRects.remove(tag)
-    }
-
-    fun isSelfDrawn(x: Int, y: Int): Boolean {
-        if (selfRects.isEmpty()) return false
-        for (r in selfRects.values) if (r.contains(x, y)) return true
-        return false
-    }
-
-    fun isSelfDrawn(x: Float, y: Float): Boolean = isSelfDrawn(x.toInt(), y.toInt())
-
-    fun selfMask(): List<android.graphics.Rect> = selfRects.values.toList()
-
-    fun selfMaskCount(): Int = selfRects.size
+    // ---- SELF-MASK (GAP1A): REMOVED (No62-D6) ----
+    // A parallel self-mask mirror used to live here (selfRects, written
+    // from OverlaySelfMask.publishView/clear and read by isSelfDrawn /
+    // selfMask / selfMaskCount). All three readers had zero callers
+    // repo-wide, VisionOverlayRegistryState exposes no mask field, and
+    // no test or native code touched it — so the mirror was write-only
+    // duplication of OverlaySelfMask.rects, kept in sync only because
+    // every mutation happened to go through OverlaySelfMask. One store
+    // (OverlaySelfMask) is the truth now; this section is gone rather
+    // than left to desync. Do not re-add a second mask store without a
+    // reader for it.
 
 }
 

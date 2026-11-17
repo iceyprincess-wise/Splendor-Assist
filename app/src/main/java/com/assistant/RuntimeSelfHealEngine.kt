@@ -209,6 +209,20 @@ object RuntimeSelfHealEngine {
 
     private fun enforceForegroundGate() {
         try {
+            // No62-D21: our own package is NON-BLOCKING for the
+            // accessibility feed (SmartAssistAccessibilityEngine:458 —
+            // packageName returns true), so the package guard below
+            // cannot see our own Control Room / Diagnosis pages: when
+            // one is open, lastForegroundPkg still names the game and
+            // isKnownNonGameForeground() is false. The old code then
+            // forced fg=true on every 5s cycle while own UI was visible
+            // — fighting ForegroundGate, flipping the stored field, and
+            // logging a misleading "FG_OVERRIDE suppressed by GAME
+            // override or package policy" line each time (the real
+            // suppressor is ForegroundGate.ownUiVisible(), read
+            // directly by VisionTrust.isGameForeground()). The gate owns
+            // the decision while any of our activities is visible.
+            if (com.assistant.vision.ForegroundGate.ownUiVisible()) return
             val frame = FrameAssembler.current() ?: return
             val frameAgeMs = System.currentTimeMillis() - frame.timestampMs
             if (frameAgeMs > 3000L) return  // capture stale — don't force

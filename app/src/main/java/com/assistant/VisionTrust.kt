@@ -113,7 +113,6 @@ object VisionTrust {
     // ---------------- gap 1c: is the game actually on screen ----------------
     @Volatile private var foregroundIsGame = false
     @Volatile private var lastForegroundPkg = ""
-    @Volatile private var gatedFrames = 0L
     @Volatile private var lastAutoTransitionMs = 0L
     @Volatile private var lastPackageEventMs = 0L
     @Volatile private var gameOffSinceMs = 0L
@@ -206,12 +205,15 @@ object VisionTrust {
         }
     }
 
-    /** true when this frame must not be ingested at all */
-    @JvmStatic
-    fun shouldGateFrame(): Boolean {
-        if (com.assistant.vision.ForegroundGate.ownUiVisible()) { gatedFrames++; return true }
-        return false
-    }
+    // No62-D22: a second frame gate, shouldGateFrame(), used to live
+    // here. It had zero callers repo-wide (its own declaration was the
+    // only reference): the live frame gate is
+    // ForegroundGate.shouldSkipCapture(), called from OverlayService:268,
+    // which also counts and throttles-logs the skips. Keeping a second
+    // gate no caller used would only invite a future caller to gate
+    // through the wrong one. Its gatedFrames counter is removed with it
+    // — it was permanently 0, so diagnostics() printed a dead "gated=0"
+    // on every line.
 
     // ---------------- gap 2: age-decayed ball trust ----------------
     @Volatile private var lastBallStampMs = 0L
@@ -324,7 +326,6 @@ object VisionTrust {
     @JvmStatic
     fun diagnostics(): String =
         "fg=" + foregroundIsGame + " pkg=" + lastForegroundPkg +
-        " gated=" + gatedFrames +
         " ballTrust=" + (if (isGameForeground()) String.format("%.3f", ballTrust()) else "n/a(non-game)") +
         " lane=" + String.format("%.3f", laneConfidence()) +
         " stability=" + String.format("%.3f", directionStability()) +

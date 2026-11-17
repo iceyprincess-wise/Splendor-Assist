@@ -264,6 +264,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
         captureFrameCount++
 
         com.assistant.SplendorCaptureRecovery.markFrame()
+        // No62-D18: overlay liveness heartbeat — keeps
+        // OverlaySurvivalRegistry ACTIVE while capture delivers frames.
+        OverlaySurvivalEngine.heartbeat()
 
         if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
             image.close()
@@ -1170,7 +1173,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
         modMenuController?.hide()
         modMenuController = null
         SmartAssistRepository.clearPanic()
-        com.assistant.vision.OverlaySelfMask.clearPrefix("hud")
+        // No62-D7: clearAll() covers every published tag (hud, modmenu,
+        // any future publisher) instead of only "hud" — the mask must
+        // not outlive the service under any tag. clearPrefix("hud") is
+        // subsumed: clearAll() clears each key through clear(), which
+        // is what clearPrefix did per key.
+        com.assistant.vision.OverlaySelfMask.clearAll()
         com.assistant.RuntimeCoordinator.shutdown()
         OverlaySurvivalEngine.destroyed()
 

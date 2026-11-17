@@ -172,6 +172,16 @@ object DashboardInjector {
                     append(AdapterStatusRegistry.snapshot()).append("\n\n")
                     append(AdapterHealthCounts.snapshot()).append("\n\n")
                     append(SelfAuditRegistry.snapshot()).append("\n\n")
+                    // No62-D18 + No62-D8: the overlay's liveness
+                    // (OverlaySurvivalRegistry.state(), wired this round
+                    // — it had zero readers before) and the live
+                    // self-mask rect count (OverlaySelfMask.count(),
+                    // likewise unread before) share one line next to the
+                    // audit snapshot. Both are point-in-time reads on
+                    // the background refresh thread; count() reads a
+                    // ConcurrentHashMap size and state() is @Synchronized.
+                    append("Overlay survival: ").append(com.assistant.survival.OverlaySurvivalRegistry.state())
+                        .append(" | selfMask rects: ").append(com.assistant.vision.OverlaySelfMask.count()).append("\n\n")
                     append(com.assistant.recovery.RecoveryMetricsRegistry.snapshot())
                 }
                 

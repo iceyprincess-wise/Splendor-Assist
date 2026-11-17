@@ -23,9 +23,19 @@ object ForegroundGate {
     @Volatile private var lastActivity = "none"
 
     @JvmStatic
+    @Synchronized
     fun install(app: Application?) {
         if (installed || app == null) return
-        installed = true
+        // No62-D9: installed used to be set BEFORE
+        // registerActivityLifecycleCallbacks, so a throw there left the
+        // gate permanently uninstalled (installed blocked every retry)
+        // and push() never ran. Register first; only a successful
+        // registration marks the gate installed.
+        // No62-D10: install used to be unsynchronised, so two threads
+        // could both pass the installed check and register the callbacks
+        // twice. Lifecycle callbacks run on the main thread, so the
+        // double count would stay balanced — but the installed-flag race
+        // with D9 is real, and one annotation closes it.
         app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
             override fun onActivityStarted(a: Activity) {
                 started++
@@ -34,6 +44,10 @@ object ForegroundGate {
             }
             override fun onActivityStopped(a: Activity) {
                 if (started > 0) started--
+                // No62-D12: the old code left lastActivity naming the
+                // activity that just stopped, so stats() reported a
+                // "last" activity although no UI was visible at all.
+                if (started <= 0) lastActivity = "none"
                 push()
             }
             override fun onActivityCreated(a: Activity, b: Bundle?) {}
@@ -42,6 +56,7 @@ object ForegroundGate {
             override fun onActivitySaveInstanceState(a: Activity, b: Bundle) {}
             override fun onActivityDestroyed(a: Activity) {}
         })
+        installed = true
         push()
         log("ForegroundGate installed")
     }
@@ -49,7 +64,15 @@ object ForegroundGate {
     private fun push() {
         try {
             com.assistant.VisionTrust.setGameForeground(started <= 0)
-        } catch (_: Throwable) { }
+        } catch (t: Throwable) {
+            // No62-D11: the old code swallowed this silently, so a
+            // VisionTrust failure left the gate and VisionTrust diverged
+            // with no trace. The gate state (started) is still the
+            // truth at the read site — VisionTrust.isGameForeground()
+            // reads ownUiVisible() directly — but the push failure
+            // itself must be visible in the log.
+            log("ForegroundGate push failed: " + t.message)
+        }
     }
 
     /** true when this captured frame must be dropped before any processing */

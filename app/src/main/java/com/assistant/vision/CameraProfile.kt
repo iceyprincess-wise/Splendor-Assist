@@ -9,13 +9,19 @@ package com.assistant.vision
  * This object intentionally stores only proven runtime geometry.
  * Detector-specific scaling constants must be added only after
  * repository execution-path evidence proves the required formula.
+ *
+ * No62-D13: the profile is FIXED at DYNAMIC_WIDE. setProfile() and
+ * isDynamicWide() had zero callers repo-wide, DYNAMIC_WIDE appears
+ * nowhere else in the repo, and no settings surface, config or intent
+ * ever selects a camera profile — so the switching API was dead and
+ * not wireable without inventing a settings UI. It was removed
+ * (queue-clearing decision: PROVEN totally dead, confirmed not
+ * wireable). activeProfileId() stays: TrainedDetectionEngine passes
+ * it to native code, and it is the seam if a second profile ever
+ * exists. Do not re-add a setter without a real caller.
  */
 object CameraProfile {
     const val PROFILE_DYNAMIC_WIDE: String = "DYNAMIC_WIDE"
-
-    @Volatile
-    var activeProfile: String = PROFILE_DYNAMIC_WIDE
-        private set
 
     @Volatile
     var captureWidth: Int = 0
@@ -40,21 +46,31 @@ object CameraProfile {
         sourceWidth: Int,
         sourceHeight: Int
     ) {
-        this.captureWidth = captureWidth
-        this.captureHeight = captureHeight
-        this.sourceWidth = sourceWidth
-        this.sourceHeight = sourceHeight
+        // No62-D14: a non-positive dimension used to be stored silently,
+        // and every consumer then fell back silently (captureWidth > 0
+        // checks) — the stored state lied about the geometry. The only
+        // caller (OverlayService:912) already guards, so this is defence
+        // in depth: ignore the bad call and keep the previous scale.
+        if (captureWidth > 0 && captureHeight > 0 && sourceWidth > 0 && sourceHeight > 0) {
+            this.captureWidth = captureWidth
+            this.captureHeight = captureHeight
+            this.sourceWidth = sourceWidth
+            this.sourceHeight = sourceHeight
+        }
     }
-
-    @JvmStatic
-    fun setProfile(profile: String) {
-        activeProfile = profile
-    }
-
-    @JvmStatic
-    fun isDynamicWide(): Boolean = activeProfile == PROFILE_DYNAMIC_WIDE
 
     // SPLENDOR_V23A_CAMERA_HELPERS_BEGIN
+    // No62-D17: the 1650f/720f fallbacks are LANDSCAPE pitch geometry
+    // (aspect ~2.29, close to the 640x288 landscape fixtures the repo
+    // tests use). That contradicts the live capture geometry — the
+    // capture surface is portrait 288x640 on a 720x1600 device (see
+    // the captureToScreen comment below and OverlayService's
+    // ZERO_CAPTURE_GUARD, which forces 288x640). The fallbacks only
+    // matter while capture is unset (OverlayService sets the real scale
+    // at service start), but nothing in the repo proves which geometry
+    // the ~40 fallback consumers actually need in that window. Queued
+    // as Q62-1: verify the fallbacks against a live unset-capture
+    // session instead of guessing here.
     @JvmStatic
     fun captureWidthOrFallback(fallback: Float = 1650f): Float =
         if (captureWidth > 0) captureWidth.toFloat() else (if (sourceWidth > 0) sourceWidth.toFloat() else fallback)
@@ -77,33 +93,37 @@ object CameraProfile {
     // SPLENDOR_V23A_CAMERA_HELPERS_END
 
     // SPLENDOR_V25_CAMERA_PROOF_BEGIN
-    @Volatile
-    private var proofLogged: Boolean = false
+    // No62-D15: proofLogged used to be a @Volatile Boolean checked and
+    // set in two steps, so two threads could both pass the check and log
+    // the diagnostic twice. AtomicBoolean.compareAndSet claims the gate
+    // in one atomic step.
+    private val proofLogged = java.util.concurrent.atomic.AtomicBoolean(false)
 
     @JvmStatic
     fun logDiagnosticsOnce() {
-        if (!proofLogged) {
-            proofLogged = true
-            try {
-                com.assistant.diagnostic.RuntimeLogger.log("CAMERA_PROFILE " + diagnostics(), "CAMERA")
-            } catch (_: Throwable) {
-            }
+        if (!proofLogged.compareAndSet(false, true)) return
+        try {
+            com.assistant.diagnostic.RuntimeLogger.log("CAMERA_PROFILE " + diagnostics(), "CAMERA")
+        } catch (_: Throwable) {
+            // No62-D16: the flag used to be set BEFORE the log call, so
+            // a transient RuntimeLogger failure lost the diagnostic
+            // forever — the once-gate had already fired. Release the
+            // claim on failure so the next call retries instead.
+            proofLogged.set(false)
         }
     }
     // SPLENDOR_V25_CAMERA_PROOF_END
 
     @JvmStatic
     fun diagnostics(): String =
-        "profile=" + activeProfile +
+        "profile=" + PROFILE_DYNAMIC_WIDE +
             " capture=" + captureWidth + "x" + captureHeight +
             " source=" + sourceWidth + "x" + sourceHeight
 
     // SPLENDOR_V14A_CAMERA_PROFILE_ID_BEGIN
-    const val PROFILE_ID_NORMAL: Int = 0
     const val PROFILE_ID_DYNAMIC_WIDE: Int = 1
 
     @JvmStatic
-    fun activeProfileId(): Int =
-        if (activeProfile == PROFILE_DYNAMIC_WIDE) PROFILE_ID_DYNAMIC_WIDE else PROFILE_ID_NORMAL
+    fun activeProfileId(): Int = PROFILE_ID_DYNAMIC_WIDE
     // SPLENDOR_V14A_CAMERA_PROFILE_ID_END
 }
