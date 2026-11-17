@@ -21,17 +21,39 @@ object LogMirror {
     private const val OLD_FILE_NAME = "stroke_log.old.txt"
     private const val MAX_BYTES = 8L * 1024L * 1024L
     private const val QUEUE_CAPACITY = 4096
-    // Tags explicitly discovered in the pinned engine sources. RuntimeLogger hook captures every tag, not only this registry.
-        private data class LogRecord(val line: String, val completion: java.util.concurrent.CountDownLatch? = null)
+    // F42-D7: the old comment claimed these tags were "explicitly
+    // discovered in the pinned engine sources". The RuntimeLogger hook
+    // captures every tag, not only a registry - there is no pinned tag
+    // list, and none is needed. (The oddly indented LogRecord line below
+    // it is also fixed.)
+    private data class LogRecord(val line: String, val completion: java.util.concurrent.CountDownLatch? = null)
     private val queue = LinkedBlockingQueue<LogRecord>(QUEUE_CAPACITY)
+    // F42-D4: enqueue used to drop records silently (full queue, or a call
+    // before init) with no count anywhere. Every lost record is counted.
+    @Volatile private var droppedRecords = 0L
+    fun droppedCount(): Long = droppedRecords
+    // F42-D6: enqueue allocated a new SimpleDateFormat on every call.
+    // One ThreadLocal formatter, like RuntimeLogger's.
+    private val enqueueDateFormat = ThreadLocal.withInitial {
+        SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US)
+    }
     @Volatile private var appContext: Context? = null
     @Volatile private var started = false
     @Synchronized
     fun init(context: Context) {
         if (started) return
         appContext = context.applicationContext
-        val initialSink = openSink(context.applicationContext)
-        try { initialSink.first.close() } catch (_: Throwable) {}
+        // F42-D2: the probe below used to throw straight out of init(), and
+        // App.onCreate calls init() unguarded - a MediaStore failure at
+        // boot crashed the app before anything else ran. The probe only
+        // validates writability; the writer thread opens the sink lazily
+        // on the first record anyway, so a probe failure is non-fatal.
+        try {
+            val initialSink = openSink(context.applicationContext)
+            try { initialSink.first.close() } catch (_: Throwable) {}
+        } catch (t: Throwable) {
+            try { android.util.Log.w("LogMirror", "initial sink probe failed; writer will retry lazily", t) } catch (_: Throwable) {}
+        }
         started = true
         Thread({ writerLoop() }, "F47-LogMirror").apply { isDaemon = true; start() }
     }
@@ -53,8 +75,11 @@ object LogMirror {
 
     private fun enqueue(tag: String, priority: Int, msg: String, completion: java.util.concurrent.CountDownLatch?) {
         try {
-            if (!started) return
-            val now = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US).format(Date())
+            if (!started) {
+                droppedRecords++
+                return
+            }
+            val now = enqueueDateFormat.get()!!.format(Date())
             val level = when (priority) {
                 2 -> "V"
                 3 -> "D"
@@ -67,11 +92,31 @@ object LogMirror {
             val record = LogRecord("$now $level/$tag: $safeMessage\n", completion)
             if (!queue.offer(record)) {
                 if (completion != null) {
-                    queue.poll()?.completion?.countDown()
-                    queue.offer(record)
-                } else return
+                    // F42-D5: the old code polled one record, counted its
+                    // completion down, then ignored offer()'s return value -
+                    // under a racing producer the record could still be
+                    // dropped while the crash waiter sat out the full
+                    // 500ms. Retry the make-room step, and only release
+                    // the waiter once the record is placed or finally lost.
+                    var placed = false
+                    var attempts = 0
+                    while (!placed && attempts < 8) {
+                        val evicted = queue.poll() ?: break
+                        evicted.completion?.countDown()
+                        placed = queue.offer(record)
+                        attempts++
+                    }
+                    if (!placed) {
+                        droppedRecords++
+                        completion.countDown()
+                    }
+                } else {
+                    droppedRecords++
+                    return
+                }
             }
         } catch (_: Throwable) {
+            droppedRecords++
             completion?.countDown()
             // Logging must never affect gesture dispatch, including during shutdown.
         }
@@ -84,10 +129,17 @@ object LogMirror {
         var sinkFile: File? = null
         var byteCount = 0L
         while (!Thread.currentThread().isInterrupted) {
-            val record = try { queue.poll(1L, TimeUnit.SECONDS) } catch (_: InterruptedException) {
+            // F42-D3: the interrupt catch below used to `return`, skipping
+            // the output.close() after the loop and leaking the open sink.
+            // It breaks instead so the trailing close always runs.
+            val record: LogRecord?
+            try {
+                record = queue.poll(1L, TimeUnit.SECONDS)
+            } catch (_: InterruptedException) {
                 Thread.currentThread().interrupt()
-                return
-            } ?: continue
+                break
+            }
+            if (record == null) continue
             try {
                 val line = record.line
                 if (output == null) {
@@ -164,9 +216,18 @@ object LogMirror {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, OLD_FILE_NAME)
                 put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
             }
+            // F42-D1: when the old file already existed, the old code
+            // updated OLD with its own name (a no-op) and never renamed
+            // the current uri to old - then inserted a NEW file named
+            // stroke_log.txt. Result: TWO stroke_log.txt entries, and
+            // findDownload (no ORDER BY) returns an arbitrary one, so
+            // openSink could keep appending to the rotated-away file or
+            // the new one unpredictably. Delete the stale old file first,
+            // then rename the current uri to old - exactly one of each.
             if (old != null) {
-                if (resolver.update(old, oldValues, null, null) <= 0) throw IllegalStateException("MediaStore old-log rename failed")
-            } else if (resolver.update(uri, oldValues, null, null) <= 0) {
+                if (resolver.delete(old, null, null) <= 0) throw IllegalStateException("MediaStore old-log delete failed")
+            }
+            if (resolver.update(uri, oldValues, null, null) <= 0) {
                 throw IllegalStateException("MediaStore rotate failed")
             }
             val replacement = ContentValues().apply {
