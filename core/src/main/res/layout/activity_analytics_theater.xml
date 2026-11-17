@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:padding="16dp">
     <ListView
-        android:id="@+id/matchHistoryList"
+        android:id="@+id/adapterHealthList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />

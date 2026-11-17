@@ -10,11 +10,18 @@ import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.assistant.diagnostic.registry.AdapterHealthRegistry
+import com.assistant.diagnostic.registry.AdapterHealthSnapshot
 import com.assistant.storage.SplendorStorageRoot
 
 class AnalyticsTheaterActivity : AppCompatActivity() {
 
-    private var matchHistoryList: ListView? = null
+    // L14-D1 (no42): renamed from matchHistoryList — the list shows live
+    // adapter-health analytics, not match history, and the old name lied
+    // about the content. Renamed together with the layout ID
+    // (@+id/adapterHealthList) and this findViewById call; renaming the
+    // layout ID alone was proven to make findViewById return null and
+    // silently kill the list.
+    private var adapterHealthList: ListView? = null
     private var saveButton: Button? = null
     private var deleteButton: Button? = null
 
@@ -24,7 +31,7 @@ class AnalyticsTheaterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_analytics_theater)
         try {
-            matchHistoryList = findViewById(R.id.matchHistoryList)
+            adapterHealthList = findViewById(R.id.adapterHealthList)
             saveButton = findViewById(R.id.btnSave)
             deleteButton = findViewById(R.id.btnDelete)
             saveButton?.setOnClickListener { saveSnapshot() }
@@ -39,8 +46,8 @@ class AnalyticsTheaterActivity : AppCompatActivity() {
     override fun onDestroy() {
         saveButton?.setOnClickListener(null)
         deleteButton?.setOnClickListener(null)
-        matchHistoryList?.adapter = null
-        matchHistoryList = null
+        adapterHealthList?.adapter = null
+        adapterHealthList = null
         saveButton = null
         deleteButton = null
         currentLines = emptyList()
@@ -49,28 +56,57 @@ class AnalyticsTheaterActivity : AppCompatActivity() {
 
     // The list is live adapter-health analytics. No match-history data
     // source exists anywhere in the repo (only this layout's view ID
-    // mentions MatchHistory), so nothing here is a match record.
+    // mentioned MatchHistory, renamed in no42), so nothing here is a
+    // match record.
     private fun loadAnalytics() {
-        try {
-            val snapshots = AdapterHealthRegistry.getAllLive()
-            currentLines = if (snapshots.isEmpty()) {
-                listOf(getString(R.string.splendor_no_adapter_data))
-            } else {
-                val now = System.currentTimeMillis()
-                snapshots.sortedBy { it.adapterName }.map { snap ->
-                    val status = AdapterHealthRegistry.effectiveStatus(snap)
-                    val ageSec = if (snap.lastHeartbeat > 0) (now - snap.lastHeartbeat) / 1000 else -1
-                    val age = if (ageSec >= 0) "age ${ageSec}s" else "never"
-                    "[$status] ${snap.adapterName} — $age, errors ${snap.errorCount}"
+        // no42: getAllLive() re-reads the persistence file on every call,
+        // so the registry read runs on a background thread — the old code
+        // called it from onCreate (main thread) and did file I/O there.
+        // Only the read is off-thread; line formatting and the adapter
+        // swap stay on the main thread, and a load that finishes after
+        // the Activity is gone is dropped. The load is user-initiated
+        // (screen open / after a delete), never a frame path, so one
+        // short-lived thread per load is enough; no polling.
+        Thread {
+            val snapshots: List<AdapterHealthSnapshot>? = try {
+                AdapterHealthRegistry.getAllLive()
+            } catch (t: Throwable) {
+                RuntimeLogger.log("AnalyticsTheaterActivity: load failed: ${t.message}", "AnalyticsTheaterActivity")
+                null
+            }
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                try {
+                    currentLines = if (snapshots == null) {
+                        listOf(getString(R.string.splendor_analytics_load_failed))
+                    } else {
+                        formatLines(snapshots)
+                    }
+                    adapterHealthList?.adapter =
+                        ArrayAdapter(this, android.R.layout.simple_list_item_1, currentLines)
+                } catch (t: Throwable) {
+                    RuntimeLogger.log("AnalyticsTheaterActivity: load failed: ${t.message}", "AnalyticsTheaterActivity")
+                    currentLines = listOf(getString(R.string.splendor_analytics_load_failed))
+                    adapterHealthList?.adapter =
+                        ArrayAdapter(this, android.R.layout.simple_list_item_1, currentLines)
                 }
             }
-            matchHistoryList?.adapter =
-                ArrayAdapter(this, android.R.layout.simple_list_item_1, currentLines)
-        } catch (t: Throwable) {
-            RuntimeLogger.log("AnalyticsTheaterActivity: load failed: ${t.message}", "AnalyticsTheaterActivity")
-            currentLines = listOf(getString(R.string.splendor_analytics_load_failed))
-            matchHistoryList?.adapter =
-                ArrayAdapter(this, android.R.layout.simple_list_item_1, currentLines)
+        }.start()
+    }
+
+    // Row text lives in resources (CrashInspectorActivity pattern: every
+    // user-visible string via getString). New strings: splendor_analytics_row,
+    // splendor_analytics_age, splendor_analytics_age_never.
+    private fun formatLines(snapshots: List<AdapterHealthSnapshot>): List<String> {
+        if (snapshots.isEmpty()) {
+            return listOf(getString(R.string.splendor_no_adapter_data))
+        }
+        val now = System.currentTimeMillis()
+        return snapshots.sortedBy { it.adapterName }.map { snap ->
+            val status = AdapterHealthRegistry.effectiveStatus(snap)
+            val ageSec = if (snap.lastHeartbeat > 0) (now - snap.lastHeartbeat) / 1000 else -1
+            val age = if (ageSec >= 0) getString(R.string.splendor_analytics_age, ageSec) else getString(R.string.splendor_analytics_age_never)
+            getString(R.string.splendor_analytics_row, status, snap.adapterName, age, snap.errorCount)
         }
     }
 
@@ -84,11 +120,13 @@ class AnalyticsTheaterActivity : AppCompatActivity() {
             return
         }
         try {
-            val name = "analytics_snapshot_${System.currentTimeMillis()}.txt"
+            // no42: one timestamp for the file name and the header (the old
+            // code called currentTimeMillis() twice, so the two could differ
+            // by a few ms). Header text is a resource now.
+            val nowMs = System.currentTimeMillis()
+            val name = "analytics_snapshot_${nowMs}.txt"
             val file = SplendorStorageRoot.file(name)
-            val header = "Splendor Assist analytics snapshot, ${System.currentTimeMillis()}\n" +
-                "Source: live adapter-health snapshots (AdapterHealthRegistry.getAllLive()). " +
-                "No match-history source exists in this app.\n\n"
+            val header = getString(R.string.splendor_analytics_snapshot_header, nowMs)
             file.writeText(header + currentLines.joinToString("\n"))
             Toast.makeText(this, R.string.splendor_analytics_saved, Toast.LENGTH_SHORT).show()
         } catch (t: Throwable) {
