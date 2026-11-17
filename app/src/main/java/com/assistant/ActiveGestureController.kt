@@ -479,7 +479,16 @@ class ActiveGestureController(
                 9999f
             }
 
-        val agilityBuffer = FloatArray(6)
+        // V4: 10-float outBuffer (escapeAngle [6], burstIntensity [7],
+        // threatLevel [8], predictedDist [9] added). Opponent velocity is
+        // passed as 0f/0f below — see the call-site note: TrackedPlayer
+        // velocity is a per-frame EMA displacement, not px/s, and there is
+        // no principled conversion into this call site's normalised 0..15
+        // velocity space, so the V4 prediction here uses the player's own
+        // motion and degrades gracefully. The full V4 prediction lives on
+        // the AgilityContributor path, where RuntimeEntity
+        // velocityXPerSecond is real px/s.
+        val agilityBuffer = FloatArray(10)
         /* SPLENDOR_AGILITY_VELOCITY_UNITS_V1 - the native engine declares a
            0..15 velocity space, but speedComp.executionBoost is a 10..35 boost
            value. Feeding it raw pinned the engine's speed term at its 1.0
@@ -497,10 +506,23 @@ class ActiveGestureController(
         // Gate on native readiness: with the library unloaded the buffer
         // stays all zeros. Use an explicit neutral result instead of
         // reading fabricated zeros as a real measurement.
+        // V4 call: oppVx/oppVy are 0f — TrackedPlayer.velocityX/Y is an
+        // EMA-smoothed PER-FRAME displacement (VELOCITY_SMOOTHING 0.35),
+        // not px/s, and this call site's velocity space is a normalised
+        // 0..15 boost scale with no per-opponent px/s mapping, so there is
+        // no principled conversion into that space (converting via a
+        // nominal 60fps and the capture diagonal would mix two different
+        // scales inside the closing-speed dot product). Passing 0 lets the
+        // V4 prediction use the player's own motion and degrades
+        // gracefully; the full V4 prediction lives on the contributor path.
+        // leadTimeSec 0.18s / aggressionFactor 1.35 are the V4 defaults —
+        // they must match AgilityContributor's LEAD_TIME_SEC /
+        // AGGRESSION_FACTOR and the C fallbacks in native_agility_physics.c.
         val agilityReady = NativeBridge.nativeAgilityPhysics(
             agilityVelocityUnits, agilityOpponentDistance, movementAngleDegrees,
             safeConfidence, safeAngleRatio,
             agilityPlayerX, agilityPlayerY, agilityOppX, agilityOppY,
+            0f, 0f, 0.18f, 1.35f,
             agilityBuffer,
             100.0f, 220.0f, 500.0f, 1200.0f,
             15.0f, 4.0f, 6.0f, 3.0f, 2.0f,
@@ -516,14 +538,22 @@ class ActiveGestureController(
             controlRetentionBoost = agilityBuffer[1],
             turnAssist = agilityBuffer[2],
             shieldAngleDegrees = agilityBuffer[3],
-            shieldDurationMs = agilityBuffer[4].toLong()
+            shieldDurationMs = agilityBuffer[4].toLong(),
+            escapeAngleDegrees = agilityBuffer[6],
+            burstIntensity = agilityBuffer[7],
+            threatLevel = agilityBuffer[8],
+            predictedDist = agilityBuffer[9]
         ) else AgilityResult(
             shieldActive = false,
             stabilityBoost = 0f,
             controlRetentionBoost = 0f,
             turnAssist = 0f,
             shieldAngleDegrees = 0f,
-            shieldDurationMs = 0L
+            shieldDurationMs = 0L,
+            escapeAngleDegrees = 0f,
+            burstIntensity = 0f,
+            threatLevel = 0f,
+            predictedDist = 0f
         )
 
         val agilityShieldRad =
@@ -532,12 +562,22 @@ class ActiveGestureController(
             kotlin.math.cos(agilityShieldRad).toFloat().let { if (it.isFinite()) it else 0f }
         val agilityShieldDirY =
             kotlin.math.sin(agilityShieldRad).toFloat().let { if (it.isFinite()) it else 0f }
-        // Normalized shield-duration multiplier (engine range 40..124 ms -> 1.00..1.60).
+        // V4 escape direction: the tangential burst-dribble exit vector.
+        // Same unit-vector construction as the shield direction, so the
+        // burst routing below can swap one for the other without changing
+        // the gesture magnitude.
+        val agilityEscapeRad =
+            Math.toRadians(agility.escapeAngleDegrees.toDouble())
+        val agilityEscapeDirX =
+            kotlin.math.cos(agilityEscapeRad).toFloat().let { if (it.isFinite()) it else 0f }
+        val agilityEscapeDirY =
+            kotlin.math.sin(agilityEscapeRad).toFloat().let { if (it.isFinite()) it else 0f }
+        // Normalized shield-duration multiplier (V4 engine range 45..160 ms -> 1.00..1.60).
         val agilityDurationScale =
             (
                 1.0f +
                 (
-                    (agility.shieldDurationMs.toFloat().coerceIn(40f, 124f) - 40f) / 84f
+                    (agility.shieldDurationMs.toFloat().coerceIn(45f, 160f) - 45f) / 115f
                 ) * 0.6f
             ).coerceIn(1.0f, 1.6f)
         val shieldAuthority =
@@ -888,6 +928,13 @@ class ActiveGestureController(
                     shieldAuthority +
                     (agility.controlRetentionBoost * 4.0f) +
                     (agility.turnAssist * 2.0f) +
+                    // V4: the combined proximity + closing-speed threat
+                    // belongs in the arbitration stability sum on the same
+                    // pattern as the other agility terms — a high threat
+                    // under an active shield raises the stability weight of
+                    // the shielded gesture, so it is not outvoted by a
+                    // passing lane that ignores the defender rushing in.
+                    (agility.threatLevel * 2.0f) +
                     telemetryAuthority +
                     (antiCutbackGain * 0.2f) +
                     (evadeActive * 0.2f) +
@@ -904,20 +951,34 @@ class ActiveGestureController(
         // active shield, lead the gesture target along the computed shield
         // vector. Magnitude is preserved, so the joystick deflection the engine
         // affects is unchanged; only its direction is corrected to shield the ball.
+        // V4 burst routing (per-gesture rule — AGC runs once per discrete
+        // gesture, not per frame, so there is no latch here; the contributor
+        // path holds the hysteresis latch instead): a burst exit
+        // (burstIntensity > 0.75) routes along the escape vector, an active
+        // shield along the shield vector, otherwise the arbitration target
+        // stands. The 0.75 threshold matches AgilityBurstLatch.BURST_ON so
+        // both paths agree on when a burst is happening.
         val finalDeltaX = finalX - startX
         val finalDeltaY = finalY - startY
         val finalMagnitude =
             kotlin.math.hypot(finalDeltaX.toDouble(), finalDeltaY.toDouble()).toFloat()
+        val burstActiveForTarget =
+            agility.shieldActive && agility.burstIntensity > 0.75f &&
+                agilityEscapeDirX.isFinite() && agilityEscapeDirY.isFinite()
         val shieldActiveForTarget =
             agility.shieldActive && agilityShieldDirX.isFinite() && agilityShieldDirY.isFinite()
         val routedEndX =
-            if (shieldActiveForTarget && finalMagnitude > 0.001f) {
-                startX + agilityShieldDirX * finalMagnitude
-            } else finalX
+            when {
+                burstActiveForTarget && finalMagnitude > 0.001f -> startX + agilityEscapeDirX * finalMagnitude
+                shieldActiveForTarget && finalMagnitude > 0.001f -> startX + agilityShieldDirX * finalMagnitude
+                else -> finalX
+            }
         val routedEndY =
-            if (shieldActiveForTarget && finalMagnitude > 0.001f) {
-                startY + agilityShieldDirY * finalMagnitude
-            } else finalY
+            when {
+                burstActiveForTarget && finalMagnitude > 0.001f -> startY + agilityEscapeDirY * finalMagnitude
+                shieldActiveForTarget && finalMagnitude > 0.001f -> startY + agilityShieldDirY * finalMagnitude
+                else -> finalY
+            }
         val routedDuration =
             (boostedDuration * agilityDurationScale).toLong().coerceAtLeast(15L)
 
@@ -951,6 +1012,14 @@ class ActiveGestureController(
             "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()}",
             "SMART_ASSIST"
         )
+        // V4 burst log: the burst exit is the one event on this path the
+        // theater/dashboard can read (predictedDist's consumer here).
+        if (burstActiveForTarget) {
+            RuntimeLogger.log(
+                "Agility BURST exit threat=${agility.threatLevel} predictedDist=${agility.predictedDist} burst=${agility.burstIntensity}",
+                "SMART_ASSIST"
+            )
+        }
     }
 
     fun emergencyClearanceVector(

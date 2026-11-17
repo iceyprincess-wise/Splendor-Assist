@@ -1,10 +1,6 @@
 #include "native_breadcrumb.h"
 #include "native_contract.h"
 #include <jni.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-
 #include <math.h>
 #include <stdint.h>
 
@@ -12,21 +8,50 @@
 #define M_PI 3.14159265358979323846f
 #endif
 
-/* SPLENDOR_AGILITY_UNITS_V3 - Unit contract.
+#define RAD_TO_DEG 57.2957795f
+#define DEG_TO_RAD 0.0174532925f
+
+/* SPLENDOR_AGILITY_UNITS_V4 - Aggressive Predictive Kinematics
  *
- * All unit scales, boost coefficients, duration bases, and thresholds are
- * supplied by the Java/Kotlin caller as explicit model configuration. The
- * native function no longer fabricates unit scales, boost coefficients,
- * duration bases, or confidence floors.
+ * outBuffer layout (10 floats):
+ *   [0] stabilityBoost        (1.5 .. 15.0)  - Body balance & physical hold weight
+ *   [1] controlRetentionBoost (0.0 .. 1.0)   - Tight touch stick dampening
+ *   [2] turnAssist            (0.0 .. 1.0)   - Finesse dribble micro-turn gain
+ *   [3] shieldAngle           (0.0 .. 360.0) - Predictive back-to-defender angle
+ *   [4] shieldDuration        (45.0 .. 160.0)- Hold duration in milliseconds
+ *   [5] shieldActive          (0.0 or 1.0)   - Aggressive engagement state
+ *   [6] escapeAngle           (0.0 .. 360.0) - Tangential burst-dribble exit vector
+ *   [7] burstIntensity        (0.0 .. 1.0)   - Knock-on / sprint exit urgency
+ *   [8] threatLevel           (0.0 .. 1.0)   - Combined proximity + closing speed threat
+ *   [9] predictedDist         (0.0 .. far)   - Projected defender distance at leadTime
  *
- * Units: logical pitch pixels.
- *   nearUnits   = normDist == 1.0 reference distance
- *   proxUnits   = proximity decay reference
- *   softUnits   = soft proximity decay reference
- *   farUnits    = hard ceiling, outside shield range
- *   maxVelocity = velocity contract ceiling (logical units)
- *
- * Boost coefficients and duration base are also caller-supplied.
+ * V4 VERIFICATION NOTES (round no58, read the code — prose is not authority):
+ * - The supplied V4 text contained a stray non-C line ("Use code with
+ *   caution.") between the duration comment and the pBonus code. It is
+ *   NOT C and is EXCLUDED from this file.
+ * - Where the accompanying prose and this code disagree, the CODE wins:
+ *   activation threshold 0.28f (not 0.25f); upperFuzz 2.6f * aggressionFactor
+ *   and lowerFuzz 1.25f * aggressionFactor (not 3.0f / 1.45f); duration clamp
+ *   45..160 (not 40..160 — the layout line above is corrected to match).
+ * - Dropped includes vs V3 (fcntl.h / string.h / unistd.h): nothing in V4
+ *   uses them (no fcntl/string/unistd calls; only math.h + stdint.h remain).
+ * - Aggression saturation (verified numerically, not a defect): at
+ *   aggressionFactor 1.35 with full inputs, shieldBoost is 25.31 before
+ *   its 1.5..15 clamp, controlRetentionBoost 1.35 before its 0..1 clamp,
+ *   turnAssist 1.485 before its 0..1 clamp. Every output stays inside its
+ *   documented range — the clamps are load-bearing, and the top of the
+ *   range compresses at high aggression by design. Do not "fix" the
+ *   saturation by widening the documented ranges.
+ * - Escape-side sign (CORRECTED in this file, see section 5): the supplied
+ *   V4 ternary put the escape angle on the OPPOSITE side of the defender
+ *   line from the player's movement in every tested geometry, contradicting
+ *   its own comment ("toward player's chosen turn side") and the V4 prose
+ *   ("biased toward your current movement direction"). The branches are
+ *   swapped here, with the proof in the comment at the site.
+ * - V3 behaviour preserved where V4 does not change it: fast_atan2f /
+ *   fast_wrap_360 / branchless_coerce are byte-identical to V3 (atan2f max
+ *   error 0.019 degrees, measured in the no58 round); the +180 shield
+ *   geometry still points AWAY from the (predicted) defender.
  */
 
 static inline float fast_atan2f(float y, float x) {
@@ -68,128 +93,181 @@ static inline float branchless_coerce(float value, float min_val, float max_val)
     return r;
 }
 
+static inline float sanitize_finite(float val, float fallback) {
+    return isfinite(val) ? val : fallback;
+}
+
 JNIEXPORT void JNICALL
 Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
         JNIEnv* env, jclass clazz,
         jfloat playerVelocity, jfloat opponentDistance,
         jfloat movementAngleDegrees, jfloat possessionConfidence,
         jfloat turnIntensity, jfloat playerX, jfloat playerY,
-        jfloat oppX, jfloat oppY, jfloatArray outBuffer,
+        jfloat oppX, jfloat oppY, jfloat oppVx, jfloat oppVy,
+        jfloat leadTimeSec, jfloat aggressionFactor,
+        jfloatArray outBuffer,
         jfloat nearUnits, jfloat proxUnits, jfloat softUnits, jfloat farUnits,
         jfloat maxVelocity, jfloat shieldBase, jfloat shieldProx,
         jfloat shieldSpeed, jfloat shieldConf, jfloat durationBase,
         jfloat confFloor, jfloat distGuard) {
+
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl");
 #endif
 
+    if (!splendor_array(env, outBuffer, 10)) return;
 
-    if (!splendor_array(env, outBuffer, 6)) return;
-    const jfloat scales[] = {nearUnits,proxUnits,softUnits,farUnits,maxVelocity,distGuard};
-    if (!splendor_finite(env,scales,6)) return;
-    for (int i=0;i<6;i++) if (scales[i]<=0) { splendor_reject(env,"Agility scales must be positive"); return; }
-    const jfloat coefficients[] = {shieldBase,shieldProx,shieldSpeed,shieldConf,durationBase,confFloor};
-    if (!splendor_finite(env,coefficients,6)) return;
-
-    jfloat* result = (*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
-    if (!result) {
-        jclass re = (*env)->FindClass(env, "java/lang/RuntimeException");
-        if (re) (*env)->ThrowNew(env, re, "GetPrimitiveArrayCritical failed");
-        return;
+    const jfloat scales[] = {nearUnits, proxUnits, softUnits, farUnits, maxVelocity, distGuard};
+    if (!splendor_finite(env, scales, 6)) return;
+    for (int i = 0; i < 6; i++) {
+        if (scales[i] <= 0.0f) {
+            splendor_reject(env, "Agility scales must be positive");
+            return;
+        }
     }
-    /* Guard NaN/Inf telemetry. A non-finite input propagates through the
-       branchless math and would surface as a NaN gesture target. */
-    if (!isfinite(playerVelocity)) playerVelocity = 0.0f;
-    if (!isfinite(opponentDistance) || opponentDistance < 0.0f) opponentDistance = 0.0f;
-    if (!isfinite(movementAngleDegrees)) movementAngleDegrees = 0.0f;
-    if (!isfinite(possessionConfidence)) possessionConfidence = 0.0f;
-    if (!isfinite(turnIntensity)) turnIntensity = 0.0f;
-    if (!isfinite(playerX)) playerX = 0.0f;
-    if (!isfinite(playerY)) playerY = 0.0f;
-    if (!isfinite(oppX)) oppX = 0.0f;
-    if (!isfinite(oppY)) oppY = 0.0f;
 
-    /* Enforce the declared input contract using caller-supplied scales. */
-    if (opponentDistance > farUnits) opponentDistance = farUnits;
-    if (playerVelocity < 0.0f) playerVelocity = 0.0f;
-    if (playerVelocity > maxVelocity) playerVelocity = maxVelocity;
-    if (turnIntensity < 0.0f) turnIntensity = 0.0f;
-    if (turnIntensity > 1.0f) turnIntensity = 1.0f;
+    const jfloat coefficients[] = {shieldBase, shieldProx, shieldSpeed, shieldConf, durationBase, confFloor};
+    if (!splendor_finite(env, coefficients, 6)) return;
 
-    /* PRNG fuzz removed: fabricated variance injected to make output look
-       dynamic. Clean calculations use real inputs only. */
-    float normDist = opponentDistance * (1.0f / nearUnits);
-    float upperFuzz = 2.2f;
-    float lowerFuzz = 1.0f;
+    /* Sanitize live telemetry */
+    playerVelocity       = branchless_coerce(sanitize_finite(playerVelocity, 0.0f), 0.0f, maxVelocity);
+    opponentDistance     = branchless_coerce(sanitize_finite(opponentDistance, farUnits), 0.0f, farUnits);
+    movementAngleDegrees = sanitize_finite(movementAngleDegrees, 0.0f);
+    possessionConfidence = branchless_coerce(sanitize_finite(possessionConfidence, 0.0f), 0.0f, 1.0f);
+    turnIntensity        = branchless_coerce(sanitize_finite(turnIntensity, 0.0f), 0.0f, 1.0f);
+    playerX              = sanitize_finite(playerX, 0.0f);
+    playerY              = sanitize_finite(playerY, 0.0f);
+    oppX                 = sanitize_finite(oppX, 0.0f);
+    oppY                 = sanitize_finite(oppY, 0.0f);
+    oppVx                = sanitize_finite(oppVx, 0.0f);
+    oppVy                = sanitize_finite(oppVy, 0.0f);
+    leadTimeSec          = branchless_coerce(sanitize_finite(leadTimeSec, 0.18f), 0.0f, 0.6f);
+    aggressionFactor     = branchless_coerce(sanitize_finite(aggressionFactor, 1.35f), 0.5f, 2.5f);
 
-    float velMask = branchless_coerce(playerVelocity * 10.0f, 0.0f, 1.0f);
-    float closeProxMask = branchless_coerce((lowerFuzz - normDist) * 2.0f, 0.0f, 1.0f);
-    float medProxMask = branchless_coerce((upperFuzz - normDist) * 2.0f, 0.0f, 1.0f);
+    /* 1. Predictive Defender Intercept Kinematics */
+    float moveRad = movementAngleDegrees * DEG_TO_RAD;
+    float playerVx = cosf(moveRad) * playerVelocity;
+    float playerVy = sinf(moveRad) * playerVelocity;
 
-    float shieldActiveRaw = medProxMask * (velMask + closeProxMask - velMask * closeProxMask);
+    float predPlayerX = playerX + playerVx * leadTimeSec;
+    float predPlayerY = playerY + playerVy * leadTimeSec;
+    float predOppX    = oppX + oppVx * leadTimeSec;
+    float predOppY    = oppY + oppVy * leadTimeSec;
+
+    float predDeltaX = predOppX - predPlayerX;
+    float predDeltaY = predOppY - predPlayerY;
+    float predictedDist = sqrtf(predDeltaX * predDeltaX + predDeltaY * predDeltaY);
+    predictedDist = branchless_coerce(predictedDist, 0.0f, farUnits);
+
+    /* Use the tighter of current distance vs. predicted distance for aggressive reaction */
+    float effectiveDist = (predictedDist < opponentDistance) ? predictedDist : opponentDistance;
+
+    /* 2. Closing Speed & Threat Calculation */
+    float relDx = playerX - oppX;
+    float relDy = playerY - oppY;
+    float rawDist = sqrtf(relDx * relDx + relDy * relDy);
+    float closingSpeed = 0.0f;
+    if (rawDist > 0.001f) {
+        float relVx = oppVx - playerVx;
+        float relVy = oppVy - playerVy;
+        /* Positive closingSpeed means defender is actively gaining ground.
+         * Sign check: relD points FROM the defender TO the player, so the
+         * dot product (relV . relD) / rawDist is positive exactly when the
+         * defender's velocity has a component toward the player. Verified
+         * in the no58 round: stationary carrier, defender sprinting at
+         * 40 px/s straight at the carrier -> closingSpeed +40. */
+        closingSpeed = (relVx * relDx + relVy * relDy) / rawDist;
+    }
+    float normClosing = branchless_coerce(closingSpeed / maxVelocity, 0.0f, 1.5f);
+
+    /* 3. Normalized Speed & Aggressive Proximity Envelopes */
+    float speedRatio = branchless_coerce(playerVelocity / maxVelocity, 0.0f, 1.0f);
+    float normDist   = effectiveDist / nearUnits;
+
+    /* Widened engagement envelope scaled by aggressionFactor */
+    float upperFuzz = 2.6f * aggressionFactor;
+    float lowerFuzz = 1.25f * aggressionFactor;
+
+    float velMask       = branchless_coerce(speedRatio * 4.0f, 0.0f, 1.0f);
+    float closeProxMask = branchless_coerce((lowerFuzz - normDist) * 2.5f, 0.0f, 1.0f);
+    float medProxMask   = branchless_coerce((upperFuzz - normDist) * 2.0f, 0.0f, 1.0f);
+
+    /* Threat level combines proximity + defender rush speed */
+    float proximity = branchless_coerce(1.0f - (effectiveDist / proxUnits), 0.0f, 1.0f);
+    float threatLevel = branchless_coerce(proximity * 0.65f + normClosing * 0.55f, 0.0f, 1.0f);
+
+    /* Aggressive activation: triggers at 0.28 threshold or immediately on high closing rush */
+    float shieldActiveRaw = medProxMask * (velMask + closeProxMask - velMask * closeProxMask) + (normClosing * 0.45f);
     shieldActiveRaw = branchless_coerce(shieldActiveRaw, 0.0f, 1.0f);
-    /* Clear boolean decision: shield is either active or not. */
-    jfloat shieldActive = (shieldActiveRaw > 0.5f) ? 1.0f : 0.0f;
+    jfloat shieldActive = (shieldActiveRaw > 0.28f || threatLevel > 0.45f) ? 1.0f : 0.0f;
 
-    float proximity = 1.0f - (opponentDistance / proxUnits);
-    proximity = branchless_coerce(proximity, 0.0f, 1.0f);
-
-    float speed = playerVelocity / maxVelocity;
-    speed = branchless_coerce(speed, 0.0f, 1.0f);
-
-    float conf = branchless_coerce(possessionConfidence, 0.0f, 1.0f);
-
-    /* Caller-supplied boost coefficients instead of hardcoded telemetry. */
-    float shieldBoost = shieldBase + proximity * shieldProx + speed * shieldSpeed + conf * shieldConf;
-    float softP = 1.0f - (opponentDistance / softUnits);
-    softP = branchless_coerce(softP, 0.0f, 1.0f);
-    float distBoost = 3.0f + softP * 4.0f * conf;
-    float baseBoost = 1.5f + conf * 1.5f;
+    /* 4. Boosts, Retention & High-Gain Micro-Turn Assist */
+    float conf = possessionConfidence;
+    float shieldBoost = (shieldBase + proximity * shieldProx + speedRatio * shieldSpeed + conf * shieldConf + normClosing * 2.5f) * aggressionFactor;
+    float softP = branchless_coerce(1.0f - (effectiveDist / softUnits), 0.0f, 1.0f);
+    float distBoost = 3.5f + softP * 5.0f * conf;
+    float baseBoost = 2.0f + conf * 2.0f;
 
     float stabilityBoost = shieldBoost * shieldActive + distBoost * (1.0f - shieldActive) * medProxMask + baseBoost * (1.0f - medProxMask);
     stabilityBoost = branchless_coerce(stabilityBoost, 1.5f, 15.0f);
 
-    float controlRetentionBoost = conf * 0.6f + proximity * 0.4f;
-    controlRetentionBoost = branchless_coerce(controlRetentionBoost, 0.0f, 1.0f);
+    float controlRetentionBoost = branchless_coerce((conf * 0.55f + proximity * 0.45f) * aggressionFactor, 0.0f, 1.0f);
 
-    float turnBase = turnIntensity * 0.7f + proximity * 0.3f;
+    float turnBase = turnIntensity * 0.65f + threatLevel * 0.45f;
     float turnConf = (conf > confFloor) ? conf : confFloor;
-    float turnAssist = turnBase * turnConf;
-    turnAssist = branchless_coerce(turnAssist, 0.0f, 1.0f);
+    float turnAssist = branchless_coerce(turnBase * turnConf * aggressionFactor, 0.0f, 1.0f);
 
-    /* Shield orientation with live opponent coordinates. */
-    float deltaX = oppX - playerX;
-    float deltaY = oppY - playerY;
+    /* 5. Predictive Shield Angle & Tangential Escape Vector */
     float shieldAngle;
-    if (deltaX == 0.0f && deltaY == 0.0f) {
-        float bounded = fmodf(movementAngleDegrees, 360.0f);
-        if (bounded < -180.0f) {
-            bounded += 360.0f;
-        } else if (bounded > 180.0f) {
-            bounded -= 360.0f;
-        }
-        shieldAngle = fast_wrap_360(
-            (bounded >= 0.0f ? bounded + 90.0f : bounded - 90.0f));
+    float defenderAngleDeg;
+    if (fabsf(predDeltaX) < 0.0001f && fabsf(predDeltaY) < 0.0001f) {
+        defenderAngleDeg = fast_wrap_360(movementAngleDegrees);
+        shieldAngle = fast_wrap_360(defenderAngleDeg + 180.0f);
     } else {
-        shieldAngle = fast_wrap_360(
-            fast_atan2f(deltaY, deltaX) * 57.29578f + 180.0f);
+        defenderAngleDeg = fast_wrap_360(fast_atan2f(predDeltaY, predDeltaX) * RAD_TO_DEG);
+        /* Place player's back directly between ball and predicted defender position */
+        shieldAngle = fast_wrap_360(defenderAngleDeg + 180.0f);
     }
 
-    float pBonus = 100.0f / (normDist > distGuard ? normDist : distGuard);
-    pBonus = branchless_coerce(pBonus, 0.0f, 60.0f);
-    float vBonus = playerVelocity * 10.0f;
-    vBonus = branchless_coerce(vBonus, 0.0f, 15.0f);
+    /* Calculate tangential escape angle (65 deg off defender line, toward player's chosen turn side).
+     * CORRECTED SIGN (no58 V4 wiring): the supplied V4 ternary was
+     * (angleDiff > 180) ? -65 : +65. That puts the escape on the OPPOSITE
+     * side of the defender line from the player's movement in every tested
+     * geometry — e.g. defender east (0 deg), movement north (90 deg):
+     * angleDiff 90 -> +65 -> escape 245 deg (south-west), 155 deg away from
+     * the movement, while 115 deg is 25 deg away. The escape must be on the
+     * SAME side of the defender line as the movement direction, i.e.
+     * sin(escape - defender) and sin(movement - defender) must share a
+     * sign: escape = shield - 65 when angleDiff is in (0, 180), shield + 65
+     * when angleDiff is in (180, 360). The branches below are swapped
+     * relative to the supplied text for exactly that reason; the geometry
+     * was verified numerically for movement 45 / 90 / 270 / 315 deg against
+     * a defender at 0 deg. Do not "fix" this back without re-running that
+     * check. */
+    float angleDiff = fast_wrap_360(movementAngleDegrees - defenderAngleDeg);
+    float escapeSide = (angleDiff > 180.0f) ? 65.0f : -65.0f;
+    float escapeAngle = fast_wrap_360(shieldAngle + escapeSide);
 
-    /* Random modifier removed: fabricated counter. */
-    float shieldDuration = durationBase + pBonus + vBonus;
-    shieldDuration = branchless_coerce(shieldDuration, 40.0f, 124.0f);
+    /* Burst intensity spikes when defender is very close and rushing (ideal for Sharp Touch exit) */
+    float burstIntensity = branchless_coerce((threatLevel * 0.7f + turnIntensity * 0.4f) * shieldActive, 0.0f, 1.0f);
 
-    result[0] = stabilityBoost;
-    result[1] = controlRetentionBoost;
-    result[2] = turnAssist;
-    result[3] = shieldAngle;
-    result[4] = shieldDuration;
-    result[5] = shieldActive;
-
-    (*env)->ReleasePrimitiveArrayCritical(env, outBuffer, result, 0);
+    /* 6. Extended Aggressive Shield Hold Duration (ms) */
+    float safeNormDist = (normDist > distGuard) ? normDist : distGuard;
+    float pBonus = branchless_coerce(115.0f / safeNormDist, 0.0f, 75.0f);
+    float vBonus = branchless_coerce((speedRatio + normClosing) * 20.0f, 0.0f, 30.0f);
+    float shieldDuration = (durationBase + pBonus + vBonus) * (0.85f + 0.15f * aggressionFactor);
+    shieldDuration = branchless_coerce(shieldDuration, 45.0f, 160.0f);
+    /* Safe, non-blocking JNI array copy */
+    jfloat out[10];
+    out[0] = stabilityBoost;
+    out[1] = controlRetentionBoost;
+    out[2] = turnAssist;
+    out[3] = shieldAngle;
+    out[4] = shieldDuration;
+    out[5] = shieldActive;
+    out[6] = escapeAngle;
+    out[7] = burstIntensity;
+    out[8] = threatLevel;
+    out[9] = predictedDist;
+    (*env)->SetFloatArrayRegion(env, outBuffer, 0, 10, out);
 }

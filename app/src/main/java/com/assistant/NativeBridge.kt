@@ -255,7 +255,8 @@ init {
         playerVelocity: Float, opponentDistance: Float,
         movementAngleDegrees: Float, possessionConfidence: Float,
         turnIntensity: Float, playerX: Float, playerY: Float,
-        oppX: Float, oppY: Float, outBuffer: FloatArray,
+        oppX: Float, oppY: Float, oppVx: Float, oppVy: Float,
+        leadTimeSec: Float, aggressionFactor: Float, outBuffer: FloatArray,
         nearUnits: Float, proxUnits: Float, softUnits: Float, farUnits: Float,
         maxVelocity: Float, shieldBase: Float, shieldProx: Float,
         shieldSpeed: Float, shieldConf: Float, durationBase: Float,
@@ -267,7 +268,8 @@ init {
         }
         nativeAgilityPhysicsImpl(
             playerVelocity, opponentDistance, movementAngleDegrees, possessionConfidence,
-            turnIntensity, playerX, playerY, oppX, oppY, outBuffer,
+            turnIntensity, playerX, playerY, oppX, oppY, oppVx, oppVy,
+            leadTimeSec, aggressionFactor, outBuffer,
             nearUnits, proxUnits, softUnits, farUnits,
             maxVelocity, shieldBase, shieldProx, shieldSpeed,
             shieldConf, durationBase, confFloor, distGuard
@@ -289,7 +291,8 @@ init {
         playerVelocity: Float, opponentDistance: Float,
         movementAngleDegrees: Float, possessionConfidence: Float,
         turnIntensity: Float, playerX: Float, playerY: Float,
-        oppX: Float, oppY: Float, outBuffer: FloatArray,
+        oppX: Float, oppY: Float, oppVx: Float, oppVy: Float,
+        leadTimeSec: Float, aggressionFactor: Float, outBuffer: FloatArray,
         nearUnits: Float, proxUnits: Float, softUnits: Float, farUnits: Float,
         maxVelocity: Float, shieldBase: Float, shieldProx: Float,
         shieldSpeed: Float, shieldConf: Float, durationBase: Float,
@@ -429,26 +432,36 @@ init {
         turnIntensity: Float,
         playerX: Float, playerY: Float,
         oppX: Float, oppY: Float,
+        oppVx: Float, oppVy: Float,
+        leadTimeSec: Float, aggressionFactor: Float,
         outBuffer: FloatArray,
         nearUnits: Float, proxUnits: Float, softUnits: Float, farUnits: Float,
         maxVelocity: Float, shieldBase: Float, shieldProx: Float,
         shieldSpeed: Float, shieldConf: Float, durationBase: Float,
         confFloor: Float, distGuard: Float
     ): Boolean {
+        // No58: this wrapper was a byte-for-byte duplicate of
+        // nativeAgilityPhysics() above (same readiness check, same impl
+        // call, same return). One delegates to the other now, so the two
+        // Kotlin callers (AgilityContributor uses this one,
+        // ActiveGestureController uses nativeAgilityPhysics) can never
+        // drift apart again. Behaviour is identical: the delegate does
+        // the nativeReady check and the impl call.
         // SPLENDOR_AGILITY_LIVE_TELEMETRY_V1 - forward real telemetry; report native readiness.
-        if (!nativeReady.get()) {
-            logFailureOnce()
-            return false
-        }
-        nativeAgilityPhysicsImpl(
+        // V4: oppVx/oppVy (opponent velocity, px/s), leadTimeSec and
+        // aggressionFactor are forwarded, not defaulted here — both
+        // callers supply them (AgilityContributor: real entity velocities
+        // + 0.18s / 1.35; ActiveGestureController: 0f/0f + 0.18s / 1.35,
+        // documented there). outBuffer is 10 floats in V4.
+        return nativeAgilityPhysics(
             playerVelocity, opponentDistance,
             movementAngleDegrees, possessionConfidence,
-            turnIntensity, playerX, playerY, oppX, oppY, outBuffer,
+            turnIntensity, playerX, playerY, oppX, oppY, oppVx, oppVy,
+            leadTimeSec, aggressionFactor, outBuffer,
             nearUnits, proxUnits, softUnits, farUnits,
             maxVelocity, shieldBase, shieldProx, shieldSpeed,
             shieldConf, durationBase, confFloor, distGuard
         )
-        return true
     }
 
     @JvmStatic
