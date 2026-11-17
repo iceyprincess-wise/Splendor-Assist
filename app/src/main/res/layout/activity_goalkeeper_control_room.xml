@@ -1,63 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Goalkeeper Control Room (File No 98) — round no61, premium tokenisation.
+
+  LIVE: inflated by GoalkeeperControlRoomActivity (setContentView).
+  Every id below is bound by that activity — none was added, removed
+  or renamed. View order is unchanged: the activity's installLivePanel()
+  inserts its programmatic views immediately after text_status, so
+  text_status must stay where it is.
+
+  NO61-D1 (PROVEN): two section headers carried hardcoded #00D4FF
+  (a third cyan, not the theme secondary) — now the SectionLabel text
+  appearance (12sp bold, cyan #00E5FF). Letter spacing moves 0.15 ->
+  0.20 with the system style (the one intentional spacing change).
+  NO61-D7 (PROVEN): both sliders hand-copied thumb/track #7C4DFF and
+  inactive track #1E2A44 — now Widget.SplendorAssist.Slider.
+  NO61-D8 (PROVEN): sliders were continuous; the activity reads
+  integer thresholds (value.toInt() in both change listeners) — now
+  android:stepSize="1", same fix as NO60-D29.
+  NO61-D9 (PROVEN): switches hand-styled (15sp #E8EEF9) — now
+  Widget.SplendorAssist.Switch (14sp system type).
+  NO61-D10..D13 (PROVEN): every hardcoded colour -> theme token
+  (background ?android:attr/colorBackground, title Headline +
+  ?attr/colorOnSurface, values Mono + ?attr/colorOnSurfaceVariant,
+  save button Widget.SplendorAssist.Button.Filled). Panel padding
+  8dp -> 16dp (matches the dashboard and the SmartAssist room).
+  NO61-D20 (checked, NOT a defect): the labels are CORRECT —
+  "Positioning" sits over seekbar_positioning and "Reactions" over
+  seekbar_reactions. No off-by-one like the SmartAssist room.
+  NO61-D21 (discovery, NOT in this script): installLivePanel() injects
+  a plain programmatic Button + TextView with default styling — the
+  live panel is unstyled against the premium buttons. Needs an
+  activity-code round; queued.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="#070B14" android:fillViewport="true" android:overScrollMode="never">
+    android:background="?android:attr/colorBackground" android:fillViewport="true" android:overScrollMode="never">
   <LinearLayout xmlns:tools="http://schemas.android.com/tools" tools:ignore="HardcodedText,DisableBaselineAlignment,ButtonStyle,UseCompoundDrawables"
       android:layout_width="match_parent" android:layout_height="wrap_content"
       android:orientation="vertical" android:padding="24dp">
 
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="@string/auto_extracted_69" android:textSize="26sp" android:textStyle="bold"
-        android:textColor="#E8EEF9" android:letterSpacing="0.02"/>
+        android:text="@string/auto_extracted_69"
+        android:textColor="?attr/colorOnSurface"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.Headline" />
     <View android:layout_width="56dp" android:layout_height="3dp"
         android:layout_marginTop="10dp" android:layout_marginBottom="20dp"
-        android:background="@drawable/accent_bar"/>
+        android:background="@drawable/accent_bar" />
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:background="@drawable/panel_surface"
-        android:padding="8dp">
+        android:padding="16dp">
 
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/switch_enabled" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_70" android:textColor="#E8EEF9" android:textSize="15sp"
-            android:paddingTop="10dp" android:paddingBottom="10dp"/>
+            style="@style/Widget.SplendorAssist.Switch"
+            android:text="@string/auto_extracted_70"
+            android:paddingTop="10dp" android:paddingBottom="10dp" />
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/switch_aggressive" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_71" android:textColor="#E8EEF9" android:textSize="15sp"
-            android:paddingTop="10dp" android:paddingBottom="10dp"/>
+            style="@style/Widget.SplendorAssist.Switch"
+            android:text="@string/auto_extracted_71"
+            android:paddingTop="10dp" android:paddingBottom="10dp" />
 
     </LinearLayout>
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="@string/auto_extracted_72" android:textSize="12sp" android:textStyle="bold"
-        android:textColor="#00D4FF" android:letterSpacing="0.15"
-        android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
+        android:text="@string/auto_extracted_72"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.SectionLabel"
+        android:layout_marginTop="20dp" android:layout_marginBottom="10dp" />
         <com.google.android.material.slider.Slider
             android:id="@+id/seekbar_positioning" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:valueFrom="0" android:valueTo="100"
-            app:thumbColor="#7C4DFF" app:trackColorActive="#7C4DFF" app:trackColorInactive="#1E2A44"/>
+            style="@style/Widget.SplendorAssist.Slider"
+            android:valueFrom="0" android:valueTo="100" android:stepSize="1" />
         <TextView android:id="@+id/text_positioning_value" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_73" android:textColor="#9FB3D1" android:textSize="12sp"
-            android:fontFamily="monospace" android:layout_marginBottom="8dp"/>
+            android:text="@string/auto_extracted_73" android:textColor="?attr/colorOnSurfaceVariant"
+            android:textAppearance="@style/TextAppearance.SplendorAssist.Mono" android:layout_marginBottom="8dp" />
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="@string/auto_extracted_74" android:textSize="12sp" android:textStyle="bold"
-        android:textColor="#00D4FF" android:letterSpacing="0.15"
-        android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
+        android:text="@string/auto_extracted_74"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.SectionLabel"
+        android:layout_marginTop="20dp" android:layout_marginBottom="10dp" />
         <com.google.android.material.slider.Slider
             android:id="@+id/seekbar_reactions" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:valueFrom="0" android:valueTo="100"
-            app:thumbColor="#7C4DFF" app:trackColorActive="#7C4DFF" app:trackColorInactive="#1E2A44"/>
+            style="@style/Widget.SplendorAssist.Slider"
+            android:valueFrom="0" android:valueTo="100" android:stepSize="1" />
         <TextView android:id="@+id/text_reactions_value" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_75" android:textColor="#9FB3D1" android:textSize="12sp"
-            android:fontFamily="monospace" android:layout_marginBottom="8dp"/>
+            android:text="@string/auto_extracted_75" android:textColor="?attr/colorOnSurfaceVariant"
+            android:textAppearance="@style/TextAppearance.SplendorAssist.Mono" android:layout_marginBottom="8dp" />
     <TextView android:id="@+id/text_status"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:layout_marginTop="20dp" android:text="@string/auto_extracted_76"
-        android:textColor="#9FB3D1" android:textSize="12sp" android:fontFamily="monospace"
-        android:background="@drawable/banner_premium" android:padding="12dp"/>
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.Mono"
+        android:background="@drawable/banner_premium" android:padding="12dp" />
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_save" android:layout_width="match_parent" android:layout_height="54dp"
         android:layout_marginTop="24dp" android:text="@string/auto_extracted_77"
-        android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="15sp"
-        android:letterSpacing="0.06" android:background="@drawable/button_premium"/>
+        style="@style/Widget.SplendorAssist.Button.Filled" />
 
   </LinearLayout>
 </ScrollView>

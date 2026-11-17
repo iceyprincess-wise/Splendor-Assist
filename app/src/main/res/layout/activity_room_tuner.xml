@@ -1,7 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Room Tuner (File No 100) — round no61, premium tokenisation.
+
+  ORPHANED (PROVEN): no activity inflates this layout — zero
+  references to R.layout.activity_room_tuner anywhere in app/ or
+  core/, and zero references to any of its eight ids (tvRoomEmoji,
+  tvRoomTitle, tvRoomSubtitle, swEnabled, seekIntensity, tvRoomStatus,
+  btnSave, btnBack) in any Kotlin file (HEAD 2a50b423). It is the
+  generic per-room tuning screen nothing opens. Documented here and
+  kept, same as the welcome/update/error orphans in no60; wiring it
+  to a real flow (or confirming it dead) is Ed's product call.
+
+  NO61-D3 (PROVEN): the "TUNING" section label was a hardcoded
+  literal (no string existed for it) — now @string/splendor_tuning,
+  new in strings.xml (same pattern as NO60-D16 splendor_authority),
+  with the SectionLabel text appearance. It also carried hardcoded
+  #00D4FF; the label is now the theme cyan #00E5FF.
+  NO61-D4 (PROVEN): btnBack textColor was hardcoded #00D4FF — now
+  Widget.SplendorAssist.Button.Ghost (cyan text, ghost outline).
+  NO61-D7 (PROVEN): seekIntensity hand-copied thumb/track #7C4DFF and
+  inactive track #1E2A44 — now Widget.SplendorAssist.Slider.
+  NO61-D8 (PROVEN): the slider was continuous; the room repositories
+  read integer thresholds (the same value.toInt() pattern as the
+  keeper/interception rooms) — now android:stepSize="1".
+  NO61-D9 (PROVEN): swEnabled hand-styled (15sp #E8EEF9) — now
+  Widget.SplendorAssist.Switch (14sp system type).
+  NO61-D10..D14 (PROVEN): every hardcoded colour -> theme token
+  (background ?android:attr/colorBackground, title Headline +
+  ?attr/colorOnSurface, subtitle/labels BodySmall +
+  ?attr/colorOnSurfaceVariant, status Mono +
+  ?attr/colorOnSurfaceVariant, btnSave
+  Widget.SplendorAssist.Button.Filled). The subtitle moves 13sp ->
+  12sp with the BodySmall system type (the one intentional size
+  change). Panel padding 8dp -> 16dp (matches the dashboard and the
+  SmartAssist room).
+  NO61-D19 (PROVEN, trivial): the button-row LinearLayout carried
+  android:layout_marginTop="0dp" — a no-op attribute (0dp is the
+  default); the buttons carry their own 24dp top margins. Removed.
+  All ids, texts and view order are preserved.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="#070B14" android:fillViewport="true" android:overScrollMode="never">
+    android:background="?android:attr/colorBackground" android:fillViewport="true" android:overScrollMode="never">
   <LinearLayout xmlns:tools="http://schemas.android.com/tools" tools:ignore="HardcodedText,DisableBaselineAlignment,ButtonStyle,UseCompoundDrawables"
       android:layout_width="match_parent" android:layout_height="wrap_content"
       android:orientation="vertical" android:padding="24dp">
@@ -10,55 +50,57 @@
         android:layout_width="52dp" android:layout_height="52dp"
         android:background="@drawable/panel_surface" android:gravity="center"
         android:text="@string/auto_extracted_58" android:textSize="24sp"
-        android:layout_marginBottom="14dp"/>
+        android:layout_marginBottom="14dp" />
 
     <TextView android:id="@+id/tvRoomTitle"
         android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="@string/auto_extracted_59" android:textStyle="bold"
-        android:textColor="#E8EEF9" android:textSize="26sp"/>
+        android:text="@string/auto_extracted_59"
+        android:textColor="?attr/colorOnSurface"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.Headline" />
 
     <TextView android:id="@+id/tvRoomSubtitle"
         android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="@string/auto_extracted_60" android:textColor="#9FB3D1"
-        android:textSize="13sp" android:layout_marginBottom="20dp"/>
+        android:text="@string/auto_extracted_60" android:textColor="?attr/colorOnSurfaceVariant"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.BodySmall" android:layout_marginBottom="20dp" />
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:background="@drawable/panel_surface"
-        android:padding="8dp">
+        android:padding="16dp">
 
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/swEnabled" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_61" android:textColor="#E8EEF9" android:textSize="15sp"
-            android:paddingTop="10dp" android:paddingBottom="10dp"/>
+            style="@style/Widget.SplendorAssist.Switch"
+            android:text="@string/auto_extracted_61"
+            android:paddingTop="10dp" android:paddingBottom="10dp" />
 
     </LinearLayout>
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="TUNING" android:textSize="12sp" android:textStyle="bold"
-        android:textColor="#00D4FF" android:letterSpacing="0.15"
-        android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
+        android:text="@string/splendor_tuning"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.SectionLabel"
+        android:layout_marginTop="20dp" android:layout_marginBottom="10dp" />
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_62" android:textColor="#9FB3D1" android:textSize="12sp"
-            android:layout_marginBottom="6dp"/>
+            android:text="@string/auto_extracted_62" android:textColor="?attr/colorOnSurfaceVariant"
+            android:textAppearance="@style/TextAppearance.SplendorAssist.BodySmall"
+            android:layout_marginBottom="6dp" />
         <com.google.android.material.slider.Slider
             android:id="@+id/seekIntensity" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:valueFrom="0" android:valueTo="100"
-            app:thumbColor="#7C4DFF" app:trackColorActive="#7C4DFF" app:trackColorInactive="#1E2A44"/>
+            style="@style/Widget.SplendorAssist.Slider"
+            android:valueFrom="0" android:valueTo="100" android:stepSize="1" />
         <TextView android:id="@+id/tvRoomStatus"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:textColor="#9FB3D1" android:textSize="12sp" android:fontFamily="monospace"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textAppearance="@style/TextAppearance.SplendorAssist.Mono"
             android:layout_marginTop="14dp" android:background="@drawable/banner_premium"
-            android:padding="12dp"/>
+            android:padding="12dp" />
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="0dp" android:orientation="horizontal">
+        android:orientation="horizontal">
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSave" android:layout_width="0dp" android:layout_weight="1" android:layout_height="54dp"
         android:layout_marginTop="24dp" android:text="@string/auto_extracted_63"
-        android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="15sp"
-        android:letterSpacing="0.06" android:background="@drawable/button_premium"/>
+        style="@style/Widget.SplendorAssist.Button.Filled" />
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBack" android:layout_width="0dp" android:layout_weight="1" android:layout_height="54dp"
         android:layout_marginTop="24dp" android:text="@string/auto_extracted_64"
-        android:textColor="#00D4FF" android:textStyle="bold" android:textSize="15sp"
-        android:letterSpacing="0.06" android:background="@drawable/btn_ghost"/>
+        style="@style/Widget.SplendorAssist.Button.Ghost" />
     </LinearLayout>
 
   </LinearLayout>
