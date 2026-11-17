@@ -11,6 +11,15 @@ data class ThreatDecision(
     val normX: Float = 0.5f
 )
 
+// No64-D9: the single PANIC line (150) shared by the interceptor engines.
+// ShotAnticipationEngine, PanicSaveEngine and OneVsOnePanicEngine all read
+// this const. NativePorts.panic keeps its own literal (see the note there —
+// NativePorts.kt cannot reference this const without importing this package,
+// which already imports NativePorts), and the two `/ 150f` authority
+// divisors in ThreatPriorityContributor / PanicSaveContributor are
+// intentionally unchanged.
+const val PANIC_PRIORITY_THRESHOLD = 150
+
 object ThreatPriorityEngine {
 
     // No63-D25: the coordinate parameters used to default to x=0, y=0,

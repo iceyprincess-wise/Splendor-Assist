@@ -31,6 +31,11 @@ object NativePorts {
         var action = 0
         // SPLENDOR_P10_SAT_PANIC: PANIC 130 -> 150 (with K2/K3/K4);
         // SAVE band becomes [100,150). claim() 140/100 unchanged.
+        // No64-D9: 150 here is the PANIC line — same value as
+        // PANIC_PRIORITY_THRESHOLD in ThreatPriorityEngine.kt; change both
+        // together. The literal stays because NativePorts.kt cannot
+        // reference that const without importing the interceptor package,
+        // which already imports NativePorts.
         if (priority >= 150) { if (direction == 0) action = 2 else if (direction == 1) action = 1 else action = 3 }
         out[0] = action.toFloat()
     }

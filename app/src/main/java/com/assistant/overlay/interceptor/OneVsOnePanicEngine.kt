@@ -14,7 +14,8 @@ object OneVsOnePanicEngine {
     ): PanicAction {
 
         // SPLENDOR_P10_SAT_PANIC: PANIC 130 -> 150.
-        if (decision.priority < 150) {
+        // No64-D9: the threshold is the shared PANIC_PRIORITY_THRESHOLD.
+        if (decision.priority < PANIC_PRIORITY_THRESHOLD) {
             return PanicAction.HOLD
         }
 

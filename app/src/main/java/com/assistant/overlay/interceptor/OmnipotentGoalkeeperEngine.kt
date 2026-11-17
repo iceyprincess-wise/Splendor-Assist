@@ -80,7 +80,11 @@ object OmnipotentGoalkeeperEngine {
                 
                 val rushRequest = ExecutionRequest(
                     source = ExecutionSource.GOALKEEPER,
-                    phase = 5,
+                    // No64-D31: phase 100 — the defensive-layer rush used
+                    // phase 5, which collides with RUSH_OUT.ordinal (5):
+                    // a pending rush reservation-blocked a same-phase save
+                    // offer (and vice versa) for up to 300 ms.
+                    phase = 100,
                     // no59 ITEM 1: carry the engine name to the dispatch log.
                     engine = "OmnipotentGoalkeeperEngine",
                     startX = pressureButtonX,
@@ -93,7 +97,7 @@ object OmnipotentGoalkeeperEngine {
                 if (ContributionRegistry.offer(rushRequest)) {
                     com.assistant.SmartAssistMetrics.recordGoalkeeperShadow(
                         rushRequest,
-                        "phase-5 goalkeeper rush submitted unchanged as shadow-observed emergency gesture"
+                        "phase-100 goalkeeper rush submitted unchanged as shadow-observed emergency gesture"
                     )
                     lastGkLayerTimestamp = now
                     com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER 1v1 rush bus-enqueued actionId=${rushRequest.actionId} dist=${attackerToGkDistance.toInt()}", "GOALKEEPER")
@@ -118,7 +122,9 @@ object OmnipotentGoalkeeperEngine {
 
             val reflexRequest = ExecutionRequest(
                 source = ExecutionSource.GOALKEEPER,
-                phase = 6,
+                // No64-D31: phase 101 — the defensive-layer reflex used
+                // phase 6, which collides with BLOCK_LEFT.ordinal (6).
+                phase = 101,
                 // no59 ITEM 1: carry the engine name to the dispatch log.
                 engine = "OmnipotentGoalkeeperEngine",
                 startX = joystickX,
@@ -131,7 +137,7 @@ object OmnipotentGoalkeeperEngine {
             if (ContributionRegistry.offer(reflexRequest)) {
                 com.assistant.SmartAssistMetrics.recordGoalkeeperShadow(
                     reflexRequest,
-                    "phase-6 goalkeeper reflex submitted unchanged as shadow-observed emergency gesture"
+                    "phase-101 goalkeeper reflex submitted unchanged as shadow-observed emergency gesture"
                 )
                 lastGkLayerTimestamp = now
                 com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER close-range reflex pulse bus-enqueued actionId=${reflexRequest.actionId}", "GOALKEEPER")
@@ -291,8 +297,9 @@ object OmnipotentGoalkeeperEngine {
             val p10GoalDet = p10Scene?.goalDetected ?: false
             val p10GoalCx = if (p10Scene != null && p10Scene.goalDetected) ((p10Scene.goalLeftX + p10Scene.goalRightX) * 0.5f).toString() else "n/a"
             com.assistant.diagnostic.RuntimeLogger.log(
-                "GK_ZONE_SCAN zone=" + decision.zone + " dir=" + decision.direction +
-                    " pri=" + decision.priority + " band=" + decision.heightBand + " normX=" + decision.normX +
+                "GK_ZONE_SCAN threat=" + detectedThreat + "(ThreatClassifierEngine)" +
+                    " zone=" + decision.zone + " dir=" + decision.direction + "(ShotDirectionEngine)" +
+                    " pri=" + decision.priority + "(ThreatPriorityEngine)" + " band=" + decision.heightBand + " normX=" + decision.normX +
                     " px=(" + detectedX + "," + detectedY + ") cap=" + width + "x" + height +
                     " ball=(" + p10Tele.ballX + "," + p10Tele.ballY + ")" +
                     " goalDet=" + p10GoalDet + " goalCX=" + p10GoalCx,
@@ -305,10 +312,37 @@ object OmnipotentGoalkeeperEngine {
     @Volatile private var lastShotEvaluationTimestamp = 0L
     @Volatile private var lastSaveTimestamp = 0L // Tracks the exact millisecond of the last successful save/parry for rebound logic
 
+    // No64-D27: save-offer stroke duration — 15 ms, the floor the loop
+    // enforces for SMART_ASSIST requests (was 8L, below that floor).
+    private const val SAVE_OFFER_DURATION_MS = 15L
+
+    // No64-D22: per-episode trackers for the feedback counters. The
+    // recovery count increments only when the recovery target changes;
+    // the PUNCH/CLAIM interception count only when the accepted action
+    // changes. (The router keeps its own lastRoutedAction.)
+    @Volatile private var lastRecoveryTarget: RecoveryTarget? = null
+    @Volatile private var lastClassifiedAction: GoalkeeperAction? = null
+
     private fun evaluateOpponentShotTrajectory(decision: ThreatDecision) {
         val now = System.currentTimeMillis()
         if (now - lastShotEvaluationTimestamp < 8L) return // BEAST MODE: 120Hz evaluation throttle for instant rebound/shot reaction
         lastShotEvaluationTimestamp = now
+
+        // Reaction speed control: a higher reaction value keeps the keeper
+        // in rebound mode for a shorter window, so it re-commits to a fresh
+        // read sooner. Previously this control was read by nothing.
+        // (Hoisted here from below so the No64-D16 window-end check can
+        // use the same value as the rebound override.)
+        val reboundWindowMs =
+            (500L - (GoalkeeperRuntimeState.reactions.coerceIn(0, 100) * 2.5f)).toLong()
+
+        // No64-D16: the rebound window ends recovery — finish it before
+        // the next decision is evaluated, so RECOVERY spans the window.
+        if (RecoveryPositionEngine.recovering() &&
+            System.currentTimeMillis() - lastSaveTimestamp >= reboundWindowMs
+        ) {
+            RecoveryPositionEngine.finishRecovery()
+        }
 
         GoalkeeperStateMachine.transition(GoalkeeperState.SAVE)
 
@@ -325,7 +359,9 @@ object OmnipotentGoalkeeperEngine {
 
                 val recoveryTarget = RecoveryPredictionEngine.predict(decision)
 
-                RecoveryAuthorityRegistry.lastTarget = recoveryTarget
+                // No64-D17: the write goes through recordTarget() now that
+                // lastTarget is private.
+                RecoveryAuthorityRegistry.recordTarget(recoveryTarget)
 
                 when (recoveryTarget) {
                     RecoveryTarget.CENTER -> {
@@ -342,14 +378,23 @@ object OmnipotentGoalkeeperEngine {
                     }
                 }
 
+                // No64-D33: name the recovery engine and its output in the
+                // log, so a live session proves RecoveryPredictionEngine is
+                // active. (No64-D40: the target value itself still steers
+                // no gesture — it is observable here and in the snapshot,
+                // but there is no designed recovery-position gesture yet.)
+                com.assistant.diagnostic.RuntimeLogger.log(
+                    "GK_RECOVERY target=" + recoveryTarget + "(RecoveryPredictionEngine)",
+                    "GOALKEEPER")
+
                 val action = GoalkeeperActionRouter.route(decision)
 
+                // No64-D16: the next decision is TRACK — recovery is over.
+                if (RecoveryPositionEngine.recovering() && action == GoalkeeperAction.TRACK) {
+                    RecoveryPositionEngine.finishRecovery()
+                }
+
                 // BEAST MODE REBOUND OVERRIDE: If a save was made <500ms ago, force REBOUND_SAVE to prevent lying down
-                // Reaction speed control: a higher reaction value keeps the keeper
-                // in rebound mode for a shorter window, so it re-commits to a fresh
-                // read sooner. Previously this control was read by nothing.
-                val reboundWindowMs =
-                    (500L - (GoalkeeperRuntimeState.reactions.coerceIn(0, 100) * 2.5f)).toLong()
                 val finalAction =
                     if (GoalkeeperRuntimeState.enabled && System.currentTimeMillis() - lastSaveTimestamp < reboundWindowMs) {
                         GoalkeeperAction.REBOUND_SAVE
@@ -372,25 +417,47 @@ object OmnipotentGoalkeeperEngine {
 
                 // Hyper-velocity interceptor swipe paths with integrated Server/Noise offsets
                 executionCoordinates[0] = vector[0]
-                executionCoordinates[1] = vector[1] + positioningBias
+                // No64-D13: RushOutActionEngine clamps its startY, but this
+                // positioningBias (±8% of screen height, unclamped) used to
+                // push the coordinates off-screen afterwards. Clamp the sum.
+                executionCoordinates[1] = (vector[1] + positioningBias).coerceIn(0f, screenHeightBase)
                 executionCoordinates[2] = vector[2]
-                executionCoordinates[3] = vector[3] + positioningBias
+                executionCoordinates[3] = (vector[3] + positioningBias).coerceIn(0f, screenHeightBase)
 
-                val accepted = ContributionRegistry.offer(
-                    ExecutionRequest(
-                        source = ExecutionSource.GOALKEEPER,
-                        phase = finalAction.ordinal,
-                        // no59 ITEM 1: carry the engine name to the dispatch log.
-                        engine = "OmnipotentGoalkeeperEngine",
-                        startX = executionCoordinates[0],
-                        startY = executionCoordinates[1],
-                        endX = executionCoordinates[2],
-                        endY = executionCoordinates[3],
-                        duration = 8L
+                // No64-D39: TRACK is "do nothing" — offering its zero-length
+                // HoldPosition swipe wastes a bus slot, can occupy the
+                // (source, phase) reservation, and counts as a save attempt.
+                // Skip the offer entirely. (The rebound override above
+                // already turns a TRACK inside the window into REBOUND_SAVE,
+                // so this only skips genuine do-nothing frames.)
+                val accepted = if (finalAction == GoalkeeperAction.TRACK) {
+                    false
+                } else {
+                    ContributionRegistry.offer(
+                        ExecutionRequest(
+                            source = ExecutionSource.GOALKEEPER,
+                            phase = finalAction.ordinal,
+                            // No64-D32: carry the PRODUCING action engine's
+                            // name to the dispatch log (no59 ITEM 1), not the
+                            // offerer's — so the dispatch line reads
+                            // engine=<ActionEngineName> instead of
+                            // engine=OmnipotentGoalkeeperEngine action=?.
+                            engine = GoalkeeperExecutionEngine.engineNameFor(finalAction),
+                            startX = executionCoordinates[0],
+                            startY = executionCoordinates[1],
+                            endX = executionCoordinates[2],
+                            endY = executionCoordinates[3],
+                            duration = SAVE_OFFER_DURATION_MS
+                        )
                     )
-                )
+                }
 
                 if (accepted) {
+                    // No64-D28: this counts bus-accepted OFFERS, not
+                    // dispatched gestures — a cooling-dropped offer still
+                    // counts here. The snapshot labels it SaveOffers.
+                    // There is no dispatch-confirmation signal at this site,
+                    // so no confirmed-dispatch count is invented.
                     GoalkeeperMetricsRegistry.saveAttempts.incrementAndGet()
                     if (finalAction in setOf(
                             GoalkeeperAction.DIVE_LEFT,
@@ -410,6 +477,15 @@ object OmnipotentGoalkeeperEngine {
                             GoalkeeperAction.REBOUND_SAVE
                         )) {
                         lastSaveTimestamp = System.currentTimeMillis()
+                        // No64-D16: an accepted dive-family save enters
+                        // recovery — RECOVERY then spans the rebound window
+                        // (finished at the top of the next evaluation, or
+                        // when the next decision is TRACK). NOTE the
+                        // torn-read caveat: begin/finish are two separate
+                        // volatile writes with a state transition between
+                        // them, so a concurrent state() read can briefly
+                        // observe flag=true/state=IDLE or vice versa.
+                        RecoveryPositionEngine.beginRecovery()
                     }
                 }
 
@@ -418,9 +494,19 @@ object OmnipotentGoalkeeperEngine {
                 // counters were declared and printed but never incremented
                 // anywhere, so the snapshot always reported Intercept=0 Panic=0.
                 if (accepted) {
+                    // No64-D22: interceptions counts PUNCH/CLAIM EPISODES,
+                    // not accepted offers — a multi-frame claim used to add
+                    // one per frame. panicSaves is not a feedback counter
+                    // and stays per-accept, as before.
+                    val newEpisode = finalAction != lastClassifiedAction
+                    lastClassifiedAction = finalAction
                     when (finalAction) {
                         GoalkeeperAction.PUNCH_CROSS,
-                        GoalkeeperAction.CLAIM_CROSS -> GoalkeeperMetricsRegistry.interceptions.incrementAndGet()
+                        GoalkeeperAction.CLAIM_CROSS -> {
+                            if (newEpisode) {
+                                GoalkeeperMetricsRegistry.interceptions.incrementAndGet()
+                            }
+                        }
                         GoalkeeperAction.REBOUND_SAVE -> {
                             if (com.assistant.SmartAssistRepository.panicActive()) {
                                 GoalkeeperMetricsRegistry.panicSaves.incrementAndGet()
@@ -431,9 +517,24 @@ object OmnipotentGoalkeeperEngine {
                 }
 
 
-            GoalkeeperMetricsRegistry.recoveryCount.incrementAndGet()
-        } finally { 
-            GoalkeeperStateMachine.transition(GoalkeeperState.IDLE) 
+            // No64-D22: recoveryCount counts recovery-target EPISODES, not
+            // trajectory evaluations — it used to increment on every call.
+            if (recoveryTarget != lastRecoveryTarget) {
+                lastRecoveryTarget = recoveryTarget
+                GoalkeeperMetricsRegistry.recoveryCount.incrementAndGet()
+            }
+        } finally {
+            // No64-D16: do not clobber RECOVERY — the save path's finally
+            // used to transition to IDLE unconditionally, which would undo
+            // beginRecovery() in the same call. While recovering, the state
+            // is restored to RECOVERY after each evaluation (the top of the
+            // next evaluation transitions to SAVE, so without this the state
+            // would read SAVE between evaluations instead of RECOVERY).
+            if (RecoveryPositionEngine.recovering()) {
+                GoalkeeperStateMachine.transition(GoalkeeperState.RECOVERY)
+            } else {
+                GoalkeeperStateMachine.transition(GoalkeeperState.IDLE)
+            }
         }
     }
 }

@@ -8,14 +8,16 @@ object RushOutActionEngine {
             GoalkeeperBiasRegistry.currentBias
         ) {
 
-            KeeperBias.SHADE_LEFT ->
-                1.20f
-
-            KeeperBias.SHADE_RIGHT ->
+            // No64-D10: Symmetric by design: shading either side starts the rush from the same depth.
+            KeeperBias.SHADE_LEFT, KeeperBias.SHADE_RIGHT ->
                 1.20f
 
             KeeperBias.TIGHTEN_GOAL_AREA ->
                 1.30f
+
+            // No64-D11: PROTECT_* and HOLD_CENTER do not scale the rush-out start.
+            KeeperBias.PROTECT_NEAR_POST, KeeperBias.PROTECT_FAR_POST, KeeperBias.HOLD_CENTER ->
+                1.00f
 
             else ->
                 1.00f

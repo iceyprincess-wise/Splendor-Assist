@@ -179,7 +179,11 @@ object OmnipotentDashPressureMatrix {
         // Dynamic adaptive pacing cooldown window to mask hard 120ms signatures
         val adaptiveCooldownMs = 40L // Fixed 40ms: was 40ms +/- 4ms random jitter feeding a live request
 
+        // No64-D30 (F9): the Interception switch gates this INT emergency
+        // offer — it used to offer unconditionally while the switch was off.
         if (
+            com.assistant.overlay.interceptor.InterceptionRuntimeRegistry.enabled &&
+            com.assistant.overlay.interceptor.InterceptionRuntimeRegistry.autoIntercept &&
             isPlayerHoldingPressure &&
             now - lastMatrixTimestamp >= adaptiveCooldownMs
         ) {

@@ -129,7 +129,11 @@ object HybridOmnipotentMatrixEngine {
         }
 
         val now = System.currentTimeMillis()
-        if (now - lastMatrixTimestamp >= 16L) {
+        // No64-D30 (F9): the Interception switch gates this INT emergency
+        // offer — it used to offer every 16 ms while the switch was off.
+        if (com.assistant.overlay.interceptor.InterceptionRuntimeRegistry.enabled &&
+            com.assistant.overlay.interceptor.InterceptionRuntimeRegistry.autoIntercept &&
+            now - lastMatrixTimestamp >= 16L) {
             val req = ExecutionRequest(
                 source=ExecutionSource.INTERCEPTION, phase=9,
                 actionClass=com.assistant.runtime.ActionClass.DEFEND,

@@ -249,6 +249,9 @@ object RuntimeCoordinator {
         try { ActiveGestureControllerDiagnostics.reset() } catch (_: Throwable) {}
         try { SmartAssistMetrics.reset() } catch (_: Throwable) {}
         try { RuntimeHealthMonitor.reset() } catch (_: Throwable) {}
+        // No64-D23: zero the keeper feedback counters (they had no reset
+        // and inflated the adaptive bonuses for the whole session).
+        try { com.assistant.overlay.interceptor.GoalkeeperMetricsRegistry.reset() } catch (_: Throwable) {}
     }
 
     @Synchronized

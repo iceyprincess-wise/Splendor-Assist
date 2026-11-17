@@ -2,9 +2,12 @@ package com.assistant.overlay.interceptor
 
 object ReflexCenterActionEngine {
     fun vector(width: Float, height: Float): FloatArray {
+        // No64-D14: parity with RushOutActionEngine — clamp degenerate inputs.
+        val safeWidth = width.coerceAtLeast(0f)
+        val safeHeight = height.coerceAtLeast(0f)
         return floatArrayOf(
-            width * 0.50f, height * 0.72f,
-            width * 0.50f, height * 0.65f
+            safeWidth * 0.50f, safeHeight * 0.72f,
+            safeWidth * 0.50f, safeHeight * 0.65f
         )
     }
 }

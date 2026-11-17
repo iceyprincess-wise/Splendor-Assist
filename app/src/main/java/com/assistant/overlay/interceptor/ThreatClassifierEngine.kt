@@ -36,10 +36,12 @@ object ThreatClassifierEngine {
         // White detection (High brightness balance across channels)
         if (r > 190 && g > 190 && b > 190) return ThreatType.WHITE
 
-        // Performance ratio scaling
-        val rRatio = (r * 100) / total
-        val gRatio = (g * 100) / total
-        val bRatio = (b * 100) / total
+        // Performance ratio scaling (No64-D1: round-half-up, not floor —
+        // a true 42.9% share used to compute as 42 and miss every strict
+        // threshold by up to ~1pt).
+        val rRatio = (r * 100 + total / 2) / total
+        val gRatio = (g * 100 + total / 2) / total
+        val bRatio = (b * 100 + total / 2) / total
 
         return when {
             // PURPLE: Dynamic player runs or extreme manual match threats

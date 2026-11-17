@@ -97,6 +97,8 @@ class AntiCutbackSubEngine(private val inputEngine:LatencyDefeatingInputEngine){
   companion object{@Volatile private var lastExecutionTimestamp=0L;private const val DEBOUNCE_COOLDOWN_MS=20L}
   fun blockCutbackPassingLanes(wingerX:Float,wingerY:Float,myNearestDefenderX:Float,myNearestDefenderY:Float,penaltyBoxCenterX:Float,penaltyBoxCenterY:Float,joystickX:Float,joystickY:Float,screenWidth:Float=com.assistant.vision.CameraProfile.captureWidthOrFallback(),screenHeight:Float=com.assistant.vision.CameraProfile.captureHeightOrFallback()):Boolean{
     val now=System.currentTimeMillis()
+    // No64-D30 (F9): the Interception switch gates this INT emergency offer.
+    if(!com.assistant.overlay.interceptor.InterceptionRuntimeRegistry.enabled||!com.assistant.overlay.interceptor.InterceptionRuntimeRegistry.autoIntercept)return false
     if(now-lastExecutionTimestamp<DEBOUNCE_COOLDOWN_MS)return false
     val baselineThreshold=screenHeight*0.55f
     val leftTouchlineThreshold=screenWidth*0.15f
