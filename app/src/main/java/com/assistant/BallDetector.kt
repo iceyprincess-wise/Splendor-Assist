@@ -106,6 +106,21 @@ object BallDetector {
     private var initialized = false
     private var lostFrames = 0
 
+    /**
+     * Test hook (no53 round): resets the smoothed ball state and the coast
+     * counter so unit tests start from a known state. No production caller
+     * uses it. Tests call it in @Before so JUnit's hash method order can
+     * never flip a result.
+     */
+    fun reset() {
+        lastBallX = 0f
+        lastBallY = 0f
+        lastRadius = 0f
+        lastConfidence = 0f
+        initialized = false
+        lostFrames = 0
+    }
+
     fun detect(
         candidate: BallCandidate?
     ): BallDetectionResult {

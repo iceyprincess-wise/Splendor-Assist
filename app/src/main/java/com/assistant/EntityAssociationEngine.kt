@@ -97,6 +97,16 @@ object EntityAssociationEngine {
 
     private var nextTrackId = 1
 
+    /**
+     * Test hook (no53 round): resets the spawned-track id counter so unit
+     * tests start from a known state. No production caller uses it. Tests
+     * call it in @Before so JUnit's hash method order can never flip a
+     * result.
+     */
+    fun reset() {
+        nextTrackId = 1
+    }
+
     // ADMIN-TUNABLE (defaults = original hard-coded values)
     private val MAX_ASSOCIATION_DISTANCE: Float
         get() = 120f

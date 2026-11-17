@@ -102,6 +102,18 @@ object MotionTracker {
 
     private const val LOOK_AHEAD_FRAMES = 6f
 
+    /**
+     * Test hook (no53 round): resets the previous position and the
+     * initialised flag so unit tests start from a known state. No
+     * production caller uses it. Tests call it in @Before so JUnit's
+     * hash method order can never flip a result.
+     */
+    fun reset() {
+        previousX = 0f
+        previousY = 0f
+        initialized = false
+    }
+
     fun update(
         ball: BallDetectionResult
     ): MotionResult {

@@ -118,6 +118,22 @@ object SceneTracker {
 
     private const val CONFIDENCE_DECAY = 0.05f
 
+    /**
+     * Test hook (no53 round): resets the frame counter, the tracked ball
+     * state, the published snapshot and all tracks, under the same lock
+     * update() uses. No production caller uses it. Tests call it in
+     * @Before so JUnit's hash method order can never flip a result.
+     */
+    fun reset() = synchronized(mutationLock) {
+        frameCounter = 0L
+        trackedBallX = 0f
+        trackedBallY = 0f
+        trackedBallSpeed = 0f
+        trackedPlayers.clear()
+        trackedGoalkeeper = null
+        latest = SceneSnapshot()
+    }
+
     fun update(
         state: GameStateSnapshot,
         players: PlayerDetectionResult

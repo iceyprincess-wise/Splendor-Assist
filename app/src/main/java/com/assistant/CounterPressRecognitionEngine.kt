@@ -96,6 +96,16 @@ import kotlin.math.*
 object CounterPressRecognitionEngine {
     private var previousPossession = false
     private var lastLossAt = Long.MIN_VALUE
+
+    /**
+     * Test hook (no53 round): resets the loss memory so unit tests start
+     * from a known state. No production caller uses it. Tests call it in
+     * @Before so JUnit's hash method order can never flip a result.
+     */
+    fun reset() {
+        previousPossession = false
+        lastLossAt = Long.MIN_VALUE
+    }
     fun analyze(scene: SceneSnapshot, possession: BallPossessionResult, pressure: PressureFieldResult,
         nowNanos: Long = System.nanoTime()): CounterPressRecognitionResult {
         if (previousPossession && !possession.hasPossession && scene.ballVisible) lastLossAt = nowNanos

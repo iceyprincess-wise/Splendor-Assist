@@ -95,6 +95,15 @@ import kotlin.math.*
 
 object PossessionStyleRecognitionEngine {
     private var heldSinceNanos: Long? = null
+
+    /**
+     * Test hook (no53 round): resets the hold timer so unit tests start
+     * from a known state. No production caller uses it. Tests call it in
+     * @Before so JUnit's hash method order can never flip a result.
+     */
+    fun reset() {
+        heldSinceNanos = null
+    }
     fun analyze(possession: BallPossessionResult, graph: PassingLaneGraph, pressure: PressureFieldResult,
         nowNanos: Long = System.nanoTime()): PossessionStyleRecognitionResult {
         if (!possession.hasPossession) { heldSinceNanos = null; return PossessionStyleRecognitionResult() }
