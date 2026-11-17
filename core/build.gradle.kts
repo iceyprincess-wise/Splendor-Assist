@@ -5,13 +5,30 @@ plugins {
 
 android {
     lint {
-        disable += listOf("SetTextI18n", "UnusedResources", "ObsoleteSdkInt", "Overdraw", "GradleDependency", "OldTargetApi", "VectorPath", "ChromeOsAbiSupport", "ScopedStorage", "StaticFieldLeak", "SdCardPath", "UseSwitchCompatOrMaterialCode", "ConstantLocale", "InlinedApi", "IconLocation", "IconDuplicatesConfig", "TypographyEllipsis", "HardcodedText", "ButtonStyle", "ProtectedPermissions", "ExportedService", "MissingClass", "SuspiciousIndentation")
+        // No51: three disables REMOVED in the no48 round — each was
+        // proven to mask nothing live in this module:
+        // - "HardcodedText": zero literal .text/setText in core Kotlin
+        //   and zero literal android:text in either core layout (the
+        //   no42 round moved the last inline text to strings).
+        // - "UnusedResources": all 25 core strings are referenced and
+        //   both core layouts are used; core res has no drawables.
+        // - "ExportedService": the core manifest declares no services.
+        // KEPT deliberately:
+        // - "SdCardPath": load-bearing — SplendorStorageRoot resolves
+        //   the log root from Environment.getExternalStorageDirectory()
+        //   on purpose (S17-D7: "/sdcard" is only a symlink).
+        // - "StaticFieldLeak": guard — AdapterHealthRegistry and
+        //   LogMirror hold applicationContext in singletons (no live
+        //   leak: applicationContext only), and whether lint exempts
+        //   that is AGP-version-dependent, so the disable stays until
+        //   lint can be run to prove otherwise.
+        // NOTE: checkReleaseBuilds = false, so lint only runs on an
+        // explicit `:core:lintDebug` invocation, never on assemble.
+        disable += listOf("SetTextI18n", "ObsoleteSdkInt", "Overdraw", "GradleDependency", "OldTargetApi", "VectorPath", "ChromeOsAbiSupport", "ScopedStorage", "StaticFieldLeak", "SdCardPath", "UseSwitchCompatOrMaterialCode", "ConstantLocale", "InlinedApi", "IconLocation", "IconDuplicatesConfig", "TypographyEllipsis", "ButtonStyle", "ProtectedPermissions", "MissingClass", "SuspiciousIndentation")
         checkReleaseBuilds = false
         abortOnError = true
         warningsAsErrors = true
     }
-
-    
 
     namespace = "com.assistant.diagnostic"
     compileSdk = 34
