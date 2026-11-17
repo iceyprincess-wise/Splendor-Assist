@@ -30,23 +30,68 @@ object FilterEngine {
     
     private var reportFile: File? = null
     private var lastReportWrite = 0L
-    private val REPORT_INTERVAL_MS = 5000L 
+    private val REPORT_INTERVAL_MS = 5000L
+
+    // F43-D3: the report file used to grow without bound (one block every
+    // 5s, forever). Rotate at 1MB.
+    private val MAX_REPORT_BYTES = 1_048_576L
+    private const val OLD_REPORT_NAME = "filter report.old.txt"
+
+    // F43-D2: stop() needs the worker thread. It used to be unretained,
+    // so isActive could never be set false and the thread ran forever.
+    private var workerThread: Thread? = null
+
+    // F43-D7: publishFilterAggression used to rewrite perf_aggression.txt
+    // on EVERY 1s tick even when the value had not changed. Readers only
+    // need freshness within 15s (registry staleness window), so publish on
+    // a real change (>= 0.01) or as a 10s heartbeat - same reader
+    // semantics, ~10x fewer file writes.
+    private var lastPublishedAggression = Float.NaN
+    private var lastPublishMs = 0L
+    private val AGGRO_PUBLISH_HEARTBEAT_MS = 10_000L
     
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
 
     fun start() {
         if (isActive) return
+        // F43-D6: start() had no process gate. App.onCreate gates its own
+        // call to the main process, but BoosterIgnition.ensureIgnited (no
+        // gate of its own) also calls start() - if that path ever ran in a
+        // sub-process, a second FilterEngine would interleave writes to
+        // the same report file, the exact hazard the App comment documents.
+        // The main process name is the bare package name (no ':'); any
+        // ':suffix' process is refused here, in the engine itself.
+        if (!isMainProcess()) {
+            com.assistant.diagnostic.RuntimeLogger.log("FilterEngine.start refused: not the main process", "FILTER")
+            return
+        }
         // SPLENDOR_P12_B3_ROOT: the hardcoded /storage/emulated/0 path
         // bypassed SplendorStorageRoot's readiness/permission gate, so a
         // not-ready start failed silently on every write. Canonical root
         // only; a not-ready start stays retryable (isActive untouched).
-        if (!com.assistant.storage.SplendorStorageRoot.isReady()) return
-        val resolved = try { com.assistant.storage.SplendorStorageRoot.file("filter report.txt") } catch (_: Throwable) { return }
-        isActive = true
+        if (!com.assistant.storage.SplendorStorageRoot.isReady()) {
+            // F43-D5: this used to be a silent return - if both App and
+            // BoosterIgnition ran before storage was ready, the engine
+            // never started and nothing said why. Say why.
+            com.assistant.diagnostic.RuntimeLogger.log("FilterEngine.start deferred: storage not ready (retryable)", "FILTER")
+            return
+        }
+        val resolved = try { com.assistant.storage.SplendorStorageRoot.file("filter report.txt") } catch (_: Throwable) {
+            // F43-D5: same silent-return problem as the not-ready path.
+            com.assistant.diagnostic.RuntimeLogger.log("FilterEngine.start deferred: report file unresolvable (retryable)", "FILTER")
+            return
+        }
         
         reportFile = resolved
-        
-        Thread {
+
+        // F43-D4: isActive used to be set BEFORE the worker thread was
+        // created, but if thread start threw, isActive stayed true and
+        // the engine was wedged "active" yet dead - start() later no-ops
+        // on the isActive check. It is still set before start() (the
+        // worker's first `while (isActive)` check must see true), but a
+        // start failure now resets it.
+        isActive = true
+        val thread = Thread {
             while (isActive) {
                 try {
                     calculateEffectivenessAndPush()
@@ -60,7 +105,41 @@ object FilterEngine {
             isDaemon = true
             name = "filter-engine-admin"
             priority = Thread.NORM_PRIORITY
-            start()
+        }
+        try {
+            thread.start()
+        } catch (t: Throwable) {
+            isActive = false
+            reportFile = null
+            com.assistant.diagnostic.RuntimeLogger.log("FilterEngine thread start failed: " + t, "FILTER")
+            return
+        }
+        workerThread = thread
+    }
+
+    // F43-D2: the engine had no stop path at all - isActive was never set
+    // false by anyone, so the report thread ran forever once started.
+    // stop() is best-effort: the worker notices isActive within ~1s, and
+    // the interrupt wakes a sleeping worker immediately.
+    fun stop() {
+        if (!isActive) return
+        isActive = false
+        val thread = workerThread
+        workerThread = null
+        try { thread?.interrupt() } catch (_: Throwable) {}
+        try { thread?.join(2000L) } catch (_: Throwable) {}
+    }
+
+    private fun isMainProcess(): Boolean {
+        return try {
+            val cmdline = java.io.File("/proc/self/cmdline").readText()
+                .trim('\u0000', ' ', '\n', '\r', '\t')
+            // Fail open: an unreadable cmdline (essentially never on
+            // Android) must not kill the main-process engine; the known
+            // callers are all main-process, and the ':' check is the gate.
+            cmdline.isBlank() || ':' !in cmdline
+        } catch (_: Throwable) {
+            true
         }
     }
 
@@ -74,6 +153,29 @@ object FilterEngine {
     ): Boolean = lagVerdict == "UNKNOWN" || stutterState == "UNKNOWN" ||
         memoryTier == "UNKNOWN" || memoryAvailMb < 0L || thermalStatus < 0 ||
         nowMs - updatedMs > 15_000L
+
+    // F43-D1: the report's action line was driven ONLY by the aggression
+    // multiplier, so a red device tier printed "Nominal operation." live
+    // logs proved it: filter memory CRITICAL in 605/707 reports while the
+    // verdict said "Nominal operation.". The arithmetic: CRITICAL alone
+    // scores 100-20=80, target multiplier 1.3, so the multiplier settles
+    // at ~1.3 (<= 1.5) and the old line said Nominal. Same for JITTERY
+    // alone (85 -> 1.0) and several amber combinations. The verdict must
+    // reflect the worst tier, not only the multiplier: a red tier is never
+    // nominal, whatever the multiplier says. Pure function of its inputs
+    // so the rule is unit-testable; the multiplier logic is untouched.
+    internal fun actionFor(
+        telemetryMissing: Boolean, memoryTier: String,
+        lagVerdict: String, stutterState: String,
+        aggressionMultiplier: Float
+    ): String = when {
+        telemetryMissing -> "NO TELEMETRY — blind; no push applied."
+        memoryTier == "CRITICAL" -> "MEMORY CRITICAL — device has no headroom; this is NOT nominal operation."
+        lagVerdict == "CHOKING" || stutterState == "SEIZURE" -> "PIPELINE COLLAPSING — lag/stutter at worst tier; this is NOT nominal operation."
+        aggressionMultiplier > 1.5f -> "EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins."
+        memoryTier == "PRESSURE" || lagVerdict == "JITTERY" || stutterState == "OSCILLATION" || stutterState == "HICCUP" -> "UNDER STRAIN — partial pressure; watch, not nominal-calm."
+        else -> "Nominal operation."
+    }
 
     private fun calculateEffectivenessAndPush() {
         // SPLENDOR_P7_XPROC_READ_BEGIN
@@ -112,6 +214,9 @@ object FilterEngine {
             "HICCUP" -> 10
             else -> 0
         }
+        // Thermal range verified: PowerManager.currentThermalStatus is
+        // 0..6 (NONE..SHUTDOWN), -1 unknown (already filtered as missing
+        // above), so this deducts 0..30 - not a defect, just pinned here.
         score -= (state.thermalStatus * 5)
         score -= when (state.memoryTier) {
             "CRITICAL" -> 20
@@ -135,8 +240,22 @@ object FilterEngine {
         // SpeedCompensationContributor read filterAggression in their own
         // process). Mirror the multiplier into the cross-process registry
         // file so those readers see it; stale (>15s) reads fall back to 1.0f.
-        PerformanceTelemetryRegistry.publishFilterAggression(aggressionMultiplier)
+        publishAggressionThrottled(aggressionMultiplier)
         // SPLENDOR_P7_XPROC_AGGRO_END
+    }
+
+    // F43-D7: throttled mirror of the aggression multiplier into the
+    // cross-process registry. See the field comment above.
+    private fun publishAggressionThrottled(multiplier: Float) {
+        val nowMs = System.currentTimeMillis()
+        if (lastPublishedAggression.isNaN() ||
+            kotlin.math.abs(multiplier - lastPublishedAggression) >= 0.01f ||
+            nowMs - lastPublishMs >= AGGRO_PUBLISH_HEARTBEAT_MS
+        ) {
+            PerformanceTelemetryRegistry.publishFilterAggression(multiplier)
+            lastPublishedAggression = multiplier
+            lastPublishMs = nowMs
+        }
     }
 
     // SPLENDOR_P8_HIST_TREND_HELPERS_BEGIN
@@ -219,11 +338,27 @@ object FilterEngine {
                 // SPLENDOR_P7_XPROC_REPORT_BRAKE
                 appendLine("")
                 appendLine("FILTER ACTION:")
-                val action = if (telemetryMissing) "NO TELEMETRY — blind; no push applied." else if (aggressionMultiplier > 1.5f) "EXTREMIST PUSH ACTIVE: Forcing engines beyond 60fps safety margins." else "Nominal operation."
+                // F43-D1: the action line is the worst-tier verdict, not
+                // the multiplier alone (see actionFor).
+                val action = actionFor(telemetryMissing, memoryTier, lag, stutter, aggressionMultiplier)
                 appendLine("  $action")
                 appendLine("-----------------------------------")
             }
             
+            // F43-D3: rotate the report file instead of appending forever.
+            // A failed rotate must never lose the block: on failure, append
+            // to the existing file as before.
+            try {
+                if (file.exists() && file.length() > MAX_REPORT_BYTES) {
+                    val old = file.parentFile?.let { File(it, OLD_REPORT_NAME) }
+                    if (old != null) {
+                        if (old.exists()) old.delete()
+                        file.renameTo(old)
+                    }
+                }
+            } catch (_: Throwable) {
+                // Rotation is best-effort; the block below still appends.
+            }
             file.appendText(report)
         } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("FilterEngine report write failed: " + t, "FILTER") }
     }
