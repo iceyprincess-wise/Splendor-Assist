@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Accent bar (re-touch, round no60).
+
+  NO60-D7 (cyan unification): gradient end was #00C2FF, a third cyan
+  beside the theme #00E5FF and the layouts' #00D4FF. Now ends on the
+  one brand cyan #00E5FF. Purple start unchanged.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-  <gradient android:startColor="#7C4DFF" android:endColor="#00C2FF" android:angle="0"/>
-  <corners android:radius="2dp"/>
+  <gradient android:startColor="#7C4DFF" android:endColor="#00E5FF" android:angle="0" />
+  <corners android:radius="2dp" />
 </shape>

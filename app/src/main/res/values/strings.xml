@@ -1,4 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?><resources><string name="accessibility_service_description">[SECURITY LOCK] Engine Assist Interceptor</string>    <string name="auto_extracted_1">ENGINE FATAL ERROR</string>
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Splendor-Assist strings (File No 91) — round no60.
+
+  CONTENT NOTE (paste-vs-repo): the pasted strings.xml matches the repo
+  exactly at HEAD 850341fe. The no42 analytics strings
+  (splendor_analytics_row/age/header/...) were NEVER in this file — they
+  live in core/src/main/res/values/strings.xml, where f44 put them, and
+  the core CrashInspector strings (splendor_crash_logs_placeholder etc.)
+  live there too. No staleness: this file is the app module's strings.
+
+  NO60-D14 (PROVEN): auto_extracted_8 does NOT exist — the numbering
+  jumps 7 -> 9 in the REPO, not just in the paste. It is an extraction
+  gap from the original auto-extraction; no code or layout references
+  _8. The gap is cosmetic. Renaming 86 strings to close it is high-risk
+  churn with zero runtime benefit (resource names are invisible at
+  runtime), so the names are KEPT deliberately — the premium look comes
+  from themes/layouts/drawables, not resource names.
+
+  NO60-D15 (PROVEN): crash_logs ("Crash Logs...") has ZERO references
+  anywhere in app/ or core/ (grep, HEAD 850341fe). The CrashInspector
+  UI that shows crash logs lives in core and already uses core's
+  splendor_crash_logs_placeholder (same text). This app string duplicates
+  it and is dead. It is KEPT here, not deleted: Ed's standing rule is
+  no deletion without his explicit call. Removal is queued for Ed.
+
+  NO60-D16 (new string): splendor_authority ("Authority") — the fourth
+  slider label in activity_smartassist_control_room.xml was hardcoded
+  "AUTHORITY" because no string existed for it. It now has one, properly
+  named (not auto_extracted_*), so the room has zero hardcoded labels.
+
+  NO60-D17 (format): the old file ran the XML declaration, <resources>
+  and the first <string> together on line 1 and packed strings with
+  uneven indentation. Reformatted to one string per line; every string
+  value is byte-identical to the repo (verified by the generator script
+  that built this file from the repo content).
+-->
+<resources>
+
+    <string name="accessibility_service_description">[SECURITY LOCK] Engine Assist Interceptor</string>
+    <string name="auto_extracted_1">ENGINE FATAL ERROR</string>
     <string name="auto_extracted_2">COPY LOG TO CLIPBOARD</string>
     <string name="auto_extracted_3">SPLENDOR ASSIST</string>
     <string name="auto_extracted_4">Runtime Control Center</string>
@@ -83,5 +123,7 @@
     <string name="auto_extracted_84">50%</string>
     <string name="auto_extracted_85">INACTIVE</string>
     <string name="auto_extracted_86">Save Settings</string>
+    <string name="splendor_authority">Authority</string>
+    <!-- NO60-D15: dead string, zero references (see header). Kept per the no-delete rule; removal is Ed's call. -->
     <string name="crash_logs">Crash Logs...</string>
 </resources>

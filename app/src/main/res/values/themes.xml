@@ -1,19 +1,206 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Splendor-Assist theme (File No 90) — round no60, PREMIUM UI UPGRADE.
+
+  The old theme was five colours (primary, secondary, surface, background,
+  bars). The brand is unchanged — Material3 Dark, purple #7C4DFF + cyan
+  #00E5FF on dark navy #070B14 — every new role is derived from those
+  tokens or from a colour the layouts already used. Nothing here changes
+  the brand; it completes it so layouts stop hand-rolling hex values.
+
+  NO60-D10 (theme roles): the old theme had no tertiary, no surface
+  variants, no outline, no error and no inverse colours, so every layout
+  invented its own: success green #00E676, muted text #9FB3D1, dim text
+  #5C7399, track #1E2A44, error red #FF5252, panel fill #0E1526. They are
+  now roles: tertiary #00E676 (the green the overlay/status already
+  used), onSurfaceVariant #9FB3D1, surfaceContainerHighest #1E2A44,
+  error #FF5252, surfaceVariant #0E1526, plus the full surface-container
+  ramp, outline/outlineVariant, secondary/tertiary containers and the
+  inverse set. The dim #5C7399 has no M3 role; it lives as
+  @color/splendor_text_dim in the new colors.xml.
+
+  NO60-D11 (typography): no text system existed — every TextView set its
+  own size/weight/spacing. TextAppearance.SplendorAssist.* is the scale
+  (Display 30sp for screen titles, Headline 26sp for room titles, Title
+  18sp, SectionLabel 12sp caps cyan, Body 14sp, BodySmall 12sp, Mono
+  12sp, Caption 11sp, Button 15sp bold). The M3 theme slots
+  (textAppearanceDisplaySmall etc.) are bound to it, so M3 components
+  pick the scale up by default.
+
+  NO60-D12 (shapes): ShapeAppearance.SplendorAssist.* carries the app's
+  corner language — Small 16dp (banner), Medium 20dp (panels/cards),
+  Large 27dp (pill buttons) — bound to the theme's shape slots, so M3
+  components (dialogs, menus) use them. Measured effect: the one
+  AppCompat AlertDialog in MainActivity moves 28dp -> 27dp corners
+  (negligible); buttons and cards keep their drawable radii, which win
+  over the theme shape. No TextInputLayout/EditText exists in the app,
+  so no text field changes shape.
+
+  NO60-D13 (widget styles): buttons, sliders, switches and progress bars
+  were hand-styled per layout (same gradient background + same tints
+  copied into four files). Widget.SplendorAssist.* is the one place:
+  Button.Filled (gradient + white), Button.Ghost (outline + cyan) and
+  Button.Ghost.Dim (outline + dim, for SKIP), Slider (purple thumb/track
+  on the container track), Switch (M3 switch, theme-driven), and the two
+  ProgressBar styles. The styles are applied EXPLICITLY per view — the
+  theme does NOT rebind materialButtonStyle/sliderStyle globally, so
+  untouched rooms keep their current look until their round.
+-->
 <resources>
 
     <style name="Theme.SplendorAssist" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Brand core (unchanged from the old theme). -->
         <item name="colorPrimary">#7C4DFF</item>
         <item name="colorOnPrimary">#FFFFFF</item>
         <item name="colorPrimaryContainer">#241447</item>
         <item name="colorOnPrimaryContainer">#E4D9FF</item>
         <item name="colorSecondary">#00E5FF</item>
         <item name="colorOnSecondary">#04222A</item>
+        <item name="colorSecondaryContainer">#0B3242</item>
+        <item name="colorOnSecondaryContainer">#C2F4FF</item>
+        <item name="colorPrimaryInverse">#5B2EE5</item>
+        <!-- Success green, promoted from the hardcoded #00E676 the overlay
+             and status lines already used. -->
+        <item name="colorTertiary">#00E676</item>
+        <item name="colorOnTertiary">#052E1B</item>
+        <item name="colorTertiaryContainer">#0B3D24</item>
+        <item name="colorOnTertiaryContainer">#C8F7DC</item>
+        <!-- Surfaces (unchanged base + the full container ramp). -->
         <item name="colorSurface">#101828</item>
         <item name="colorOnSurface">#E8EEF9</item>
+        <item name="colorSurfaceVariant">#0E1526</item>
+        <item name="colorOnSurfaceVariant">#9FB3D1</item>
+        <item name="colorSurfaceContainerLowest">#070B14</item>
+        <item name="colorSurfaceContainerLow">#0B1220</item>
+        <item name="colorSurfaceContainer">#0D1424</item>
+        <item name="colorSurfaceContainerHigh">#141D33</item>
+        <item name="colorSurfaceContainerHighest">#1E2A44</item>
+        <item name="colorSurfaceInverse">#E8EEF9</item>
+        <item name="colorOnSurfaceInverse">#101828</item>
+        <!-- Outlines: the faint panel stroke (#261E2A44) and a visible slate. -->
+        <item name="colorOutline">#3A4A68</item>
+        <item name="colorOutlineVariant">#261E2A44</item>
+        <!-- Error red, from activity_error's hardcoded #FF5252. -->
+        <item name="colorError">#FF5252</item>
+        <item name="colorOnError">#2A0A0A</item>
+        <item name="colorErrorContainer">#3D1215</item>
+        <item name="colorOnErrorContainer">#FFD7D7</item>
+        <!-- Background and system bars (unchanged). -->
         <item name="android:colorBackground">#070B14</item>
         <item name="android:windowBackground">#070B14</item>
         <item name="android:statusBarColor">#04060C</item>
         <item name="android:navigationBarColor">#04060C</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <!-- Typography scale (NO60-D11). -->
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.SplendorAssist.Display</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.SplendorAssist.Headline</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.SplendorAssist.Title</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.SplendorAssist.Body</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.SplendorAssist.Button</item>
+        <!-- Shape language (NO60-D12). -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.SplendorAssist.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.SplendorAssist.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.SplendorAssist.Large</item>
+    </style>
+
+    <!-- Typography scale. -->
+    <style name="TextAppearance.SplendorAssist.Display" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:textSize">30sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.06</item>
+    </style>
+    <style name="TextAppearance.SplendorAssist.Headline" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">26sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+    <style name="TextAppearance.SplendorAssist.Title" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="TextAppearance.SplendorAssist.SectionLabel" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.2</item>
+        <item name="android:textColor">?attr/colorSecondary</item>
+    </style>
+    <style name="TextAppearance.SplendorAssist.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="TextAppearance.SplendorAssist.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">12sp</item>
+    </style>
+    <style name="TextAppearance.SplendorAssist.Mono" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+    <style name="TextAppearance.SplendorAssist.MonoSmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+    <style name="TextAppearance.SplendorAssist.Caption" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.08</item>
+    </style>
+    <style name="TextAppearance.SplendorAssist.Button" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.06</item>
+    </style>
+
+    <!-- Shape language: Small 16dp (banner), Medium 20dp (panels/cards),
+         Large 27dp (pill buttons, matches the 27dp drawable radius). -->
+    <style name="ShapeAppearance.SplendorAssist.Small" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerSize">16dp</item>
+    </style>
+    <style name="ShapeAppearance.SplendorAssist.Medium" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerSize">20dp</item>
+    </style>
+    <style name="ShapeAppearance.SplendorAssist.Large" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerSize">27dp</item>
+    </style>
+
+    <!-- Widget styles (NO60-D13). Applied explicitly per view; the theme
+         does not rebind the global widget styles. -->
+    <style name="Widget.SplendorAssist.Button.Filled" parent="Widget.Material3.Button">
+        <item name="android:background">@drawable/button_premium</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="android:textAppearance">@style/TextAppearance.SplendorAssist.Button</item>
+        <item name="android:minHeight">54dp</item>
+        <item name="android:paddingLeft">24dp</item>
+        <item name="android:paddingRight">24dp</item>
+    </style>
+    <style name="Widget.SplendorAssist.Button.Ghost" parent="Widget.Material3.Button">
+        <item name="android:background">@drawable/btn_ghost</item>
+        <item name="android:textColor">?attr/colorSecondary</item>
+        <item name="android:textAppearance">@style/TextAppearance.SplendorAssist.Button</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingLeft">24dp</item>
+        <item name="android:paddingRight">24dp</item>
+    </style>
+    <style name="Widget.SplendorAssist.Button.Ghost.Dim" parent="Widget.SplendorAssist.Button.Ghost">
+        <item name="android:textColor">@color/splendor_text_dim</item>
+    </style>
+    <style name="Widget.SplendorAssist.Slider" parent="Widget.Material3.Slider">
+        <item name="thumbColor">?attr/colorPrimary</item>
+        <item name="trackColorActive">?attr/colorPrimary</item>
+        <item name="trackColorInactive">?attr/colorSurfaceContainerHighest</item>
+        <item name="haloColor">?attr/colorPrimary</item>
+        <item name="trackHeight">6dp</item>
+    </style>
+    <style name="Widget.SplendorAssist.Switch" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+        <item name="android:textAppearance">@style/TextAppearance.SplendorAssist.Body</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+    <style name="Widget.SplendorAssist.ProgressBar.Horizontal" parent="@android:style/Widget.ProgressBar.Horizontal">
+        <item name="android:progressTint">?attr/colorPrimary</item>
+        <item name="android:progressBackgroundTint">?attr/colorSurfaceContainerHighest</item>
+        <item name="android:minHeight">10dp</item>
+        <item name="android:maxHeight">10dp</item>
+    </style>
+    <style name="Widget.SplendorAssist.ProgressBar.Circular" parent="@android:style/Widget.ProgressBar">
+        <item name="android:indeterminateTint">?attr/colorSecondary</item>
     </style>
 </resources>

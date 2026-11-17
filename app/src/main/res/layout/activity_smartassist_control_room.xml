@@ -1,79 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Smart Assist Control Room (File No 97) — round no60, premium re-touch.
+
+  LIVE: inflated by SmartAssistControlRoomActivity (setContentView).
+  Every id below is bound by that activity — none was added, removed
+  or renamed.
+
+  NO60-D24..D28 — THE LABEL BUG (PROVEN): all four slider labels were
+  shifted by one string, and the fourth was hardcoded.
+    section header showed @string/auto_extracted_52 "Pass Threshold"
+      -> @string/auto_extracted_55 "Runtime Authority" (D24)
+    Pass label showed _53 "Shot Threshold" -> _52 "Pass Threshold" (D25)
+    Shot label showed _54 "Cross Threshold" -> _53 "Shot Threshold" (D26)
+    Cross label showed _55 "Runtime Authority" -> _54 "Cross Threshold" (D27)
+    Authority label was hardcoded "AUTHORITY" (no string existed)
+      -> @string/splendor_authority, new in strings.xml (D28)
+  The activity binds sliders by id only, so the wrong labels were
+  purely visual — every slider drove the right threshold — but a user
+  reading "Pass Threshold" over the Shot slider was misled on all four
+  rows. Fixed by re-pointing the five TextViews; no code change needed.
+
+  NO60-D29: sliders now use Widget.SplendorAssist.Slider (theme
+  purple thumb/track) with android:stepSize="1" — the activity reads
+  integer thresholds (pass.value.toInt()), so a continuous slider
+  could previously rest between integers; the UI now matches the data.
+  NO60-D30: switches use Widget.SplendorAssist.Switch; the panel
+  padding goes 8dp -> 16dp to match the dashboard's runtimeStatusCard.
+  NO60-D31: every hardcoded colour -> theme token (background
+  ?android:attr/colorBackground, title ?attr/colorOnSurface, labels
+  ?attr/colorOnSurfaceVariant, values Mono, metrics dim) and the save
+  button uses Widget.SplendorAssist.Button.Filled. Title, section
+  label, slider labels and values use the theme text appearances.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="#070B14" android:fillViewport="true" android:overScrollMode="never">
+    android:background="?android:attr/colorBackground" android:fillViewport="true" android:overScrollMode="never">
   <LinearLayout xmlns:tools="http://schemas.android.com/tools" tools:ignore="HardcodedText,DisableBaselineAlignment,ButtonStyle,UseCompoundDrawables"
       android:layout_width="match_parent" android:layout_height="wrap_content"
       android:orientation="vertical" android:padding="24dp">
 
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="@string/auto_extracted_49" android:textSize="26sp" android:textStyle="bold"
-        android:textColor="#E8EEF9" android:letterSpacing="0.02"/>
+        android:text="@string/auto_extracted_49"
+        android:textColor="?attr/colorOnSurface"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.Headline" />
     <View android:layout_width="56dp" android:layout_height="3dp"
         android:layout_marginTop="10dp" android:layout_marginBottom="20dp"
-        android:background="@drawable/accent_bar"/>
+        android:background="@drawable/accent_bar" />
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:background="@drawable/panel_surface"
-        android:padding="8dp">
+        android:padding="16dp">
 
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/swEnabled" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_50" android:textColor="#E8EEF9" android:textSize="15sp"
-            android:paddingTop="10dp" android:paddingBottom="10dp"/>
+            style="@style/Widget.SplendorAssist.Switch"
+            android:text="@string/auto_extracted_50"
+            android:paddingTop="10dp" android:paddingBottom="10dp" />
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/swPanic" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_51" android:textColor="#E8EEF9" android:textSize="15sp"
-            android:paddingTop="10dp" android:paddingBottom="10dp"/>
+            style="@style/Widget.SplendorAssist.Switch"
+            android:text="@string/auto_extracted_51"
+            android:paddingTop="10dp" android:paddingBottom="10dp" />
 
     </LinearLayout>
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="@string/auto_extracted_52" android:textSize="12sp" android:textStyle="bold"
-        android:textColor="#00D4FF" android:letterSpacing="0.15"
-        android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
+        android:text="@string/auto_extracted_55"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.SectionLabel"
+        android:layout_marginTop="20dp" android:layout_marginBottom="10dp" />
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_53" android:textColor="#9FB3D1" android:textSize="12sp"
-            android:layout_marginBottom="6dp"/>
+            android:text="@string/auto_extracted_52" android:textColor="?attr/colorOnSurfaceVariant"
+            android:textAppearance="@style/TextAppearance.SplendorAssist.BodySmall"
+            android:layout_marginBottom="6dp" />
         <com.google.android.material.slider.Slider
             android:id="@+id/passSeek" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:valueFrom="0" android:valueTo="100"
-            app:thumbColor="#7C4DFF" app:trackColorActive="#7C4DFF" app:trackColorInactive="#1E2A44"/>
+            style="@style/Widget.SplendorAssist.Slider"
+            android:valueFrom="0" android:valueTo="100" android:stepSize="1" />
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_54" android:textColor="#9FB3D1" android:textSize="12sp"
-            android:layout_marginBottom="6dp"/>
+            android:text="@string/auto_extracted_53" android:textColor="?attr/colorOnSurfaceVariant"
+            android:textAppearance="@style/TextAppearance.SplendorAssist.BodySmall"
+            android:layout_marginBottom="6dp" />
         <com.google.android.material.slider.Slider
             android:id="@+id/shotSeek" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:valueFrom="0" android:valueTo="100"
-            app:thumbColor="#7C4DFF" app:trackColorActive="#7C4DFF" app:trackColorInactive="#1E2A44"/>
+            style="@style/Widget.SplendorAssist.Slider"
+            android:valueFrom="0" android:valueTo="100" android:stepSize="1" />
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_55" android:textColor="#9FB3D1" android:textSize="12sp"
-            android:layout_marginBottom="6dp"/>
+            android:text="@string/auto_extracted_54" android:textColor="?attr/colorOnSurfaceVariant"
+            android:textAppearance="@style/TextAppearance.SplendorAssist.BodySmall"
+            android:layout_marginBottom="6dp" />
         <com.google.android.material.slider.Slider
             android:id="@+id/crossSeek" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:valueFrom="0" android:valueTo="100"
-            app:thumbColor="#7C4DFF" app:trackColorActive="#7C4DFF" app:trackColorInactive="#1E2A44"/>
+            style="@style/Widget.SplendorAssist.Slider"
+            android:valueFrom="0" android:valueTo="100" android:stepSize="1" />
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="AUTHORITY" android:textColor="#9FB3D1" android:textSize="12sp"
-            android:layout_marginBottom="6dp"/>
+            android:text="@string/splendor_authority" android:textColor="?attr/colorOnSurfaceVariant"
+            android:textAppearance="@style/TextAppearance.SplendorAssist.BodySmall"
+            android:layout_marginBottom="6dp" />
         <com.google.android.material.slider.Slider
             android:id="@+id/authoritySeek" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:valueFrom="0" android:valueTo="100"
-            app:thumbColor="#7C4DFF" app:trackColorActive="#7C4DFF" app:trackColorInactive="#1E2A44"/>
+            style="@style/Widget.SplendorAssist.Slider"
+            android:valueFrom="0" android:valueTo="100" android:stepSize="1" />
         <TextView android:id="@+id/tvAuthorityValue" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/auto_extracted_56" android:textColor="#9FB3D1" android:textSize="12sp"
-            android:fontFamily="monospace" android:layout_marginBottom="8dp"/>
+            android:text="@string/auto_extracted_56" android:textColor="?attr/colorOnSurfaceVariant"
+            android:textAppearance="@style/TextAppearance.SplendorAssist.Mono" android:layout_marginBottom="8dp" />
     <TextView android:id="@+id/tvRuntime"
         android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="12dp" android:textColor="#9FB3D1" android:textSize="12sp"
-        android:fontFamily="monospace"/>
+        android:layout_marginTop="12dp" android:textColor="?attr/colorOnSurfaceVariant"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.Mono" />
     <TextView android:id="@+id/tvMetrics"
         android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" android:textColor="#5C7399" android:textSize="11sp"
-        android:fontFamily="monospace"/>
+        android:layout_marginTop="8dp" android:textColor="@color/splendor_text_dim"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.MonoSmall" />
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSave" android:layout_width="match_parent" android:layout_height="54dp"
         android:layout_marginTop="24dp" android:text="@string/auto_extracted_57"
-        android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="15sp"
-        android:letterSpacing="0.06" android:background="@drawable/button_premium"/>
+        style="@style/Widget.SplendorAssist.Button.Filled" />
 
   </LinearLayout>
 </ScrollView>

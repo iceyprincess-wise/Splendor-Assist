@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Dashboard card outer ring (re-touch, round no60).
+
+  NO60-D7 (cyan unification): gradient end was #00C2FF, a third cyan.
+  Now #00E5FF, the theme secondary — the card ring is the same gradient
+  as button_premium and accent_bar. The 2dp padding + card_inner_premium
+  fill still make the visible 2dp gradient border. 20dp radius
+  unchanged.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-  <gradient android:startColor="#7C4DFF" android:centerColor="#5C6BFF" android:endColor="#00C2FF" android:angle="135"/>
-  <corners android:radius="20dp"/>
+  <gradient android:startColor="#7C4DFF" android:centerColor="#5C6BFF" android:endColor="#00E5FF" android:angle="135" />
+  <corners android:radius="20dp" />
 </shape>

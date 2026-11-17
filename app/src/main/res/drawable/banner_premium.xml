@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Overlay status banner (re-touch, round no60).
+
+  NO60-D8: was a flat translucent solid (#26101828). Now a subtle
+  vertical gradient in the same navy family, so the banner reads as a
+  raised glass strip over the game instead of a flat box. Stroke and
+  16dp radius unchanged; the green status text sits on it via the
+  theme tertiary, not a hardcoded hex.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-  <solid android:color="#26101828"/>
-  <corners android:radius="16dp"/>
-  <stroke android:width="1dp" android:color="#337C4DFF"/>
+  <gradient android:startColor="#33101828" android:endColor="#1A101828" android:angle="270" />
+  <corners android:radius="16dp" />
+  <stroke android:width="1dp" android:color="#337C4DFF" />
 </shape>

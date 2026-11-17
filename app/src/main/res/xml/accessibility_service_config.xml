@@ -1,8 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  SmartAssist accessibility service config (File No 89) — round no60.
+
+  Traced against SmartAssistAccessibilityEngine.kt (HEAD 850341fe):
+
+  NO60-D5 (PROVEN): flagRetrieveInteractiveWindows REMOVED. The flag
+  only matters if the service calls getWindows(); the service never does
+  (zero getWindows()/windows references in the service). It only reads
+  rootInActiveWindow (onServiceConnected seed + F34), which needs
+  canRetrieveWindowContent="true" — kept. Removing an unused flag
+  changes no behaviour; keeping it overstated what the service does.
+
+  VERIFIED, not defects: the three declared event types are exactly the
+  three the service handles — typeWindowStateChanged (foreground-package
+  trust gate), typeTouchInteractionStart/End (UserTouchState) — no
+  declared type is unhandled and no handled type is undeclared.
+  canPerformGestures="true" is USED (dispatchGesture in the gesture
+  path). notificationTimeout="0" is deliberate (touch latency).
+  canRetrieveWindowContent="true" is USED (rootInActiveWindow seed).
+
+  NO60-D6 (PROVEN, documented not changed): feedbackHaptic is declared
+  but the service emits NO haptic feedback — no Vibrator/vibrate call
+  anywhere in the service. The attribute is inert as declared. It is
+  KEPT deliberately: removing it would let the system fall back to its
+  default feedback type for this service, which is a behaviour change
+  for accessibility users that cannot be verified in the sandbox. If
+  Ed wants it gone, that is his call (queued).
+-->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/accessibility_service_description"
     android:accessibilityEventTypes="typeWindowStateChanged|typeTouchInteractionStart|typeTouchInteractionEnd"
-    android:accessibilityFlags="flagRetrieveInteractiveWindows"
     android:accessibilityFeedbackType="feedbackHaptic"
     android:notificationTimeout="0"
     android:canRetrieveWindowContent="true"

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Splendor-Assist semantic colour tokens (NEW file, round no60).
+
+  These are the colours the Material3 theme roles cannot carry: the
+  success green is theme colorTertiary, the muted text is
+  colorOnSurfaceVariant, but the dim footer/disabled text (#5C7399) has
+  no M3 role, and dialogs need a scrim. Every hardcoded hex in the
+  premium layouts now resolves to either a ?attr/ theme role or one of
+  these three tokens — no bare hex remains in the touched layouts.
+
+  Cyan unification (NO60-D7, PROVEN): the tree carried THREE cyans —
+  #00E5FF (theme colorSecondary), #00D4FF (hand-written in ~15 layout
+  spots) and #00C2FF (gradient ends in button_premium, accent_bar,
+  card_outer_premium). One brand cyan now: #00E5FF, the theme token.
+  #00D4FF and #00C2FF are gone from every touched layout and drawable.
+-->
+<resources>
+    <!-- Success green: same value as theme colorTertiary; kept as a named
+         token for drawables, which cannot reference ?attr/ colours. -->
+    <color name="splendor_success">#00E676</color>
+    <!-- Dim text: footers, version line, disabled/ghost labels. -->
+    <color name="splendor_text_dim">#5C7399</color>
+    <!-- Scrim for dialogs/sheets: the app background at 60% opacity. -->
+    <color name="splendor_scrim">#99070B14</color>
+</resources>

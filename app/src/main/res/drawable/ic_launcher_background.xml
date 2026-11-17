@@ -1,3 +1,15 @@
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#061A3A"/>
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launcher icon background (re-touch, round no60).
+
+  NO60-D9: the file had no XML declaration (every other drawable has
+  one) — added. Was a flat #061A3A solid; now a subtle vertical
+  gradient in the same deep navy (#0A2148 top to #061A3A bottom), so
+  the icon has depth against dark wallpapers instead of a flat slab.
+  The foreground (splendor_assist_logo bitmap, inset 13%) is untouched
+  — no invented art. ic_launcher.xml / ic_launcher_round.xml needed
+  no change: they already reference this drawable.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+  <gradient android:startColor="#0A2148" android:endColor="#061A3A" android:angle="270" />
 </shape>

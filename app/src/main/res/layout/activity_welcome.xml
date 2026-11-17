@@ -1,17 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Welcome / loading screen (File No 95) — round no60, premium re-touch.
+
+  ORPHANED (PROVEN): no activity inflates this layout — no
+  WelcomeActivity exists, MainActivity inflates activity_main, and no
+  code references R.layout.activity_welcome or the tvCheckState id
+  (grep, HEAD 850341fe). Kept and upgraded, not deleted (no-delete
+  rule): it is premium and ready if the launch flow is ever wired to
+  it. Wiring it is Ed's call (queued).
+
+  NO60-D19: every hardcoded colour -> theme token (background
+  ?android:attr/colorBackground, title ?attr/colorPrimary, state text
+  ?attr/colorOnSurfaceVariant). The spinner tint #00D4FF -> the
+  Circular progress style (theme secondary). Title and state text now
+  use the theme text appearances instead of per-view sizes.
+  NO60-D20: the app logo (splendor_assist_logo.png, already used by the
+  launcher foreground) now heads the screen above the title — a loading
+  screen with no mark looked unfinished.
+-->
 <LinearLayout xmlns:tools="http://schemas.android.com/tools" tools:ignore="HardcodedText,DisableBaselineAlignment,ButtonStyle,UseCompoundDrawables" android:baselineAligned="false" xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="#070B14" android:gravity="center" android:orientation="vertical"
+    android:background="?android:attr/colorBackground" android:gravity="center" android:orientation="vertical"
     android:padding="32dp">
+  <ImageView android:layout_width="96dp" android:layout_height="96dp"
+      android:src="@drawable/splendor_assist_logo"
+      android:contentDescription="@string/auto_extracted_46" />
   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-      android:text="@string/auto_extracted_46" android:textColor="#7C4DFF"
-      android:textSize="30sp" android:textStyle="bold" android:letterSpacing="0.18"/>
+      android:layout_marginTop="20dp"
+      android:text="@string/auto_extracted_46" android:textColor="?attr/colorPrimary"
+      android:textAppearance="@style/TextAppearance.SplendorAssist.Display" />
   <View android:layout_width="56dp" android:layout_height="3dp" android:layout_marginTop="14dp"
-      android:background="@drawable/accent_bar"/>
+      android:background="@drawable/accent_bar" />
   <TextView android:id="@+id/tvCheckState"
       android:layout_width="wrap_content" android:layout_height="wrap_content"
       android:layout_marginTop="24dp" android:text="@string/auto_extracted_47"
-      android:textColor="#9FB3D1" android:textSize="14sp" android:fontFamily="monospace"/>
-  <ProgressBar android:layout_width="28dp" android:layout_height="28dp"
-      android:layout_marginTop="32dp" android:indeterminateTint="#00D4FF"/>
+      android:textColor="?attr/colorOnSurfaceVariant"
+      android:textAppearance="@style/TextAppearance.SplendorAssist.Mono" />
+  <ProgressBar style="@style/Widget.SplendorAssist.ProgressBar.Circular"
+      android:layout_width="28dp" android:layout_height="28dp"
+      android:layout_marginTop="32dp" />
 </LinearLayout>

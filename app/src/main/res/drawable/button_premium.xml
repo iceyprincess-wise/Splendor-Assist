@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Premium filled button (re-touch, round no60).
+
+  NO60-D7 (cyan unification): gradient end was #00C2FF, a third cyan.
+  Now #00E5FF, the theme secondary — the same gradient runs in
+  accent_bar and card_outer_premium, so the button, the accent bar and
+  the dashboard cards are one gradient, not three near-misses. Purple
+  start, centre, 135-degree angle, 27dp pill radius, white ripple and
+  hairline stroke unchanged.
+-->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#55FFFFFF">
   <item>
     <shape android:shape="rectangle">
-      <gradient android:startColor="#7C4DFF" android:centerColor="#5C6BFF" android:endColor="#00C2FF" android:angle="135"/>
-      <corners android:radius="27dp"/>
-      <stroke android:width="1dp" android:color="#40FFFFFF"/>
+      <gradient android:startColor="#7C4DFF" android:centerColor="#5C6BFF" android:endColor="#00E5FF" android:angle="135" />
+      <corners android:radius="27dp" />
+      <stroke android:width="1dp" android:color="#40FFFFFF" />
     </shape>
   </item>
 </ripple>

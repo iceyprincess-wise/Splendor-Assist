@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Splendor-Assist FileProvider paths (File No 87) — round no60.
+
+  NO60-D1 (PROVEN): the old file exposed TWO roots outside the canonical
+  storage rule — <external-files-path path="logs"> (app-private external
+  files) and <external-cache-path path="exports"> (external cache). The
+  no59 single-path rule is that EVERYTHING the app writes lives under
+  /sdcard/Splendor-Assist (SplendorStorageRoot.ROOT_PATH). Both old paths
+  violated it, so a file shared through here would have come from a
+  location no writer in the app uses. Fixed: ONE <external-path> rooted
+  at Splendor-Assist/, so any future share serves the canonical root.
+
+  NO60-D2 (PROVEN, documented not fixed): this file is currently
+  UNREFERENCED — no <provider> is declared in AndroidManifest.xml and
+  no code calls FileProvider/getUriForFile anywhere in app/ or core/
+  (grep, HEAD 850341fe). No share flow exists to serve (no ACTION_SEND
+  anywhere), so wiring a <provider> entry in this round would invent a
+  feature. The paths are corrected now so the file is right IF a share
+  flow is ever wired; adding the manifest entry is Ed's call (queued).
+  Do NOT delete this file without Ed's say-so (no-delete rule).
+-->
 <paths>
-    <!-- Restricted external path -->
-    <external-files-path name="external_files" path="logs" />
-    <external-cache-path name="external_cache" path="exports" />
+    <!-- Canonical app root: /sdcard/Splendor-Assist (SplendorStorageRoot). -->
+    <external-path name="splendor_assist" path="Splendor-Assist/" />
 </paths>

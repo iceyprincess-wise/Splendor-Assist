@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Splendor-Assist DVR theater FileProvider paths (File No 88) — round no60.
+
+  NO60-D3 (PROVEN): the old file exposed <external-cache-path
+  path="MatchAnalytics_DVR/"> — external cache, outside the no59
+  single-path rule (everything under /sdcard/Splendor-Assist). Fixed:
+  ONE <external-path> at Splendor-Assist/MatchAnalytics_DVR/, the same
+  theater directory name, now under the canonical root.
+
+  NO60-D4 (PROVEN, documented not fixed): this file is currently
+  UNREFERENCED — no <provider> is declared in AndroidManifest.xml, no
+  code calls FileProvider/getUriForFile, and no code anywhere writes a
+  "MatchAnalytics_DVR" directory (grep finds zero references in app/
+  or core/, HEAD 850341fe). The DVR theater is a planned directory with
+  no writer yet; there is nothing to share through here today. The path
+  is corrected now so the file is right IF the theater lands; wiring a
+  manifest entry or a DVR writer is Ed's call (queued). Do NOT delete
+  this file without Ed's say-so (no-delete rule).
+-->
 <paths>
-    <external-cache-path name="dvr_theater_cache" path="MatchAnalytics_DVR/" />
+    <!-- DVR theater, under the canonical root: /sdcard/Splendor-Assist/MatchAnalytics_DVR/ -->
+    <external-path name="splendor_assist_dvr" path="Splendor-Assist/MatchAnalytics_DVR/" />
 </paths>

@@ -1,13 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Overlay status banner (File No 94) — round no60, premium re-touch.
+
+  LIVE: inflated by OverlayService.initializeOverlayUI(), bound as
+  overlay_status_text (OverlayService.kt:678). The text is replaced at
+  runtime by updateOverlayVisuals() ("SPLENDOR ASSIST ACTIVE" + colour),
+  so @string/auto_extracted_48 here is only the initial value.
+
+  NO60-D18: hardcoded textColor #00E676 -> ?attr/colorTertiary (the
+  theme success green). Padding, size, monospace, shadow, banner
+  background and gone-by-default visibility unchanged — the banner must
+  not change geometry over the game, only its colour token.
+-->
 <FrameLayout xmlns:tools="http://schemas.android.com/tools" tools:ignore="HardcodedText,DisableBaselineAlignment,ButtonStyle,UseCompoundDrawables" xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
   <TextView android:id="@+id/overlay_status_text"
       android:layout_width="wrap_content" android:layout_height="wrap_content"
       android:layout_gravity="top|center_horizontal" android:layout_marginTop="45dp"
-      android:text="@string/auto_extracted_48" android:textColor="#00E676"
+      android:text="@string/auto_extracted_48" android:textColor="?attr/colorTertiary"
       android:textSize="13sp" android:textStyle="bold" android:fontFamily="monospace"
       android:background="@drawable/banner_premium" android:paddingLeft="14dp"
       android:paddingRight="14dp" android:paddingTop="6dp" android:paddingBottom="6dp"
       android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1"
-      android:shadowRadius="2" android:visibility="gone"/>
+      android:shadowRadius="2" android:visibility="gone" />
 </FrameLayout>
