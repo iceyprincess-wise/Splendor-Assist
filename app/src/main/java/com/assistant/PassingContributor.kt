@@ -102,7 +102,7 @@ object PassingContributor : GameplayContributor {
         if (!frame.trusted || !frame.hasBall) return null
         val rx = frame.passTargetX
         val ry = frame.passTargetY
-        if (rx <= 0f && ry <= 0f) return null
+        if (rx <= 0f || ry <= 0f) return null
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.PASS,

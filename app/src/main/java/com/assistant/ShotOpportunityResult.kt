@@ -95,7 +95,6 @@ import kotlin.math.*
 
 data class ShotOpportunityResult(
     val confidence:Float,
-    val openSideScore:Float,
-    val pressureScore:Float
+    val openSideScore:Float
 )
 

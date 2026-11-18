@@ -28,9 +28,7 @@ add_library(splendor_native SHARED
   native_sa_corrector.c
 
   native_critical_vector.c
-  native_cross_precision.c
   native_speed_compensation.c
-  native_shot_opportunity.c
 
   native_tactical_engines.c
 

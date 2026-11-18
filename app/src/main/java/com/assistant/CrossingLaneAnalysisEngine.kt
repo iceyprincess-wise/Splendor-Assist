@@ -120,9 +120,8 @@ object CrossingLaneAnalysisEngine {
 
     private fun assertCrossingLaneOmegaAuthority(stage: String) {
         check(stage.isNotBlank()) { "CrossingLane omega authority stage must be explicit" }
-        check(CROSSINGLANE_OMEGA_AUTHORITY_TAG.isNotBlank()) {
-            "CrossingLane omega authority marker missing before $stage"
-        }
+        // No67-D25: the CROSSINGLANE_OMEGA_AUTHORITY_TAG check was vacuous
+        // (a compile-time const that can never be blank) — removed.
     }
 
     fun analyze(

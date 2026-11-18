@@ -93,15 +93,13 @@ import kotlin.math.sin
 
 
 
-class AutoEvadeEngine(
-    private val inputEngine: LatencyDefeatingInputEngine
-) {
+class AutoEvadeEngine() {
 
     companion object {
         @Volatile
         private var lastEvadeTimestamp = 0L
 
-        // BASE COOLDOWN: 132ms (Optimized to align with exactly 4 server ticks at 33.33ms each)
+        // BASE COOLDOWN: 132ms (Optimized to align with ≈4 server ticks at 33.33ms each (4 × 33.33 = 133.32 ms; 132 ms is the tuned value))
         private const val BASE_EVADE_COOLDOWN_MS = 132L
         
         // NETCODE ALIGNMENT: Standard game server tick intervals
@@ -109,6 +107,7 @@ class AutoEvadeEngine(
         
         // DISPLAY PACING: Hardware refresh rate boundaries
         private const val FRAME_120HZ_MS = 8.33f
+        private const val AUTO_EVADE_PHASE = 7 // private parked-lane slot; NOT ActionClass.NONE (ordinal 7)
     }
 
     fun monitorAttackingSpace(
@@ -126,11 +125,15 @@ class AutoEvadeEngine(
             return false
         }
 
-        // [PREDICTIVE TRACKING] - Calculate opponent's future intersection based on momentum
-        // Previously unused oppVx/oppVy now project the opponent 2 server ticks into the future (~66ms)
-        val predictionScale = (SERVER_TICK_MS * 2f) / 1000f
-        val predictedOppX = nearestOpponentX + (oppVx * predictionScale)
-        val predictedOppY = nearestOpponentY + (oppVy * predictionScale)
+        // [PREDICTIVE TRACKING] - Project the opponent 2 server ticks into
+        // the future (~66 ms). oppVx/oppVy are px per FRAME (the nearest
+        // opponent's own velocity, passed by the caller), so the projection
+        // is 2 frames at 30 fps capture — NOT seconds (the old
+        // 0.06666 s scale under-predicted by 30x, No67-D2). Capture fps is
+        // unmeasured (Q67-6); if it is not 30 fps this constant moves.
+        val predictionFrames = 2f
+        val predictedOppX = nearestOpponentX + (oppVx * predictionFrames)
+        val predictedOppY = nearestOpponentY + (oppVy * predictionFrames)
 
         val closingDistance = hypot(
             predictedOppX - myPlayerX,
@@ -165,15 +168,16 @@ class AutoEvadeEngine(
         // Base target: ~38-44ms gesture sweep.
         val rawDuration = 38f 
         
-        // Snap duration to perfectly match 120Hz display boundaries (8.33ms intervals)
-        val frameAlignedDuration = (ceil((rawDuration / FRAME_120HZ_MS).toDouble()) * FRAME_120HZ_MS).toLong()
+        // Snap duration to the nearest integer ms to a 120 Hz boundary (exact snap is impossible in integer ms)
+        val frameAlignedDuration = (ceil((rawDuration / FRAME_120HZ_MS).toDouble()) * FRAME_120HZ_MS).roundToLong()
         
         // Ensure duration structurally bridges at least one server packet boundary to guarantee registration
         val authoritativeDuration = frameAlignedDuration.coerceAtLeast(SERVER_TICK_MS.toLong() + 2L)
 
         val evadeRequest = ExecutionRequest(
             source = ExecutionSource.SMART_ASSIST,
-            phase = 7,
+            phase = AUTO_EVADE_PHASE,
+            actionClass = ActionClass.EVADE,
             // no59 ITEM 1: carry the engine name so the dispatch log at
             // HybridExecutionTerminal.route() can name this request.
             engine = "AutoEvadeEngine",
@@ -184,15 +188,16 @@ class AutoEvadeEngine(
             duration = authoritativeDuration
         )
 
-        if (ContributionRegistry.offer(evadeRequest)) {
-            lastEvadeTimestamp = now
-            RuntimeLogger.log(
-                "AUTO_EVADE dynamic_slip v=(${evadeTargetX.toInt()}, ${evadeTargetY.toInt()}) dur=${authoritativeDuration}ms pred_dist=${closingDistance.toInt()}", 
-                "SMART_ASSIST"
-            )
-            return true
-        }
-
+        // No67-D3: offer() parks SMART_ASSIST requests and always returns
+        // false, so the timestamp must be set on the park, not on a
+        // success that never comes. The evade still reaches the screen via
+        // drainBest() when the contributor lane yields nothing.
+        ContributionRegistry.offer(evadeRequest)
+        lastEvadeTimestamp = now
+        RuntimeLogger.log(
+            "AUTO_EVADE dynamic_slip parked v=(${evadeTargetX.toInt()}, ${evadeTargetY.toInt()}) dur=${authoritativeDuration}ms pred_dist=${closingDistance.toInt()}",
+            "SMART_ASSIST"
+        )
         return false
     }
 }

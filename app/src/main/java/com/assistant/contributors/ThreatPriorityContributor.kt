@@ -1,5 +1,6 @@
 package com.assistant.contributors
 
+import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.overlay.interceptor.*
 import com.assistant.runtime.*
 
@@ -15,6 +16,11 @@ import com.assistant.runtime.*
 object ThreatPriorityContributor : GameplayContributor {
     override val engineName = "ThreatPriority"
     override val capabilities = setOf(EngineCapability.DEFENSE, EngineCapability.KEEPER)
+
+    // No67-D29: throttled failure logging — collect() runs single-threaded
+    // under @Synchronized onFrame(), so plain vars are enough.
+    private var decisionFailureCount = 0
+    private var gateFailureCount = 0
 
     internal fun zoneOf(frame: RuntimeFrame): ThreatZone {
         val w = if (frame.captureWidth > 0f) frame.captureWidth
@@ -82,7 +88,11 @@ object ThreatPriorityContributor : GameplayContributor {
                 frame.captureHeight.toInt().takeIf { it > 0 }
                     ?: com.assistant.vision.CameraProfile.captureHeightOrFallback().toInt()
             )
-        } catch (_: Throwable) { null }
+        } catch (_: Throwable) {
+            decisionFailureCount += 1
+            if (decisionFailureCount % 50 == 1) RuntimeLogger.log("ThreatPriority decisionOf failed x$decisionFailureCount", "THREAT")
+            null
+        }
     }
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
@@ -100,7 +110,11 @@ object ThreatPriorityContributor : GameplayContributor {
             CollisionAvoidanceEngine.allowRush(
                 CollisionAvoidanceEngine.evaluate(decision)
             )
-        } catch (_: Throwable) { false }
+        } catch (_: Throwable) {
+            gateFailureCount += 1
+            if (gateFailureCount % 50 == 1) RuntimeLogger.log("ThreatPriority gate failed x$gateFailureCount", "THREAT")
+            false
+        }
         if (!rushAllowed) return null
 
         // GATE 2: own-goal safety may veto execution entirely.
@@ -108,7 +122,11 @@ object ThreatPriorityContributor : GameplayContributor {
             OwnGoalAvoidanceEngine.allowExecution(
                 OwnGoalAvoidanceEngine.evaluate(decision.direction, decision.zone)
             )
-        } catch (_: Throwable) { false }
+        } catch (_: Throwable) {
+            gateFailureCount += 1
+            if (gateFailureCount % 50 == 1) RuntimeLogger.log("ThreatPriority gate failed x$gateFailureCount", "THREAT")
+            false
+        }
         if (!safeToExecute) return null
 
         return EngineContribution(

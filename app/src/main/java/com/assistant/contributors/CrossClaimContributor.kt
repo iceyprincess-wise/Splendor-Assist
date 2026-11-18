@@ -17,14 +17,11 @@ object CrossClaimContributor : GameplayContributor {
             ?: return null
         if (action == CrossAction.HOLD) return null
 
+        // No66-D2: allowClaim is LOW || MEDIUM (HIGH vetoes) — the same
+        // predicate the router's CLAIM gate uses. A CROSS claim is always
+        // MEDIUM live (BOX zone + pri>=100), never LOW.
         val claimAllowed = try {
-            // No64-D29 (F8): allow LOW or MEDIUM collision for claims.
-            // CollisionAvoidanceEngine.allowClaim itself is unchanged
-            // (the router's CLAIM gate still uses LOW-only); CROSS at
-            // default sliders is always >= MEDIUM, so LOW-only made this
-            // contributor provably dead. HIGH still vetoes.
-            val risk = CollisionAvoidanceEngine.evaluate(decision)
-            risk == CollisionRisk.LOW || risk == CollisionRisk.MEDIUM
+            CollisionAvoidanceEngine.allowClaim(CollisionAvoidanceEngine.evaluate(decision))
         } catch (_: Throwable) { false }
         if (!claimAllowed) return null
 

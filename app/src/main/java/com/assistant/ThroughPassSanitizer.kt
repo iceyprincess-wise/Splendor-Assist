@@ -129,8 +129,10 @@ class ThroughPassSanitizer(
                 defDx.toDouble()
             )
 
-        val angularDisparity =
-            abs(primaryAngle - defenderAngle)
+        // No67-D14: wrap-aware — without the wrap, angles straddling ±π
+        // read as ~358° instead of ~2° and the dodge never fires.
+        val rawDisparity = abs(primaryAngle - defenderAngle)
+        val angularDisparity = min(rawDisparity, 2.0 * Math.PI - rawDisparity)
 
         val sanitizedAngle =
             if(

@@ -21,7 +21,7 @@ object PassLaneContributor : GameplayContributor {
         if (!frame.trusted || !frame.hasBall) return null
         if (frame.viableLaneCount <= 0) return null
         if (frame.bestLaneConfidence < MIN_LANE_CONFIDENCE) return null
-        if (frame.passTargetX < 0f || frame.passTargetY < 0f) return null
+        if (frame.passTargetX <= 0f || frame.passTargetY <= 0f) return null
 
         // A pass to our own feet is not a pass.
         val dx = frame.passTargetX - frame.ballX

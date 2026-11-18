@@ -28,7 +28,7 @@ object PressEvadeContributor : GameplayContributor {
             frame.bestLaneConfidence > LANE_ESCAPE_CONFIDENCE
         ) return null
 
-        // zones: 0=left 1=mid 2=right; balance +1 = fully ours
+        // zones: 0=top 1=mid 2=bottom (Y-thirds); balance +1 = fully ours
         var bestZone = 1
         var bestBalance = -2f
         for (z in 0..2) {

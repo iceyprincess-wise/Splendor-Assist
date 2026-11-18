@@ -293,7 +293,12 @@ SceneTracker.update(
       )
 
   val crossingLaneAnalysis =
-      if (!InterceptionRuntimeRegistry.armed) CrossingLaneAnalysis() else CrossingLaneAnalysisEngine.analyze(
+      if (!InterceptionRuntimeRegistry.armed) {
+          // No67-D24: publish the empty result so the snapshot does not
+          // keep reporting the last armed period's lanes.
+          CrossingLaneAnalysisEngine.reset()
+          CrossingLaneAnalysis()
+      } else CrossingLaneAnalysisEngine.analyze(
           passingGraph
       )
 

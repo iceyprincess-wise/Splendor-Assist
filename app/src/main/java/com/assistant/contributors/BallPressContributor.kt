@@ -6,9 +6,9 @@ import com.assistant.runtime.*
  * Out-of-possession press contributor (Task C item (d) onboarding).
  *
  * When we do not have the ball, the frame's ball position IS the pressing
- * target - no invented coordinates. Deliberately silent during panic frames
- * (PanicSaveContributor owns those) and deliberately modest in authority so
- * the keeper family always outranks it inside the box.
+ * target - no invented coordinates. Deliberately silent while user panic mode
+ * is on and deliberately modest in authority (0.35–0.70); the keeper family
+ * outranks it only when priority >= 105 (priority/150 >= 0.70).
  */
 object BallPressContributor : GameplayContributor {
     override val engineName = "BallPress"
@@ -19,7 +19,7 @@ object BallPressContributor : GameplayContributor {
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || frame.hasBall) return null
-        if (frame.panic) return null // panic family owns this frame
+        if (frame.panic) return null // silent while user panic mode is on (frame.panic is the toggle, not a threat panic)
         // Pressing is only meaningful when both sides are actually visible.
         if (frame.playerCount <= 0 || frame.opponentCount <= 0) return null
 

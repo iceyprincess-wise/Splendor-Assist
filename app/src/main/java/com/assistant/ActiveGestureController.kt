@@ -94,7 +94,7 @@ class ActiveGestureController(
 
     private val latencyInputEngine = LatencyDefeatingInputEngine(service)
     private val antiCutbackEngine = AntiCutbackSubEngine(latencyInputEngine)
-    private val autoEvadeEngine = AutoEvadeEngine(latencyInputEngine)
+    private val autoEvadeEngine = AutoEvadeEngine()
 
 
     fun injectWinningVector(
@@ -159,7 +159,7 @@ class ActiveGestureController(
         val evadeActive = if (autoEvadeEngine.monitorAttackingSpace(
             startX, startY, startX, startY,
             nearestOppEarly?.x ?: endX, nearestOppEarly?.y ?: endY,
-            earlyTraj.velocityX, earlyTraj.velocityY)) 1.0f else 0.0f
+            nearestOppEarly?.velocityX ?: 0f, nearestOppEarly?.velocityY ?: 0f)) 1.0f else 0.0f
         val scoreAim = CriticalAttackingVectorEngine.computeAbsoluteScoringVector(startX, startY, dynamicGkX, dynamicGkY, dynamicGoalLeftX, dynamicGoalLeftY, dynamicGoalRightX, dynamicGoalRightY)
         val defensiveVectorPacked = OmnipotentDashPressureMatrix.computeHighAuthorityDefensiveVector(endX, endY, startX, startY, startX, startY + 50f, endX, endY, true)
         val godspeedVectorPacked = HybridOmnipotentMatrixEngine.computeGodspeedInterceptVector(startX, startY, endX, endY, 0f, 0f, endX, endY, 0f, 0f, false)

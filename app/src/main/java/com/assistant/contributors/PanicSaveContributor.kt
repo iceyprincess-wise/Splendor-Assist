@@ -9,8 +9,6 @@ object PanicSaveContributor : GameplayContributor {
     override val engineName = "PanicSave"
     override val capabilities = setOf(EngineCapability.KEEPER, EngineCapability.DEFENSE)
 
-    private val outBuffer = FloatArray(1)
-
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (frame.confidence < 0.05f) return null
         val possessionWeight = if (!frame.hasBall) 1.0f else 0.2f
@@ -18,6 +16,7 @@ object PanicSaveContributor : GameplayContributor {
         val fluidMultiplier = possessionWeight * trustWeight
         val decision = ThreatPriorityContributor.decisionOf(frame) ?: return null
 
+        val outBuffer = FloatArray(1)
         NativePorts.panic(
             decision.direction.ordinal,
             decision.priority,

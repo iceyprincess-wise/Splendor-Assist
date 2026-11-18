@@ -94,10 +94,10 @@ import kotlin.math.*
 
 
 object ShotOpportunityAnalysisEngine {
-    private val outBuffer = FloatArray(3)
     fun analyze(distance:Float, pressure:Float):ShotOpportunityResult {
+        val outBuffer = FloatArray(3)
         NativePorts.shot(distance, pressure, outBuffer)
-        return ShotOpportunityResult(outBuffer[0], outBuffer[1], outBuffer[2])
+        return ShotOpportunityResult(outBuffer[0], outBuffer[1])
     }
 }
 

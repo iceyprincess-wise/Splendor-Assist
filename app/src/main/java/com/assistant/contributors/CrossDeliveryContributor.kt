@@ -53,8 +53,7 @@ object CrossDeliveryContributor : GameplayContributor {
         )
         if (ballTravel < MIN_CROSS_DISTANCE_PX) return null
 
-        // Delivering into a box where we are not hopelessly outnumbered is
-        // worth more; zone balance at the goal side feeds authority.
+        // Delivering closer to the goal centre is worth more (boxCloseness); zone balance is not an input here.
         val boxCloseness = (1f - targetToGoal / reach).coerceIn(0f, 1f)
         val authority =
             (0.40f + 0.30f * boxCloseness + 0.20f * frame.bestLaneConfidence)

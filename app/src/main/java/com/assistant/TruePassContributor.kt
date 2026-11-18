@@ -110,7 +110,7 @@ object TruePassContributor : GameplayContributor {
         // Zero-allocation indexed loop
         for (i in 0 until size) {
             val p = players[i]
-            if (p.isUserTeam && !p.isGoalkeeper) {
+            if (p.isUserTeam && !p.isGoalkeeper && p.lastSeenFrame == scene.frameNumber) {
                 val d = hypot((p.x - frame.passTargetX).toDouble(), (p.y - frame.passTargetY).toDouble()).toFloat()
                 if (d < minDistance) {
                     minDistance = d
@@ -127,10 +127,14 @@ object TruePassContributor : GameplayContributor {
                 frame.defenderDensity
             )
         } else {
+            // No67-D11: retention 1.0f — the fallback target is the real
+            // pass target, not a fraction of the way there (at low
+            // confidence the old fraction was a noise target ~30 px from
+            // the ball). Authority is still confidence-shaped.
             TrueTargetPassingEngine.optimize(
                 frame.ballX, frame.ballY,
                 frame.passTargetX, frame.passTargetY,
-                frame.bestLaneConfidence.coerceIn(0f, 1f)
+                1.0f
             )
         }
 
@@ -148,15 +152,3 @@ object TruePassContributor : GameplayContributor {
     }
 }
 
-/* ========
-TrueShotContributor
-======== */
-/**
- * TrueShotContributor
- *
- * TRUE on-target shot: aims the open post opposite the goalkeeper.
- * Distance gate 700px — wider than ShotContributor (550px).
- * No confidence threshold gating it; distance is the only requirement.
- * Gets +0.18 authority boost when SmartAssist corrections are active,
- * ensuring it beats ShotContributor in arbitration and overrides SA drift.
- */
