@@ -252,6 +252,9 @@ object RuntimeCoordinator {
         // No64-D23: zero the keeper feedback counters (they had no reset
         // and inflated the adaptive bonuses for the whole session).
         try { com.assistant.overlay.interceptor.GoalkeeperMetricsRegistry.reset() } catch (_: Throwable) {}
+        // No66-D40: same treatment for the runtime metrics counters — without
+        // this the dashboard snapshot mixed epochs after an in-process restart.
+        try { com.assistant.diagnostic.RuntimeMetricsRegistry.reset() } catch (_: Throwable) {}
     }
 
     @Synchronized

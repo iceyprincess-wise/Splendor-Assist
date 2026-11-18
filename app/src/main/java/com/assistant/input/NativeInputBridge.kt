@@ -14,7 +14,10 @@ object NativeInputBridge {
     external fun nativeInjectSwipe(startX: Float, startY: Float, endX: Float, endY: Float, duration: Long): Boolean
 
     fun injectTap(service: AccessibilityService, x: Float, y: Float): Boolean {
-        if (nativeInjectTap(x, y)) return true // Native success
+        // No66-D20: if the library failed to load, the init block above
+        // swallowed it and this call would throw UnsatisfiedLinkError
+        // instead of reaching the Accessibility fallback below.
+        if (runCatching { nativeInjectTap(x, y) }.getOrDefault(false)) return true // Native success
         // Fallback to AccessibilityService (safe, but slower)
         val path = Path().apply { moveTo(x, y) }
         val gesture = GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(path, 0, 2L)).build()
@@ -22,7 +25,9 @@ object NativeInputBridge {
     }
     
     fun injectSwipe(service: AccessibilityService, startX: Float, startY: Float, endX: Float, endY: Float, duration: Long): Boolean {
-        if (nativeInjectSwipe(startX, startY, endX, endY, duration)) return true
+        // No66-D20: same guard as injectTap — a missing library/symbol must
+        // fall through to the Accessibility gesture, never throw.
+        if (runCatching { nativeInjectSwipe(startX, startY, endX, endY, duration) }.getOrDefault(false)) return true
         val path = Path().apply { moveTo(startX, startY); lineTo(endX, endY) }
         val gesture = GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(path, 0, duration)).build()
         return GestureExecutionAuthority.execute(service, gesture, null, null)

@@ -53,7 +53,6 @@ class GameplayRoomActivity : AppCompatActivity() {
     private var amplifierView: TextView? = null
     private var busView: TextView? = null
     private var crowdView: TextView? = null
-    private var captaincyToggle: Switch? = null
 
     private val logFmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
     private val LOG_FILE: File
@@ -70,7 +69,9 @@ class GameplayRoomActivity : AppCompatActivity() {
     private fun section(list: LinearLayout, title: String) {
         val tv = TextView(this).apply {
             text = title; textSize = 13f
-            setTextColor(ThemeTokens.ACCENT)
+            // No66-D25: ACCENT as text was 4.09:1 on BG (fail); ACCENT_TEXT
+            // is 6.29:1. ACCENT itself stays for button backgrounds.
+            setTextColor(ThemeTokens.ACCENT_TEXT)
             setTypeface(typeface, Typeface.BOLD)
             setPadding(0, dp(12), 0, dp(4))
         }
@@ -107,6 +108,18 @@ class GameplayRoomActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // No66-D41: the captaincy + crowding toggles below bind to in-memory
+        // state that is only loaded from SharedPreferences by
+        // CaptaincySkillEngine.init / CrowdingZoneDetector.init — and the
+        // only caller of both is OverlayService (service start, after the
+        // MediaProjection permission flow). This room opens straight from
+        // the home cards, so without this the toggles read defaults
+        // (captaincy OFF, crowding ON) instead of the persisted state, and
+        // a toggle write before any init is silently lost (prefs is null).
+        // init() is idempotent: it re-reads the same prefs OverlayService
+        // reads, so calling it here changes nothing on the normal path.
+        try { CaptaincySkillEngine.init(this) } catch (_: Throwable) {}
+        try { CrowdingZoneDetector.init(this) } catch (_: Throwable) {}
         buildUi()
     }
 
@@ -215,7 +228,6 @@ class GameplayRoomActivity : AppCompatActivity() {
                 logLine("CAPTAINCY_TOGGLE: $msg")
             }
         }
-        captaincyToggle = sw
         toggleRow.addView(toggleLabel)
         toggleRow.addView(sw)
         root.addView(toggleRow)
@@ -386,7 +398,14 @@ class GameplayRoomActivity : AppCompatActivity() {
                 capDesig, capActive, capLift, capComp,
                 inZone, crowdLvl))
 
-        } catch (_: Throwable) {}
+        } catch (t: Throwable) {
+            // No66-D43: this used to swallow every failure silently, so a
+            // snapshot failure left "Loading..." on screen forever with no
+            // trace anywhere — the opposite of what a truth room is for.
+            // Log it and say so on screen; the next manual refresh retries.
+            try { android.util.Log.w("GameplayRoom", "refreshNow failed", t) } catch (_: Throwable) {}
+            try { decisionView?.text = "Refresh failed: ${t.message ?: t.javaClass.simpleName}" } catch (_: Throwable) {}
+        }
     }
 
     private fun buildLogEntry(
@@ -396,9 +415,9 @@ class GameplayRoomActivity : AppCompatActivity() {
         inZone: Boolean, crowdLvl: Any
     ): String {
         val frameSnap = try {
-            RuntimeDecisionLoop.let {
-                com.assistant.FrameAssembler.frameRuntimeSnapshot()
-            }
+            // No66-D42: this was `RuntimeDecisionLoop.let { ... }` — a dead
+            // `let`: the receiver was never used inside the block. Direct call.
+            com.assistant.FrameAssembler.frameRuntimeSnapshot()
         } catch (_: Throwable) {
             emptyMap<String, Any>()
         }

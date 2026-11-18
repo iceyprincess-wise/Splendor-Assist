@@ -1,7 +1,5 @@
 package com.assistant.overlay.interceptor
 
-import com.assistant.overlay.interceptor.GoalkeeperMetricsRegistry
-
 enum class GoalkeeperAction {
     TRACK,
     DIVE_LEFT,
@@ -29,12 +27,30 @@ enum class GoalkeeperAction {
 
 object GoalkeeperActionRouter {
 
+    // No66-D6: the 2D-matrix partition boundaries, named. The TOP/MID
+    // split (0.33/0.66) and the BOTTOM dive split (0.4/0.6) were bare
+    // literals repeated across arms — drift between them would silently
+    // break the partition (the PARRY arm's written 0.33..0.66 range
+    // already overstated its effective [0.4, 0.6] range; see below).
+    private const val MATRIX_SPLIT_LOW = 0.33f
+    private const val MATRIX_SPLIT_HIGH = 0.66f
+    private const val BOTTOM_DIVE_LOW = 0.4f
+    private const val BOTTOM_DIVE_HIGH = 0.6f
+
     // No64-D22: last routed action, for per-episode feedback counting.
     // interceptions / crossClaims count episodes (a run of the same
     // action), not frames — the per-frame counts inflated the adaptive
     // bonuses to saturation within seconds of play (trace 2, B3).
     @Volatile
     private var lastRoutedAction: GoalkeeperAction? = null
+
+    // No66-D3: clear the per-episode tracker for a session reset (see
+    // GoalkeeperMetricsRegistry.reset()). Without this, the first
+    // post-reset PUNCH/CLAIM/RUSH episode could be swallowed when the
+    // last pre-reset action was the same.
+    fun resetEpisodeTracking() {
+        lastRoutedAction = null
+    }
 
     // No64-D33: pure builder for the GK_DECISION log line (no Android,
     // no I/O) — pinned in the no64 harness. Every field names the engine
@@ -48,7 +64,15 @@ object GoalkeeperActionRouter {
         safety: OwnGoalSafety,
         collision: CollisionRisk,
         cross: CrossAction,
-        keeperBias: KeeperBias
+        keeperBias: KeeperBias,
+        // No66-D13: the post/INTERCEPT inputs were computed but never
+        // logged, so a live GK_DECISION line could not say why a
+        // RUSH_OUT fired or whether post coverage was even consulted.
+        // Defaulted so the no64 harness pin (8-arg call) still compiles.
+        farPostCoverage: Boolean = false,
+        nearPostCoverage: Boolean = false,
+        crossIntercept: Boolean = false,
+        longBallThreat: Boolean = false
     ): String {
         return "GK_DECISION action=" + action +
             " ShotAnticipationEngine=" + anticipation +
@@ -57,7 +81,11 @@ object GoalkeeperActionRouter {
             " OwnGoalAvoidanceEngine=" + safety +
             " CollisionAvoidanceEngine=" + collision +
             " CrossClaimEngine=" + cross +
-            " KeeperPositionBiasEngine=" + keeperBias
+            " KeeperPositionBiasEngine=" + keeperBias +
+            " FarPostCoverageEngine=" + farPostCoverage +
+            " NearPostCoverageEngine=" + nearPostCoverage +
+            " CrossInterceptionEngine=" + crossIntercept +
+            " LongBallCounterEngine=" + longBallThreat
     }
 
     fun route(
@@ -84,11 +112,15 @@ object GoalkeeperActionRouter {
                 decision
             )
 
+        // No66-D5: the registry write stays — RushOutActionEngine and
+        // RecoveryPredictionEngine read currentBias outside this call —
+        // but the read-back below used to round-trip through the registry
+        // for a value this call already holds. Read the local instead.
         GoalkeeperBiasRegistry.currentBias =
             keeperBias
 
         val activeBias =
-            GoalkeeperBiasRegistry.currentBias
+            keeperBias
 
         val farPostCoverage =
             FarPostCoverageEngine.shouldCover(
@@ -127,7 +159,8 @@ object GoalkeeperActionRouter {
         // vetoing would make the keeper stand still (TRACK) on point-blank
         // shots, which is strictly worse. The two pipelines are
         // complementary, not contradictory. `safety` is therefore read only
-        // by the RISKY+SAVE arm below.
+        // by the RISKY+SAVE arm below (which is itself unreachable — see
+        // its note; safety's live effect is the GK_DECISION log line only).
         val safety =
             OwnGoalAvoidanceEngine.evaluate(
                 decision.direction,
@@ -145,21 +178,31 @@ object GoalkeeperActionRouter {
             } else if (InterceptionRuntimeRegistry.armed &&
                 InterceptionRuntimeRegistry.autoIntercept &&
                 cross == CrossAction.CLAIM &&
+                // No66-D2: TOP claims take the AERIAL arm below (moved
+                // above the matrix), not this gate — the aerial jump
+                // reaches higher (0.10h) than the claim (0.35h).
+                decision.heightBand != HeightBand.TOP &&
                 CollisionAvoidanceEngine.allowClaim(collision)
             ) {
                 GoalkeeperAction.CLAIM_CROSS
             } else {
                 when {
 
-                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.BOTTOM && decision.normX < 0.4f -> {
-                        GoalkeeperMetricsRegistry.saveAttempts.incrementAndGet()
+                    // No66-D1: the saveAttempts increments that used to
+                    // sit in these two arms are removed. saveAttempts is
+                    // now incremented ONLY on bus-accept in
+                    // OmnipotentGoalkeeperEngine (the "SaveOffers" label
+                    // in the snapshot); the router increments counted
+                    // every DIVE_BOTTOM route whether the offer was
+                    // accepted or cooling-dropped, so one accepted
+                    // dive-bottom save counted twice and a dropped one
+                    // counted once. Behaviour change (counters only):
+                    // saveAttempts drops to accepted offers exactly.
+                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.BOTTOM && decision.normX < BOTTOM_DIVE_LOW ->
                         GoalkeeperAction.DIVE_BOTTOM_LEFT
-                    }
 
-                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.BOTTOM && decision.normX > 0.6f -> {
-                        GoalkeeperMetricsRegistry.saveAttempts.incrementAndGet()
+                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.BOTTOM && decision.normX > BOTTOM_DIVE_HIGH ->
                         GoalkeeperAction.DIVE_BOTTOM_RIGHT
-                    }
 
                     // No64-D24: the PANIC value is now read explicitly.
                     // Behaviour-neutral: panicOverride (pri >= 150) already
@@ -192,20 +235,41 @@ object GoalkeeperActionRouter {
                         GoalkeeperAction.RUSH_OUT
                     }
 
+                    // No66-D2 (closes Q65-4): the AERIAL arm used to sit
+                    // BELOW the 2D matrix, where it could never fire —
+                    // cross==CLAIM needs pri>=100 (NativePorts.claim),
+                    // pri>=100 is always SAVE (ShotAnticipationEngine),
+                    // and the matrix catches every SAVE, so a TOP cross
+                    // always took JUMP_TOP_* even though the CLAIM gate
+                    // above had declined it. (The gate is not the binding
+                    // constraint no65 named: a CLAIM is always MEDIUM
+                    // collision live — BOX zone + pri>=100 — so the
+                    // gate's allowClaim never took a CLAIM either; the
+                    // matrix was the blocker.) The gate takes the
+                    // non-TOP CLAIM cases first (above), so this arm now
+                    // fires exactly for SAVE + TOP + CLAIM: AERIAL_CLAIM
+                    // (was JUMP_TOP_*). SAVE+MID/BOTTOM CLAIM cases
+                    // still take the matrix arms below. INTERCEPT/TRACK
+                    // TOP crosses are unchanged (cross is HOLD below
+                    // pri 100, so they still take the INTERCEPT arm's
+                    // RUSH_OUT below).
+                    cross == CrossAction.CLAIM && decision.heightBand == HeightBand.TOP ->
+                        GoalkeeperAction.AERIAL_CLAIM
+
                     // PRECISE 2D GOALMOUTH COVERAGE MATRIX
-                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.TOP && decision.normX < 0.33f ->
+                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.TOP && decision.normX < MATRIX_SPLIT_LOW ->
                         GoalkeeperAction.JUMP_TOP_LEFT
 
-                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.TOP && decision.normX > 0.66f ->
+                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.TOP && decision.normX > MATRIX_SPLIT_HIGH ->
                         GoalkeeperAction.JUMP_TOP_RIGHT
 
                     anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.TOP ->
                         GoalkeeperAction.JUMP_TOP_CENTER
 
-                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.MID && decision.normX < 0.33f ->
+                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.MID && decision.normX < MATRIX_SPLIT_LOW ->
                         GoalkeeperAction.REACH_LEFT_CENTER
 
-                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.MID && decision.normX > 0.66f ->
+                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.MID && decision.normX > MATRIX_SPLIT_HIGH ->
                         GoalkeeperAction.REACH_RIGHT_CENTER
 
                     anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.MID && decision.priority >= 120 ->
@@ -214,12 +278,14 @@ object GoalkeeperActionRouter {
                     anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.MID ->
                         GoalkeeperAction.CATCH_CENTER
 
-                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.BOTTOM && decision.normX in 0.33f..0.66f ->
+                    // No66-D6: the written range used to be 0.33..0.66,
+                    // but the DIVE_BOTTOM arms above already take
+                    // normX < 0.4 and normX > 0.6, so this arm's
+                    // effective range was always [0.4, 0.6] — the wider
+                    // literal overstated it. Behaviour-neutral: the
+                    // literal now states the effective range.
+                    anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.BOTTOM && decision.normX in BOTTOM_DIVE_LOW..BOTTOM_DIVE_HIGH ->
                         GoalkeeperAction.PARRY_BOTTOM_CENTER
-
-                    // AERIAL COVERAGE
-                    cross == CrossAction.CLAIM && decision.heightBand == HeightBand.TOP ->
-                        GoalkeeperAction.AERIAL_CLAIM
 
                     // No65-D17: the two post arms below are UNREACHABLE by
                     // shadowing — for anticipation==SAVE every heightBand
@@ -266,6 +332,14 @@ object GoalkeeperActionRouter {
                         GoalkeeperAction.RUSH_OUT
                     }
 
+                    // No66-D7: UNREACHABLE by the same shadowing as the
+                    // post arms above (D17) — for anticipation==SAVE the
+                    // matrix (plus the AERIAL arm) catches every band, so
+                    // this arm never fires and its panicSaves increment
+                    // never executes. Kept, behaviour-neutral (no64
+                    // precedent): OwnGoalAvoidanceEngine.evaluate's RISKY
+                    // value therefore has no live routing effect — it is
+                    // visible only in the GK_DECISION log line.
                     safety == OwnGoalSafety.RISKY &&
                         anticipation == AnticipationResult.SAVE -> {
                         GoalkeeperMetricsRegistry
@@ -305,7 +379,7 @@ object GoalkeeperActionRouter {
         // routing (HybridExecutionTerminal.route precedent).
         try {
             com.assistant.diagnostic.RuntimeLogger.log(
-                decisionLogLine(action, anticipation, panicOverride, panic, safety, collision, cross, keeperBias),
+                decisionLogLine(action, anticipation, panicOverride, panic, safety, collision, cross, keeperBias, farPostCoverage, nearPostCoverage, crossIntercept, longBallThreat),
                 "GOALKEEPER"
             )
         } catch (_: Throwable) {

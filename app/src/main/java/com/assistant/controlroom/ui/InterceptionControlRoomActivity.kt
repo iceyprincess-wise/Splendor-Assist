@@ -1,5 +1,6 @@
 package com.assistant.controlroom.ui
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Button
@@ -98,16 +99,25 @@ class InterceptionControlRoomActivity : AppCompatActivity() {
     }
 
     /* Live runtime panel injected under the status line - no layout edit needed. */
+    // No66-D32 (Q61-1): the panel used to be a default-styled Button/TextView
+    // with raw-pixel padding. It now uses ThemeTokens like the rest of the
+    // room, with dp padding (same helper shape as the other rooms).
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
     private fun installLivePanel(anchor: TextView) {
         val parent = anchor.parent as? ViewGroup ?: return
         val refresh = Button(this).apply {
             text = "Refresh live interception status"
             isAllCaps = false
+            setBackgroundColor(ThemeTokens.BUTTON)
+            setTextColor(Color.WHITE)
+            textSize = 14f
             setOnClickListener { liveText?.text = liveInterceptionStatus() }
         }
         val live = TextView(this).apply {
             textSize = 12f
-            setPadding(0, 16, 0, 16)
+            setTextColor(ThemeTokens.TEXT_MUTED)
+            setPadding(0, dp(16), 0, dp(16))
         }
         val index = parent.indexOfChild(anchor) + 1
         parent.addView(refresh, index)
@@ -135,14 +145,19 @@ class InterceptionControlRoomActivity : AppCompatActivity() {
         val registered =
             (registry["names"]?.toString() ?: "").contains("InterceptMatrix")
 
+        // No66-D33: a cold frame carries only "frames"/"state" — the five
+        // field keys below are absent and used to render as literal "null".
+        val cold = !frame.containsKey("trusted")
+
         buildString {
             append("INTERCEPT GATE: ").append(gate).append('\n')
             append("InterceptMatrix contributor registered = ").append(registered).append('\n')
-            append("Field read: players=").append(frame["players"])
-                .append(" opponents=").append(frame["opponents"])
-                .append(" lanes=").append(frame["viableLanes"])
-                .append(" zones=").append(frame["zones"]).append('\n')
-            append("Frame confidence=").append(frame["confidence"])
+            if (cold) append("Field read: no frame yet (runtime cold — open the game)\n")
+            append("Field read: players=").append(frame["players"] ?: "—")
+                .append(" opponents=").append(frame["opponents"] ?: "—")
+                .append(" lanes=").append(frame["viableLanes"] ?: "—")
+                .append(" zones=").append(frame["zones"] ?: "—").append('\n')
+            append("Frame confidence=").append(frame["confidence"] ?: "—")
                 .append(" trusted=").append(trusted)
                 .append(" hasBall=").append(hasBall).append('\n')
             append("Decisions=").append(decision["decisions"])

@@ -14,8 +14,14 @@ object RecoveryPredictionEngine {
     ): RecoveryTarget {
 
 
+        // No66-D10: evaluate the bias for THIS decision directly. The
+        // registry read used to return the previous route's bias:
+        // predict() runs at Omnipotent:372, before route() at :402 writes
+        // the fresh bias, so the recovery target was always one frame
+        // stale. KeeperPositionBiasEngine.evaluate is pure (no side
+        // effects, no registry reads), so this is a direct swap.
         val bias =
-            GoalkeeperBiasRegistry.currentBias
+            KeeperPositionBiasEngine.evaluate(decision)
 
 
 

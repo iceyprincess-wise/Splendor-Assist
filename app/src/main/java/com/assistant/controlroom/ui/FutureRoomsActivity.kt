@@ -1,65 +1,44 @@
 package com.assistant.controlroom.ui
 
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.assistant.RuntimeSelfHealEngine
 
 /**
  * PHASE4 UPGRADE: FutureRoomsActivity
  *
- * Previous state: list of "Room XX • planned" placeholders.
- * Now: real room cards with navigation to active subsystems.
+ * Room directory: real room cards with navigation to active subsystems.
  *
  * Active rooms:
- *   - AI Self-Heal Agent Monitor (inline — shows heal events + live bus status)
- *   - Admin Settings (Engine Tuning)
+ *   - AI Self-Heal Agent Monitor — navigates to AgentHubActivity, the
+ *     single authoritative agent monitor (No66-D44: the inline agent
+ *     screen that used to live here duplicated AgentHub, and its
+ *     "Force Heal Cycle Now" button was a no-op whenever the daemon was
+ *     already running — RuntimeSelfHealEngine.start() returns at once
+ *     when running, so the button only showed a toast. AgentHub's
+ *     button genuinely forces a cycle via InAppAgentCore.runNow()).
  *
  * Future stubs: 15 planned rooms listed below active rooms.
  *
- * Navigation: can be launched with intent.extra "room_label" = "agent"
- * to open directly to the agent monitor screen.
+ * Navigation: launched with intent.extra "room_label" (e.g. "Future
+ * Rooms" from the home card). No deep-link screen is selected from it:
+ * the old "agent" value had zero callers repo-wide (only "Future Rooms"
+ * is ever passed, and the activity is exported=false, so no external
+ * caller can pass it either) — the branch was dead and is removed.
  */
 class FutureRoomsActivity : AppCompatActivity() {
 
-    private enum class Screen { HOME, AGENT }
-    private var screen = Screen.HOME
-
-    private val refreshHandler = Handler(Looper.getMainLooper())
-    private var agentRefreshRunnable: Runnable? = null
-
-    // Views held for live refresh in agent screen
-    private var agentStatusView: TextView? = null
-    private var agentEventsView: TextView? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val fromRoom = intent.getStringExtra("room_label")
-        if (fromRoom == "agent") showAgent() else showHome()
-    }
-
-    override fun onDestroy() {
-        agentRefreshRunnable?.let { refreshHandler.removeCallbacks(it) }
-        agentStatusView = null
-        agentEventsView = null
-        super.onDestroy()
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        when (screen) {
-            Screen.AGENT -> showHome()
-            else -> @Suppress("DEPRECATION") super.onBackPressed()
-        }
+        showHome()
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -75,7 +54,6 @@ class FutureRoomsActivity : AppCompatActivity() {
     }
 
     private fun mount(v: LinearLayout) {
-        agentRefreshRunnable?.let { refreshHandler.removeCallbacks(it)  }
         setContentView(ScrollView(this).apply {
             setBackgroundColor(ThemeTokens.BG)
             addView(v, ViewGroup.LayoutParams(
@@ -100,7 +78,9 @@ class FutureRoomsActivity : AppCompatActivity() {
                     bg: Int = ThemeTokens.BUTTON, onClick: () -> Unit) {
         list.addView(Button(this).apply {
             text = label; isAllCaps = false; setBackgroundColor(bg)
-            setTextColor(Color.WHITE); textSize = 14f
+            // No66-D23: white text on BUTTON_ALT was 2.38:1; alt buttons
+            // (now brand cyan #00E5FF) take dark text — 12.79:1.
+            setTextColor(if (bg == ThemeTokens.BUTTON_ALT) ThemeTokens.BG else Color.WHITE); textSize = 14f
             val lp = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             lp.setMargins(0, dp(5), 0, dp(5))
@@ -123,7 +103,6 @@ class FutureRoomsActivity : AppCompatActivity() {
     // HOME SCREEN — Room Cards
     // ─────────────────────────────────────────────────────────────────────
     private fun showHome() {
-        screen = Screen.HOME
         val root = page()
 
         text(root, "SPLENDOR ROOMS", 22f, bold = true, color = Color.WHITE)
@@ -134,7 +113,7 @@ class FutureRoomsActivity : AppCompatActivity() {
         text(root, "ACTIVE ROOMS", 13f, bold = true, color = ThemeTokens.SUCCESS)
 
         btn(root, "🤖   AI Self-Heal Agent Monitor", ThemeTokens.BUTTON_ALT) {
-            showAgent()
+            startActivity(Intent(this, AgentHubActivity::class.java))
         }
         text(root, "   Detects and fixes broken engine states while you play. Logs every fix to SplendorHealLog.txt", 11f, color = ThemeTokens.TEXT_MUTED)
 
@@ -169,96 +148,5 @@ class FutureRoomsActivity : AppCompatActivity() {
 
         btn(root, "←  Back", ThemeTokens.BUTTON_NEUTRAL) { finish() }
         mount(root)
-    }
-
-    // ─────────────────────────────────────────────────────────────────────
-    // AGENT SCREEN — AI Self-Heal Monitor (inline, no separate Activity)
-    // ─────────────────────────────────────────────────────────────────────
-    private fun showAgent() {
-        screen = Screen.AGENT
-        val root = page()
-
-        text(root, "🤖  AI SELF-HEAL AGENT", 20f, bold = true, color = Color.WHITE)
-        text(root, "Runtime monitor: detects broken engine states and fixes them in-memory while you play",
-            11f, color = ThemeTokens.TEXT_MUTED)
-
-        divider(root)
-
-        text(root, "LIVE STATUS", 13f, bold = true, color = ThemeTokens.SUCCESS)
-
-        val statusTv = TextView(this).apply {
-            textSize = 11f
-            setTextColor(ThemeTokens.SUCCESS)
-            setPadding(0, dp(4), 0, dp(8))
-            typeface = Typeface.MONOSPACE
-            text = "Loading agent status..."
-        }
-        root.addView(statusTv)
-        agentStatusView = statusTv
-
-        divider(root)
-
-        text(root, "HEAL EVENT LOG  (latest 20)", 13f, bold = true, color = ThemeTokens.WARN)
-
-        val eventsTv = TextView(this).apply {
-            textSize = 10f
-            setTextColor(ThemeTokens.TEXT)
-            setPadding(0, dp(4), 0, dp(8))
-            typeface = Typeface.MONOSPACE
-            text = "Waiting for heal events..."
-        }
-        root.addView(eventsTv)
-        agentEventsView = eventsTv
-
-        divider(root)
-
-        btn(root, "↺  Force Heal Cycle Now", ThemeTokens.BUTTON_ALT) {
-            try {
-                RuntimeSelfHealEngine.start()
-                android.widget.Toast.makeText(this, "Heal cycle triggered", android.widget.Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                android.widget.Toast.makeText(this, "Error: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        btn(root, "←  Back to Rooms", ThemeTokens.BUTTON_NEUTRAL) { showHome() }
-
-        mount(root)
-
-        // Start live refresh (3s interval)
-        val refreshRunnable = object : Runnable {
-            override fun run() {
-                if (screen != Screen.AGENT) return
-                try {
-                    agentStatusView?.text = RuntimeSelfHealEngine.getStatusSummary()
-
-                    val events = RuntimeSelfHealEngine.healEvents
-                    agentEventsView?.text = if (events.isEmpty()) {
-                        "No heal events yet.\nAgent is monitoring...\n\nIf game is running and no events appear\nafter 30s, the agent detected no problems."
-                    } else {
-                        events.reversed().take(20).joinToString("\n\n") { ev ->
-                            val icon = when (ev.severity) {
-                                "FIXED"    -> "✅ FIXED"
-                                "CRITICAL" -> "🔴 CRITICAL"
-                                "WARNING"  -> "🟡 WARNING"
-                                else       -> "ℹ️ INFO"
-                            }
-                            "$icon  [${ev.timestamp}]  ${ev.category}\n" +
-                            "DETECTED: ${ev.detected.take(160)}\n" +
-                            "FIX: ${ev.fix.take(160)}"
-                        }
-                    }
-                } catch (_: Throwable) {}
-                // no59 ITEM 4: STOPPED — the 3s agent refresh no longer
-                // re-arms. InAppLiveDisplay is the single switch (default
-                // OFF): with it off the screen refreshes exactly once,
-                // when first posted. File logging is untouched.
-                if (com.assistant.diagnostic.InAppLiveDisplay.liveRefreshAllowed()) {
-                    refreshHandler.postDelayed(this, 3000L)
-                }
-            }
-        }
-        agentRefreshRunnable = refreshRunnable
-        refreshHandler.post(refreshRunnable)
     }
 }

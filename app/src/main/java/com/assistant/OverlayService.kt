@@ -1184,6 +1184,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
         modMenuController?.hideLauncher()
         modMenuController?.hide()
         modMenuController = null
+        // No66-D19: stop the interception bridge next to the ModMenu
+        // teardown — the bridge's collector writes the registry for the
+        // life of the process unless stop() cancels its scope, so a
+        // START_STICKY stop/start cycle used to leave the old collector
+        // running beside the new one.
+        interceptionBridge?.stop()
+        interceptionBridge = null
         SmartAssistRepository.clearPanic()
         // No62-D7: clearAll() covers every published tag (hud, modmenu,
         // any future publisher) instead of only "hud" — the mask must

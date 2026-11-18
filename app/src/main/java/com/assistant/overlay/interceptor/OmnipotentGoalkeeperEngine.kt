@@ -328,12 +328,14 @@ object OmnipotentGoalkeeperEngine {
         GoalkeeperAction.REBOUND_SAVE
     )
 
-    // No64-D22: per-episode trackers for the feedback counters. The
-    // recovery count increments only when the recovery target changes;
-    // the PUNCH/CLAIM interception count only when the accepted action
-    // changes. (The router keeps its own lastRoutedAction.)
+    // No64-D22: per-episode tracker for the recovery counter. The
+    // recovery count increments only when the recovery target changes.
+    // (The router keeps its own lastRoutedAction. No66-D9: the
+    // PUNCH/CLAIM interception classification that used to live here
+    // is removed — it double-counted the router's episode increments
+    // into the same counter; the router is now the single writer of
+    // interceptions.)
     @Volatile private var lastRecoveryTarget: RecoveryTarget? = null
-    @Volatile private var lastClassifiedAction: GoalkeeperAction? = null
 
     private fun evaluateOpponentShotTrajectory(decision: ThreatDecision) {
         val now = System.currentTimeMillis()
@@ -489,30 +491,18 @@ object OmnipotentGoalkeeperEngine {
                     }
                 }
 
-                // Classify the accepted action so the registry interception and
-                // panic-save counters are no longer permanently zero. These
-                // counters were declared and printed but never incremented
-                // anywhere, so the snapshot always reported Intercept=0 Panic=0.
-                if (accepted) {
-                    // No64-D22: interceptions counts PUNCH/CLAIM EPISODES,
-                    // not accepted offers — a multi-frame claim used to add
-                    // one per frame. panicSaves is not a feedback counter
-                    // and stays per-accept, as before.
-                    val newEpisode = finalAction != lastClassifiedAction
-                    lastClassifiedAction = finalAction
-                    when (finalAction) {
-                        GoalkeeperAction.PUNCH_CROSS,
-                        GoalkeeperAction.CLAIM_CROSS -> {
-                            if (newEpisode) {
-                                GoalkeeperMetricsRegistry.interceptions.incrementAndGet()
-                            }
-                        }
-                        GoalkeeperAction.REBOUND_SAVE -> {
-                            if (com.assistant.SmartAssistRepository.panicActive()) {
-                                GoalkeeperMetricsRegistry.panicSaves.incrementAndGet()
-                            }
-                        }
-                        else -> Unit
+                // No66-D9: classify the accepted action for the panic-save
+                // counter only. The PUNCH/CLAIM interception arm that used
+                // to live here is removed: it wrote interceptions from a
+                // second tracker (lastClassifiedAction) while the router
+                // writes the same counter from lastRoutedAction, so one
+                // PUNCH/CLAIM episode incremented Intercept twice — once
+                // per tracker. The router is now the single writer of
+                // interceptions (episode-gated, no64-D22); panicSaves is
+                // not a feedback counter and stays per-accept, as before.
+                if (accepted && finalAction == GoalkeeperAction.REBOUND_SAVE) {
+                    if (com.assistant.SmartAssistRepository.panicActive()) {
+                        GoalkeeperMetricsRegistry.panicSaves.incrementAndGet()
                     }
                 }
 

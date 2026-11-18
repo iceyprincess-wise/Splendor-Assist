@@ -4,19 +4,40 @@ import android.graphics.Color
 
 /**
  * Single palette source for the control-room activities and the mod menu.
- * Pairings are contrast-checked (>= 4.5:1) by f7.py. Plain constants only: no I/O.
+ * Plain constants only: no I/O.
+ *
+ * No66-D22: the old claim "contrast-checked (>= 4.5:1) by f7.py" was false —
+ * no f7.py exists in the repo or workspace. Ratios below were computed
+ * directly from the hex values (WCAG 2.x relative luminance) in round no66:
+ * TEXT/BG 16.90, TEXT_MUTED/BG 9.22, TEXT_DIM/BG 5.55, WARN/BG 9.13,
+ * SUCCESS/BG 11.79, white/BUTTON 4.81, white/DANGER 10.01,
+ * white/BUTTON_NEUTRAL 12.63, dark-BG/BUTTON_ALT 12.79, ACCENT_TEXT/BG 6.29
+ * — all >= 4.5:1. Pairings that FAIL and must not be used: white text on
+ * BUTTON_ALT (was 2.38:1 on #00B8D4 — alt buttons now use dark BG text),
+ * ACCENT as text on BG/SURFACE (4.09/3.69 — use ACCENT_TEXT instead).
+ *
+ * No66-D23/D24 (Q61-2 advance): values that duplicate a theme token now
+ * EQUAL it — TEXT is theme colorOnSurface #E8EEF9, SUCCESS is theme
+ * colorTertiary #00E676, BUTTON_ALT is brand cyan #00E5FF (theme
+ * colorSecondary). ACCENT/SURFACE/BG/TEXT_MUTED already matched their
+ * theme roles. TEXT_DIM stays #888888: the theme's dim token #5C7399
+ * measures only 4.09:1 on BG and must not be unified (No66-D35).
  */
 object ThemeTokens {
     const val BG_HEX = "#070B14"
     const val SURFACE_HEX = "#101828"
     const val ACCENT_HEX = "#7C4DFF"
-    const val TEXT_HEX = "#DDDDDD"
+    // No66-D25: lighter purple for TEXT use only. No single hex passes
+    // both roles: ACCENT #7C4DFF as text is 4.09:1 on BG (fail) while as a
+    // button background with white text it is 4.81:1 (pass).
+    const val ACCENT_TEXT_HEX = "#9D7BFF"
+    const val TEXT_HEX = "#E8EEF9"
     const val TEXT_MUTED_HEX = "#9FB3D1"
     const val TEXT_DIM_HEX = "#888888"
     const val WARN_HEX = "#FF9800"
-    const val SUCCESS_HEX = "#4CAF50"
+    const val SUCCESS_HEX = "#00E676"
     const val BUTTON_HEX = "#7C4DFF"
-    const val BUTTON_ALT_HEX = "#00B8D4"
+    const val BUTTON_ALT_HEX = "#00E5FF"
     const val BUTTON_NEUTRAL_HEX = "#333333"
     const val DANGER_HEX = "#8B0000"
     const val PANEL_BG_HEX = "#EE0A0E17"
@@ -25,6 +46,7 @@ object ThemeTokens {
     val BG: Int = Color.parseColor(BG_HEX)
     val SURFACE: Int = Color.parseColor(SURFACE_HEX)
     val ACCENT: Int = Color.parseColor(ACCENT_HEX)
+    val ACCENT_TEXT: Int = Color.parseColor(ACCENT_TEXT_HEX)
     val TEXT: Int = Color.parseColor(TEXT_HEX)
     val TEXT_MUTED: Int = Color.parseColor(TEXT_MUTED_HEX)
     val TEXT_DIM: Int = Color.parseColor(TEXT_DIM_HEX)

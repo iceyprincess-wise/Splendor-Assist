@@ -632,14 +632,15 @@ class ModMenuController(private val context: Context) {
                     if (fromUser) {
                         // No65-D29: repo only — the direct registry write
                         // used to sit here too and defeated the repo clamp:
-                        // updateAwareness clamps to 25..150, but the raw
-                        // slider value (0..100) was written straight to the
-                        // registry afterwards, so dragging to 10 left the
-                        // live value at 10 while prefs held 25 — and the
-                        // outcome raced the bridge's async sync. The repo
-                        // save emits the clamped state and the bridge sets
-                        // the registry from it (the keeper-reactions slider
-                        // just above already uses this repo-only pattern).
+                        // the raw slider value was written straight to the
+                        // registry after the repo save, so the live value
+                        // raced the bridge's async sync. (No66-D48: the old
+                        // comment claimed the repo clamped to 25..150 — it
+                        // never did; InterceptionRepository clamps 0..100,
+                        // the slider range. The repo save emits the clamped
+                        // state and the bridge sets the registry from it —
+                        // the keeper-reactions slider just above already
+                        // uses this repo-only pattern.)
                         interceptionRepo.updateAwareness(progress)
                     }
                 }
@@ -665,9 +666,10 @@ class ModMenuController(private val context: Context) {
                     tvPrediction.text = "Prediction: $progress"
                     if (fromUser) {
                         // No65-D29: repo only — same clamp-defeating double
-                        // write as the awareness slider above (raw 0..100
-                        // overwrote the repo's 25..150 clamped value and
-                        // raced the bridge sync).
+                        // write as the awareness slider above (the raw
+                        // 0..100 value overwrote the repo-clamped value and
+                        // raced the bridge sync). No66-D48: the repo clamp
+                        // is 0..100, not 25..150 as the old comment said.
                         interceptionRepo.updatePrediction(progress)
                     }
                 }

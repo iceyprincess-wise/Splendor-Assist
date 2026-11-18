@@ -1,5 +1,6 @@
 package com.assistant.controlroom.ui
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Button
@@ -103,16 +104,25 @@ class GoalkeeperControlRoomActivity : AppCompatActivity() {
     }
 
     /* Live runtime panel injected under the status line - no layout edit needed. */
+    // No66-D32 (Q61-1): the panel used to be a default-styled Button/TextView
+    // with raw-pixel padding. It now uses ThemeTokens like the rest of the
+    // room, with dp padding (same helper shape as the other rooms).
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
     private fun installLivePanel(anchor: TextView) {
         val parent = anchor.parent as? ViewGroup ?: return
         val refresh = Button(this).apply {
             text = "Refresh live keeper status"
             isAllCaps = false
+            setBackgroundColor(ThemeTokens.BUTTON)
+            setTextColor(Color.WHITE)
+            textSize = 14f
             setOnClickListener { liveText?.text = liveKeeperStatus() }
         }
         val live = TextView(this).apply {
             textSize = 12f
-            setPadding(0, 16, 0, 16)
+            setTextColor(ThemeTokens.TEXT_MUTED)
+            setPadding(0, dp(16), 0, dp(16))
         }
         val index = parent.indexOfChild(anchor) + 1
         parent.addView(refresh, index)
@@ -142,12 +152,17 @@ class GoalkeeperControlRoomActivity : AppCompatActivity() {
         val registered =
             (registry["names"]?.toString() ?: "").contains("KeeperFeedback")
 
+        // No66-D33: a cold frame carries only "frames"/"state" — confidence
+        // is absent and used to render as literal "null".
+        val cold = !frame.containsKey("trusted")
+
         buildString {
             append("KEEPER GATE: ").append(gate).append('\n')
             append("KeeperFeedback contributor registered = ").append(registered).append('\n')
+            if (cold) append("Frame: no frame yet (runtime cold — open the game)\n")
             append("Frame: trusted=").append(trusted)
                 .append(" hasBall=").append(hasBall)
-                .append(" confidence=").append(frame["confidence"]).append('\n')
+                .append(" confidence=").append(frame["confidence"] ?: "—").append('\n')
             append("Decisions=").append(decision["decisions"])
                 .append(" routed=").append(decision["routed"])
                 .append(" lastAction=").append(decision["lastAction"]).append('\n')

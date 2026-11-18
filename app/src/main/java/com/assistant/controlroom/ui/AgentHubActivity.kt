@@ -18,14 +18,16 @@ import com.assistant.InAppAgentCore
  * Agent Hub Room (Item 4/6)
  *
  * The single authoritative Activity for the AI Self-Heal Agent monitor.
- * Opened by cardAccessibility (renamed to AGENT HUB ROOM on the home screen).
+ * Opened by cardAccessibility and cardNotifications on the home screen,
+ * and linked from FutureRooms (No66-D44: FutureRooms' inline agent screen
+ * was a duplicate of this room and is removed — this is the only agent
+ * monitor; its "Force Heal Cycle Now" button genuinely forces a cycle
+ * via InAppAgentCore.runNow()).
  *
  * Shows:
  *   - Live agent status (3s refresh)
  *   - Last 20 heal events with severity icons
  *   - Force Heal Cycle button
- *
- * This is the only home card approved for agent content.
  */
 class AgentHubActivity : AppCompatActivity() {
 
@@ -60,7 +62,9 @@ class AgentHubActivity : AppCompatActivity() {
                     bg: Int = ThemeTokens.BUTTON, onClick: () -> Unit) {
         list.addView(Button(this).apply {
             text = label; isAllCaps = false; setBackgroundColor(bg)
-            setTextColor(Color.WHITE); textSize = 14f
+            // No66-D23: white text on BUTTON_ALT was 2.38:1; alt buttons
+            // (now brand cyan #00E5FF) take dark text — 12.79:1.
+            setTextColor(if (bg == ThemeTokens.BUTTON_ALT) ThemeTokens.BG else Color.WHITE); textSize = 14f
             val lp = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             lp.setMargins(0, dp(6), 0, dp(6)); layoutParams = lp
@@ -110,7 +114,9 @@ class AgentHubActivity : AppCompatActivity() {
 
         val coreTv = TextView(this).apply {
             textSize = 10f
-            setTextColor(ThemeTokens.ACCENT)
+            // No66-D25: ACCENT as text was 4.09:1 on BG (fail); ACCENT_TEXT
+            // is 6.29:1. ACCENT itself stays for button backgrounds.
+            setTextColor(ThemeTokens.ACCENT_TEXT)
             setPadding(0, dp(4), 0, dp(8))
             typeface = Typeface.MONOSPACE
             text = "InAppAgentCore: starting..."
@@ -183,8 +189,11 @@ class AgentHubActivity : AppCompatActivity() {
                                 else       -> "ℹ️ INFO"
                             }
                             "$icon  [${ev.timestamp}]  ${ev.category}\n" +
-                            "DETECTED: ${ev.detected}\n" +
-                            "FIX: ${ev.fix}"
+                            // No66-D46: cap long event text like FutureRooms
+                            // did (.take(160)) — an uncapped DETECTED/FIX
+                            // string builds an unbounded TextView.
+                            "DETECTED: ${ev.detected.take(160)}\n" +
+                            "FIX: ${ev.fix.take(160)}"
                         }
                     }
                 } catch (_: Throwable) {}
