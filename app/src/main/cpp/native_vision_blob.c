@@ -1,12 +1,9 @@
 #include "native_breadcrumb.h"
 #include <jni.h>
-#include <fcntl.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <stdint.h>
 #include <math.h>
-#include <string.h>
 #include <pthread.h>
 
 #define MAX_PIXELS 1048576

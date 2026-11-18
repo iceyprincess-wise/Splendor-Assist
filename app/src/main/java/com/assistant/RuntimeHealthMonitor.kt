@@ -121,6 +121,13 @@ object RuntimeHealthMonitor {
         val lastEvaluatedMs: Long
     )
 
+    // No68-E1-D36: snapshot() reads and writes prevFrames/framesProgressMs
+    // as a pair, but it was unsynchronised while MainActivity (3s hub
+    // tick), the control rooms and RuntimeObservation.capture() call it
+    // from different threads — two concurrent snapshots could interleave
+    // the check and the update and report frame flow that never happened
+    // (or miss flow that did). The whole evaluation is now atomic.
+    @Synchronized
     fun snapshot(): HealthState {
         evaluations.incrementAndGet()
         val now = System.currentTimeMillis()
@@ -177,18 +184,34 @@ object RuntimeHealthMonitor {
         val requested = (execution["requested"] as? Number)?.toLong() ?: 0L
         val acceptedCount = (execution["accepted"] as? Number)?.toLong() ?: 0L
         val executionLast = (execution["lastUpdatedMs"] as? Number)?.toLong() ?: 0L
+        // No68-E1-D37: acceptedCount > 0 used to report dispatch alive
+        // FOREVER — accepted is cumulative, so one accepted gesture in
+        // the first minute kept dispatchAlive true for the whole session
+        // even after the dispatcher died. Alive now means: nothing was
+        // ever requested, or everything requested was accepted, or the
+        // execution record is fresh (a dispatch is in flight).
         val dispatchAlive = when {
             requested == 0L -> true
-            acceptedCount > 0L -> true
+            acceptedCount >= requested -> true
             executionLast > 0L && now - executionLast <= EXECUTION_STALE_MS -> true
             else -> false
         }
 
+        // No68-E1-D38: gameplayAlive had the same cumulative-count shape
+        // (decisions > 0 OR offered > 0, no freshness) — one decision in
+        // the first minute kept gameplay alive forever after the loop
+        // died. Anchor it on decision freshness, with the same idle
+        // allowance the decision verdict already uses: when frame flow
+        // is paused the loop is idle by design, not dead — but only if
+        // it has ever produced anything; a loop that never decided
+        // anything is still idle, paused or not.
+        val everProduced = decisions > 0L ||
+            ((contributions["offered"] as? Number)?.toLong() ?: 0L) > 0L
         val gameplayAlive =
             ((registry["engines"] as? Number)?.toInt() ?: 0) > 0 &&
                 (
-                    decisions > 0L ||
-                    ((contributions["offered"] as? Number)?.toLong() ?: 0L) > 0L
+                    decisionFresh ||
+                    (!frameFlowing && everProduced)
                 )
 
         // ---- booster: cross-process heartbeats, fresh ones only ----
@@ -237,6 +260,7 @@ object RuntimeHealthMonitor {
         )
     }
 
+    @Synchronized
     fun reset() {
         evaluations.set(0L)
         lastEvaluatedMs = 0L

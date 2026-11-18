@@ -106,13 +106,18 @@ object TouchRecoveryContributor : GameplayContributor {
 
         // After recovering the touch, drive toward the open passing lane.
         // Returning to ballX/ballY (where the player already is) is a no-op.
+        // No68-E2-D14: a viable lane's target is authoritative even on the
+        // edge (x/y == 0f is a legal coordinate); the old `> 0f` test
+        // rejected it. Only finiteness is checked now. The no-lane
+        // fallback still nudges +60px in X (tuned step, kept as-is) and
+        // now clamps Y to the capture height too (it was unclamped).
         val targetX = when {
-            frame.viableLaneCount > 0 && frame.passTargetX > 0f -> frame.passTargetX
+            frame.viableLaneCount > 0 && frame.passTargetX.isFinite() -> frame.passTargetX
             else -> (frame.ballX + 60f).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
         }
         val targetY = when {
-            frame.viableLaneCount > 0 && frame.passTargetY > 0f -> frame.passTargetY
-            else -> frame.ballY
+            frame.viableLaneCount > 0 && frame.passTargetY.isFinite() -> frame.passTargetY
+            else -> frame.ballY.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
         }
 
         return EngineContribution(
@@ -128,18 +133,5 @@ object TouchRecoveryContributor : GameplayContributor {
 }
 
 /* ========
-TrueCrossContributor
+TouchRecoveryContributor
 ======== */
-/**
- * TrueCrossContributor
- *
- * Run-predicted cross: aims at where the receiver WILL BE when the ball arrives.
- *
- * SA cross interception root cause:
- *   SA aims at the receiver's CURRENT position. The receiver is always running
- *   into the box. By the time the lofted ball arrives, the receiver has moved
- *   on and a defender has filled that spot — intercepted every time.
- *
- * TrueCross leads the receiver run so the ball meets them in motion.
- * +0.14 authority boost when SmartAssist corrections are active.
- */

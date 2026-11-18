@@ -71,6 +71,10 @@ object TouchQualityEngine {
     private const val POLL_MS = 500L
     private const val STALL_THRESHOLD_CYCLES = 2 // 2 cycles * 500ms = 1000ms max touch unresponsiveness
 
+    // No68-I-D31: the Regex was constructed for EVERY line of
+    // /proc/interrupts on EVERY 500 ms poll. Hoist it to one instance.
+    private val IRQ_NUMBER_REGEX = Regex("""\s+(\d+)""")
+
     @Volatile private var running = false
     @Volatile var irqDropDetected = false; private set
 
@@ -91,24 +95,40 @@ object TouchQualityEngine {
                     if (prevIrq >= 0 && irq >= 0) {
                         val delta = irq - prevIrq
                         if (delta == 0L) {
-                            emptyIrqCycles++
-                            
-                            // CONDITIONLESS ACTIVE MITIGATION:
-                            // If no touch IRQs for 1000ms, the kernel/CPU is starved by HyperOS.
-                            if (emptyIrqCycles >= STALL_THRESHOLD_CYCLES) {
-                                if (!irqDropDetected) {
-                                    irqDropDetected = true
-                                    
-                                    // Signal Queen Bee (SmartAssist) to drop non-essential UI work
-                                    AdapterSignalBus.publishInput("TOUCH_IRQ_STALL", emptyIrqCycles.toLong())
-                                    
-                                    // Force boost priority to fight HyperOS cgroup throttling
-                                    try {
-                                        Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
-                                    } catch (_: Throwable) {}
-                                    
-                                    RuntimeLogger.log("TouchQuality: TOUCH IRQ STALL — no kernel events for ${emptyIrqCycles * POLL_MS}ms. SURVIVAL MODE TRIGGERED.", "INPUT")
+                            // No68-I-D29: zero IRQs only mean "stall" while the
+                            // user is actually touching. The IRQ counter moves
+                            // on touch events, so a user who simply is not
+                            // touching for > 1 s used to raise a false STALL
+                            // (and the survival-mode signal) every idle second.
+                            // UserTouchState.isTouching() is true through a
+                            // hold (the touching flag) and for 2.5 s after the
+                            // last touch, which covers the 1 s detection
+                            // window; during a genuine stall the END event
+                            // never arrives, so the flag stays true and the
+                            // stall is still caught in 2 cycles. Not touching
+                            // resets the count: no touch, no evidence.
+                            if (UserTouchState.isTouching()) {
+                                emptyIrqCycles++
+
+                                // CONDITIONLESS ACTIVE MITIGATION:
+                                // If no touch IRQs for 1000ms, the kernel/CPU is starved by HyperOS.
+                                if (emptyIrqCycles >= STALL_THRESHOLD_CYCLES) {
+                                    if (!irqDropDetected) {
+                                        irqDropDetected = true
+
+                                        // Signal Queen Bee (SmartAssist) to drop non-essential UI work
+                                        AdapterSignalBus.publishInput("TOUCH_IRQ_STALL", emptyIrqCycles.toLong())
+
+                                        // Force boost priority to fight HyperOS cgroup throttling
+                                        try {
+                                            Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
+                                        } catch (_: Throwable) {}
+
+                                        RuntimeLogger.log("TouchQuality: TOUCH IRQ STALL — no kernel events for ${emptyIrqCycles * POLL_MS}ms. SURVIVAL MODE TRIGGERED.", "INPUT")
+                                    }
                                 }
+                            } else {
+                                emptyIrqCycles = 0
                             }
                         } else {
                             emptyIrqCycles = 0
@@ -145,7 +165,7 @@ object TouchQualityEngine {
                 if (kw.any { line.lowercase().contains(it) }) {
                     found = true
                     // Fixed Regex: correctly extracts numbers from /proc/interrupts
-                    Regex("""\s+(\d+)""").findAll(line).forEach { total += it.groupValues[1].toLongOrNull() ?: 0L }
+                    IRQ_NUMBER_REGEX.findAll(line).forEach { total += it.groupValues[1].toLongOrNull() ?: 0L }
                 }
             }
         }

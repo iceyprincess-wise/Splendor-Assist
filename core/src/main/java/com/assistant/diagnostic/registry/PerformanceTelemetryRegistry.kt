@@ -563,4 +563,55 @@ object PerformanceTelemetryRegistry {
         return if (now - aggroReadCacheMs < 15_000L) aggroReadCache else 1.0f
     }
     // SPLENDOR_P7_XPROC_DEVICE_END
+
+    // ---- CROWDING ZONE (No68-C-D6: main-process detector -> :survival lag verdict) ----
+    // CrowdingZoneDetector publishes to the in-process AdapterSignalBus, but
+    // LagVerdictEngine runs in :survival (PerformanceEngineService), where
+    // that bus copy is never published — so the "+2 CHOKING confirmation
+    // polls when crowded" protection could never fire. Mirror the zone here
+    // on the same file-backed pattern as filter aggression. The publisher
+    // writes change-only (CrowdingZoneDetector tracks the last value), so
+    // this is at most one small write per crowded-phase transition, never
+    // per-frame I/O. Stale (>5 s) reads as not-crowded: a crowded phase is
+    // transient, and a dead main process must never leave :survival
+    // demanding extra confirmation forever.
+    @Volatile private var crowdZone = false
+    @Volatile private var crowdMs = 0L
+    @Volatile private var crowdFile: File? = null
+    @Volatile private var crowdReadAt = 0L
+    @Volatile private var crowdReadCache = false
+    @Volatile private var crowdReadCacheMs = 0L
+    private const val CROWD_STALE_MS = 5_000L
+
+    @JvmStatic
+    @Synchronized
+    fun publishCrowdingZone(zone: Boolean) {
+        ensureFile()
+        crowdZone = zone
+        crowdMs = System.currentTimeMillis()
+        try {
+            if (crowdFile == null) crowdFile = file?.parentFile?.let { File(it, "perf_crowding.txt") }
+            crowdFile?.writeText(zone.toString() + "|" + crowdMs)
+        } catch (_: Throwable) { }
+    }
+
+    /** Non-blocking. Fresh in-memory value wins, else a throttled file read. Stale reads false. */
+    @JvmStatic
+    @Synchronized
+    fun currentCrowdingZone(): Boolean {
+        val now = System.currentTimeMillis()
+        if (now - crowdMs < CROWD_STALE_MS) return crowdZone
+        if (now - crowdReadAt < 2_000L) return if (now - crowdReadCacheMs < CROWD_STALE_MS) crowdReadCache else false
+        crowdReadAt = now
+        ensureFile()
+        try {
+            if (crowdFile == null) crowdFile = file?.parentFile?.let { File(it, "perf_crowding.txt") }
+            val p = (crowdFile?.takeIf { it.exists() }?.readText() ?: return false).split("|")
+            if (p.size >= 2) {
+                crowdReadCache = p[0].toBooleanStrictOrNull() ?: false
+                crowdReadCacheMs = p[1].toLongOrNull() ?: 0L
+            }
+        } catch (_: Throwable) { }
+        return if (now - crowdReadCacheMs < CROWD_STALE_MS) crowdReadCache else false
+    }
 }

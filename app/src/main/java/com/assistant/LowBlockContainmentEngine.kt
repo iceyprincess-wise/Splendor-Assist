@@ -117,7 +117,17 @@ object LowBlockContainmentEngine {
 
         val activationThreshold = safeHeight * 0.70f
 
-        if (ballY >= activationThreshold) {
+        // No68-D-D20: when the ball is not deep the old code returned an
+        // EMPTY list — a consumer expecting one movement per defender got
+        // zero, so the shape contract (movements.size == defenders.size)
+        // broke exactly when the line should be holding its shape.
+        // Inactive now means "hold position": return the defenders where
+        // they already are.
+        if (ballY < activationThreshold) {
+            return DefensiveContainmentResult(movements = defenders.toList())
+        }
+
+        run {
             val ballDepthProgress = ((ballY - activationThreshold) / (safeHeight - activationThreshold))
                 .coerceIn(0f, 1f)
 
@@ -131,17 +141,30 @@ object LowBlockContainmentEngine {
                     (defender.first - ballX).toDouble(),
                     (defender.second - ballY).toDouble()
                 ).toFloat()
-                
+
                 if (distanceToBall < minDistanceToBall) {
                     minDistanceToBall = distanceToBall
                     closestDefenderIndex = index
                 }
             }
 
+            // No68-D-D19: slots were assigned by INPUT index order, so a
+            // defender listed first always took the leftmost slot even
+            // when standing on the right — the line crossed itself. Slots
+            // now follow each defender's RANK in current-X order (ties
+            // break by input index, so the order is deterministic), while
+            // movements are still returned in input order so a consumer
+            // matching by index gets the right defender.
+            val rankOf = IntArray(defenders.size) { index ->
+                defenders.count { other ->
+                    other.first < defenders[index].first
+                } + defenders.subList(0, index).count { it.first == defenders[index].first }
+            }
+
             val centralPenaltySpotX = safeWidth * 0.5f
 
             defenders.forEachIndexed { index, defender ->
-                val optimalX = (safeWidth / (defenders.size + 1)) * (index + 1)
+                val optimalX = (safeWidth / (defenders.size + 1)) * (rankOf[index] + 1)
 
                 val hazardLevel = ((ballY - (safeHeight * 0.80f)) / (safeHeight * 0.20f))
                     .coerceIn(0f, 1f)

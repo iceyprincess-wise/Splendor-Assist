@@ -74,7 +74,12 @@ object AdapterSignalBus {
     val inputClassification: String get() = state.inputClassification
     val inputLatencyMs: Long get() = state.inputLatencyMs
     fun publishInput(classification: String, latencyMs: Long) { state = state.copy(inputClassification = classification, inputLatencyMs = latencyMs) }
-    val inputIsLagging: Boolean get() { val s = state; return s.inputClassification == "LAGGING" }
+    // No68-I-D30: TouchQualityEngine publishes "TOUCH_IRQ_STALL" on a real
+    // touch-IRQ stall, but this getter only matched "LAGGING" — so the stall
+    // signal had no behavioural consumer anywhere (only diagnostic dumps
+    // read the raw string). A stalled touch input IS lagging input:
+    // SpeedCompensation shortens gestures 0.7x while it holds.
+    val inputIsLagging: Boolean get() { val s = state; return s.inputClassification == "LAGGING" || s.inputClassification == "TOUCH_IRQ_STALL" }
     val memoryIsCritical: Boolean get() { val s = state; return s.memoryTier == "CRITICAL" }
     val memoryIsUnderPressure: Boolean get() { val s = state; return s.memoryTier == "CRITICAL" || s.memoryTier == "PRESSURE" }
     fun publishLag(verdict: String) { state = state.copy(lagVerdict = verdict) }

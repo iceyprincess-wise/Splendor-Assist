@@ -425,7 +425,6 @@ class GlobalCrashHandler(
                 EngineEntry("CrossClaimContributor","com.assistant.contributors.CrossClaimContributor","ACTIVE","goalkeeper cross claim"),
                 EngineEntry("KeeperBiasContributor","com.assistant.contributors.KeeperBiasContributor","ACTIVE","keeper positional bias"),
                 EngineEntry("PanicSaveContributor","com.assistant.contributors.PanicSaveContributor","ACTIVE","1v1 panic save — highest urgency keeper"),
-                EngineEntry("PassLaneContributor","com.assistant.contributors.PassLaneContributor","ACTIVE","open-play passing via vision lane data"),
                 EngineEntry("BallPressContributor","com.assistant.contributors.BallPressContributor","ACTIVE","out-of-possession pressing"),
                 EngineEntry("PressEvadeContributor","com.assistant.contributors.PressEvadeContributor","ACTIVE","press evasion when being pressed"),
                                 EngineEntry("CrossDeliveryContributor","com.assistant.contributors.CrossDeliveryContributor","ACTIVE","cross into goal box delivery"),

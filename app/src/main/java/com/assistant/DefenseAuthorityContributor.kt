@@ -99,6 +99,13 @@ object DefenseAuthorityContributor : GameplayContributor {
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || frame.hasBall) return null
+        // No68-D-D8: no presence gate. defenderDensity is the opponent
+        // share (FrameAssembler: opponents / players), so 0 means no
+        // opponent is visible at all — yet the old code still built a
+        // DEFEND claim from vision confidence alone (authority up to
+        // ~0.79 at confidence 0.9) that could outrank BallPress and win
+        // arbitration with nothing to defend against.
+        if (frame.defenderDensity <= 0f) return null
 
         var distance = (1f - frame.defenderDensity) * 500f
         var defX: Float? = null
@@ -143,7 +150,14 @@ object DefenseAuthorityContributor : GameplayContributor {
             val attackDirection = AttackAxisModel.directionIfConfident()
             val fallbackGoalX = 0f
             val goalX = if (attackDirection > 0) fallbackGoalX else if (attackDirection < 0) com.assistant.vision.CameraProfile.captureWidthOrFallback() else fallbackGoalX
-            val goalY = 540f
+            // No68-D-D9: was a hardcoded 540f. On the 720-high fallback
+            // that is 0.75h; on the live 640-high capture it is 0.84h —
+            // in neither space is it the goal line. Use the detected
+            // goal's real centre (frame.goalCenterY, carried from the
+            // goal detector via FrameAssembler) and fall back to the
+            // vertical centre of the capture when no goal is detected.
+            val goalY = if (frame.goalDetected) frame.goalCenterY
+                else com.assistant.vision.CameraProfile.captureHeightOrFallback() * 0.5f
             val refX = defX ?: ballX
             val refY = defY ?: ballY
 

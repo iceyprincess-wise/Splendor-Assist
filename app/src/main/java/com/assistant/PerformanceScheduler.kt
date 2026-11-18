@@ -77,40 +77,61 @@ object PerformanceScheduler {
 
         schedulerHandler!!.post(object : Runnable {
             override fun run() {
+                // No68-E1-D34: the reschedule lived AFTER the try/catch and
+                // after the isGameForeground() cadence read, so any throw
+                // from isGameForeground() killed this loop silently and
+                // battery publishing stopped forever. Reschedule in a
+                // finally so the loop cannot die on one bad read.
+                var cadence = 30_000L
                 try {
-                    val intent = context.registerReceiver(null, android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED))
-                    val level = intent?.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) ?: -1
-                    val scale = intent?.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1) ?: -1
-                    val charging = intent?.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) == android.os.BatteryManager.BATTERY_STATUS_CHARGING
-                    val pct = if (scale > 0) (level * 100) / scale else level
-                    com.assistant.diagnostic.AdapterSignalBus.publishBattery(pct, charging)
-                    // SPLENDOR_P7_DEVICE_BATTERY_BEGIN
-                    // Mirror into the cross-process device snapshot so
-                    // main-process FilterEngine reads real battery values.
-                    try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceBattery(pct, charging) } catch (_: Throwable) {}
-                    // SPLENDOR_P7_DEVICE_BATTERY_END
-                } catch (_: Throwable) {}
-                val cadence = if (com.assistant.VisionTrust.isGameForeground()) 30_000L else 5_000L
-                schedulerHandler?.postDelayed(this, cadence)
+                    try {
+                        val intent = context.registerReceiver(null, android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED))
+                        val level = intent?.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                        val scale = intent?.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1) ?: -1
+                        val charging = intent?.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) == android.os.BatteryManager.BATTERY_STATUS_CHARGING
+                        val pct = if (scale > 0) (level * 100) / scale else level
+                        com.assistant.diagnostic.AdapterSignalBus.publishBattery(pct, charging)
+                        // SPLENDOR_P7_DEVICE_BATTERY_BEGIN
+                        // Mirror into the cross-process device snapshot so
+                        // main-process FilterEngine reads real battery values.
+                        try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceBattery(pct, charging) } catch (_: Throwable) {}
+                        // SPLENDOR_P7_DEVICE_BATTERY_END
+                    } catch (_: Throwable) {}
+                    cadence = if (com.assistant.VisionTrust.isGameForeground()) 30_000L else 5_000L
+                } catch (_: Throwable) {
+                    cadence = 30_000L
+                } finally {
+                    schedulerHandler?.postDelayed(this, cadence)
+                }
             }
         })
 
         schedulerHandler!!.postDelayed(object : Runnable {
             override fun run() {
+                // No68-E1-D35: same silent-death shape as the battery loop
+                // (D34): a throw from isGameForeground() skipped the
+                // reschedule and thermal publishing stopped forever.
+                // Reschedule in a finally.
+                var cadence = 60_000L
                 try {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                        val pm = context.getSystemService(android.content.Context.POWER_SERVICE) as? android.os.PowerManager
-                        val status = pm?.currentThermalStatus ?: -1
-                        com.assistant.diagnostic.AdapterSignalBus.publishThermal(status)
-                        // SPLENDOR_P7_DEVICE_THERMAL_BEGIN
-                        // Mirror into the cross-process device snapshot so
-                        // main-process FilterEngine reads real thermal values.
-                        try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceThermal(status) } catch (_: Throwable) {}
-                        // SPLENDOR_P7_DEVICE_THERMAL_END
-                    }
-                } catch (_: Throwable) {}
-                val cadence = if (com.assistant.VisionTrust.isGameForeground()) 60_000L else 30_000L
-                schedulerHandler?.postDelayed(this, cadence)
+                    try {
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                            val pm = context.getSystemService(android.content.Context.POWER_SERVICE) as? android.os.PowerManager
+                            val status = pm?.currentThermalStatus ?: -1
+                            com.assistant.diagnostic.AdapterSignalBus.publishThermal(status)
+                            // SPLENDOR_P7_DEVICE_THERMAL_BEGIN
+                            // Mirror into the cross-process device snapshot so
+                            // main-process FilterEngine reads real thermal values.
+                            try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceThermal(status) } catch (_: Throwable) {}
+                            // SPLENDOR_P7_DEVICE_THERMAL_END
+                        }
+                    } catch (_: Throwable) {}
+                    cadence = if (com.assistant.VisionTrust.isGameForeground()) 60_000L else 30_000L
+                } catch (_: Throwable) {
+                    cadence = 60_000L
+                } finally {
+                    schedulerHandler?.postDelayed(this, cadence)
+                }
             }
         }, 10000L)
     }

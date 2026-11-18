@@ -19,6 +19,14 @@ import kotlin.math.sqrt
 object DiagnosticSamplers {
     private const val FPS_PERIOD_MS = 5000L
     private const val PERIODIC_MS = 30000L
+    // No68-C-D2: the fps window is the last FPS_PERIOD_MS of arrivals, not
+    // the whole 600-slot ring. The ring holds 10 s at 60 fps but 30 s at
+    // 20 fps, so the old average mixed three different regimes and the
+    // reported rate lagged a real drop by tens of seconds.
+    private const val FPS_WINDOW_NANOS = 5_000_000_000L
+    @Volatile private var lastMeasuredFps = 0f
+    /** Last measured capture rate in fps (0 = no frames in the last window). */
+    fun lastMeasuredFps(): Float = lastMeasuredFps
     private val frameLock = Any()
     private val frameTimes = LongArray(600)
     private var frameNext = 0
@@ -58,17 +66,48 @@ object DiagnosticSamplers {
                         for (i in 0 until frameCount) out[i] = frameTimes[(start + i) % frameTimes.size]
                     }
                 }
-                if (values.size > 1) {
-                    val gaps = LongArray(values.size - 1) { values[it + 1] - values[it] }.filter { it > 0L }
+                // No68-C-D2: measure only the recent window. Timestamps are
+                // System.nanoTime(), so the window cut is a plain subtraction.
+                val nowNanos = System.nanoTime()
+                val recent = values.filter { it > 0L && nowNanos - it <= FPS_WINDOW_NANOS }
+                if (recent.size > 1) {
+                    val gaps = LongArray(recent.size - 1) { recent[it + 1] - recent[it] }.filter { it > 0L }
                     if (gaps.isNotEmpty()) {
                         val avg = gaps.average()
                         val sorted = gaps.sorted()
-                        val p95 = sorted[(sorted.size - 1) * 95 / 100]
+                        // No68-C-D3: the old index (size-1)*95/100 reads the
+                        // MINIMUM gap for tiny samples (size=2 -> index 0),
+                        // so p95 understated the real tail. Round the index
+                        // up so a 2-sample window reports the max gap.
+                        val p95Index = ((sorted.size - 1) * 95 + 99) / 100
+                        val p95 = sorted[p95Index.coerceIn(0, sorted.size - 1)]
                         val sd = sqrt(gaps.map { (it - avg) * (it - avg) }.average())
                         val fps = 1_000_000_000.0 / avg
+                        lastMeasuredFps = fps.toFloat()
+                        // No68-C-D1: the F47FPS line used to be the end of
+                        // the road — no engine ever read it, so the measured
+                        // capture rate never reached FPSMonitor (whose
+                        // update() had zero callers) or any decision engine.
+                        // Feed it: the in-app FPS display now shows the real
+                        // measured rate instead of a permanent 0.
+                        try { FPSMonitor.update(fps.toFloat()) } catch (_: Throwable) { }
                         LogMirror.mirror("F47FPS", android.util.Log.INFO,
                             "samples=${gaps.size} avg_fps=${"%.2f".format(java.util.Locale.US, fps)} p95_frame_gap_ms=${"%.2f".format(java.util.Locale.US, p95 / 1_000_000.0)} jitter_stddev_ms=${"%.2f".format(java.util.Locale.US, sd / 1_000_000.0)}")
+                    } else {
+                        lastMeasuredFps = 0f
+                        try { FPSMonitor.update(0f) } catch (_: Throwable) { }
+                        LogMirror.mirror("F47FPS", android.util.Log.INFO,
+                            "samples=0 avg_fps=0.00 p95_frame_gap_ms=0.00 jitter_stddev_ms=0.00")
                     }
+                } else {
+                    // No68-C-D2: a dead capture used to be silent here (no
+                    // line at all, so nothing distinguished "dead" from
+                    // "sampler not running"). Report 0 so a dead capture is
+                    // observable in the log instead of absent from it.
+                    lastMeasuredFps = 0f
+                    try { FPSMonitor.update(0f) } catch (_: Throwable) { }
+                    LogMirror.mirror("F47FPS", android.util.Log.INFO,
+                        "samples=0 avg_fps=0.00 p95_frame_gap_ms=0.00 jitter_stddev_ms=0.00")
                 }
             } catch (_: Throwable) { }
             handler?.postDelayed(this, FPS_PERIOD_MS)

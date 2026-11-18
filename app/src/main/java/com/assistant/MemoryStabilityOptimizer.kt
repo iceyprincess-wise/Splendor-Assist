@@ -105,11 +105,21 @@ class MemoryStabilityOptimizer(
 
     private val isInitialized = AtomicBoolean(false)
     private val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-    private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    // No68-E1-D22: the scope was a val cancelled for good by terminate(),
+    // so initialise() after a terminate() launched the monitor into a
+    // dead scope and the optimiser silently never ran again. Recreate it.
+    private var coroutineScope = newScope()
+    private fun newScope() = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var monitorJob: Job? = null
+    // No68-E1-D23: the listener was notified on EVERY 3s healthy poll, so
+    // onMemoryRestored() fired ~20x/minute forever. Notify on transition.
+    @Volatile private var wasCritical = false
 
     fun initialize() {
         if (isInitialized.compareAndSet(false, true)) {
+            // No68-E1-D22b: a scope cancelled by an earlier terminate()
+            // cannot launch again — rebuild it here, before monitoring.
+            if (!coroutineScope.isActive) coroutineScope = newScope()
             context.registerComponentCallbacks(this)
             startActiveMonitoring()
         }
@@ -119,7 +129,9 @@ class MemoryStabilityOptimizer(
         if (isInitialized.compareAndSet(true, false)) {
             context.unregisterComponentCallbacks(this)
             monitorJob?.cancel()
+            monitorJob = null
             coroutineScope.cancel()
+            wasCritical = false
         }
     }
 
@@ -143,9 +155,18 @@ class MemoryStabilityOptimizer(
 
         if (memoryInfo.availMem <= criticalThreshold || memoryInfo.lowMemory) {
             executeAggressiveCleanup()
-            memoryStateListener?.onMemoryCritical(availableMb)
+            // No68-E1-D23b: notify critical on transition only; the poll
+            // repeats every 3s and the old code re-fired the listener
+            // (and the GC) on every critical poll too.
+            if (!wasCritical) {
+                wasCritical = true
+                memoryStateListener?.onMemoryCritical(availableMb)
+            }
         } else {
-            memoryStateListener?.onMemoryRestored()
+            if (wasCritical) {
+                wasCritical = false
+                memoryStateListener?.onMemoryRestored()
+            }
         }
     }
 
@@ -155,19 +176,27 @@ class MemoryStabilityOptimizer(
             ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW,
             ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
                 executeAggressiveCleanup()
-                
+
                 val memoryInfo = ActivityManager.MemoryInfo()
                 activityManager.getMemoryInfo(memoryInfo)
+                // No68-E1-D23c: keep the poll's transition flag in sync, so
+                // an OS trim does not make the next healthy poll re-fire
+                // a stale "restored" for a state that was never reported.
+                wasCritical = true
                 memoryStateListener?.onMemoryCritical(memoryInfo.availMem / (1024 * 1024))
             }
             ComponentCallbacks2.TRIM_MEMORY_MODERATE,
             ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE,
             ComponentCallbacks2.TRIM_MEMORY_BACKGROUND,
             ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> {
-                // Mild background cleanup without aggressive yields
-                coroutineScope.launch(Dispatchers.IO) {
-                    System.gc()
-                }
+                // No68-E1-D24: the old code fired a full System.gc() on
+                // every MILD trim — including UI_HIDDEN and BACKGROUND,
+                // which arrive while the game is foregrounded and the
+                // device is healthy. System.gc() is a global stop-the-
+                // world pause on the gameplay path, and this class holds
+                // no caches of its own to free, so the GC bought nothing
+                // but a frame stall. Mild trims now do nothing here; the
+                // OS reclaims what it needs without a forced collection.
             }
         }
     }
@@ -176,6 +205,7 @@ class MemoryStabilityOptimizer(
         executeAggressiveCleanup()
         val memoryInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfo)
+        wasCritical = true
         memoryStateListener?.onMemoryCritical(memoryInfo.availMem / (1024 * 1024))
     }
 

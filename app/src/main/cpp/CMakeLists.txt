@@ -17,7 +17,6 @@ add_library(splendor_native SHARED
   native_frame_analyzer.c
   native_direct_input_hook.c
   native_predictive_frame_interp.c
-  native_dominance_matrix.c
   native_stopper_matrix.c
 
 

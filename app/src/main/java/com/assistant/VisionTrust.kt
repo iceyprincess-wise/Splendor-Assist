@@ -97,7 +97,12 @@ import kotlin.math.sqrt
 
 object VisionTrust {
 
-    // ---------------- tunables (ADMIN-TUNABLE, defaults = original values) ----------------
+    // ---------------- tunables (HARD-CODED CONSTANTS, no admin store) ----------------
+    // No68-C-D12: the old header called these ADMIN-TUNABLE. They are not:
+    // every value below is a getter returning a literal, and no admin store
+    // is read anywhere in this file. Do not tune them from an admin UI
+    // that does not exist; a real re-tune changes the literal (and, for
+    // FRESH_MS/STALE_MS, is Ed's call — see No68-C-D14).
     // PHASE4: 15fps tuning — FRESH_MS=120ms = 1.8 frames → ball always seems stale at 15fps
     // → frameTrusted() returns false every other frame → ALL contributors blocked
     // Fix: FRESH_MS=200ms (3 frames), STALE_MS=600ms (9 frames) for 15fps operation
@@ -322,6 +327,10 @@ object VisionTrust {
 
     // ---------------- proof surface ----------------
     private val ticks = java.util.concurrent.atomic.AtomicLong(0L)
+    // No68-C-D13: tickAndLog's cadence is frame-counted (every 20 frames),
+    // so at 60 fps it logs 3x/second and at 15 fps 0.75x/second. Cap it at
+    // one line per second of wall time as well.
+    @Volatile private var lastTickLogMs = 0L
 
     @JvmStatic
     fun diagnostics(): String =
@@ -336,6 +345,9 @@ object VisionTrust {
     @JvmOverloads
     fun tickAndLog(every: Long = 20L) {
         if (ticks.incrementAndGet() % every != 0L) return
+        val nowMs = android.os.SystemClock.elapsedRealtime()
+        if (nowMs - lastTickLogMs < 1000L) return
+        lastTickLogMs = nowMs
         try { com.assistant.diagnostic.RuntimeLogger.log(diagnostics(), "VISIONTRUST") } catch (_: Throwable) { }
     }
 }

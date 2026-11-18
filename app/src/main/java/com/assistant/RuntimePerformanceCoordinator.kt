@@ -95,6 +95,12 @@ import kotlin.math.*
 
 object RuntimePerformanceCoordinator {
 
+    // No68-E1-D40: masterAuthority was a plain var written from UI
+    // threads (control-room sliders, ModMenu) and read on the decision
+    // loop thread (RuntimeDecisionLoop) — a data race: the loop could
+    // read a stale authority forever on some cores. Volatile, like the
+    // state holder below.
+    @Volatile
     private var masterAuthority:Int = 100
 
     fun updateAuthority(authority:Int){
@@ -103,7 +109,13 @@ object RuntimePerformanceCoordinator {
 
     fun authority():Int = masterAuthority
 
-    fun runtimeAuthority(): Int = authority().coerceIn(0,100) * 10
+    // No68-E1-D41: runtimeAuthority() returned authority * 10 (0..1000)
+    // and the control rooms displayed it beside a "%" as the "Runtime"
+    // figure — a full-authority engine showed "1000 Runtime". No caller
+    // anywhere uses the 0..1000 range (goalkeeper/interception/
+    // smartAssistAuthority have zero callers); the scale was a bug, not
+    // a unit. Return the same 0..100 scale as authority().
+    fun runtimeAuthority(): Int = authority().coerceIn(0,100)
 
     fun goalkeeperAuthority(): Int = runtimeAuthority()
 
@@ -140,6 +152,17 @@ object RuntimePerformanceCoordinator {
     fun activate() {
         RuntimeDiagnosticsRegistry.enableRuntimeDiagnostics()
         RuntimeVisualizationRegistry.enableVisualization()
+        refresh()
+    }
+
+    // No68-E1-D42: activate() had no counterpart — once enabled, the
+    // diagnostics/visualization registries could never be switched off
+    // again from this coordinator (their disable*() methods exist and
+    // have no other caller). Symmetric deactivate, same shape as
+    // activate().
+    fun deactivate() {
+        RuntimeDiagnosticsRegistry.disableRuntimeDiagnostics()
+        RuntimeVisualizationRegistry.disableVisualization()
         refresh()
     }
 

@@ -54,13 +54,24 @@ Java_com_assistant_NativeBridge_nativeTrueShotCompute(
     
     float mid = goalLeftX * 0.5f + goalRightX * 0.5f;
     float gkVisMask = (float)goalkeeperVisible;
-    float leftOpenMask = branchless_coerce((mid - goalkeeperX) * 0.01f, 0.0f, 1.0f);
-    float rightOpenMask = 1.0f - leftOpenMask;
-    
-    float openXLeft = goalCX + (goalRightX - goalCX) * 0.72f;
-    float openXRight = goalCX - (goalCX - goalLeftX) * 0.72f;
-    
-    float gkOffsetX = openXLeft * leftOpenMask + openXRight * rightOpenMask;
+    // No68-F-D17: the old names were swapped — openXLeft held the
+    // RIGHT-side value (goalCX + right half) and openXRight the LEFT-side
+    // value. Renamed to match the values; the arithmetic is unchanged.
+    // No68-F-D18: the old keeper-offset weight saturated at a fixed 100 px
+    // from centre ((mid - goalkeeperX) * 0.01) regardless of capture size
+    // or goal width, so on a small/far goal (half-width < 100 px) the aim
+    // never reached the far side even with the keeper on the post. The
+    // weight is now the keeper's offset as a fraction of the goal
+    // half-width: 1.0 when the keeper stands on the post, 0.0 at centre.
+    // Identical to the old form when the goal half-width is 100 px.
+    // A degenerate box (half-width <= 0) aims midway (0.5).
+    float halfGoalW = (goalRightX - goalLeftX) * 0.5f;
+    float awayFromKeeper = (halfGoalW > 0.0f)
+        ? branchless_coerce((mid - goalkeeperX) / halfGoalW, 0.0f, 1.0f)
+        : 0.5f;
+    float openXRight = goalCX + (goalRightX - goalCX) * 0.72f;
+    float openXLeft = goalCX - (goalCX - goalLeftX) * 0.72f;
+    float gkOffsetX = openXRight * awayFromKeeper + openXLeft * (1.0f - awayFromKeeper);
     float openX = goalCX * (1.0f - gkVisMask) + gkOffsetX * gkVisMask;
     
     // Clamp to goal bounds branchlessly

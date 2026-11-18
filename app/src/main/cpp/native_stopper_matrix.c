@@ -1,16 +1,9 @@
 #include "native_breadcrumb.h"
 #include "native_contract.h"
 #include <jni.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
 
 #include <math.h>
 #include <stdint.h>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846f
-#endif
 
 static inline float fast_inv_sqrt(float x) {
     float xhalf = 0.5f * x;
@@ -30,14 +23,16 @@ static inline float branchless_coerce(float value, float min_val, float max_val)
 
 JNIEXPORT void JNICALL
 Java_com_assistant_NativeBridge_nativeExecuteStopperMatrix(
-        JNIEnv* env, jobject thiz,
+        JNIEnv* env, jclass clazz,
         jfloat playerX, jfloat playerY, jfloat playerVx, jfloat playerVy,
         jfloat homeAnchorX, jfloat homeAnchorY,
         jfloat oppX, jfloat oppY, jfloat oppVx, jfloat oppVy,
         jboolean isHoldingPressure, jfloat screenWidth, jfloat screenHeight,
+        jfloat restX, jfloat restY,
         jfloatArray outBuffer) {
+    (void)clazz;
     if (!splendor_array(env, outBuffer, 4)) return;
-    const jfloat contract_values[] = {playerX, playerY, playerVx, playerVy, homeAnchorX, homeAnchorY, oppX, oppY, oppVx, oppVy, screenWidth, screenHeight};
+    const jfloat contract_values[] = {playerX, playerY, playerVx, playerVy, homeAnchorX, homeAnchorY, oppX, oppY, oppVx, oppVy, screenWidth, screenHeight, restX, restY};
     if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
 
 #ifdef SPLENDOR_BREADCRUMBS
@@ -47,8 +42,11 @@ Java_com_assistant_NativeBridge_nativeExecuteStopperMatrix(
     jfloat* result = (jfloat*)(*env)->GetPrimitiveArrayCritical(env, outBuffer, NULL);
     if (!result) return;
 
-    float targetStickX = 250.0f;
-    float targetStickY = 550.0f;
+    // No68-H-D33: the stick rest comes from the caller (the trained
+    // joystick centre) — the hardcoded 250f/550f landscape constants put
+    // the base ~200px off the live rest point.
+    float targetStickX = restX;
+    float targetStickY = restY;
     float forcePhysicalBarge = 0.0f;
     float trackingPacingDuration = 40.0f;
 

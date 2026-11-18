@@ -238,7 +238,9 @@ object SmartAssistMetrics {
 
     val requestsSubmitted = AtomicLong()
     val requestsExecuted = AtomicLong()
-    val trajectoryProduced = AtomicLong()
+    // No68-E2-D3: the trajectory counter / producer are gone —
+    // zero callers repo-wide, no producer defined anywhere, so the
+    // "Trajectory" line of snapshot() printed a permanent 0.
 
     fun submitRequest() {
         requestsSubmitted.incrementAndGet()
@@ -248,10 +250,6 @@ object SmartAssistMetrics {
         requestsExecuted.incrementAndGet()
     }
 
-    fun produceTrajectory() {
-        trajectoryProduced.incrementAndGet()
-    }
-
     fun snapshot(): String {
         return buildString {
             append("Submitted : ")
@@ -259,26 +257,60 @@ object SmartAssistMetrics {
             append("\n")
             append("Executed : ")
             append(requestsExecuted.get())
-            append("\n")
-            append("Trajectory : ")
-            append(trajectoryProduced.get())
         }
     }
 
+    // No68-E2-D1: the old reset() zeroed only the three request counters
+    // while RuntimeCoordinator.reset() calls it expecting a full session
+    // reset — bus counts, goalkeeper-shadow state and the decision
+    // mirror all survived into the next epoch and the dashboard mixed
+    // epochs (same class as No66-D40). Everything resets now.
+    @Synchronized
     fun reset() {
         requestsSubmitted.set(0L)
         requestsExecuted.set(0L)
-        trajectoryProduced.set(0L)
+        goalkeeperShadowObservations = 0L
+        goalkeeperShadowLastPhase = 0
+        goalkeeperShadowLastStartX = 0f
+        goalkeeperShadowLastStartY = 0f
+        goalkeeperShadowLastEndX = 0f
+        goalkeeperShadowLastEndY = 0f
+        goalkeeperShadowLastDuration = 0L
+        goalkeeperShadowLastReason = "no goalkeeper shadow observation yet"
+        goalkeeperShadowLastUpdatedMs = 0L
+        busConsumed = 0L
+        busDispatched = 0L
+        busFailed = 0L
+        busLastSource = "none"
+        busLastPhase = 0
+        busLastDuration = 0L
+        busLastStartX = 0f
+        busLastStartY = 0f
+        busLastEndX = 0f
+        busLastEndY = 0f
+        busLastReason = "no bus request consumed yet"
+        busLastUpdatedMs = 0L
+        decisionsMade.set(0L)
+        decisionActions.set(0L)
+        decisionErrors.set(0L)
+        decisionTimeTotal.set(0L)
+        lastDecisionMs = 0L
+        lastDecisionUpdatedMs = 0L
     }
 
     fun magneticFeetRuntimeSnapshot(): Map<String, Any> {
+        // No68-SYNTH (warning cleanup): magneticFeetSnapshot() is non-null
+        // since No68-B-D41, and MagneticFeetState.result + its fields are
+        // non-null too — the defensive ?. / ?: here warned on every line
+        // (9 warnings in the first :app:compileDebugKotlin run). Direct
+        // access; no behaviour change.
         val state = MagneticFeetEngine.magneticFeetSnapshot()
         return mapOf(
-            "sequence" to (state?.sequence ?: 0L),
-            "amplification" to (state?.amplification ?: 1.0f),
-            "touchRetention" to (state?.result?.touchRetention ?: 0.0f),
-            "interceptionResistance" to (state?.result?.interceptionResistance ?: 0.0f),
-            "possessionControl" to (state?.result?.possessionControl ?: 0.0f)
+            "sequence" to state.sequence,
+            "amplification" to state.amplification,
+            "touchRetention" to state.result.touchRetention,
+            "interceptionResistance" to state.result.interceptionResistance,
+            "possessionControl" to state.result.possessionControl
         )
     }
 
@@ -356,6 +388,20 @@ object SmartAssistMetrics {
         decisionTimeTotal.addAndGet(durationMs)
         lastDecisionMs = durationMs
         lastDecisionUpdatedMs = System.currentTimeMillis()
+    }
+
+    // No68-E2-D2: the action/error hooks. decisionActions and
+    // decisionErrors had no producer anywhere, so the snapshot published
+    // permanent 0s as if measured. These are the wire points — the
+    // call-site wiring (dispatch path) is QE2-5; until it lands the
+    // fields stay 0, now honestly documented as unwired rather than
+    // silently presented as measured.
+    fun noteActionTriggered() {
+        decisionActions.incrementAndGet()
+    }
+
+    fun noteDecisionError() {
+        decisionErrors.incrementAndGet()
     }
 
     fun decisionRuntimeSnapshot(): Map<String, Any> {

@@ -46,15 +46,24 @@ class ObservedTacticsTest {
         val center=scene.copy(trackedPlayers=ours.map { it.copy(y=150f) })
         assertTrue(CentralOverloadDetectionEngine.compute(center).overloaded)
     }
-    @Test fun pressingTriggersOnMeanPressureAboveThreshold() {
+    // No68-SYNTH (g5 harness failure): No68-I-D24 changed analyze() to
+    // judge pressure AT THE BALL (cellPressureAt) instead of the old mean,
+    // and ballVisible=false (the default) means "not detected". The old
+    // 3-arg calls therefore returned not-detected and the assertTrue
+    // failed. Updated to the new contract: same 0.4 threshold, same
+    // 0.8 compactness, same found formation — but the ball is now visible
+    // at the centre of the 288x640 frame, so the ball cell carries the
+    // grid value (uniform 0.8 -> detected; uniform 0.0 -> not detected).
+    // Renamed: the metric pinned is ball-cell pressure, not mean pressure.
+    @Test fun pressingTriggersOnBallCellPressureAboveThreshold() {
         // No54-D4: renamed — the old name claimed the test varied grid
         // dimensions, but it never does; what it pins is the mean-pressure
         // threshold (0.4) against a fixed compactness (0.8 > 0.55) and a
         // found formation.
         val shape=DefensiveCompactnessResult(compactness=0.8f,confidence=0.8f)
         val formation=FormationResult(true,confidence=0.8f)
-        assertFalse(PressingRecognitionEngine.analyze(pressure(0f),shape,formation).detected)
-        assertTrue(PressingRecognitionEngine.analyze(pressure(0.8f),shape,formation).detected)
+        assertFalse(PressingRecognitionEngine.analyze(pressure(0f),shape,formation,ballX=144f,ballY=320f,frameWidth=288f,frameHeight=640f,ballVisible=true).detected)
+        assertTrue(PressingRecognitionEngine.analyze(pressure(0.8f),shape,formation,ballX=144f,ballY=320f,frameWidth=288f,frameHeight=640f,ballVisible=true).detected)
     }
     @Test fun counterpressRequiresLossRatherThanTeammatePassOrRegain() {
         val scene=SceneSnapshot(ballVisible=true,confidence=0.8f)

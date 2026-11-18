@@ -140,13 +140,11 @@ object PressureFieldEngine {
         }
 
         if (maxValue > 0f) {
-            val dynamicMax = maxValue
-
+            // No68-I-D25: the inner `if (dynamicMax > 0f)` was redundant —
+            // this block only runs when maxValue > 0. Divide directly.
             grid.forEachIndexed { r, _ ->
                 grid[r].indices.forEach { c ->
-                    if (dynamicMax > 0f) {
-                        grid[r][c] /= dynamicMax
-                    }
+                    grid[r][c] /= maxValue
                 }
             }
         }

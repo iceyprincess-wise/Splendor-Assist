@@ -199,8 +199,30 @@ class OverlayService : Service(), ComponentCallbacks2 {
     // V51: Vision Watchdog to prevent LOOP_FROZEN from coroutine death
     private var visionStartTimeMs = 0L
 
+    // No68-C-D18: one-shot arm for the stuck-vision heal (see the
+    // VISION_BUSY branch in imageAvailableListener). Reset in the vision
+    // coroutine's finally block when the in-flight frame completes.
+    @Volatile private var visionStuckHealArmed = false
+
     private val captureFrameIntervalMs: Long
-        get() = com.assistant.MemoryCaptureGateEngine.recommendedIntervalMs()
+        get() {
+            val memory = com.assistant.MemoryCaptureGateEngine.recommendedIntervalMs()
+            // No68-C-D4: LoadShedCaptureBrakeEngine.recommendedIntervalMs()
+            // used to have zero callers — the load-shed brake published to
+            // the bus and stopped there, so LIGHT (15 fps) / HEAVY (10 fps)
+            // never throttled capture despite the engine's KDoc. Take the
+            // slower of the two gates, but never let a brake starve the
+            // decision loop in-game: the V10 latency principle floors
+            // in-game capture at 30 fps (33 ms). The brake still sheds
+            // (16 ms -> 33 ms at target 60) but cannot drop the game-time
+            // decision rate below 30 fps. Out of game the full brake
+            // applies (HEAVY 100 ms, LIGHT 66 ms).
+            val brake = try { com.assistant.LoadShedCaptureBrakeEngine.recommendedIntervalMs() } catch (_: Throwable) { 0L }
+            val combined = if (brake > 0L) maxOf(memory, brake) else memory
+            return try {
+                if (com.assistant.VisionTrust.isGameForeground()) combined.coerceAtMost(33L) else combined
+            } catch (_: Throwable) { combined }
+        }
 
     @Volatile private var captureFrameCount = 0L
     private val trajectoryHandler = Handler(Looper.getMainLooper())
@@ -240,6 +262,14 @@ class OverlayService : Service(), ComponentCallbacks2 {
         mediaProjection = null
         lastFrameProcessedMs = 0L
         captureFrameCount = 0L
+        // No68-C-D17: the dedup/busy counters used to survive teardown, so
+        // a fresh capture session inherited the previous session's counts
+        // and the throttled logs read as one long session.
+        duplicateFrameCount = 0L
+        visionBusySkips = 0L
+        lastDuplicateLogMs = 0L
+        lastVisionBusyLogMs = 0L
+        visionStuckHealArmed = false
         captureState = finalState
         // f5: capture teardown must not leave the mod menu on screen.
         modMenuController?.hideLauncher()
@@ -256,6 +286,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
         com.assistant.DiagnosticSamplers.onCaptureFrame(System.nanoTime())
         com.assistant.CrashForensics.mark(5, 4, captureFrameCount)
         val acquiredAtNanos = System.nanoTime()
+        // No68-C-D15: capturedAtNanos used to be the acquire time, so the
+        // pipeline latency FrameAssembler measures excluded the time the
+        // frame already spent queued in the ImageReader (up to a full
+        // frame at 60 fps, more under load). Image.getTimestamp() is the
+        // compositor's timestamp for this frame in the same monotonic base
+        // as System.nanoTime(); use it when it is sane (within the last
+        // second, not in the future) and fall back to the acquire time.
+        val capturedAtNanos = try {
+            val ts = image.timestamp
+            if (ts in (acquiredAtNanos - 1_000_000_000L)..acquiredAtNanos) ts else acquiredAtNanos
+        } catch (_: Throwable) { acquiredAtNanos }
         val captureNow = System.currentTimeMillis()
         if (captureNow - lastFrameProcessedMs < captureFrameIntervalMs) {
             image.close()
@@ -303,6 +344,26 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 if (visionBusySkips == 1L || visionBusySkips % 100L == 0L || busyNow - lastVisionBusyLogMs > 300_000L) {
                     lastVisionBusyLogMs = busyNow
                     RuntimeLogger.log("VISION_BUSY_SKIP count=$visionBusySkips (vision coroutine still in flight; frame dropped)", "OVERLAY")
+                }
+                // No68-C-D18: the old 500 ms watchdog was removed for a
+                // data race (it unblocked the frame pump while the
+                // coroutine was still reading the shared buffer) and
+                // nothing replaced it — so a hung vision coroutine dropped
+                // every later frame FOREVER with only the throttled log
+                // above. If the in-flight frame has been stuck > 5 s
+                // (vision work is normally tens of ms), ask the main
+                // thread to recreate the capture surfaces: that cancels
+                // visionScope children, whose finally block resets
+                // visionInFlight. One attempt per stall; the flag resets
+                // when a frame completes. The 5 s line is deliberately
+                // generous — this is a liveness net, not a performance
+                // throttle, and it never touches visionInFlight itself.
+                if (visionStartTimeMs > 0L && busyNow - visionStartTimeMs > 5_000L && !visionStuckHealArmed) {
+                    visionStuckHealArmed = true
+                    RuntimeLogger.log("VISION_STUCK inFlightMs=${busyNow - visionStartTimeMs} busySkips=$visionBusySkips (recreating capture surfaces)", "OVERLAY")
+                    keepAliveHandler.post {
+                        try { recreateCaptureSurfaces() } catch (_: Throwable) {}
+                    }
                 }
             }
 
@@ -367,7 +428,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     return@launch
                 }
                 previousVisionLayout = Triple(width, height, rowStride)
-                val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride, acquiredAtNanos)
+                val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride, capturedAtNanos)
                 com.assistant.CrashForensics.mark(4, 2, captureFrameCount)
                 val prevBuf = previousVisionBuffer
                 val opticalVariance = if (prevBuf != null && prevBuf.remaining() == visionBuffer.remaining()) {
@@ -395,7 +456,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 com.assistant.RuntimeCoordinator.reportCaptureReady()
                 com.assistant.CrashForensics.mark(5, 3, captureFrameCount)
                 com.assistant.CrashForensics.setEngineStage(5)
-                val frame = com.assistant.FrameAssembler.assemble(opticalVariance, acquiredAtNanos)
+                val frame = com.assistant.FrameAssembler.assemble(opticalVariance, capturedAtNanos)
                 // F37-D7: cross-process capture heartbeat for LagVerdictEngine
                 // (:survival cannot see FrameAssembler — a main-process object).
                 try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishCaptureHeartbeat() } catch (_: Throwable) {}
@@ -417,6 +478,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     com.assistant.MemoryCaptureGateEngine.targetFps
                 )
                 visionInFlight.set(false)
+                // No68-C-D18: a completed frame clears the stuck-heal arm
+                // so a later, separate stall can heal again.
+                visionStuckHealArmed = false
             }
         }
 
@@ -427,9 +491,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
             else -> 1L
         }
 
+        // No68-C-D19: OCR used to run inline at the end of the capture
+        // listener, on the same thread that must acquire the next frame —
+        // the bitmap snapshot copy blocked the next acquireLatestImage.
+        // Post it to the OCR handler instead so the listener returns and
+        // the next frame can be acquired; processBitmapForOCR then reads
+        // the latest bitmap, which is the right frame for advisory OCR at
+        // a 1.5 s cadence.
         if (ocrReady && System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS * shedFactor) {
             lastOcrTime = System.currentTimeMillis()
-            processBitmapForOCR()
+            val ocrHandler = ocrIoHandler ?: ocrIoThread?.looper?.let { Handler(it) }
+            if (ocrHandler != null) ocrHandler.post { processBitmapForOCR() } else processBitmapForOCR()
         }
     }
 
@@ -714,6 +786,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
     }
 
     private fun updateOverlayVisuals(text: String, color: Int) {
+        // No68-C-D20: txtEngineStatus is GONE from the first capture start
+        // (capture purity: zero app-owned pixels in the MediaProjection
+        // surface), so every later update posted Choreographer work that
+        // painted nothing. Skip it; the pre-capture call still paints.
+        if (!::txtEngineStatus.isInitialized) return
+        if (txtEngineStatus.visibility != View.VISIBLE) return
         ChoreographerRenderLoop.postUpdate {
             txtEngineStatus.text = if (CallOverlayRepository.incomingCallVisible) "[CALL PROTECTED] " + text else text
             txtEngineStatus.setTextColor(color)
@@ -864,10 +942,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
         recreateCaptureSurfacesInternal()
     }
 
-    private fun recreateCaptureSurfaces() {
+    // No68-C-D16: the wrapper used to discard recreateCaptureSurfacesInternal's
+    // CaptureResult, so the keepalive could not tell success from failure.
+    private fun recreateCaptureSurfaces(): CaptureResult {
         captureLock.lock()
         try {
-            recreateCaptureSurfacesInternal()
+            return recreateCaptureSurfacesInternal()
         } finally {
             captureLock.unlock()
         }
@@ -1001,8 +1081,20 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     if (now - lastFrameProcessedMs > 10000L && lastFrameProcessedMs > 0L) {
                         RuntimeLogger.log("KEEPALIVE: Capture stale for >10s. Proactively replacing ImageReader to prevent HyperOS silent kill.", "OVERLAY")
                         try {
-                            recreateCaptureSurfaces()
-                            lastFrameProcessedMs = System.currentTimeMillis()
+                            // No68-C-D16: the old code reset the freshness
+                            // timestamp unconditionally, so a FAILED recreate
+                            // masked the stall for another 10 s and the
+                            // keepalive could loop forever on a dead capture
+                            // believing it had healed. Only a SUCCESS counts
+                            // as fresh; a failure leaves the stale timestamp
+                            // so the next 45 s poll (and the 30 s recovery
+                            // checker) still see the real stall.
+                            val result = recreateCaptureSurfaces()
+                            if (result == CaptureResult.SUCCESS) {
+                                lastFrameProcessedMs = System.currentTimeMillis()
+                            } else {
+                                RuntimeLogger.log("KEEPALIVE replace failed: $result (stale timestamp kept)", "OVERLAY")
+                            }
                         } catch (e: Exception) {
                             RuntimeLogger.log("KEEPALIVE replace failed: ${e.message}", "OVERLAY")
                         }

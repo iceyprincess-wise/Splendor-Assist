@@ -105,6 +105,10 @@ internal const val SERVER_TICK_RATE_MS = 33.33333f // 30Hz Authoritative Tick Wi
 
 internal const val DISPLAY_REFRESH_120HZ_MS = 8.333333f
 
+// No68-C-D15: prediction horizon (see assemble()). 50 ms ahead of the
+// measured pipeline latency, capped at 100 ms total by the leadMs clamp.
+internal const val PREDICTION_LEAD_MS = 50f
+
 internal const val ADHESION_COEFFICIENT = 1.25f       // Magnetic retention pull factor
 
 internal const val DRIFT_FILTER_BETA = 0.90f          // Jitter filter strength
@@ -263,7 +267,15 @@ object FrameAssembler {
             captureHeight = com.assistant.vision.CameraProfile.captureHeight.toFloat()
         )
         val now = System.nanoTime()
-        val leadMs = ((now - capturedAtNanos).coerceAtLeast(0) / 1e6f + 50f).coerceAtMost(100f)
+        // No68-C-D15: the +50 ms used to be a bare magic number on top of an
+        // unmeasured latency (capturedAtNanos was the acquire time, not the
+        // frame's own timestamp). It is the prediction horizon — where the
+        // ball/players will be when the gesture lands — not a measured
+        // delay. Named so it reads as a horizon, not a fudge factor; the
+        // measured part now comes from Image.getTimestamp() (OverlayService
+        // passes it, with an acquire-time fallback). The 100 ms cap is a
+        // tactical bound: do not re-tune either number silently.
+        val leadMs = ((now - capturedAtNanos).coerceAtLeast(0) / 1e6f + PREDICTION_LEAD_MS).coerceAtMost(100f)
         val width = observedFrame.captureWidth; val height = observedFrame.captureHeight
         if (predictionLayout != width to height) {
             predictor.reset(); predictionLayout = width to height

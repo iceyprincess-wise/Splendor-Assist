@@ -178,6 +178,10 @@ object NativeBridge {
         ownerIsUserTeam: Boolean,
         ballX: Float,
         ballY: Float,
+        // No68-I-D20: real capture dimensions (was guessed in C from the
+        // coordinate magnitude). Kotlin and C parameter order must match.
+        screenWidth: Float,
+        screenHeight: Float,
         resultBuffer: FloatArray
     )
 
@@ -313,6 +317,10 @@ init {
         ownerIsUserTeam: Boolean,
         ballX: Float,
         ballY: Float,
+        // No68-I-D20: real capture dimensions (was hardcoded 1650x720 in C).
+        // Kotlin and C parameter order must match.
+        screenWidth: Float,
+        screenHeight: Float,
         resultBuffer: FloatArray
     )
 
@@ -356,9 +364,13 @@ init {
     // --- V44/V45: System Core & Dynamic Jitter ---
 
     // --- V46: Defensive Dominance Matrix ---
-    @JvmStatic external fun nativeComputeDominanceVectors(defX: Float, defY: Float, defVx: Float, defVy: Float, targetX: Float, targetY: Float, targetVx: Float, targetVy: Float, isHoldingPressure: Boolean, screenWidth: Float, screenHeight: Float, globalMatchTick: Int, outBuffer: FloatArray)
+    // No68-H-D32: nativeComputeDominanceVectors deleted — its outputs were
+    // 100% discarded by the only caller (DefenseContributor never read
+    // outDominance); the C file and CMakeLists line go with it.
     // --- V47: Active Aggressive Stopper Matrix ---
-    @JvmStatic external fun nativeExecuteStopperMatrix(playerX: Float, playerY: Float, playerVx: Float, playerVy: Float, homeAnchorX: Float, homeAnchorY: Float, oppX: Float, oppY: Float, oppVx: Float, oppVy: Float, isHoldingPressure: Boolean, screenWidth: Float, screenHeight: Float, outBuffer: FloatArray)
+    // No68-H-D33: restX/restY are the trained joystick centre (the C code
+    // used to hardcode 250f/550f as the stick rest).
+    @JvmStatic external fun nativeExecuteStopperMatrix(playerX: Float, playerY: Float, playerVx: Float, playerVy: Float, homeAnchorX: Float, homeAnchorY: Float, oppX: Float, oppY: Float, oppVx: Float, oppVy: Float, isHoldingPressure: Boolean, screenWidth: Float, screenHeight: Float, restX: Float, restY: Float, outBuffer: FloatArray)
 
 
     // --- V48: CrossClaim Native Migration ---

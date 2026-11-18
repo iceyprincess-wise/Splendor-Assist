@@ -104,7 +104,15 @@ object PassingLaneGraphEngine {
 
         val teammates =
             scene.trackedPlayers.filter {
-                it.isUserTeam
+                // No68-A-D7: a track with a non-finite coordinate poisons
+                // the whole graph — distance goes NaN, score goes NaN,
+                // and the NaN lane sorts first and wins the "best lane"
+                // max in PreferredPassingLaneLearningEngine (its loop
+                // deliberately matches maxOrNull's NaN-wins ordering).
+                // FrameAssembler and ObservedTactics.players already
+                // filter the same way; the graph must not trust coords
+                // they would reject.
+                it.isUserTeam && it.x.isFinite() && it.y.isFinite()
             }
 
         if (teammates.size < 2) {

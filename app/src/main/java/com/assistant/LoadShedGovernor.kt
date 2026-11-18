@@ -68,7 +68,9 @@ import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 object LoadShedGovernor {
 
-    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    // HARD-CODED CONSTANTS (No68-C-D11): the old "ADMIN-TUNABLE" header
+    // was false — these getters return literals and no admin store is read
+    // anywhere in this file. A re-tune changes the literal.
     private val MIN_HOLD_MS: Long get() = 8000L
     private val POLL_MS: Long get() = 2000L
     private val ARM_POLLS: Int get() = 4
@@ -93,7 +95,14 @@ object LoadShedGovernor {
                     // the old "escalates immediately" comment was false).
                     val burst = PerformanceTelemetryRegistry.currentStutterState()
                     val bootAge=System.currentTimeMillis()-startTimeMs
-                    if(startTimeMs>0L&&bootAge<10_000L){try{Thread.sleep(POLL_MS.coerceAtLeast(1L))}catch(_:Throwable){return@Thread};continue}
+                    // No68-C-D35: the 10 s boot blackout used to swallow a
+                    // SEIZURE as well, so worst-case HEAVY took boot 10 s +
+                    // 4-poll arm 8 s + 8 s hold ≈ 26 s from the first burst
+                    // — far too slow for a fast game. SEIZURE bypasses the
+                    // boot blackout only; the 4-poll arm + 8 s hold still
+                    // filter boot transients, so a single startup stutter
+                    // cannot shed load on its own.
+                    if(startTimeMs>0L&&bootAge<10_000L&&burst!="SEIZURE"){try{Thread.sleep(POLL_MS.coerceAtLeast(1L))}catch(_:Throwable){return@Thread};continue}
                     val want = when {
                         burst == "SEIZURE" -> "HEAVY"
                         LagVerdictEngine.verdict == "CHOKING" -> "HEAVY"

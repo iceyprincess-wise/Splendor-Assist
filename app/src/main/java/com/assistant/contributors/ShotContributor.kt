@@ -33,10 +33,13 @@ object ShotContributor : GameplayContributor {
     override fun fastGate(frame: RuntimeFrame): Boolean = frame.trusted && frame.hasBall && frame.goalDetected
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
+        // No68-F-D14: contribute() used to depend on fastGate() to make
+        // possessionWeight/trustWeight 1.0 (fluidMultiplier was always 1.0
+        // via the registry). Enforce the preconditions here instead, so a
+        // direct call cannot emit a zero-authority SHOT, and drop the dead
+        // weights.
+        if (!frame.hasBall || !frame.trusted) return null
         if (frame.confidence < 0.05f) return null
-        val possessionWeight = if (frame.hasBall) 1.0f else 0.0f // Shots require possession
-        val trustWeight = if (frame.trusted) 1.0f else 0.5f
-        val fluidMultiplier = possessionWeight * trustWeight
         if (!frame.goalDetected) return null
         if (frame.goalConfidence < MIN_GOAL_CONFIDENCE) return null
         if (frame.goalWidth <= 1f) return null
@@ -63,17 +66,29 @@ object ShotContributor : GameplayContributor {
         // can actually see (and aim around) is worth more than a blind shot.
         val proximity = (1f - range / maxRange).coerceIn(0f, 1f)
         val keeperBonus = if (frame.goalkeeperVisible) 0.15f else 0f
-        val authority = fluidMultiplier *
+        val authority =
             (0.35f + 0.35f * proximity + 0.15f * frame.goalConfidence + keeperBonus)
                 .coerceIn(0f, 1f)
 
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.SHOT,
-            targetX = aimX.coerceAtLeast(0f),
-            targetY = aimY.coerceAtLeast(0f),
+            // No68-F-D34 (completion round): the aim was clamped only
+            // >= 0 — the same one-sided clamp D5 fixed in
+            // ShotAnticipationContributor. The goal box can extend past
+            // the capture edge (the goal sits at an X end), so rightAim /
+            // aimY could exceed captureWidth/captureHeight and the
+            // dispatch would aim off-screen. Clamp both axes to the
+            // capture, same form as D5; unchanged for any on-screen goal.
+            targetX = aimX.coerceIn(0f, frame.captureWidth),
+            targetY = aimY.coerceIn(0f, frame.captureHeight),
             authority = authority,
-            confidence = (frame.confidence * frame.goalConfidence).coerceIn(0f, 1f),
+            // No68-F-D13 (closes Q67-18): the product double-discounted
+            // Shot against TrueShot (ConAI scores authority^2 x
+            // confidence, and frame/goal confidence are not independent —
+            // the goal sighting is part of the frame sighting). Weakest
+            // link: min(...).
+            confidence = minOf(frame.confidence, frame.goalConfidence).coerceIn(0f, 1f),
             durationHintMs = 30L
         )
     }

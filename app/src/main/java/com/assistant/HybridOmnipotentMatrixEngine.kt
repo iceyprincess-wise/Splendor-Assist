@@ -95,9 +95,8 @@ import kotlin.math.hypot
 
 object HybridOmnipotentMatrixEngine {
 
-    private val physicsMatrix = FloatArray(8)
-    private const val BALL_X=4; private const val BALL_Y=5
-    private const val BALL_VX=6; private const val BALL_YV=7
+    // No68-H-D14: physicsMatrix (FloatArray(8)) + BALL_X/BALL_Y/BALL_VX/
+    // BALL_YV index consts removed — never written or read anywhere.
     @Volatile private var lastMatrixTimestamp = 0L
 
     fun computeGodspeedInterceptVector(
@@ -107,7 +106,16 @@ object HybridOmnipotentMatrixEngine {
         ballX:Float, ballY:Float,
         ballVx:Float, ballVy:Float,
         isOpponentExecutingSkill:Boolean,
-        joystickX:Float=250f, joystickY:Float=550f,
+        // No68-H-D16: the joystick rest is the TRAINED centre (0.182w,
+        // 0.648h), not the stale 250f/550f landscape constants — the old
+        // defaults put the emergency gesture's start ~500px off the live
+        // joystick on screen (625,1375 vs 131,1037 at 720x1600).
+        joystickX:Float=com.assistant.vision.CameraProfile.captureWidthOrFallback() * ControlMappingTrainer.joystickCenterX(),
+        joystickY:Float=com.assistant.vision.CameraProfile.captureHeightOrFallback() * ControlMappingTrainer.joystickCenterY(),
+        // No68-H-D15: contributors own the ConAI path — when false the
+        // matrix is a pure function and offers nothing, so one decision
+        // dispatches once instead of twice (emergency offer + contribution).
+        offerEmergency:Boolean=true,
         screenWidth:Float=com.assistant.vision.CameraProfile.captureWidthOrFallback(),
         screenHeight:Float=com.assistant.vision.CameraProfile.captureHeightOrFallback()
     ): Long {
@@ -121,8 +129,16 @@ object HybridOmnipotentMatrixEngine {
             targetY = (ballY + ballVy*lookAhead).coerceIn(0f,screenHeight)
         } else {
             val mag = hypot(oppVx.toDouble(),oppVy.toDouble()).toFloat()
-            val nvx = if(mag>0.05f) oppVx/mag else (ballX-myPlayerX)*0.1f
-            val nvy = if(mag>0.05f) oppVy/mag else (ballY-myPlayerY)*0.1f
+            // No68-H-D17: the fallback direction was NOT a unit vector —
+            // (ball-my)*0.1 grows with distance (up to ~60x), so the target
+            // (opp + dir*br) rocketed to a screen edge on every tight
+            // marking frame (all live callers pass oppV=0, so this branch
+            // always ran). Normalise it like the live branch.
+            val fallbackDx = ballX - myPlayerX
+            val fallbackDy = ballY - myPlayerY
+            val fallbackMag = hypot(fallbackDx.toDouble(), fallbackDy.toDouble()).toFloat()
+            val nvx = if (mag > 0.05f) oppVx / mag else if (fallbackMag > 0.05f) fallbackDx / fallbackMag else 0f
+            val nvy = if (mag > 0.05f) oppVy / mag else if (fallbackMag > 0.05f) fallbackDy / fallbackMag else 0f
             val br  = screenHeight*0.03f
             targetX = (oppPlayerX + nvx*br).coerceIn(0f,screenWidth)
             targetY = (oppPlayerY + nvy*br).coerceIn(0f,screenHeight)
@@ -131,7 +147,8 @@ object HybridOmnipotentMatrixEngine {
         val now = System.currentTimeMillis()
         // No64-D30 (F9): the Interception switch gates this INT emergency
         // offer — it used to offer every 16 ms while the switch was off.
-        if (com.assistant.overlay.interceptor.InterceptionRuntimeRegistry.enabled &&
+        if (offerEmergency &&
+            com.assistant.overlay.interceptor.InterceptionRuntimeRegistry.enabled &&
             com.assistant.overlay.interceptor.InterceptionRuntimeRegistry.autoIntercept &&
             now - lastMatrixTimestamp >= 16L) {
             val req = ExecutionRequest(
@@ -153,7 +170,3 @@ object HybridOmnipotentMatrixEngine {
     fun unpackX(packed:Long):Float = Float.fromBits((packed shr 32).toInt())
     fun unpackY(packed:Long):Float = Float.fromBits(packed.toInt())
 }
-
-/* ========
-HybridResponseCompensationEngine
-======== */

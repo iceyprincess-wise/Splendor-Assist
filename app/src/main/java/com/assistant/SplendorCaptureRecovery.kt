@@ -32,7 +32,11 @@ object SplendorCaptureRecovery {
         svcRef = WeakReference(svc); ensureChannel(svc)
         handler.removeCallbacks(checker); handler.post(checker)
     }
-    fun markFrame() { lastFrame = System.currentTimeMillis(); armed = true; dead = false }
+    // No68-C-D24: staleness used to be measured on System.currentTimeMillis
+    // (wall clock) — a clock jump could declare capture dead or hide a
+    // real stall. Use elapsedRealtime, the monotonic clock, like the rest
+    // of the vision path.
+    fun markFrame() { lastFrame = android.os.SystemClock.elapsedRealtime(); armed = true; dead = false }
     fun statusText(default: String): String =
         if (!dead) default else "ENGINE DEAD - tap to re-authorize capture"
     
@@ -52,7 +56,7 @@ object SplendorCaptureRecovery {
 
     private fun check() {
         if (!armed || lastFrame == 0L || dead) return
-        if (System.currentTimeMillis() - lastFrame > 30000) { dead = true; onRevoked() }
+        if (android.os.SystemClock.elapsedRealtime() - lastFrame > 30000) { dead = true; onRevoked() }
     }
     private fun onRevoked() {
         if (svcRef?.get() == null) return
@@ -60,9 +64,18 @@ object SplendorCaptureRecovery {
         // SPLENDOR_V42_AUTOHEAL_REVOKED_BEGIN
         // v2: automatic recovery — token reuse first (zero tap), then the
         // system consent dialog (one tap). No overlay prompt / notification spam.
-        try {
+        // No68-C-D23: requestAutoHeal()'s Boolean used to be ignored and
+        // requestReauth() had zero callers, so when auto-heal failed
+        // (e.g. the 15 s anti-spam cooldown) the user got no prompt at
+        // all. Fall back to the tap-to-reauthorize notification then. The
+        // overlap with auto-heal's own reauth-activity launch is deliberate:
+        // the notification persists if that launch is swallowed.
+        val healed = try {
             com.assistant.OverlayService.requestAutoHeal()
-        } catch (_: Throwable) {}
+        } catch (_: Throwable) { false }
+        if (!healed) {
+            try { requestReauth() } catch (_: Throwable) {}
+        }
         // SPLENDOR_V42_AUTOHEAL_REVOKED_END
     }
     fun deliver(rc: Int, data: Intent) {

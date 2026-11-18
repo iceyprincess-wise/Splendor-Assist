@@ -1,8 +1,5 @@
 #include "native_breadcrumb.h"
 #include <jni.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -14,6 +11,18 @@ static inline int splendor_clamp_max_int(int v, int max) {
     return v - (mask & (v - max));
 }
 
+/* Return codes (No68-H-D59 — previously undocumented; the Kotlin caller
+ * only checks == 0, so every failure looked identical):
+ *   0  success
+ *  -1  null env / src / dst buffer
+ *  -2  src or dst is not a direct buffer (no address)
+ *  -3  bad geometry (non-positive dims/stride/size, stride < width*4)
+ *      or inputSize^2 * 3 * sizeof(float) overflows size_t
+ *  -4, -5  unassigned
+ *  -6  negative buffer capacity reported by the JVM
+ *  -7  src buffer too small for (height-1)*rowStride + width*4
+ *  -8  dst buffer too small for inputSize^2 * 3 floats
+ */
 JNIEXPORT jint JNICALL
 Java_com_assistant_NativeBridge_nativePreprocessFrame(
     JNIEnv *env,
@@ -31,6 +40,10 @@ Java_com_assistant_NativeBridge_nativePreprocessFrame(
 #endif
 
     (void)clazz;
+    // No68-H-D57: cameraProfileId is intentionally unused today — it is
+    // the seam for a future second camera profile (cf. No62-D13, which
+    // kept CameraProfile.activeProfileId() as the same seam). No
+    // per-profile behaviour exists to implement; do not invent one.
     (void)cameraProfileId;
 
     if (env == NULL || srcBuf == NULL || dstBuf == NULL) {

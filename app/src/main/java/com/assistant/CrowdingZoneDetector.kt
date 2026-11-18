@@ -102,6 +102,20 @@ object CrowdingZoneDetector {
 
     private val detections = AtomicLong(0L)
 
+    // No68-C-D6: last zone value mirrored cross-process. The registry write
+    // is change-only (a file write per frame would be I/O on the decision
+    // path); LagVerdictEngine polls the registry from :survival, where the
+    // in-process bus copy of this zone is always false.
+    @Volatile private var lastRegistryZone: Boolean? = null
+
+    private fun publishZone(zone: Boolean, level: Float) {
+        AdapterSignalBus.publishCrowdingZone(zone, level)
+        if (lastRegistryZone != zone) {
+            lastRegistryZone = zone
+            try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishCrowdingZone(zone) } catch (_: Throwable) {}
+        }
+    }
+
     @Volatile var inCrowdedZone: Boolean = false; private set
     @Volatile var crowdingLevel: Float = 0f; private set
     @Volatile private var enabled = true
@@ -126,18 +140,34 @@ object CrowdingZoneDetector {
     /**
      * Evaluate crowding from the current frame.
      * Returns true when in a penalty-box / corner crowded zone.
+     *
+     * No68-C-D7 (call-site truth, correcting the misplaced KDoc that used
+     * to sit on this engine): this is NOT called once per frame.
+     * RuntimeDecisionLoop calls evaluate() only after arbitration
+     * (chooseRequest), and only on frames that produced a request
+     * (best/parked non-null) — untrusted frames and no-contribution frames
+     * never reach it. It DOES run before the amplifiers (CaptaincySkill
+     * amplification + crowding saturation cap, RuntimeDecisionLoop:222-241),
+     * so the old KDoc's "BEFORE amplifiers" clause was its one true part —
+     * what was false was "once per frame" and the implied pre-arbitration
+     * position. (No68-C-D41: the first D7 wording said "NOT before the
+     * amplifiers"; that overcorrected — see RuntimeDecisionLoop:216.)
+     * What IS per-frame is the bus publish below, which
+     * runs on every call including the early returns, so the bus never
+     * holds a stale true. The LagVerdictEngine "+2 polls" protection is
+     * real only since No68-C-D6, which mirrors the zone cross-process.
      */
     fun evaluate(frame: RuntimeFrame): Boolean {
         if (!enabled) {
             inCrowdedZone = false
             crowdingLevel = 0f
-            AdapterSignalBus.publishCrowdingZone(false, 0f)
+            publishZone(false, 0f)
             return false
         }
         if (!frame.trusted) {
             inCrowdedZone = false
             crowdingLevel = 0f
-            AdapterSignalBus.publishCrowdingZone(false, 0f)
+            publishZone(false, 0f)
             return false
         }
 
@@ -152,7 +182,7 @@ object CrowdingZoneDetector {
 
         inCrowdedZone = zone
         crowdingLevel = level
-        AdapterSignalBus.publishCrowdingZone(zone, level)
+        publishZone(zone, level)
 
         if (zone) {
             val count = detections.incrementAndGet()
@@ -172,7 +202,7 @@ object CrowdingZoneDetector {
         inCrowdedZone = false
         crowdingLevel = 0f
         detections.set(0L)
-        AdapterSignalBus.publishCrowdingZone(false, 0f)
+        publishZone(false, 0f)
     }
 
     fun diagnostics(): Map<String, Any> = mapOf(

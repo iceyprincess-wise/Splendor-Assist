@@ -111,6 +111,8 @@ Java_com_assistant_NativeBridge_nativeInstantInterceptCompute(
     jboolean ownerIsUserTeam,
     jfloat ballX,
     jfloat ballY,
+    jfloat screenW,
+    jfloat screenH,
     jfloatArray resultBuffer
 ) {
 #ifdef SPLENDOR_BREADCRUMBS
@@ -145,10 +147,11 @@ Java_com_assistant_NativeBridge_nativeInstantInterceptCompute(
     }
 
     const float LOOK_AHEAD_FRAMES = 2.0f;
-    float max_x = ownerX > ballX ? ownerX : ballX;
-    float max_y = ownerY > ballY ? ownerY : ballY;
-    float SCREEN_W = max_x > 320.0f ? 1650.0f : (max_x > 0.0f ? 288.0f : 1650.0f);
-    float SCREEN_H = max_y > 320.0f ? 720.0f : (max_y > 0.0f ? 640.0f : 720.0f);
+    /* No68-I-D20: screen size is passed by the caller now. It used to be
+     * guessed from the coordinate magnitude (>320 -> 1650x720 else 288x640),
+     * which is wrong on any capture size other than those two. */
+    float SCREEN_W = screenW > 0.0f ? screenW : 1650.0f;
+    float SCREEN_H = screenH > 0.0f ? screenH : 720.0f;
 
     float px = ownerX + (ownerVx * LOOK_AHEAD_FRAMES);
     if (px < 0.0f) px = 0.0f; else if (px > SCREEN_W) px = SCREEN_W;
@@ -183,6 +186,8 @@ Java_com_assistant_NativeBridge_nativeBuildUpPressCompute(
     jboolean ownerIsUserTeam,
     jfloat ballX,
     jfloat ballY,
+    jfloat screenW,
+    jfloat screenH,
     jfloatArray resultBuffer
 ) {
 #ifdef SPLENDOR_BREADCRUMBS
@@ -215,8 +220,12 @@ Java_com_assistant_NativeBridge_nativeBuildUpPressCompute(
         return;
     }
 
-    const float SCREEN_W = 1650.0f;
-    const float SCREEN_H = 720.0f;
+    /* No68-I-D20: screen size is passed by the caller now. It used to be
+     * hardcoded 1650x720 (the fallback size, not the live 288x640 capture),
+     * so the clamp below could never bind live — and would be wrong on any
+     * other capture size. */
+    float SCREEN_W = screenW > 0.0f ? screenW : 1650.0f;
+    float SCREEN_H = screenH > 0.0f ? screenH : 720.0f;
 
     float px = ownerX;
     if (px < 0.0f) px = 0.0f; else if (px > SCREEN_W) px = SCREEN_W;

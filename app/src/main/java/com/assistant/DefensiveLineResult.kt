@@ -120,4 +120,11 @@ EntityAssociationEngine
  * Now: the distance gate is applied BEFORE a detection is consumed,
  * duplicate merging is deterministic (stronger wins, fresher breaks ties),
  * and the association distances answer to the admin store live.
+ *
+ * No68-D-D24: this block documents EntityAssociationEngine, not
+ * DefensiveLineResult — it is the ONLY copy of the Task B repair note
+ * (EntityAssociationEngine.kt itself does not carry it), so it is KEPT
+ * here rather than deleted. It belongs at the top of
+ * EntityAssociationEngine.kt; moving it is queued (QD-9, needs the
+ * owning family — this file is outside Family D's scope to move it to).
  */

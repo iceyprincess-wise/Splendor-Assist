@@ -358,7 +358,14 @@ SceneTracker.update(
       PressingRecognitionEngine.analyze(
           pressure,
           defensiveCompactnessResult,
-          formation
+          formation,
+          // No68-I-D24: pressing is judged at the ball, not by the mean of
+          // the whole field (the mean is inverted — see the engine).
+          ballX = scene.trackedBallX,
+          ballY = scene.trackedBallY,
+          frameWidth = frame.width.toFloat(),
+          frameHeight = frame.height.toFloat(),
+          ballVisible = scene.trackedBallVisible
       )
 
   val counterPressRecognitionResult =

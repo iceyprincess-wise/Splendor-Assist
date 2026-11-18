@@ -23,7 +23,7 @@ object PressEvadeContributor : GameplayContributor {
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
         if (frame.defenderDensity < PRESSURE_THRESHOLD) return null
-        // If a decent pass exists, PassLaneContributor handles the frame.
+        // If a decent pass exists, PassingContributor handles the frame.
         if (frame.viableLaneCount > 0 &&
             frame.bestLaneConfidence > LANE_ESCAPE_CONFIDENCE
         ) return null

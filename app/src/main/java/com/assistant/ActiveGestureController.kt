@@ -161,7 +161,11 @@ class ActiveGestureController(
             nearestOppEarly?.x ?: endX, nearestOppEarly?.y ?: endY,
             nearestOppEarly?.velocityX ?: 0f, nearestOppEarly?.velocityY ?: 0f)) 1.0f else 0.0f
         val scoreAim = CriticalAttackingVectorEngine.computeAbsoluteScoringVector(startX, startY, dynamicGkX, dynamicGkY, dynamicGoalLeftX, dynamicGoalLeftY, dynamicGoalRightX, dynamicGoalRightY)
-        val defensiveVectorPacked = OmnipotentDashPressureMatrix.computeHighAuthorityDefensiveVector(endX, endY, startX, startY, startX, startY + 50f, endX, endY, true)
+        val defensiveVectorPacked = OmnipotentDashPressureMatrix.computeHighAuthorityDefensiveVector(endX, endY, startX, startY, startX, startY + 50f, endX, endY, UserTouchState.isTouching())
+        // No68-I-D36: the last argument above was a hardcoded `true`, so the
+        // matrix's direct INTERCEPTION offer fired on the legacy path even
+        // when the user was NOT holding pressure. Pass the real touch state
+        // (the same signal DashPressureContributor uses).
         val godspeedVectorPacked = HybridOmnipotentMatrixEngine.computeGodspeedInterceptVector(startX, startY, endX, endY, 0f, 0f, endX, endY, 0f, 0f, false)
         val truePass = CriticalAttackingVectorEngine.computeTrueTargetPass(startX, startY, endX, endY, earlyTraj.velocityX, earlyTraj.velocityY, false)
         val deltaX = endX - startX

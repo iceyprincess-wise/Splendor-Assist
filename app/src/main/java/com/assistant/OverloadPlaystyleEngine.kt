@@ -37,7 +37,6 @@ package com.assistant
 
 
 
-import com.assistant.runtime.*
 
 
 
@@ -64,7 +63,8 @@ import com.assistant.runtime.*
 
 
 
-import kotlin.math.*
+
+
 
 import kotlin.math.abs
 
@@ -117,7 +117,11 @@ object OverloadPlaystyleEngine {
         zoneOurs: Int = 0,
         zoneTheirs: Int = 0,
         pitchWidth: Float = DEFAULT_PITCH_W,
-        pitchHeight: Float = DEFAULT_PITCH_H
+        pitchHeight: Float = DEFAULT_PITCH_H,
+        // No68-G-D21: known attack direction along X (+1 attacks +X,
+        // -1 attacks -X, 0 unknown — preserves the old +X advance).
+        // FrameAssembler carries it on RuntimeFrame.attackDirection.
+        attackDirection: Int = 0
     ): OverloadPlaystyleResult {
 
         val width = pitchWidth.coerceAtLeast(1f)
@@ -154,7 +158,11 @@ object OverloadPlaystyleEngine {
 
         val switchPlay = opponentOverload && zone != OverloadZone.NONE
 
-        val advance = width * ADVANCE_RATIO
+        // No68-G-D21: the advance must follow the known attack
+        // direction. The old code always advanced +X, so in the half
+        // where we attack left the "exploit" target pointed at our own
+        // goal. Direction 0 (unknown) preserves the old +X behaviour.
+        val advance = width * ADVANCE_RATIO * if (attackDirection < 0) -1f else 1f
         val swarm = !weHavePossession
         val exploitX = if (swarm) ballX.coerceIn(0f, width)
                        else (ballX + advance).coerceIn(0f, width)

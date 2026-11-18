@@ -120,8 +120,17 @@ object LagVerdictEngine {
                     // inflates stall/jitter from rendering load, not
                     // sustained device stress. Require 2 extra polls
                     // before confirming CHOKING to protect attacking actions.
+                    // No68-C-D6: the crowded flag used to be read only from
+                    // the in-process bus, which in :survival is never
+                    // published (CrowdingZoneDetector runs in the main
+                    // process), so this protection NEVER fired here. Read
+                    // the cross-process registry first; the bus is kept as
+                    // a same-process fallback.
+                    val crowded = try {
+                        com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentCrowdingZone()
+                    } catch (_: Throwable) { AdapterSignalBus.crowdingZone }
                     val basePoll = if (CONFIRM_POLLS < 1) 1 else CONFIRM_POLLS
-                    val need = if (raw == "CHOKING" && AdapterSignalBus.crowdingZone)
+                    val need = if (raw == "CHOKING" && crowded)
                         basePoll + 2 else basePoll
                     val now = System.currentTimeMillis()
                     if (candidate != verdict && streak >= need) {
@@ -185,18 +194,27 @@ object LagVerdictEngine {
 /**
  * LoadShedCaptureBrakeEngine — load shed → execution feedback bridge.
  *
- * PROVEN GAP: LoadShedGovernor.level is published to
- * PerformanceTelemetryRegistry and stops there. No component with
- * execution authority (OverlayService capture loop, gesture queue)
- * reads the load shed level to adjust behavior.
+ * No68-C-D37 (stale duplicate corrected — the canonical KDoc lives here
+ * as this file's trailing merged doc; No68-C-D11 fixed the same class of
+ * false claim in LoadShedCaptureBrakeEngine.kt itself, but this copy was
+ * missed): the old "PROVEN GAP" paragraph claimed no component with
+ * execution authority reads the load shed level. That is no longer true
+ * for the capture gate — since No68-C-D4, OverlayService's
+ * captureFrameIntervalMs reads recommendedIntervalMs() (max with the
+ * memory-gate interval, floored at 30 fps in-game). The gesture
+ * submission path still does NOT read it (suppressMoveGestures() has zero
+ * callers — see No68-C-D5 / QC-1).
  *
  * This engine translates load shed level into an execution throttle
  * signal published to AdapterSignalBus, consumed by OverlayService's
- * capture gate and the gesture submission path.
+ * capture gate; the gesture submission path is a stated consumer that
+ * was never wired.
  *
  *   NONE  → executionBrake = 0  (normal operation)
- *   LIGHT → executionBrake = 1  (reduce capture rate 15fps, keep gestures)
- *   HEAVY → executionBrake = 2  (10fps capture, suppress MOVE-class only gestures)
+ *   LIGHT → executionBrake = 1  (reduce capture rate: 15 fps out of game,
+ *           floored to 30 fps in-game; keep gestures)
+ *   HEAVY → executionBrake = 2  (10 fps out of game, floored to 30 fps
+ *           in-game; suppress MOVE-class only gestures — unwired, QC-1)
  *
  * The brake is polled every 500ms (faster than LoadShedGovernor's 2s poll)
  * so it responds within one poll cycle after the governor decides.

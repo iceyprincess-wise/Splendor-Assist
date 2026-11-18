@@ -68,7 +68,9 @@ import kotlin.math.max
 
 object FramePacingEngine {
 
-    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    // HARD-CODED CONSTANTS (No68-C-D36): the old "ADMIN-TUNABLE" header
+    // was false — these getters return literals and no admin store is read
+    // anywhere in this file. A re-tune changes the literal.
     private val ALPHA: Float get() = 0.2f
     private val REPORT_EVERY_MS: Long get() = 20_000L
     private val STALL_MS: Float get() = 100f
@@ -156,12 +158,19 @@ object FramePacingEngine {
 
 // --- MERGED: LagVerdictEngine.kt ---
 
-// V3 ADMIN-WIRED - every threshold live, publishes the Detector snapshot
+// No68-C-D36 (false claim corrected — this trailing KDoc is
+// LagVerdictEngine's header, physically pasted here by the repo's merged
+// file layout): the old "V3 ADMIN-WIRED - every threshold live" line was
+// false. LagVerdictEngine's thresholds (POLL_MS, JITTER_MS, STABILITY_PCT,
+// CHOKE_STALLS, CHOKE_MTSTALL_MS, CHOKE_SPIKES, CONFIRM_POLLS) are getters
+// returning literals and no admin store is read anywhere in that file —
+// nothing is re-read each poll. A re-tune changes the literal.
 
 /**
  * The judge: reads every lag measurement and names the state -
  * SMOOTH / JITTERY / CHOKING. A change must be seen on N consecutive polls
- * before it flips (no whipsawing on a single blip). V3: the poll rhythm and
- * EVERY threshold line are admin-tunable and re-read each poll; each poll
- * also publishes the full live lag snapshot the admin Detector reads.
+ * before it flips (no whipsawing on a single blip). Each poll also
+ * publishes the full live lag snapshot the admin Detector reads. The poll
+ * rhythm and every threshold line are hard-coded literals, not admin
+ * tunables (see No68-C-D36).
  */

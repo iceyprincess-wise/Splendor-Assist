@@ -94,8 +94,7 @@ import kotlin.math.*
 
 
 data class PreferredPassingLaneLearningResult(
-    val confidence:Float=0f,
-    val preferredLaneScore:Float=0f
+    val confidence:Float=0f
 )
 
 /* ========

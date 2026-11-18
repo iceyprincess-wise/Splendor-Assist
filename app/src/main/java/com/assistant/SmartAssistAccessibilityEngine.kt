@@ -32,8 +32,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         private var dispatchStartedMs = 0L
         @Volatile
         private var dispatchingPriority = Int.MIN_VALUE
-        @Volatile
-        private var dispatchingSource: com.assistant.execution.ExecutionSource? = null
+        // No68-H-D2: dispatchingSource removed — written on every dispatch,
+        // never read anywhere (write-only field).
         private const val DISPATCH_LATCH_TIMEOUT_MS = 250L
         private const val LATCH_STUCK_GRACE_MS = 500L // grace after first stuck report before force-release
 
@@ -45,10 +45,12 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         private var serverTickRateMs = 16.6667f 
         
         // UNRESTRICTED LETHAL CAP: Raised to 250ms to allow long, authoritative control holds.
-        private const val MAX_SAFE_DURATION_MS = 250L     
-        private const val NOISE_AMPLITUDE_PX = 1.0f     // Dropped from 3.85f to prevent trajectory deviations
+        private const val MAX_SAFE_DURATION_MS = 250L
+        // No68-H-D1: NOISE_AMPLITUDE_PX (1.0f) removed — declared, never read.
         // SPLENDOR_POLL_FIX: Aligned poll rate from aggressive 2ms wakeup to 16ms frame boundary
-        private const val BUS_POLL_RATE_MS = 9L // bounded 8.33ms event-wake backstop
+        // No68-H-D10: 9L, not 8.33 — a Long-ms poll cannot express 8.33ms;
+        // 9ms is the ceiling of the 8.33ms event-wake backstop.
+        private const val BUS_POLL_RATE_MS = 9L // ceil of the 8.33ms event-wake backstop
         private const val DISPATCH_RATE_WINDOW_MS = 10_000L
     }
 
@@ -72,7 +74,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         reportedStallActionId = null
         latchStuckSinceMs = 0L
         isDispatching = false
-        dispatchingSource = null
     }
 
     private lateinit var dispatcher: ActiveGestureController
@@ -83,28 +84,34 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     @Volatile private var windowStartMs = 0L
 
     /**
-     * UNCOMPRESSED TICK SYNC: Ensures synchronization never reduces the necessary execution time
-     * requested by our lethal engines.
+     * No68-H-D3: this used to be called synchronizeToTickRate, but it never
+     * synchronised anything to the tick — it only clamps to [8, 250]ms (and
+     * substitutes one tick for non-positive durations). Renamed to what it
+     * does; behaviour preserved. Whether durations should quantise UP to a
+     * tick multiple is an open question, not a silent change (QH-17).
      */
-    private fun synchronizeToTickRate(targetDuration: Long): Long {
+    private fun clampDispatchDuration(targetDuration: Long): Long {
         if (targetDuration <= 0L) return serverTickRateMs.roundToLong()
         // Do not force rigid division downscales if target duration is intentionally elongated.
         return max(8L, min(targetDuration, MAX_SAFE_DURATION_MS))
     }
 
-    private fun generatePrecisionPath(startX: Float, startY: Float, endX: Float, endY: Float): Path {
+    // No68-H-D5: the old path clamped only the lower bound — an end past
+    // the right/bottom edge sailed off-screen. Clamp to the screen bounds
+    // when known (CameraProfile source dims); 0 means unknown, and the
+    // behaviour is then the old lower-bound-only clamp.
+    private fun generatePrecisionPath(startX: Float, startY: Float, endX: Float, endY: Float, screenWidth: Float = 0f, screenHeight: Float = 0f): Path {
         val path = Path()
-        // Direct assignment without compounding noise variations twice.
-        val safeStartX = startX.coerceAtLeast(0f)
-        val safeStartY = startY.coerceAtLeast(0f)
+        fun clampX(v: Float): Float = if (screenWidth > 0f) v.coerceIn(0f, screenWidth) else v.coerceAtLeast(0f)
+        fun clampY(v: Float): Float = if (screenHeight > 0f) v.coerceIn(0f, screenHeight) else v.coerceAtLeast(0f)
+        val safeStartX = clampX(startX)
+        val safeStartY = clampY(startY)
         path.moveTo(safeStartX, safeStartY)
 
         if (startX == endX && startY == endY) {
             path.lineTo(safeStartX, safeStartY)
         } else {
-            val safeEndX = endX.coerceAtLeast(0f)
-            val safeEndY = endY.coerceAtLeast(0f)
-            path.lineTo(safeEndX, safeEndY)
+            path.lineTo(clampX(endX), clampY(endY))
         }
         return path
     }
@@ -187,7 +194,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         isDispatching = true
         dispatchStartedMs = System.currentTimeMillis()
         dispatchingPriority = HybridExecutionTerminal.priority(request.source)
-        dispatchingSource = request.source
 
         return try {
             // SPLENDOR_CAPTURE_TO_SCREEN_V1 - every ExecutionRequest is built in
@@ -203,9 +209,11 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 screenStartX,
                 screenStartY,
                 screenEndX,
-                screenEndY
+                screenEndY,
+                com.assistant.vision.CameraProfile.sourceWidth.toFloat(),
+                com.assistant.vision.CameraProfile.sourceHeight.toFloat()
             )
-            val syncedDuration = synchronizeToTickRate(request.duration)
+            val syncedDuration = clampDispatchDuration(request.duration)
 
             val stroke = GestureDescription.StrokeDescription(
                 optimizedPath,
@@ -216,9 +224,12 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 .addStroke(stroke)
                 .build()
 
+            // No68-H-D4: the old line logged the CAPTURE coords while the
+            // gesture uses the SCREEN coords — the log lied about where the
+            // stroke lands. Log the dispatched coordinates.
             RuntimeLogger.execution(
                 "DIRECT_DISPATCH",
-                "actionId=${request.actionId} source=${request.source} phase=${request.phase} duration=$syncedDuration start=(${request.startX},${request.startY}) end=(${request.endX},${request.endY})"
+                "actionId=${request.actionId} source=${request.source} phase=${request.phase} duration=$syncedDuration start=($screenStartX,$screenStartY) end=($screenEndX,$screenEndY)"
             )
 
             FrameAssembler.current()?.takeIf { it.trusted }?.let { frame ->
@@ -248,18 +259,20 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             if (!accepted) {
                 ActionOutcomeVerifier.cancelDispatch(request.actionId)
                 releaseDispatch()
-                dispatchingSource = null
             } else {
                 recordDispatchForRate()
                 ControlMappingTrainer.recordDispatch(request.phase, request.duration)
             }
 
             accepted
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
+            // No68-H-D7: the catch was Exception-only, so an Error (OOM,
+            // linkage, stack overflow in the gesture build) escaped with
+            // the latch held until the stuck-grace force-release — the same
+            // Exception-only shape F38-D1 fixed in the bus loop below.
             releaseDispatch()
-            dispatchingSource = null
             RuntimeLogger.log(
-                "Direct dispatch vector crash: ${e.message}",
+                "Direct dispatch vector crash: ${t.message}",
                 "SMART_ASSIST"
             )
             false
@@ -321,12 +334,22 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                         busHandler.postDelayed(this, BUS_POLL_RATE_MS)
                         return
                     }
-                    releaseDispatch()
-                    dispatchingSource = null
+                    // No68-H-D6: the old code released the latch here, which
+                    // abandoned the live stroke (its completion callback
+                    // became a no-op via the actionId check) and let the
+                    // head request dispatch while the old stroke was still
+                    // running on screen — either losing the head (the OS
+                    // refuses overlapping gestures) or overlapping two
+                    // strokes. Wait instead: the live stroke is at most
+                    // 250ms and the head (GK/INT, 300ms maxAge) stays
+                    // queued; the latch-stuck guard above force-releases a
+                    // lost callback, so this wait is bounded.
                     RuntimeLogger.execution(
                         "BUS_PREEMPT",
-                        "head=$headSource overIntPriority=$dispatchingPriority"
+                        "head=$headSource headPriority=$headPriority currentPriority=$dispatchingPriority waitingForStroke"
                     )
+                    busHandler.postDelayed(this, BUS_POLL_RATE_MS)
+                    return
                 }
 
                 val request = CentralExecutionBus.consume()
@@ -441,15 +464,22 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             return
         }
 
-        val syncedDuration = synchronizeToTickRate(50L)
+        val syncedDuration = clampDispatchDuration(50L)
         if (::dispatcher.isInitialized) {
-            dispatcher.injectWinningVector(
-                (x1),
-                (y1),
-                (x2),
-                (y2),
-                syncedDuration
-            )
+            // No68-H-D9: a throw inside injectWinningVector used to escape
+            // to onFrame — contain it here so the trigger fails logged, not
+            // lost inside the decision loop.
+            try {
+                dispatcher.injectWinningVector(
+                    (x1),
+                    (y1),
+                    (x2),
+                    (y2),
+                    syncedDuration
+                )
+            } catch (t: Throwable) {
+                RuntimeLogger.log("triggerInstantExecution failed: ${t.message}", "SMART_ASSIST")
+            }
         }
     }
 
@@ -461,13 +491,23 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     // overlay (com.assistant.overlay) 8 — all side-effects of the missing
     // allowlist, none of them a foreign app. WhatsApp (434) and the other
     // foreign apps still block, as designed.
+    // No68-H-D8: the IME list is an IPC that used to run on EVERY window
+    // state event. Cache the package set; the IME set effectively never
+    // changes while the service runs.
+    @Volatile private var cachedImePackages: Set<String>? = null
+
     private fun isNonBlockingForegroundPackage(pkg: String): Boolean {
         if (pkg.equals(packageName, ignoreCase = true)) return true
         if (pkg.equals("com.android.systemui", ignoreCase = true)) return true
         if (pkg.equals("miui.systemui.plugin", ignoreCase = true)) return true
         return try {
-            val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
-            imm?.inputMethodList?.any { it.packageName.equals(pkg, ignoreCase = true) } == true
+            var imePackages = cachedImePackages
+            if (imePackages == null) {
+                val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+                imePackages = imm?.inputMethodList?.map { it.packageName }?.toSet() ?: emptySet()
+                cachedImePackages = imePackages
+            }
+            imePackages.any { it.equals(pkg, ignoreCase = true) }
         } catch (_: Throwable) { false }
     }
 
@@ -513,7 +553,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             busThread.quitSafely()
         }
         releaseDispatch()
-        dispatchingSource = null
         if (globalInstance === this) {
             globalInstance = null
         }

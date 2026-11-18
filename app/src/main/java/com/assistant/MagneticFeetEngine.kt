@@ -37,31 +37,6 @@ package com.assistant
 
 
 
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import java.util.concurrent.atomic.AtomicLong
 
 import kotlin.math.*
@@ -96,7 +71,7 @@ import kotlin.math.*
 object MagneticFeetEngine {
 
     private const val MAX_SIGNAL = 100.0f
-    private const val MAX_TOUCH = 15.0f
+    private const val MAX_TOUCH = 12.0f
     private const val MAX_INTERCEPTION = 12.0f
     private const val MAX_POSSESSION = 12.0f
     private const val MAX_AMPLIFICATION = 1.2f
@@ -148,7 +123,7 @@ object MagneticFeetEngine {
     )
 
     /**
-     * Converts bounded 0..100 pressure and strength signals into
+     * Converts bounded 0..100 proximity and strength signals into
      * continuously varying specialist outputs.
      *
      * The old implementation began at 15.0 and then added only positive
@@ -156,32 +131,33 @@ object MagneticFeetEngine {
      * This version deliberately keeps the signal below the final ceiling
      * so the inputs remain observable in the result.
      */
+    @Synchronized
     fun stabilize(
-        pressure: Int,
+        proximity: Int,
         strength: Int
     ): MagneticFeetResult {
 
-        val safePressure =
-            pressure.coerceIn(0, 100)
+        val safeProximity =
+            proximity.coerceIn(0, 100)
 
         val safeStrength =
             strength.coerceIn(0, 100)
 
         calls.incrementAndGet()
 
-        lastPressure = safePressure
+        lastPressure = safeProximity
         lastStrength = safeStrength
-        lastReason = "stabilized"
+        lastReason = "stabilized p=$safeProximity s=$safeStrength"
         lastUpdatedMs = System.currentTimeMillis()
 
-        val pressureNorm =
-            safePressure / MAX_SIGNAL
+        val proximityNorm =
+            safeProximity / MAX_SIGNAL
 
         val strengthNorm =
             safeStrength / MAX_SIGNAL
 
         val synergy =
-            (pressureNorm * strengthNorm)
+            (proximityNorm * strengthNorm)
                 .coerceIn(0.0f, 1.0f)
 
         /*
@@ -205,15 +181,19 @@ object MagneticFeetEngine {
         /*
          * Continuous touch scale.
          *
-         * At 0/0 this starts at 2.
-         * At 100/100 it reaches 10 before amplification.
-         * This prevents the previous guaranteed 15.0 saturation.
+         * No68-B-D34: at 0/0 this starts at 0 -- the old 2.0 baseline
+         * paid authority for zero signal (stabilize(0,0) returned a
+         * touch of 2.0, which the contributor turned into 0.57
+         * authority), the same fabrication class as the 0.9 floor the
+         * P9 round removed. At 100/100 it reaches 10 before
+         * amplification (0.05 coefficients), so the 12.0 ceiling is
+         * reachable exactly at full signal instead of unreachable.
          */
         val calculatedTouch =
             (
-                2.0f +
-                    (safePressure * 0.04f) +
-                    (safeStrength * 0.04f)
+                0.0f +
+                    (safeProximity * 0.05f) +
+                    (safeStrength * 0.05f)
             ).coerceIn(
                 0.0f,
                 10.0f
@@ -232,7 +212,7 @@ object MagneticFeetEngine {
 
                 interceptionResistance =
                     (
-                        safePressure *
+                        safeProximity *
                             0.12f
                     ).coerceIn(
                         0.0f,
@@ -260,11 +240,17 @@ object MagneticFeetEngine {
 
     // SPLENDOR_P10_TRAP_DIAG_RECORD: records the trap window computed by
     // MagneticFeetContributor.contribute(). Read-only for diagnostics;
-    // it never feeds back into stabilize().
+    // it never feeds back into stabilize(). No68-B-D43: only the three
+    // windows contribute() can produce are stored; anything else is a
+    // caller bug and must not pollute the diagnostic.
+    @Synchronized
     fun recordTrapWindow(window: String) {
-        lastTrapWindow = window
+        if (window == "CLOSING" || window == "SETTLED" || window == "LEAVING") {
+            lastTrapWindow = window
+        }
     }
 
+    @Synchronized
     fun reset() {
         calls.set(0L)
         lastPressure = 0
@@ -282,9 +268,13 @@ object MagneticFeetEngine {
      * IMPORTANT:
      * This function does not call stabilize(). Reading diagnostics must
      * never mutate runtime counters or create synthetic engine activity.
+     *
+     * No68-B-D41: the return is non-null -- the old nullable type could
+     * never return null and forced defensive `?.` on every caller.
      */
+    @Synchronized
     fun magneticFeetSnapshot():
-        MagneticFeetState? {
+        MagneticFeetState {
 
         return MagneticFeetState(
             sequence = calls.get(),
@@ -293,6 +283,7 @@ object MagneticFeetEngine {
         )
     }
 
+    @Synchronized
     fun magneticFeetActivationDiagnostics():
         MagneticFeetDiagnostics {
 
@@ -307,7 +298,3 @@ object MagneticFeetEngine {
         )
     }
 }
-
-/* ========
-MotionResult
-======== */

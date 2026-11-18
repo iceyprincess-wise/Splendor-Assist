@@ -100,21 +100,28 @@ object InterceptMatrixContributor : GameplayContributor {
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || frame.hasBall) return null
 
-        // My defending player: goalkeeper position when detected, otherwise
-        // estimate from ball (defender trails ball slightly)
-        val myX = if (frame.goalkeeperVisible && frame.goalkeeperX > 0f)
-            frame.goalkeeperX else (frame.ballX - 80f).coerceAtLeast(0f)
-        val myY = if (frame.goalkeeperVisible && frame.goalkeeperY > 0f)
-            frame.goalkeeperY else frame.ballY
+        // No68-H-D28: "my defending player" was the GOALKEEPER's position
+        // — the keeper is not the defender. Use the frame's defender
+        // entity; fall back to trailing the ball only when it is absent.
+        val defender = frame.entities.firstOrNull { it.id == frame.defenderId && it.teammate }
+        val myX = defender?.x ?: (frame.ballX - 80f).coerceAtLeast(0f)
+        val myY = defender?.y ?: frame.ballY
 
-        // Opponent carrier: where the passing engine projects the ball going
-        val oppX = if (frame.passTargetX > 0f) frame.passTargetX
-                   else (frame.ballX + 120f).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
-        val oppY = if (frame.passTargetY > 0f) frame.passTargetY else frame.ballY
-
-        // Direction hint for opponent velocity (magnitude kept small)
-        val ovx = (oppX - frame.ballX) * 0.08f
-        val ovy = (oppY - frame.ballY) * 0.08f
+        // No68-H-D29: the "opponent carrier" was passTargetX/Y — where the
+        // passing engine projects the ball GOING, not where the carrier IS
+        // — and the velocity was a fabricated (opp-ball)*0.08 position
+        // difference, not a velocity. Use the nearest opponent to the ball
+        // (the carrier) and that entity's real per-second velocity; the
+        // matrix normalises it in the close branch, so units cancel there.
+        val carrier = frame.entities.filter { !it.teammate }.minByOrNull { e ->
+            val dx = e.x - frame.ballX
+            val dy = e.y - frame.ballY
+            dx * dx + dy * dy
+        }
+        val oppX = carrier?.x ?: frame.ballX
+        val oppY = carrier?.y ?: frame.ballY
+        val ovx = carrier?.velocityXPerSecond ?: 0f
+        val ovy = carrier?.velocityYPerSecond ?: 0f
 
         val packed = HybridOmnipotentMatrixEngine.computeGodspeedInterceptVector(
             myPlayerX            = myX,
@@ -125,28 +132,35 @@ object InterceptMatrixContributor : GameplayContributor {
             oppVy                = ovy,
             ballX                = frame.ballX,
             ballY                = frame.ballY,
+            // Ball velocity stays 0f: the matrix's lookAhead units (seconds
+            // vs frames) are unverified and the capture fps is unmeasured
+            // (Q67-6) — wiring px/s here would saturate the lead (QH-2).
             ballVx               = 0f,
             ballVy               = 0f,
-            isOpponentExecutingSkill = false
+            isOpponentExecutingSkill = false,
+            // No68-H-D15: single dispatch — the matrix must not also offer
+            // an emergency request; this contribution IS the dispatch path.
+            offerEmergency = false
         )
 
         val tx = HybridOmnipotentMatrixEngine.unpackX(packed)
         val ty = HybridOmnipotentMatrixEngine.unpackY(packed)
         if (!tx.isFinite() || !ty.isFinite()) return null
-        if (tx <= 0f && ty <= 0f) return null
+        // Targets are coerced to [0, screen] inside the matrix, so only the
+        // exact (0,0) degenerate target is rejected here.
+        if (tx == 0f && ty == 0f) return null
 
         return EngineContribution(
             engine          = engineName,
             actionClass     = ActionClass.DEFEND,
             targetX         = tx.coerceAtLeast(0f),
             targetY         = ty.coerceAtLeast(0f),
+            // Authority floor 0.50 + 0.50*density is a deliberate tactical
+            // number (strictly dominates Defense/DashPressure on every
+            // frame it fires) — NOT silently re-tuned; see QH-1.
             authority       = (0.50f + frame.defenderDensity * 0.50f).coerceIn(0f, 1f),
             confidence      = frame.confidence,
             durationHintMs  = 40L
         )
     }
 }
-
-/* ========
-KeeperFeedbackContributor
-======== */

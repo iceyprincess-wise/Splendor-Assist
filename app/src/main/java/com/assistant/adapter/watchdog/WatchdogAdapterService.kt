@@ -14,7 +14,6 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.os.IBinder
-import android.os.Messenger
 
 /**
  * PHASE3 UPGRADE: WatchdogAdapterService
@@ -25,7 +24,6 @@ import android.os.Messenger
  * honest restart attempt is far better than zero.
  */
 class WatchdogAdapterService : Service() {
-    private val messenger = Messenger(Handler(Looper.getMainLooper(), Handler.Callback { _ -> true }))
     private val heartbeatHandler = Handler(Looper.getMainLooper())
     @Volatile private var lastScan = "no scan yet"
     // SPLENDOR_P11_D5: key of the last watchdog death report
@@ -35,6 +33,23 @@ class WatchdogAdapterService : Service() {
     @Volatile private var totalRestarts = 0
     @Volatile private var wakeLock: PowerManager.WakeLock? = null
 
+    // No68-E2-D24: one restart attempt per adapter per cooldown window.
+    // The old code restarted an OFFLINE adapter on every 15s scan with
+    // no backoff — a crash-looping adapter was restart-spammed forever.
+    // 120s matches AdapterRecoveryEngine.COOLDOWN_MS and the 120s
+    // OFFLINE threshold in AdapterHealthRegistry.effectiveStatus.
+    // Written only on the main looper (watchdogRunnable), so a plain map
+    // is enough.
+    private val lastRestartAttemptMs = mutableMapOf<String, Long>()
+    private val RESTART_COOLDOWN_MS = 120_000L
+
+    // No68-E2-D28: the marker check does file I/O plus an
+    // ActivityManager IPC on every 15s scan — it runs here, off the
+    // main looper, instead of inside the scan runnable.
+    private val markerCheckExecutor = java.util.concurrent.Executors.newSingleThreadExecutor { r ->
+        Thread(r, "WatchdogMarkerCheck").apply { isDaemon = true }
+    }
+
     // Map from adapter registry name to its service class name
     private val adapterMap = mapOf(
         "performance_engine" to "com.assistant.PerformanceEngineService",
@@ -43,23 +58,37 @@ class WatchdogAdapterService : Service() {
 
     private val heartbeatRunnable = object : Runnable {
         override fun run() {
-            AdapterHealthRegistry.update(
-                AdapterHealthSnapshot(
-                    adapterName = "adapter_watchdog",
-                    status = if (lastScan == "no scan yet") "STARTING" else "ACTIVE",
-                    lastHeartbeat = System.currentTimeMillis(),
-                    errorCount = 0,
-                    recoveryCount = totalRestarts,
-                    details = "scan: $lastScan restarts=$totalRestarts"
+            // No68-E2-D22: the re-post used to sit at the end of the body,
+            // so any throw above it killed the heartbeat loop permanently
+            // while the last snapshot kept reporting the watchdog ACTIVE.
+            // The re-post is now in finally; a failure is logged, not fatal.
+            try {
+                AdapterHealthRegistry.update(
+                    AdapterHealthSnapshot(
+                        adapterName = "adapter_watchdog",
+                        status = if (lastScan == "no scan yet") "STARTING" else "ACTIVE",
+                        lastHeartbeat = System.currentTimeMillis(),
+                        errorCount = 0,
+                        recoveryCount = totalRestarts,
+                        details = "scan: $lastScan restarts=$totalRestarts"
+                    )
                 )
-            )
-            RuntimeLogger.log("Watchdog heartbeat", "HEALTH")
-            heartbeatHandler.postDelayed(this, 10000)
+                RuntimeLogger.log("Watchdog heartbeat", "HEALTH")
+            } catch (t: Throwable) {
+                try { RuntimeLogger.log("Watchdog heartbeat failed: ${t.message}", "WATCHDOG") } catch (_: Throwable) { }
+            } finally {
+                heartbeatHandler.postDelayed(this, 10000)
+            }
         }
     }
 
     private val watchdogRunnable = object : Runnable {
         override fun run() {
+            // No68-E2-D22: as with the heartbeat — the re-post and the
+            // WakeLock renewal are in finally, so a throw mid-scan
+            // cannot silently stop the watchdog while its heartbeat
+            // keeps reporting ACTIVE.
+            try {
             var offline = 0; var degraded = 0; var active = 0; var restarted = 0
             val liveSnapshots = AdapterHealthRegistry.getAllLive().associateBy { it.adapterName }
             val checked = mutableSetOf<String>()
@@ -77,9 +106,22 @@ class WatchdogAdapterService : Service() {
                     "OFFLINE" -> {
                         offline++
                         RuntimeLogger.log("WATCHDOG OFFLINE: $name", "WATCHDOG")
-                        restartOffline(name)
-                        restarted++
-                        totalRestarts++
+                        // No68-E2-D24: one attempt per cooldown window; a
+                        // restart that is still cooling down is skipped,
+                        // not re-attempted. No68-E2-D23: only a successful
+                        // restart counts — the old code counted attempts,
+                        // including failed ones, as restarts.
+                        val nowMs = System.currentTimeMillis()
+                        val lastAttempt = lastRestartAttemptMs[name] ?: 0L
+                        if (nowMs - lastAttempt < RESTART_COOLDOWN_MS) {
+                            RuntimeLogger.log("WATCHDOG RESTART COOLED DOWN: $name (${(RESTART_COOLDOWN_MS - (nowMs - lastAttempt)) / 1000L}s left)", "WATCHDOG")
+                        } else {
+                            lastRestartAttemptMs[name] = nowMs
+                            if (restartOffline(name)) {
+                                restarted++
+                                totalRestarts++
+                            }
+                        }
                     }
                     "DEGRADED" -> {
                         degraded++
@@ -109,10 +151,16 @@ class WatchdogAdapterService : Service() {
             com.assistant.survival.AdapterHealthCounts.update(active, degraded, offline)
             // SPLENDOR_P11_D5: cross-process marker watchdog (see
             // checkMainProcessMarker below).
-            checkMainProcessMarker()
-            watchdogHandler.postDelayed(this, 15000)
-            // HYPEROS LMK SURVIVAL: Renew WakeLock timeout on every successful scan cycle
-            wakeLock?.acquire(10 * 60 * 1000L)
+            markerCheckExecutor.execute {
+                try { checkMainProcessMarker() } catch (_: Throwable) { }
+            }
+            } catch (t: Throwable) {
+                try { RuntimeLogger.log("Watchdog scan failed: ${t.message}", "WATCHDOG") } catch (_: Throwable) { }
+            } finally {
+                watchdogHandler.postDelayed(this, 15000)
+                // HYPEROS LMK SURVIVAL: Renew WakeLock timeout on every scan cycle
+                wakeLock?.acquire(10 * 60 * 1000L)
+            }
         }
     }
 
@@ -165,15 +213,19 @@ class WatchdogAdapterService : Service() {
         } catch (_: Throwable) { }
     }
 
-    private fun restartOffline(adapterName: String) {
-        val className = adapterMap[adapterName] ?: return
+    // No68-E2-D23: returns whether the restart was actually issued, so
+    // the caller counts successes, not attempts.
+    private fun restartOffline(adapterName: String): Boolean {
+        val className = adapterMap[adapterName] ?: return false
         try {
             val cls = Class.forName(className)
             val intent = Intent(this, cls)
             startService(intent)
             RuntimeLogger.log("WATCHDOG RESTART: $adapterName -> $className", "WATCHDOG")
+            return true
         } catch (e: Exception) {
             RuntimeLogger.log("WATCHDOG RESTART FAILED: $adapterName — ${e.message}", "WATCHDOG")
+            return false
         }
     }
 
@@ -185,6 +237,11 @@ class WatchdogAdapterService : Service() {
         // HYPEROS LMK SURVIVAL: Acquire PARTIAL_WAKE_LOCK to prevent CPU dozing during 15s watchdog scans
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Splendor:WatchdogWakeLock").apply {
+            // No68-E2-D27: non-reference-counted, so the acquire() on
+            // every 15s scan renews the 10-minute timeout instead of
+            // stacking a reference count the single release() in
+            // onDestroy() could never drop to zero.
+            setReferenceCounted(false)
             acquire(10 * 60 * 1000L) // 10 minutes, renewable on each scan cycle
         }
         AdapterHealthRegistry.update(
@@ -207,6 +264,26 @@ class WatchdogAdapterService : Service() {
         heartbeatHandler.removeCallbacksAndMessages(null)
         watchdogHandler.removeCallbacksAndMessages(null)
         NodeNotificationHub.detach(this, "adapter_watchdog")
+        markerCheckExecutor.shutdown()
+        // No68-E2-D30: don't leave a fresh ACTIVE snapshot behind — a
+        // dead watchdog read as ACTIVE for up to 120s (the OFFLINE
+        // threshold). lastHeartbeat=0 makes effectiveStatus() report
+        // OFFLINE immediately; the status string agrees with it.
+        // (A same-status write inside 5s is throttled by
+        // HealthPersistenceStore — this status differs from ACTIVE, so
+        // the write lands.)
+        try {
+            AdapterHealthRegistry.update(
+                AdapterHealthSnapshot(
+                    adapterName = "adapter_watchdog",
+                    status = "OFFLINE",
+                    lastHeartbeat = 0L,
+                    errorCount = 0,
+                    recoveryCount = totalRestarts,
+                    details = "stopped: $lastScan restarts=$totalRestarts"
+                )
+            )
+        } catch (_: Throwable) { }
         // HYPEROS LMK SURVIVAL: Release WakeLock to prevent battery drain on service shutdown
         wakeLock?.let { if (it.isHeld) it.release() }
         RuntimeLogger.log("Watchdog stopped", "HEALTH")
@@ -217,5 +294,8 @@ class WatchdogAdapterService : Service() {
         return START_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder? = messenger.binder
+    // No68-E2-D29: the old Messenger swallowed every message ({ _ -> true })
+    // with no protocol, and zero binders exist repo-wide. Not bindable:
+    // a bind attempt now fails cleanly instead of silently swallowing.
+    override fun onBind(intent: Intent?): IBinder? = null
 }

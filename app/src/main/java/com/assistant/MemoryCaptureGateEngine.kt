@@ -71,7 +71,14 @@ object MemoryCaptureGateEngine {
     @Volatile var captureThrottle = 0; private set
     @Volatile var targetFps: Int = 60; private set
 
-    fun setTargetFps(fps: Int) { targetFps = if (fps in setOf(30, 45, 60)) fps else 60 }
+    // No68-C-D9: an invalid persisted value (corrupt prefs, a hand-edited
+    // value) used to be silently coerced to 60. Log it so a bad stored
+    // target is visible instead of silently "fixed".
+    fun setTargetFps(fps: Int) {
+        if (fps in setOf(30, 45, 60)) { targetFps = fps; return }
+        RuntimeLogger.log("MemoryCaptureGate: invalid targetFps=$fps, keeping 60", "MEMORY")
+        targetFps = 60
+    }
     @Volatile private var lastTier = "UNKNOWN"
 
     /**
@@ -123,6 +130,12 @@ object MemoryCaptureGateEngine {
         }
         // While the game is foregrounded, memory shedding may not lower the
         // configured minimum capture rate. Outside a match the memory interval wins.
+        // No68-C-D8 (checked, not changed): 1000L / targetFps is an integer
+        // FLOOR, and the floor is load-bearing — 1000/60 = 16 ms admits a
+        // true 16.67 ms stream, while rounding to 17 ms would drop every
+        // other 60 fps frame (16.7 < 17) and halve the rate to 30. The
+        // interval must stay <= the true frame period; do not "fix" it
+        // to round().
         return if (com.assistant.VisionTrust.isGameForeground())
             minOf(memoryInterval, 1000L / targetFps) else memoryInterval
     }

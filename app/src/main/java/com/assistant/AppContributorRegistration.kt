@@ -89,7 +89,6 @@ object AppContributorRegistration {
                         com.assistant.contributors.CrossClaimContributor,
                         com.assistant.contributors.KeeperBiasContributor,
                         com.assistant.contributors.PanicSaveContributor,
-                        com.assistant.contributors.PassLaneContributor,
                         com.assistant.contributors.BallPressContributor,
                         com.assistant.contributors.PressEvadeContributor,
                         com.assistant.contributors.ShotContributor,

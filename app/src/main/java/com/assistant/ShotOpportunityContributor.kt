@@ -99,20 +99,39 @@ object ShotOpportunityContributor : GameplayContributor {
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
         if (!frame.goalDetected) return null
-        // No67-D31: distance to the goal when detected (the old value was
-        // the distance to the right edge of the capture — meaningless when
-        // the goal is at the left end).
-        val goalDistance = if (frame.goalDetected) hypot(frame.goalCenterX - frame.ballX, frame.goalCenterY - frame.ballY)
-            else (com.assistant.vision.CameraProfile.captureWidthOrFallback() - frame.ballX).coerceAtLeast(0f)
+        // No68-F-D8: the D31 else-branch is dead — !goalDetected returns
+        // null above, so the fallback distance could never run, and the
+        // `if (frame.goalDetected)` re-test was always true. Direct hypot.
+        val goalDistance = hypot(frame.goalCenterX - frame.ballX, frame.goalCenterY - frame.ballY)
         val r = ShotOpportunityAnalysisEngine.analyze(goalDistance, frame.defenderDensity)
         if (r.openSideScore <= 0f) return null
         // No67-D33: the old target was the ball itself, so chooseRequest saw
         // a zero drag vector and dropped every dispatch. Aim at the detected
-        // goal centre; without a detected goal there is no shot to take.
-        // (Open-side aim instead of centre is Ed's call — Q67-26; centre is
-        // the least-assumptive aim.)
+        // goal; without a detected goal there is no shot to take.
+        // No68-F-D7 (closes Q67-26): aim at the OPEN side, not the centre
+        // — the keeper stands at the centre, and this engine's own score
+        // is an open-side score. Same rule as ShotContributor: inset 0.18
+        // of the goal width, away from the keeper when visible, centre
+        // when not. A degenerate box (width <= 1) has no computable
+        // inset aim, so there is no shot.
+        if (frame.goalWidth <= 1f) return null
+        val inset = frame.goalWidth * 0.18f
+        val leftAim = frame.goalLeftX + inset
+        val rightAim = frame.goalRightX - inset
+        val aimX = when {
+            !frame.goalkeeperVisible -> frame.goalCenterX
+            frame.goalkeeperX <= frame.goalCenterX -> rightAim
+            else -> leftAim
+        }
+        // No68-F-D34 (completion round): the aim was clamped only
+        // >= 0 — the same one-sided clamp D5 fixed in
+        // ShotAnticipationContributor. The goal box can extend past the
+        // capture edge (the goal sits at an X end), so rightAim /
+        // goalCenterY could exceed captureWidth/captureHeight and the
+        // dispatch would aim off-screen. Clamp both axes to the capture,
+        // same form as D5; unchanged for any on-screen goal.
         return EngineContribution(engineName, ActionClass.SHOT,
-            frame.goalCenterX.coerceAtLeast(0f), frame.goalCenterY.coerceAtLeast(0f),
+            aimX.coerceIn(0f, frame.captureWidth), frame.goalCenterY.coerceIn(0f, frame.captureHeight),
             (r.openSideScore / 4f).coerceIn(0f, 1f), r.confidence.coerceIn(0f, 1f), 35L)
     }
 }
@@ -120,9 +139,3 @@ object ShotOpportunityContributor : GameplayContributor {
 /* ========
 SmartAssistUltimateCorrectorContributor
 ======== */
-/**
- * SmartAssistUltimateCorrectorContributor
- *
- * Zero-allocation always-on contributor for correcting eFootball Smart Assist drift.
- * Eliminates redundant null checks and object creations inside 60 FPS hot paths.
- */
