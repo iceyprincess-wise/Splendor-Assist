@@ -436,6 +436,10 @@ class ModMenuController(private val context: Context) {
             setTextColor(Color.WHITE)
             isChecked = InterceptionRuntimeRegistry.armed
             setOnCheckedChangeListener { _, isChecked ->
+                // No65-D26: persist like the neighbouring switches — the
+                // switch used to write the registry only, so a restart
+                // silently reset armed to true.
+                interceptionRepo.updateArmed(isChecked)
                 InterceptionRuntimeRegistry.armed = isChecked
             }
         }
@@ -626,8 +630,17 @@ class ModMenuController(private val context: Context) {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                     tvAwareness.text = "Awareness: $progress"
                     if (fromUser) {
+                        // No65-D29: repo only — the direct registry write
+                        // used to sit here too and defeated the repo clamp:
+                        // updateAwareness clamps to 25..150, but the raw
+                        // slider value (0..100) was written straight to the
+                        // registry afterwards, so dragging to 10 left the
+                        // live value at 10 while prefs held 25 — and the
+                        // outcome raced the bridge's async sync. The repo
+                        // save emits the clamped state and the bridge sets
+                        // the registry from it (the keeper-reactions slider
+                        // just above already uses this repo-only pattern).
                         interceptionRepo.updateAwareness(progress)
-                        InterceptionRuntimeRegistry.awareness = progress
                     }
                 }
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -651,8 +664,11 @@ class ModMenuController(private val context: Context) {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                     tvPrediction.text = "Prediction: $progress"
                     if (fromUser) {
+                        // No65-D29: repo only — same clamp-defeating double
+                        // write as the awareness slider above (raw 0..100
+                        // overwrote the repo's 25..150 clamped value and
+                        // raced the bridge sync).
                         interceptionRepo.updatePrediction(progress)
-                        InterceptionRuntimeRegistry.prediction = progress
                     }
                 }
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {}

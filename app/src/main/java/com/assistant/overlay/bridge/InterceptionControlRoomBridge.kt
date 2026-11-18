@@ -23,6 +23,8 @@ class InterceptionControlRoomBridge(
                 InterceptionRuntimeRegistry.autoIntercept = state.autoIntercept
                 InterceptionRuntimeRegistry.awareness = state.awareness
                 InterceptionRuntimeRegistry.prediction = state.prediction
+                // No65-D26: armed is restored from the persisted state now.
+                InterceptionRuntimeRegistry.armed = state.armed
             }
         }
     }

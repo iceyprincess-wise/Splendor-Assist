@@ -60,7 +60,8 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        LogMirror.init(this)
+        // No65-D10: LogMirror.init() takes no Context any more.
+        LogMirror.init()
         GlobalCrashHandler.install(this)
         OverrideStore.initialize(this)
         installF47CrashMirror()

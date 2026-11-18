@@ -221,6 +221,20 @@ object GoalkeeperActionRouter {
                     cross == CrossAction.CLAIM && decision.heightBand == HeightBand.TOP ->
                         GoalkeeperAction.AERIAL_CLAIM
 
+                    // No65-D17: the two post arms below are UNREACHABLE by
+                    // shadowing — for anticipation==SAVE every heightBand
+                    // is fully covered by the 2D-matrix arms above (TOP →
+                    // JUMP_TOP_*, MID → REACH/REFLEX/CATCH, BOTTOM →
+                    // DIVE_BOTTOM_*/PARRY, with normX fully partitioned in
+                    // each band), so a SAVE never reaches them. The
+                    // post-coverage inputs (nearPostCoverage,
+                    // farPostCoverage, PROTECT_* bias) are therefore dead
+                    // inputs on the SAVE path — same class as the no64
+                    // RISKY-arm shadowing. Kept, behaviour-neutral:
+                    // reordering post-coverage above the band arms would
+                    // CHANGE behaviour (a TOP far-post SAVE would DIVE_LEFT
+                    // instead of JUMP_TOP_LEFT — a tactical call for Ed,
+                    // queued as Q65-5. Do not delete them silently.
                     anticipation ==
                         AnticipationResult.SAVE &&
                     (

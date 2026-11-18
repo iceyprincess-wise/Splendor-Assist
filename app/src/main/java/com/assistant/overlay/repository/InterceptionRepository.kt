@@ -10,7 +10,11 @@ data class InterceptionState(
     val enabled: Boolean = true,
     val autoIntercept: Boolean = true,
     val awareness: Int = 100,
-    val prediction: Int = 100
+    val prediction: Int = 100,
+    // No65-D26: armed joins the persisted state — it used to live only in
+    // InterceptionRuntimeRegistry, so the ModMenu switch wrote the registry
+    // and a restart silently reset it to true.
+    val armed: Boolean = true
 )
 
 class InterceptionRepository(context: Context) {
@@ -29,7 +33,8 @@ class InterceptionRepository(context: Context) {
             // (a negative would subtract priority; >100 would inflate
             // it). Clamp at the read site.
             awareness = clampSlider(prefs.getInt("awareness", 100)),
-            prediction = clampSlider(prefs.getInt("prediction", 100))
+            prediction = clampSlider(prefs.getInt("prediction", 100)),
+            armed = prefs.getBoolean("armed", true)
         )
     }
     
@@ -39,6 +44,7 @@ class InterceptionRepository(context: Context) {
             putBoolean("auto_intercept", state.autoIntercept)
             putInt("awareness", state.awareness)
             putInt("prediction", state.prediction)
+            putBoolean("armed", state.armed)
             apply()
         }
         _state.value = state
@@ -46,6 +52,8 @@ class InterceptionRepository(context: Context) {
     
     fun updateEnabled(enabled: Boolean) = save(_state.value.copy(enabled = enabled))
     fun updateAutoIntercept(auto: Boolean) = save(_state.value.copy(autoIntercept = auto))
+    // No65-D26: the armed switch finally persists — see InterceptionState.
+    fun updateArmed(armed: Boolean) = save(_state.value.copy(armed = armed))
     // No63-D12: updateAwareness/updatePrediction accepted any Int with
     // no clamp — the values flow straight through the bridge into
     // NativePorts.threat as aw/10 and pr/10 (negative would subtract

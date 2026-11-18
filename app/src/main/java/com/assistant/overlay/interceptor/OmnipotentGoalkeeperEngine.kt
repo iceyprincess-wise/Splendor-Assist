@@ -26,17 +26,12 @@ import com.assistant.execution.ContributionRegistry
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
 import com.assistant.overlay.repository.GoalkeeperRuntimeState
-import com.assistant.TelemetryCoordinator
 import com.assistant.TelemetryRepository
 
 object OmnipotentGoalkeeperEngine {
-    // Zero-allocation primitive matrix tracking variables
-    private val ballTrajectory = FloatArray(4) // [CurrentX, CurrentY, VelocityX, VelocityY]
-    private const val BALL_CX = 0
-    private const val BALL_CY = 1
-    private const val BALL_VX = 2
-    private const val BALL_VY = 3
-    
+    // No65-D13: the ballTrajectory array + BALL_* consts are gone — the
+    // array was written on every defensive-layer call and never read
+    // anywhere, and the ball velocity params fed only that dead write.
     @Volatile private var lastGkLayerTimestamp = 0L
 
 
@@ -44,7 +39,6 @@ object OmnipotentGoalkeeperEngine {
 
     fun processGoalkeeperDefensiveLayer(
         ballX: Float, ballY: Float,
-        ballVx: Float, ballVy: Float,
         gkX: Float, gkY: Float,
         nearestAttackerX: Float, nearestAttackerY: Float,
         pressureButtonX: Float, pressureButtonY: Float,
@@ -58,11 +52,6 @@ object OmnipotentGoalkeeperEngine {
         val now = System.currentTimeMillis()
         if (now - lastGkLayerTimestamp < 8L) return false // BEAST MODE: 120Hz reaction throttle for 0.00ms threat response
         lastGkLayerTimestamp = now
-
-        ballTrajectory[BALL_CX] = ballX
-        ballTrajectory[BALL_CY] = ballY
-        ballTrajectory[BALL_VX] = ballVx
-        ballTrajectory[BALL_VY] = ballVy
 
         // FABRICATED-THREAT GATE: Require valid detected positions
         if (!isAttackerDetected || !isGkDetected) return false
@@ -148,8 +137,11 @@ object OmnipotentGoalkeeperEngine {
         return false
     }
 
-    @Volatile private var capturedWidth = 1650.0f
-    @Volatile private var capturedHeight = 720.0f
+    // No65-D15: 0f, not the old 1650x720 landscape defaults — those values
+    // were never observed (scanFrame always sets both from the frame before
+    // any read) and contradicted the live 288x640 portrait capture.
+    @Volatile private var capturedWidth = 0f
+    @Volatile private var capturedHeight = 0f
     private val executionCoordinates = FloatArray(4)
 
 
@@ -253,8 +245,6 @@ object OmnipotentGoalkeeperEngine {
                 processGoalkeeperDefensiveLayer(
                     ballX = t.ballX,
                     ballY = t.ballY,
-                    ballVx = t.ballVelocityX,
-                    ballVy = t.ballVelocityY,
                     gkX = t.goalkeeperX,
                     gkY = t.goalkeeperY,
                     nearestAttackerX = attackerX,
@@ -315,6 +305,28 @@ object OmnipotentGoalkeeperEngine {
     // No64-D27: save-offer stroke duration — 15 ms, the floor the loop
     // enforces for SMART_ASSIST requests (was 8L, below that floor).
     private const val SAVE_OFFER_DURATION_MS = 15L
+
+    // No65-D14: the dive-family set is hoisted — it used to be built with
+    // setOf(...) inside `if (accepted)` on EVERY accepted save (a fresh
+    // HashSet per save on the hot path, against this file's
+    // zero-allocation claim). Membership is unchanged.
+    private val DIVE_FAMILY_ACTIONS = setOf(
+        GoalkeeperAction.DIVE_LEFT,
+        GoalkeeperAction.DIVE_RIGHT,
+        GoalkeeperAction.DIVE_BOTTOM_LEFT,
+        GoalkeeperAction.DIVE_BOTTOM_RIGHT,
+        GoalkeeperAction.BLOCK_LEFT,
+        GoalkeeperAction.BLOCK_RIGHT,
+        GoalkeeperAction.JUMP_TOP_CENTER,
+        GoalkeeperAction.JUMP_TOP_LEFT,
+        GoalkeeperAction.JUMP_TOP_RIGHT,
+        GoalkeeperAction.REACH_LEFT_CENTER,
+        GoalkeeperAction.REACH_RIGHT_CENTER,
+        GoalkeeperAction.CATCH_CENTER,
+        GoalkeeperAction.REFLEX_CENTER,
+        GoalkeeperAction.PARRY_BOTTOM_CENTER,
+        GoalkeeperAction.REBOUND_SAVE
+    )
 
     // No64-D22: per-episode trackers for the feedback counters. The
     // recovery count increments only when the recovery target changes;
@@ -402,37 +414,41 @@ object OmnipotentGoalkeeperEngine {
                         action
                     }
 
-                val vector = GoalkeeperExecutionEngine.vectorFor(
-                    finalAction,
-                    screenWidthBase,
-                    screenHeightBase
-                )
-
-                // Positioning control: how far off the goal line the keeper stands.
-                // 50 is neutral; above pushes the keeper up the pitch, below drops
-                // it back. Bounded to +/-8% of screen height.
-                val positioningBias =
-                    ((GoalkeeperRuntimeState.positioning.coerceIn(0, 100) - 50) / 50f) *
-                        (screenHeightBase * 0.08f)
-
-                // Hyper-velocity interceptor swipe paths with integrated Server/Noise offsets
-                executionCoordinates[0] = vector[0]
-                // No64-D13: RushOutActionEngine clamps its startY, but this
-                // positioningBias (±8% of screen height, unclamped) used to
-                // push the coordinates off-screen afterwards. Clamp the sum.
-                executionCoordinates[1] = (vector[1] + positioningBias).coerceIn(0f, screenHeightBase)
-                executionCoordinates[2] = vector[2]
-                executionCoordinates[3] = (vector[3] + positioningBias).coerceIn(0f, screenHeightBase)
-
                 // No64-D39: TRACK is "do nothing" — offering its zero-length
                 // HoldPosition swipe wastes a bus slot, can occupy the
                 // (source, phase) reservation, and counts as a save attempt.
                 // Skip the offer entirely. (The rebound override above
                 // already turns a TRACK inside the window into REBOUND_SAVE,
                 // so this only skips genuine do-nothing frames.)
+                // No65-D16: the vector is computed only when an offer will
+                // be made — it used to be computed for TRACK too and then
+                // thrown away (a fresh FloatArray per TRACK frame, the
+                // common idle case, for a zero vector nothing reads).
                 val accepted = if (finalAction == GoalkeeperAction.TRACK) {
                     false
                 } else {
+                    val vector = GoalkeeperExecutionEngine.vectorFor(
+                        finalAction,
+                        screenWidthBase,
+                        screenHeightBase
+                    )
+
+                    // Positioning control: how far off the goal line the keeper stands.
+                    // 50 is neutral; above pushes the keeper up the pitch, below drops
+                    // it back. Bounded to +/-8% of screen height.
+                    val positioningBias =
+                        ((GoalkeeperRuntimeState.positioning.coerceIn(0, 100) - 50) / 50f) *
+                            (screenHeightBase * 0.08f)
+
+                    // Hyper-velocity interceptor swipe paths with integrated Server/Noise offsets
+                    executionCoordinates[0] = vector[0]
+                    // No64-D13: RushOutActionEngine clamps its startY, but this
+                    // positioningBias (±8% of screen height, unclamped) used to
+                    // push the coordinates off-screen afterwards. Clamp the sum.
+                    executionCoordinates[1] = (vector[1] + positioningBias).coerceIn(0f, screenHeightBase)
+                    executionCoordinates[2] = vector[2]
+                    executionCoordinates[3] = (vector[3] + positioningBias).coerceIn(0f, screenHeightBase)
+
                     ContributionRegistry.offer(
                         ExecutionRequest(
                             source = ExecutionSource.GOALKEEPER,
@@ -459,23 +475,7 @@ object OmnipotentGoalkeeperEngine {
                     // There is no dispatch-confirmation signal at this site,
                     // so no confirmed-dispatch count is invented.
                     GoalkeeperMetricsRegistry.saveAttempts.incrementAndGet()
-                    if (finalAction in setOf(
-                            GoalkeeperAction.DIVE_LEFT,
-                            GoalkeeperAction.DIVE_RIGHT,
-                            GoalkeeperAction.DIVE_BOTTOM_LEFT,
-                            GoalkeeperAction.DIVE_BOTTOM_RIGHT,
-                            GoalkeeperAction.BLOCK_LEFT,
-                            GoalkeeperAction.BLOCK_RIGHT,
-                            GoalkeeperAction.JUMP_TOP_CENTER,
-                            GoalkeeperAction.JUMP_TOP_LEFT,
-                            GoalkeeperAction.JUMP_TOP_RIGHT,
-                            GoalkeeperAction.REACH_LEFT_CENTER,
-                            GoalkeeperAction.REACH_RIGHT_CENTER,
-                            GoalkeeperAction.CATCH_CENTER,
-                            GoalkeeperAction.REFLEX_CENTER,
-                            GoalkeeperAction.PARRY_BOTTOM_CENTER,
-                            GoalkeeperAction.REBOUND_SAVE
-                        )) {
+                    if (finalAction in DIVE_FAMILY_ACTIONS) {
                         lastSaveTimestamp = System.currentTimeMillis()
                         // No64-D16: an accepted dive-family save enters
                         // recovery — RECOVERY then spans the rebound window

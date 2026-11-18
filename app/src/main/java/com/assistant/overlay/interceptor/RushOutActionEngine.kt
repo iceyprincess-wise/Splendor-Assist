@@ -16,10 +16,11 @@ object RushOutActionEngine {
                 1.30f
 
             // No64-D11: PROTECT_* and HOLD_CENTER do not scale the rush-out start.
+            // No65-D11: the `else` arm is gone — the when covers all six
+            // KeeperBias values, so the else was redundant (compiler
+            // warning) and duplicated the 1.00f above. A future KeeperBias
+            // entry now fails compilation until it is given an arm.
             KeeperBias.PROTECT_NEAR_POST, KeeperBias.PROTECT_FAR_POST, KeeperBias.HOLD_CENTER ->
-                1.00f
-
-            else ->
                 1.00f
         }
     }

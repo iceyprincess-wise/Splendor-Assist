@@ -1,6 +1,5 @@
 package com.assistant.diagnostic
 
-import android.content.Context
 import com.assistant.storage.SplendorStorageRoot
 import java.io.File
 import java.io.FileOutputStream
@@ -56,11 +55,12 @@ object LogMirror {
     }
     @Volatile private var started = false
     @Synchronized
-    fun init(context: Context) {
+    // No65-D10: the Context parameter is gone — the sink never used it.
+    // (no59 moved the sink to SplendorStorageRoot; the parameter stayed
+    // only so the App.onCreate call was unchanged, and the compiler warned
+    // about it.) Callers use LogMirror.init() now.
+    fun init() {
         if (started) return
-        // no59: the sink no longer needs the Context (no MediaStore, no
-        // getExternalFilesDir) — the parameter stays so App.onCreate's
-        // LogMirror.init(this) call is unchanged.
         // F42-D2: the probe below used to throw straight out of init(), and
         // App.onCreate calls init() unguarded - a MediaStore failure at
         // boot crashed the app before anything else ran. The probe only

@@ -40,6 +40,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.Process
 import android.util.DisplayMetrics
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -676,7 +677,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private fun initializeOverlayUI() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        // No65-D1 (THE CRASH): the inflater used to come from the raw
+        // service context, whose theme is the system
+        // Theme.DeviceDefault.Light.DarkActionBar — it cannot resolve the
+        // app's ?attr/colorTertiary, so TextView construction threw
+        // UnsupportedOperationException and onCreate died (6 crashes in
+        // ~21 s, 23:53:19–23:53:40). Inflate with a ContextThemeWrapper
+        // carrying Theme.SplendorAssist instead; the service context
+        // never gets <application android:theme> (Activities only).
+        val themedContext = ContextThemeWrapper(this, com.assistant.overlay.R.style.Theme_SplendorAssist)
+        val inflater = LayoutInflater.from(themedContext)
         overlayView = inflater.inflate(com.assistant.overlay.R.layout.overlay_layout, null)
         txtEngineStatus = overlayView.findViewById(com.assistant.overlay.R.id.overlay_status_text)
 
