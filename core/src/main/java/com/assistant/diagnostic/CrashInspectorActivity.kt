@@ -183,7 +183,15 @@ class CrashInspectorActivity : AppCompatActivity() {
             val truncatedBytes = fileBytes > capBytes
             val capKb = capBytes / 1024
             val totalKb = (fileBytes + 1023L) / 1024L
-            val full = String(bytes, Charsets.UTF_8)
+            // UTF-8 split edge (batch 5): the 256 KB cut can land inside
+            // a multi-byte character, which String(bytes, UTF_8) renders
+            // as U+FFFD replacement chars at the very end. Drop trailing
+            // replacement chars only when truncated — a genuine U+FFFD
+            // mid-file is untouched, and at most the one split character
+            // is lost (cosmetic: the note already says only the first
+            // 256 KB are shown).
+            val raw = String(bytes, Charsets.UTF_8)
+            val full = if (truncatedBytes) raw.trimEnd('\uFFFD') else raw
             val lines = full.lines()
             val maxLines = 2000
             val shown = if (lines.size > maxLines) lines.take(maxLines) else lines

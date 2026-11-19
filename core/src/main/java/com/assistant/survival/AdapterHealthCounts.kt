@@ -18,10 +18,11 @@ package com.assistant.survival
  * Counts never expire on their own: snapshot() reports NO DATA YET before
  * the first update, and STALE once the last update is older than
  * STALE_AFTER_MS (120s, the same bound as the sibling registry, 8 missed
- * 15s watchdog scans). The counts and the ledger are not read atomically,
- * so the dashboard can briefly show a mismatched pair - a combined
- * snapshot API plus a DashboardInjector change would be needed to fix
- * that, and neither is in this round (AHC-D2, open).
+ * 15s watchdog scans). AHC-D2 (batch 5, closed): the counts and the ledger
+ * are now read atomically — both registries share AdapterHealthLock, and
+ * combinedSnapshot() below renders ledger first, then counts, under one
+ * lock with one shared `now`; DashboardInjector calls it instead of the
+ * two separate snapshots.
  */
 object AdapterHealthCounts {
 
@@ -40,12 +41,15 @@ object AdapterHealthCounts {
     @Volatile
     private var updatedAtMs = 0L
 
-    @Synchronized
+    // AHC-D2 (batch 5): synchronizes on the shared AdapterHealthLock,
+    // not on this object — the counts and the ledger must move as one
+    // generation (see combinedSnapshot() below).
     fun update(
         active: Int,
         degraded: Int,
         offline: Int
     ) {
+        synchronized(AdapterHealthLock.lock) {
         // AHC-D5: counts are sizes, never negative. The sole writer
         // (WatchdogAdapterService) only increments from 0, so this cannot
         // trip on the live path - it guards against a future caller
@@ -57,11 +61,27 @@ object AdapterHealthCounts {
         degradedAdapters = degraded
         offlineAdapters = offline
         updatedAtMs = System.currentTimeMillis()
+        }
     }
 
-    @Synchronized
+    // AHC-D2 (batch 5): one atomic read of ledger + counts, ledger first
+    // (the dashboard's existing display order), one shared `now`, one
+    // lock — the pair can never straddle a watchdog scan again.
+    // DashboardInjector calls this instead of the two separate snapshots.
+    fun combinedSnapshot(): String {
+        synchronized(AdapterHealthLock.lock) {
+            val now = System.currentTimeMillis()
+            return AdapterStatusRegistry.renderSnapshot(now) + "\n\n" + renderSnapshot(now)
+        }
+    }
+
     fun snapshot(): String {
-        val now = System.currentTimeMillis()
+        synchronized(AdapterHealthLock.lock) {
+            return renderSnapshot(System.currentTimeMillis())
+        }
+    }
+
+    internal fun renderSnapshot(now: Long): String {
         if (updatedAtMs == 0L)
             return "Counts: NO DATA YET"
 

@@ -15,7 +15,6 @@ import com.assistant.compliance.ComplianceState
 import com.assistant.diagnostic.InAppLiveDisplay
 import com.assistant.diagnostic.RuntimeMetricsRegistry
 import com.assistant.survival.AdapterHealthCounts
-import com.assistant.survival.AdapterStatusRegistry
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executors
 
@@ -60,8 +59,8 @@ object DashboardInjector {
             // fleet lifecycle state (COLD/WARMING/READY/DEGRADED) plus the
             // ignited flag, which is what BoosterIgnition.fleetSnapshot()
             // returns; per-adapter health is already shown by the refresh
-            // runnable below via AdapterStatusRegistry / AdapterHealthCounts
-            // (both fed by the watchdog from the registry), so this
+            // runnable below via AdapterHealthCounts.combinedSnapshot()
+            // (ledger + counts, fed by the watchdog), so this
             // function does not read the registry directly.
             val snapshot = BoosterIgnition.fleetSnapshot()
             val state = snapshot["state"] ?: "COLD"
@@ -169,8 +168,11 @@ object DashboardInjector {
             bgExecutor.execute {
                 val metricsText = buildString {
                     append(RuntimeMetricsRegistry.snapshot()).append("\n\n")
-                    append(AdapterStatusRegistry.snapshot()).append("\n\n")
-                    append(AdapterHealthCounts.snapshot()).append("\n\n")
+                    // AHC-D2 (batch 5): one atomic read of the adapter
+                    // ledger + counts (ledger first, the old display
+                    // order) instead of two separate snapshots that could
+                    // straddle a watchdog scan.
+                    append(AdapterHealthCounts.combinedSnapshot()).append("\n\n")
                     append(SelfAuditRegistry.snapshot()).append("\n\n")
                     // No62-D18 + No62-D8: the overlay's liveness
                     // (OverlaySurvivalRegistry.state(), wired this round
@@ -204,6 +206,15 @@ object DashboardInjector {
                         .append(" skippedUndetected=").append(ballSnap["skippedUndetected"])
                         .append(" lastConfidence=").append(ballSnap["lastConfidence"])
                         .append(" lastUpdatedMs=").append(ballSnap["lastUpdatedMs"]).append("\n")
+                    // GER-D6 (batch 5): the last-accepted-contribution
+                    // map was write-only — its first reader. Compact
+                    // engine:action pairs (52 engines max, one line).
+                    val lastContrib = com.assistant.runtime.GameplayEngineRegistry.lastContributionSnapshot()
+                    append("Last contributions: ").append(if (lastContrib.isEmpty()) "none yet" else lastContrib.entries.sortedBy { it.key }.joinToString(", ") { (name, c) -> "$name:${c.actionClass}" }).append("\n")
+                    // O37-5 (batch 5): the dropped-write counter was
+                    // session-header + logcat only — its first in-app
+                    // reader. Non-zero means log lines were lost.
+                    append("Dropped log writes: ").append(com.assistant.diagnostic.RuntimeLogger.droppedWriteCount()).append("\n")
                 }
                 
                 val statusText = ComplianceState.summary(activity)

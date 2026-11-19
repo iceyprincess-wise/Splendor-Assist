@@ -419,8 +419,18 @@ object FrameAssembler {
         // tactical bound: do not re-tune either number silently.
         val leadMs = ((now - capturedAtNanos).coerceAtLeast(0) / 1e6f + PREDICTION_LEAD_MS).coerceAtMost(100f)
         val width = observedFrame.captureWidth; val height = observedFrame.captureHeight
-        if (predictionLayout != width to height) {
-            predictor.reset(); predictionLayout = width to height
+        // PS-D3 (batch 5): the layout check + predictor reset + layout
+        // assign used to be three unsynchronised steps on shared singleton
+        // state, while overlapping visionScope launches run assemble()
+        // concurrently — one frame could project against a predictor
+        // another frame had just cleared for a new layout (velocity lost
+        // for a frame). All three steps now run under the predictor's own
+        // monitor (project/retain/reset are @Synchronized on it), so the
+        // check-reset-assign is atomic against every project() call.
+        synchronized(predictor) {
+            if (predictionLayout != width to height) {
+                predictor.reset(); predictionLayout = width to height
+            }
         }
         val ball = if (ballSeen) predictor.project(Int.MIN_VALUE, ballX, ballY, capturedAtNanos, leadMs, width, height)
             else com.assistant.runtime.PredictedPoint(ballX, ballY, 0f, 0f)
@@ -480,8 +490,13 @@ object FrameAssembler {
     fun current(): RuntimeFrame? = lastFrame
 
     fun reset() {
-        predictor.reset()
-        predictionLayout = null
+        // PS-D3 (batch 5): same monitor as the layout check in assemble()
+        // — the predictor reset and the layout clear must not interleave
+        // with another frame's check-reset-assign.
+        synchronized(predictor) {
+            predictor.reset()
+            predictionLayout = null
+        }
         frameCounter.set(0L)
         lastFrame = null
     }

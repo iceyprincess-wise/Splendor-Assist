@@ -209,6 +209,35 @@ object RuntimeLogger {
         if (failed > 0) {
             try { android.util.Log.w("RuntimeLogger", "retention sweep: $failed file(s) could not be deleted") } catch (_: Throwable) {}
         }
+        // O37-3 (batch 5): the four live logs were skipped by the age
+        // sweep forever, so they grew without bound. Rotate each one at
+        // startup when it passes the cap (same 8 MB cap and single .old
+        // generation as the field log): the previous session's
+        // death-window record survives one restart in the .old file,
+        // which is when it is investigated, and the live file never
+        // grows past the cap. Runs at initialize(), before the session
+        // appends anything, so no append races the rename.
+        rotateLiveForensicLogs(dir)
+    }
+
+    // O37-3 (batch 5): same cap and single-generation pattern as
+    // rotateFieldLogIfOversize. Best-effort: a failed rotate never loses
+    // a line — the session just keeps appending to the oversize file
+    // until the next startup.
+    private fun rotateLiveForensicLogs(dir: File) {
+        for (name in LIVE_FORENSIC_FILES) {
+            try {
+                val file = File(dir, name)
+                if (!file.exists() || file.length() <= FIELD_LOG_MAX_BYTES) continue
+                val old = File(dir, "$name.old")
+                if (old.exists()) old.delete()
+                if (!file.renameTo(old)) {
+                    try { android.util.Log.w("RuntimeLogger", "live forensic rotation failed for $name") } catch (_: Throwable) {}
+                }
+            } catch (_: Throwable) {
+                try { android.util.Log.w("RuntimeLogger", "live forensic rotation failed for $name") } catch (_: Throwable) {}
+            }
+        }
     }
 
 

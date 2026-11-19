@@ -117,7 +117,10 @@ class PerformanceEngineService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
-        super.onDestroy()
+        // O37-2 (batch 5): cleanup first, the super call last — the
+        // old order called super first, so detach() ran after the service
+        // was already destroyed (WatchdogAdapterService already had the
+        // correct order; this unifies the three).
         healthHandler.removeCallbacksAndMessages(null)
         // No68-E-D30b (O37-1): stop the ledger this service started.
         try { MachineLedger.stopMonitoring() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
@@ -147,5 +150,6 @@ class PerformanceEngineService : Service() {
 
         NodeNotificationHub.detach(this, "performance_engine")
         RuntimeLogger.log("PerformanceEngineService destroyed", "ENGINE")
+        super.onDestroy()
     }
 }

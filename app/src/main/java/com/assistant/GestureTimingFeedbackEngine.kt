@@ -144,15 +144,19 @@ object GestureTimingFeedbackEngine {
         if (submitMs < 0) return
         if (System.currentTimeMillis() - submitMs > TIMEOUT_MS) {
             expiredCount++
+            // publishInput latency abuse (batch 5): the old code passed
+            // expiredCount (a count) as latencyMs. The real latency is
+            // the age of the expired submission at expiry.
+            val lateMs = System.currentTimeMillis() - submitMs
             pendingSubmitMs.set(-1L)
-            
+
             // HARDWORKING ELIMINATOR: Force boost main thread when queue is stale
             try {
                 Process.setThreadPriority(Process.myTid(), Process.THREAD_PRIORITY_URGENT_DISPLAY)
             } catch (_: Throwable) {}
-            
+
             // Signal the CentralExecutionBus to drop stale events
-            AdapterSignalBus.publishInput("BUS_STALE_PURGE", expiredCount)
+            AdapterSignalBus.publishInput("BUS_STALE_PURGE", lateMs)
             
             RuntimeLogger.log(
                 "GestureDispatch EXPIRED after ${TIMEOUT_MS}ms — bus queue pressure " +

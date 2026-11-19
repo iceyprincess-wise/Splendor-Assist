@@ -104,7 +104,10 @@ class AnalyticsTheaterActivity : AppCompatActivity() {
         val now = System.currentTimeMillis()
         return snapshots.sortedBy { it.adapterName }.map { snap ->
             val status = AdapterHealthRegistry.effectiveStatus(snap)
-            val ageSec = if (snap.lastHeartbeat > 0) (now - snap.lastHeartbeat) / 1000 else -1
+            // Future-heartbeat age edge (batch 5): a heartbeat stamped
+            // ahead of the clock (clock jump) used to print a negative
+            // age; clamp at 0 — a future beat is 0s old, never negative.
+            val ageSec = if (snap.lastHeartbeat > 0) ((now - snap.lastHeartbeat) / 1000).coerceAtLeast(0L) else -1
             val age = if (ageSec >= 0) getString(R.string.splendor_analytics_age, ageSec) else getString(R.string.splendor_analytics_age_never)
             getString(R.string.splendor_analytics_row, status, snap.adapterName, age, snap.errorCount)
         }
@@ -113,6 +116,11 @@ class AnalyticsTheaterActivity : AppCompatActivity() {
     // Save writes the currently displayed lines to a new file
     // analytics_snapshot_<millis>.txt under SplendorStorageRoot,
     // the same pattern as CrashInspector.saveLog.
+    // Main-thread is deliberate (batch 5 note): save/delete are
+    // tap-initiated, tiny (one writeText of the displayed lines / one
+    // delete loop over small snapshot files), and the load path is
+    // already off-thread — moving these would add a thread hop to a
+    // user tap for no measurable gain.
     private fun saveSnapshot() {
         if (!SplendorStorageRoot.isReady()) {
             RuntimeLogger.log("AnalyticsTheaterActivity: save dropped, storage not ready", "AnalyticsTheaterActivity")

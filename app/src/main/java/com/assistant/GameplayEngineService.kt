@@ -61,10 +61,14 @@ class GameplayEngineService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
-        super.onDestroy()
+        // O37-2 (batch 5): cleanup first, the super call last — the
+        // old order called super first, so detach()/stopForeground ran
+        // after the service was already destroyed (WatchdogAdapterService
+        // already had the correct order; this unifies the three).
         healthHandler.removeCallbacksAndMessages(null)
         try { AccessibilitySurvivalEngine.getInstance(this).release() } catch (_: Throwable) {}
         NodeNotificationHub.detach(this, "gameplay_engine")
         RuntimeLogger.log("GameplayEngineService destroyed", "ENGINE")
+        super.onDestroy()
     }
 }

@@ -57,6 +57,20 @@ static inline void union_labels(int a, int b) {
     }
 }
 
+/* Return codes (batch 5, Task 5 C-side gap — mirrors the
+ * nativePreprocessFrame table in native_vision_preprocessor.c, No68-H-D59;
+ * previously every failure returned -1, so the Kotlin caller
+ * (VisionPreprocessor.process, which logs blobCount= on failure onset)
+ * could not tell the causes apart):
+ *   >= 0  success: number of blobs written to outputBlobs
+ *   -1  null byteBuffer / outputBlobs
+ *   -2  byteBuffer is not a direct buffer (no address)
+ *   -3  bad geometry (non-positive width/height, pixelStride < 3,
+ *       rowStride < width*pixelStride, width*height > MAX_PIXELS,
+ *       or threshold not in [0, 1])
+ *   -4  direct buffer capacity smaller than the bytes the geometry needs
+ *   -5  bad output array (GetArrayLength/8 <= 0, i.e. no room for a blob)
+ */
 JNIEXPORT jint JNICALL
 Java_com_assistant_NativeBridge_nativeExtractBlobs(
     JNIEnv *env,
@@ -74,24 +88,26 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
 #endif
 
     (void)clazz;
-    
-    // Defensive input validation
-    if (width <= 0 || height <= 0 || pixelStride < 3 || (jlong)rowStride < (jlong)width * pixelStride ||
-        (jlong)width * height > MAX_PIXELS || !isfinite(threshold) || threshold < 0.0f || threshold > 1.0f ||
-        byteBuffer == NULL || outputBlobs == NULL) {
+
+    // Defensive input validation (distinct codes, see the table above).
+    if (byteBuffer == NULL || outputBlobs == NULL) {
         return -1;
     }
-    
+    if (width <= 0 || height <= 0 || pixelStride < 3 || (jlong)rowStride < (jlong)width * pixelStride ||
+        (jlong)width * height > MAX_PIXELS || !isfinite(threshold) || threshold < 0.0f || threshold > 1.0f) {
+        return -3;
+    }
+
     uint8_t* pixels = (uint8_t*) (*env)->GetDirectBufferAddress(env, byteBuffer);
-    if (!pixels) return -1;
+    if (!pixels) return -2;
 
     // FIX 1: Validate direct buffer capacity to prevent SIGSEGV OOB read
     jlong capacity = (*env)->GetDirectBufferCapacity(env, byteBuffer);
     jlong requiredBytes = (jlong)(height - 1) * rowStride + (jlong)(width - 1) * pixelStride + 3;
-    if (capacity >= 0 && capacity < requiredBytes) return -1;
+    if (capacity >= 0 && capacity < requiredBytes) return -4;
 
     int maxBlobs = (*env)->GetArrayLength(env, outputBlobs) / 8;
-    if (maxBlobs <= 0) return -1;
+    if (maxBlobs <= 0) return -5;
     if (maxBlobs > 10000) maxBlobs = 10000;
 
     // FIX 2: Lock mutex and compute OUTSIDE JNI critical section
@@ -99,10 +115,14 @@ Java_com_assistant_NativeBridge_nativeExtractBlobs(
 
     int thresholdInt = (int)(threshold * 255.0f);
     int nextLabel = 1;
-    
+
+    // Belt-and-braces re-check of the geometry validated above (same -3);
+    // unreachable while the first check stands, kept so a future edit to
+    // the first check cannot silently admit an oversize frame past the
+    // mutex into the fixed-size label tables.
     if (width * height > MAX_PIXELS) {
         pthread_mutex_unlock(&g_vision_mutex);
-        return -1;
+        return -3;
     }
 
     // Pass 1: Assign labels (8-connectivity)

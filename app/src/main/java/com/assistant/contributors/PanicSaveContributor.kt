@@ -12,8 +12,11 @@ object PanicSaveContributor : GameplayContributor {
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (frame.confidence < 0.05f) return null
         val possessionWeight = if (!frame.hasBall) 1.0f else 0.2f
-        val trustWeight = if (frame.trusted) 1.0f else 0.7f
-        val fluidMultiplier = possessionWeight * trustWeight
+        // RF-D9 (batch 5): the trustWeight fallback (0.7f on untrusted) was
+        // dead — GameplayEngineRegistry.collect() returns empty before
+        // contributors on an untrusted frame, so frame.trusted is always
+        // true here (same as ShotContributor's No68-F-D14 fix).
+        val fluidMultiplier = possessionWeight
         val decision = ThreatPriorityContributor.decisionOf(frame) ?: return null
 
         val outBuffer = FloatArray(1)

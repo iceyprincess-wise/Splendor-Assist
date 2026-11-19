@@ -853,14 +853,27 @@ object RuntimeSelfHealEngine {
     // ─────────────────────────────────────────────────────────────────────
     private fun checkBattery() {
         try {
-            val level = AdapterSignalBus.batteryLevel
-            val charging = AdapterSignalBus.batteryCharging
+            // Bus snapshot() rewiring (batch 5): one consistent
+            // generation — the old code read batteryLevel and
+            // batteryCharging via separate getters, so a publish between
+            // the two reads could pair a level from one generation with
+            // a charging flag from the next.
+            val snap = AdapterSignalBus.snapshot()
+            val level = snap.batteryLevel
+            val charging = snap.batteryCharging
+            // Battery range mismatch (batch 5): the old text claimed the
+            // 50% gesture reduction for the whole 1..20% band, but
+            // SpeedCompensationContributor only reduces at batteryCritical
+            // (0..14% and not charging) — at 15..20% gestures run at full
+            // duration. The claim now appears only when it is true.
+            val critical = level in 0..14 && !charging
             if (level in 1..20 && !charging && shouldLog("BATTERY_LOW", "level=$level")) {
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
                     category = "BATTERY_LOW",
                     detected = "Battery at ${level}% and not charging. " +
-                        "SpeedCompensationContributor reduces gesture duration to 50% of normal. " +
+                        (if (critical) "SpeedCompensationContributor reduces gesture duration to 50% of normal. "
+                        else "No gesture reduction yet — SpeedCompensationContributor only reduces at 14% or below. ") +
                         "Charging=false means CPU governor may throttle A75 cores.",
                     fix = "OPERATIONAL — reduced gestures is intentional at low battery. " +
                         "Plug in charger for full engine performance.",

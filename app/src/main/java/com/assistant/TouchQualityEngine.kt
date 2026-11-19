@@ -117,7 +117,13 @@ object TouchQualityEngine {
                                         irqDropDetected = true
 
                                         // Signal Queen Bee (SmartAssist) to drop non-essential UI work
-                                        AdapterSignalBus.publishInput("TOUCH_IRQ_STALL", emptyIrqCycles.toLong())
+                                        // publishInput latency abuse (batch 5):
+                                        // the old code passed emptyIrqCycles
+                                        // (a count) as latencyMs. The real
+                                        // latency is the stall duration the
+                                        // log line below already prints:
+                                        // cycles x poll interval in ms.
+                                        AdapterSignalBus.publishInput("TOUCH_IRQ_STALL", emptyIrqCycles * POLL_MS)
 
                                         // Force boost priority to fight HyperOS cgroup throttling
                                         try {

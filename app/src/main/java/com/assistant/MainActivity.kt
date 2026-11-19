@@ -314,33 +314,38 @@ class MainActivity : AppCompatActivity() {
     private fun refreshRoomBulbs() {
         // Project live runtime state into the registry before reading it,
         // so these bulbs reflect reality instead of the bootstrap snapshot.
-        com.assistant.controlroom.AdapterControlRoomSync.snapshot()
-
-        val smartReady = SmartAssistRepository.enabled()
+        // D-R5 (batch 5): the old code discarded snapshot()'s return and
+        // re-read the registry (and SmartAssistRepository) directly. The
+        // bulbs now drive from the returned list — same values, one read.
+        val rooms = com.assistant.controlroom.AdapterControlRoomSync.snapshot()
+        val smart = rooms.find { it.adapterId == "smart_assist" }
+        val smartReady = smart?.enabled ?: SmartAssistRepository.enabled()
         setBulb(
             com.assistant.overlay.R.id.tvSmartAssistBulb,
             com.assistant.overlay.R.id.tvSmartAssistState,
             smartReady,
-            if (smartReady) "READY" else "LOCKED"
+            if (smartReady) "READY ${smart?.intensity ?: 50}%" else "LOCKED"
         )
 
-        val goalkeeperReady = AdapterControlRoomRegistry.get("goalkeeper")?.enabled == true
+        val goalkeeper = rooms.find { it.adapterId == "goalkeeper" }
+        val goalkeeperReady = goalkeeper?.enabled ?: (AdapterControlRoomRegistry.get("goalkeeper")?.enabled == true)
         setBulb(
             com.assistant.overlay.R.id.tvGoalkeeperBulb,
             com.assistant.overlay.R.id.tvGoalkeeperState,
             goalkeeperReady,
-            if (goalkeeperReady) "ACTIVE" else "OFF"
+            if (goalkeeperReady) "ACTIVE ${goalkeeper?.intensity ?: 50}%" else "OFF"
         )
 
-        val interceptionReady = AdapterControlRoomRegistry.get("interception")?.enabled == true
+        val interception = rooms.find { it.adapterId == "interception" }
+        val interceptionReady = interception?.enabled ?: (AdapterControlRoomRegistry.get("interception")?.enabled == true)
         setBulb(
             com.assistant.overlay.R.id.tvInterceptionBulb,
             com.assistant.overlay.R.id.tvInterceptionState,
             interceptionReady,
-            if (interceptionReady) "ACTIVE" else "OFF"
+            if (interceptionReady) "ACTIVE ${interception?.intensity ?: 50}%" else "OFF"
         )
 
-        val roomCount = AdapterControlRoomRegistry.getAll().size
+        val roomCount = rooms.size
         setBulb(
             com.assistant.overlay.R.id.tvFutureBulb,
             com.assistant.overlay.R.id.tvFutureState,
@@ -488,6 +493,21 @@ class MainActivity : AppCompatActivity() {
             }
             return
         }
+
+        // S17-D3 (batch 5): DeathWatch.install() is guarded — it returns
+        // early when storage is not ready, and App.onCreate only calls it
+        // once, so a phone that boots before all-files access is granted
+        // never arms the death watcher. All-files access is confirmed on
+        // this path (the missing-permission branch returned above), so
+        // retry the install here: initialize() re-checks the permission
+        // and install() is idempotent (returns at once if already armed).
+        // Guarded so a storage failure can never break the permission
+        // flow. Note: the :survival process has no activity to retry
+        // from — its install attempt stays one-shot (App.kt:179).
+        try {
+            com.assistant.storage.SplendorStorageRoot.initialize()
+            DeathWatch.install(this)
+        } catch (_: Throwable) {}
 
         checkNotificationAndProceed()
     }

@@ -30,11 +30,14 @@ object AdapterStatusRegistry {
     @Volatile
     private var lastUpdateMs = 0L
 
-    @Synchronized
+    // AHC-D2 (batch 5): synchronizes on the shared AdapterHealthLock,
+    // not on this object — the ledger and the counts must move as one
+    // generation (see combinedSnapshot() in AdapterHealthCounts).
     fun update(
         adapter: String,
         state: String
     ) {
+        synchronized(AdapterHealthLock.lock) {
         // B15-D5: keep the "name : state" snapshot format uncorruptible -
         // ':' and newlines in a name or state would break the " : "
         // separator and the one-line-per-adapter shape. Live inputs
@@ -45,11 +48,18 @@ object AdapterStatusRegistry {
         val now = System.currentTimeMillis()
         adapters[name] = Entry(cleanState, now)
         lastUpdateMs = now
+        }
     }
 
-    @Synchronized
+    // AHC-D2 (batch 5): same shared lock. The render takes the shared
+    // `now` so a combined read stamps ledger and counts identically.
     fun snapshot(): String {
-        val now = System.currentTimeMillis()
+        synchronized(AdapterHealthLock.lock) {
+            return renderSnapshot(System.currentTimeMillis())
+        }
+    }
+
+    internal fun renderSnapshot(now: Long): String {
         adapters.entries.removeIf { now - it.value.updatedAtMs > STALE_AFTER_MS }
 
         if (adapters.isEmpty()) {

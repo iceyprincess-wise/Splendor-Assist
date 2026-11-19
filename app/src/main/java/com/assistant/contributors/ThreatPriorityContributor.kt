@@ -93,8 +93,11 @@ object ThreatPriorityContributor : GameplayContributor {
         if (!InterceptionRuntimeRegistry.enabled) return null
         if (frame.confidence < 0.05f) return null
         val possessionWeight = if (!frame.hasBall) 1.0f else 0.3f // Defensive focus when opponent has ball
-        val trustWeight = if (frame.trusted) 1.0f else 0.6f
-        val fluidMultiplier = possessionWeight * trustWeight
+        // RF-D9 (batch 5): the trustWeight fallback (0.6f on untrusted) was
+        // dead — GameplayEngineRegistry.collect() returns empty before
+        // contributors on an untrusted frame, so frame.trusted is always
+        // true here (same as ShotContributor's No68-F-D14 fix).
+        val fluidMultiplier = possessionWeight
         val decision = decisionOf(frame) ?: return null
 
         // GATE 1: collision risk may veto a rush.

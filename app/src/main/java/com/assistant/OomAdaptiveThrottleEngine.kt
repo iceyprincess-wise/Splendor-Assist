@@ -120,7 +120,11 @@ object OomAdaptiveThrottleEngine {
 
         if (hostile) {
             // Publish hostile signal so Queen Bee (SmartAssist) can drop non-essential UI work
-            AdapterSignalBus.publishInput("OOM_HOSTILE", adj.toLong())
+            // publishInput latency abuse (batch 5): the old code passed adj
+            // (oom_score_adj, -1000..1000) as latencyMs. No latency is
+            // measured here — the signal carries the adj value in the log
+            // line below, not in the latency field — so 0L.
+            AdapterSignalBus.publishInput("OOM_HOSTILE", 0L)
 
             val now = System.currentTimeMillis()
             if (!wasHostile || now - lastHostileLogMs > LOG_COOLDOWN_MS) {
@@ -135,7 +139,8 @@ object OomAdaptiveThrottleEngine {
             if (wasHostile) {
                 RuntimeLogger.log("OOM_CLEAR: adj=$adj — throttle released", "INPUT")
                 // Publish clear signal to restore full performance
-                AdapterSignalBus.publishInput("OOM_CLEAR", adj.toLong())
+                // (batch 5: 0L — see OOM_HOSTILE above; adj is not ms).
+                AdapterSignalBus.publishInput("OOM_CLEAR", 0L)
             }
         }
     }

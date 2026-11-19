@@ -290,5 +290,9 @@ interface GameplayContributor {
     fun update(frame: RuntimeFrame) {}
     fun contribute(frame: RuntimeFrame): EngineContribution?
     fun reset() {}
-    fun shutdown() {}
+    // RF-D7 (batch 5): the shutdown() hook is removed — it had no caller
+    // and no override in any of the 52 contributors. Teardown is reset()
+    // via GameplayEngineRegistry.resetAll(), wired through
+    // RuntimeCoordinator.shutdown() (MainActivity Stop tap and
+    // OverlayService.onDestroy).
 }

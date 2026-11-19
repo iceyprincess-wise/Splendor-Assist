@@ -25,6 +25,12 @@ object GameplayEngineRegistry {
 
     fun getRegisteredNames(): Set<String> = registeredNames.keys.toSet()
 
+    // GER-D6 (batch 5): lastContribution was write-only — collect() stored
+    // the latest accepted contribution per engine and nothing ever read it.
+    // Read-only snapshot for the dashboard (DashboardInjector renders it);
+    // a copy, so callers can never mutate the registry's live map.
+    fun lastContributionSnapshot(): Map<String, EngineContribution> = lastContribution.toMap()
+
     fun register(contributor: GameplayContributor): Boolean {
         synchronized(registrationLock) {
             if (registeredNames.putIfAbsent(contributor.engineName, true) != null) {

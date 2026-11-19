@@ -192,7 +192,10 @@ object DeathWatch {
         val threshMb  = at(7)
 
         val lived = if (began > 0 && lastBeat > began) (lastBeat - began) / 1000L else -1L
-        val gap   = if (lastBeat > 0) (System.currentTimeMillis() - lastBeat) / 1000L else -1L
+        // Future-heartbeat age edge (batch 5): a heartbeat stamped ahead
+        // of the clock (clock jump) used to print a negative gap; clamp
+        // at 0 — a future beat is 0s old, never negative.
+        val gap   = if (lastBeat > 0) ((System.currentTimeMillis() - lastBeat) / 1000L).coerceAtLeast(0L) else -1L
 
         val javaCrash = javaCrashMarkerPresent(began)
         val avail = availMb.toIntOrNull() ?: -1

@@ -137,19 +137,35 @@ object SpeedCompensationContributor : GameplayContributor {
                 // channel every other aggression consumer uses.
                 val aggro = com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentFilterAggression()
                 // SPLENDOR_P7_AGGRO_READ_SPEED_END
+                // Bus snapshot() rewiring (batch 5): one snapshot, derived
+                // once — the old code read nine separate bus getters, so
+                // the `when` branches could mix generations (e.g. a
+                // thermal value from before a publish with a battery value
+                // from after it). Formulas are the getters' own
+                // (AdapterSignalBus), evaluated on this one generation.
+                val snap = AdapterSignalBus.snapshot()
+                val thermalIsSevere = snap.thermalStatus >= 3
+                val batteryCritical = snap.batteryLevel in 0..14 && !snap.batteryCharging
+                val lagIsChoking = snap.lagVerdict == "CHOKING"
+                val memoryIsCritical = snap.memoryTier == "CRITICAL"
+                val inputIsLagging = snap.inputClassification == "LAGGING" || snap.inputClassification == "TOUCH_IRQ_STALL"
+                val stutterIsSevere = snap.stutterState == "SEIZURE"
+                val memoryIsUnderPressure = snap.memoryTier == "CRITICAL" || snap.memoryTier == "PRESSURE"
+                val executionIsFullyBraked = snap.executionBrake >= 2
+                val executionIsBraked = snap.executionBrake > 0
                 val p = when {
-                    AdapterSignalBus.thermalIsSevere -> 0.4f          // severe heat: very short gestures
-                    AdapterSignalBus.batteryCritical -> 0.5f          // critical battery: reduce load
-                    AdapterSignalBus.lagIsChoking || AdapterSignalBus.memoryIsCritical -> 0.5f
-                    AdapterSignalBus.inputIsLagging -> 0.7f
-                    AdapterSignalBus.stutterIsSevere -> 0.65f         // now actually works (bus was never published before)
-                    AdapterSignalBus.lagVerdict == "JITTERY" || AdapterSignalBus.memoryIsUnderPressure -> 0.8f
+                    thermalIsSevere -> 0.4f          // severe heat: very short gestures
+                    batteryCritical -> 0.5f          // critical battery: reduce load
+                    lagIsChoking || memoryIsCritical -> 0.5f
+                    inputIsLagging -> 0.7f
+                    stutterIsSevere -> 0.65f         // now actually works (bus was never published before)
+                    snap.lagVerdict == "JITTERY" || memoryIsUnderPressure -> 0.8f
                     // Live adaptive brake: PerformanceEngineService publishes
                     // executionBrake from measured load shedding, but nothing on
                     // the execution path read it, so the brake was a decorative
                     // flag. Honour it here by shortening the gesture window.
-                    AdapterSignalBus.executionIsFullyBraked -> 0.55f
-                    AdapterSignalBus.executionIsBraked -> 0.8f
+                    executionIsFullyBraked -> 0.55f
+                    executionIsBraked -> 0.8f
                     aggro > 1.5f -> 1.2f // EXTREMIST OVERRIDE: Force longer holds for guaranteed execution
                     else -> 1.0f
                 }

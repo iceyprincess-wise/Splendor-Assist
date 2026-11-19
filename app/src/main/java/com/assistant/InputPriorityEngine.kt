@@ -89,7 +89,11 @@ object InputPriorityEngine {
                     if (cur > Process.THREAD_PRIORITY_URGENT_DISPLAY) {
                         reapplyCount++
                         applyPriority()
-                        AdapterSignalBus.publishInput("OS_THROTTLE_BLOCKED", reapplyCount.toLong())
+                        // publishInput latency abuse (batch 5): the old
+                        // code passed reapplyCount (a count) as latencyMs.
+                        // No latency is measured here — a priority reapply
+                        // is a state change, not a timed dispatch — so 0L.
+                        AdapterSignalBus.publishInput("OS_THROTTLE_BLOCKED", 0L)
                         RuntimeLogger.log("InputPriority: reset to $cur by OS, reapplying (#$reapplyCount)", "INPUT")
                     } else {
                         // Conditionlessly reapply anyway to fight silent HyperOS battery saver throttling
