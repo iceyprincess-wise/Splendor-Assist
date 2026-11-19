@@ -101,6 +101,9 @@ object VisionOverlayRegistry {
     fun current(): VisionOverlayRegistryState = state
 
     fun refresh() {
+        // P8: deduped within one coordinator refresh cycle (see
+        // RefreshCycle); standalone calls always run fully.
+        if (!RefreshCycle.tryClaim("VisionOverlayRegistry")) return
         state = VisionOverlayRegistryState()
     }
 

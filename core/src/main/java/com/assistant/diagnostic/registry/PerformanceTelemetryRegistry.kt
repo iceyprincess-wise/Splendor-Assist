@@ -150,6 +150,10 @@ object PerformanceTelemetryRegistry {
     @Volatile private var dVerdict = "UNKNOWN"
     @Volatile private var dMs = 0L
     @Volatile private var dfile: File? = null
+    // P5: throttles ONLY the display-history file append (see
+    // DisplayHistoryThrottle). The current value, in-memory fields,
+    // and cross-process snapshot below stay at full rate.
+    private val displayHistoryThrottle = DisplayHistoryThrottle()
 
     @JvmStatic
     fun publishDisplay(frameGapMs: Float, jankPerMin: Float, stallMs: Float, verdict: String) {
@@ -165,7 +169,12 @@ object PerformanceTelemetryRegistry {
         // same sample to the bounded history file (trend analysis). This
         // also gives perf_display.txt its first registry reader (via the
         // history reader below); previously no reader existed at all.
-        appendHistory("perf_display_history.txt", frameGapMs.toString() + "|" + jankPerMin + "|" + stallMs + "|" + verdict + "|" + dMs)
+        // P5: the history append is throttled (verdict change, or at most
+        // one per 5 s) — the only reader is FilterEngine's last-10 trend,
+        // which needs verdicts, not every 500 ms sample.
+        if (displayHistoryThrottle.shouldAppend(verdict, System.currentTimeMillis())) {
+            appendHistory("perf_display_history.txt", frameGapMs.toString() + "|" + jankPerMin + "|" + stallMs + "|" + verdict + "|" + dMs)
+        }
         // SPLENDOR_P7_DEVICE_LAG_BEGIN
         // LagVerdictEngine already reports this verdict to the registry
         // (publishDisplay, every 500ms); mirror it into the merged

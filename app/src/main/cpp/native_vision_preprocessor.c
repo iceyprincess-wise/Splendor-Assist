@@ -87,6 +87,32 @@ Java_com_assistant_NativeBridge_nativePreprocessFrame(
     const int maxSy = height - 1;
     const int maxSx = width - 1;
 
+    /* P6 (batch 3) — hoist the per-pixel source-coordinate divisions.
+     * sx depends only on x, not on y, so the loop below used to recompute
+     * (x * width) / inputSize once per (x, y) pair — inputSize^2 integer
+     * divisions per frame (102,400 at INPUT_SIZE 320). The table holds
+     * exactly the values the old formula computes, so the sampled pixels,
+     * the float math, the write order, and the outputs are bit-identical;
+     * only redundant divisions are removed (2*inputSize divisions per
+     * frame now: one table fill + one per row for sy). The NEON/SIMD
+     * vectorisation the report sketches is NOT done here: the gather
+     * pattern cannot be vectorised without changing the sampling, and
+     * bit-identity could not be verified in the sandbox without ARM
+     * execution — the division hoist is the dominant, provably-identical
+     * win, verified by an x86 old-vs-new diff over randomized geometries
+     * (see the batch-3 handoff). When inputSize exceeds the stack table
+     * the original per-pixel formula runs instead (same outputs).
+     */
+    int sxTab[1024];
+    const int *sxPtr = NULL;
+    if (inputSize <= 1024) {
+        for (int x = 0; x < inputSize; ++x) {
+            int sx = (int)(((long)x * (long)width) / (long)inputSize);
+            sxTab[x] = splendor_clamp_max_int(sx, maxSx);
+        }
+        sxPtr = sxTab;
+    }
+
     for (int y = 0; y < inputSize; ++y) {
         int sy = (int)(((long)y * (long)height) / (long)inputSize);
         sy = splendor_clamp_max_int(sy, maxSy);
@@ -94,8 +120,13 @@ Java_com_assistant_NativeBridge_nativePreprocessFrame(
         const uint8_t *row = src + (size_t)sy * (size_t)rowStride;
 
         for (int x = 0; x < inputSize; ++x) {
-            int sx = (int)(((long)x * (long)width) / (long)inputSize);
-            sx = splendor_clamp_max_int(sx, maxSx);
+            int sx;
+            if (sxPtr != NULL) {
+                sx = sxPtr[x];
+            } else {
+                sx = (int)(((long)x * (long)width) / (long)inputSize);
+                sx = splendor_clamp_max_int(sx, maxSx);
+            }
 
             const uint8_t *p = row + (size_t)sx * 4u;
 

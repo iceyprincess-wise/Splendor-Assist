@@ -101,6 +101,9 @@ object RuntimeTuningPanel {
     fun current(): RuntimeTuningState = state
 
     fun reload() {
+        // P8: deduped within one coordinator refresh cycle (see
+        // RefreshCycle); standalone calls always run fully.
+        if (!RefreshCycle.tryClaim("RuntimeTuningPanel")) return
         state = RuntimeTuningState(
             visionConfiguration = VisionConfigurationEngine.current(),
             trackingConfiguration = TrackingConfigurationEngine.current()

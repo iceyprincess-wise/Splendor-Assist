@@ -313,7 +313,8 @@ object RuntimeLogger {
         // line per entry, header included when present).
         val logEntry = mainGrouper.format(timestamp, callerLocation(), "[$tag] $message\n")
 
-        writeToAll(logEntry)
+        // P2: urgent lines flush to disk immediately, never batched.
+        writeToAll(logEntry, isUrgentLog(tag, message))
         LogMirror.mirror(tag, android.util.Log.INFO, logEntry)
 
         if (FIELD_TEST_MODE) {
@@ -407,9 +408,20 @@ object RuntimeLogger {
         }
     )
 
+    /**
+     * P2: lines that must reach disk immediately, never batched — the
+     * heal-agent lines, and any line naming a CRITICAL/FATAL condition
+     * (TruthLogcatEngine tails the field log for exactly those lines, so
+     * a batched CRITICAL line would arrive up to 1 s late). Everything
+     * else batches under LogBatcher.
+     */
+    internal fun isUrgentLog(tag: String, message: String): Boolean =
+        tag == "AGENT" || tag == "HEAL" || message.contains("CRITICAL") || message.contains("FATAL")
+
     private fun append(
         file:File?,
-        text:String
+        text:String,
+        urgent:Boolean = false
     ){
         if (file == null) return
         logIoExecutor.execute {
@@ -419,12 +431,13 @@ object RuntimeLogger {
                 // without bound. Forensic/telemetry/heartbeat files never
                 // reach here as the field log (identity check), and the
                 // retention sweep owns their lifecycle instead.
+                // P2: push any batched bytes to the old file before a
+                // rotation renames it, then batch this line.
                 if (file === externalLogFile || file === internalLogFile) {
+                    try { LogBatcher.flush(file) } catch (_: Throwable) {}
                     rotateFieldLogIfOversize(file)
                 }
-                java.io.FileOutputStream(file, true).use { fos ->
-                    fos.write(text.toByteArray(Charsets.UTF_8))
-                }
+                LogBatcher.append(file, text, urgent)
             } catch (e: Exception) {
                 droppedWrites.incrementAndGet()
                 android.util.Log.e("RuntimeLogger", "Log append failed", e)
@@ -468,12 +481,13 @@ object RuntimeLogger {
     }
 
     private fun writeToAll(
-        text: String
+        text: String,
+        urgent: Boolean = false
     ) {
         // F40-D1: fall back to the process-private internal file when the
         // external file is unavailable (background process, or external
         // storage not ready). Previously this was append(externalLogFile)
         // only, i.e. a silent no-op in exactly those cases.
-        append(externalLogFile ?: internalLogFile, text)
+        append(externalLogFile ?: internalLogFile, text, urgent)
     }
 }

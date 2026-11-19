@@ -256,8 +256,30 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     }
                 }
             }
+            // P3: off-match rate adapter — lowers the processed-frame
+            // interval to 200 ms while no match is live (game not
+            // foreground, or ball absent past the dwell) and restores
+            // the full in-game interval the moment the ball is seen
+            // again. The in-game full-rate path below is unchanged
+            // (combined, capped at 33 ms); D1 holds — memory still
+            // cannot slow in-game capture, the adapter only sheds
+            // off-match work. Transitions are logged (rare by
+            // construction: re-lowering needs another 3 s ball loss).
             return try {
-                if (com.assistant.VisionTrust.isGameForeground()) combined.coerceAtMost(33L) else combined
+                val wasLowered = com.assistant.OffMatchRateAdapter.isLowered()
+                val interval = com.assistant.OffMatchRateAdapter.intervalMs(
+                    com.assistant.VisionTrust.isGameForeground(),
+                    com.assistant.VisionTrust.ballTrust(),
+                    android.os.SystemClock.elapsedRealtime(),
+                    combined
+                )
+                if (com.assistant.OffMatchRateAdapter.isLowered() != wasLowered) {
+                    try { com.assistant.diagnostic.RuntimeLogger.log(
+                        "OFFMATCH_RATE lowered=${com.assistant.OffMatchRateAdapter.isLowered()} intervalMs=$interval (gameForeground=${com.assistant.VisionTrust.isGameForeground()} ballTrust=${com.assistant.VisionTrust.ballTrust()})",
+                        "OVERLAY"
+                    ) } catch (_: Throwable) {}
+                }
+                interval
             } catch (_: Throwable) { combined }
         }
 
@@ -421,7 +443,48 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 }
             }
 
-        val visionBuffer: java.nio.ByteBuffer = if (startVision) {
+        // P7: dedup BEFORE the buffer copy (it used to run inside the
+        // vision coroutine, after the copy — every duplicate frame paid
+        // a direct-buffer copy plus a coroutine launch before being
+        // dropped). The compare runs here, on the listener thread,
+        // against the Image plane buffer itself, which is byte-identical
+        // to the copy the coroutine used to compare (the copy is a
+        // put() of this buffer). This is safe only because startVision
+        // proves no coroutine is in flight, so previousVisionBuffer is
+        // stable. On a duplicate the OCR bitmap copy below still runs
+        // exactly as before (OCR reads reusableBitmap, not the vision
+        // buffer) and the coroutine is never launched — so
+        // visionInFlight is released here. The in-coroutine dedup block
+        // is removed with this change: keeping it would pay the
+        // full-frame compare twice per non-duplicate frame.
+        var dedupEarlyExit = false
+        var dedupMs = 0L
+        if (startVision) {
+            val dedupStartNanos = System.nanoTime()
+            val isDuplicate = previousVisionLayout == Triple(width, height, rowStride) && previousVisionBuffer?.let { prior ->
+                com.assistant.runtime.CaptureContent.same(originalBuffer, prior, width, height, rowStride, pixelStride) { x, y ->
+                    com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(x, y)
+                }
+            } == true
+            dedupMs = (System.nanoTime() - dedupStartNanos) / 1_000_000L
+            if (isDuplicate) {
+                // SPLENDOR_P6_DEDUP_DIAG_BEGIN (moved here from the
+                // coroutine by P7 — same counter, same throttled log,
+                // same outcome-verifier call, same return path).
+                duplicateFrameCount++
+                val dupNow = System.currentTimeMillis()
+                if (duplicateFrameCount == 1L || duplicateFrameCount % 300L == 0L || dupNow - lastDuplicateLogMs > 300_000L) {
+                    lastDuplicateLogMs = dupNow
+                    RuntimeLogger.log("DEDUP_SKIP count=$duplicateFrameCount layout=" + width + "x" + height + " stride=$rowStride (identical frame: onFrame skipped, decision counter not advanced)", "OVERLAY")
+                }
+                // SPLENDOR_P6_DEDUP_DIAG_END
+                com.assistant.FrameAssembler.current()?.let { com.assistant.ActionOutcomeVerifier.verify(it) }
+                visionInFlight.set(false)
+                dedupEarlyExit = true
+            }
+        }
+
+        val visionBuffer: java.nio.ByteBuffer = if (startVision && !dedupEarlyExit) {
             val required = originalBuffer.remaining()
             val existing = reusableVisionBuffer
             // N4: allocate a FRESH buffer when the generation has advanced
@@ -462,7 +525,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         image.close()
 
         // Launch Vision Coroutine with SAFE copied buffer
-        if (startVision) visionScope.launch {
+        if (startVision && !dedupEarlyExit) visionScope.launch {
             val visionStartedNanos = System.nanoTime()
             // N4: the generation this coroutine belongs to. Abandoning a
             // wedged coroutine bumps visionGeneration; this coroutine must
@@ -490,28 +553,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
             try {
                 com.assistant.CrashForensics.mark(3, 2, captureFrameCount)
-                // Exact byte comparison: repeated capture content must not trigger another action.
-                if (previousVisionLayout == Triple(width, height, rowStride) && previousVisionBuffer?.let { prior ->
-                    com.assistant.runtime.CaptureContent.same(visionBuffer, prior, width, height, rowStride, pixelStride) { x, y ->
-                        com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(x, y)
-                    }
-                } == true) {
-                    // SPLENDOR_P6_DEDUP_DIAG_BEGIN
-                    // A duplicate frame skips VisionCore/FrameAssembler/onFrame,
-                    // so the decision counter does not advance even though
-                    // capture is alive: prime suspect for LOOP_FROZEN. Log
-                    // throttled (first + every 300th + at most every 5 min).
-                    duplicateFrameCount++
-                    val dupNow = System.currentTimeMillis()
-                    if (duplicateFrameCount == 1L || duplicateFrameCount % 300L == 0L || dupNow - lastDuplicateLogMs > 300_000L) {
-                        lastDuplicateLogMs = dupNow
-                        RuntimeLogger.log("DEDUP_SKIP count=$duplicateFrameCount layout=" + width + "x" + height + " stride=$rowStride (identical frame: onFrame skipped, decision counter not advanced)", "OVERLAY")
-                    }
-                    // SPLENDOR_P6_DEDUP_DIAG_END
-                    com.assistant.FrameAssembler.current()?.let { com.assistant.ActionOutcomeVerifier.verify(it) }
-                    return@launch
-                }
-                stage("dedup", t0); t0 = System.nanoTime()
+                // P7: the duplicate check now runs in the listener,
+                // before the buffer copy — a duplicate never reaches
+                // this coroutine. The listener-measured dedup duration
+                // is recorded here so the B1 stage profile keeps the
+                // "dedup" stage (same stage() call, same slow-log).
+                stage("dedup", System.nanoTime() - dedupMs * 1_000_000L); t0 = System.nanoTime()
                 // N4: late return from dedup after an abandon — do not
                 // write shared state or dispatch on a stale frame.
                 if (frameGeneration != visionGeneration.get()) return@launch
@@ -1284,12 +1331,33 @@ class OverlayService : Service(), ComponentCallbacks2 {
         if (reusableBitmap == null || reusableBitmap!!.isRecycled) return
         if (taskExecutionLock.tryLock()) {
             try {
-                val snapshot = reusableBitmap!!.copy(reusableBitmap!!.config, false)
+                // P1: reuse a pooled snapshot bitmap instead of
+                // allocating + recycling one per 1.5 s tick. The pool
+                // fill is an exact byte copy (same pixels the fresh
+                // copy held); on any pool failure fall back to the
+                // legacy copy + recycle so OCR never loses a tick.
+                val source = reusableBitmap!!
+                var pooledSnapshot: Bitmap? = null
+                var pooled = false
+                try {
+                    val acquired = com.assistant.SnapshotBufferPool.acquire(source.width, source.height, source.config)
+                    if (com.assistant.SnapshotBufferPool.fill(acquired, source)) {
+                        pooledSnapshot = acquired
+                        pooled = true
+                    } else {
+                        try { acquired.recycle() } catch (_: Throwable) {}
+                    }
+                } catch (_: Throwable) {}
+                val snapshot = pooledSnapshot ?: source.copy(source.config, false)
                 val snapshotForClosure = snapshot
+                val pooledForClosure = pooled
                 
                 recognizer.process(InputImage.fromBitmap(snapshot, 0))
                     .addOnCompleteListener { task ->
-                        try { snapshotForClosure.recycle() } catch (_: Throwable) {}
+                        try {
+                            if (pooledForClosure) com.assistant.SnapshotBufferPool.release(snapshotForClosure)
+                            else snapshotForClosure.recycle()
+                        } catch (_: Throwable) {}
                         
                         if (task.isSuccessful) {
                             val visionText = task.result

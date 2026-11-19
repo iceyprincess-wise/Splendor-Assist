@@ -42,7 +42,10 @@ object LogMirror {
     // captures every tag, not only a registry - there is no pinned tag
     // list, and none is needed. (The oddly indented LogRecord line below
     // it is also fixed.)
-    private data class LogRecord(val line: String, val completion: java.util.concurrent.CountDownLatch? = null)
+    // P2: the record keeps its priority — the writer flushes immediately
+    // for ERROR+ (crash lines), and batches routine lines instead of
+    // flushing after every record.
+    private data class LogRecord(val line: String, val priority: Int = android.util.Log.INFO, val completion: java.util.concurrent.CountDownLatch? = null)
     private val queue = LinkedBlockingQueue<LogRecord>(QUEUE_CAPACITY)
     // F42-D4: enqueue used to drop records silently (full queue, or a call
     // before init) with no count anywhere. Every lost record is counted.
@@ -107,7 +110,7 @@ object LogMirror {
                 else -> "?"
             }
             val safeMessage = msg.replace("\r", "\\r").replace("\n", "\\n")
-            val record = LogRecord("$now $level/$tag: $safeMessage\n", completion)
+            val record = LogRecord("$now $level/$tag: $safeMessage\n", priority, completion)
             if (!queue.offer(record)) {
                 if (completion != null) {
                     // F42-D5: the old code polled one record, counted its
@@ -140,10 +143,48 @@ object LogMirror {
         }
     }
 
+    /**
+     * P4: drops queued ROUTINE log records (no crash waiter attached),
+     * keeping every crash-waiter record, and returns the count + bytes
+     * dropped. Dropped records are counted in droppedRecords, exactly
+     * like any other lost record. Called only by
+     * NonEssentialCacheEvictor under CRITICAL memory.
+     */
+    data class DroppedRoutine(val count: Long, val bytes: Long)
+
+    fun dropQueuedRoutine(): DroppedRoutine {
+        var count = 0L
+        var bytes = 0L
+        val keep = ArrayList<LogRecord>()
+        while (true) {
+            val record = queue.poll() ?: break
+            if (record.completion != null) {
+                keep.add(record)
+            } else {
+                count++
+                bytes += record.line.toByteArray(Charsets.UTF_8).size
+                droppedRecords++
+            }
+        }
+        for (record in keep) {
+            if (!queue.offer(record)) {
+                // The queue refilled while draining; release the waiter
+                // rather than losing the crash line silently.
+                droppedRecords++
+                record.completion?.countDown()
+            }
+        }
+        return DroppedRoutine(count, bytes)
+    }
+
     private fun writerLoop() {
         var output: OutputStream? = null
         var sinkFile: File? = null
         var byteCount = 0L
+        // P2: bytes written since the last flush. Routine lines batch
+        // (flush at 8 KB or after 1 s idle); ERROR+ / crash-waiter
+        // lines flush immediately, exactly as before.
+        var unflushedBytes = 0L
         while (!Thread.currentThread().isInterrupted) {
             // F42-D3: the interrupt catch below used to `return`, skipping
             // the output.close() after the loop and leaking the open sink.
@@ -155,7 +196,14 @@ object LogMirror {
                 Thread.currentThread().interrupt()
                 break
             }
-            if (record == null) continue
+            if (record == null) {
+                // P2: idle flush — a routine line waits at most ~1 s for disk.
+                if (unflushedBytes > 0L) {
+                    try { output?.flush() } catch (_: Throwable) {}
+                    unflushedBytes = 0L
+                }
+                continue
+            }
             try {
                 val line = record.line
                 if (output == null) {
@@ -173,9 +221,16 @@ object LogMirror {
                     output = replacement.first
                     sinkFile = replacement.second
                     byteCount = replacement.third
+                    unflushedBytes = 0L
                 }
                 output.write(bytes)
-                output.flush()
+                unflushedBytes += bytes.size
+                // P2: flush immediately for ERROR+ / crash-waiter lines;
+                // batch routine lines (8 KB threshold, 1 s idle flush).
+                if (record.priority >= android.util.Log.ERROR || record.completion != null || unflushedBytes >= 8192L) {
+                    output.flush()
+                    unflushedBytes = 0L
+                }
                 byteCount += bytes.size
                 record.completion?.countDown()
             } catch (_: Throwable) {
@@ -183,6 +238,7 @@ object LogMirror {
                 output = null
                 sinkFile = null
                 byteCount = 0L
+                unflushedBytes = 0L
                 record.completion?.countDown()
                 // Drop this record and retry the sink on the next queued record.
             }

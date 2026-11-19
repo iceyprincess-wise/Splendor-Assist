@@ -129,24 +129,32 @@ object RuntimePerformanceCoordinator {
     fun current(): RuntimePerformanceState = state
 
     fun refresh() {
-        RuntimeDiagnosticsRegistry.refresh()
-        RuntimeVisualizationRegistry.refresh()
-        FPSMonitor.refresh()
-        VisionLatencyMonitor.refresh()
-        ConfidenceHeatmap.refresh()
+        // P8: one shared refresh per cycle — the leaf refreshes below
+        // used to re-run RuntimeDiagnosticsRegistry.refresh() 4x per
+        // coordinator refresh. The cycle dedups them (RefreshCycle).
+        val cycle = RefreshCycle.begin()
+        try {
+            RuntimeDiagnosticsRegistry.refresh()
+            RuntimeVisualizationRegistry.refresh()
+            FPSMonitor.refresh()
+            VisionLatencyMonitor.refresh()
+            ConfidenceHeatmap.refresh()
 
-        state = RuntimePerformanceState(
-            diagnostics = RuntimeDiagnosticsRegistry.current(),
-            visualization = RuntimeVisualizationRegistry.current(),
-            fpsMonitor = FPSMonitor.current(),
-            latencyMonitor = VisionLatencyMonitor.current(),
-            confidenceHeatmap = ConfidenceHeatmap.current(),
-            stutterSuppressionEnabled = true,
-            lagCompensationEnabled = true,
-            inputDelayReductionEnabled = true,
-            networkLatencyReductionEnabled = true,
-            fpsStabilizationEnabled = true
-        )
+            state = RuntimePerformanceState(
+                diagnostics = RuntimeDiagnosticsRegistry.current(),
+                visualization = RuntimeVisualizationRegistry.current(),
+                fpsMonitor = FPSMonitor.current(),
+                latencyMonitor = VisionLatencyMonitor.current(),
+                confidenceHeatmap = ConfidenceHeatmap.current(),
+                stutterSuppressionEnabled = true,
+                lagCompensationEnabled = true,
+                inputDelayReductionEnabled = true,
+                networkLatencyReductionEnabled = true,
+                fpsStabilizationEnabled = true
+            )
+        } finally {
+            RefreshCycle.end(cycle)
+        }
     }
 
     fun activate() {
@@ -177,15 +185,21 @@ object RuntimePerformanceCoordinator {
     }
 
     fun synchronizeRuntimePipeline() {
+        // P8: same shared cycle as refresh() (nested begin/end share
+        // the outer cycle id — see RefreshCycle).
+        val cycle = RefreshCycle.begin()
+        try {
+            RuntimeDiagnosticsRegistry.refresh()
+            RuntimeVisualizationRegistry.refresh()
 
-        RuntimeDiagnosticsRegistry.refresh()
-        RuntimeVisualizationRegistry.refresh()
+            FPSMonitor.refresh()
+            VisionLatencyMonitor.refresh()
+            ConfidenceHeatmap.refresh()
 
-        FPSMonitor.refresh()
-        VisionLatencyMonitor.refresh()
-        ConfidenceHeatmap.refresh()
-
-        refresh()
+            refresh()
+        } finally {
+            RefreshCycle.end(cycle)
+        }
     }
 
 }

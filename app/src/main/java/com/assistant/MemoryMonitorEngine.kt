@@ -88,6 +88,23 @@ object MemoryMonitorEngine {
                             info.threshold / 1048576L, info.lowMemory
                         )
                         MemoryPressureBusEngine.publish(tier, availMb)
+                        // P4 (batch 3): on CRITICAL, free RAM from caches
+                        // no gameplay engine reads (pooled OCR snapshots
+                        // + queued routine log lines). At most once a
+                        // minute; the log line appears only when bytes
+                        // were actually freed. Capture rate is never
+                        // touched here (D1).
+                        if (tier == "CRITICAL") {
+                            try {
+                                NonEssentialCacheEvictor.evictIfDue(System.currentTimeMillis())?.let { report ->
+                                    if (report.freedBytes > 0L) {
+                                        com.assistant.diagnostic.RuntimeLogger.log(
+                                            NonEssentialCacheEvictor.logLine(report), "MEMORY"
+                                        )
+                                    }
+                                }
+                            } catch (_: Throwable) {}
+                        }
                         // L7 (batch 1): attribute every avail drop — the
                         // next memory event names its processes instead of
                         // leaving a ~900 MB drop unexplained (Q-N7-3).

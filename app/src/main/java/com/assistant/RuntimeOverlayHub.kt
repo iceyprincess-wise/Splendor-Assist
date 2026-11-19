@@ -101,6 +101,9 @@ object RuntimeOverlayHub {
     fun current(): RuntimeOverlayHubState = state
 
     fun refresh() {
+        // P8: deduped within one coordinator refresh cycle (see
+        // RefreshCycle); standalone calls always run fully.
+        if (!RefreshCycle.tryClaim("RuntimeOverlayHub")) return
         VisionDebugOverlay.refresh()
         RuntimeTuningPanel.reload()
         VisionOverlayRegistry.refresh()
