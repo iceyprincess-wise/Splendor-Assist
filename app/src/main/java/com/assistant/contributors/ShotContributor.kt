@@ -1,5 +1,6 @@
 package com.assistant.contributors
 
+import com.assistant.ShotTypeEngine
 import com.assistant.runtime.*
 import kotlin.math.hypot
 
@@ -55,20 +56,42 @@ object ShotContributor : GameplayContributor {
         val inset = frame.goalWidth * MOUTH_INSET
         val leftAim = frame.goalLeftX + inset
         val rightAim = frame.goalRightX - inset
-        val aimX = when {
+        var aimX = when {
             !frame.goalkeeperVisible -> frame.goalCenterX
             frame.goalkeeperX <= frame.goalCenterX -> rightAim
             else -> leftAim
         }
-        val aimY = (frame.goalTopY + (frame.goalBottomY - frame.goalTopY) * 0.5f)
+        var aimY = (frame.goalTopY + (frame.goalBottomY - frame.goalTopY) * 0.5f)
 
         // Closer shot + clearer goal sighting = more authority. A keeper we
         // can actually see (and aim around) is worth more than a blind shot.
         val proximity = (1f - range / maxRange).coerceIn(0f, 1f)
         val keeperBonus = if (frame.goalkeeperVisible) 0.15f else 0f
-        val authority =
+        var authority =
             (0.35f + 0.35f * proximity + 0.15f * frame.goalConfidence + keeperBonus)
                 .coerceIn(0f, 1f)
+
+        // G-G (batch 4): shot-type selection — chip the advanced keeper,
+        // power it close in, place it (finesse) from range. The type
+        // moves the aim INSIDE the mouth only and adjusts the duration.
+        // The reassigned aimX/aimY keep the No68-F-D34 clamp text below
+        // (targetX = aimX.coerceIn(...)) literal, so that pin still
+        // guards the clamp; the clamp itself is unchanged.
+        val shotType = ShotTypeEngine.select(frame, aimX, aimY)
+        aimX = shotType?.aimX ?: aimX
+        aimY = shotType?.aimY ?: aimY
+        val durationHint = shotType?.durationHintMs ?: 30L
+
+        // G-C (batch 4, D12): match-state posture — chase a goal late
+        // (shoot more), protect a lead late (shoot less). Only when the
+        // state is known; an unknown clock changes nothing.
+        if (frame.matchStateKnown && frame.matchPhase == MatchPhase.LATE) {
+            authority = when {
+                frame.matchScoreFor < frame.matchScoreAgainst -> (authority + 0.10f).coerceIn(0f, 1f)
+                frame.matchScoreFor > frame.matchScoreAgainst -> (authority - 0.05f).coerceIn(0f, 1f)
+                else -> authority
+            }
+        }
 
         return EngineContribution(
             engine = engineName,
@@ -89,7 +112,7 @@ object ShotContributor : GameplayContributor {
             // the goal sighting is part of the frame sighting). Weakest
             // link: min(...).
             confidence = minOf(frame.confidence, frame.goalConfidence).coerceIn(0f, 1f),
-            durationHintMs = 30L
+            durationHintMs = durationHint
         )
     }
 }

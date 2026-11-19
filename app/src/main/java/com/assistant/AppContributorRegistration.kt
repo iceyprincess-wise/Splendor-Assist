@@ -17,7 +17,7 @@ object AppContributorRegistration {
     // keep this count and EXPECTED_CONTRIBUTOR_NAMES in sync with the
     // listOf below; a stale count throws in check() and leaves the
     // registry EMPTY (proven by Ed's 2026-11-18 logs: 43 != 44, Gens 1-13).
-    const val EXPECTED_CONTRIBUTOR_COUNT = 43
+    const val EXPECTED_CONTRIBUTOR_COUNT = 52
 
     // HIGH: Completeness invariant - explicit set of expected names
     private val EXPECTED_CONTRIBUTOR_NAMES = setOf(
@@ -27,7 +27,12 @@ object AppContributorRegistration {
         "ShotOpportunity", "DefenseAuthority", "ShotAnticipation", "KeeperFeedback", "DashAnchor", "SpeedCompensation",
         "InstantIntercept", "BuildUpPress", "BallRetentionShield", "TrueShot", "TrueCross", "SAUltimateCorrector",
         "SharpTouchTiming", "KickingPosture",
-        "DREADNOUGHT_BUMPER", "FORMATIONS_ANCHOR", "MAGNETIC_FEET", "LASER_PASS_DIRECTOR", "APEX_FINISHER"
+        "DREADNOUGHT_BUMPER", "FORMATIONS_ANCHOR", "MAGNETIC_FEET", "LASER_PASS_DIRECTOR", "APEX_FINISHER",
+        // Batch 4 (§4 G-A/G-D/G-E/G-F/G-I/G-J/G-L/G-M + §7 G-N):
+        // SetPiece, Restart, Dribble, Marking, Clearance,
+        // KeeperDistribution, CombinationPlay, PhysicalBarge, BeastTackle.
+        "SetPiece", "Restart", "Dribble", "Marking", "Clearance",
+        "KeeperDistribution", "CombinationPlay", "PhysicalBarge", "BeastTackle"
     )
 
     private val state = AtomicReference(RegistrationState.IDLE)
@@ -88,7 +93,8 @@ object AppContributorRegistration {
                 if (generation.get() != myGeneration) return@submit
                 
                 try {
-                    val allContributors = listOf<GameplayContributor>(
+                    // Batch 4 (§4 + §7 new gameplay contributors).
+                val allContributors = listOf<GameplayContributor>(
                         com.assistant.contributors.ThreatPriorityContributor,
                         com.assistant.contributors.CrossClaimContributor,
                         com.assistant.contributors.KeeperBiasContributor,
@@ -132,10 +138,19 @@ object AppContributorRegistration {
                         com.assistant.gameplay.FormationsAnchorEngine(),
                         com.assistant.gameplay.AbsoluteMagneticFeetEngine(),
                         com.assistant.gameplay.LaserPassDirectorEngine(),
-                        com.assistant.gameplay.ApexFinisherEngine()
+                        com.assistant.gameplay.ApexFinisherEngine(),
+                        com.assistant.contributors.SetPieceContributor,
+                        com.assistant.contributors.RestartContributor,
+                        com.assistant.contributors.DribbleContributor,
+                        com.assistant.contributors.MarkingContributor,
+                        com.assistant.contributors.ClearanceContributor,
+                        com.assistant.contributors.KeeperDistributionContributor,
+                        com.assistant.contributors.CombinationPlayContributor,
+                        com.assistant.contributors.PhysicalBargeContributor,
+                        com.assistant.contributors.BeastTackleContributor
                     )
-                    
-                    // MEDIUM: Runtime assertion for 43-contributor contract
+
+                    // MEDIUM: Runtime assertion for 52-contributor contract
                     check(allContributors.size == EXPECTED_CONTRIBUTOR_COUNT) {
                         "CRITICAL: Hardcoded contributor list size (${allContributors.size}) != expected ($EXPECTED_CONTRIBUTOR_COUNT)"
                     }

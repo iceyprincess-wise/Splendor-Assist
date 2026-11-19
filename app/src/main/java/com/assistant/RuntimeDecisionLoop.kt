@@ -416,7 +416,16 @@ object RuntimeDecisionLoop {
             startY = startY,
             endX = leadX.coerceAtLeast(0f),
             endY = leadY.coerceAtLeast(0f),
-            duration = (ControlMappingTrainer.personalDuration(best.actionClass, best.durationHintMs) * executionBias(best.actionClass)).toLong().coerceIn(15L, 85L)
+            duration = run {
+                val base = (ControlMappingTrainer.personalDuration(best.actionClass, best.durationHintMs) * executionBias(best.actionClass)).toLong().coerceIn(15L, 85L)
+                // G-M (batch 4, Q68-31): a barge contribution renders as a
+                // SHORT, HARD swipe — duration clamped to <= 20 ms. The
+                // barge flag + this clamp ARE the terminal support for
+                // the barge channel; the terminal dispatches swipes, and
+                // a barge is a short hard swipe, not an ordinary DEFEND
+                // drag. A non-barge contribution is unchanged.
+                if (best.barge) base.coerceAtMost(20L) else base
+            }
         )
     }
 

@@ -440,8 +440,41 @@ object FrameAssembler {
             passTargetX = passTargetX + if (before != null && after != null) after.x - before.x else 0f,
             passTargetY = passTargetY + if (before != null && after != null) after.y - before.y else 0f,
             passTargetId = receiver)
-        lastFrame = frame
-        return frame
+        // G-C (batch 4, D12): copy the match state the OCR already
+        // parsed (MatchStateEngine — one volatile read, no new load).
+        // G-F / G-O (batch 4): publish the marking assignments + the
+        // overload plan (primary + secondary) computed from the
+        // projected entities. The secondary marker is PUBLISHED ONLY —
+        // no second-player control exists to drive it.
+        val matchState = try { MatchStateEngine.current() } catch (_: Throwable) { MatchState() }
+        val marking = try { MarkingEngine.assign(frame) } catch (_: Throwable) { emptyList() }
+        val overload = try { OverloadMarkingEngine.plan(frame) } catch (_: Throwable) {
+            OverloadPlan(null, null, null, 0f, 0f)
+        }
+        val markingWithOverload = if (overload.opponentId != null && overload.secondaryDefenderId != null) {
+            val already = marking.any {
+                it.opponentId == overload.opponentId && it.defenderId == overload.secondaryDefenderId
+            }
+            if (already) marking else marking + MarkingAssignment(
+                defenderId = overload.secondaryDefenderId,
+                opponentId = overload.opponentId,
+                targetX = overload.targetX,
+                targetY = overload.targetY,
+                overloadSecondary = true
+            )
+        } else marking
+        val enriched = frame.copy(
+            matchMinute = matchState.minute,
+            matchScoreFor = matchState.scoreFor,
+            matchScoreAgainst = matchState.scoreAgainst,
+            matchPhase = matchState.phase,
+            matchStateKnown = matchState.known,
+            markingAssignments = markingWithOverload,
+            overloadOpponentId = overload.opponentId,
+            overloadSecondaryId = overload.secondaryDefenderId
+        )
+        lastFrame = enriched
+        return enriched
     }
 
     fun current(): RuntimeFrame? = lastFrame
@@ -478,7 +511,14 @@ object FrameAssembler {
             "defensiveLineX" to f.defensiveLineX,
             "stanceTight" to f.stanceTight,
             "dragOutHeld" to f.dragOutHeld,
-            "homeFound" to f.homeFound
+            "homeFound" to f.homeFound,
+            // G-C/G-F/G-O (batch 4): match state + marking/overload plan.
+            "matchMinute" to f.matchMinute,
+            "matchScore" to "${f.matchScoreFor}-${f.matchScoreAgainst}",
+            "matchPhase" to f.matchPhase.name,
+            "markingAssignments" to f.markingAssignments.size,
+            "overloadOpponent" to (f.overloadOpponentId ?: -1),
+            "overloadSecondary" to (f.overloadSecondaryId ?: -1)
         )
     }
 }

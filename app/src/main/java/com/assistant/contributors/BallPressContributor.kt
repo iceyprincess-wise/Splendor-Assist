@@ -1,5 +1,7 @@
 package com.assistant.contributors
 
+import com.assistant.StaminaEngine
+import com.assistant.TackleTimingEngine
 import com.assistant.runtime.*
 
 /*
@@ -26,15 +28,27 @@ object BallPressContributor : GameplayContributor {
         val outnumbered = frame.opponentCount > frame.playerCount
         val base = if (outnumbered) 0.45f else 0.35f
 
+        // G-B (batch 4): stamina scales the press — a tired team presses
+        // softer (scale in [0.55, 1.0], never silent). G-K (batch 4):
+        // an open tackle window turns the press into a tackle at the
+        // right moment — authority lifts toward 0.90 and the duration
+        // shortens, so the press becomes the tackle instead of a jog.
+        val staminaScale = StaminaEngine.pressScale(frame)
+        val tackle = TackleTimingEngine.window(frame)
+        val authority = if (tackle.open) {
+            (0.55f + 0.35f * tackle.quality).coerceIn(0f, 1f)
+        } else {
+            (base + 0.25f * frame.defenderDensity.coerceIn(0f, 1f)) * staminaScale
+        }.coerceIn(0f, 1f)
+
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.DEFEND,
             targetX = frame.ballX.coerceAtLeast(0f),
             targetY = frame.ballY.coerceAtLeast(0f),
-            authority = (base + 0.25f * frame.defenderDensity.coerceIn(0f, 1f))
-                .coerceIn(0f, 1f),
+            authority = authority,
             confidence = frame.confidence,
-            durationHintMs = 35L
+            durationHintMs = if (tackle.open) 20L else 35L
         )
     }
 }

@@ -158,7 +158,10 @@ object DashPressureContributor : GameplayContributor {
             actionClass    = ActionClass.DEFEND,
             targetX        = tx.coerceAtLeast(0f),
             targetY        = ty.coerceAtLeast(0f),
-            authority      = frame.defenderDensity.coerceIn(0f, 1f),
+            // G-B (batch 4): stamina scales the press — a tired team
+            // presses softer (scale in [0.55, 1.0], never silent).
+            authority      = (frame.defenderDensity.coerceIn(0f, 1f) *
+                com.assistant.StaminaEngine.pressScale(frame)).coerceIn(0f, 1f),
             confidence     = frame.confidence,
             durationHintMs = 42L
         )

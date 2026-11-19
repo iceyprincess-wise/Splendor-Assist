@@ -1,5 +1,6 @@
 package com.assistant.contributors
 
+import com.assistant.CrossVariantEngine
 import com.assistant.runtime.*
 
 import kotlin.math.hypot
@@ -59,16 +60,31 @@ object CrossDeliveryContributor : GameplayContributor {
             (0.40f + 0.30f * boxCloseness + 0.20f * frame.bestLaneConfidence)
                 .coerceIn(0f, 1f)
 
+        // G-H (batch 4): cross-variant selection — low / driven / early /
+        // floated, from box occupancy + crosser position + near/far post.
+        // The variant moves the target INSIDE the box region only and
+        // adjusts the duration. shootingViable is the D8 SHOT cross
+        // type (a viable shooting lane), the frame's own signal.
+        val variant = CrossVariantEngine.select(
+            frame,
+            frame.passTargetX,
+            frame.passTargetY,
+            shootingViable = frame.crossType == CrossType.SHOT
+        )
+        val finalTargetX = (variant?.targetX ?: frame.passTargetX).coerceAtLeast(0f)
+        val finalTargetY = (variant?.targetY ?: frame.passTargetY).coerceAtLeast(0f)
+        val durationHint = variant?.durationHintMs ?: 50L
+
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.CROSS,
-            targetX = frame.passTargetX.coerceAtLeast(0f),
-            targetY = frame.passTargetY.coerceAtLeast(0f),
+            targetX = finalTargetX,
+            targetY = finalTargetY,
             authority = authority,
             confidence = (frame.confidence *
                 (0.5f * frame.bestLaneConfidence + 0.5f * frame.goalConfidence))
                 .coerceIn(0f, 1f),
-            durationHintMs = 50L
+            durationHintMs = durationHint
         )
     }
 }

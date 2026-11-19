@@ -253,6 +253,50 @@ object ControlMappingTrainer {
             throughPressCandidateActive = false
         }
     }
+    // G-P (batch 4, D11): dash+pressure HOLD recording. Same honest
+    // pattern as the D13 through press: the app cannot see a hardware
+    // press, so the observable signal is the slot-4 (Dash & Pressure)
+    // centre pixel leaving its at-rest green while the user is
+    // touching: the finger occludes the Dash button (or the game
+    // highlights it while held). Two consecutive occluded in-match
+    // frames = a hold CANDIDATE — an inference, never a confirmed
+    // press. Read by DribbleContributor (the G-P autopilot gate) via
+    // dashHoldCandidateFresh(). The through press (slot 1) is untouched.
+    @Volatile private var lastDashHoldMs = 0L
+    @Volatile private var dashHoldCandidateActive = false
+    private var slot4OccludedFrames = 0
+    private var lastDashHoldCandidateLogMs = 0L
+
+    /** Wall time of the last dash-hold candidate, or 0 when none. */
+    fun lastDashHoldMs(): Long = lastDashHoldMs
+
+    /** True while a dash-hold candidate is fresh (within 250 ms). */
+    fun dashHoldCandidateFresh(nowMs: Long = System.currentTimeMillis()): Boolean =
+        dashHoldCandidateActive && nowMs - lastDashHoldMs <= 250L
+
+    private fun recordDashHoldState(
+        b: java.nio.ByteBuffer, w: Int, h: Int, stride: Int, pixelStride: Int
+    ) {
+        val now = System.currentTimeMillis()
+        val slot4Green = probe(b, w, h, stride, slotX[4], slotY[4], pixelStride) && isGreen()
+        if (!slot4Green && UserTouchState.isTouching()) slot4OccludedFrames++ else slot4OccludedFrames = 0
+        if (slot4OccludedFrames >= 2) {
+            dashHoldCandidateActive = true
+            lastDashHoldMs = now
+            if (now - lastDashHoldCandidateLogMs >= 60_000L) {
+                lastDashHoldCandidateLogMs = now
+                try {
+                    com.assistant.diagnostic.RuntimeLogger.log(
+                        "DASH_HOLD_CANDIDATE slot=4 occludedFrames=$slot4OccludedFrames (inferred: finger occludes the Dash button while touching; NOT a confirmed hardware press)",
+                        "TRAINER"
+                    )
+                } catch (_: Throwable) { }
+            }
+        } else if (now - lastDashHoldMs > 250L) {
+            dashHoldCandidateActive = false
+        }
+    }
+
     @Volatile private var pendingClass = -1
     @Volatile private var pendingMs = 0L
     @Volatile private var pendingAt = 0L
@@ -358,6 +402,9 @@ object ControlMappingTrainer {
             // D13: record the through-press state every in-match frame
             // (slot-1 pixel + touch signal → press candidate).
             recordThroughPressState(buffer, w, h, rowStride, pixelStride)
+            // G-P (batch 4, D11): record the dash-hold state the same way
+            // (slot-4 pixel + touch signal → hold candidate).
+            recordDashHoldState(buffer, w, h, rowStride, pixelStride)
         }
     }
 

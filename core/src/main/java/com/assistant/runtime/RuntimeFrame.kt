@@ -47,6 +47,27 @@ data class LowBlockMovement(
     val targetY: Float
 )
 
+/**
+ * G-C match state (batch 4, Ed D12): the match clock/score phase the
+ * OCR already produced, copied into the frame by FrameAssembler.
+ * UNKNOWN = no score+minute pair has ever been parsed.
+ */
+enum class MatchPhase { UNKNOWN, EARLY, MID, LATE, FULLTIME }
+
+/**
+ * G-F marking assignment (batch 4): one defender marking one
+ * opponent, at a goal-side point next to the man. overloadSecondary
+ * marks the SECOND marker on a G-O 2v1 (published, not driven — no
+ * second-player control exists; see OverloadMarkingEngine).
+ */
+data class MarkingAssignment(
+    val defenderId: Int,
+    val opponentId: Int,
+    val targetX: Float,
+    val targetY: Float,
+    val overloadSecondary: Boolean = false
+)
+
 data class RuntimeFrame(
     val frameId: Long,
     val timestampMs: Long,
@@ -180,7 +201,33 @@ data class RuntimeFrame(
     val throughReceiverY: Float = 0f,
     val throughLeadX: Float = 0f,
     val throughLeadY: Float = 0f,
-    val throughLaneViable: Boolean = false
+    val throughLaneViable: Boolean = false,
+    /*
+     * G-C Match-State Engine (batch 4, D12 zero-added-load): the
+     * score/clock the OCR already produced, parsed by
+     * MatchStateEngine and copied here by FrameAssembler. All default
+     * to "unknown" (minute 0, UNKNOWN phase, known=false) — an
+     * unparsed frame behaves exactly as before; consumers gate on
+     * matchStateKnown. ShotContributor reads these for the chase /
+     * protect-lead posture.
+     */
+    val matchMinute: Int = 0,
+    val matchScoreFor: Int = 0,
+    val matchScoreAgainst: Int = 0,
+    val matchPhase: MatchPhase = MatchPhase.UNKNOWN,
+    val matchStateKnown: Boolean = false,
+    /*
+     * G-F Marking Engine + G-O Overload plan (batch 4): the marking
+     * assignments FrameAssembler computed from the tracked entities.
+     * overloadOpponentId names the 2v1 target when one exists;
+     * overloadSecondaryId names its second marker — PUBLISHED ONLY.
+     * No second-player control mechanism exists in the repo, so the
+     * secondary marker is planned and observable, never driven
+     * (OverloadMarkingEngine documents the blocker).
+     */
+    val markingAssignments: List<MarkingAssignment> = emptyList(),
+    val overloadOpponentId: Int? = null,
+    val overloadSecondaryId: Int? = null
 ) {
     // RF-D1/RF-D2: the old gate trusted a frame with a 0x0 capture size
     // (reachable before the camera profile populates), a confidence above
@@ -216,7 +263,17 @@ data class EngineContribution(
     val aimOriginX: Float? = null,
     val aimOriginY: Float? = null,
     val aimEntityId: Int? = null,
-    val targetEntityId: Int? = null
+    val targetEntityId: Int? = null,
+    /*
+     * G-M Physical Barge (batch 4, Q68-31): a physical barge request.
+     * Default false — all 43 pre-existing contributors are unaffected.
+     * RuntimeDecisionLoop.chooseRequest renders barge=true as a short,
+     * hard swipe (duration clamped to <= 20 ms); that clamp IS the
+     * terminal support — the terminal dispatches swipes, and a barge is
+     * a short hard swipe, distinguished from an ordinary DEFEND drag
+     * by this flag.
+     */
+    val barge: Boolean = false
 ) {
     val weight: Float
         get() = authority.coerceIn(0f, 1f) * confidence.coerceIn(0f, 1f)
