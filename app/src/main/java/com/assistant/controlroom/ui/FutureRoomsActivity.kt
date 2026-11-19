@@ -36,6 +36,20 @@ import androidx.appcompat.app.AppCompatActivity
  */
 class FutureRoomsActivity : AppCompatActivity() {
 
+    // Q61-2/Q66-B4 (batch 5b): the themed palette, resolved once from this
+    // activity's theme — the theme is the source of truth, the ThemeTokens
+    // hex values are fallbacks for any attribute the theme does not define.
+    // Roles with no theme attribute (TEXT_DIM, WARN, BUTTON_NEUTRAL) keep
+    // their hex constants. Other ThemeTokens users (Goalkeeper/Interception/
+    // AgentHub/GameplayRoom activities, ModMenuController) stay on hex for
+    // now — the resolver exists; they adopt one by one.
+    private val paletteBg by lazy { ThemeTokens.bg(this) }
+    private val paletteText by lazy { ThemeTokens.text(this) }
+    private val paletteTextMuted by lazy { ThemeTokens.textMuted(this) }
+    private val paletteSuccess by lazy { ThemeTokens.success(this) }
+    private val paletteButton by lazy { ThemeTokens.button(this) }
+    private val paletteButtonAlt by lazy { ThemeTokens.buttonAlt(this) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showHome()
@@ -50,12 +64,12 @@ class FutureRoomsActivity : AppCompatActivity() {
     private fun page(): LinearLayout = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         setPadding(dp(16), dp(24), dp(16), dp(32))
-        setBackgroundColor(ThemeTokens.BG)
+        setBackgroundColor(paletteBg)
     }
 
     private fun mount(v: LinearLayout) {
         setContentView(ScrollView(this).apply {
-            setBackgroundColor(ThemeTokens.BG)
+            setBackgroundColor(paletteBg)
             addView(v, ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -64,7 +78,7 @@ class FutureRoomsActivity : AppCompatActivity() {
     }
 
     private fun text(list: LinearLayout, t: String, size: Float = 13f,
-                     bold: Boolean = false, color: Int = ThemeTokens.TEXT): TextView {
+                     bold: Boolean = false, color: Int = paletteText): TextView {
         val tv = TextView(this).apply {
             text = t; textSize = size; setTextColor(color)
             if (bold) setTypeface(typeface, Typeface.BOLD)
@@ -75,12 +89,12 @@ class FutureRoomsActivity : AppCompatActivity() {
     }
 
     private fun btn(list: LinearLayout, label: String,
-                    bg: Int = ThemeTokens.BUTTON, onClick: () -> Unit) {
+                    bg: Int = paletteButton, onClick: () -> Unit) {
         list.addView(Button(this).apply {
             text = label; isAllCaps = false; setBackgroundColor(bg)
             // No66-D23: white text on BUTTON_ALT was 2.38:1; alt buttons
             // (now brand cyan #00E5FF) take dark text — 12.79:1.
-            setTextColor(if (bg == ThemeTokens.BUTTON_ALT) ThemeTokens.BG else Color.WHITE); textSize = 14f
+            setTextColor(if (bg == paletteButtonAlt) paletteBg else Color.WHITE); textSize = 14f
             val lp = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             lp.setMargins(0, dp(5), 0, dp(5))
@@ -110,12 +124,12 @@ class FutureRoomsActivity : AppCompatActivity() {
 
         divider(root)
 
-        text(root, "ACTIVE ROOMS", 13f, bold = true, color = ThemeTokens.SUCCESS)
+        text(root, "ACTIVE ROOMS", 13f, bold = true, color = paletteSuccess)
 
-        btn(root, "🤖   AI Self-Heal Agent Monitor", ThemeTokens.BUTTON_ALT) {
+        btn(root, "🤖   AI Self-Heal Agent Monitor", paletteButtonAlt) {
             startActivity(Intent(this, AgentHubActivity::class.java))
         }
-        text(root, "   Detects and fixes broken engine states while you play. Logs every fix to SplendorHealLog.txt", 11f, color = ThemeTokens.TEXT_MUTED)
+        text(root, "   Detects and fixes broken engine states while you play. Logs every fix to SplendorHealLog.txt", 11f, color = paletteTextMuted)
 
         text(root, "  ⚙️  Admin Settings — removed", 11f, color = ThemeTokens.TEXT_DIM)
 

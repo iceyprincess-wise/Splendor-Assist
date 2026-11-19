@@ -247,6 +247,14 @@ object RuntimeCoordinator {
         try { com.assistant.runtime.GameplayEngineRegistry.resetAll() } catch (_: Throwable) {}
         try { FrameAssembler.reset() } catch (_: Throwable) {}
         try { BallTelemetryBridge.reset() } catch (_: Throwable) {}
+        // Q68-53 (batch 5b): TelemetryRepository.reset() existed with no
+        // caller — its first caller. Without it the repository's counters
+        // survived a session reset and read stale into the next epoch.
+        try { TelemetryRepository.reset() } catch (_: Throwable) {}
+        // Q62-2 (batch 5b): OverlaySelfMask.resetStats() existed with no
+        // caller — its first caller. Without it the mask's hit/pass stats
+        // accumulated across sessions and the dashboard read a stale total.
+        try { com.assistant.vision.OverlaySelfMask.resetStats() } catch (_: Throwable) {}
         try { com.assistant.events.EventHubs.resetAll() } catch (_: Throwable) {}
         try { com.assistant.execution.ContributionRegistry.clear() } catch (_: Throwable) {}
         try { GestureExecutionAuthority.reset() } catch (_: Throwable) {}

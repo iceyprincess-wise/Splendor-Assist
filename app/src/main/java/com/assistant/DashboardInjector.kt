@@ -215,6 +215,24 @@ object DashboardInjector {
                     // session-header + logcat only — its first in-app
                     // reader. Non-zero means log lines were lost.
                     append("Dropped log writes: ").append(com.assistant.diagnostic.RuntimeLogger.droppedWriteCount()).append("\n")
+                    // Q68-51 (batch 5b): eight SmartAssistMetrics snapshot
+                    // fns had zero readers — their first readers. One
+                    // compact line each; the maps are small counter maps,
+                    // read point-in-time on the background refresh thread.
+                    append("GK shadow: ").append(com.assistant.SmartAssistMetrics.goalkeeperShadowRuntimeSnapshot()).append("\n")
+                    append("Gameplay downstream: ").append(com.assistant.SmartAssistMetrics.gameplayDownstreamRuntimeSnapshot()).append("\n")
+                    append("Gameplay amplification: ").append(com.assistant.SmartAssistMetrics.gameplayAmplificationRuntimeSnapshot()).append("\n")
+                    append("Magnetic feet: ").append(com.assistant.SmartAssistMetrics.magneticFeetRuntimeSnapshot()).append("\n")
+                    append("Crossing lane: ").append(com.assistant.SmartAssistMetrics.crossingLaneRuntimeSnapshot()).append("\n")
+                    append("Magnetic feet activation: ").append(com.assistant.SmartAssistMetrics.magneticFeetActivationRuntimeSnapshot()).append("\n")
+                    append("Gameplay activation: ").append(com.assistant.SmartAssistMetrics.gameplayActivationRuntimeSnapshot()).append("\n")
+                    append("Controller entry: ").append(com.assistant.SmartAssistMetrics.controllerEntryRuntimeSnapshot()).append("\n")
+                    // Q62-2 (batch 5b): OverlaySelfMask.mask() — the rect
+                    // LIST itself — had zero readers (only count() was
+                    // read, above). The rects the mask is currently
+                    // suppressing, one line; the list is small (one rect
+                    // per masked UI element).
+                    append("Self-mask rects: ").append(com.assistant.vision.OverlaySelfMask.mask().joinToString(", ")).append("\n")
                 }
                 
                 val statusText = ComplianceState.summary(activity)

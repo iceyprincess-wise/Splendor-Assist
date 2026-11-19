@@ -5,6 +5,7 @@ import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.execution.ExecutionSource
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.HybridExecutionTerminal
+import com.assistant.runtime.ActionClass
 import android.accessibilityservice.AccessibilityService
 import kotlin.math.atan2
 
@@ -637,6 +638,18 @@ class ActiveGestureController(
         val shieldAuthority =
             agility.stabilityBoost
 
+        // Q68-12 (batch 5b): MagneticFeetEngine.stabilize() takes a
+        // PROXIMITY (close ball = large input, 0..100) — the contributor
+        // passes (1 - distance/MAGNETIC_RADIUS)*100. AGC passed the raw
+        // drag distance, i.e. the opposite sense (far = large input).
+        // Pass the proximity-sense value instead (100 - distance, clamped).
+        // TouchRecoveryEngine.recover() keeps the raw distance: its
+        // parameter is pressure, and the contributor feeds it
+        // defenderDensity — aligning THAT input needs a density value
+        // this call site does not have, so it is left alone, not
+        // silently re-sensed.
+        val proximitySense = (100f - distance).toInt().coerceIn(0, 100)
+
         val touchRecovery =
             TouchRecoveryEngine.recover(
                 (distance.toInt().coerceIn(0,100)),
@@ -645,24 +658,28 @@ class ActiveGestureController(
 
         val magneticFeet =
             MagneticFeetEngine.stabilize(
-                distance.toInt().coerceIn(0, 100),
+                proximitySense,
                 strength
             )
 
         /*
          * Magnetic Feet contributes bounded specialist signals. Normalizing
          * here prevents it from overpowering the other arbitration engines.
+         * Q68-12 (batch 5b): the true maxima are 12.0f (MAX_TOUCH /
+         * MAX_INTERCEPTION / MAX_POSSESSION in MagneticFeetEngine) — the
+         * old /10.0f saturated every value >= 10 to 1.0, so the top of
+         * the range carried no information.
          */
         val magneticTouchAuthority =
-            (magneticFeet.touchRetention / 10.0f)
+            (magneticFeet.touchRetention / 12.0f)
                 .coerceIn(0.0f, 1.0f)
 
         val magneticInterceptionAuthority =
-            (magneticFeet.interceptionResistance / 10.0f)
+            (magneticFeet.interceptionResistance / 12.0f)
                 .coerceIn(0.0f, 1.0f)
 
         val magneticPossessionAuthority =
-            (magneticFeet.possessionControl / 10.0f)
+            (magneticFeet.possessionControl / 12.0f)
                 .coerceIn(0.0f, 1.0f)
 
         val selectedPassingLane =
@@ -975,6 +992,32 @@ class ActiveGestureController(
             else if (passAssist.correctedY.isFinite()) passAssist.correctedY
             else truePass.y
 
+        // Q68-93 (batch 5b): the two matrix bonuses were flat +0.1f
+        // whenever the packed vector was non-zero — always on, and the
+        // packed target coordinates were discarded. Scale each bonus by
+        // the magnitude of the move its matrix proposes: the displacement
+        // from this gesture's start to the packed target, on the file's
+        // own 0..100 distance scale, capped at the old 0.1f ceiling — so
+        // the stability sum can never exceed its old maximum, a zero
+        // packed vector still pays 0, and a 1 px nudge no longer pays
+        // the same as a full drag.
+        val defensiveVectorBonus =
+            if (defensiveVectorPacked == 0L) 0.0f else
+                0.1f * (
+                    kotlin.math.hypot(
+                        (com.assistant.OmnipotentDashPressureMatrix.unpackX(defensiveVectorPacked) - startX).toDouble(),
+                        (com.assistant.OmnipotentDashPressureMatrix.unpackY(defensiveVectorPacked) - startY).toDouble()
+                    ).toFloat() / 100f
+                ).coerceIn(0.0f, 1.0f)
+        val godspeedVectorBonus =
+            if (godspeedVectorPacked == 0L) 0.0f else
+                0.1f * (
+                    kotlin.math.hypot(
+                        (com.assistant.HybridOmnipotentMatrixEngine.unpackX(godspeedVectorPacked) - startX).toDouble(),
+                        (com.assistant.HybridOmnipotentMatrixEngine.unpackY(godspeedVectorPacked) - startY).toDouble()
+                    ).toFloat() / 100f
+                ).coerceIn(0.0f, 1.0f)
+
         val arbitration =
             AuthorityArbitrationEngine.arbitrate(
                 mode = mode,
@@ -987,7 +1030,19 @@ class ActiveGestureController(
                 receiver = receiverEngagement.engagementBoost,
                 forward = forwardRun.runBoost,
                 recovery = touchRecovery.recoveryBoost,
-                shot = shotAnalysis.openSideScore,
+                // Q68-71 (batch 5b): openSideScore is a 0..4 scale
+                // (NativePorts.shot out[1] = (1-pressure)*4) — the
+                // contributor normalizes it /4, but this call site passed
+                // it raw, so shot*36 in the native arbitration saturated
+                // the +/-120 clamp on every open shot. Normalize to 0..1
+                // like the contributor.
+                // OPEN (Q68-71 remainder): the native dx/dy offsets are
+                // always +X/+Y — every input (receiver, shot, forward,
+                // recovery, stability) is non-negative, so the arbitration
+                // result is only ever pushed down-right, never toward a
+                // computed direction. Whether +X/+Y is the intended attack
+                // direction needs a decision; the sign is not invented here.
+                shot = (shotAnalysis.openSideScore / 4f).coerceIn(0f, 1f),
                 stability =
                     inputDiagnostics.stabilityScore +
                     speedProtectionAuthority +
@@ -1012,8 +1067,9 @@ class ActiveGestureController(
                     (evadeActive * 0.2f) +
                     // SPLENDOR_F34_PRECEDENCE: parenthesize conditional bonuses so the
                     // godspeed bonus is not swallowed into the defensive else-arm.
-                    (if (defensiveVectorPacked != 0L) 0.1f else 0.0f) +
-                    (if (godspeedVectorPacked != 0L) 0.1f else 0.0f)
+                    // Q68-93 (batch 5b): magnitude-scaled (see above), not flat.
+                    defensiveVectorBonus +
+                    godspeedVectorBonus
             )
 
         val finalX = arbitration.finalX
@@ -1071,6 +1127,17 @@ class ActiveGestureController(
             ExecutionRequest(
                 source = ExecutionSource.SMART_ASSIST,
                 phase = decision.mode,
+                // Q68-94 (batch 5b): the legacy path carried actionClass=null,
+                // so executeDirectRequest skipped the cooling check entirely
+                // (only GOALKEEPER-source requests had a fallback). Map the
+                // decided mode — the same 0/1/2 the native arbitration
+                // branches on (default=cross, 1=pass, 2=shot) — and panic,
+                // whose clearance duration makes it a DEFEND gesture.
+                actionClass = if (isPanic) ActionClass.DEFEND else when (mode) {
+                    2 -> ActionClass.SHOT
+                    1 -> ActionClass.PASS
+                    else -> ActionClass.CROSS
+                },
                 // no59 ITEM 1: the legacy injectWinningVector path has no
                 // contributing engine (it arbitrates inside this controller
                 // from the legacy decision) — the controller itself is the

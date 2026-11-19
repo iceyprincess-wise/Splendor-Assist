@@ -68,7 +68,12 @@ import com.assistant.diagnostic.RuntimeLogger
 
 object MainThreadStallEngine {
 
-    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    // Q68-23 (batch 5b): NOT admin-tunable — the old comment claimed
+    // "ADMIN-TUNABLE (defaults = original hard-coded values)", but these
+    // are plain getters returning literals; no admin store is read anywhere
+    // in this file. The values below are the original hard-coded values,
+    // kept as-is. If an admin knob is ever wanted, it must be wired to the
+    // admin store first — the comment must not claim it already is.
     private val CADENCE_MS: Long get() = 250L
     private val SPIKE_MS: Long get() = 80L
     private val ALPHA: Float get() = 0.25f
@@ -131,12 +136,14 @@ object MainThreadStallEngine {
 
 // --- MERGED: ThermalPeekEngine.kt ---
 
-// V3 ADMIN-WIRED - thermal evidence probe, live rhythm
+// Q68-23 (batch 5b): the old footer claimed "V3 ADMIN-WIRED … the check
+// rhythm is admin-tunable and re-read every cycle" — false. ThermalPeek's
+// POLL_MS is likewise a literal (10_000L) with no admin store read
+// anywhere in the file. The rhythm is a fixed constant, not an admin knob.
 
 /**
  * One cheap system reading: the OS thermal status. If lag storms correlate
  * with SEVERE+ status, the enemy is heat throttling; if status stays
  * NONE/LIGHT through a storm, throttling is exonerated and scheduling
- * contention becomes prime suspect. V3: the check rhythm is admin-tunable
- * and re-read every cycle.
+ * contention becomes prime suspect.
  */

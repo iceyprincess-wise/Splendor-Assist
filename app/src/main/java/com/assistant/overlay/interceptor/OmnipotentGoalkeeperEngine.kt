@@ -303,7 +303,10 @@ object OmnipotentGoalkeeperEngine {
                 p10Tele.ballX.toInt(),
                 p10Tele.ballY.toInt(),
                 width,
-                height
+                height,
+                // Q68-86 (batch 5b — D15): live ball trajectory speed so
+                // LONG_BALL is trajectory-gated, not a catch-all.
+                com.assistant.BallTrajectoryPredictor.current().speed
             )
 
             GoalkeeperDecisionRegistry.latestDecision = decision
@@ -506,11 +509,10 @@ object OmnipotentGoalkeeperEngine {
                         // No64-D16: an accepted dive-family save enters
                         // recovery — RECOVERY then spans the rebound window
                         // (finished at the top of the next evaluation, or
-                        // when the next decision is TRACK). NOTE the
-                        // torn-read caveat: begin/finish are two separate
-                        // volatile writes with a state transition between
-                        // them, so a concurrent state() read can briefly
-                        // observe flag=true/state=IDLE or vice versa.
+                        // when the next decision is TRACK). Q65-6 (batch 5b)
+                        // fixed the torn-read caveat that used to sit here:
+                        // begin/finish + the state transition are now one
+                        // atomic step under the shared monitor.
                         RecoveryPositionEngine.beginRecovery()
                     }
                 }
@@ -544,10 +546,16 @@ object OmnipotentGoalkeeperEngine {
             // is restored to RECOVERY after each evaluation (the top of the
             // next evaluation transitions to SAVE, so without this the state
             // would read SAVE between evaluations instead of RECOVERY).
-            if (RecoveryPositionEngine.recovering()) {
-                GoalkeeperStateMachine.transition(GoalkeeperState.RECOVERY)
-            } else {
-                GoalkeeperStateMachine.transition(GoalkeeperState.IDLE)
+            // Q65-6 (batch 5b): the recovering() read + transition pair
+            // runs under the shared GoalkeeperStateMachine monitor, so a
+            // concurrent begin/finish cannot land between the read and the
+            // transition and clobber the restore.
+            synchronized(GoalkeeperStateMachine) {
+                if (RecoveryPositionEngine.recovering()) {
+                    GoalkeeperStateMachine.transition(GoalkeeperState.RECOVERY)
+                } else {
+                    GoalkeeperStateMachine.transition(GoalkeeperState.IDLE)
+                }
             }
         }
     }

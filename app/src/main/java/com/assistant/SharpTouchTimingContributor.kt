@@ -177,10 +177,6 @@ object SharpTouchTimingContributor : GameplayContributor {
     }
 }
 
-/* ========
-FrameDropStabilizer
-======== */
-/**
- * High-precision Frame Drop Stabilizer optimized for 60Hz/120Hz display refresh cycles.
- * Operates with zero-allocation in the hot-path to strictly prevent GC thrashing.
- */
+// Q68-49 (batch 5b): the trailing "FrameDropStabilizer" marker KDoc that
+// used to sit here named a deleted class — removed, not moved. The class
+// is gone; a KDoc naming it would send the next reader hunting for it.

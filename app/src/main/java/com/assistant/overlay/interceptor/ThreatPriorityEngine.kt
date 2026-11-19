@@ -34,9 +34,15 @@ object ThreatPriorityEngine {
         x: Int,
         y: Int,
         width: Int,
-        height: Int
+        height: Int,
+        // Q68-86 (batch 5b — D15): the live ball speed (px/frame) from
+        // BallTrajectoryPredictor, forwarded to ShotDirectionEngine so
+        // LONG_BALL is trajectory-gated. Defaults to 0 (no trajectory)
+        // so a caller without trajectory data gets CENTER, never a
+        // long-ball claim it cannot support.
+        ballSpeedPxPerFrame: Float = 0f
     ): ThreatDecision {
-        val direction = ShotDirectionEngine.detect(zone, threat)
+        val direction = ShotDirectionEngine.detect(zone, threat, ballSpeedPxPerFrame)
 
         // No63-D24: the native call used to write into a shared
         // `outBuffer` field on this singleton. Both live callers run on

@@ -1,6 +1,9 @@
 package com.assistant.controlroom.ui
 
+import android.content.Context
 import android.graphics.Color
+import android.util.TypedValue
+import androidx.annotation.AttrRes
 
 /**
  * Single palette source for the control-room activities and the mod menu.
@@ -56,4 +59,47 @@ object ThemeTokens {
     val BUTTON_ALT: Int = Color.parseColor(BUTTON_ALT_HEX)
     val BUTTON_NEUTRAL: Int = Color.parseColor(BUTTON_NEUTRAL_HEX)
     val DANGER: Int = Color.parseColor(DANGER_HEX)
+
+    /**
+     * Q61-2/Q66-B4 (batch 5b): ?attr/ resolution layer. The hex constants
+     * above are FALLBACKS, not the source of truth — each themed role
+     * resolves its theme attribute from the caller's theme at call time,
+     * so a theme change re-skins the room without a code change. If the
+     * theme does not define the attribute (or it does not resolve to a
+     * color int), the hex fallback is used — today every resolved value
+     * equals its hex fallback (No66 unified them), so adopting the
+     * resolver changes no pixel, only the source of truth.
+     *
+     * Roles with NO theme attribute keep their hex values, with the
+     * reason at the constant: ACCENT_TEXT (no attr, deliberately lighter
+     * than ACCENT for text use), TEXT_DIM (theme dim #5C7399 fails
+     * contrast, No66-D35), WARN, DANGER, BUTTON_NEUTRAL, PANEL_BG/ORB_BG.
+     */
+    fun resolve(context: Context, @AttrRes attr: Int, fallbackHex: String): Int {
+        val out = TypedValue()
+        return if (context.theme.resolveAttribute(attr, out, true) &&
+            out.type >= TypedValue.TYPE_FIRST_COLOR_INT &&
+            out.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+            out.data
+        } else {
+            Color.parseColor(fallbackHex)
+        }
+    }
+
+    fun bg(context: Context): Int =
+        resolve(context, android.R.attr.colorBackground, BG_HEX)
+    fun surface(context: Context): Int =
+        resolve(context, com.google.android.material.R.attr.colorSurface, SURFACE_HEX)
+    fun accent(context: Context): Int =
+        resolve(context, com.google.android.material.R.attr.colorPrimary, ACCENT_HEX)
+    fun text(context: Context): Int =
+        resolve(context, com.google.android.material.R.attr.colorOnSurface, TEXT_HEX)
+    fun textMuted(context: Context): Int =
+        resolve(context, com.google.android.material.R.attr.colorOnSurfaceVariant, TEXT_MUTED_HEX)
+    fun success(context: Context): Int =
+        resolve(context, com.google.android.material.R.attr.colorTertiary, SUCCESS_HEX)
+    fun button(context: Context): Int =
+        resolve(context, com.google.android.material.R.attr.colorPrimary, BUTTON_HEX)
+    fun buttonAlt(context: Context): Int =
+        resolve(context, com.google.android.material.R.attr.colorSecondary, BUTTON_ALT_HEX)
 }

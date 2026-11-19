@@ -179,5 +179,10 @@ CrowdingZoneDetector
  *  - LagVerdictEngine requires 2 extra confirmation polls before CHOKING.
  *
  * Pure detection: no gameplay authority, no bus writes except crowdingZone.
- * Called once per frame by RuntimeDecisionLoop BEFORE amplifiers.
+ * Q68-21 (batch 5b): the old footer claimed "Called once per frame by
+ * RuntimeDecisionLoop BEFORE amplifiers" — that is false. The true call
+ * site is CrowdingZoneDetector.evaluate(): RuntimeDecisionLoop calls it
+ * only after arbitration, on frames that produced a request — NOT once
+ * per frame. The "before amplifiers" clause was the one true part: it
+ * does run before the amplifiers.
  */

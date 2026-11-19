@@ -19,6 +19,21 @@ package com.assistant.vision
  * wireable). activeProfileId() stays: TrainedDetectionEngine passes
  * it to native code, and it is the seam if a second profile ever
  * exists. Do not re-add a setter without a real caller.
+ * Q68-5 (batch 5b): PIXEL/TIME CONSTANTS ASSUME 288x640 CAPTURE.
+ * Several engines hard-code pixel and frame constants that are only
+ * correct at the 288x640 capture the pipeline forces (OverlayService's
+ * ZERO_CAPTURE_GUARD — a zero capture dimension falls back to 288x640,
+ * so the constants always see this geometry in production). If the
+ * capture size ever changes, every one of these must be re-scaled:
+ *   - PassingLaneGraphEngine.kt:163 — 500f graph distance scale
+ *   - TrueTargetPassingEngine.kt:167 — 750f px/s ball speed
+ *   - TruePassContributor.kt:142 — 120 px advanced-branch radius
+ *   - AdaptiveLoftedThroughEngine.kt:164 — 95f gesture radius
+ * The general rule: any constant in px, px/s or px/frame in a gameplay
+ * engine is a capture-geometry constant, not a device-independent one.
+ * OPEN (Q62-1): the 1650x720 fallback is unverified — whether the
+ * constants above would still hold at that geometry is unknown, and no
+ * evidence exists that the fallback ever engages in production.
  */
 object CameraProfile {
     const val PROFILE_DYNAMIC_WIDE: String = "DYNAMIC_WIDE"

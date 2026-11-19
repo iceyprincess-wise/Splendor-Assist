@@ -113,6 +113,10 @@ object TrainedDetectionEngine {
     private val failures = AtomicLong(0L)
     private val ballsFound = AtomicLong(0L)
     private val divergences = AtomicLong(0L)
+    // Q68-95 (batch 5b): native-preprocess failure counters — the C return
+    // codes were ignored before, so failures were invisible.
+    private val preprocessFailures = AtomicLong(0L)
+    @Volatile private var lastPreprocessCode = 0
     @Volatile private var consecutiveFailures = 0
     @Volatile private var lastLatencyMs = 0L
     @Volatile private var lastError = "none"
@@ -179,7 +183,7 @@ object TrainedDetectionEngine {
             // SPLENDOR_V14A_NATIVE_VISION_PREPROCESS_BEGIN
             val nativePreprocessOk: Boolean = if (frame.pixelStride == 4 && com.assistant.NativeBridge.nativePreprocessAvailable) {
                 try {
-                    com.assistant.NativeBridge.nativePreprocessFrame(
+                    val preprocessCode = com.assistant.NativeBridge.nativePreprocessFrame(
                         src,
                         inputBuffer,
                         w,
@@ -187,7 +191,34 @@ object TrainedDetectionEngine {
                         frame.rowStride,
                         INPUT_SIZE,
                         com.assistant.vision.CameraProfile.activeProfileId()
-                    ) == 0
+                    )
+                    if (preprocessCode == 0) true else {
+                        // Q68-95 (batch 5b): the C return codes were ignored —
+                        // every nonzero silently fell back to the Kotlin
+                        // resample with no log, and nativePreprocessAvailable
+                        // stayed true, so every frame paid a failed JNI call.
+                        // Codes (native_vision_preprocessor.c): 0 ok; -1 null
+                        // env/src/dst; -2 not direct buffer; -3 bad geometry;
+                        // -6 negative capacity; -7 src too small; -8 dst too
+                        // small. PERMANENT codes (-1/-2/-6/-8 — buffers and
+                        // geometry are fixed by construction: inputBuffer is
+                        // preallocated, INPUT_SIZE is const 320) mark the
+                        // native path unavailable exactly like the Throwable
+                        // path. GEOMETRY codes (-3/-7 — vary per frame and
+                        // rotation) log only; the next frame may succeed.
+                        preprocessFailures.incrementAndGet()
+                        if (preprocessCode != lastPreprocessCode || preprocessFailures.get() % PROOF_LOG_EVERY == 0L) {
+                            lastPreprocessCode = preprocessCode
+                            try { com.assistant.diagnostic.RuntimeLogger.log(
+                                "PREPROCESS_NATIVE_CODE=$preprocessCode failures=${preprocessFailures.get()} (w=$w h=$h rowStride=${frame.rowStride})",
+                                "NATIVE_VISION"
+                            ) } catch (_: Throwable) {}
+                        }
+                        if (preprocessCode == -1 || preprocessCode == -2 || preprocessCode == -6 || preprocessCode == -8) {
+                            com.assistant.NativeBridge.markNativePreprocessUnavailable()
+                        }
+                        false
+                    }
                 } catch (_: Throwable) {
                     com.assistant.NativeBridge.markNativePreprocessUnavailable()
                     false
@@ -310,7 +341,10 @@ object TrainedDetectionEngine {
         "ballsFound" to ballsFound.get(),
         "divergences" to divergences.get(),
         "lastLatencyMs" to lastLatencyMs,
-        "lastError" to lastError
+        "lastError" to lastError,
+        // Q68-95 (batch 5b): native-preprocess failure counters.
+        "preprocessFailures" to preprocessFailures.get(),
+        "lastPreprocessCode" to lastPreprocessCode
     )
 }
 

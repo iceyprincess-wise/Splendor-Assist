@@ -227,7 +227,19 @@ data class RuntimeFrame(
      */
     val markingAssignments: List<MarkingAssignment> = emptyList(),
     val overloadOpponentId: Int? = null,
-    val overloadSecondaryId: Int? = null
+    val overloadSecondaryId: Int? = null,
+    /*
+     * Q68-80 (batch 5b): the overload-balance fields the overload engines
+     * already compute — centralControl (CentralOverloadDetectionResult),
+     * left/rightWingAdvantage (WingOverloadDetectionResult) — had ZERO
+     * production readers (only a test read the wing advantages). They are
+     * copied here by FrameAssembler and exposed in frameRuntimeSnapshot(),
+     * so the live frame state names which side the overload favours.
+     * Defaults 0f = no measured advantage, exactly as before.
+     */
+    val centralControl: Float = 0f,
+    val leftWingAdvantage: Float = 0f,
+    val rightWingAdvantage: Float = 0f
 ) {
     // RF-D1/RF-D2: the old gate trusted a frame with a 0x0 capture size
     // (reachable before the camera profile populates), a confidence above

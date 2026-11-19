@@ -78,7 +78,10 @@ object ThreatPriorityContributor : GameplayContributor {
                 frame.captureWidth.toInt().takeIf { it > 0 }
                     ?: com.assistant.vision.CameraProfile.captureWidthOrFallback().toInt(),
                 frame.captureHeight.toInt().takeIf { it > 0 }
-                    ?: com.assistant.vision.CameraProfile.captureHeightOrFallback().toInt()
+                    ?: com.assistant.vision.CameraProfile.captureHeightOrFallback().toInt(),
+                // Q68-86 (batch 5b — D15): live ball trajectory speed so
+                // LONG_BALL is trajectory-gated, not a catch-all.
+                com.assistant.BallTrajectoryPredictor.current().speed
             )
         } catch (_: Throwable) {
             decisionFailureCount += 1

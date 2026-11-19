@@ -56,10 +56,21 @@
         
         
 
+        <!-- C2/C3 (batch 5b): mediaProjection|specialUse. The MediaProjection
+             grant dies with the crashed process, so a sticky restart after
+             ANY crash could never re-enter foreground as mediaProjection
+             alone (SecurityException, v219 2026-11-19 16:35:55 + 16:51:29);
+             startForegroundSafely() falls back to SPECIAL_USE on that
+             refusal. Subtype states the real use: screen capture of the
+             game for the on-device vision pipeline. -->
         <service
             android:name="com.assistant.OverlayService"
             android:exported="false"
-            android:foregroundServiceType="mediaProjection" />
+            android:foregroundServiceType="mediaProjection|specialUse" >
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Captures the game screen for on-device vision that drives the assist overlay while playing." />
+        </service>
 
         <service
             android:name="com.assistant.SmartAssistAccessibilityEngine"

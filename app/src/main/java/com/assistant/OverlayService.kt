@@ -257,20 +257,21 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 }
             }
             // P3: off-match rate adapter — lowers the processed-frame
-            // interval to 200 ms while no match is live (game not
-            // foreground, or ball absent past the dwell) and restores
-            // the full in-game interval the moment the ball is seen
-            // again. The in-game full-rate path below is unchanged
-            // (combined, capped at 33 ms); D1 holds — memory still
-            // cannot slow in-game capture, the adapter only sheds
-            // off-match work. Transitions are logged (rare by
-            // construction: re-lowering needs another 3 s ball loss).
+            // interval to 200 ms ONLY while the game is not foreground,
+            // and restores the full in-game interval otherwise. Ball
+            // absence NEVER lowers in-game (batch 5b fix): v219 showed
+            // ballTrust=0 in-game lowering the rate to 200 ms, which
+            // starved the very detection that would restore the ball
+            // (ball unseen -> slower -> ball stays unseen). The in-game
+            // full-rate path below is unchanged (combined, capped at
+            // 33 ms); D1 holds — memory still cannot slow in-game
+            // capture, the adapter only sheds off-match work. Transitions
+            // are logged (rare by construction: re-lowering needs the
+            // game to leave the foreground).
             return try {
                 val wasLowered = com.assistant.OffMatchRateAdapter.isLowered()
                 val interval = com.assistant.OffMatchRateAdapter.intervalMs(
                     com.assistant.VisionTrust.isGameForeground(),
-                    com.assistant.VisionTrust.ballTrust(),
-                    android.os.SystemClock.elapsedRealtime(),
                     combined
                 )
                 if (com.assistant.OffMatchRateAdapter.isLowered() != wasLowered) {
@@ -443,48 +444,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 }
             }
 
-        // P7: dedup BEFORE the buffer copy (it used to run inside the
-        // vision coroutine, after the copy — every duplicate frame paid
-        // a direct-buffer copy plus a coroutine launch before being
-        // dropped). The compare runs here, on the listener thread,
-        // against the Image plane buffer itself, which is byte-identical
-        // to the copy the coroutine used to compare (the copy is a
-        // put() of this buffer). This is safe only because startVision
-        // proves no coroutine is in flight, so previousVisionBuffer is
-        // stable. On a duplicate the OCR bitmap copy below still runs
-        // exactly as before (OCR reads reusableBitmap, not the vision
-        // buffer) and the coroutine is never launched — so
-        // visionInFlight is released here. The in-coroutine dedup block
-        // is removed with this change: keeping it would pay the
-        // full-frame compare twice per non-duplicate frame.
-        var dedupEarlyExit = false
-        var dedupMs = 0L
-        if (startVision) {
-            val dedupStartNanos = System.nanoTime()
-            val isDuplicate = previousVisionLayout == Triple(width, height, rowStride) && previousVisionBuffer?.let { prior ->
-                com.assistant.runtime.CaptureContent.same(originalBuffer, prior, width, height, rowStride, pixelStride) { x, y ->
-                    com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(x, y)
-                }
-            } == true
-            dedupMs = (System.nanoTime() - dedupStartNanos) / 1_000_000L
-            if (isDuplicate) {
-                // SPLENDOR_P6_DEDUP_DIAG_BEGIN (moved here from the
-                // coroutine by P7 — same counter, same throttled log,
-                // same outcome-verifier call, same return path).
-                duplicateFrameCount++
-                val dupNow = System.currentTimeMillis()
-                if (duplicateFrameCount == 1L || duplicateFrameCount % 300L == 0L || dupNow - lastDuplicateLogMs > 300_000L) {
-                    lastDuplicateLogMs = dupNow
-                    RuntimeLogger.log("DEDUP_SKIP count=$duplicateFrameCount layout=" + width + "x" + height + " stride=$rowStride (identical frame: onFrame skipped, decision counter not advanced)", "OVERLAY")
-                }
-                // SPLENDOR_P6_DEDUP_DIAG_END
-                com.assistant.FrameAssembler.current()?.let { com.assistant.ActionOutcomeVerifier.verify(it) }
-                visionInFlight.set(false)
-                dedupEarlyExit = true
-            }
-        }
+        // C1 (batch 5b — P7 REVERTED): the listener must never compare
+        // against the live Image plane buffer. P7 moved the dedup compare
+        // here, but a rotation closes the old reader (recreateCaptureSurfaces)
+        // while the listener is mid-compare, so CaptureContent.same() threw
+        // IllegalStateException "buffer is inaccessible" (v219 C1,
+        // 2026-11-19 16:35:47). The dedup runs in the coroutine below, on
+        // the app-owned copy, exactly as at 0661b53a. The OCR bitmap copy
+        // below still runs for every frame, as before.
 
-        val visionBuffer: java.nio.ByteBuffer = if (startVision && !dedupEarlyExit) {
+        val visionBuffer: java.nio.ByteBuffer = if (startVision) {
             val required = originalBuffer.remaining()
             val existing = reusableVisionBuffer
             // N4: allocate a FRESH buffer when the generation has advanced
@@ -525,14 +494,21 @@ class OverlayService : Service(), ComponentCallbacks2 {
         image.close()
 
         // Launch Vision Coroutine with SAFE copied buffer
-        if (startVision && !dedupEarlyExit) visionScope.launch {
+        if (startVision) visionScope.launch {
             val visionStartedNanos = System.nanoTime()
             // N4: the generation this coroutine belongs to. Abandoning a
             // wedged coroutine bumps visionGeneration; this coroutine must
             // then return early (guards below) and must not clear the new
             // frame's flag in finally.
             val frameGeneration = visionGeneration.get()
-            var t0 = visionStartedNanos
+            // C1 (batch 5b): t0 keeps the visionStartedNanos initializer —
+            // the restored in-coroutine dedup block READS t0 first
+            // (stage("dedup", t0)), so the initializer is genuinely used,
+            // not redundant. The old "initializer is redundant" warning
+            // fired only because the P7-era coroutine reassigned t0 before
+            // its first read; with the dedup read restored, the warning
+            // cannot fire. The explicit `: Long` type stays.
+            var t0: Long = visionStartedNanos
             visionStage = "launch"
             visionStageStartedMs = System.currentTimeMillis()
             // N4: per-stage heartbeat. The body has zero suspension
@@ -553,12 +529,28 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
             try {
                 com.assistant.CrashForensics.mark(3, 2, captureFrameCount)
-                // P7: the duplicate check now runs in the listener,
-                // before the buffer copy — a duplicate never reaches
-                // this coroutine. The listener-measured dedup duration
-                // is recorded here so the B1 stage profile keeps the
-                // "dedup" stage (same stage() call, same slow-log).
-                stage("dedup", System.nanoTime() - dedupMs * 1_000_000L); t0 = System.nanoTime()
+                // Exact byte comparison: repeated capture content must not trigger another action.
+                if (previousVisionLayout == Triple(width, height, rowStride) && previousVisionBuffer?.let { prior ->
+                    com.assistant.runtime.CaptureContent.same(visionBuffer, prior, width, height, rowStride, pixelStride) { x, y ->
+                        com.assistant.vision.OverlaySelfMask.isSelfDrawnCapture(x, y)
+                    }
+                } == true) {
+                    // SPLENDOR_P6_DEDUP_DIAG_BEGIN
+                    // A duplicate frame skips VisionCore/FrameAssembler/onFrame,
+                    // so the decision counter does not advance even though
+                    // capture is alive: prime suspect for LOOP_FROZEN. Log
+                    // throttled (first + every 300th + at most every 5 min).
+                    duplicateFrameCount++
+                    val dupNow = System.currentTimeMillis()
+                    if (duplicateFrameCount == 1L || duplicateFrameCount % 300L == 0L || dupNow - lastDuplicateLogMs > 300_000L) {
+                        lastDuplicateLogMs = dupNow
+                        RuntimeLogger.log("DEDUP_SKIP count=$duplicateFrameCount layout=" + width + "x" + height + " stride=$rowStride (identical frame: onFrame skipped, decision counter not advanced)", "OVERLAY")
+                    }
+                    // SPLENDOR_P6_DEDUP_DIAG_END
+                    com.assistant.FrameAssembler.current()?.let { com.assistant.ActionOutcomeVerifier.verify(it) }
+                    return@launch
+                }
+                stage("dedup", t0); t0 = System.nanoTime()
                 // N4: late return from dedup after an abandon — do not
                 // write shared state or dispatch on a stale frame.
                 if (frameGeneration != visionGeneration.get()) return@launch
@@ -821,7 +813,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
               com.assistant.RuntimeSelfHealEngine.start() } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("RuntimeSelfHealEngine init/start failed: ${t.message}", "OVERLAY") }
         // F37-D5: register contributors at service start, not only after the
         // first assembled frame — otherwise a never-started capture leaves
-        // the registry at 0/43 forever. The frame-path call stays as well.
+        // the registry at 0/52 forever. The frame-path call stays as well.
         try { com.assistant.AppContributorRegistration.ensureRegistered() } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("AppContributorRegistration.ensureRegistered at startup failed: ${t.message}", "OVERLAY") }
         try { com.assistant.CaptaincySkillEngine.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CaptaincySkillEngine.init failed: ${t.message}", "OVERLAY") }
         try { com.assistant.CrowdingZoneDetector.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CrowdingZoneDetector.init failed: ${t.message}", "OVERLAY") }
@@ -917,8 +909,30 @@ class OverlayService : Service(), ComponentCallbacks2 {
             .setSmallIcon(android.R.drawable.stat_notify_more)
             .build()
 
+        // C2/C3 (batch 5b): the MediaProjection grant dies with the crashed
+        // process, so a sticky restart after ANY crash threw SecurityException
+        // here (starting FGS with type mediaProjection requires the grant)
+        // and the service died ~5 s after boot before the token / auto-heal /
+        // recovery-prompt logic could run (v219, 2026-11-19 16:35:55 +
+        // 16:51:29). Try mediaProjection first; on SecurityException fall
+        // back to SPECIAL_USE (declared in the manifest with a
+        // PROPERTY_SPECIAL_USE_FGS_SUBTYPE); if that also throws, log and
+        // continue — NEVER rethrow — so the recovery logic below runs.
+        // Pre-UPSIDE_DOWN_CAKE branch (bare startForeground): unchanged on
+        // purpose — the grant-death enforcement is a U+ mediaProjection
+        // rule, and the target device is API 35, so the >=34 branch is
+        // the live one; <34 behaviour is not silently changed.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(NOTIFICATION_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION)
+            try {
+                startForeground(NOTIFICATION_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION)
+            } catch (e: SecurityException) {
+                try {
+                    android.util.Log.w("OverlayService", "mediaProjection FGS refused (grant died with previous process); falling back to specialUse", e)
+                    startForeground(NOTIFICATION_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+                } catch (e2: Throwable) {
+                    android.util.Log.e("OverlayService", "specialUse FGS fallback also failed; continuing without foreground promotion so recovery can run", e2)
+                }
+            }
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }

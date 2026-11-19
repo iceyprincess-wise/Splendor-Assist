@@ -481,7 +481,13 @@ object FrameAssembler {
             matchStateKnown = matchState.known,
             markingAssignments = markingWithOverload,
             overloadOpponentId = overload.opponentId,
-            overloadSecondaryId = overload.secondaryDefenderId
+            overloadSecondaryId = overload.secondaryDefenderId,
+            // Q68-80 (batch 5b): the overload-balance fields the overload
+            // engines already compute, copied from the world state so the
+            // live frame names which side the overload favours.
+            centralControl = world.centralOverloadDetectionResult.centralControl,
+            leftWingAdvantage = world.wingOverloadDetectionResult.leftWingAdvantage,
+            rightWingAdvantage = world.wingOverloadDetectionResult.rightWingAdvantage
         )
         lastFrame = enriched
         return enriched
@@ -533,7 +539,12 @@ object FrameAssembler {
             "matchPhase" to f.matchPhase.name,
             "markingAssignments" to f.markingAssignments.size,
             "overloadOpponent" to (f.overloadOpponentId ?: -1),
-            "overloadSecondary" to (f.overloadSecondaryId ?: -1)
+            "overloadSecondary" to (f.overloadSecondaryId ?: -1),
+            // Q68-80 (batch 5b): overload balance — which side the
+            // overload favours (0 = no measured advantage).
+            "centralControl" to f.centralControl,
+            "leftWingAdvantage" to f.leftWingAdvantage,
+            "rightWingAdvantage" to f.rightWingAdvantage
         )
     }
 }

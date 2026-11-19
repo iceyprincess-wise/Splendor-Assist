@@ -98,6 +98,9 @@ object RuntimeHealthMonitor {
     private const val FRAME_STALE_MS = 3000L
     private const val DECISION_STALE_MS = 3000L
     private const val EXECUTION_STALE_MS = 5000L
+    // Q68-44 (batch 5b): bus-offer freshness window — same 3 s as decision
+    // freshness, because an offer is a decision product.
+    private const val BUS_STALE_MS = 3000L
 
     private val evaluations = AtomicLong(0L)
 
@@ -107,6 +110,12 @@ object RuntimeHealthMonitor {
     // frame-counter progress tracking between evaluations
     @Volatile private var prevFrames = -1L
     @Volatile private var framesProgressMs = 0L
+
+    // Q68-44 (batch 5b): bus-offer latch — the last time the offered
+    // counter ROSE, and the highest offered value seen. snapshot() is
+    // @Synchronized, so these are only ever touched under that lock.
+    @Volatile private var offeredLastMs = 0L
+    @Volatile private var lastOfferedSeen = 0L
 
     data class HealthState(
         val accessibilityAlive: Boolean,
@@ -176,9 +185,22 @@ object RuntimeHealthMonitor {
             else -> false
         }
 
+        // Q68-44 (batch 5b): busAlive was cumulative — offered > 0 forever,
+        // so one offer in the first minute kept the bus "alive" for the
+        // whole session even after the bus died (same shape D37/D38 fixed
+        // for dispatchAlive/gameplayAlive). Latch the last offer: alive
+        // means the bus is enabled, or an offer arrived within BUS_STALE_MS.
+        // The latch tracks the counter rising, not the clock alone, so a
+        // reset (ContributionRegistry.clear() zeroes offered) cannot fake
+        // freshness — offered must RISE again to re-arm.
+        val offered = (contributions["offered"] as? Number)?.toLong() ?: 0L
+        if (offered > lastOfferedSeen) {
+            lastOfferedSeen = offered
+            offeredLastMs = now
+        }
         val busAlive =
             (runtime["busEnabled"] as? Boolean ?: false) ||
-                ((contributions["offered"] as? Number)?.toLong() ?: 0L) > 0L
+                (offered > 0L && now - offeredLastMs <= BUS_STALE_MS)
 
         // ---- dispatch: idle-with-nothing-requested is healthy ----
         val requested = (execution["requested"] as? Number)?.toLong() ?: 0L
@@ -266,6 +288,11 @@ object RuntimeHealthMonitor {
         lastEvaluatedMs = 0L
         prevFrames = -1L
         framesProgressMs = 0L
+        // Q68-44 (batch 5b): the bus-offer latch is epoch state too — a
+        // reset without it would keep a stale offeredLastMs and report
+        // the bus alive into the next epoch on zero new offers.
+        offeredLastMs = 0L
+        lastOfferedSeen = 0L
     }
 }
 

@@ -90,8 +90,8 @@ object GameplayEngineRegistry {
         // lock-free; a reset landing mid-collect must not let the writes below
         // resurrect entries for engines that are no longer registered.
         val epochAtStart = sessionEpoch.get()
-        // SPLENDOR_V43_FAST_GATE: Instant exit on untrusted frames (saves 43 engine calls)
-        // GER-D2: was 37; 43 contributors are registered
+        // SPLENDOR_V43_FAST_GATE: Instant exit on untrusted frames (saves 52 engine calls)
+        // GER-D2: was 37; 52 contributors are registered
         // (AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT).
         if (!frame.trusted) {
             // SPLENDOR_F31_TRUST_VISIBILITY: trust-blocked frames are now counted and logged
@@ -185,7 +185,15 @@ object GameplayEngineRegistry {
         "generation" to registrationGeneration.get(),
         "collisions" to collisions.get(),
         "warmUpTimestamp" to warmUpCompletionTimestamp,
-        "sessionEpoch" to sessionEpoch.get()
+        "sessionEpoch" to sessionEpoch.get(),
+        // Q68-75 (batch 5b): every contributor declares `capabilities`,
+        // but nothing ever read them — the collect() comment claims "O(1)
+        // capability culling" while actually gating on fastGate, not on
+        // capabilities. First reader: per-capability contributor counts,
+        // so the dashboard and the crash handler can see which capability
+        // classes are actually registered (and which are empty).
+        "capabilities" to contributors.flatMap { it.capabilities.toList() }
+            .groupingBy { it }.eachCount()
     )
 
 }

@@ -42,13 +42,26 @@ object NativePorts {
     fun shot(distance: Float, pressure: Float, out: FloatArray) {
         out[0] = coerce(1f - (distance * 0.001f), 0f, 1f)
         out[1] = coerce((1f - pressure) * 4f, 0f, 4f)
-        out[2] = coerce(pressure, 0f, 1f)
+        // Q68-73 (batch 5b): the out[2] write (pressure, coerced) is dead —
+        // the sole caller (ShotOpportunityAnalysisEngine.analyze) reads
+        // only out[0] (confidence) and out[1] (openSideScore), and no C
+        // shot function exists, so this is not port fidelity. Removed.
     }
     fun threat(ts: Int,z: Int,d: Int,aw: Int,pr: Int,ib: Int,rb: Int,x: Int,y: Int,w: Int,h: Int,out: FloatArray) {
         val d1=if(d==1)1f else 0f; val d2=if(d==2)1f else 0f
         val db=(d1*35f)+(d2*30f)
-        val z1=if(z==1)1f else 0f; val z2=if(z==2)1f else 0f; val z3=if(z==3)1f else 0f
-        val zb=(z1*40f)+(z2*25f)+(z3*10f)
+        // Q68-72 (batch 5b): the zone bonus was inverted vs danger — the
+        // most dangerous zone (GOAL_AREA, ball inside the goal span) got 0
+        // while RIGHT got 40. Danger order, same value set so the priority
+        // arithmetic's magnitude is unchanged: GOAL_AREA 40 > BOX 25 >
+        // CENTER 10 > flanks (LEFT/RIGHT symmetric) 0. Note Q63-3 flagged
+        // this mapping as Ed's design call; the GOAL_AREA=0 defect is
+        // unambiguously inverted, and the CENTER-vs-flanks order follows
+        // central-is-more-dangerous-than-wide — if Ed disagrees with that
+        // leg he can say so; the bonus values themselves are untouched.
+        // ThreatZone ordinals: LEFT=0, RIGHT=1, CENTER=2, BOX=3, GOAL_AREA=4.
+        val zGoalArea=if(z==4)1f else 0f; val zBox=if(z==3)1f else 0f; val zCenter=if(z==2)1f else 0f
+        val zb=(zGoalArea*40f)+(zBox*25f)+(zCenter*10f)
         // SPLENDOR_P10_SAT_BONUS: (aw shr 1)+(pr shr 1) added +100 at
         // the default sliders (100/100), so every detected threat scored
         // >= 145 and always PANIC; SAVE [100,130) was unreachable and

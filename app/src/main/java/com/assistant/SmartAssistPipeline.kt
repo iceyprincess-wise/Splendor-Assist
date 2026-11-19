@@ -187,6 +187,21 @@ class SmartAssistPipeline {
 
                     else -> 0
                 },
+            // Q68-94 (batch 5b): the OCR pipe carried actionClass=null like
+            // the AGC legacy path, so executeDirectRequest skipped the
+            // cooling check. Same mapping as phase above (NONE stays null:
+            // no class to cool on).
+            actionClass =
+                when(decision.actionType){
+
+                    ActionType.PASS -> ActionClass.PASS
+
+                    ActionType.SHOT -> ActionClass.SHOT
+
+                    ActionType.CROSS -> ActionClass.CROSS
+
+                    else -> null
+                },
             // no59 ITEM 1: the OCR pipe builds this request — it is the
             // owning producer, so its name is the honest engine label.
             engine =
