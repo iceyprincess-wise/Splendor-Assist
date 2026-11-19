@@ -108,6 +108,14 @@ object RuntimeDecisionLoop {
     private val routed = AtomicLong(0L)
     private val idleNoContribution = AtomicLong(0L)
     private val idleUntrusted = AtomicLong(0L)
+    // N3 (f58): idleUntrusted used to merge two different gates (foreground/enabled
+    // vs frame.trusted/opticalVariance) into one counter with no log line, so
+    // the 2026-11-18 session's 877/947 could not be attributed to either.
+    // Keep idleUntrusted as the sum for the existing snapshot/heal readers;
+    // the split counters below are the attribution.
+    private val idleUntrustedFg = AtomicLong(0L)
+    private val idleUntrustedFrame = AtomicLong(0L)
+    private val idleUntrustedVariance = AtomicLong(0L)
     // F37-D4/D6: the four loss exits below had no counter, so a DEC/ROUTED
     // gap could not be attributed. chooseNull splits the silent
     // chooseRequest() nulls out of idleNoContribution.
@@ -146,13 +154,22 @@ object RuntimeDecisionLoop {
 
         if (!com.assistant.VisionTrust.isGameForeground() || !com.assistant.SmartAssistRepository.enabled()) {
             idleUntrusted.incrementAndGet()
-            lastAction = "idle-untrusted"
+            idleUntrustedFg.incrementAndGet()
+            lastAction = "idle-untrusted-fg"
             return false
         }
 
-        if (!frame.trusted || frame.opticalVariance >= MAX_OPTICAL_VARIANCE_FOR_ACTION) {
+        if (!frame.trusted) {
             idleUntrusted.incrementAndGet()
-            lastAction = "idle-untrusted"
+            idleUntrustedFrame.incrementAndGet()
+            lastAction = "idle-untrusted-frame"
+            return false
+        }
+
+        if (frame.opticalVariance >= MAX_OPTICAL_VARIANCE_FOR_ACTION) {
+            idleUntrusted.incrementAndGet()
+            idleUntrustedVariance.incrementAndGet()
+            lastAction = "idle-untrusted-variance"
             return false
         }
 
@@ -470,6 +487,7 @@ object RuntimeDecisionLoop {
         CrowdingZoneDetector.reset()
         lastParkedTriggerMs = 0L
         idleNoContribution.set(0L); idleUntrusted.set(0L)
+        idleUntrustedFg.set(0L); idleUntrustedFrame.set(0L); idleUntrustedVariance.set(0L)
         gateBlocked.set(0L); staleFrame.set(0L); settingsExit.set(0L); routeRejected.set(0L); chooseNull.set(0L)
         lastAction = "none"; lastWeight = 0f; lastUpdatedMs = 0L
     }
@@ -478,6 +496,9 @@ object RuntimeDecisionLoop {
         "decisions" to decisions.get(),
         "routed" to routed.get(),
         "idleUntrusted" to idleUntrusted.get(),
+        "idleUntrustedFg" to idleUntrustedFg.get(),
+        "idleUntrustedFrame" to idleUntrustedFrame.get(),
+        "idleUntrustedVariance" to idleUntrustedVariance.get(),
         "idleNoContribution" to idleNoContribution.get(),
         "gateBlocked" to gateBlocked.get(),
         "staleFrame" to staleFrame.get(),

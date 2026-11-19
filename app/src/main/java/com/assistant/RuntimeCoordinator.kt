@@ -207,9 +207,10 @@ object RuntimeCoordinator {
     }
 
     @Synchronized
-    fun shutdown() {
+    fun shutdown(caller: String = "unspecified") {
+        RuntimeLogger.log("RuntimeCoordinator.shutdown caller=$caller", "RUNTIME")
         stopExecutionLoopCallback?.invoke()
-        CentralExecutionBus.stop()
+        CentralExecutionBus.stop(reason = "RuntimeCoordinator.shutdown caller=$caller")
         busEnabled.set(false)
         runtimeReady.set(false)
         captureReady.set(false)
@@ -291,14 +292,28 @@ object RuntimeCoordinator {
         }
     }
 
+    // N2 (f58): evaluateInner() used to return silently here, so a 26-minute G1 outage
+    // looked identical to a dead bus. Log the blocking gate, throttled to 1/min.
+    @Volatile private var lastEvaluateBlockedLogMs = 0L
+    private fun logEvaluateBlocked(detail: String) {
+        val now = System.currentTimeMillis()
+        if (now - lastEvaluateBlockedLogMs >= 60_000L) {
+            lastEvaluateBlockedLogMs = now
+            RuntimeLogger.log("RuntimeCoordinator bus re-enable blocked: $detail", "RUNTIME")
+        }
+    }
+
     private fun evaluateInner() {
         refreshBoosterReadyFromRegistry()
-        if (!accessibilityReady.get() || !captureReady.get()) return
+        if (!accessibilityReady.get() || !captureReady.get()) {
+            logEvaluateBlocked("accessibilityReady=${accessibilityReady.get()} captureReady=${captureReady.get()}")
+            return
+        }
         // P0 FIX: G3 gate is now an ACTUAL execution gate, not a display-only flag.
         // Engines must NOT start until BoosterIgnition confirms fleet quorum.
         // Once busEnabled=true this check is already bypassed by the busEnabled gate below,
         // so this ONLY affects cold-start -- engines will not fire with a dead fleet.
-        if (!boosterReady.get()) return
+        if (!boosterReady.get()) { logEvaluateBlocked("boosterReady=false"); return }
         if (busEnabled.get()) return
 
         if (!enginesWarm.get()) {

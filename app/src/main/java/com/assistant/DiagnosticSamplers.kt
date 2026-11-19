@@ -157,7 +157,16 @@ object DiagnosticSamplers {
     }
 
     fun onTrimMemory(level: Int) {
-        LogMirror.mirror("F47MEM", android.util.Log.WARN, "onTrimMemory level=$level")
+        // N7: level 20 is TRIM_MEMORY_UI_HIDDEN (routine), not pressure;
+        // name it so the next audit does not misread it as an emergency.
+        val name = when (level) {
+            android.content.ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> "UI_HIDDEN(routine)"
+            android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> "RUNNING_CRITICAL"
+            android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW -> "RUNNING_LOW"
+            android.content.ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> "COMPLETE"
+            else -> "level=$level"
+        }
+        LogMirror.mirror("F47MEM", android.util.Log.WARN, "onTrimMemory $name")
     }
 
     private fun reportThermal(context: Context) {

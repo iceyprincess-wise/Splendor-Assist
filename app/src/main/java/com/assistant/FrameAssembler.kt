@@ -125,6 +125,7 @@ object FrameAssembler {
     private val frameCounter = AtomicLong(0L)
 
     @Volatile private var lastFrame: RuntimeFrame? = null
+    @Volatile private var lastTrustRejectLogMs: Long = 0L
 
     fun assemble(opticalVariance: Float = 0f, capturedAtNanos: Long = System.nanoTime()): RuntimeFrame {
         val id = frameCounter.incrementAndGet()
@@ -218,6 +219,29 @@ object FrameAssembler {
         val automaticTrustedFrame = VisionTrust.frameTrusted(players.size, opponents)
         val isTrustedFrame = OverrideStore.resolve("TRUST", automaticTrustedFrame)
         val confidence = if (isTrustedFrame && ballSeen) rawConfidence else 0f
+
+        // N3 (f58): the 2026-11-18 session exited 877/947 frames as idle-untrusted
+        // with no record of which trust leg failed. Log the verdict
+        // components, throttled to one line per second (same cadence guard as
+        // VisionTrust.tickAndLog), so the next session names the leg:
+        // ballSeen (telemetry/scene freshness, trackedBallVisible),
+        // isTrustedFrame (frameTrusted + TRUST override), or confidence.
+        // No gate changes: this is observation only.
+        try {
+            val nowTrustMs = System.currentTimeMillis()
+            if (!isTrustedFrame || !ballSeen) {
+                if (nowTrustMs - lastTrustRejectLogMs >= 1000L) {
+                    lastTrustRejectLogMs = nowTrustMs
+                    com.assistant.diagnostic.RuntimeLogger.log(
+                        "TRUST_REJECT ballSeen=$ballSeen trustedFrame=$isTrustedFrame " +
+                            "ballTrust=${String.format("%.3f", ballTrustNow)} " +
+                            "players=${players.size} opponents=$opponents " +
+                            "optVar=${String.format("%.3f", opticalVariance)}",
+                        "VISIONTRUST"
+                    )
+                }
+            }
+        } catch (_: Throwable) { }
 
         VisionTrust.tickAndLog()
 

@@ -781,6 +781,15 @@ class ActiveGestureController(
                     ?.centerY
                 ?: passAssist.correctedY
 
+        // N5: record which arm supplied the cross target — the
+        // 2026-11-18 off-screen endpoints were unattributable because
+        // this was never logged (see the "SmartAssist queued" line).
+        val crossSource = when {
+            selectedCrossLane != null -> "LANE"
+            selectedOpenSpace != null -> "OPEN_SPACE"
+            else -> "PASS"
+        }
+
         val crossAssist =
             CrossPrecisionEngine.calculate(
                 crossTargetX,
@@ -1018,7 +1027,7 @@ class ActiveGestureController(
             HybridExecutionTerminal.route(request)
 
         RuntimeLogger.log(
-            "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()}",
+            "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()} cross=(${crossTargetX.toInt()},${crossTargetY.toInt()}) crossSrc=$crossSource",
             "SMART_ASSIST"
         )
         // V4 burst log: the burst exit is the one event on this path the

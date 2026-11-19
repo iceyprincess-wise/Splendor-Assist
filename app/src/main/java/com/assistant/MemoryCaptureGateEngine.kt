@@ -101,15 +101,22 @@ object MemoryCaptureGateEngine {
         AdapterSignalBus.publishCaptureThrottle(newThrottle)
 
         if (changed && newThrottle > 0) {
+            // N7: "(capture rate reduced)" was false in-game —
+            // recommendedIntervalMs() caps the CRITICAL 100 ms interval to
+            // 16 ms while the game is foregrounded, so the effective
+            // interval did not change at the 19:08:57 CRITICAL transition.
+            // Log the effective interval so the next audit is not misled.
             RuntimeLogger.log(
                 "MemoryCaptureGate: tier=$tier avail=${availMb}MB → " +
-                    "captureThrottle=$newThrottle (capture rate reduced)",
+                    "captureThrottle=$newThrottle (effective interval " +
+                    "${recommendedIntervalMs()}ms)",
                 "MEMORY"
             )
         } else if (changed && newThrottle == 0) {
             RuntimeLogger.log(
                 "MemoryCaptureGate: tier=HEALTHY avail=${availMb}MB → " +
-                    "captureThrottle=0 (full rate restored)",
+                    "captureThrottle=0 (effective interval " +
+                    "${recommendedIntervalMs()}ms)",
                 "MEMORY"
             )
         }

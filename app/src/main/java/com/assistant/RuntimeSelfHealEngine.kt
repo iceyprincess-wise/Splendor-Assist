@@ -521,6 +521,17 @@ object RuntimeSelfHealEngine {
                         else "Next restart attempt in ${(30_000L - (System.currentTimeMillis() - lastRestartAttemptMs)) / 1000}s.",
                     severity = "CRITICAL"
                 ))
+                // N4: the 3-attempt budget used to exhaust permanently
+                // (19:11:28 in the 2026-11-18 session), after which nothing
+                // watched the vision path for 21 minutes. Re-arm it on
+                // this 5-min stale cadence while the frame is still frozen,
+                // so the heal keeps attempting restarts (3 per 5 min)
+                // instead of going silent. Only when the budget is actually
+                // exhausted; the 30 s spacing between attempts is unchanged.
+                if (captureRestartAttempts >= 3) {
+                    captureRestartAttempts = 0
+                    RuntimeLogger.log("CAPTURE_RESTART_BUDGET_RESET: restart budget exhausted while capture still stale; re-armed to 0/3 (next attempt in ~30s)", "AGENT")
+                }
             }
         } catch (t: Throwable) { android.util.Log.e("RuntimeSelfHealEngine", "suppressed error in self-heal check", t) }
     }
@@ -533,6 +544,10 @@ object RuntimeSelfHealEngine {
     private fun checkBusSignals(warmed: Boolean) {
         if (!warmed) return
         try {
+            // N3 (f58): mirror the :survival-published signals into this
+            // process's bus copy before judging it — without this the
+            // check below could never clear (see MainProcessBusMirror).
+            MainProcessBusMirror.mirrorIfDue()
             val bus = AdapterSignalBus
             val allUnknown = bus.netWindow == "UNKNOWN" && bus.lagVerdict == "UNKNOWN" &&
                     bus.stutterState == "UNKNOWN" && bus.memoryTier == "UNKNOWN"
@@ -635,6 +650,9 @@ object RuntimeSelfHealEngine {
                 "routeRejected=${snap["routeRejected"] as? Long ?: 0L} " +
                 "chooseNull=${snap["chooseNull"] as? Long ?: 0L} " +
                 "idleUntrusted=${snap["idleUntrusted"] as? Long ?: 0L} " +
+                "idleFg=${snap["idleUntrustedFg"] as? Long ?: 0L} " +
+                "idleFrame=${snap["idleUntrustedFrame"] as? Long ?: 0L} " +
+                "idleVariance=${snap["idleUntrustedVariance"] as? Long ?: 0L} " +
                 "idleNoContribution=${snap["idleNoContribution"] as? Long ?: 0L}"
         } catch (_: Throwable) { "decisionExitCounters=unavailable" }
     }
@@ -692,7 +710,10 @@ object RuntimeSelfHealEngine {
                         category = "LOOP_FROZEN",
                         detected = "RuntimeDecisionLoop counter frozen at $decisions. " +
                             "onFrame() not being called — decision counter did not advance since last check. " +
-                            "Most likely ImageReader stopped delivering; unverified until the capture check reports. Decision exits: ${decisionExitCounters()}",
+                            "Upstream cause is NOT established by this check: ImageReader may still be delivering " +
+                            "(check CAPTURE_IMAGE breadcrumbs) while the vision coroutine is wedged " +
+                            "(VISION_BUSY_SKIP) and dropping every frame before onFrame. " +
+                            "See the capture check result for which. Decision exits: ${decisionExitCounters()}",
                         fix = "AGENT will attempt capture restart. If max attempts reached: " +
                             "re-grant MediaProjection via the capture recovery prompt; no automatic force-stop exists.",
                         severity = "CRITICAL"

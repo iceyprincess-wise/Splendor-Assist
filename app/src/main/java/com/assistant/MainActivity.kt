@@ -277,7 +277,7 @@ class MainActivity : AppCompatActivity() {
             permissionPipelineActive = false
             permissionPipelineStarted = false
             stopService(Intent(this, OverlayService::class.java))
-            com.assistant.RuntimeCoordinator.shutdown()
+            com.assistant.RuntimeCoordinator.shutdown(caller = "MainActivity.btnStopEngine")
             refreshRuntimeHub()
         }
 

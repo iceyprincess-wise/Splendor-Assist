@@ -147,12 +147,26 @@ object FilterEngine {
 
     // F37-D7: the telemetry-missing test lived in two places (calc +
     // report) and could drift; one function now owns it.
-    private fun isTelemetryMissing(
-        lagVerdict: String, stutterState: String, memoryTier: String,
-        memoryAvailMb: Long, thermalStatus: Int, updatedMs: Long, nowMs: Long
-    ): Boolean = lagVerdict == "UNKNOWN" || stutterState == "UNKNOWN" ||
-        memoryTier == "UNKNOWN" || memoryAvailMb < 0L || thermalStatus < 0 ||
+    // N7: "missing" used to mean "any one field UNKNOWN", so a single
+    // UNKNOWN lag verdict (capture wedged, N4) discarded five live fields
+    // for 264 consecutive reports. Missing now means only "snapshot stale":
+    // no publisher of any field has refreshed it in 15 s. Unknown fields
+    // are reported by name and scored as no-evidence (0), never as good.
+    // internal (not private) like actionFor: the f58 harness pins the
+    // stale-only rule directly.
+    internal fun isTelemetryMissing(updatedMs: Long, nowMs: Long): Boolean =
         nowMs - updatedMs > 15_000L
+
+    internal fun unknownFields(
+        lagVerdict: String, stutterState: String, memoryTier: String,
+        memoryAvailMb: Long, thermalStatus: Int
+    ): List<String> = buildList {
+        if (lagVerdict == "UNKNOWN") add("lag")
+        if (stutterState == "UNKNOWN") add("stutter")
+        if (memoryTier == "UNKNOWN") add("memory")
+        if (memoryAvailMb < 0L) add("memoryAvail")
+        if (thermalStatus < 0) add("thermal")
+    }
 
     // F43-D1: the report's action line was driven ONLY by the aggression
     // multiplier, so a red device tier printed "Nominal operation." live
@@ -191,10 +205,7 @@ object FilterEngine {
         // snapshot older than 15s is treated as missing, never as fresh.
         val state = PerformanceTelemetryRegistry.currentDeviceState()
         val nowMs = System.currentTimeMillis()
-        val telemetryMissing = isTelemetryMissing(
-            state.lagVerdict, state.stutterState, state.memoryTier,
-            state.memoryAvailMb, state.thermalStatus, state.updatedMs, nowMs
-        )
+        val telemetryMissing = isTelemetryMissing(state.updatedMs, nowMs)
         // SPLENDOR_P7_XPROC_READ_END
 
         if (telemetryMissing) {
@@ -215,9 +226,11 @@ object FilterEngine {
             else -> 0
         }
         // Thermal range verified: PowerManager.currentThermalStatus is
-        // 0..6 (NONE..SHUTDOWN), -1 unknown (already filtered as missing
-        // above), so this deducts 0..30 - not a defect, just pinned here.
-        score -= (state.thermalStatus * 5)
+        // 0..6 (NONE..SHUTDOWN), -1 unknown. N7: a -1 used to be filtered
+        // as missing above; now that UNKNOWN fields score as no-evidence
+        // instead of early-returning, guard it — an unguarded -1 would
+        // ADD 5 points. Unknown fields score 0.
+        score -= (state.thermalStatus.coerceAtLeast(0) * 5)
         score -= when (state.memoryTier) {
             "CRITICAL" -> 20
             "PRESSURE" -> 10
@@ -306,13 +319,15 @@ object FilterEngine {
                 val stutter = dev.stutterState
                 val memoryTier = dev.memoryTier
                 val memoryAvailMb = dev.memoryAvailMb
-                val telemetryMissing = isTelemetryMissing(
-                    lag, stutter, memoryTier, memoryAvailMb,
-                    dev.thermalStatus, dev.updatedMs, now
+                val telemetryMissing = isTelemetryMissing(dev.updatedMs, now)
+                val unknown = unknownFields(
+                    lag, stutter, memoryTier, memoryAvailMb, dev.thermalStatus
                 )
                 // SPLENDOR_P7_XPROC_REPORT_END
                 val scoreText = if (telemetryMissing || effectivenessScore == null)
-                    "ENV: UNKNOWN (telemetry missing)" else "ENV: ${effectivenessScore}/100"
+                    "ENV: UNKNOWN (telemetry missing)" else if (unknown.isNotEmpty())
+                    "ENV: ${effectivenessScore}/100 (partial: unknown=${unknown.joinToString(",")})"
+                else "ENV: ${effectivenessScore}/100"
                 appendLine(scoreText)
                 appendLine("AGGRESSION MULTIPLIER: ${"%.2f".format(aggressionMultiplier)}x")
                 appendLine("")

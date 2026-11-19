@@ -44,7 +44,7 @@ object HybridExecutionTerminal {
      * choke point every dispatch flows through (RuntimeDecisionLoop
      * onFrame, the ContributionRegistry emergency lane, the legacy
      * injectWinningVector, BurstForensics re-asserts, the zero-latency
-     * injector, the OCR pipe), so one log line here covers all 44
+     * injector, the OCR pipe), so one log line here covers all 43
      * engines at once — no per-engine edits. Each line answers, for
      * that dispatch: WHICH engine (request.engine, "?" when none claimed
      * it), WHAT was dispatched (actionClass + phase + start/end slot
@@ -59,13 +59,50 @@ object HybridExecutionTerminal {
     fun route(
         request: ExecutionRequest
     ): Boolean {
-        val accepted = CentralExecutionBus.submit(request)
+        // N5: clamp every request to the LIVE capture bounds before
+        // submit, so the [Dispatch] line shows the clamped values and no
+        // off-screen endpoint is ever accepted (4 accepted dispatches
+        // with to.y 647-821 in a 640-tall capture, 2026-11-18 session).
+        // Clamp, do not drop: a clamped endpoint still executes as an
+        // edge swipe (the H-D5 physical-clamp behaviour, made visible).
+        val bounded = clampToCapture(request)
+        val accepted = CentralExecutionBus.submit(bounded)
         try {
-            com.assistant.diagnostic.RuntimeLogger.log(dispatchLine(request, accepted), "Dispatch")
+            com.assistant.diagnostic.RuntimeLogger.log(dispatchLine(bounded, accepted), "Dispatch")
         } catch (_: Throwable) {
             // A logging failure must never fail a dispatch.
         }
         return accepted
+    }
+
+    // N5: first-clamp witness, once per session (later clamps are silent;
+    // the [Dispatch] line shows the clamped values).
+    @Volatile private var loggedClamp = false
+
+    // N5: pure, pinned in the f58 harness. Clamps start/end to
+    // [0, captureWidth] x [0, captureHeight] from DispatchBounds (live
+    // bounds published by OverlayService on every recreate; 0x0 means
+    // capture not yet established — pass through unchanged, never invent
+    // bounds). Non-finite coordinates pass through untouched so
+    // CentralExecutionBus.requestIsValid still rejects them as before.
+    internal fun clampToCapture(request: ExecutionRequest): ExecutionRequest {
+        val w = DispatchBounds.captureWidth
+        val h = DispatchBounds.captureHeight
+        if (w <= 0f || h <= 0f) return request
+        if (!request.startX.isFinite() || !request.startY.isFinite() ||
+            !request.endX.isFinite() || !request.endY.isFinite()) return request
+        if (request.startX in 0f..w && request.startY in 0f..h &&
+            request.endX in 0f..w && request.endY in 0f..h) return request
+        if (!loggedClamp) {
+            loggedClamp = true
+            try { com.assistant.diagnostic.RuntimeLogger.log("CLAMPED_DISPATCH actionId=${request.actionId} origTo=(${request.endX},${request.endY}) clampedTo=(${request.endX.coerceIn(0f, w)},${request.endY.coerceIn(0f, h)}) bounds=${w.toInt()}x${h.toInt()}", "Dispatch") } catch (_: Throwable) {}
+        }
+        return request.copy(
+            startX = request.startX.coerceIn(0f, w),
+            startY = request.startY.coerceIn(0f, h),
+            endX = request.endX.coerceIn(0f, w),
+            endY = request.endY.coerceIn(0f, h)
+        )
     }
 
     /**

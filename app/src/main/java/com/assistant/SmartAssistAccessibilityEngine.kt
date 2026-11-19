@@ -65,6 +65,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     @Volatile private var lastBusHeartbeatMs = 0L
     @Volatile private var lastBusIdleReason: String? = null
     @Volatile private var latchStuckSinceMs = 0L
+    // N5: first-occurrence witness for the H-D5 physical clamp in
+    // generatePrecisionPath (below) — the f57 clamp was silent.
+    @Volatile private var pathClampLogged = false
     @Synchronized private fun completeDispatch(actionId: String) {
         if (currentActionId == actionId) releaseDispatch()
     }
@@ -111,7 +114,16 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         if (startX == endX && startY == endY) {
             path.lineTo(safeStartX, safeStartY)
         } else {
-            path.lineTo(clampX(endX), clampY(endY))
+            val safeEndX = clampX(endX)
+            val safeEndY = clampY(endY)
+            // N5: the H-D5 clamp existed in the f57 build but was silent —
+            // the 2026-11-18 logs could not prove the clamped stroke
+            // landed where intended. Log the first clamp, once per session.
+            if (!pathClampLogged && (safeEndX != endX || safeEndY != endY || safeStartX != startX || safeStartY != startY)) {
+                pathClampLogged = true
+                try { com.assistant.diagnostic.RuntimeLogger.log("PATH_CLAMPED origStart=($startX,$startY) origEnd=($endX,$endY) clampedEnd=($safeEndX,$safeEndY) screen=${screenWidth.toInt()}x${screenHeight.toInt()}", "SMART_ASSIST") } catch (_: Throwable) {}
+            }
+            path.lineTo(safeEndX, safeEndY)
         }
         return path
     }
@@ -561,6 +573,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     override fun onInterrupt() {
+        // N2: name the lifecycle callback — the bare "G1 lost" line cannot
+        // distinguish onInterrupt vs onUnbind vs onDestroy.
+        RuntimeLogger.log("SmartAssistAccessibilityEngine onInterrupt: stopping execution loop", "SMART_ASSIST")
         stopExecutionLoop()
         AccessibilitySurvivalEngine.interrupted()
         AccessibilitySurvivalEngine.getInstance(this).release()
@@ -571,6 +586,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     override fun onUnbind(intent: android.content.Intent?): Boolean {
+        // N2: name the lifecycle callback (see onInterrupt).
+        RuntimeLogger.log("SmartAssistAccessibilityEngine onUnbind: stopping execution loop", "SMART_ASSIST")
         stopExecutionLoop()
         AccessibilitySurvivalEngine.getInstance(this).release()
         // No63-D1: the service is unbound — the registry ages from here
@@ -582,6 +599,8 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     override fun onDestroy() {
+        // N2: name the lifecycle callback (see onInterrupt).
+        RuntimeLogger.log("SmartAssistAccessibilityEngine onDestroy: stopping execution loop", "SMART_ASSIST")
         stopExecutionLoop()
         AccessibilitySurvivalEngine.getInstance(this).release()
         // No63-D1: same as onUnbind — the service is gone.

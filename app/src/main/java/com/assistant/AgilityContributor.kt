@@ -4,7 +4,7 @@ import com.assistant.runtime.*
 import com.assistant.vision.CameraProfile
 import kotlin.math.*
 
-// No58: AgilityContributor is registered (AppContributorRegistration, 44
+// No58: AgilityContributor is registered (AppContributorRegistration, 43
 // contributors) and reached through GameplayEngineRegistry.collect(), which
 // is called once per assembled frame by RuntimeDecisionLoop.onFrame() on
 // the OverlayService capture coroutine. It does NOT override fastGate, so

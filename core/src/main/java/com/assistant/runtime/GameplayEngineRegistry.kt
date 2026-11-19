@@ -84,8 +84,8 @@ object GameplayEngineRegistry {
         // lock-free; a reset landing mid-collect must not let the writes below
         // resurrect entries for engines that are no longer registered.
         val epochAtStart = sessionEpoch.get()
-        // SPLENDOR_V43_FAST_GATE: Instant exit on untrusted frames (saves 44 engine calls)
-        // GER-D2: was 37; 44 contributors are registered
+        // SPLENDOR_V43_FAST_GATE: Instant exit on untrusted frames (saves 43 engine calls)
+        // GER-D2: was 37; 43 contributors are registered
         // (AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT).
         if (!frame.trusted) {
             // SPLENDOR_F31_TRUST_VISIBILITY: trust-blocked frames are now counted and logged

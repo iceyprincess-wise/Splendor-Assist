@@ -13,11 +13,15 @@ enum class RegistrationState { IDLE, REGISTERING, READY, PARTIAL, FAILED }
 
 object AppContributorRegistration {
 
-    const val EXPECTED_CONTRIBUTOR_COUNT = 44
+    // N1 (f58): 43 after the f57 deletion in no68 —
+    // keep this count and EXPECTED_CONTRIBUTOR_NAMES in sync with the
+    // listOf below; a stale count throws in check() and leaves the
+    // registry EMPTY (proven by Ed's 2026-11-18 logs: 43 != 44, Gens 1-13).
+    const val EXPECTED_CONTRIBUTOR_COUNT = 43
 
     // HIGH: Completeness invariant - explicit set of expected names
     private val EXPECTED_CONTRIBUTOR_NAMES = setOf(
-        "ThreatPriority", "CrossClaim", "KeeperBias", "PanicSave", "PassLane", "BallPress", "PressEvade", "Shot", "CrossDelivery",
+        "ThreatPriority", "CrossClaim", "KeeperBias", "PanicSave", "BallPress", "PressEvade", "Shot", "CrossDelivery",
         "MagneticFeet", "Passing", "Support", "Defense", "Evade", "AttackingVector", "Cross", "Agility", "WingBlock",
         "DashPressure", "InterceptMatrix", "TouchRecovery", "OverloadPlaystyle", "TruePass", "ReceiverEngagement", "ForwardRun",
         "ShotOpportunity", "DefenseAuthority", "ShotAnticipation", "KeeperFeedback", "DashAnchor", "SpeedCompensation",
@@ -131,7 +135,7 @@ object AppContributorRegistration {
                         com.assistant.gameplay.ApexFinisherEngine()
                     )
                     
-                    // MEDIUM: Runtime assertion for 44-contributor contract
+                    // MEDIUM: Runtime assertion for 43-contributor contract
                     check(allContributors.size == EXPECTED_CONTRIBUTOR_COUNT) {
                         "CRITICAL: Hardcoded contributor list size (${allContributors.size}) != expected ($EXPECTED_CONTRIBUTOR_COUNT)"
                     }

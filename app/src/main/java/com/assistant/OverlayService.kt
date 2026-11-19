@@ -123,6 +123,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
     private var interceptionBridge: com.assistant.overlay.bridge.InterceptionControlRoomBridge? = null
     private var processingThread: Thread? = null
     @Volatile private var reusableVisionBuffer: java.nio.ByteBuffer? = null
+    // N4: generation of the frame bytes currently held in
+    // reusableVisionBuffer. The listener allocates a FRESH buffer (never
+    // reuses the shared one) when the generation has advanced since the
+    // last copy, so an abandoned coroutine returning late can never read
+    // bytes overwritten by a newer frame.
+    @Volatile private var visionBufferGeneration = 0
     private var previousVisionLayout: Triple<Int, Int, Int>? = null
     @Volatile private var previousVisionBuffer: java.nio.ByteBuffer? = null
     // SPLENDOR_P6_DEDUP_DIAG_FIELDS_BEGIN
@@ -191,6 +197,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     @Volatile private var lastFrameProcessedMs = 0L
     private val visionInFlight = java.util.concurrent.atomic.AtomicBoolean(false)
+    // N4: frame generation. Bumped only by abandonWedgedVision(). A
+    // coroutine captures its generation at launch; if it returns after an
+    // abandon, its finally must NOT clear the new frame's flag and its
+    // late stages must NOT write shared state or dispatch.
+    private val visionGeneration = java.util.concurrent.atomic.AtomicInteger(0)
+    // N4: per-stage heartbeat of the in-flight vision coroutine, so the
+    // next wedge names the blocking stage instead of going silent.
+    @Volatile private var visionStage = "idle"
+    @Volatile private var visionStageStartedMs = 0L
 
     // V53: Hardware-level locks to prevent HyperOS CPU/Network suspension
     private var wakeLock: android.os.PowerManager.WakeLock? = null
@@ -203,6 +218,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
     // VISION_BUSY branch in imageAvailableListener). Reset in the vision
     // coroutine's finally block when the in-flight frame completes.
     @Volatile private var visionStuckHealArmed = false
+
+    // N7: throttle for the CAPTURE GATE OVERRIDE witness log (below).
+    @Volatile private var lastGateOverrideLogMs = 0L
 
     private val captureFrameIntervalMs: Long
         get() {
@@ -219,6 +237,25 @@ class OverlayService : Service(), ComponentCallbacks2 {
             // applies (HEAVY 100 ms, LIGHT 66 ms).
             val brake = try { com.assistant.LoadShedCaptureBrakeEngine.recommendedIntervalMs() } catch (_: Throwable) { 0L }
             val combined = if (brake > 0L) maxOf(memory, brake) else memory
+            // N7: in-game the memory brake is capped to 33 ms (and the gate
+            // itself to 16 ms at target 60 fps), so a CRITICAL tier changes
+            // nothing here. Say so, throttled, instead of letting the gate
+            // log claim a reduction that never happened. In-game only: out
+            // of game the memory interval applies in full, so there is no
+            // override to witness.
+            if (com.assistant.MemoryCaptureGateEngine.captureThrottle >= 3) {
+                val inGame = try { com.assistant.VisionTrust.isGameForeground() } catch (_: Throwable) { false }
+                if (inGame) {
+                    val nowMs = System.currentTimeMillis()
+                    if (nowMs - lastGateOverrideLogMs > 30_000L) {
+                        lastGateOverrideLogMs = nowMs
+                        try { com.assistant.diagnostic.RuntimeLogger.log(
+                            "CAPTURE GATE OVERRIDE: memory CRITICAL (throttle=3) but in-game interval stays ${combined.coerceAtMost(33L)}ms (memory asked ${memory}ms)",
+                            "MEMORY"
+                        ) } catch (_: Throwable) {}
+                    }
+                }
+            }
             return try {
                 if (com.assistant.VisionTrust.isGameForeground()) combined.coerceAtMost(33L) else combined
             } catch (_: Throwable) { combined }
@@ -362,7 +399,21 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     visionStuckHealArmed = true
                     RuntimeLogger.log("VISION_STUCK inFlightMs=${busyNow - visionStartTimeMs} busySkips=$visionBusySkips (recreating capture surfaces)", "OVERLAY")
                     keepAliveHandler.post {
-                        try { recreateCaptureSurfaces() } catch (_: Throwable) {}
+                        try {
+                            // N4: cancelChildren() alone cannot stop the
+                            // wedged coroutine (zero suspension points in
+                            // its body), so abandon it first — generation
+                            // bump + flag reset — then recreate. Guarded by
+                            // the same 5 s staleness: if the old coroutine
+                            // already returned and a fresh one started, its
+                            // visionStartTimeMs is fresh and must NOT be
+                            // abandoned. recreateCaptureSurfaces() still
+                            // runs unconditionally (pre-existing behaviour).
+                            if (visionStartTimeMs > 0L && System.currentTimeMillis() - visionStartTimeMs > 5_000L) {
+                                abandonWedgedVision()
+                            }
+                            recreateCaptureSurfaces()
+                        } catch (_: Throwable) {}
                     }
                 }
             }
@@ -370,9 +421,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
         val visionBuffer: java.nio.ByteBuffer = if (startVision) {
             val required = originalBuffer.remaining()
             val existing = reusableVisionBuffer
-            val buffer: java.nio.ByteBuffer = if (existing == null || existing.capacity() < required) {
+            // N4: allocate a FRESH buffer when the generation has advanced
+            // since the last copy — the previous generation's buffer may
+            // still be read by an abandoned coroutine returning late, and
+            // reusing it here would overwrite the bytes it is reading
+            // (the data race that killed the old 500 ms watchdog).
+            val buffer: java.nio.ByteBuffer = if (existing == null || existing.capacity() < required || visionGeneration.get() != visionBufferGeneration) {
                 val allocated = java.nio.ByteBuffer.allocateDirect(if (required > 0) required else 1)
                 reusableVisionBuffer = allocated
+                visionBufferGeneration = visionGeneration.get()
                 allocated
             } else {
                 existing
@@ -404,6 +461,25 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // Launch Vision Coroutine with SAFE copied buffer
         if (startVision) visionScope.launch {
             val visionStartedNanos = System.nanoTime()
+            // N4: the generation this coroutine belongs to. Abandoning a
+            // wedged coroutine bumps visionGeneration; this coroutine must
+            // then return early (guards below) and must not clear the new
+            // frame's flag in finally.
+            val frameGeneration = visionGeneration.get()
+            var t0 = visionStartedNanos
+            visionStage = "launch"
+            visionStageStartedMs = System.currentTimeMillis()
+            // N4: per-stage heartbeat. The body has zero suspension
+            // points, so if it wedges the last stage named here is the
+            // blocker; stages over 100 ms are logged immediately.
+            fun stage(name: String, startedNanos: Long) {
+                visionStage = name
+                visionStageStartedMs = System.currentTimeMillis()
+                val dtMs = (System.nanoTime() - startedNanos) / 1_000_000L
+                if (dtMs > 100L) {
+                    try { RuntimeLogger.log("VISION_STAGE_SLOW stage=$name dtMs=$dtMs", "OVERLAY") } catch (_: Throwable) {}
+                }
+            }
             try {
                 com.assistant.CrashForensics.mark(3, 2, captureFrameCount)
                 // Exact byte comparison: repeated capture content must not trigger another action.
@@ -427,13 +503,19 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     com.assistant.FrameAssembler.current()?.let { com.assistant.ActionOutcomeVerifier.verify(it) }
                     return@launch
                 }
+                stage("dedup", t0); t0 = System.nanoTime()
+                // N4: late return from dedup after an abandon — do not
+                // write shared state or dispatch on a stale frame.
+                if (frameGeneration != visionGeneration.get()) return@launch
                 previousVisionLayout = Triple(width, height, rowStride)
                 val normalized = com.assistant.FrameNormalizer.normalize(visionBuffer, width, height, rowStride, pixelStride, capturedAtNanos)
+                stage("normalize", t0); t0 = System.nanoTime()
                 com.assistant.CrashForensics.mark(4, 2, captureFrameCount)
                 val prevBuf = previousVisionBuffer
                 val opticalVariance = if (prevBuf != null && prevBuf.remaining() == visionBuffer.remaining()) {
                     try { com.assistant.NativeBridge.nativeComputeOpticalVariance(visionBuffer, prevBuf, width, height, rowStride, 0, 0, width, height).coerceIn(0f, 1f) } catch (_: Throwable) { 0f }
                 } else 0f
+                stage("opticalVariance", t0); t0 = System.nanoTime()
                 val cap = visionBuffer.remaining()
                 val prevStore = previousVisionBuffer
                 val targetBuf = if (prevStore == null || prevStore.capacity() < cap) {
@@ -449,7 +531,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 visionBuffer.position(pos)
                 targetBuf.flip()
                 com.assistant.ControlMappingTrainer.observe(visionBuffer, width, height, rowStride, pixelStride)
+                stage("observe", t0); t0 = System.nanoTime()
                 val state = com.assistant.VisionCore.process(normalized)
+                stage("visionCore", t0); t0 = System.nanoTime()
+                // N4: late return from VisionCore after an abandon — do not
+                // train, ignite, assemble, or dispatch on a stale frame.
+                // (The shared previousVisionBuffer copy above may already
+                // have run with stale bytes; that only perturbs one
+                // frame's variance/dedup input, it cannot dispatch.)
+                if (frameGeneration != visionGeneration.get()) return@launch
                 com.assistant.CrashForensics.mark(4, 2, captureFrameCount)
                 com.assistant.BoosterIgnition.ensureIgnited(this@OverlayService)
                 com.assistant.AppContributorRegistration.ensureRegistered()
@@ -457,15 +547,18 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 com.assistant.CrashForensics.mark(5, 3, captureFrameCount)
                 com.assistant.CrashForensics.setEngineStage(5)
                 val frame = com.assistant.FrameAssembler.assemble(opticalVariance, capturedAtNanos)
+                stage("assemble", t0); t0 = System.nanoTime()
                 // F37-D7: cross-process capture heartbeat for LagVerdictEngine
                 // (:survival cannot see FrameAssembler — a main-process object).
                 try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishCaptureHeartbeat() } catch (_: Throwable) {}
                 com.assistant.CrashForensics.mark(6, 3, captureFrameCount)
                 com.assistant.RuntimeDecisionLoop.onFrame(frame)
+                stage("onFrame", t0); t0 = System.nanoTime()
                 com.assistant.CrashForensics.mark(6, 3, captureFrameCount)
                 // WIRE SILOED GK ENGINES: Activate Dive, Claim, Rush, and Block action engines
                 com.assistant.GameStateBuilder.update(state)
                 com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(visionBuffer, width, height, rowStride)
+                stage("gameState+keeperScan", t0)
             } catch (t: Throwable) {
                 val now = System.currentTimeMillis()
                 if (now - lastCaptureFaultLog > 1000L) {
@@ -477,10 +570,16 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     this@OverlayService, System.nanoTime() - visionStartedNanos,
                     com.assistant.MemoryCaptureGateEngine.targetFps
                 )
-                visionInFlight.set(false)
-                // No68-C-D18: a completed frame clears the stuck-heal arm
-                // so a later, separate stall can heal again.
-                visionStuckHealArmed = false
+                // N4: only the CURRENT generation may clear the flag and
+                // re-arm the heal. An abandoned coroutine returning late
+                // used to clear a fresh frame's flag here, dropping every
+                // later frame until the next restart.
+                if (frameGeneration == visionGeneration.get()) {
+                    visionInFlight.set(false)
+                    // No68-C-D18: a completed frame clears the stuck-heal arm
+                    // so a later, separate stall can heal again.
+                    visionStuckHealArmed = false
+                }
             }
         }
 
@@ -575,6 +674,26 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    // N4: abandon a wedged vision coroutine. cancelChildren() cannot stop
+    // it — the body has zero suspension points, so cancellation is never
+    // observed — and its finally is the ONLY writer that clears
+    // visionInFlight. Abandoning means: cancel (harmless if it ever does
+    // suspend), bump the generation so the late finally cannot clear a
+    // fresh frame's flag and the late guards return early, clear the flag
+    // so the next frame can start, and re-arm the stuck-heal so a later
+    // stall heals again. Safe to call when nothing is wedged: the CAS
+    // fails and nothing changes. The abandoned coroutine keeps its
+    // Default worker until it returns (leak: one worker per wedge) and
+    // keeps its own (now per-generation) buffer — see the listener copy.
+    // Callers: the VISION_STUCK heal and restartCapture().
+    private fun abandonWedgedVision() {
+        if (!visionInFlight.compareAndSet(true, false)) return
+        val generation = visionGeneration.incrementAndGet()
+        visionStuckHealArmed = false
+        val stuckMs = if (visionStartTimeMs > 0L) System.currentTimeMillis() - visionStartTimeMs else -1L
+        try { RuntimeLogger.log("VISION_ABANDONED generation=$generation stage=$visionStage stageMs=${if (visionStageStartedMs > 0L) System.currentTimeMillis() - visionStageStartedMs else -1L} inFlightMs=$stuckMs busySkips=$visionBusySkips (wedged coroutine abandoned; next frame may start)", "OVERLAY") } catch (_: Throwable) {}
+    }
+
     fun restartCapture(): Boolean {
         captureLock.lock()
         try {
@@ -595,6 +714,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 }
                 lastFrameProcessedMs = 0L
                 captureFrameCount = 0L
+                // N4: a restart must reset the vision pipeline, not just
+                // the ImageReader — abandon any wedged coroutine so the
+                // next frame can start (previously the flag stayed set and
+                // every later frame was VISION_BUSY_SKIP).
+                abandonWedgedVision()
                 RuntimeLogger.log("AGENT CAPTURE RESTART: ImageReader replaced successfully", "AGENT")
                 return true
             } catch (e: Exception) {
@@ -642,7 +766,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
               com.assistant.RuntimeSelfHealEngine.start() } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("RuntimeSelfHealEngine init/start failed: ${t.message}", "OVERLAY") }
         // F37-D5: register contributors at service start, not only after the
         // first assembled frame — otherwise a never-started capture leaves
-        // the registry at 0/44 forever. The frame-path call stays as well.
+        // the registry at 0/43 forever. The frame-path call stays as well.
         try { com.assistant.AppContributorRegistration.ensureRegistered() } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("AppContributorRegistration.ensureRegistered at startup failed: ${t.message}", "OVERLAY") }
         try { com.assistant.CaptaincySkillEngine.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CaptaincySkillEngine.init failed: ${t.message}", "OVERLAY") }
         try { com.assistant.CrowdingZoneDetector.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CrowdingZoneDetector.init failed: ${t.message}", "OVERLAY") }
@@ -1010,6 +1134,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
         )
         com.assistant.vision.CameraProfile.logDiagnosticsOnce()
         // SPLENDOR_V12A_CAMERA_PROFILE_END
+        // N5: publish the live capture bounds to core so the dispatch
+        // choke point (HybridExecutionTerminal.route) can clamp requests
+        // to this frame — core cannot read CameraProfile (app module).
+        try { com.assistant.execution.DispatchBounds.set(finalWidth.toFloat(), finalHeight.toFloat()) } catch (_: Throwable) {}
 
         val isInitial = virtualDisplay == null
         val dimensionsChanged = finalWidth != currentWidth || finalHeight != currentHeight || metrics.densityDpi != currentDpi
@@ -1043,6 +1171,14 @@ class OverlayService : Service(), ComponentCallbacks2 {
             
             // V38 LOOP_FROZEN FIX: Force-kill stuck vision coroutines safely without race condition
             visionScope.coroutineContext.cancelChildren()
+            // N6: a rotation changes the frame space (288x640 <-> 640x288).
+            // The ball-velocity bridge keeps its previous position across
+            // publishes with no space tag, so one velocity sample straddles
+            // the rotation. Reset it when the dimensions change so the next
+            // publish has no previous frame instead of a cross-era delta.
+            if (dimensionsChanged) {
+                try { com.assistant.BallTelemetryBridge.reset() } catch (_: Throwable) {}
+            }
             // Do NOT prematurely force visionInFlight = false while background coroutine is still reading/assembling
             // visionInFlight resets cleanly in the coroutine finally block
             
@@ -1290,7 +1426,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // subsumed: clearAll() clears each key through clear(), which
         // is what clearPrefix did per key.
         com.assistant.vision.OverlaySelfMask.clearAll()
-        com.assistant.RuntimeCoordinator.shutdown()
+        com.assistant.RuntimeCoordinator.shutdown(caller = "OverlayService.onDestroy")
         OverlaySurvivalEngine.destroyed()
 
         isRunning = false

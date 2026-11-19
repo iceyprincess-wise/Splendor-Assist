@@ -303,8 +303,9 @@ object CentralExecutionBus {
     // start()) is kept: the consumer starts at G5, and any pre-G5
     // submission queues in the ring (<=1024) and is consumed at G5 or
     // goes stale - bounded, not a leak.
-    @Synchronized fun start() { running.set(true); updateStatistics(force = true) }
-    @Synchronized fun stop() {
+    @Synchronized fun start() { running.set(true); RuntimeLogger.log("CentralExecutionBus started", "CentralExecutionBus"); updateStatistics(force = true) }
+    @Synchronized fun stop(reason: String = "unspecified") {
+        RuntimeLogger.log("CentralExecutionBus stopped reason=$reason", "CentralExecutionBus")
         running.set(false)
         for (ring in listOf(highRing, medRing, lowRing)) {
             while (ring.readCursor.get() < ring.writeCursor.get()) {
