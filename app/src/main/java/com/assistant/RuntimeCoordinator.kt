@@ -134,6 +134,11 @@ object RuntimeCoordinator {
         evaluate()
     }
 
+    // B3: the gate-recovery engine reads the gate states without going
+    // through the full runtimeState() map (which re-checks the fleet).
+    fun isAccessibilityReady(): Boolean = accessibilityReady.get()
+    fun isCaptureReady(): Boolean = captureReady.get()
+
     @Synchronized
     fun reportCaptureReady() {
         // Fires on EVERY captured frame. Once the runtime is up there is nothing

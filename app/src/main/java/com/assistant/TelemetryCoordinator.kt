@@ -127,6 +127,10 @@ object TelemetryCoordinator {
         // (Still zero callers repo-wide — the producer is QE2-2.)
         val safeVelocity = if (velocity.isFinite()) velocity else 0f
         val safeDistance = if (opponentDistance.isFinite()) opponentDistance else Float.MAX_VALUE
+        // B2 / Q68-54: this writer stamps only the legacy shared
+        // timestamp — never ballTimestampMs / goalkeeperTimestampMs.
+        // A player-motion write must not refresh ball or keeper
+        // freshness (that was the shared-timestamp defect).
         TelemetryRepository.update { current ->
             current.copy(
                 playerVelocity = safeVelocity,
@@ -166,6 +170,8 @@ object TelemetryCoordinator {
                 ballVelocityY = safeVy,
                 confidence = safeConfidence,
                 timestamp = System.currentTimeMillis(),
+                // B2 / Q68-54: the ball writer stamps only the ball field.
+                ballTimestampMs = System.currentTimeMillis(),
                 captureWidth = com.assistant.vision.CameraProfile.captureWidth,
                 captureHeight = com.assistant.vision.CameraProfile.captureHeight
             )
@@ -198,6 +204,10 @@ object TelemetryCoordinator {
                 goalkeeperY = safeY,
                 goalkeeperConfidence = safeConfidence,
                 timestamp = if (realDetection) System.currentTimeMillis() else current.timestamp,
+                // B2 / Q68-54: the keeper writer stamps only the keeper
+                // field, and only on a real detection (same rule as the
+                // legacy stamp above).
+                goalkeeperTimestampMs = if (realDetection) System.currentTimeMillis() else current.goalkeeperTimestampMs,
                 captureWidth = com.assistant.vision.CameraProfile.captureWidth,
                 captureHeight = com.assistant.vision.CameraProfile.captureHeight
             )

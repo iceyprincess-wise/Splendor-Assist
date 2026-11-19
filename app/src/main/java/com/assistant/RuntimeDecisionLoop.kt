@@ -129,6 +129,10 @@ object RuntimeDecisionLoop {
     // routeRejected: the bus never saw it, and the room's "Decision
     // Routed=" must stop climbing while the user is hands-off.
     private val moveHeldNoTouch = AtomicLong(0L)
+    // B10: MOVE requests suppressed by the HEAVY load-shed brake
+    // (chooseRequest). Counted separately from the no-touch hold: the
+    // brake suppresses even while the user IS touching.
+    private val loadShedMoveSuppressed = AtomicLong(0L)
 
     @Volatile private var lastAction: String = "none"
     @Volatile private var lastWeight: Float = 0f
@@ -184,6 +188,12 @@ object RuntimeDecisionLoop {
             settingsExit.incrementAndGet(); com.assistant.execution.UiExecutionGate.block("control-calibration"); return false
         }
         ControlMappingTrainer.observeOutcome(frame)
+
+        // D13: sanitize Ed's through press, if this frame carries one.
+        // User-only: the gateway fires only on a fresh physical
+        // press candidate + a viable through lane, and never initiates
+        // a through pass on its own. Best-effort (never fails onFrame).
+        try { ThroughPassSanitizerGateway.maybeSanitize(frame) } catch (_: Throwable) { }
 
         // SPLENDOR_AUTHORITY_REACHES_ARBITRATION_V1 - the master authority
         // slider used to reach RuntimeObservation only, so it could not change
@@ -331,8 +341,26 @@ object RuntimeDecisionLoop {
         // now explicit: a parked entry is the fallback when arbitration
         // has no best; it never outranks a live best (bus rings already
         // give GK/INT priority over SMART_ASSIST).
-        if (parked != null && best == null) return parked
+        if (parked != null && best == null) {
+            // B10: the load-shed MOVE gate applies to the parked request
+            // too — a parked MOVE is still a MOVE under HEAVY shed.
+            if (parked.actionClass == ActionClass.MOVE && LoadShedCaptureBrakeEngine.suppressMoveGestures()) {
+                loadShedMoveSuppressed.incrementAndGet()
+                return null
+            }
+            return parked
+        }
         if (best == null) return null
+
+        // B10: HEAVY load shed suppresses MOVE-class requests (Q68-14:
+        // suppressMoveGestures() had zero callers; this is its consumer
+        // in chooseRequest). Action-class gestures still pass, per the
+        // brake's KDoc — only MOVE is filtered, by design: that is what
+        // the brake is for.
+        if (best.actionClass == ActionClass.MOVE && LoadShedCaptureBrakeEngine.suppressMoveGestures()) {
+            loadShedMoveSuppressed.incrementAndGet()
+            return null
+        }
 
         // Contributor targets carry action-specific intent (goal, receiver, movement).
         var leadX = best.targetX
@@ -491,6 +519,11 @@ object RuntimeDecisionLoop {
         if (contribution.controlSlot != 0) contribution.controlSlot else when (contribution.actionClass) {
             ActionClass.PASS, ActionClass.CROSS -> 3
             ActionClass.SHOT -> 2
+            // D13: a through pass is pressed on slot 1 (Through). A
+            // THROUGH contribution therefore routes from the Through
+            // button and is gated on slot 1 being trained, like every
+            // other slot-routed action.
+            ActionClass.THROUGH -> 1
             else -> 0
         }
 
@@ -531,6 +564,7 @@ object RuntimeDecisionLoop {
         idleUntrustedFg.set(0L); idleUntrustedFrame.set(0L); idleUntrustedVariance.set(0L)
         gateBlocked.set(0L); staleFrame.set(0L); settingsExit.set(0L); routeRejected.set(0L); chooseNull.set(0L)
         moveHeldNoTouch.set(0L)
+        loadShedMoveSuppressed.set(0L)
         lastAction = "none"; lastWeight = 0f; lastUpdatedMs = 0L
     }
 
@@ -548,6 +582,7 @@ object RuntimeDecisionLoop {
         "routeRejected" to routeRejected.get(),
         "chooseNull" to chooseNull.get(),
         "moveHeldNoTouch" to moveHeldNoTouch.get(),
+        "loadShedMoveSuppressed" to loadShedMoveSuppressed.get(),
         "lastAction" to lastAction,
         "lastWeight" to lastWeight,
         "lastUpdatedMs" to lastUpdatedMs,

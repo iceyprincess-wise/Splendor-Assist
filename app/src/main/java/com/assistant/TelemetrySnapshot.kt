@@ -100,6 +100,15 @@ data class TelemetrySnapshot(
     // MAX_TELEMETRY_AGE_MS window instead of as no-data.
     val timestamp: Long = 0L,
 
+    // B2 / Q68-54: SPLIT freshness timestamps. The single shared
+    // `timestamp` below served both the ball and the keeper, so a keeper
+    // write refreshed ball freshness (and vice versa) — the keeper scan
+    // then read a stale ball as fresh. Writers stamp only their own
+    // field; consumers read the split fields (legacy `timestamp` is
+    // still stamped by both writers for old readers). 0 = never written.
+    val ballTimestampMs: Long = 0L,
+    val goalkeeperTimestampMs: Long = 0L,
+
     val playerVelocity: Float = 0f,
     // No68-E2-D12: Float.MAX_VALUE is the no-data sentinel, not a
     // measurement — a real opponent distance never reaches it. (The

@@ -210,6 +210,49 @@ object ControlMappingTrainer {
     private val emaMs = FloatArray(8)
     private val emaN = IntArray(8)
     private val baseMs = floatArrayOf(30f, 30f, 30f, 30f, 30f, 30f, 30f, 30f)
+
+    // D13: through-press STATE recording. The app cannot see a hardware
+    // press (no touch coordinates reach it), so the observable signal
+    // is the slot-1 centre pixel leaving its at-rest green while the
+    // user is touching: the finger occludes the Through button (or the
+    // game highlights it while held). Two consecutive occluded
+    // in-match frames = a press CANDIDATE — an inference, logged as
+    // such, never a confirmed press. Read by FrameAssembler
+    // (frame.throughPressed) and the sanitizer gateway.
+    @Volatile private var lastThroughPressMs = 0L
+    @Volatile private var throughPressCandidateActive = false
+    private var slot1OccludedFrames = 0
+    private var lastThroughCandidateLogMs = 0L
+
+    /** Wall time of the last through-press candidate, or 0 when none. */
+    fun lastThroughPressMs(): Long = lastThroughPressMs
+
+    /** True while a press candidate is fresh (within 250 ms). */
+    fun throughPressCandidateFresh(nowMs: Long = System.currentTimeMillis()): Boolean =
+        throughPressCandidateActive && nowMs - lastThroughPressMs <= 250L
+
+    private fun recordThroughPressState(
+        b: java.nio.ByteBuffer, w: Int, h: Int, stride: Int, pixelStride: Int
+    ) {
+        val now = System.currentTimeMillis()
+        val slot1Green = probe(b, w, h, stride, slotX[1], slotY[1], pixelStride) && isGreen()
+        if (!slot1Green && UserTouchState.isTouching()) slot1OccludedFrames++ else slot1OccludedFrames = 0
+        if (slot1OccludedFrames >= 2) {
+            throughPressCandidateActive = true
+            lastThroughPressMs = now
+            if (now - lastThroughCandidateLogMs >= 60_000L) {
+                lastThroughCandidateLogMs = now
+                try {
+                    com.assistant.diagnostic.RuntimeLogger.log(
+                        "THROUGH_PRESS_CANDIDATE slot=1 occludedFrames=$slot1OccludedFrames (inferred: finger occludes the Through button while touching; NOT a confirmed hardware press)",
+                        "TRAINER"
+                    )
+                } catch (_: Throwable) { }
+            }
+        } else if (now - lastThroughPressMs > 250L) {
+            throughPressCandidateActive = false
+        }
+    }
     @Volatile private var pendingClass = -1
     @Volatile private var pendingMs = 0L
     @Volatile private var pendingAt = 0L
@@ -312,10 +355,21 @@ object ControlMappingTrainer {
             // L11 (batch 1): the maxDrag probe runs here, throttled to
             // once per second inside measureMaxDrag, and only while armed.
             if (maxDragProbeActive) measureMaxDrag(buffer, w, h, rowStride, pixelStride)
+            // D13: record the through-press state every in-match frame
+            // (slot-1 pixel + touch signal → press candidate).
+            recordThroughPressState(buffer, w, h, rowStride, pixelStride)
         }
     }
 
     fun recordDispatch(phaseOrdinal: Int, durationMs: Long) {
+        // D13: a THROUGH phase (ordinal 8) is the user's own press
+        // sanitized by the gateway at a fixed 75 ms stroke — its
+        // duration is not outcome-learned. Without this guard it would
+        // coerce into bucket 7 (NONE) and train that bucket.
+        if (phaseOrdinal == ActionClass.THROUGH.ordinal) {
+            pendingClass = -1
+            return
+        }
         pendingClass = phaseOrdinal.coerceIn(0, 7)
         pendingMs = durationMs
         pendingAt = System.currentTimeMillis()
@@ -338,6 +392,9 @@ object ControlMappingTrainer {
     }
 
     fun personalDuration(actionClass: ActionClass, hint: Long): Long {
+        // D13: THROUGH has no outcome-learned bucket (see
+        // recordDispatch) — the hint passes through unchanged.
+        if (actionClass == ActionClass.THROUGH) return hint
         val i = actionClass.ordinal.coerceIn(0, 7)
         if (emaN[i] < 4) return hint
         val scale = (emaMs[i] / baseMs[i]).coerceIn(0.8f, 1.25f)
@@ -357,6 +414,9 @@ object ControlMappingTrainer {
         "maxDragPx" to (measuredMaxDragPx?.toString() ?: "unmeasured"),
         "maxDragProbeActive" to maxDragProbeActive,
         "maxDragProbeSamples" to maxDragProbeSamples.get(),
+        // D13: the through-press candidate state.
+        "throughPressCandidateActive" to throughPressCandidateActive,
+        "lastThroughPressMs" to lastThroughPressMs,
         "lastMove" to lastMove
     )
 
@@ -373,6 +433,12 @@ object ControlMappingTrainer {
         maxDragProbeAttempts = 0
         lastMaxDragMeasureMs = 0L
         maxDragProbeActive = true
+        // D13: a reset clears the press candidate (a stale candidate
+        // must not survive a reset and sanitize a later press).
+        lastThroughPressMs = 0L
+        throughPressCandidateActive = false
+        slot1OccludedFrames = 0
+        lastThroughCandidateLogMs = 0L
         com.assistant.execution.DispatchBounds.setMaxDrag(null)
     }
 }

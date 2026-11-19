@@ -99,6 +99,12 @@ object VisionCore {
         frame: FrameNormalizer.NormalizedFrame
     ): GameStateSnapshot {
 
+        // B7: real frame-time measurement — the vision latency producer.
+        // process() IS the frame processing; its wall time is the latency
+        // VisionLatencyMonitor.update() was waiting for (Q68-57: measure,
+        // never derive from FPS). Reported on both exits below.
+        val processStartedNanos = System.nanoTime()
+
         val blobs =
             VisionPreprocessor.process(frame)
 
@@ -137,7 +143,9 @@ val ball =
 // better than dropping vision entirely). D1: capture is NOT slowed;
 // this path is strictly cheaper than full vision.
 if (MemoryCaptureGateEngine.shouldSkipFullVision()) {
-    return processBallOnly(filteredBlobs, ball)
+    val ballOnlyState = processBallOnly(filteredBlobs, ball)
+    reportVisionLatency(processStartedNanos)
+    return ballOnlyState
 }
 
 val goal =
@@ -269,6 +277,36 @@ SceneTracker.update(
           ball.x,
           com.assistant.vision.CameraProfile.captureWidthOrFallback()
       )
+
+  // B4: the low-block wiring — the FIRST live caller of
+  // LowBlockContainmentEngine (zero callers before this round). The
+  // defenders are our tracked players; the movements are published to
+  // the world store (frame → DefenseContributor). QD-3 is UNRESOLVED,
+  // so the frame's lowBlockActive gate stays false and no consumer
+  // applies these movements yet — they are computed + published, not
+  // acted on, until Ed defines the X-geometry.
+  val lowBlockMovements =
+      run {
+          val defenders = scene.trackedPlayers.filter { it.isUserTeam }
+          if (defenders.isEmpty()) {
+              emptyList<com.assistant.runtime.LowBlockMovement>()
+          } else {
+              val result = LowBlockContainmentEngine.applyLowBlockContainment(
+                  ball.x,
+                  ball.y,
+                  com.assistant.vision.CameraProfile.captureWidthOrFallback(),
+                  com.assistant.vision.CameraProfile.captureHeightOrFallback(),
+                  defenders.map { Pair(it.x, it.y) }
+              )
+              result.movements.mapIndexed { index, target ->
+                  com.assistant.runtime.LowBlockMovement(
+                      defenderId = defenders[index].id,
+                      targetX = target.first,
+                      targetY = target.second
+                  )
+              }
+          }
+      }
 
   // L14 (batch 1): the tracked defender's home on the tight line. The
   // stopper anchor in DefenseContributor reads it off the frame.
@@ -546,6 +584,10 @@ val offsideRiskEstimationResult =
             teamShape = teamShape,
             defensiveLine = defensiveLine,
             defensiveStance = defensiveStance,
+            // B5: the user line itself, as a store field (first publish).
+            userLine = userLine,
+            // B4: the low-block movement list (computed above).
+            lowBlockMovements = lowBlockMovements,
             defenderHome = defenderHome,
             offensiveLine = offensiveLine,
             occupancy = occupancy,
@@ -585,7 +627,18 @@ val offsideRiskEstimationResult =
 )
     )
 
+reportVisionLatency(processStartedNanos)
 return state
+    }
+
+    // B7: the vision-latency producer — reports this process() call's
+    // measured wall time (ms) to VisionLatencyMonitor. A non-positive
+    // or absurd reading is never reported (the monitor guards anyway).
+    private fun reportVisionLatency(processStartedNanos: Long) {
+        val elapsedMs = (System.nanoTime() - processStartedNanos) / 1_000_000f
+        if (elapsedMs.isFinite() && elapsedMs >= 0f) {
+            try { VisionLatencyMonitor.update(elapsedMs) } catch (_: Throwable) { }
+        }
     }
 
     // L1 (batch 1): the CRITICAL-memory ball-only path — the cheap half of

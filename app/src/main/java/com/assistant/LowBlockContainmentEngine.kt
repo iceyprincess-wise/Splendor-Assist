@@ -96,6 +96,22 @@ import kotlin.math.hypot
 object LowBlockContainmentEngine {
 
     /**
+     * B4 / QD-3 (Q68-27): the axis rework has NOT landed. This engine's
+     * activation (ballY > 0.70 × height) and line (a Y) are Y-axis
+     * geometry, but the proven attack model runs along X (goals at the
+     * X ends) — so "deep" must be ball-X near our goal, not ball-Y.
+     * QD-3 closes only when Ed defines the X-geometry (activation
+     * threshold on ball-X vs the own-goal edge, line-X, spread along Y)
+     * or confirms Y is intended. Until then this flag is false and no
+     * consumer may apply the movements: the wiring (VisionCore →
+     * world store → frame → DefenseContributor) is live and the
+     * movements are published, but lowBlockActive stays false so a
+     * wrong-axis shape can never move a defender. Flip this ONLY in
+     * the round that lands the X rework, with the geometry in the KDoc.
+     */
+    const val QD3_AXIS_RESOLVED = false
+
+    /**
      * Deep low-block defensive cover and spatial squeeze.
      */
     fun applyLowBlockContainment(

@@ -108,6 +108,10 @@ object SceneTracker {
 
     private val mutationLock = Any()
 
+    // B6: measured inter-update gap for the px/s conversion
+    // (PlayerMotionProducer). 0 = no previous update yet.
+    private var lastUpdateElapsedMs = 0L
+
     private var trackedGoalkeeper: TrackedPlayer? = null
 
     // ADMIN-TUNABLE (defaults = original hard-coded values)
@@ -129,6 +133,7 @@ object SceneTracker {
         trackedBallX = 0f
         trackedBallY = 0f
         trackedBallSpeed = 0f
+        lastUpdateElapsedMs = 0L
         trackedPlayers.clear()
         trackedGoalkeeper = null
         latest = SceneSnapshot()
@@ -202,6 +207,29 @@ object SceneTracker {
                 keeper.lastSeenFrame =
                     frameCounter
             }
+        }
+
+        // B6 (PlayerMotionProducer): per-player velocity in px/s from the
+        // MEASURED inter-update gap — never from a guessed fps. The
+        // per-frame EMA displacement (velocityX/Y) times 1000/dtMs is
+        // px/s; an unbelievable gap (first update, stall, clock jump)
+        // yields 0, never a scaled-up guess. Runs after associate() AND
+        // after the keeper displacement above, so the displacement it
+        // converts is this frame's for every track. Wall clock, not
+        // elapsedRealtime: the plain-JVM harness cannot run the Android
+        // clock stub, and a wall-clock jump only ever lands outside the
+        // 8..250 ms window — i.e. 0, the safe direction — never a wrong
+        // velocity.
+        run {
+            val nowMs = System.currentTimeMillis()
+            val dtMs = if (lastUpdateElapsedMs == 0L) 0L else nowMs - lastUpdateElapsedMs
+            lastUpdateElapsedMs = nowMs
+            val convert = { track: TrackedPlayer ->
+                track.velocityXPerSecond = PlayerMotionProducer.perSecond(track.velocityX, dtMs)
+                track.velocityYPerSecond = PlayerMotionProducer.perSecond(track.velocityY, dtMs)
+            }
+            trackedPlayers.forEach(convert)
+            trackedGoalkeeper?.let(convert)
         }
 
         // prune the dead: unseen too long or fully faded

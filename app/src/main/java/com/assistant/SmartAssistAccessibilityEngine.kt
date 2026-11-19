@@ -82,6 +82,10 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     private lateinit var dispatcher: ActiveGestureController
     private lateinit var busHandler: Handler
     private lateinit var busThread: HandlerThread
+    // B3: the bus consumer's liveness, tracked explicitly — a quit
+    // HandlerThread is dead even though the service object may still
+    // be alive (onInterrupt), and the recovery engine reads this.
+    @Volatile private var busConsumerAlive = false
 
     private val windowDispatches = AtomicLong(0L)
     @Volatile private var windowStartMs = 0L
@@ -412,6 +416,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
         busThread = HandlerThread("SmartAssistBus", Process.THREAD_PRIORITY_URGENT_DISPLAY).apply { start() }
         busHandler = Handler(busThread.looper)
+        busConsumerAlive = true
 
         dispatcher = ActiveGestureController(this)
         globalInstance = this
@@ -557,7 +562,44 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         }
     }
 
-    private fun stopExecutionLoop() {
+    /**
+     * B3 — re-establishes the bus consumer after a G1 loss. This is NOT
+     * a bus restart (forbidden): it recreates the dead HandlerThread +
+     * Handler, re-attaches the execution loop, and re-reports G1 ready
+     * so RuntimeCoordinator's normal G5 path re-enables the bus. Called
+     * by AccessibilityGateRecoveryEngine (self-heal cycle). Returns false
+     * when the consumer could not be rebuilt (the engine retries).
+     */
+    @Synchronized fun isBusConsumerAlive(): Boolean {
+        if (!busConsumerAlive) return false
+        if (!::busThread.isInitialized || !::busHandler.isInitialized) return false
+        return busThread.isAlive
+    }
+
+    @Synchronized fun restartBusConsumer(): Boolean {
+        if (isBusConsumerAlive()) return true
+        return try {
+            if (::busThread.isInitialized) {
+                try { busThread.quitSafely() } catch (_: Throwable) { }
+            }
+            busThread = HandlerThread("SmartAssistBus", Process.THREAD_PRIORITY_URGENT_DISPLAY).apply { start() }
+            busHandler = Handler(busThread.looper)
+            busConsumerAlive = true
+            globalInstance = this
+            RuntimeCoordinator.attachExecutionLoop(
+                start = { busHandler.post(busRunnable) },
+                stop = { stopExecutionLoop() }
+            )
+            // The coordinator re-enables the bus through its normal G5
+            // path (bus start + startExecutionLoop post); this method
+            // never touches CentralExecutionBus directly.
+            RuntimeCoordinator.reportAccessibilityReady()
+            true
+        } catch (_: Throwable) { false }
+    }
+
+    private fun stopExecutionLoop(clearInstance: Boolean = true) {
+        busConsumerAlive = false
         if (::busHandler.isInitialized) {
             busHandler.removeCallbacks(busRunnable)
         }
@@ -565,7 +607,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             busThread.quitSafely()
         }
         releaseDispatch()
-        if (globalInstance === this) {
+        if (clearInstance && globalInstance === this) {
             globalInstance = null
         }
         RuntimeCoordinator.reportAccessibilityLost()
@@ -579,7 +621,11 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // L4 (batch 1): teardown attribution — a system interrupt is an
         // external teardown event for the next shutdown().
         com.assistant.TeardownAttributionEngine.noteInterrupt()
-        stopExecutionLoop()
+        // B3: an interrupt kills the consumer thread but the service
+        // object is still alive — keep globalInstance so the gate
+        // recovery engine can find it and rebuild the consumer. (onUnbind
+        // / onDestroy still clear it: the service is really gone there.)
+        stopExecutionLoop(clearInstance = false)
         AccessibilitySurvivalEngine.interrupted()
         AccessibilitySurvivalEngine.getInstance(this).release()
         RuntimeLogger.log(

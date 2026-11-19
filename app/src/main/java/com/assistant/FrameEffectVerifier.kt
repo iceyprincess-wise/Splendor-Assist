@@ -49,7 +49,7 @@ object FrameEffectVerifier {
         val ownerChanged = pre.ownerId != post.ownerId
         val possessionFlipped = pre.hasBall != post.hasBall
         return when (actionClass) {
-            ActionClass.PASS, ActionClass.SHOT, ActionClass.CROSS ->
+            ActionClass.PASS, ActionClass.SHOT, ActionClass.CROSS, ActionClass.THROUGH ->
                 ownerChanged || possessionFlipped || moved > 8f
             ActionClass.MOVE, ActionClass.EVADE ->
                 moved > 2f

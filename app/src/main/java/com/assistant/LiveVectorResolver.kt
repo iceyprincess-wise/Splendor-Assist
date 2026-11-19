@@ -109,8 +109,11 @@ object LiveVectorResolver {
 
         // SPLENDOR_P12_T2_STALE: a frozen snapshot used to read as real data
         // (any nonzero ball coordinate counted), so a stale point produced a
-        // "real" vector. Require a fresh snapshot.
-        val snapshotFresh = System.currentTimeMillis() - t.timestamp <= MAX_TELEMETRY_AGE_MS
+        // "real" vector. Require a fresh snapshot — freshness reads the
+        // SPLIT ball timestamp (B2 / Q68-54: the shared stamp was
+        // refreshed by keeper writes, so a stale ball read as fresh).
+        val ballStamped = if (t.ballTimestampMs > 0L) t.ballTimestampMs else t.timestamp
+        val snapshotFresh = System.currentTimeMillis() - ballStamped <= MAX_TELEMETRY_AGE_MS
         val hasReal = snapshotFresh && (t.ballX != 0f || t.ballY != 0f ||
                       t.playerVelocity != 0f ||
                       t.opponentDistance != Float.MAX_VALUE)

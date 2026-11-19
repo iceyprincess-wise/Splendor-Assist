@@ -105,6 +105,18 @@ data class Phase3WorldState(
     // L13 (batch 1): the tight defensive stance (DefensiveStanceProducer),
     // computed in VisionCore from computeUserLine. Read by FrameAssembler.
     val defensiveStance: DefensiveStance = DefensiveStance(false),
+    // B5 (batch 2): the raw user line itself (DefensiveLineEngine.
+    // computeUserLine), published as a store field by VisionCore — the
+    // stance above is derived from it. Read by FrameAssembler (frame
+    // userLineX/Spread/Found). userLine.found=false = no line this frame.
+    val userLine: DefensiveLineResult = DefensiveLineResult(false),
+    // B4 (batch 2): the low-block movement list, one target per defender
+    // (by defender id), computed in VisionCore from
+    // LowBlockContainmentEngine. Read by FrameAssembler. The movements
+    // are published even while QD-3 is unresolved; the frame's
+    // lowBlockActive gate (not this list) decides whether a consumer
+    // may apply them.
+    val lowBlockMovements: List<com.assistant.runtime.LowBlockMovement> = emptyList(),
     // L14 (batch 1): the tracked defender's home on the tight line
     // (HomePositionProducer), computed in VisionCore. Read by
     // FrameAssembler; DefenseContributor uses it as the stopper anchor.

@@ -144,8 +144,12 @@ class ThroughPassSanitizer(
      * or the bus rejects the swipe, so a caller can tell the swipe was
      * lost instead of assuming it fired.
      *
-     * Q67-7 / QA-1: this function still has NO caller in the repo (see
-     * §4). It is correct to call; nothing calls it yet.
+     * Q67-7 / QA-1 / D13 (batch 2): the caller is now
+     * ThroughPassSanitizerGateway (called from
+     * RuntimeDecisionLoop.onFrame), which fires only on a fresh
+     * physical through-press candidate with a viable through lane.
+     * The trigger is a candidate, not a confirmed hardware press —
+     * see the gateway's KDoc for what remains blocked.
      */
     fun sanitizeAndInjectThroughPass(
         passButtonX:Float,

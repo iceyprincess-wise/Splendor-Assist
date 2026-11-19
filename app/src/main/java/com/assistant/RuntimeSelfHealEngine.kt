@@ -198,6 +198,10 @@ object RuntimeSelfHealEngine {
         checkDispatchRate()
         checkContributors(warmed)
         checkBattery()
+        // B3: re-establish the gate's consumer when G1 is lost (never a
+        // bus restart — the recovery engine only repairs the consumer
+        // thread; the coordinator's G5 path re-enables the bus).
+        try { AccessibilityGateRecoveryEngine.checkAndRecover() } catch (_: Throwable) { }
     }
 
     // ─────────────────────────────────────────────────────────────────────

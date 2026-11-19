@@ -1,6 +1,6 @@
 package com.assistant.runtime
 
-enum class ActionClass { PASS, SHOT, CROSS, DEFEND, EVADE, KEEPER, MOVE, NONE }
+enum class ActionClass { PASS, SHOT, CROSS, DEFEND, EVADE, KEEPER, MOVE, NONE, THROUGH }
 enum class EngineCapability { ATTACK, DEFENSE, MOVEMENT, PASSING, KEEPER, SUPPORT }
 
 /**
@@ -38,6 +38,13 @@ data class RuntimeEntity(
     val velocityX: Float, val velocityY: Float,
     val confidence: Float, val teammate: Boolean,
     val velocityXPerSecond: Float = 0f, val velocityYPerSecond: Float = 0f
+)
+
+/** B4: one low-block movement target, addressed to a defender by id. */
+data class LowBlockMovement(
+    val defenderId: Int,
+    val targetX: Float,
+    val targetY: Float
 )
 
 data class RuntimeFrame(
@@ -141,7 +148,39 @@ data class RuntimeFrame(
      */
     val homeX: Float = 0f,
     val homeY: Float = 0f,
-    val homeFound: Boolean = false
+    val homeFound: Boolean = false,
+    /*
+     * B5 User-Line Publisher: the raw user line (DefensiveLineEngine.
+     * computeUserLine, published to the world store by VisionCore) —
+     * the stance above is derived from it. userLineFound=false means
+     * no user line was computed this frame.
+     */
+    val userLineX: Float = 0f,
+    val userLineSpread: Float = 0f,
+    val userLineFound: Boolean = false,
+    /*
+     * B4 Low-Block Wiring: the low-block movement list, one target per
+     * defender (by defender id). lowBlockActive is false while QD-3
+     * (Q68-27, Y→X axis rework) is unresolved — the movements are
+     * published and observable, but no consumer applies them until Ed
+     * defines the X-geometry, or the wired positions are wrong.
+     */
+    val lowBlockMovements: List<LowBlockMovement> = emptyList(),
+    val lowBlockActive: Boolean = false,
+    /*
+     * D13 Through-Pass Sanitizer wiring: the user's through-press
+     * state on this frame. throughPressed is a CANDIDATE (trainer
+     * pixel-occlusion + touch signal), not a confirmed hardware press
+     * — see ControlMappingTrainer / ThroughPassSanitizerGateway.
+     * throughReceiver/throughLead are the B9 direction-aware lead's
+     * target; throughLaneViable names a real viable through lane.
+     */
+    val throughPressed: Boolean = false,
+    val throughReceiverX: Float = 0f,
+    val throughReceiverY: Float = 0f,
+    val throughLeadX: Float = 0f,
+    val throughLeadY: Float = 0f,
+    val throughLaneViable: Boolean = false
 ) {
     // RF-D1/RF-D2: the old gate trusted a frame with a 0x0 capture size
     // (reachable before the camera profile populates), a confidence above

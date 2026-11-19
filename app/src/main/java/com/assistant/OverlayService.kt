@@ -397,7 +397,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 // throttle, and it never touches visionInFlight itself.
                 if (visionStartTimeMs > 0L && busyNow - visionStartTimeMs > 5_000L && !visionStuckHealArmed) {
                     visionStuckHealArmed = true
-                    RuntimeLogger.log("VISION_STUCK inFlightMs=${busyNow - visionStartTimeMs} busySkips=$visionBusySkips (recreating capture surfaces)", "OVERLAY")
+                    // B1: name the blocking stage — the last stage the
+                    // wedged coroutine reached (visionStage) is the
+                    // suspect; without it the heal log only counts skips.
+                    RuntimeLogger.log("VISION_STUCK inFlightMs=${busyNow - visionStartTimeMs} busySkips=$visionBusySkips stage=$visionStage stageMs=${busyNow - visionStageStartedMs} (recreating capture surfaces)", "OVERLAY")
                     keepAliveHandler.post {
                         try {
                             // N4: cancelChildren() alone cannot stop the
@@ -476,6 +479,11 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 visionStage = name
                 visionStageStartedMs = System.currentTimeMillis()
                 val dtMs = (System.nanoTime() - startedNanos) / 1_000_000L
+                // B1: the stage profiler records every stage's duration
+                // (VISION_STAGE summary lines + VISION_STAGE_STUCK
+                // alerts) — the slow-stage log below alone could never
+                // name the wedge's blocking stage.
+                try { com.assistant.VisionStageProfiler.record(name, dtMs) } catch (_: Throwable) {}
                 if (dtMs > 100L) {
                     try { RuntimeLogger.log("VISION_STAGE_SLOW stage=$name dtMs=$dtMs", "OVERLAY") } catch (_: Throwable) {}
                 }

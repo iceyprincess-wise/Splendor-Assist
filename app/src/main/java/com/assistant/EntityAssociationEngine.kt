@@ -133,7 +133,9 @@ object EntityAssociationEngine {
         frameNumber: Long
     ) {
         trackedPlayers.removeAll { !it.x.isFinite() || !it.y.isFinite() ||
-            !it.velocityX.isFinite() || !it.velocityY.isFinite() || !it.confidence.isFinite() }
+            !it.velocityX.isFinite() || !it.velocityY.isFinite() || !it.confidence.isFinite() ||
+            // B6: a non-finite px/s velocity poisons the same consumers.
+            !it.velocityXPerSecond.isFinite() || !it.velocityYPerSecond.isFinite() }
         val assigned = mutableSetOf<Int>()
         val maxDist = MAX_ASSOCIATION_DISTANCE
 

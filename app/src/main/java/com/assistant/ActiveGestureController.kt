@@ -111,7 +111,15 @@ class ActiveGestureController(
 
     private val vsyncAnchor = VsyncInputAnchor { _ -> RuntimeLogger.log("VSync dispatch synchronized","SMART_ASSIST") }
 
-    private val latencyInputEngine = LatencyDefeatingInputEngine(service)
+    // D13: the controller owns the only LatencyDefeatingInputEngine, so
+    // it binds it into the through-pass sanitizer gateway at creation —
+    // the gateway (called from RuntimeDecisionLoop.onFrame) then has a
+    // real engine to sanitize Ed's through presses with. Bound here with
+    // .also (not in an init block): the init blocks above run before
+    // this property is initialized, so a bind there would see null.
+    private val latencyInputEngine = LatencyDefeatingInputEngine(service).also {
+        ThroughPassSanitizerGateway.bind(it)
+    }
     private val antiCutbackEngine = AntiCutbackSubEngine(latencyInputEngine)
     private val autoEvadeEngine = AutoEvadeEngine()
 
@@ -549,23 +557,26 @@ class ActiveGestureController(
         // Gate on native readiness: with the library unloaded the buffer
         // stays all zeros. Use an explicit neutral result instead of
         // reading fabricated zeros as a real measurement.
-        // V4 call: oppVx/oppVy are 0f — TrackedPlayer.velocityX/Y is an
-        // EMA-smoothed PER-FRAME displacement (VELOCITY_SMOOTHING 0.35),
-        // not px/s, and this call site's velocity space is a normalised
-        // 0..15 boost scale with no per-opponent px/s mapping, so there is
-        // no principled conversion into that space (converting via a
-        // nominal 60fps and the capture diagonal would mix two different
-        // scales inside the closing-speed dot product). Passing 0 lets the
-        // V4 prediction use the player's own motion and degrades
-        // gracefully; the full V4 prediction lives on the contributor path.
+        // B6: oppVx/oppVy are the NEAREST OPPONENT's real velocity now
+        // — TrackedPlayer.velocityXPerSecond/YPerSecond (px/s, measured
+        // dt via PlayerMotionProducer) mapped into this call site's
+        // normalised 0..15 space by the same producer. The old 0f/0f
+        // made the closing-speed dot product compute against zero; the
+        // per-frame EMA displacement (velocityX/Y) is still NOT used
+        // here — it is not px/s. No opponent → 0f/0f (no motion
+        // claimed), exactly as before.
         // leadTimeSec 0.18s / aggressionFactor 1.35 are the V4 defaults —
         // they must match AgilityContributor's LEAD_TIME_SEC /
         // AGGRESSION_FACTOR and the C fallbacks in native_agility_physics.c.
+        val oppVelocityNorm = PlayerMotionProducer.toNormalised(
+            agilityOpponent?.velocityXPerSecond ?: 0f,
+            agilityOpponent?.velocityYPerSecond ?: 0f
+        )
         val agilityReady = NativeBridge.nativeAgilityPhysics(
             agilityVelocityUnits, agilityOpponentDistance, movementAngleDegrees,
             safeConfidence, safeAngleRatio,
             agilityPlayerX, agilityPlayerY, agilityOppX, agilityOppY,
-            0f, 0f, 0.18f, 1.35f,
+            oppVelocityNorm.first, oppVelocityNorm.second, 0.18f, 1.35f,
             agilityBuffer,
             100.0f, 220.0f, 500.0f, 1200.0f,
             15.0f, 4.0f, 6.0f, 3.0f, 2.0f,
@@ -724,6 +735,11 @@ class ActiveGestureController(
                 ?.y
                 ?: predictiveY
 
+        // B9: throughLead (the directionless scalar) is superseded by
+        // the lead VECTOR on the lane (leadX/leadY) — the scalar is kept
+        // on ThroughBallLane for the confidence math, but the arbitration
+        // below reads the vector, never this scalar.
+        @Suppress("UNUSED_VARIABLE")
         val throughLead =
             selectedThroughLane
                 ?.leadDistance
@@ -945,14 +961,18 @@ class ActiveGestureController(
         // SPLENDOR_THROUGH_PASS_ARBITRATION_V1
         // Viable through-ball telemetry stays inside the unified
         // arbitration -> execution bus -> accessibility path.
+        // B9: the through target is the receiver PLUS the
+        // direction-aware lead vector (along the lane / receiver run) —
+        // the old scalar lead subtracted from Y always led up-screen
+        // regardless of attack direction (attack is along X).
         val passArbitrationX =
-            if (mode == 1 && selectedThroughLane != null) throughReceiverX 
-            else if (passAssist.correctedX.isFinite()) passAssist.correctedX 
+            if (mode == 1 && selectedThroughLane != null) throughReceiverX + selectedThroughLane.leadX
+            else if (passAssist.correctedX.isFinite()) passAssist.correctedX
             else truePass.x
 
         val passArbitrationY =
-            if (mode == 1 && selectedThroughLane != null) throughReceiverY - throughLead 
-            else if (passAssist.correctedY.isFinite()) passAssist.correctedY 
+            if (mode == 1 && selectedThroughLane != null) throughReceiverY + selectedThroughLane.leadY
+            else if (passAssist.correctedY.isFinite()) passAssist.correctedY
             else truePass.y
 
         val arbitration =

@@ -148,6 +148,19 @@ object DefenseContributor : GameplayContributor {
         // real signal is the user's touch, same as DashPressureContributor.
         val holdingPressure = UserTouchState.isTouching()
 
+        // B4: the low-block movement for THIS defender is the home
+        // anchor while the low block is active (frame.lowBlockActive —
+        // false while QD-3 is unresolved, so the L14 home below is what
+        // runs until Ed defines the X-geometry). A movement addressed
+        // to another defender must never move this one.
+        val lowBlockMove = if (frame.lowBlockActive) {
+            frame.lowBlockMovements.firstOrNull { it.defenderId == frame.defenderId }
+        } else null
+        val homeAnchorX = lowBlockMove?.targetX
+            ?: if (frame.homeFound) frame.homeX else screenW * 0.5f
+        val homeAnchorY = lowBlockMove?.targetY
+            ?: if (frame.homeFound) frame.homeY else screenH * 0.5f
+
         // No68-H-D40: the bare external gives no success signal — a C
         // contract rejection throws at the call, and a failed critical
         // array leaves the previous frame's values in the buffer (the
@@ -164,8 +177,11 @@ object DefenseContributor : GameplayContributor {
                     // VisionCore + FrameAssembler) when the frame carries
                     // one; screen centre is the fallback when no line was
                     // found (homeFound=false). QH-6 closed.
-                    if (frame.homeFound) frame.homeX else screenW * 0.5f,
-                    if (frame.homeFound) frame.homeY else screenH * 0.5f,
+                    // B4: while the low block is active the anchor is the
+                    // low-block movement for this defender (homeAnchorX/Y
+                    // above); the L14 home is the fallback otherwise.
+                    homeAnchorX,
+                    homeAnchorY,
                     frame.ballX, frame.ballY, frame.ballVelocityXPerSecond, frame.ballVelocityYPerSecond,
                     holdingPressure, screenW, screenH,
                     restX, restY,

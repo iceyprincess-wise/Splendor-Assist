@@ -137,13 +137,25 @@ object FrameAssembler {
         val lanes = if (scene != null) world.crossingLaneAnalysis.lanes else emptyList()
         val laneCount = lanes.size
         val viable = lanes.count { it.viable }
+        // The crossing best lane is now the CROSSING target only (D8):
+        // crossTarget below reads it. passTarget moved to the passing
+        // graph (B8) — a pass aims at the receiver, not 40 px above them.
         val bestLane = lanes.firstOrNull { it.viable }
-        val passTargetX = bestLane?.targetX ?: 0f
-        val passTargetY = bestLane?.targetY ?: 0f
         val bestConf = bestLane?.confidence ?: 0f
+        // B8: the pass target comes from the PASSING-lane analysis
+        // (PassingLaneTargetProducer over world.passingGraph), not from
+        // the crossing lanes. No −40 crossing lead is applied.
+        val passingTarget = if (scene != null) PassingLaneTargetProducer.targetFor(world.passingGraph) else null
+        val passTargetX = passingTarget?.targetX ?: 0f
+        val passTargetY = passingTarget?.targetY ?: 0f
 
-        val telemetry = TelemetryRepository.current().takeIf {
-            System.currentTimeMillis() - it.timestamp in 0L..MAX_TELEMETRY_AGE_MS
+        val telemetry = TelemetryRepository.current().takeIf { snapshot ->
+            // B2 / Q68-54: ball freshness reads the SPLIT ball
+            // timestamp — the shared stamp used to be refreshed by
+            // keeper writes, so a stale ball read as fresh.
+            val ballAgeMs = System.currentTimeMillis() -
+                (snapshot.ballTimestampMs.takeIf { ts -> ts > 0L } ?: snapshot.timestamp)
+            ballAgeMs in 0L..MAX_TELEMETRY_AGE_MS
         }
         val ballX = telemetry?.ballX ?: 0f
         val ballY = telemetry?.ballY ?: 0f
@@ -291,14 +303,16 @@ object FrameAssembler {
             )
             hasBall && shootingViable -> Triple(
                 CrossType.SHOT,
-                if (goalDetected) goalCentreX else passTargetX,
-                if (goalDetected) goalCentreY else passTargetY
+                if (goalDetected) goalCentreX else bestLane?.targetX ?: passTargetX,
+                if (goalDetected) goalCentreY else bestLane?.targetY ?: passTargetY
             )
             hasBall && bestLane != null && receiverInBox -> Triple(
-                CrossType.HEAD, passTargetX, passTargetY
+                // HEAD: the cross target is the CROSSING lane's target
+                // (receiver.y − 40), not the passing target (B8).
+                CrossType.HEAD, bestLane.targetX, bestLane.targetY
             )
             hasBall && bestLane != null -> Triple(
-                CrossType.PASS, passTargetX, passTargetY
+                CrossType.PASS, bestLane.targetX, bestLane.targetY
             )
             else -> Triple(CrossType.NONE, 0f, 0f)
         }
@@ -335,7 +349,9 @@ object FrameAssembler {
             goalkeeperY = scene?.goalkeeperY ?: 0f,
             opticalVariance = opticalVariance.coerceIn(0f, 1f),
             entities = players.map { com.assistant.runtime.RuntimeEntity(it.id, it.x, it.y,
-                it.velocityX, it.velocityY, it.confidence, it.isUserTeam) },
+                it.velocityX, it.velocityY, it.confidence, it.isUserTeam,
+                // B6: per-player px/s (SceneTracker / PlayerMotionProducer).
+                it.velocityXPerSecond, it.velocityYPerSecond) },
             ownerId = world.ownership.takeIf { scene != null && it.hasOwner && it.confidence >= 0.2f }?.owner?.id,
             defenderId = world.defender.takeIf { scene != null && it.found }?.defender?.id,
             // L10: the learning-chain readout (see above).
@@ -371,6 +387,23 @@ object FrameAssembler {
             homeX = world.defenderHome.x,
             homeY = world.defenderHome.y,
             homeFound = world.defenderHome.found,
+            // B5: the raw user line (VisionCore → world store).
+            userLineX = world.userLine.averageX,
+            userLineSpread = (world.userLine.maxX - world.userLine.minX).coerceAtLeast(0f),
+            userLineFound = world.userLine.found,
+            // B4: the low-block movement list. Active only while QD-3
+            // is resolved — the movements are published regardless, but
+            // no consumer may apply them until the axis rework lands.
+            lowBlockMovements = world.lowBlockMovements,
+            lowBlockActive = LowBlockContainmentEngine.QD3_AXIS_RESOLVED && world.lowBlockMovements.isNotEmpty(),
+            // D13: the user's through-press state + the B9 lead target.
+            // throughPressed is a candidate, not a confirmed press.
+            throughPressed = ControlMappingTrainer.throughPressCandidateFresh(),
+            throughReceiverX = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.lane?.receiver?.x ?: 0f,
+            throughReceiverY = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.lane?.receiver?.y ?: 0f,
+            throughLeadX = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.leadX ?: 0f,
+            throughLeadY = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.leadY ?: 0f,
+            throughLaneViable = world.throughBallAnalysis.lanes.any { it.viable },
             attackDirection = AttackAxisModel.directionIfConfident(),
             captureWidth = com.assistant.vision.CameraProfile.captureWidth.toFloat(),
             captureHeight = com.assistant.vision.CameraProfile.captureHeight.toFloat()
@@ -396,7 +429,9 @@ object FrameAssembler {
             entity.copy(x = point.x, y = point.y, velocityXPerSecond = point.vxPerSecond, velocityYPerSecond = point.vyPerSecond)
         }
         predictor.retain(projected.map { it.id }.toSet() + if (ballSeen) setOf(Int.MIN_VALUE) else emptySet())
-        val receiver = bestLane?.lane?.receiver?.id
+        // B8: the projection shift follows the PASSING receiver now
+        // (passingTarget), not the crossing lane's receiver.
+        val receiver = passingTarget?.receiverId
         val before = observedFrame.entities.firstOrNull { it.id == receiver }
         val after = projected.firstOrNull { it.id == receiver }
         val frame = observedFrame.copy(ballX = ball.x, ballY = ball.y, entities = projected,

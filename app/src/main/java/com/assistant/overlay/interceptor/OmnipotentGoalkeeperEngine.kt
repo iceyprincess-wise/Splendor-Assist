@@ -161,6 +161,11 @@ object OmnipotentGoalkeeperEngine {
         if (!GoalkeeperRuntimeState.enabled) return
         capturedWidth = width.toFloat()
         capturedHeight = height.toFloat()
+        // B2: resync the scan's ball from fresh telemetry BEFORE any
+        // read below uses it — the scan used to read a frozen ball
+        // while the game was live (N3-trace B). A fresh slot is a
+        // no-op; a stale slot with no fresh scene ball logs BALL_STALE.
+        try { com.assistant.BallTelemetryResync.resyncIfStale() } catch (_: Throwable) { }
         // Accessibility connectivity is a dispatch prerequisite, not a detection gate.
         // Detection and decision readiness proceed regardless of dispatch availability.
         // REMOVED: if (isProcessingFrame) return. Frame scanning MUST NEVER be blocked by execution queue!
