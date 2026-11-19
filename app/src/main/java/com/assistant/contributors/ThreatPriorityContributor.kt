@@ -29,32 +29,24 @@ object ThreatPriorityContributor : GameplayContributor {
             else com.assistant.vision.CameraProfile.captureHeightOrFallback()
         // SPLENDOR_P10_ZONE: the goal sits at an X end of the frame
         // (GoalDetector searches the left/right ends; attack direction
-        // is X everywhere it is consumed). Prefer the detected goal
-        // span when present; the BOX band extends one old band-width
-        // (0.12 of width: 0.88 - 0.76) beyond each end of the span.
-        // Fall back to either-end width fractions when no goal is
-        // detected -- the old code only covered the right end, so in
-        // halves defending the left goal GOAL_AREA/BOX never fired.
-        // LEFT/RIGHT stay by ballY (far/near side). ThreatZoneEngine
-        // .detect(), the scan strip and the six-yard box are deliberately
-        // UNCHANGED (gauge-pixel input, not ball position).
-        if (frame.goalDetected && frame.goalRightX > frame.goalLeftX) {
-            if (frame.ballX >= frame.goalLeftX && frame.ballX <= frame.goalRightX) return ThreatZone.GOAL_AREA
-            val boxMargin = w * 0.12f
-            if (frame.ballX >= frame.goalLeftX - boxMargin && frame.ballX <= frame.goalRightX + boxMargin) return ThreatZone.BOX
-        } else {
-            if (frame.ballX > w * 0.88f || frame.ballX < w * 0.12f) return ThreatZone.GOAL_AREA
-            if (frame.ballX > w * 0.76f || frame.ballX < w * 0.24f) return ThreatZone.BOX
-        }
-        return when {
-            frame.ballY < h * 0.33f -> ThreatZone.LEFT
-            frame.ballY > h * 0.67f -> ThreatZone.RIGHT
-            else -> ThreatZone.CENTER
-        }
+        // is X everywhere it is consumed). L12 (batch 1): the Model-X
+        // logic now lives in ThreatZoneEngine.zoneOfBall (shared with
+        // the keeper scan); this delegates so the two paths cannot drift.
+        // ThreatZoneEngine.detect(), the scan strip and the six-yard box
+        // are deliberately UNCHANGED (gauge-pixel input, not ball
+        // position).
+        return ThreatZoneEngine.zoneOfBall(
+            frame.ballX, frame.ballY,
+            frame.goalLeftX, frame.goalRightX, frame.goalDetected, w, h
+        )
     }
 
     internal fun threatOf(frame: RuntimeFrame): ThreatType {
-        val heat = (frame.defenderDensity * 0.6f + frame.confidence * 0.4f)
+        // L10 (batch 1): the learned opponent aggression lifts the heat,
+        // at most +0.10, scaled by the learning confidence — with no
+        // learning (confidence 0) the heat is exactly as before.
+        val learnedLift = frame.opponentAggression * 0.10f * frame.opponentBehaviourConfidence
+        val heat = (frame.defenderDensity * 0.6f + frame.confidence * 0.4f) + learnedLift
         return when {
             heat >= 0.85f -> ThreatType.PURPLE
             heat >= 0.70f -> ThreatType.GREEN

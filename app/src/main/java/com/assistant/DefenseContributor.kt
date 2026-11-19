@@ -159,9 +159,13 @@ object DefenseContributor : GameplayContributor {
             else {
                 com.assistant.NativeBridge.nativeExecuteStopperMatrix(
                     defX, defY, defVx, defVy,
-                    // Home anchor is still the screen centre — no producer
-                    // for a defender's real home position exists (QH-6).
-                    screenW * 0.5f, screenH * 0.5f,
+                    // L14 (batch 1): the home anchor is the producer's
+                    // home (frame.homeX/homeY, HomePositionProducer via
+                    // VisionCore + FrameAssembler) when the frame carries
+                    // one; screen centre is the fallback when no line was
+                    // found (homeFound=false). QH-6 closed.
+                    if (frame.homeFound) frame.homeX else screenW * 0.5f,
+                    if (frame.homeFound) frame.homeY else screenH * 0.5f,
                     frame.ballX, frame.ballY, frame.ballVelocityXPerSecond, frame.ballVelocityYPerSecond,
                     holdingPressure, screenW, screenH,
                     restX, restY,

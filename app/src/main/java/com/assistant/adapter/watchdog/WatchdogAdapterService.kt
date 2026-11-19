@@ -149,6 +149,18 @@ class WatchdogAdapterService : Service() {
             // active whenever the fleet held more than the 2 restartable
             // adapters (offline/degraded already counted fleet-wide).
             com.assistant.survival.AdapterHealthCounts.update(active, degraded, offline)
+            // L16 (batch 1): mirror the fleet into the file-backed
+            // registry so the main process can read it (the in-memory
+            // AdapterHealthCounts / AdapterStatusRegistry copies are
+            // per-process — the dashboard's copy never updated).
+            try {
+                val fleetSummary = liveSnapshots.values.joinToString(",") { snapshot ->
+                    "${snapshot.adapterName}=${AdapterHealthRegistry.effectiveStatus(snapshot)}"
+                }
+                com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishFleet(
+                    active, degraded, offline, fleetSummary
+                )
+            } catch (_: Throwable) { }
             // SPLENDOR_P11_D5: cross-process marker watchdog (see
             // checkMainProcessMarker below).
             markerCheckExecutor.execute {

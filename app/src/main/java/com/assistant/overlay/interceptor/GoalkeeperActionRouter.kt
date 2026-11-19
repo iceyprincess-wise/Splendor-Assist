@@ -124,12 +124,17 @@ object GoalkeeperActionRouter {
 
         val farPostCoverage =
             FarPostCoverageEngine.shouldCover(
-                decision
+                decision,
+                // L2 (batch 1): the anchored overload — the coverage claim
+                // now requires calibrated posts (GoalPostCalibrationEngine
+                // .latest(), written every frame by VisionCore).
+                com.assistant.GoalPostCalibrationEngine.latest()
             )
 
         val nearPostCoverage =
             NearPostCoverageEngine.shouldCover(
-                decision
+                decision,
+                com.assistant.GoalPostCalibrationEngine.latest()
             )
 
         val crossIntercept =

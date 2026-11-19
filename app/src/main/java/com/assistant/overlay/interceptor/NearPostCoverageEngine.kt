@@ -1,5 +1,6 @@
 package com.assistant.overlay.interceptor
 
+import com.assistant.GoalPostCalibration
 import kotlin.math.abs
 import kotlin.math.atan2
 
@@ -16,6 +17,20 @@ object NearPostCoverageEngine {
 
         return decision.direction ==
             ShotDirection.NEAR_POST
+    }
+
+    /**
+     * L2 (batch 1): the anchored overload — same rule as
+     * FarPostCoverageEngine: no valid calibration, no post to cover.
+     * checkNearPostVulnerability below is unchanged: it already takes
+     * the near post's real coordinates, so it is anchored by its inputs.
+     */
+    fun shouldCover(
+        decision: ThreatDecision,
+        calibration: GoalPostCalibration
+    ): Boolean {
+        if (decision.direction != ShotDirection.NEAR_POST) return false
+        return calibration.valid
     }
 
     fun checkNearPostVulnerability(

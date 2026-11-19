@@ -28,6 +28,17 @@ object AsynchronousGestureQueue {
         accessibilityService = service
     }
 
+    // L6 (batch 1, DECIDED not-needed): enqueue() is the DIRECT-EXECUTE
+    // bypass — it dispatches via GestureExecutionAuthority.execute with
+    // origin "AsynchronousGestureQueue", bypassing
+    // HybridExecutionTerminal.route() (DispatchBounds clamp + gates). It
+    // has ZERO callers (only bindService is called, from
+    // SmartAssistAccessibilityEngine; binding alone dispatches nothing).
+    // Do NOT wire it into the live path: wiring it would re-open the
+    // ghost-touch vector batch G closed. Kept (not deleted) per the
+    // no-delete rule; the batch-1 harness pins its caller-less state.
+    // The choke point is already single-route for all live traffic — L6
+    // is closed as not-needed, not implemented.
     fun enqueue(request: GestureRequest) {
         // SPLENDOR_F34_NEWEST_MOVE: drop stale backlog so a superseded move never
         // executes after a newer decision arrived.

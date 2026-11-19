@@ -127,10 +127,31 @@ val ball =
         ballCandidate
     )
 
+// L1 (batch 1): CRITICAL memory — the ball-only path. This is the first
+// live caller of MemoryCaptureGateEngine.shouldSkipFullVision() (zero
+// callers before this round). Full VisionCore is skipped: only the ball
+// (+ goal in BALL_GOAL mode, + players in BALL_PLAYERS mode) is
+// detected, the ball is published so the keeper scan + FrameAssembler
+// trust path stay live, and the world store keeps its last full-vision
+// values (stale possession under CRITICAL is the documented trade-off —
+// better than dropping vision entirely). D1: capture is NOT slowed;
+// this path is strictly cheaper than full vision.
+if (MemoryCaptureGateEngine.shouldSkipFullVision()) {
+    return processBallOnly(filteredBlobs, ball)
+}
+
 val goal =
     GoalDetector.detect(
         filteredBlobs
     )
+
+// L2 (batch 1): anchor the detected goal to its posts. The calibration
+// is stored in GoalPostCalibrationEngine.latest() for the keeper router.
+GoalPostCalibrationEngine.calibrate(
+    goal,
+    com.assistant.vision.CameraProfile.captureWidthOrFallback(),
+    com.assistant.vision.CameraProfile.captureHeightOrFallback()
+)
 
 val field =
     FieldLineDetector.detect(
@@ -232,6 +253,37 @@ SceneTracker.update(
       DefensiveLineEngine.compute(
           scene
       )
+
+  // L13 (batch 1): the user line + the tight defensive stance. This is
+  // computeUserLine's first live caller (zero callers before this round).
+  // The stance is stored on the world state for FrameAssembler; the
+  // D14 tight-line/tight-midfield clamps live in DefensiveStanceProducer.
+  val userLine =
+      DefensiveLineEngine.computeUserLine(
+          scene
+      )
+
+  val defensiveStance =
+      DefensiveStanceProducer.compute(
+          userLine,
+          ball.x,
+          com.assistant.vision.CameraProfile.captureWidthOrFallback()
+      )
+
+  // L14 (batch 1): the tracked defender's home on the tight line. The
+  // stopper anchor in DefenseContributor reads it off the frame.
+  val defenderHome =
+      run {
+          val trackedDef = defender.defender
+          if (defender.found && trackedDef != null) {
+              HomePositionProducer.homePosition(
+                  trackedDef.y,
+                  userLine,
+                  com.assistant.vision.CameraProfile.captureWidthOrFallback(),
+                  com.assistant.vision.CameraProfile.captureHeightOrFallback()
+              )
+          } else HomePosition(false)
+      }
 
   val offensiveLine =
       OffensiveLineEngine.compute(
@@ -493,6 +545,8 @@ val offsideRiskEstimationResult =
             formation = formation,
             teamShape = teamShape,
             defensiveLine = defensiveLine,
+            defensiveStance = defensiveStance,
+            defenderHome = defenderHome,
             offensiveLine = offensiveLine,
             occupancy = occupancy,
             pressure = pressure,
@@ -532,6 +586,73 @@ val offsideRiskEstimationResult =
     )
 
 return state
+    }
+
+    // L1 (batch 1): the CRITICAL-memory ball-only path — the cheap half of
+    // process(). Only the ball is always detected; the goal is detected
+    // only in BALL_GOAL mode, players only in BALL_PLAYERS mode (D3
+    // zone-conditional). Field lines, keeper, formation, lanes and all
+    // learning/tactical engines are skipped; the fused state carries
+    // undetected defaults for them and SceneTracker still updates, so
+    // the keeper scan + FrameAssembler trust path keep a live ball. The
+    // Phase3 world store is NOT rewritten here — it keeps its last
+    // full-vision values. The keeper telemetry slot is published 0,0,0
+    // (no keeper was detected on this path) so confidence collapses
+    // instead of holding a stale keeper position.
+    @Volatile private var lastBallOnlyLogMs: Long = 0L
+
+    private fun processBallOnly(
+        filteredBlobs: List<ConnectedComponentEngine.Blob>,
+        ball: BallDetectionResult
+    ): GameStateSnapshot {
+        val width = com.assistant.vision.CameraProfile.captureWidthOrFallback()
+        val height = com.assistant.vision.CameraProfile.captureHeightOrFallback()
+        val mode = BallOnlyDetector.modeFor(
+            ball.x, width, AttackAxisModel.directionIfConfident()
+        )
+        val goal = if (mode == BallOnlyMode.BALL_GOAL) {
+            val detected = GoalDetector.detect(filteredBlobs)
+            GoalPostCalibrationEngine.calibrate(detected, width, height)
+            detected
+        } else {
+            GoalDetectionResult(false, 0f, 0f, 0f, 0f, 0f)
+        }
+        val players = if (mode == BallOnlyMode.BALL_PLAYERS) {
+            PlayerDetector.detect(filteredBlobs)
+        } else {
+            PlayerDetectionResult(false, 0, 0f, emptyList())
+        }
+        val result = BallOnlyDetector.select(
+            ball.x, ball.y, ball.confidence,
+            goal.rightX - goal.leftX, goal.detected,
+            players.detections.size, width,
+            AttackAxisModel.directionIfConfident()
+        )
+        val motion = MotionTracker.update(ball)
+        BallTelemetryBridge.publish(ball)
+        val state = GameStateFusion.fuse(
+            ball,
+            motion,
+            players,
+            GoalkeeperDetectionResult(false, 0f, 0f, 0f),
+            goal,
+            FieldLineDetectionResult(false, false, false, false, 0f)
+        )
+        SceneTracker.update(state, players)
+        TelemetryCoordinator.updateGoalkeeperPosition(0f, 0f, 0f)
+        try {
+            val now = System.currentTimeMillis()
+            if (now - lastBallOnlyLogMs >= 1000L) {
+                lastBallOnlyLogMs = now
+                com.assistant.diagnostic.RuntimeLogger.log(
+                    "BALL_ONLY mode=${result.mode} ball=(${String.format("%.1f", result.ballX)}," +
+                        "${String.format("%.1f", result.ballY)}) goal=${result.goalIncluded} " +
+                        "players=${result.nearestPlayerCount}",
+                    "VISION"
+                )
+            }
+        } catch (_: Throwable) { }
+        return state
     }
 
     // PHASE8 CLOSED-LOOP TEMPORAL HOOK

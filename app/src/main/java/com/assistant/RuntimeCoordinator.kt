@@ -209,6 +209,12 @@ object RuntimeCoordinator {
     @Synchronized
     fun shutdown(caller: String = "unspecified") {
         RuntimeLogger.log("RuntimeCoordinator.shutdown caller=$caller", "RUNTIME")
+        // L4 (batch 1): teardown attribution — resolves the external cause
+        // (user Stop tap / accessibility off / service destroy / interrupt
+        // / unknown) from the timestamped events above and logs the
+        // TEARDOWN correlation line. Q-N2's 19:06:31 initiator stays
+        // UNPROVEN — this only makes the NEXT teardown attributable.
+        com.assistant.TeardownAttributionEngine.attributeShutdown(caller)
         stopExecutionLoopCallback?.invoke()
         CentralExecutionBus.stop(reason = "RuntimeCoordinator.shutdown caller=$caller")
         busEnabled.set(false)

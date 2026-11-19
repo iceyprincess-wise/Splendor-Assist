@@ -94,7 +94,20 @@ import kotlin.math.max
 
 
 object TouchStabilizationEngine {
-    
+
+    // L6 (batch 1, DECIDED not-needed): this object is a
+    // DIRECT-EXECUTE bypass — injectZeroLatencyTap / injectStabilizedSwipe
+    // inject gestures via NativeInputBridge, bypassing
+    // HybridExecutionTerminal.route() (DispatchBounds clamp + gates).
+    // It has ZERO callers (verified by grep: the only
+    // "TouchStabilizationEngine" mentions outside this file are the
+    // footer marker in ThroughPassSanitizer.kt, not a call; the live
+    // zero-latency path is LatencyDefeatingInputEngine, which submits
+    // to the bus). Do NOT wire it into the live path: wiring it would
+    // re-open the ghost-touch vector batch G closed. Kept (not deleted)
+    // per the no-delete rule; the batch-1 harness pins its caller-less
+    // state. The choke point is already single-route for all live
+    // traffic — L6 is closed as not-needed, not implemented.
     // Absolute minimum time required by Android for a gesture (forced to 2ms for near-instant latency)
     private const val OVERRIDE_LATENCY_MS = 2L
     

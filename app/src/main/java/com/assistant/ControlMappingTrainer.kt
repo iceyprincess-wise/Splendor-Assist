@@ -131,6 +131,82 @@ object ControlMappingTrainer {
     private val probesRead = AtomicLong(0)
     @Volatile private var lastMove = "none"
 
+    // L11 (batch 1): maxDrag trainer probe mode (D9 delegated — the VALUE
+    // can only be measured on Ed's device, so it is recorded as
+    // measured-later: DispatchBounds.maxDragPx stays null until a probe
+    // completes on-device; no number is invented here). The probe is
+    // auto-armed: while armed it measures the joystick-base radius once
+    // per second in-match (8 directions from the joystick centre, last
+    // joystick-coloured pixel per direction; the minimum across
+    // directions is the conservative radius), then disarms on the first
+    // good measurement. After 10 failed attempts it gives up for the
+    // session and the value stays unmeasured. Read-only pixel probing:
+    // decision-neutral, no dispatch. setMaxDragProbeActive(false)
+    // disables it (a future ModMenu toggle can call the same setter).
+    @Volatile var maxDragProbeActive: Boolean = true; private set
+    @Volatile private var measuredMaxDragPx: Float? = null
+    private val maxDragProbeSamples = AtomicLong(0)
+    private var maxDragProbeAttempts = 0
+    private var lastMaxDragMeasureMs: Long = 0L
+
+    fun setMaxDragProbeActive(active: Boolean) {
+        maxDragProbeActive = active
+    }
+
+    /** The measured joystick drag radius in px, or null when unmeasured. */
+    fun measuredMaxDragPx(): Float? = measuredMaxDragPx
+
+    private fun measureMaxDrag(b: ByteBuffer, w: Int, h: Int, stride: Int, pixelStride: Int) {
+        val now = System.currentTimeMillis()
+        if (now - lastMaxDragMeasureMs < 1000L) return
+        lastMaxDragMeasureMs = now
+        val cx = JOY_NX * w
+        val cy = JOY_NY * h
+        val radii = FloatArray(8)
+        var valid = 0
+        for (d in 0 until 8) {
+            val angle = d * Math.PI / 4.0
+            val dx = kotlin.math.cos(angle).toFloat()
+            val dy = kotlin.math.sin(angle).toFloat()
+            var radius = 0f
+            var step = 4f
+            while (step <= 260f) {
+                val nx = (cx + dx * step) / w
+                val ny = (cy + dy * step) / h
+                if (nx !in 0f..1f || ny !in 0f..1f) break
+                if (!probe(b, w, h, stride, nx, ny, pixelStride)) break
+                if (!(isGray() || isGreen())) break
+                radius = step
+                step += 4f
+            }
+            if (radius > 0f) radii[valid++] = radius
+        }
+        val measured = MaxDragProbe.selectRadius(radii.copyOf(valid))
+        if (measured != null) {
+            measuredMaxDragPx = measured
+            com.assistant.execution.DispatchBounds.setMaxDrag(measured)
+            maxDragProbeSamples.incrementAndGet()
+            maxDragProbeActive = false
+            try {
+                com.assistant.diagnostic.RuntimeLogger.log(
+                    "MAXDRAG_PROBE measured=${measured.toInt()}px directions=$valid samples=${maxDragProbeSamples.get()} — probe disarmed, value in DispatchBounds.maxDragPx",
+                    "TRAINER"
+                )
+            } catch (_: Throwable) { }
+        } else {
+            maxDragProbeAttempts++
+            if (maxDragProbeAttempts >= 10) {
+                maxDragProbeActive = false
+                try {
+                    com.assistant.diagnostic.RuntimeLogger.log(
+                        "MAXDRAG_PROBE giving up after 10 attempts — joystick edge not found, value stays unmeasured",
+                        "TRAINER"
+                    )
+                } catch (_: Throwable) { }
+            }
+        }
+    }
+
     private val emaMs = FloatArray(8)
     private val emaN = IntArray(8)
     private val baseMs = floatArrayOf(30f, 30f, 30f, 30f, 30f, 30f, 30f, 30f)
@@ -233,6 +309,9 @@ object ControlMappingTrainer {
             lastMove = "settings-training"
         } else if (next == UiMode.IN_MATCH) {
             matchFrames.incrementAndGet()
+            // L11 (batch 1): the maxDrag probe runs here, throttled to
+            // once per second inside measureMaxDrag, and only while armed.
+            if (maxDragProbeActive) measureMaxDrag(buffer, w, h, rowStride, pixelStride)
         }
     }
 
@@ -273,6 +352,11 @@ object ControlMappingTrainer {
         "matchFrames" to matchFrames.get(),
         "probesRead" to probesRead.get(),
         "trainedSlots" to trainedSlots(),
+        // L11 (batch 1): the probe state — "unmeasured" until a probe
+        // completes on-device; the value itself is measured-later.
+        "maxDragPx" to (measuredMaxDragPx?.toString() ?: "unmeasured"),
+        "maxDragProbeActive" to maxDragProbeActive,
+        "maxDragProbeSamples" to maxDragProbeSamples.get(),
         "lastMove" to lastMove
     )
 
@@ -282,6 +366,30 @@ object ControlMappingTrainer {
         observed.set(0); settingsFrames.set(0); matchFrames.set(0); probesRead.set(0)
         for (i in 0..7) { emaMs[i] = 0f; emaN[i] = 0 }
         pendingClass = -1; lastMove = "none"; baseSpeed = 0f
+        // L11: a reset re-arms the probe and clears the measurement (the
+        // probe must re-measure; a stale radius must not survive a reset).
+        measuredMaxDragPx = null
+        maxDragProbeSamples.set(0)
+        maxDragProbeAttempts = 0
+        lastMaxDragMeasureMs = 0L
+        maxDragProbeActive = true
+        com.assistant.execution.DispatchBounds.setMaxDrag(null)
+    }
+}
+
+/**
+ * L11 (batch 1): the pure radius selection for the maxDrag probe.
+ * The measured radius is the MINIMUM across valid directions — the
+ * tightest direction binds the drag. Fewer than 4 valid directions is
+ * not a measurement (null), never a guess from one ray.
+ */
+object MaxDragProbe {
+    const val MIN_DIRECTIONS = 4
+
+    fun selectRadius(directionRadii: FloatArray): Float? {
+        val valid = directionRadii.filter { it > 0f && it.isFinite() }
+        if (valid.size < MIN_DIRECTIONS) return null
+        return valid.minOrNull()
     }
 }
 

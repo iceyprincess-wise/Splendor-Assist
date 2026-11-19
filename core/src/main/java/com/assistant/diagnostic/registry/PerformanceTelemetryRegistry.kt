@@ -415,6 +415,50 @@ object PerformanceTelemetryRegistry {
         }
     // SPLENDOR_P8_HIST_END
 
+    // ---- FLEET (adapter health, cross-process) ----
+    // L16 (batch 1): AdapterHealthCounts / AdapterStatusRegistry are
+    // plain in-process objects — the :survival watchdog writes them, the
+    // main-process dashboard reads its own never-updated copy (NO DATA
+    // YET / ADAPTERS: NONE). Same pattern as the f58 bus mirror: the
+    // :survival writer publishes the fleet into this file-backed
+    // history, and MainProcessBusMirror copies the freshest sample into
+    // the main-process registries. Line format:
+    // active|degraded|offline|adapter1=STATUS,adapter2=STATUS|updatedMs
+    // (adapter names/statuses are pipe-safe internal constants; the whole
+    // adapters field is pipe-sanitised anyway).
+    data class FleetSample(
+        val active: Int,
+        val degraded: Int,
+        val offline: Int,
+        val adapters: String,
+        val updatedMs: Long
+    )
+
+    /** Pure line parser (harness-pinned): null for any malformed line, never throws. */
+    fun parseFleetLine(line: String): FleetSample? {
+        val p = line.split("|")
+        if (p.size < 5) return null
+        val active = p[0].toIntOrNull() ?: return null
+        val degraded = p[1].toIntOrNull() ?: return null
+        val offline = p[2].toIntOrNull() ?: return null
+        if (active < 0 || degraded < 0 || offline < 0) return null
+        val updatedMs = p[4].toLongOrNull() ?: return null
+        return FleetSample(active, degraded, offline, p[3], updatedMs)
+    }
+
+    @JvmStatic
+    fun publishFleet(active: Int, degraded: Int, offline: Int, adapters: String) {
+        appendHistory(
+            "perf_fleet_history.txt",
+            "$active|$degraded|$offline|${pipeSafe(adapters)}|${System.currentTimeMillis()}"
+        )
+    }
+
+    /** Recent fleet samples, oldest first. Skips malformed lines. */
+    @JvmStatic
+    fun recentFleetHistory(maxLines: Int = 10): List<FleetSample> =
+        readHistoryLines("perf_fleet_history.txt", maxLines).mapNotNull { parseFleetLine(it) }
+
     // ---- DEVICE STATE (lag/stutter/thermal/memory/battery/brake, cross-process) ----
     // SPLENDOR_P7_XPROC_DEVICE_BEGIN
     // The :survival publishers write these signals to AdapterSignalBus, a

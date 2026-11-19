@@ -284,9 +284,26 @@ object RuntimeDecisionLoop {
         // Register before publishing: the bus consumer runs on another thread.
         ActionOutcomeVerifier.recordDispatch(terminalRequest, frame)
         val accepted = HybridExecutionTerminal.route(terminalRequest)
-        if (!accepted) { routeRejected.incrementAndGet(); ActionOutcomeVerifier.cancelDispatch(terminalRequest.actionId) }
+        if (!accepted) {
+            routeRejected.incrementAndGet()
+            ActionOutcomeVerifier.cancelDispatch(terminalRequest.actionId)
+            // L5 / Q68-55 (batch 1): the decision-error hook, wired at the
+            // dispatch site — a route rejection is a decision that failed
+            // to execute. (SmartAssistMetrics.noteDecisionError had zero
+            // callers before this round.)
+            SmartAssistMetrics.noteDecisionError()
+        }
         if (accepted) {
             routed.incrementAndGet()
+            // L3 (batch 1): density telemetry at the dispatch decision.
+            DensityTelemetryLogger.logDensity(
+                frame.defenderDensity,
+                terminalRequest.actionClass?.name ?: "NONE"
+            )
+            // L5 / Q68-55 (batch 1): the action-triggered hook, wired at
+            // the dispatch site. (noteActionTriggered had zero callers
+            // before this round; the snapshot published permanent 0s.)
+            SmartAssistMetrics.noteActionTriggered()
             try {
                 com.assistant.events.GameplayEventHub.emit(
                     "routed",

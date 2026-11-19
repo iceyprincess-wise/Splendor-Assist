@@ -576,6 +576,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // N2: name the lifecycle callback — the bare "G1 lost" line cannot
         // distinguish onInterrupt vs onUnbind vs onDestroy.
         RuntimeLogger.log("SmartAssistAccessibilityEngine onInterrupt: stopping execution loop", "SMART_ASSIST")
+        // L4 (batch 1): teardown attribution — a system interrupt is an
+        // external teardown event for the next shutdown().
+        com.assistant.TeardownAttributionEngine.noteInterrupt()
         stopExecutionLoop()
         AccessibilitySurvivalEngine.interrupted()
         AccessibilitySurvivalEngine.getInstance(this).release()
@@ -588,6 +591,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     override fun onUnbind(intent: android.content.Intent?): Boolean {
         // N2: name the lifecycle callback (see onInterrupt).
         RuntimeLogger.log("SmartAssistAccessibilityEngine onUnbind: stopping execution loop", "SMART_ASSIST")
+        // L4 (batch 1): teardown attribution — unbind is the accessibility
+        // service going away (toggle off / system unbind).
+        com.assistant.TeardownAttributionEngine.noteAccessibilityOff("SmartAssistAccessibilityEngine.onUnbind")
         stopExecutionLoop()
         AccessibilitySurvivalEngine.getInstance(this).release()
         // No63-D1: the service is unbound — the registry ages from here
@@ -601,6 +607,13 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     override fun onDestroy() {
         // N2: name the lifecycle callback (see onInterrupt).
         RuntimeLogger.log("SmartAssistAccessibilityEngine onDestroy: stopping execution loop", "SMART_ASSIST")
+        // L4 (batch 1): the teardown attribution — the service going away
+        // is an external teardown event; the next shutdown() names it.
+        com.assistant.TeardownAttributionEngine.noteAccessibilityOff("SmartAssistAccessibilityEngine.onDestroy")
+        // L8 (batch 1): the optimizer teardown hook (Q68-41).
+        try {
+            if (::dispatcher.isInitialized) dispatcher.shutdown()
+        } catch (_: Throwable) { }
         stopExecutionLoop()
         AccessibilitySurvivalEngine.getInstance(this).release()
         // No63-D1: same as onUnbind — the service is gone.

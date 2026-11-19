@@ -276,6 +276,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(com.assistant.overlay.R.id.btnStopEngine).setOnClickListener {
             permissionPipelineActive = false
             permissionPipelineStarted = false
+            // L4 (batch 1): teardown attribution — the Stop tap is a user
+            // teardown event; record it BEFORE shutdown() so the TEARDOWN
+            // line can correlate this shutdown to the tap.
+            com.assistant.TeardownAttributionEngine.noteUserStop("MainActivity.btnStopEngine")
             stopService(Intent(this, OverlayService::class.java))
             com.assistant.RuntimeCoordinator.shutdown(caller = "MainActivity.btnStopEngine")
             refreshRuntimeHub()

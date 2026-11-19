@@ -1426,6 +1426,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // subsumed: clearAll() clears each key through clear(), which
         // is what clearPrefix did per key.
         com.assistant.vision.OverlaySelfMask.clearAll()
+        // L4 (batch 1): teardown attribution — the service destroy is a
+        // system teardown event; record it BEFORE shutdown() so the
+        // TEARDOWN line can correlate this shutdown to the destroy.
+        com.assistant.TeardownAttributionEngine.noteServiceDestroy()
         com.assistant.RuntimeCoordinator.shutdown(caller = "OverlayService.onDestroy")
         OverlaySurvivalEngine.destroyed()
 

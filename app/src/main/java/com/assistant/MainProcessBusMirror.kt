@@ -44,6 +44,26 @@ object MainProcessBusMirror {
             if (window != null && System.currentTimeMillis() - window.updatedMs < 15_000L) {
                 AdapterSignalBus.publishNet(window.verdict)
             }
+            // L16 (batch 1): fleet health — the :survival watchdog
+            // publishes into the file-backed fleet history; copy the
+            // freshest sample (< 60 s: the watchdog scans every 15 s, so
+            // 60 s is 4 missed scans) into the MAIN-process registries so
+            // DashboardInjector's existing reads show real data. A stale
+            // sample is never mirrored — a dead watchdog must read
+            // STALE / NO DATA YET, not a fossil.
+            val fleet = PerformanceTelemetryRegistry.recentFleetHistory(1).lastOrNull()
+            if (fleet != null && System.currentTimeMillis() - fleet.updatedMs < 60_000L) {
+                com.assistant.survival.AdapterHealthCounts.update(fleet.active, fleet.degraded, fleet.offline)
+                AdapterSignalBus.publishFleet(fleet.offline)
+                if (fleet.adapters.isNotBlank()) {
+                    for (entry in fleet.adapters.split(",")) {
+                        val kv = entry.split("=", limit = 2)
+                        if (kv.size == 2 && kv[0].isNotBlank()) {
+                            com.assistant.survival.AdapterStatusRegistry.update(kv[0], kv[1])
+                        }
+                    }
+                }
+            }
         } catch (_: Throwable) { }
     }
 }

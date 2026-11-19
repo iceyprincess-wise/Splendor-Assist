@@ -86,6 +86,11 @@ class App : Application() {
 
         RuntimeLogger.initialize(this)
 
+        // L15 (batch 1): restore the persisted VisionConfiguration
+        // toggles — without this a restart lost every toggle (Q68-97).
+        // Runs on every process start (main + :survival); the seam reads
+        // SharedPreferences, so each process restores its own copy.
+        try { com.assistant.VisionConfigurationEngine.restore(applicationContext) } catch (_: Throwable) { }
 
         // Domain Backup Generator: Forces class loading for all 216+ engine objects
         // and verifies SMART_ASSIST (90) and STUTTER (80) execution sources.

@@ -264,17 +264,6 @@ object OmnipotentGoalkeeperEngine {
         }
 
         if (anomalyDetected && !defensiveActionPerformed) {
-            val decision = ThreatPriorityEngine.evaluate(
-                detectedThreat,
-                detectedZone,
-                detectedX,
-                detectedY,
-                width,
-                height
-            )
-
-            GoalkeeperDecisionRegistry.latestDecision = decision
-
             // SPLENDOR_P10_ZONE_LOG: temporary, remove after live
             // confirmation. ADAPTATION vs the trace sketch: TelemetrySnapshot
             // has NO goalDetected/goalLeftX/goalRightX fields (only ball /
@@ -284,13 +273,43 @@ object OmnipotentGoalkeeperEngine {
             // inside the run{} block and is not visible here).
             val p10Tele = TelemetryRepository.current()
             val p10Scene = try { com.assistant.SceneTracker.current() } catch (_: Throwable) { null }
+            // L12 (batch 1): the save path's zone comes from the BALL via
+            // the Model-X logic (ThreatZoneEngine.zoneOfBall), not from
+            // the scan strip's gauge pixel — the strip only ever yields
+            // BOX/GOAL_AREA, so LEFT/RIGHT/CENTER zones and NEAR_POST /
+            // FAR_POST directions were unreachable from scan. The ball
+            // coords are also passed as the evaluate x/y (same as
+            // ThreatPriorityContributor.decisionOf), so heightBand/normX
+            // derive from the ball and the TOP band is reachable from the
+            // save path. The strip zone stays on the log line as
+            // stripZone= for audit.
+            val ballZone = ThreatZoneEngine.zoneOfBall(
+                p10Tele.ballX,
+                p10Tele.ballY,
+                p10Scene?.goalLeftX ?: 0f,
+                p10Scene?.goalRightX ?: 0f,
+                p10Scene?.goalDetected ?: false,
+                width.toFloat(),
+                height.toFloat()
+            )
+            val decision = ThreatPriorityEngine.evaluate(
+                detectedThreat,
+                ballZone,
+                p10Tele.ballX.toInt(),
+                p10Tele.ballY.toInt(),
+                width,
+                height
+            )
+
+            GoalkeeperDecisionRegistry.latestDecision = decision
+
             val p10GoalDet = p10Scene?.goalDetected ?: false
             val p10GoalCx = if (p10Scene != null && p10Scene.goalDetected) ((p10Scene.goalLeftX + p10Scene.goalRightX) * 0.5f).toString() else "n/a"
             com.assistant.diagnostic.RuntimeLogger.log(
                 "GK_ZONE_SCAN threat=" + detectedThreat + "(ThreatClassifierEngine)" +
                     " zone=" + decision.zone + " dir=" + decision.direction + "(ShotDirectionEngine)" +
                     " pri=" + decision.priority + "(ThreatPriorityEngine)" + " band=" + decision.heightBand + " normX=" + decision.normX +
-                    " px=(" + detectedX + "," + detectedY + ") cap=" + width + "x" + height +
+                    " px=(" + detectedX + "," + detectedY + ") stripZone=" + detectedZone + " cap=" + width + "x" + height +
                     " ball=(" + p10Tele.ballX + "," + p10Tele.ballY + ")" +
                     " goalDet=" + p10GoalDet + " goalCX=" + p10GoalCx,
                 "GOALKEEPER")

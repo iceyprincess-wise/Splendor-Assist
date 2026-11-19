@@ -99,6 +99,16 @@ object ActiveAttackerEngine{
   @Volatile private var lastTargetX=0f;@Volatile private var lastTargetY=0f;@Volatile private var lastUpdatedMs=0L
   @Synchronized fun getAttackerDiagnostics()=AttackerActivationDiagnostics(computeCalls,lastConfidence,lastTargetX,lastTargetY,lastUpdatedMs)
 
+  // L6 (batch 1, DECIDED not-needed): this 5-arg overload is the
+  // DIRECT-EXECUTE bypass — it dispatches an unclamped gesture via
+  // GestureExecutionAuthority.execute, bypassing
+  // HybridExecutionTerminal.route() (DispatchBounds clamp + gates). It
+  // has ZERO callers: the only call site (VisionCore:209) uses the 2-arg
+  // pure-compute overload below. Do NOT wire it into the live path:
+  // wiring it would re-open the ghost-touch vector batch G closed. Kept
+  // (not deleted) per the no-delete rule; the batch-1 harness pins its
+  // caller-less state. The choke point is already single-route for all
+  // live traffic — L6 is closed as not-needed, not implemented.
   fun compute(service:AccessibilityService,currentX:Float,currentY:Float,scene:SceneSnapshot,possession:BallPossessionResult):ActiveAttackerResult{
     if(!possession.hasPossession)return ActiveAttackerResult(found=false)
     val index=possession.ownerIndex

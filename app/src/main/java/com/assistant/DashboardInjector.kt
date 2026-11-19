@@ -195,6 +195,15 @@ object DashboardInjector {
                     val gkDecision = com.assistant.overlay.interceptor.GoalkeeperDecisionRegistry.latestDecision
                     append("GK decision: ").append(if (gkDecision == null) "none" else "${gkDecision.threat} ${gkDecision.zone} ${gkDecision.direction} pri=${gkDecision.priority}").append("\n")
                     append(com.assistant.overlay.interceptor.GoalkeeperMetricsRegistry.snapshot()).append("\n")
+                    // L16 (batch 1): the ball-telemetry snapshot's first
+                    // reader (Q68-60: ballTelemetryRuntimeSnapshot() was
+                    // unwired to any reader). Point-in-time read on the
+                    // background refresh thread, like the registries above.
+                    val ballSnap = com.assistant.BallTelemetryBridge.ballTelemetryRuntimeSnapshot()
+                    append("Ball telemetry: published=").append(ballSnap["published"])
+                        .append(" skippedUndetected=").append(ballSnap["skippedUndetected"])
+                        .append(" lastConfidence=").append(ballSnap["lastConfidence"])
+                        .append(" lastUpdatedMs=").append(ballSnap["lastUpdatedMs"]).append("\n")
                 }
                 
                 val statusText = ComplianceState.summary(activity)

@@ -3,6 +3,17 @@ package com.assistant.runtime
 enum class ActionClass { PASS, SHOT, CROSS, DEFEND, EVADE, KEEPER, MOVE, NONE }
 enum class EngineCapability { ATTACK, DEFENSE, MOVEMENT, PASSING, KEEPER, SUPPORT }
 
+/**
+ * D8 (Ed, §5): the four cross types the frame must distinguish, each with
+ * its own target (crossTargetX/Y). PASS = cross as a pass to a receiver;
+ * SHOT = cross to a shooter; HEAD = cross to a header in the box;
+ * OPPONENT_PUNCH = a cross from the opponent, which the keeper punches
+ * (target = the goal centre). NONE = no cross is on. The old frame
+ * carried one crossing-lane target for every case; that conflation is
+ * what D8 ends.
+ */
+enum class CrossType { NONE, PASS, SHOT, HEAD, OPPONENT_PUNCH }
+
 /* Immutable per-capture snapshot. The only frame input a gameplay engine may read; engines may also consult world state and device buses. */
 /* Per-zone body count. Owned by FrameAssembler; read-only to engines. */
 data class ZoneDistribution(
@@ -78,7 +89,59 @@ data class RuntimeFrame(
     val predictedAtNanos: Long = 0L,
     val ballVelocityXPerSecond: Float = 0f,
     val ballVelocityYPerSecond: Float = 0f,
-    val passTargetId: Int? = null
+    val passTargetId: Int? = null,
+    /*
+     * L10 Learning-Chain Reader: the learning/tactical scalars
+     * LearningChainReader copies out of Phase3WorldStateStore. Every
+     * value defaults to "no learning yet" (0 / false / tickSync 1.0) and
+     * every consumer gates on the matching confidence, so an unlearned
+     * frame behaves exactly as before. These are advisory inputs, not
+     * trust inputs — `trusted` below deliberately does not check them.
+     */
+    val opponentAggression: Float = 0f,
+    val opponentPressFrequency: Float = 0f,
+    val opponentBehaviourConfidence: Float = 0f,
+    val playerPassBias: Float = 0f,
+    val playerDribbleBias: Float = 0f,
+    val playerShootBias: Float = 0f,
+    val playerTendencyConfidence: Float = 0f,
+    val shootingHabitConfidence: Float = 0f,
+    val formationAdaptationScore: Float = 0f,
+    val formationStable: Boolean = false,
+    val formationConfidence: Float = 0f,
+    val offsideRisk: Float = 0f,
+    val offsideSafeLanes: Int = 0,
+    val counterattackDetected: Boolean = false,
+    val counterattackConfidence: Float = 0f,
+    val preferredPassingConfidence: Float = 0f,
+    val temporalConfidence: Float = 0f,
+    val onlineAdaptationGain: Float = 0f,
+    val tickSyncMultiplier: Float = 1f,
+    /*
+     * D8 four cross types: the cross kind on this frame + its own target.
+     * passTarget (crossing-lane target) is unchanged; crossTarget is the
+     * type's target (for OPPONENT_PUNCH: the goal centre, the punch target).
+     */
+    val crossType: CrossType = CrossType.NONE,
+    val crossTargetX: Float = 0f,
+    val crossTargetY: Float = 0f,
+    /*
+     * L13 Defensive Stance Producer: the tight line/midfield stance
+     * VisionCore computed from computeUserLine. dragOutHeld names a
+     * drag-out the stance refused to follow (D14).
+     */
+    val defensiveLineX: Float = 0f,
+    val defensiveLineSpread: Float = 0f,
+    val stanceTight: Boolean = false,
+    val dragOutHeld: Boolean = false,
+    /*
+     * L14 Home Position Producer: the tracked defender's home on the
+     * tight line. homeFound=false means "no line — use the historical
+     * screen-centre fallback" (DefenseContributor).
+     */
+    val homeX: Float = 0f,
+    val homeY: Float = 0f,
+    val homeFound: Boolean = false
 ) {
     // RF-D1/RF-D2: the old gate trusted a frame with a 0x0 capture size
     // (reachable before the camera profile populates), a confidence above

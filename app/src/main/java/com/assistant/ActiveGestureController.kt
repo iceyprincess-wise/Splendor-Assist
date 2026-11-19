@@ -90,6 +90,25 @@ class ActiveGestureController(
 
     private val memoryOptimizer = MemoryStabilityOptimizer(service)
 
+    init {
+        // L8 (batch 1): register the optimizer with the liveness reporter
+        // at controller creation — the startup `optimizer=` line fires
+        // here, not behind the gesture gate (Q-N7-4: initialize() is
+        // gesture-gated, so the reporter must not be).
+        OptimizerLivenessReporter.noteRegistered(memoryOptimizer)
+    }
+
+    /**
+     * L8 (batch 1): the controller teardown path (Q68-41: terminate()
+     * was never called — no teardown hook existed). Called from
+     * SmartAssistAccessibilityEngine.onDestroy. Terminates the optimizer
+     * and reports it; safe to call twice (terminate() is idempotent).
+     */
+    fun shutdown() {
+        try { memoryOptimizer.terminate() } catch (_: Throwable) { }
+        OptimizerLivenessReporter.noteTerminated()
+    }
+
     private val vsyncAnchor = VsyncInputAnchor { _ -> RuntimeLogger.log("VSync dispatch synchronized","SMART_ASSIST") }
 
     private val latencyInputEngine = LatencyDefeatingInputEngine(service)

@@ -251,6 +251,58 @@ object FrameAssembler {
                 (scene?.goalRightX ?: 0f) > (scene?.goalLeftX ?: 0f) &&
                 (scene?.goalBottomY ?: 0f) > (scene?.goalTopY ?: 0f)
 
+        // L10 (batch 1): the learning-chain readout — the first read of
+        // the learning/tactical results into the frame (repo map G2: the
+        // assembler used to read only crossingLaneAnalysis + possession).
+        val learning = try {
+            LearningChainReader.read(world)
+        } catch (_: Throwable) { LearningReadout() }
+
+        // D8 (batch 1): the four cross types, each with its own target.
+        // OPPONENT_PUNCH fires when we do NOT have the ball and it is
+        // wide (an opponent cross the keeper punches; target = goal
+        // centre). SHOT fires when we have the ball and a shooting lane
+        // is viable (cross to a shooter; target = goal centre). HEAD
+        // fires when the best crossing lane's receiver is inside the
+        // goal span (cross to a header; target = the lane target). PASS
+        // is the remaining viable crossing lane. NONE when no case holds.
+        // passTarget is unchanged; crossTarget is the type's own target.
+        val shootingViable = try {
+            world.shootingLaneAnalysis.lanes.any { it.viable }
+        } catch (_: Throwable) { false }
+        val goalLeft = scene?.goalLeftX ?: 0f
+        val goalRight = scene?.goalRightX ?: 0f
+        val goalTop = scene?.goalTopY ?: 0f
+        val goalBottom = scene?.goalBottomY ?: 0f
+        val goalCentreX = (goalLeft + goalRight) * 0.5f
+        val goalCentreY = (goalTop + goalBottom) * 0.5f
+        val captureW = com.assistant.vision.CameraProfile.captureWidthOrFallback()
+        val captureH = com.assistant.vision.CameraProfile.captureHeightOrFallback()
+        val ballWide = ballY < pitchH * 0.33f || ballY > pitchH * 0.67f
+        val receiverX = bestLane?.lane?.receiver?.x ?: Float.NaN
+        val receiverInBox = goalDetected && receiverX.isFinite() &&
+            receiverX >= goalLeft - captureW * 0.12f &&
+            receiverX <= goalRight + captureW * 0.12f
+        val (crossType, crossTargetX, crossTargetY) = when {
+            !hasBall && ballWide -> Triple(
+                CrossType.OPPONENT_PUNCH,
+                if (goalDetected) goalCentreX else captureW * 0.5f,
+                if (goalDetected) goalCentreY else captureH * 0.5f
+            )
+            hasBall && shootingViable -> Triple(
+                CrossType.SHOT,
+                if (goalDetected) goalCentreX else passTargetX,
+                if (goalDetected) goalCentreY else passTargetY
+            )
+            hasBall && bestLane != null && receiverInBox -> Triple(
+                CrossType.HEAD, passTargetX, passTargetY
+            )
+            hasBall && bestLane != null -> Triple(
+                CrossType.PASS, passTargetX, passTargetY
+            )
+            else -> Triple(CrossType.NONE, 0f, 0f)
+        }
+
         val observedFrame = RuntimeFrame(
             frameId = scene?.frameNumber ?: id,
             timestampMs = System.currentTimeMillis(),
@@ -286,6 +338,39 @@ object FrameAssembler {
                 it.velocityX, it.velocityY, it.confidence, it.isUserTeam) },
             ownerId = world.ownership.takeIf { scene != null && it.hasOwner && it.confidence >= 0.2f }?.owner?.id,
             defenderId = world.defender.takeIf { scene != null && it.found }?.defender?.id,
+            // L10: the learning-chain readout (see above).
+            opponentAggression = learning.opponentAggression,
+            opponentPressFrequency = learning.opponentPressFrequency,
+            opponentBehaviourConfidence = learning.opponentBehaviourConfidence,
+            playerPassBias = learning.playerPassBias,
+            playerDribbleBias = learning.playerDribbleBias,
+            playerShootBias = learning.playerShootBias,
+            playerTendencyConfidence = learning.playerTendencyConfidence,
+            shootingHabitConfidence = learning.shootingHabitConfidence,
+            formationAdaptationScore = learning.formationAdaptationScore,
+            formationStable = learning.formationStable,
+            formationConfidence = learning.formationConfidence,
+            offsideRisk = learning.offsideRisk,
+            offsideSafeLanes = learning.offsideSafeLanes,
+            counterattackDetected = learning.counterattackDetected,
+            counterattackConfidence = learning.counterattackConfidence,
+            preferredPassingConfidence = learning.preferredPassingConfidence,
+            temporalConfidence = learning.temporalConfidence,
+            onlineAdaptationGain = learning.onlineAdaptationGain,
+            tickSyncMultiplier = learning.tickSyncMultiplier,
+            // D8: the cross type + its own target (see above).
+            crossType = crossType,
+            crossTargetX = crossTargetX,
+            crossTargetY = crossTargetY,
+            // L13: the tight defensive stance (VisionCore).
+            defensiveLineX = world.defensiveStance.lineX,
+            defensiveLineSpread = world.defensiveStance.lineSpread,
+            stanceTight = world.defensiveStance.tight,
+            dragOutHeld = world.defensiveStance.dragOutHeld,
+            // L14: the tracked defender's home on the tight line.
+            homeX = world.defenderHome.x,
+            homeY = world.defenderHome.y,
+            homeFound = world.defenderHome.found,
             attackDirection = AttackAxisModel.directionIfConfident(),
             captureWidth = com.assistant.vision.CameraProfile.captureWidth.toFloat(),
             captureHeight = com.assistant.vision.CameraProfile.captureHeight.toFloat()
@@ -348,7 +433,17 @@ object FrameAssembler {
             "goalDetected" to f.goalDetected,
             "goalConfidence" to f.goalConfidence,
             "confidence" to f.confidence,
-            "trusted" to f.trusted
+            "trusted" to f.trusted,
+            // L10/D8/L13/L14 (batch 1): the learning readout, cross type,
+            // stance and home, so a live frame state names them.
+            "crossType" to f.crossType.name,
+            "opponentAggression" to f.opponentAggression,
+            "offsideRisk" to f.offsideRisk,
+            "counterattack" to f.counterattackDetected,
+            "defensiveLineX" to f.defensiveLineX,
+            "stanceTight" to f.stanceTight,
+            "dragOutHeld" to f.dragOutHeld,
+            "homeFound" to f.homeFound
         )
     }
 }

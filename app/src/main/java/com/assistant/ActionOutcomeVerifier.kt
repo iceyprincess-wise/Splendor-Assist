@@ -96,8 +96,14 @@ import kotlinx.coroutines.cancel
 object ActionOutcomeVerifier {
     private data class Pending(val request: ExecutionRequest, val frame: RuntimeFrame, val at: Long = System.nanoTime())
     private val pending = linkedMapOf<String, Pending>()
+    // L5 (batch 1): confirmed dispatches keep their pre-frame so verify()
+    // can run the frame-effect compare (pre vs post). Bounded at 64 and
+    // swept with the 800 ms window below; a missing pre-frame means the
+    // policy verdict stands alone (see verify()).
+    private val confirmedPreFrames = linkedMapOf<String, Pair<RuntimeFrame, ActionClass?>>()
     private val policy = com.assistant.execution.OutcomePolicy()
     private var dispatched = 0L; private var macroObserved = 0L; private var heuristicFailure = 0L
+    private var effectConfirmedCount = 0L; private var effectFailedCount = 0L
     @Synchronized fun recordDispatch(request: ExecutionRequest, frame: RuntimeFrame) {
         if (pending.size >= 64) cancelDispatch(pending.keys.first())
         if (!pending.containsKey(request.actionId)) pending[request.actionId] = Pending(request, frame)
@@ -138,6 +144,9 @@ object ActionOutcomeVerifier {
                 return
             }
         policy.dispatched(actionId, phase, item.frame.ownerId, item.frame.hasBall, System.nanoTime())
+        // L5 (batch 1): keep the pre-frame for the frame-effect compare.
+        if (confirmedPreFrames.size >= 64) confirmedPreFrames.remove(confirmedPreFrames.keys.first())
+        confirmedPreFrames[actionId] = item.frame to phase
         dispatched++
     }
     @Synchronized fun cancelDispatch(actionId: String) { pending.remove(actionId); policy.cancel(actionId) }
@@ -157,14 +166,40 @@ object ActionOutcomeVerifier {
         // discarded entries the policy could still judge, so confirmDispatch
         // after the drop never reached the policy (no cooling / no update).
         pending.entries.removeAll { now - it.value.at > 800_000_000L }
+        // L5 (batch 1): confirmed pre-frames are consumed by the loop
+        // below; leftovers the policy never observes are evicted FIFO at
+        // the 64-entry cap in confirmDispatch() (no age sweep — the map
+        // stores no timestamps, and a stale pre-frame is only ever read
+        // through the 800 ms policy window above).
         for ((id, observed) in policy.observe(currentFrame.ownerId, currentFrame.hasBall, currentFrame.trusted, now, currentFrame.capturedAtNanos)) {
             if (observed) macroObserved++ else heuristicFailure++
-            GestureExecutionAuthority.recordEffectObserved(id, observed)
+            // L5 (batch 1): the frame-effect verdict beside the policy
+            // verdict. A dispatch counts as observed only when BOTH agree
+            // it moved; without a pre-frame the policy verdict stands
+            // alone (recorded as-is, never faked from a missing frame).
+            val pre = confirmedPreFrames.remove(id)
+            val effectConfirmed = if (pre != null) {
+                FrameEffectVerifier.effectConfirmed(pre.first, currentFrame, pre.second)
+            } else null
+            // Without a pre-frame the policy verdict stands alone and the
+            // effect counters are untouched (a policy-only verdict is not
+            // a frame-effect verdict in either direction).
+            val effect = effectConfirmed ?: observed
+            if (effectConfirmed != null) {
+                if (effectConfirmed) effectConfirmedCount++ else effectFailedCount++
+            }
+            GestureExecutionAuthority.recordEffectObserved(id, effect)
+            RuntimeLogger.log(
+                "FRAME_EFFECT actionId=$id effectConfirmed=$effect policyObserved=$observed " +
+                    "preFrame=${if (pre != null) "present" else "missing"}",
+                "FEEDBACK"
+            )
             RuntimeLogger.log("${if (observed) "Macro_State_Correlation" else "Heuristic_Gesture_Failure"} actionId=$id", "FEEDBACK")
         }
     }
-    @Synchronized fun reset() { pending.clear(); policy.reset(); dispatched = 0; macroObserved = 0; heuristicFailure = 0 }
+    @Synchronized fun reset() { pending.clear(); confirmedPreFrames.clear(); policy.reset(); dispatched = 0; macroObserved = 0; heuristicFailure = 0; effectConfirmedCount = 0; effectFailedCount = 0 }
     @Synchronized fun diagnostics(): Map<String, Any> = mapOf("dispatched" to dispatched,
         "macroObserved" to macroObserved, "heuristicFailure" to heuristicFailure,
+        "effectConfirmed" to effectConfirmedCount, "effectFailed" to effectFailedCount,
         "pending" to pending.size, "evidenceKind" to "macro-state-correlation-not-internal-success")
 }

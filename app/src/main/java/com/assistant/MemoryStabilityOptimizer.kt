@@ -125,6 +125,9 @@ class MemoryStabilityOptimizer(
         }
     }
 
+    /** L8 (batch 1): the liveness reporter's read — true once initialize() has run and terminate() has not. */
+    fun isInitialized(): Boolean = isInitialized.get()
+
     fun terminate() {
         if (isInitialized.compareAndSet(true, false)) {
             context.unregisterComponentCallbacks(this)

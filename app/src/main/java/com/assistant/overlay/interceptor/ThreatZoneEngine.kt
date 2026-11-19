@@ -10,6 +10,45 @@ enum class ThreatZone {
 
 object ThreatZoneEngine {
 
+    /**
+     * L12 (batch 1) — Model-X zone from BALL position (the proven model:
+     * the goal sits at an X end of the frame). This is the
+     * ThreatPriorityContributor.zoneOf() logic extracted verbatim so the
+     * keeper scan can use it too: with a detected goal the ball inside
+     * the goal span reads GOAL_AREA, within one band-width (0.12 of
+     * width) of it reads BOX; without a goal the outer 12% / 24% of the
+     * width read GOAL_AREA / BOX. Otherwise the ball's Y third reads
+     * LEFT / RIGHT / CENTER. Unlike detect() (gauge-pixel input from
+     * the scan strip), this takes the ball — so LEFT/RIGHT/CENTER and
+     * the NEAR_POST/FAR_POST directions derived from them are reachable
+     * from the save path.
+     */
+    fun zoneOfBall(
+        ballX: Float,
+        ballY: Float,
+        goalLeftX: Float,
+        goalRightX: Float,
+        goalDetected: Boolean,
+        width: Float,
+        height: Float
+    ): ThreatZone {
+        if (width <= 0f || height <= 0f || !ballX.isFinite() || !ballY.isFinite())
+            return ThreatZone.CENTER
+        if (goalDetected && goalRightX > goalLeftX) {
+            if (ballX >= goalLeftX && ballX <= goalRightX) return ThreatZone.GOAL_AREA
+            val boxMargin = width * 0.12f
+            if (ballX >= goalLeftX - boxMargin && ballX <= goalRightX + boxMargin) return ThreatZone.BOX
+        } else {
+            if (ballX > width * 0.88f || ballX < width * 0.12f) return ThreatZone.GOAL_AREA
+            if (ballX > width * 0.76f || ballX < width * 0.24f) return ThreatZone.BOX
+        }
+        return when {
+            ballY < height * 0.33f -> ThreatZone.LEFT
+            ballY > height * 0.67f -> ThreatZone.RIGHT
+            else -> ThreatZone.CENTER
+        }
+    }
+
     // No63-D22: from the only live caller — OmnipotentGoalkeeperEngine's
     // GK scan strip, which only ever feeds gauge pixels in the bottom
     // 25% of the frame (y > 0.75h) — detect() can only return BOX

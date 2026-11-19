@@ -102,6 +102,13 @@ data class Phase3WorldState(
     val formation: FormationResult = FormationResult(false),
     val teamShape: TeamShapeResult = TeamShapeResult(false),
     val defensiveLine: DefensiveLineResult = DefensiveLineResult(false),
+    // L13 (batch 1): the tight defensive stance (DefensiveStanceProducer),
+    // computed in VisionCore from computeUserLine. Read by FrameAssembler.
+    val defensiveStance: DefensiveStance = DefensiveStance(false),
+    // L14 (batch 1): the tracked defender's home on the tight line
+    // (HomePositionProducer), computed in VisionCore. Read by
+    // FrameAssembler; DefenseContributor uses it as the stopper anchor.
+    val defenderHome: HomePosition = HomePosition(false),
     val offensiveLine: OffensiveLineResult = OffensiveLineResult(false),
     val occupancy: SpaceOccupancyResult =
         SpaceOccupancyResult(0,0, emptyArray()),
