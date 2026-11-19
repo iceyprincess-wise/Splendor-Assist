@@ -123,6 +123,26 @@ class ActiveGestureController(
             return
         }
 
+        // GHOST-TOUCH (batch G): injectWinningVector is a joystick drag
+        // (joystick centre -> ball/target) fired by the parked-lane
+        // trigger while the loop itself decided nothing (best == null).
+        // Firing it while the user is not touching a control is the app
+        // moving the phone on its own. Gate it on user touch, like the
+        // onFrame MOVE hold: the trigger only primes the parked evade
+        // while Ed is holding a control (autopilot dribble/skill is
+        // defined as while holding dash+pressure). Deliberately NOT the
+        // bypass: bypass ON must not re-open autonomous movement.
+        if (!UserTouchState.isTouching()) {
+            ActiveGestureControllerDiagnostics.blocked(
+                "no user touch before controller execution"
+            )
+            RuntimeLogger.log(
+                "No user touch, ignoring legacy vector",
+                "SMART_ASSIST"
+            )
+            return
+        }
+
         memoryOptimizer.initialize()
 
         val earlyScene = SceneTracker.current()

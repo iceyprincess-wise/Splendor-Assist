@@ -40,6 +40,27 @@ object HybridExecutionTerminal {
     }
 
     /*
+     * GHOST-TOUCH (batch G, 2026-11-19): a MOVE/EVADE request is a
+     * joystick hold / escape drag. Issued while the user is not touching
+     * a control it is the app moving the phone on its own: with Smart
+     * Assist ON the decision loop routes a MOVE hold on nearly every
+     * frame (MOVE is never cooled, ConAI returns a best whenever any
+     * candidate has weight > 0), the bus reservation alternately
+     * rejects/accepts the resubmits, and with the touch-gate bypass ON
+     * every accepted dispatch lands on screen untouched. The production
+     * sites therefore gate movement holds on UserTouchState.isTouching()
+     * and this predicate is the single definition of "movement hold",
+     * pinned in the harness (group 19): it must NOT silently widen to
+     * DEFEND/KEEPER/PASS/SHOT/CROSS — discrete and event actions keep
+     * the existing bypass behaviour (a keeper save must fire while the
+     * user is not touching). A null actionClass is NOT a hold (the
+     * zero-latency phase-100 through-pass swipe is user-initiated).
+     */
+    fun isMovementHold(request: ExecutionRequest): Boolean =
+        request.actionClass == com.assistant.runtime.ActionClass.MOVE ||
+            request.actionClass == com.assistant.runtime.ActionClass.EVADE
+
+    /*
      * no59 ITEM 1 — PER-ENGINE DISPATCH LOGGING. route() is the single
      * choke point every dispatch flows through (RuntimeDecisionLoop
      * onFrame, the ContributionRegistry emergency lane, the legacy

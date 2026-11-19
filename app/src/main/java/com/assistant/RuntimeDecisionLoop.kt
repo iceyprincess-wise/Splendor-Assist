@@ -124,6 +124,11 @@ object RuntimeDecisionLoop {
     private val settingsExit = AtomicLong(0L)
     private val routeRejected = AtomicLong(0L)
     private val chooseNull = AtomicLong(0L)
+    // GHOST-TOUCH (batch G): MOVE/EVADE holds dropped because the user
+    // was not touching a control. The hold is counted here, not in
+    // routeRejected: the bus never saw it, and the room's "Decision
+    // Routed=" must stop climbing while the user is hands-off.
+    private val moveHeldNoTouch = AtomicLong(0L)
 
     @Volatile private var lastAction: String = "none"
     @Volatile private var lastWeight: Float = 0f
@@ -256,6 +261,25 @@ object RuntimeDecisionLoop {
         val terminalRequest = if (inCrowdedZone && resolvedRequest.duration > 45L) {
             resolvedRequest.copy(duration = resolvedRequest.duration.coerceAtMost(45L))
         } else resolvedRequest
+
+        // GHOST-TOUCH (batch G): a MOVE/EVADE request is a joystick
+        // hold / escape drag. Routing it while the user is not touching
+        // a control is the app moving the phone on its own — the loop
+        // routes a MOVE hold on nearly every frame (MOVE is never
+        // cooled), so hands-off this is a continuous autonomous drag.
+        // Hold it: PASS/SHOT/CROSS/DEFEND/KEEPER are discrete/event
+        // actions and are NOT gated here (the keeper must save while
+        // the user is not touching). The touch gate is deliberately
+        // NOT the bypass: bypass ON is Ed's working config, and it
+        // must not re-open autonomous movement. isTouching() stays
+        // true for 2.5s after the last touch, so a hold extends briefly
+        // after release instead of cutting dead. Checked BEFORE
+        // recordDispatch so a held request leaves no pending entry.
+        if (HybridExecutionTerminal.isMovementHold(terminalRequest) && !UserTouchState.isTouching()) {
+            moveHeldNoTouch.incrementAndGet()
+            lastAction = "idle-no-touch-move"
+            return false
+        }
 
         // Register before publishing: the bus consumer runs on another thread.
         ActionOutcomeVerifier.recordDispatch(terminalRequest, frame)
@@ -489,6 +513,7 @@ object RuntimeDecisionLoop {
         idleNoContribution.set(0L); idleUntrusted.set(0L)
         idleUntrustedFg.set(0L); idleUntrustedFrame.set(0L); idleUntrustedVariance.set(0L)
         gateBlocked.set(0L); staleFrame.set(0L); settingsExit.set(0L); routeRejected.set(0L); chooseNull.set(0L)
+        moveHeldNoTouch.set(0L)
         lastAction = "none"; lastWeight = 0f; lastUpdatedMs = 0L
     }
 
@@ -505,6 +530,7 @@ object RuntimeDecisionLoop {
         "settingsExit" to settingsExit.get(),
         "routeRejected" to routeRejected.get(),
         "chooseNull" to chooseNull.get(),
+        "moveHeldNoTouch" to moveHeldNoTouch.get(),
         "lastAction" to lastAction,
         "lastWeight" to lastWeight,
         "lastUpdatedMs" to lastUpdatedMs,
