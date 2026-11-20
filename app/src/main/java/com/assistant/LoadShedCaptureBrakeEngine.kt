@@ -128,12 +128,6 @@ object LoadShedCaptureBrakeEngine {
         1    -> 66L   // LIGHT: 15fps
         else -> 0L    // NONE: use base rate (0 = no override)
     }
-
-    /**
-     * Returns true when HEAVY load shed is active and MOVE-class gesture
-     * submissions should be suppressed (action-class gestures still pass).
-     */
-    fun suppressMoveGestures(): Boolean = executionBrake >= 2
 }
 
 // --- MERGED: LoadShedGovernor.kt ---

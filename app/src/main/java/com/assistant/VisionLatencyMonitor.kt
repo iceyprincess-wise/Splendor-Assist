@@ -100,11 +100,13 @@ object VisionLatencyMonitor {
 
     fun current(): VisionLatencyMonitorState = state
 
-    // No68-E2-D19: guard + staleness. update() still has no in-repo
-    // producer (QE2-7): latencyMs stays 0f and hasMeasurement stays
-    // false until one is wired — 0 must never read as "0 ms latency".
-    // Non-finite / negative readings are ignored, keeping the last good
-    // measurement instead of poisoning the state.
+    // No68-E2-D19: guard + staleness. update() HAS an in-repo producer:
+    // VisionCore.reportVisionLatency() calls it on every process() call
+    // with the measured wall time (B7) — latencyMs stays 0f and
+    // hasMeasurement stays false only until the first frame is processed,
+    // and 0 must never read as "0 ms latency". Non-finite / negative
+    // readings are ignored, keeping the last good measurement instead of
+    // poisoning the state.
     @Synchronized
     fun update(latencyMs: Float) {
         if (!latencyMs.isFinite() || latencyMs < 0f) return

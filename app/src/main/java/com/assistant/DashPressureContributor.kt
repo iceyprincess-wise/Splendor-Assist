@@ -112,13 +112,20 @@ object DashPressureContributor : GameplayContributor {
         val oppX = frame.ballX
         val oppY = frame.ballY
 
+        // Queue item 6 (F7): the defender home is the LIVE home, not the
+        // hardcoded (250, 360) — the same homeFound-guarded pattern
+        // DefenseContributor uses. The guard is mandatory: the world
+        // defender home defaults to no-line with x=0,y=0, so a raw
+        // frame.homeX would regress to (0,0) when no line is found.
+        val screenW = com.assistant.vision.CameraProfile.captureWidthOrFallback()
+        val screenH = com.assistant.vision.CameraProfile.captureHeightOrFallback()
         val packed = OmnipotentDashPressureMatrix.computeHighAuthorityDefensiveVector(
             ballX  = frame.ballX,
             ballY  = frame.ballY,
             defX   = defX,
             defY   = defY,
-            defHomeX = 250f,
-            defHomeY = 360f,
+            defHomeX = if (frame.homeFound) frame.homeX else screenW * 0.5f,
+            defHomeY = if (frame.homeFound) frame.homeY else screenH * 0.5f,
             oppX   = oppX,
             oppY   = oppY,
             isPlayerHoldingPressure = UserTouchState.isTouching(),

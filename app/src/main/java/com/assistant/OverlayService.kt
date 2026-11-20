@@ -451,7 +451,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // IllegalStateException "buffer is inaccessible" (v219 C1,
         // 2026-11-19 16:35:47). The dedup runs in the coroutine below, on
         // the app-owned copy, exactly as at 0661b53a. The OCR bitmap copy
-        // below still runs for every frame, as before.
+        // below runs only when OCR is due (queue item 6).
 
         val visionBuffer: java.nio.ByteBuffer = if (startVision) {
             val required = originalBuffer.remaining()
@@ -480,15 +480,31 @@ class OverlayService : Service(), ComponentCallbacks2 {
         }
         // SPLENDOR_V23B_VISION_BUFFER_REUSE_END
         
-        // Deep copy for OCR (sync safe via reusableBitmap)
-        val ocrReady = try {
+        // Queue item 6 (F5): the OCR bitmap copy used to run for every
+        // admitted frame while OCR itself fires at most every 1.5 s
+        // (OCR_INTERVAL_MS, stretched by the load-shed factor) — the copy
+        // is pure cost on the frames OCR never reads. Gate it on the same
+        // due check the trigger below uses, computed here so the copy and
+        // the trigger agree on one instant. The copy must still happen in
+        // the listener, before image.close() below.
+        val shedFactor = when (com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentLoadShed()) {
+            "HEAVY" -> 4L
+            "LIGHT" -> 2L
+            else -> 1L
+        }
+        val ocrDue = System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS * shedFactor
+
+        // Deep copy for OCR (sync safe via reusableBitmap) — only when OCR
+        // is due; otherwise the bitmap keeps its last frame and no copy
+        // is spent.
+        val ocrReady = if (ocrDue) try {
             if (reusableBitmap == null || reusableBitmap!!.width != width || reusableBitmap!!.height != height) {
                 reusableBitmap?.recycle()
                 reusableBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             }
             reusableBitmap!!.copyPixelsFromBuffer(originalBuffer)
             true
-        } catch (_: Throwable) { false }
+        } catch (_: Throwable) { false } else false
 
         // CLOSE IMAGE IMMEDIATELY: Frees native surface, prevents queue backup and faults
         image.close()
@@ -630,12 +646,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
             }
         }
 
-        // Trigger OCR if interval met (uses already-populated reusableBitmap)
-        val shedFactor = when (com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.currentLoadShed()) {
-            "HEAVY" -> 4L
-            "LIGHT" -> 2L
-            else -> 1L
-        }
+        // Trigger OCR if interval met (uses already-populated reusableBitmap).
+        // Queue item 6 (F5): the due check already ran at the copy above
+        // (ocrDue, same instant) — ocrReady is true only when the copy ran
+        // for a due OCR, so no time re-check is needed here.
 
         // No68-C-D19: OCR used to run inline at the end of the capture
         // listener, on the same thread that must acquire the next frame —
@@ -644,7 +658,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // the next frame can be acquired; processBitmapForOCR then reads
         // the latest bitmap, which is the right frame for advisory OCR at
         // a 1.5 s cadence.
-        if (ocrReady && System.currentTimeMillis() - lastOcrTime >= OCR_INTERVAL_MS * shedFactor) {
+        if (ocrReady) {
             lastOcrTime = System.currentTimeMillis()
             val ocrHandler = ocrIoHandler ?: ocrIoThread?.looper?.let { Handler(it) }
             if (ocrHandler != null) ocrHandler.post { processBitmapForOCR() } else processBitmapForOCR()

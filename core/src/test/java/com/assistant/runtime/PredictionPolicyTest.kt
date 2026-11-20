@@ -110,10 +110,10 @@ class PredictionPolicyTest {
         val p = OutcomePolicy(); p.dispatched("p", ActionClass.PASS, 1, true, 1L)
         assertEquals(listOf("p" to true), p.observe(2, true, true, 800_000_001L))
     }
-    @Test fun coolingWindowEndsAt800ms() {
+    @Test fun coolingWindowEndsAt150ms() {
         val p = OutcomePolicy(); p.dispatched("p", ActionClass.PASS, 1, true, 1L)
-        assertTrue(p.cooling(ActionClass.PASS, 800_000_001L))
-        assertFalse(p.cooling(ActionClass.PASS, 800_000_002L))
+        assertTrue(p.cooling(ActionClass.PASS, 150_000_001L))
+        assertFalse(p.cooling(ActionClass.PASS, 150_000_002L))
     }
     @Test fun macroTooEarlyStaysPendingThenSucceeds() {
         val p = OutcomePolicy(); p.dispatched("p", ActionClass.PASS, 1, true, 1L)

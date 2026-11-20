@@ -129,10 +129,6 @@ object RuntimeDecisionLoop {
     // routeRejected: the bus never saw it, and the room's "Decision
     // Routed=" must stop climbing while the user is hands-off.
     private val moveHeldNoTouch = AtomicLong(0L)
-    // B10: MOVE requests suppressed by the HEAVY load-shed brake
-    // (chooseRequest). Counted separately from the no-touch hold: the
-    // brake suppresses even while the user IS touching.
-    private val loadShedMoveSuppressed = AtomicLong(0L)
 
     @Volatile private var lastAction: String = "none"
     @Volatile private var lastWeight: Float = 0f
@@ -342,25 +338,9 @@ object RuntimeDecisionLoop {
         // has no best; it never outranks a live best (bus rings already
         // give GK/INT priority over SMART_ASSIST).
         if (parked != null && best == null) {
-            // B10: the load-shed MOVE gate applies to the parked request
-            // too — a parked MOVE is still a MOVE under HEAVY shed.
-            if (parked.actionClass == ActionClass.MOVE && LoadShedCaptureBrakeEngine.suppressMoveGestures()) {
-                loadShedMoveSuppressed.incrementAndGet()
-                return null
-            }
             return parked
         }
         if (best == null) return null
-
-        // B10: HEAVY load shed suppresses MOVE-class requests (Q68-14:
-        // suppressMoveGestures() had zero callers; this is its consumer
-        // in chooseRequest). Action-class gestures still pass, per the
-        // brake's KDoc — only MOVE is filtered, by design: that is what
-        // the brake is for.
-        if (best.actionClass == ActionClass.MOVE && LoadShedCaptureBrakeEngine.suppressMoveGestures()) {
-            loadShedMoveSuppressed.incrementAndGet()
-            return null
-        }
 
         // Contributor targets carry action-specific intent (goal, receiver, movement).
         var leadX = best.targetX
@@ -454,10 +434,12 @@ object RuntimeDecisionLoop {
      *    legacy direct one, then the drained parked evade via chooseRequest
      *    below); both are short joystick drags from the same origin and the
      *    bus serialises them through the dispatch latch.
-     *  - AutoEvade's 132ms cooldown never engages for parked offers
-     *    (offer() returns false for non-emergency, so lastEvadeTimestamp is
-     *    never set); re-parking while a threat persists relies on the
-     *    registry's latest-per-(source, phase) replacement plus this
+     *  - AutoEvade's 132ms cooldown DOES gate re-parking: the timestamp
+     *    IS set on the park (AutoEvadeEngine stamps lastEvadeTimestamp
+     *    when it parks, No67-D3 — offer() returns false for non-emergency,
+     *    so the park, not a success, is what stamps it). Re-parking while
+     *    a threat persists is throttled by that cooldown plus the
+     *    registry's latest-per-(source, phase) replacement and this
      *    hook's 250ms floor.
      *  - The trigger re-checks UiExecutionGate / enabled / foreground
      *    itself; onFrame's own gates above already passed, so this is
@@ -497,11 +479,18 @@ object RuntimeDecisionLoop {
      * BallTrajectoryPredictor.current().velocityX/Y (px per FRAME —
      * MotionTracker.kt: ball.x - previousX, no dt division), NOT
      * frame.ballVelocityXPerSecond (px per SECOND). Reading the predictor
-     * here keeps the gate's projection identical to the monitor's; using
+     * here keeps the gate on the same velocity the monitor sees; using
      * the frame velocity would project the opponent ~fps-times too far.
      *
+     * Projection (queue item 6): the gate projects the same 2 frames as
+     * the monitor — `traj.velocityX * 2f`. At the 20 fps processed rate
+     * that is 100 ms, a superset of the monitor's 66.7 ms wall-time
+     * horizon, so the gate never rejects a threat the monitor would
+     * take. The old 0.0667 scale under-projected 30x: it treated a
+     * px/frame velocity as px/second.
+     *
      * Superset radius: the monitor scales its 8.5%-of-height radius by
-     * 1.0 + (|v| * 0.05 capped at 0.4); the gate uses the 1.4 maximum, so
+     * 1.0 + (|v| * 0.0025 capped at 0.4) on per-second magnitudes; the gate uses the 1.4 maximum, so
      * it never rejects a threat the monitor would take. The constants
      * 0.085f / 1.4f are duplicated from AutoEvadeEngine (its consts are
      * private); the monitor stays the authority and this gate is only a
@@ -515,9 +504,8 @@ object RuntimeDecisionLoop {
         frameHeight: Float
     ): Boolean {
         val traj = BallTrajectoryPredictor.current()
-        val predictionScale = (33.33f * 2f) / 1000f // 2 server ticks, as in AutoEvadeEngine
-        val predictedOppX = nearestOppX + traj.velocityX * predictionScale
-        val predictedOppY = nearestOppY + traj.velocityY * predictionScale
+        val predictedOppX = nearestOppX + traj.velocityX * 2f
+        val predictedOppY = nearestOppY + traj.velocityY * 2f
         val closing = hypot(predictedOppX - joystickX, predictedOppY - joystickY)
         return closing < frameHeight * 0.085f * 1.4f
     }
@@ -573,7 +561,6 @@ object RuntimeDecisionLoop {
         idleUntrustedFg.set(0L); idleUntrustedFrame.set(0L); idleUntrustedVariance.set(0L)
         gateBlocked.set(0L); staleFrame.set(0L); settingsExit.set(0L); routeRejected.set(0L); chooseNull.set(0L)
         moveHeldNoTouch.set(0L)
-        loadShedMoveSuppressed.set(0L)
         lastAction = "none"; lastWeight = 0f; lastUpdatedMs = 0L
     }
 
@@ -591,7 +578,6 @@ object RuntimeDecisionLoop {
         "routeRejected" to routeRejected.get(),
         "chooseNull" to chooseNull.get(),
         "moveHeldNoTouch" to moveHeldNoTouch.get(),
-        "loadShedMoveSuppressed" to loadShedMoveSuppressed.get(),
         "lastAction" to lastAction,
         "lastWeight" to lastWeight,
         "lastUpdatedMs" to lastUpdatedMs,

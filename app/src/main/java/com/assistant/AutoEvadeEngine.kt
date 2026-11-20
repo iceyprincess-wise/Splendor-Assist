@@ -114,7 +114,7 @@ class AutoEvadeEngine() {
         myPlayerX: Float, myPlayerY: Float,
         joystickX: Float, joystickY: Float,
         nearestOpponentX: Float, nearestOpponentY: Float,
-        oppVx: Float, oppVy: Float,
+        oppVxPerSecond: Float, oppVyPerSecond: Float,
         screenWidth: Float = com.assistant.vision.CameraProfile.captureWidthOrFallback(),
         screenHeight: Float = com.assistant.vision.CameraProfile.captureHeightOrFallback()
     ): Boolean {
@@ -126,23 +126,31 @@ class AutoEvadeEngine() {
         }
 
         // [PREDICTIVE TRACKING] - Project the opponent 2 server ticks into
-        // the future (~66 ms). oppVx/oppVy are px per FRAME (the nearest
-        // opponent's own velocity, passed by the caller), so the projection
-        // is 2 frames at 30 fps capture — NOT seconds (the old
-        // 0.06666 s scale under-predicted by 30x, No67-D2). Capture fps is
-        // unmeasured (Q67-6); if it is not 30 fps this constant moves.
-        val predictionFrames = 2f
-        val predictedOppX = nearestOpponentX + (oppVx * predictionFrames)
-        val predictedOppY = nearestOpponentY + (oppVy * predictionFrames)
+        // the future (~66 ms). oppVxPerSecond/oppVyPerSecond are px per
+        // SECOND (the nearest opponent's own velocity, passed by the
+        // caller), so the projection is vPerSecond * 0.0667f — a wall-time
+        // horizon, rate-independent (queue item 6). The old form projected
+        // 2 frames of a px/frame velocity at an assumed 30 fps; at the
+        // 20 fps processed rate that was 100 ms of motion, not 66 ms, and
+        // the frame count itself was unmeasured (Q67-6). No frame-rate
+        // assumption remains.
+        val predictedOppX = nearestOpponentX + (oppVxPerSecond * 0.0667f)
+        val predictedOppY = nearestOpponentY + (oppVyPerSecond * 0.0667f)
 
         val closingDistance = hypot(
             predictedOppX - myPlayerX,
             predictedOppY - myPlayerY
         )
 
-        // [AMPLIFIED INPUT EFFECTIVENESS] - Dynamic threat radius based on velocity magnitude
-        val velocityMagnitude = hypot(oppVx, oppVy)
-        val dynamicThreatMultiplier = 1.0f + (velocityMagnitude * 0.05f).coerceIn(0f, 0.4f)
+        // [AMPLIFIED INPUT EFFECTIVENESS] - Dynamic threat radius based on velocity magnitude.
+        // Queue item 6: the multiplier coefficient is rescaled for the
+        // per-second input — 0.0025f is the old 0.05 per-frame coefficient
+        // at the 20 fps processed rate (0.05 / 20), so the multiplier's
+        // actual on-device behaviour is preserved. Keeping 0.05 on
+        // per-second magnitudes would saturate the multiplier at 1.4
+        // on every frame.
+        val velocityMagnitude = hypot(oppVxPerSecond, oppVyPerSecond)
+        val dynamicThreatMultiplier = 1.0f + (velocityMagnitude * 0.0025f).coerceIn(0f, 0.4f)
         val pressRadiusThreshold = (screenHeight * 0.085f) * dynamicThreatMultiplier
 
         if (closingDistance >= pressRadiusThreshold) {

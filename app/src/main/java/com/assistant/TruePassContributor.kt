@@ -187,7 +187,7 @@ object TruePassContributor : GameplayContributor {
             TrueTargetPassingEngine.optimizeWithAdvancedTactics(
                 frame.ballX, frame.ballY,
                 bestReceiver.x, bestReceiver.y,
-                bestReceiver.velocityX, bestReceiver.velocityY,
+                bestReceiver.velocityXPerSecond, bestReceiver.velocityYPerSecond,
                 frame.defenderDensity,
                 nearestDefender?.x, nearestDefender?.y
             )

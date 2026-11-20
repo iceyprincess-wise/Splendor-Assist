@@ -202,19 +202,21 @@ object LagVerdictEngine {
  * for the capture gate — since No68-C-D4, OverlayService's
  * captureFrameIntervalMs reads recommendedIntervalMs() (max with the
  * memory-gate interval, floored at 30 fps in-game). The gesture
- * submission path still does NOT read it (suppressMoveGestures() has zero
- * callers — see No68-C-D5 / QC-1).
+ * submission path does NOT read it either: it was wired to the brake
+ * once (see No68-C-D5), and queue item 6 removed that gate — MOVE is
+ * continuous steering, and shedding it removes gameplay, not cost.
  *
  * This engine translates load shed level into an execution throttle
  * signal published to AdapterSignalBus, consumed by OverlayService's
- * capture gate; the gesture submission path is a stated consumer that
- * was never wired.
+ * capture gate. The brake's lever is the capture rate
+ * (recommendedIntervalMs), which stays; the gesture path is not a
+ * consumer of the brake.
  *
  *   NONE  → executionBrake = 0  (normal operation)
  *   LIGHT → executionBrake = 1  (reduce capture rate: 15 fps out of game,
  *           floored to 30 fps in-game; keep gestures)
  *   HEAVY → executionBrake = 2  (10 fps out of game, floored to 30 fps
- *           in-game; suppress MOVE-class only gestures — unwired, QC-1)
+ *           in-game; gestures unaffected)
  *
  * The brake is polled every 500ms (faster than LoadShedGovernor's 2s poll)
  * so it responds within one poll cycle after the governor decides.

@@ -37,9 +37,10 @@ import kotlin.math.sin
  * - No frame-rate constant anywhere: all horizons are per-frame positions
  *   or wall-ms timeouts from frame.timestampMs. The AIM target is the
  *   receiver's LIVE position via optimize(retention = 1.0f) — deliberately
- *   NOT optimizeWithAdvancedTactics, whose fixed frame-rate assumption
- *   over-leads 3x at the 20 fps processed rate (open TruePass defect,
- *   File 217).
+ *   NOT optimizeWithAdvancedTactics: the AIM target is the live
+ *   position by design, even though that function's lead is now a
+ *   rate-independent per-second lead (queue item 6 fixed the old 3x
+ *   over-lead at the 20 fps processed rate, File 217).
  *
  * STATED CONSTANTS (tuning, not measured — flagged for on-device check):
  * every fraction below names its anchor in its comment. Nothing here
@@ -423,8 +424,9 @@ object DecoyRunEngine {
     }
 
     /** The AIM offer: receiver's LIVE scene position (fresh) — no velocity
-     *  lead on purpose (optimizeWithAdvancedTactics over-leads 3x at
-     *  20 fps (open TruePass defect). The pass goes where he IS. */
+     *  lead on purpose (the advanced-tactics lead is rate-independent
+     *  per-second since queue item 6, but this engine still takes the
+     *  live position by design). The pass goes where he IS. */
     private fun buildAimDecision(
         frame: RuntimeFrame,
         scene: SceneSnapshot,

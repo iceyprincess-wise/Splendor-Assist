@@ -79,11 +79,14 @@ class OutcomePolicy {
         pending[id] = Waiting(phase, ownerId, hasBall, now)
     }
     // No64-D26: KEEPER gets a 150 ms cooling window — emergency saves must
-    // be re-offerable inside one play. Every other action keeps the 800 ms
-    // window. (The 800 ms outcome-verification deadline in observe() below
-    // is a different window and is unchanged.)
+    // be re-offerable inside one play. Queue item 6 extends the 150 ms
+    // window to every other action too: at the 20 fps processed rate
+    // 800 ms is 16 frames of class-wide silence after one dispatch, and
+    // a second dispatch cannot clobber the first entry's outcome —
+    // pending is keyed by actionId. (The 800 ms outcome-verification
+    // deadline in observe() below is a different window and is unchanged.)
     @Synchronized fun cooling(phase: ActionClass, now: Long): Boolean {
-        val windowNs = if (phase == ActionClass.KEEPER) 150_000_000L else 800_000_000L
+        val windowNs = if (phase == ActionClass.KEEPER) 150_000_000L else 150_000_000L
         return pending.values.any { it.phase == phase && now - it.at in 0L..windowNs }
     }
     @Synchronized fun confidenceFactor(phase: ActionClass) = reliability[phase] ?: 1f

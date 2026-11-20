@@ -205,7 +205,7 @@ class ActiveGestureController(
         val evadeActive = if (autoEvadeEngine.monitorAttackingSpace(
             startX, startY, startX, startY,
             nearestOppEarly?.x ?: endX, nearestOppEarly?.y ?: endY,
-            nearestOppEarly?.velocityX ?: 0f, nearestOppEarly?.velocityY ?: 0f)) 1.0f else 0.0f
+            nearestOppEarly?.velocityXPerSecond ?: 0f, nearestOppEarly?.velocityYPerSecond ?: 0f)) 1.0f else 0.0f
         val scoreAim = CriticalAttackingVectorEngine.computeAbsoluteScoringVector(startX, startY, dynamicGkX, dynamicGkY, dynamicGoalLeftX, dynamicGoalLeftY, dynamicGoalRightX, dynamicGoalRightY)
         val defensiveVectorPacked = OmnipotentDashPressureMatrix.computeHighAuthorityDefensiveVector(endX, endY, startX, startY, startX, startY + 50f, endX, endY, UserTouchState.isTouching())
         // No68-I-D36: the last argument above was a hardcoded `true`, so the

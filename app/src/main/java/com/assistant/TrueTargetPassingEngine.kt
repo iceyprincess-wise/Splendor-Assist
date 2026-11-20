@@ -94,16 +94,14 @@ import kotlin.math.sin
 
 
 object TrueTargetPassingEngine {
-    private const val TARGET_FPS = 60f // honest named fallback; no captured interval is exposed
-    // No68-A-D13 / Q67-6 (KEPT OPEN, device proof): this 60 fps
-    // assumption disagrees with AutoEvadeEngine (30 fps: predictionFrames
-    // = 2f) and with the current game rate (20 fps per the FPS answer —
-    // game 20 + app 60 is being abandoned for game 60 + app 60). At 20
-    // fps this engine over-leads 3x. The constant is NOT silently
-    // retuned here: the target rate (60) is what this constant already
-    // assumes, and the measured processed rate is still unproven. The
-    // same unmeasured rate also moves AdaptiveLoftedThroughEngine's
-    // 27-frame look-ahead (No68-A-D1).
+    // Queue item 6 (F1): the lead is now rate-independent. The receiver
+    // velocity is px per SECOND (TrackedPlayer.velocityXPerSecond/Y,
+    // filled by SceneTracker via PlayerMotionProducer) and the lead is
+    // vPerSecond * travelS — no frame-rate constant anywhere. The old
+    // 60 fps constant multiplied a px/frame velocity by 60, over-leading
+    // 3x at the 20 fps processed rate (Q67-6); that question no longer
+    // gates this maths. The same unmeasured rate also moves
+    // AdaptiveLoftedThroughEngine's 27-frame look-ahead (No68-A-D1).
 
     /**
      * @param retention 0..1 fraction along (start->end) to land on.
@@ -158,17 +156,16 @@ object TrueTargetPassingEngine {
     fun optimizeWithAdvancedTactics(
         ballX: Float, ballY: Float,
         receiverX: Float, receiverY: Float,
-        receiverVx: Float, receiverVy: Float,
+        receiverVxPerSecond: Float, receiverVyPerSecond: Float,
         defenderDensity: Float,
         nearestDefenderX: Float? = null,
         nearestDefenderY: Float? = null
     ): PassingAssistResult {
         val dist = hypot((receiverX - ballX).toDouble(), (receiverY - ballY).toDouble()).toFloat()
         val travelS = (dist / 750f + 0.14f).coerceIn(0f, 0.55f)
-        val fps = TARGET_FPS // no captured interval available in this scope
 
-        var predX = (receiverX + receiverVx * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
-        var predY = (receiverY + receiverVy * fps * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
+        var predX = (receiverX + receiverVxPerSecond * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback())
+        var predY = (receiverY + receiverVyPerSecond * travelS).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
 
         // Match-Up / Defender Shadow Offset — away from the real defender.
         if (defenderDensity > 0.5f && nearestDefenderX != null && nearestDefenderY != null) {
