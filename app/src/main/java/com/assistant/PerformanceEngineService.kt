@@ -107,6 +107,25 @@ class PerformanceEngineService : Service() {
         ignite({ CongestionSentinelEngine.start() })
         ignite({ BurstForensicsEngine.startDecay() })
         ignite({ MemoryMonitorEngine.start(this) })
+        // Batch 6e: InputPriorityEngine.start(), InputThermalEliminatorEngine.start(),
+        // InputVsyncEliminatorEngine.start() and OomAdaptiveThrottleEngine.start() all
+        // had zero callers anywhere — the four input eliminators never ran, so the
+        // main-thread priority was never re-applied and the vsync/thermal/OOM
+        // signals were never published (their bus signals have no other
+        // producer). Same defect class as 440/442/459 (6d) and P12_B13_CARRIER:
+        // ignite them here. All four starts are idempotent (running guard).
+        ignite({ InputPriorityEngine.start() })
+        ignite({ InputThermalEliminatorEngine.start(this) })
+        ignite({ InputVsyncEliminatorEngine.start() })
+        ignite({ OomAdaptiveThrottleEngine.start() })
+        // Batch 6e: PacketLossProbeEngine.start(), PanelWatchEngine.start() and
+        // RadioKeepAliveEngine.start() also had zero callers anywhere — the
+        // loss input ActionWindowEngine reads (lossPct) stayed at its 0.0
+        // default, the real panel rate never reached StutterPulseEngine, and
+        // the radio keepalive never fired. Same defect class; ignite here.
+        ignite({ PacketLossProbeEngine.start() })
+        ignite({ PanelWatchEngine.start(this) })
+        ignite({ RadioKeepAliveEngine.start() })
 
         // Start consolidated scheduler for adapter telemetry
         ignite({ PerformanceScheduler.start(this) })
@@ -116,7 +135,12 @@ class PerformanceEngineService : Service() {
         // now matches the ignition list.
         // MERGE (no68): 19 -> 20 — famI No68-I-D28 adds TouchQualityEngine
         // to the ignition list above.
-        RuntimeLogger.log("Performance engine stack ignited: 20 engines + scheduler", "ENGINE")
+        // Batch 6d: 20 -> 23 — DnsWarmupEngine, ConnectionHealEngine and
+        // CongestionSentinelEngine were ignited without updating this count.
+        // Batch 6e: 23 -> 30 — the seven zero-caller starters above
+        // (InputPriority, InputThermal, InputVsync, OOM, PacketLoss,
+        // PanelWatch, RadioKeepAlive) are ignited here.
+        RuntimeLogger.log("Performance engine stack ignited: 30 engines + scheduler", "ENGINE")
     }
 
     /** O37-1 reader: the MachineLedger samples collected since onCreate. */
@@ -161,6 +185,22 @@ class PerformanceEngineService : Service() {
         // started engine with a stop that was never stopped. Its thread
         // survived service destruction and kept polling.
         try { ThermalPeekEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        // Batch 6d trio (same class as No68-E-D33): DnsWarmupEngine,
+        // ConnectionHealEngine and CongestionSentinelEngine all HAVE a
+        // stop() but onDestroy never called it — their threads survived
+        // service destruction and kept polling.
+        try { DnsWarmupEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { ConnectionHealEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { CongestionSentinelEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        // Batch 6e: stop the seven newly-ignited engines (each HAS a
+        // stop(); without these their threads survive destruction too).
+        try { InputPriorityEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { InputThermalEliminatorEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { InputVsyncEliminatorEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { OomAdaptiveThrottleEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { PacketLossProbeEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { PanelWatchEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { RadioKeepAliveEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
 
         NodeNotificationHub.detach(this, "performance_engine")
         RuntimeLogger.log("PerformanceEngineService destroyed", "ENGINE")

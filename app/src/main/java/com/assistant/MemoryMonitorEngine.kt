@@ -74,6 +74,11 @@ object MemoryMonitorEngine {
         if (running) return
         running = true
         appContext = ctx.applicationContext
+        // Batch 6e: OptimizerLivenessReporter.reportStartup() had zero
+        // callers — the one-line startup state report never ran, while
+        // reportPeriodic() is called from this engine's poll below. Log
+        // the optimizer state once at monitor startup.
+        OptimizerLivenessReporter.reportStartup()
         val t = Thread {
             while (running) {
                 try {

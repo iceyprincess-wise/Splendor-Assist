@@ -441,7 +441,7 @@ class GlobalCrashHandler(
                 EngineEntry("CpuGovernorEngine","com.assistant.CpuGovernorEngine","ACTIVE","A75 core pinned to eFootball; A55 to Splendor"),
                 EngineEntry("ConnectionHealEngine","com.assistant.ConnectionHealEngine","ACTIVE","WiFi rescan+rebind on HOLD; 15s cooldown"),
                 EngineEntry("InputLatencyEngine","com.assistant.InputLatencyEngine","ACTIVE","main-thread dispatch latency; 6s boot suppress"),
-                EngineEntry("InputPriorityEngine","com.assistant.InputPriorityEngine","ACTIVE","URGENT_DISPLAY priority; re-applies every 30s"),
+                EngineEntry("InputPriorityEngine","com.assistant.InputPriorityEngine","ACTIVE","URGENT_DISPLAY priority; re-applies every 500ms"),
                 EngineEntry("TouchQualityEngine","com.assistant.TouchQualityEngine","ACTIVE","OOM adj + IRQ stall monitor"),
                 EngineEntry("MemoryPressureBusEngine","com.assistant.MemoryPressureBusEngine","ACTIVE","memory tier → bus publish"),
                 EngineEntry("StutterPulseEngine","com.assistant.StutterPulseEngine","ACTIVE","burst radar; BURST_MULT=4 for 30fps eFootball on 90Hz panel"),

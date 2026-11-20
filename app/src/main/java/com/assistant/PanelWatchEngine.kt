@@ -68,7 +68,7 @@ import com.assistant.diagnostic.RuntimeLogger
 
 object PanelWatchEngine {
 
-    // ADMIN-TUNABLE
+    // Fixed 5 s sweep interval (a literal, not a live-set value).
     private val POLL_MS: Long get() = 5000L
 
     @Volatile private var running = false
@@ -119,7 +119,7 @@ object PanelWatchEngine {
 /* ========
 StutterPulseEngine
 ======== */
-// V3 ADMIN-WIRED - every knob answers the admin store live, publishes for the Detector
+// V3: every knob is a fixed literal in code, publishes for the Detector
 
 /**
  * Sub-second burst radar. Lag grades long windows; this watches EVERY slice
@@ -129,6 +129,6 @@ StutterPulseEngine
  * out - the felt micro-stutter.
  *
  * V3: burst line, frames-per-slice, slice length and readout rhythm are all
- * admin-tunable and re-read every frame - values apply instantly, no
- * restart. Publishes live burst truth for the admin Detector.
+ * fixed literals in code (BURST_MULT, MIN_FRAMES, SLICE_MS, PUBLISH_MS) —
+ * none is set from outside the code. Publishes live burst truth for the Detector.
  */

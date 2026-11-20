@@ -65,7 +65,7 @@ object HybridExecutionTerminal {
      * choke point every dispatch flows through (RuntimeDecisionLoop
      * onFrame, the ContributionRegistry emergency lane, the legacy
      * injectWinningVector, BurstForensics re-asserts, the zero-latency
-     * injector, the OCR pipe), so one log line here covers all 43
+     * injector, the OCR pipe), so one log line here covers all 54
      * engines at once — no per-engine edits. Each line answers, for
      * that dispatch: WHICH engine (request.engine, "?" when none claimed
      * it), WHAT was dispatched (actionClass + phase + start/end slot

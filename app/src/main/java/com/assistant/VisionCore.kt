@@ -136,6 +136,15 @@ val ball =
         ballCandidate
     )
 
+// Batch 6e (carried from 6d File 438): ConfidenceHeatmap.update() had
+// zero callers, so the `confidence` field in the heatmap state was
+// permanently 0f while RuntimePerformanceCoordinator reads it into the
+// live performance state. Feed it the ball detection confidence of
+// this frame — the per-frame detection confidence. Full-vision path
+// only; under CRITICAL memory the ball-only path runs instead and the
+// field keeps its last value.
+ConfidenceHeatmap.update(ball.confidence)
+
 // L1 (batch 1): CRITICAL memory — the ball-only path. This is the first
 // live caller of MemoryCaptureGateEngine.shouldSkipFullVision() (zero
 // callers before this round). Full VisionCore is skipped: only the ball

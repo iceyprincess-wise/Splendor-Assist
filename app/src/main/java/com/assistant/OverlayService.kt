@@ -803,17 +803,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         RuntimeLogger.log("OverlayService started", "OVERLAY")
         com.assistant.vision.ForegroundGate.install(application)
-        // SPLENDOR_CONTROL_MAP_V1 - RadarScaleCalibrator was never calibrated,
-        // so its logical-pitch -> screen mapping was permanently at its default
-        // 1080x2340 with unit scales. Calibrate from the real display once the
-        // service is up so the mapping is usable and not dead infrastructure.
-        try { com.assistant.RadarScaleCalibrator.calibrate(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("RadarScaleCalibrator.calibrate failed: ${t.message}", "OVERLAY") }
+        // Batch 6e (File 568): RadarScaleCalibrator is deleted — its
+        // calibrate() call ran, but pitchScaleX/Y, screenWidth/Height
+        // and mapToScreen() have zero readers anywhere and no
+        // logical-coordinate consumer exists repo-wide, so the
+        // calibration was write-only. The call goes with the file.
 
         try { com.assistant.RuntimeSelfHealEngine.init(applicationContext)
               com.assistant.RuntimeSelfHealEngine.start() } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("RuntimeSelfHealEngine init/start failed: ${t.message}", "OVERLAY") }
         // F37-D5: register contributors at service start, not only after the
         // first assembled frame — otherwise a never-started capture leaves
-        // the registry at 0/52 forever. The frame-path call stays as well.
+        // the registry at 0/54 forever. The frame-path call stays as well.
         try { com.assistant.AppContributorRegistration.ensureRegistered() } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("AppContributorRegistration.ensureRegistered at startup failed: ${t.message}", "OVERLAY") }
         try { com.assistant.CaptaincySkillEngine.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CaptaincySkillEngine.init failed: ${t.message}", "OVERLAY") }
         try { com.assistant.CrowdingZoneDetector.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CrowdingZoneDetector.init failed: ${t.message}", "OVERLAY") }

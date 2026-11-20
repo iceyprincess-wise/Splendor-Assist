@@ -70,7 +70,7 @@ object PacketLossProbeEngine {
 
     private val RESOLVERS = listOf("8.8.8.8", "1.1.1.1")
 
-    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    // Fixed literals (not set from outside the code)
     private val ROUND_MS: Long get() = 4000L
     private val PER_ROUND: Int get() = 4
     private val REPLY_TIMEOUT_MS: Int get() = 700
@@ -152,8 +152,9 @@ RadioKeepAliveEngine
 
 /**
  * V2: cadence adapts - when the link is dirty the radio is pinned at high
- * power MORE often (every rhythm/2 s, floor = admin value), because a dirty
+ * power MORE often (every rhythm/2 s, floor = a fixed literal), because a dirty
  * link plus a sleepy radio compounds into the worst first-touch latency.
- * V3: the base rhythm itself is override-aware (net.profile.keepalive_s),
- * so the admin controls both the rhythm and the floor.
+ * V3: the base rhythm comes from the detected carrier profile
+ * (CarrierProfileEngine.keepAliveS). The rhythm is profile-detected and
+ * the floor is a literal — neither is set from outside the code.
  */

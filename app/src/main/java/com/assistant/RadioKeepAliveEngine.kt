@@ -68,7 +68,7 @@ import java.net.InetAddress
 
 object RadioKeepAliveEngine {
 
-    // ADMIN-TUNABLE (default = original hard-coded value)
+    // Fixed literal floor (not set from outside the code)
     private val FLOOR_S: Int get() = 4
 
     @Volatile private var running = false
@@ -115,6 +115,7 @@ SpikeBurstEngine
  * When the sentinel flags congestion, this fires a rapid probe burst to map
  * the spike (depth + floor) and then watches for recovery at 1s resolution -
  * so the runtime knows the link is clean again SECONDS before the slow
- * cadence would notice. V3: burst size, burst gap and the clean line are all
- * admin-tunable, and the clean line follows the override-aware baseline.
+ * cadence would notice. V3: burst size, burst gap and the clean line are
+ * fixed literals in code (BURST_SAMPLES, BURST_GAP_MS, CLEAN_MULT) — none
+ * is set from outside the code.
  */
