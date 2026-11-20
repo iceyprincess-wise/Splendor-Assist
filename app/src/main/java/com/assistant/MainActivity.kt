@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.content.ComponentName
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
-import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -116,35 +115,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    // P0 FIX: VPN consent launcher.
-    // PingEliminatorVpnService detects VpnService.prepare() returns non-null (user not authorized)
-    // and routes here via REQUEST_VPN_CONSENT extra. This launcher handles the system
-    // VPN authorization dialog. On RESULT_OK the VPN service is started directly.
-    // On denial: ping probe engine stays offline; fleet heartbeats normally via specialUse adapter.
-    private val vpnConsentLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                com.assistant.diagnostic.RuntimeLogger.log(
-                    "VPN consent GRANTED -- starting PingEliminatorVpnService",
-                    "VPN"
-                )
-                try {
-                    startService(Intent(this@MainActivity, PingEliminatorVpnService::class.java))
-                } catch (e: Exception) {
-                    com.assistant.diagnostic.RuntimeLogger.log(
-                        "VPN service start post-consent failed: ${e.message}",
-                        "VPN"
-                    )
-                }
-            } else {
-                com.assistant.diagnostic.RuntimeLogger.log(
-                    "VPN consent DENIED by user -- ping probe engine will remain offline",
-                    "VPN"
-                )
-            }
-        }
+    // Batch 6b VERDICT — PingEliminatorVpnService REMOVED, do not
+    // re-add a start path here. The service was a real VpnService that
+    // captured ALL traffic (route 0.0.0.0/0) and wrote every TUN packet
+    // back to the same fd — no socket, no server, no forwarding, no
+    // protect() — so it could not reduce ping or pick a route, and its
+    // "Network latency masking enabled" notification was false. A real
+    // upstream needs a server decision from Ed (not invented here), so
+    // the tunnel goes instead of being faked. The consent launcher,
+    // the REQUEST_VPN_CONSENT resume branch and the manifest entry
+    // are all gone with it; the class itself is deleted.
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -199,33 +179,10 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        // P0 FIX: VPN consent flow.
-        // PingEliminatorVpnService sends REQUEST_VPN_CONSENT when VpnService.prepare()
-        // returns non-null (user not yet authorized for VPN). We launch the system
-        // authorization dialog here; result handled in vpnConsentLauncher above.
-        if (intent?.getBooleanExtra("REQUEST_VPN_CONSENT", false) == true) {
-            intent.removeExtra("REQUEST_VPN_CONSENT")
-            val vpnPrepareIntent = VpnService.prepare(this)
-            if (vpnPrepareIntent != null) {
-                // System dialog needed.
-                vpnConsentLauncher.launch(vpnPrepareIntent)
-            } else {
-                // Already authorized (granted between service request and this resume).
-                com.assistant.diagnostic.RuntimeLogger.log(
-                    "VPN already authorized on resume -- starting PingEliminatorVpnService directly",
-                    "VPN"
-                )
-                try {
-                    startService(Intent(this, PingEliminatorVpnService::class.java))
-                } catch (e: Exception) {
-                    com.assistant.diagnostic.RuntimeLogger.log(
-                        "VPN direct start on resume failed: ${e.message}",
-                        "VPN"
-                    )
-                }
-            }
-            return
-        }
+        // Batch 6b: the REQUEST_VPN_CONSENT branch is gone with
+        // PingEliminatorVpnService (see the verdict note above) — no
+        // in-repo code can set that extra any more, so a stale extra
+        // from an old install is ignored instead of starting a tunnel.
 
         if (intent?.getBooleanExtra("REQUEST_MEDIA_PROJECTION_RECOVERY", false) == true) {
             intent.removeExtra("REQUEST_MEDIA_PROJECTION_RECOVERY")

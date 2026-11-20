@@ -192,6 +192,23 @@ object DeathWatch {
         val threshMb  = at(7)
 
         val lived = if (began > 0 && lastBeat > began) (lastBeat - began) / 1000L else -1L
+        // Batch 6b (v219 item d): lived is a LOWER bound quantized to
+        // the 15 s heartbeat — a session that lived 4.7 s or 6.2 s has
+        // only its START beat, so lived came out -1/0 while the session
+        // really ran. livedAtDetection is the UPPER bound (death
+        // happened between the last beat and this detection — the gap
+        // includes the delay before this restart, so it overstates a
+        // late-detected death and must never feed the verdict). The
+        // report prints both; the verdict branches below still use
+        // the lower bound only.
+        val livedAtDetection = if (began > 0) (detectedMs - began) / 1000L else -1L
+        val livedText = if (lived >= 0) {
+            "at least " + lived + "s (last beat) / at most " + livedAtDetection + "s (at detection)"
+        } else if (livedAtDetection >= 0) {
+            "unknown — shorter than the 15s heartbeat resolution / at most " + livedAtDetection + "s (at detection)"
+        } else {
+            "unknown"
+        }
         // Future-heartbeat age edge (batch 5): a heartbeat stamped ahead
         // of the clock (clock jump) used to print a negative gap; clamp
         // at 0 — a future beat is 0s old, never negative.
@@ -244,7 +261,7 @@ object DeathWatch {
         sb.appendLine("Dead process  : " + deadProc + "  (pid " + deadPid + ")")
         sb.appendLine("Session began : " + (if (began > 0) ts.format(Date(began)) else "?"))
         sb.appendLine("Last heartbeat: " + (if (lastBeat > 0) ts.format(Date(lastBeat)) else "?"))
-        sb.appendLine("Survived      : " + lived + "s")
+        sb.appendLine("Survived      : " + livedText)
         sb.appendLine("Last beat age at detection: " + gap + "s (death occurred after the last beat; the gap includes the delay before this restart)")
         sb.appendLine("Memory then   : avail=" + availMb + "MB threshold=" + threshMb + "MB lowMemory=" + lowMem)
         sb.appendLine("Java crash    : " + (if (javaCrash) "YES" else "NO"))
@@ -273,7 +290,7 @@ object DeathWatch {
             try { javaCrashMarkerFile()?.delete() } catch (t: Throwable) { android.util.Log.e("DeathWatch", "java crash marker delete failed", t) }
         }
 
-        log("ABNORMAL DEATH proc=" + deadProc + " lived=" + lived + "s avail=" +
+        log("ABNORMAL DEATH proc=" + deadProc + " lived=" + lived + "s livedAtDetection=" + livedAtDetection + "s avail=" +
             availMb + "MB lowMemory=" + lowMem + " verdict=" + verdict)
     }
 

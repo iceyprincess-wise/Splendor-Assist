@@ -64,6 +64,12 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     // lastBusIdleReason logs each idle reason once, and once when it clears.
     @Volatile private var lastBusHeartbeatMs = 0L
     @Volatile private var lastBusIdleReason: String? = null
+    // Batch 6b (v219 item i): BUS_PREEMPT used to log on EVERY 9 ms
+    // poll while a higher-priority head waited for the live stroke —
+    // 63 identical lines in bursts of 5 in the v219 session. One log
+    // per wait episode (key = head + priorities + live action) is the
+    // whole signal; repeats add nothing. Null = not currently waiting.
+    @Volatile private var lastPreemptKey: String? = null
     @Volatile private var latchStuckSinceMs = 0L
     // N5: first-occurrence witness for the H-D5 physical clamp in
     // generatePrecisionPath (below) — the f57 clamp was silent.
@@ -347,6 +353,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                         headSource != null &&
                             headPriority > dispatchingPriority
                     if (!preempt) {
+                        // Batch 6b: not waiting — clear the episode key
+                        // so a later head for this stroke logs as new.
+                        lastPreemptKey = null
                         busHandler.postDelayed(this, BUS_POLL_RATE_MS)
                         return
                     }
@@ -360,13 +369,23 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     // 250ms and the head (GK/INT, 300ms maxAge) stays
                     // queued; the latch-stuck guard above force-releases a
                     // lost callback, so this wait is bounded.
-                    RuntimeLogger.execution(
-                        "BUS_PREEMPT",
-                        "head=$headSource headPriority=$headPriority currentPriority=$dispatchingPriority waitingForStroke"
-                    )
+                    // Batch 6b: log once per wait episode (see
+                    // lastPreemptKey) — the 9 ms poll used to repeat this
+                    // identical line for the whole wait.
+                    val preemptKey = "$headSource/$headPriority/$dispatchingPriority/$currentActionId"
+                    if (preemptKey != lastPreemptKey) {
+                        lastPreemptKey = preemptKey
+                        RuntimeLogger.execution(
+                            "BUS_PREEMPT",
+                            "head=$headSource headPriority=$headPriority currentPriority=$dispatchingPriority waitingForStroke"
+                        )
+                    }
                     busHandler.postDelayed(this, BUS_POLL_RATE_MS)
                     return
                 }
+                // Not waiting on a preemption any more — a later wait is
+                // a new episode and logs again (batch 6b).
+                lastPreemptKey = null
 
                 val request = CentralExecutionBus.consume()
                 if (request != null) {

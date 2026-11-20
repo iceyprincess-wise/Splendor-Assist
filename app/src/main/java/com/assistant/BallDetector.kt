@@ -121,6 +121,17 @@ object BallDetector {
         lostFrames = 0
     }
 
+    /*
+     * Batch 6b: the last locked-on ball position, for
+     * BallCandidateEngine's temporal prior. Null until the detector has
+     * locked on (initialized) — VisionCore passes null then, and
+     * select() runs exactly as before. The coasted position is NOT
+     * returned: after COAST_FRAMES of loss the prior must die with the
+     * lock, or a stale position would keep attracting blobs.
+     */
+    fun lastKnownPosition(): Pair<Float, Float>? =
+        if (initialized) Pair(lastBallX, lastBallY) else null
+
     fun detect(
         candidate: BallCandidate?
     ): BallDetectionResult {

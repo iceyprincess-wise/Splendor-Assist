@@ -87,6 +87,45 @@ object NetProbeEngine {
     @Volatile private var probes = 0L
     @Volatile private var failures = 0L
 
+    /*
+     * Batch 6b — fastest-wins resolver selection (the missing "best
+     * connection" consumer, honestly scoped). Nothing in the repo can
+     * pick a game server or a route — no game-server address exists
+     * anywhere in the code — but the probe already measures TWO public
+     * resolvers, and until now it used first-success (8.8.8.8 unless
+     * it failed) and every other engine hardcoded 8.8.8.8. The
+     * selection below measures both once per selection round and
+     * publishes the faster one; RadioKeepAliveEngine sends its
+     * keepalive to the winner instead of the hardcoded address.
+     * A resolver is only ever a DNS endpoint, never a game route —
+     * the name "preferred resolver" says exactly that.
+     */
+    @Volatile var preferredResolver: String = "8.8.8.8"; private set
+
+    /*
+     * Pure fastest-wins pick (pinned): the faster measured RTT wins;
+     * a failed measurement (-1) loses to any success; both failed (or
+     * tied) keeps the first resolver. No network access here — the
+     * caller supplies the two measured values.
+     */
+    fun pickFaster(firstMs: Long, secondMs: Long): String {
+        if (firstMs < 0 && secondMs < 0) return TARGETS[0].first
+        if (firstMs < 0) return TARGETS[1].first
+        if (secondMs < 0) return TARGETS[0].first
+        return if (secondMs < firstMs) TARGETS[1].first else TARGETS[0].first
+    }
+
+    /** One fastest-wins selection round: measure both, publish the winner. */
+    fun selectPreferredResolver() {
+        val first = tcpRtt(TARGETS[0].first, TARGETS[0].second)
+        val second = tcpRtt(TARGETS[1].first, TARGETS[1].second)
+        val winner = pickFaster(first, second)
+        if (winner != preferredResolver) {
+            preferredResolver = winner
+            RuntimeLogger.log("preferred resolver now $winner (8.8.8.8=${first}ms 1.1.1.1=${second}ms)", "NETPROBE")
+        }
+    }
+
     fun start(ctx: Context) {
         if (running) return
         running = true
@@ -95,7 +134,15 @@ object NetProbeEngine {
             var tick = 0L
             while (running) {
                 probeOnce()
-                if (++tick % 6L == 0L) RuntimeLogger.log(summary(), "NETPROBE")
+                // Batch 6b: re-select the fastest resolver on every
+                // summary tick (every 6th probe) so the winner follows
+                // the link instead of being a one-time guess. The
+                // cadence loop itself stays first-success (rawSample)
+                // — selection is a separate, bounded round.
+                if (++tick % 6L == 0L) {
+                    selectPreferredResolver()
+                    RuntimeLogger.log(summary(), "NETPROBE")
+                }
                 val nap = if (quality == "GOOD") CALM_MS else FAST_MS
                 try {
                     synchronized(lock) { lock.wait(if (nap > 0) nap else 1L) }
@@ -110,6 +157,9 @@ object NetProbeEngine {
     /** Link changed: wipe history and probe again NOW - no waiting out the nap. */
     fun onLinkChanged() {
         rtt = 0f; jitter = 0f; quality = "UNKNOWN"; lastRawMs = -1L
+        // Batch 6b: a new link can flip which resolver is faster —
+        // re-select immediately instead of serving the old winner.
+        selectPreferredResolver()
         wake()
         RuntimeLogger.log("link changed - history wiped, instant re-probe", "NETPROBE")
     }
@@ -172,6 +222,7 @@ object NetProbeEngine {
         "rtt=" + String.format("%.0f", rtt) + "ms jitter=" + String.format("%.0f", jitter) +
         "ms " + quality + " loss=" + String.format("%.0f", PacketLossProbeEngine.lossPct) +
         "% carrier=" + CarrierProfileEngine.current.name +
+        " resolver=" + preferredResolver +
         " probes=" + probes + " fail=" + failures
 }
 

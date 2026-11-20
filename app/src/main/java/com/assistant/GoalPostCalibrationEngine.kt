@@ -42,7 +42,16 @@ data class GoalPostCalibration(
     val rightPostX: Float = 0f,
     val goalWidth: Float = 0f,
     val goalEnd: GoalEnd = GoalEnd.NONE,
-    val confidence: Float = 0f
+    val confidence: Float = 0f,
+    /*
+     * Batch 6b: WHY this calibration is invalid — the first failing
+     * clause, e.g. "not-detected" / "width-too-wide". The v219 session
+     * logged 23 invalid vs 2 valid with no way to tell which clause
+     * failed, because the GOAL_POSTS line printed only valid=false.
+     * Empty when valid. Never a fabricated post — the reason only
+     * names the failed check.
+     */
+    val invalidReason: String = ""
 ) {
     /** Near post for this goal end; 0f when unanchored. */
     val nearPostX: Float get() = if (!valid) 0f else if (goalEnd == GoalEnd.LEFT) leftPostX else rightPostX
@@ -61,18 +70,28 @@ object GoalPostCalibrationEngine {
         captureHeight: Float
     ): GoalPostCalibration {
         val width = detection.rightX - detection.leftX
-        val valid = detection.detected &&
-            detection.rightX > detection.leftX &&
-            captureWidth > 0f && captureHeight > 0f &&
-            width >= captureWidth * 0.02f && width <= captureWidth * 0.60f &&
-            detection.leftX >= 0f && detection.rightX <= captureWidth &&
-            detection.topY >= 0f && detection.bottomY <= captureHeight &&
-            detection.bottomY > detection.topY &&
-            detection.confidence.isFinite() && detection.confidence > 0f
+        // Batch 6b: name the FIRST failing clause so an invalid line
+        // is diagnosable (v219: 23 invalid vs 2 valid, cause unknown).
+        // The checks run in the same order as the validity conjunction
+        // below, so the reason always names a clause that actually
+        // failed; when every clause passes the reason stays empty.
+        val invalidReason = when {
+            !detection.detected -> "not-detected"
+            detection.rightX <= detection.leftX -> "inverted-box"
+            !(captureWidth > 0f && captureHeight > 0f) -> "no-capture"
+            width < captureWidth * 0.02f -> "width-too-narrow"
+            width > captureWidth * 0.60f -> "width-too-wide"
+            detection.leftX < 0f || detection.rightX > captureWidth -> "posts-outside-frame-x"
+            detection.topY < 0f || detection.bottomY > captureHeight -> "posts-outside-frame-y"
+            detection.bottomY <= detection.topY -> "inverted-box-y"
+            !detection.confidence.isFinite() || detection.confidence <= 0f -> "no-confidence"
+            else -> ""
+        }
+        val valid = invalidReason.isEmpty()
         val end = if (!valid) GoalEnd.NONE
             else if ((detection.leftX + detection.rightX) * 0.5f < captureWidth * 0.5f) GoalEnd.LEFT
             else GoalEnd.RIGHT
-        val calibration = if (!valid) GoalPostCalibration(valid = false)
+        val calibration = if (!valid) GoalPostCalibration(valid = false, invalidReason = invalidReason)
         else GoalPostCalibration(
             valid = true,
             leftPostX = detection.leftX,
@@ -90,7 +109,10 @@ object GoalPostCalibrationEngine {
                     "GOAL_POSTS width=${String.format("%.1f", calibration.goalWidth)} " +
                         "left=${String.format("%.1f", calibration.leftPostX)} " +
                         "right=${String.format("%.1f", calibration.rightPostX)} " +
-                        "end=${calibration.goalEnd} valid=${calibration.valid}",
+                        "end=${calibration.goalEnd} valid=${calibration.valid}" +
+                        // Batch 6b: the reason an invalid calibration
+                        // failed — without it the line cannot say why.
+                        (if (!calibration.valid) " reason=${calibration.invalidReason}" else ""),
                     "GOALKEEPER"
                 )
             }

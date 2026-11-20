@@ -185,6 +185,13 @@ class GlobalCrashHandler(
             val accEnabled = accStr.contains(ctx.packageName, true)
             out.appendLine("  SYSTEM_ALERT_WINDOW : ${if (canOverlay) "GRANTED" else "DENIED — overlay cannot show"}")
             out.appendLine("  ACCESSIBILITY       : ${if (accEnabled) "ENABLED" else "DISABLED — gesture dispatch is DEAD without this"}")
+            // Batch 6b (v219 item h): the Settings toggle (ENABLED above)
+            // and the in-process binding are DIFFERENT facts — after a
+            // crash/restart the service is enabled in the system but not
+            // yet bound in this process, so "ENABLED + instance NULL" is
+            // the expected post-crash state, not a contradiction. Print
+            // both so a future report never reads as contradictory.
+            out.appendLine("  Accessibility inst  : ${if (SmartAssistAccessibilityEngine.globalInstance != null) "BOUND in this process" else "NULL — not bound in this process (service not yet rebound)"}")
             if (Build.VERSION.SDK_INT >= 33)
                 out.appendLine("  POST_NOTIFICATIONS  : ${permStatus("android.permission.POST_NOTIFICATIONS")}")
             out.appendLine("  Accessibility svc   : $accStr")

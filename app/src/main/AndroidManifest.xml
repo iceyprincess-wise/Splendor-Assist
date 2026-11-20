@@ -122,21 +122,11 @@
 
         
 
-        <service
-            android:name="com.assistant.PingEliminatorVpnService"
-            android:exported="false"
-            android:foregroundServiceType="systemExempted"
-            android:permission="android.permission.BIND_VPN_SERVICE" >
-            <intent-filter>
-                <action android:name="android.net.VpnService" />
-            </intent-filter>
-        </service>
-        
+        <!-- Batch 6b: PingEliminatorVpnService entry REMOVED with the
+             class (verdict: tunnel with no upstream cannot reduce ping;
+             a real upstream needs Ed's server decision). Do not re-add
+             a VpnService entry without that decision. -->
 
-        
-
-
-    
         <service
             android:name="com.assistant.PerformanceEngineService"
             android:exported="false"

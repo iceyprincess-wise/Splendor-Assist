@@ -83,11 +83,18 @@ object RadioKeepAliveEngine {
                 if (CarrierProfileEngine.current.name != "WIFI") {
                     if (NetProbeEngine.quality != "GOOD") cadence = maxOf(FLOOR_S, cadence / 2)
                     try {
+                        // Batch 6b: the keepalive goes to the
+                        // fastest-wins resolver NetProbeEngine selected
+                        // this session — not the hardcoded 8.8.8.8. The
+                        // keepalive is still a 1-byte UDP poke that
+                        // keeps the radio awake; the resolver choice is
+                        // the only thing that changed, and it is the
+                        // first live consumer of the selection.
                         DatagramSocket().use { s ->
-                            s.send(DatagramPacket(ByteArray(1), 1, InetAddress.getByName("8.8.8.8"), 53))
+                            s.send(DatagramPacket(ByteArray(1), 1, InetAddress.getByName(NetProbeEngine.preferredResolver), 53))
                         }
                         if (++sent % 20L == 0L)
-                            RuntimeLogger.log("keepalive sent=" + sent + " cadence=" + cadence + "s", "NET")
+                            RuntimeLogger.log("keepalive sent=" + sent + " cadence=" + cadence + "s resolver=" + NetProbeEngine.preferredResolver, "NET")
                     } catch (_: Throwable) { }
                 }
                 try { Thread.sleep(if (cadence > 0) cadence * 1000L else 1000L) } catch (_: Throwable) { return@Thread }

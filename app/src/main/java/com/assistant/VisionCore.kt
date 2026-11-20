@@ -113,7 +113,10 @@ object VisionCore {
 
 val heuristicCandidate =
     BallCandidateEngine.select(
-        filteredBlobs
+        filteredBlobs,
+        // Batch 6b: temporal prior from the detector's last lock-on.
+        // Null until the first lock-on — select() is unchanged then.
+        BallDetector.lastKnownPosition()
     )
 
 /*

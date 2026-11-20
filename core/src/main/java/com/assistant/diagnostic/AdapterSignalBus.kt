@@ -22,6 +22,13 @@ package com.assistant.diagnostic
  * Derived getters read one local copy of the state, so each derived value
  * is evaluated on a single generation. Public names, defaults and publish
  * semantics are unchanged; only the storage is atomic now.
+ *
+ * LIVENESS (batch 6b, v219 item e): a snapshot used to carry NO time —
+ * two snapshots taken minutes apart through a dead period were
+ * byte-identical, so no reader could tell a live-but-quiet bus from a
+ * dead one. Every publish now stamps updatedMs (wall clock at publish)
+ * through commit(); a snapshot whose updatedMs is old is stale, never
+ * silently fresh. 0 means "never published".
  */
 object AdapterSignalBus {
 
@@ -54,11 +61,19 @@ object AdapterSignalBus {
         val executionBrake: Int = 0,
         val crowdingZone: Boolean = false,
         val crowdingLevel: Float = 0f,
-        val filterAggression: Float = 1.0f
+        val filterAggression: Float = 1.0f,
+        // Batch 6b: wall-clock ms of the last publish (0 = never).
+        // The liveness signal — see the class KDoc.
+        val updatedMs: Long = 0L
     )
 
     @Volatile
     private var state: SignalSnapshot = SignalSnapshot()
+
+    /** Single choke point for every publish: stamps updatedMs. */
+    private fun commit(next: SignalSnapshot) {
+        state = next.copy(updatedMs = System.currentTimeMillis())
+    }
 
     /** One consistent generation of all signals; see the class KDoc. */
     fun snapshot(): SignalSnapshot = state
@@ -69,11 +84,11 @@ object AdapterSignalBus {
 
     val memoryTier: String get() = state.memoryTier
     val memoryAvailMb: Long get() = state.memoryAvailMb
-    fun publishNet(verdict: String) { state = state.copy(netWindow = verdict) }
-    fun publishMemory(tier: String, availMb: Long) { state = state.copy(memoryTier = tier, memoryAvailMb = availMb) }
+    fun publishNet(verdict: String) { commit(state.copy(netWindow = verdict)) }
+    fun publishMemory(tier: String, availMb: Long) { commit(state.copy(memoryTier = tier, memoryAvailMb = availMb)) }
     val inputClassification: String get() = state.inputClassification
     val inputLatencyMs: Long get() = state.inputLatencyMs
-    fun publishInput(classification: String, latencyMs: Long) { state = state.copy(inputClassification = classification, inputLatencyMs = latencyMs) }
+    fun publishInput(classification: String, latencyMs: Long) { commit(state.copy(inputClassification = classification, inputLatencyMs = latencyMs)) }
     // No68-I-D30: TouchQualityEngine publishes "TOUCH_IRQ_STALL" on a real
     // touch-IRQ stall, but this getter only matched "LAGGING" — so the stall
     // signal had no behavioural consumer anywhere (only diagnostic dumps
@@ -82,9 +97,9 @@ object AdapterSignalBus {
     val inputIsLagging: Boolean get() { val s = state; return s.inputClassification == "LAGGING" || s.inputClassification == "TOUCH_IRQ_STALL" }
     val memoryIsCritical: Boolean get() { val s = state; return s.memoryTier == "CRITICAL" }
     val memoryIsUnderPressure: Boolean get() { val s = state; return s.memoryTier == "CRITICAL" || s.memoryTier == "PRESSURE" }
-    fun publishLag(verdict: String) { state = state.copy(lagVerdict = verdict) }
+    fun publishLag(verdict: String) { commit(state.copy(lagVerdict = verdict)) }
     // Parameter renamed newState (was `state`): it shadowed the snapshot holder.
-    fun publishStutter(newState: String) { state = state.copy(stutterState = newState) }
+    fun publishStutter(newState: String) { commit(state.copy(stutterState = newState)) }
 
     // PHASE3: new adapter signals
     val thermalStatus: Int get() = state.thermalStatus
@@ -98,11 +113,11 @@ object AdapterSignalBus {
     // (PerformanceScheduler publishes -1 when PowerManager is null), 0..6 is
     // PowerManager.currentThermalStatus (NONE..SHUTDOWN). Clamping to 0..6
     // would have lied UNKNOWN into NONE.
-    fun publishThermal(status: Int) { state = state.copy(thermalStatus = status.coerceIn(-1, 6)) }
-    fun publishBattery(level: Int, charging: Boolean) { state = state.copy(batteryLevel = level.coerceIn(-1, 100), batteryCharging = charging) }
-    fun publishPing(quality: String) { state = state.copy(pingQuality = quality) }
-    fun publishBootState(stable: Boolean) { state = state.copy(deviceBootStable = stable) }
-    fun publishFleet(offlineCount: Int) { state = state.copy(fleetDegraded = offlineCount > 2) }
+    fun publishThermal(status: Int) { commit(state.copy(thermalStatus = status.coerceIn(-1, 6))) }
+    fun publishBattery(level: Int, charging: Boolean) { commit(state.copy(batteryLevel = level.coerceIn(-1, 100), batteryCharging = charging)) }
+    fun publishPing(quality: String) { commit(state.copy(pingQuality = quality)) }
+    fun publishBootState(stable: Boolean) { commit(state.copy(deviceBootStable = stable)) }
+    fun publishFleet(offlineCount: Int) { commit(state.copy(fleetDegraded = offlineCount > 2)) }
 
     val thermalIsSevere: Boolean get() { val s = state; return s.thermalStatus >= 3 }
     val batteryCritical: Boolean get() { val s = state; return s.batteryLevel in 0..14 && !s.batteryCharging }
@@ -113,11 +128,11 @@ object AdapterSignalBus {
 
     // PHASE5B: memory -> capture bridge signal
     val captureThrottle: Int get() = state.captureThrottle
-    fun publishCaptureThrottle(level: Int) { state = state.copy(captureThrottle = level.coerceIn(0, 3)) }
+    fun publishCaptureThrottle(level: Int) { commit(state.copy(captureThrottle = level.coerceIn(0, 3))) }
 
     // PHASE5B: load shed -> execution brake signal
     val executionBrake: Int get() = state.executionBrake
-    fun publishExecutionBrake(level: Int) { state = state.copy(executionBrake = level.coerceIn(0, 2)) }
+    fun publishExecutionBrake(level: Int) { commit(state.copy(executionBrake = level.coerceIn(0, 2))) }
     val executionIsBraked: Boolean get() { val s = state; return s.executionBrake > 0 }
     val executionIsFullyBraked: Boolean get() { val s = state; return s.executionBrake >= 2 }
 
@@ -128,10 +143,10 @@ object AdapterSignalBus {
     val crowdingZone: Boolean get() = state.crowdingZone
     val crowdingLevel: Float get() = state.crowdingLevel
     fun publishCrowdingZone(zone: Boolean, level: Float) {
-        state = state.copy(crowdingZone = zone, crowdingLevel = level.coerceIn(0f, 1f))
+        commit(state.copy(crowdingZone = zone, crowdingLevel = level.coerceIn(0f, 1f)))
     }
 
     // FILTER ENGINE: Extremist push multiplier
     val filterAggression: Float get() = state.filterAggression
-    fun publishFilterAggression(multiplier: Float) { state = state.copy(filterAggression = multiplier.coerceIn(1.0f, 3.0f)) }
+    fun publishFilterAggression(multiplier: Float) { commit(state.copy(filterAggression = multiplier.coerceIn(1.0f, 3.0f))) }
 }
