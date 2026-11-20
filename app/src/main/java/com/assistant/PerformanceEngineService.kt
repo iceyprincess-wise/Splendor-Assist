@@ -84,6 +84,11 @@ class PerformanceEngineService : Service() {
         ignite({ NetJitterEngine.start() })
         ignite({ NetProbeEngine.start(this) })
         ignite({ NetworkStateEngine.start(this) }) // SPLENDOR_P12_B13_CARRIER: NetworkStateEngine.start() had zero callers, so carrier stayed GENERIC and transport NONE while rtt/jitter were real TCP medians.
+        // Batch 6d: DnsWarmupEngine.start() had zero callers anywhere — the
+        // DNS warm loop never ran (warmNow() from NetworkStateEngine only
+        // notifies a lock on a thread that never started). Same defect class
+        // as 440/442 below; ignite it here with the other network engines.
+        ignite({ DnsWarmupEngine.start() })
         ignite({ InputLatencyEngine.start() })
         // No68-I-D28: TouchQualityEngine.start() had zero callers anywhere,
         // so the touch-IRQ stall monitor never ran. Ignite it here with the
@@ -91,6 +96,15 @@ class PerformanceEngineService : Service() {
         ignite({ TouchQualityEngine.start() })
         ignite({ StutterPulseEngine.start() })
         ignite({ ActionWindowEngine.start() })
+        // Batch 6d: ConnectionHealEngine.start() and CongestionSentinelEngine.start()
+        // both had zero callers anywhere — the healer thread (HOLD polling +
+        // network-lost callback) and the congestion sentinel thread never ran,
+        // so `congested` stayed false forever and HOLD never healed. Same
+        // defect class as SPLENDOR_P12_B13_CARRIER (NetworkStateEngine) and
+        // No68-I-D28 (TouchQualityEngine) above: ignite them here with the
+        // other network engines. Both starts are idempotent (running guard).
+        ignite({ ConnectionHealEngine.start(this) })
+        ignite({ CongestionSentinelEngine.start() })
         ignite({ BurstForensicsEngine.startDecay() })
         ignite({ MemoryMonitorEngine.start(this) })
 

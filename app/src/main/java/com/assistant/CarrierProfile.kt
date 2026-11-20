@@ -75,8 +75,9 @@ data class CarrierProfile(
 
 /**
  * Detects the live carrier and selects its tuned profile (no extra permission
- * needed). V3: the admin can OVERRIDE the baseline ping, wobble allowance and
- * keepalive rhythm from the admin panel (0 = automatic, follow the detected
- * carrier). Every engine reads the override-aware values below, so an admin
- * override takes effect stack-wide on the next tick.
+ * needed). Batch 6d: the V3 doc used to claim the admin could override the
+ * baseline ping, wobble allowance and keepalive rhythm from the admin panel
+ * — no such panel or preference exists, and the getters hardcoded the
+ * override to 0. Every engine reads the detected-profile values below
+ * (auto only); an admin override needs a real preference + writer first.
  */

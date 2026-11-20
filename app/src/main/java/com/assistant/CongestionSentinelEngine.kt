@@ -68,7 +68,10 @@ import com.assistant.diagnostic.RuntimeLogger
 
 object CongestionSentinelEngine {
 
-    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    // Batch 6d: these were labelled as if they were admin-configurable but are plain literals —
+    // nothing anywhere can tune them (private vals, no setter, no pref).
+    // Fixed constants (original hard-coded values); if admin tuning is ever
+    // wanted it needs a real preference + writer first.
     private val POLL_MS: Long get() = 2000L
     private val RISE_FACTOR: Float get() = 1.5f
     private val RISE_FRACTION: Float get() = 0.6f

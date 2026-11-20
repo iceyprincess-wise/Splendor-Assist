@@ -14,7 +14,7 @@ package com.assistant
  *
  * Now: the distance gate is applied BEFORE a detection is consumed,
  * duplicate merging is deterministic (stronger wins, fresher breaks ties),
- * and the association distances answer to the admin store live.
+ * and the association distances are fixed literals, not live-tuned.
  *
  * Q68-33 (batch 5b, QD-9): moved here from DefensiveLineResult.kt, where
  * it lived as a merged-file footer. This note documents THIS engine; the
@@ -128,7 +128,8 @@ object EntityAssociationEngine {
         nextTrackId = 1
     }
 
-    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    // Batch 6d: these were labelled as if admin-configurable and the header
+    // claimed live tuning — both are plain literals, nothing can tune them.
     private val MAX_ASSOCIATION_DISTANCE: Float
         get() = 120f
     private val DUPLICATE_TRACK_DISTANCE: Float

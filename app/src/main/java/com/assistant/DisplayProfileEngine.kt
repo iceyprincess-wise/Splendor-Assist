@@ -70,11 +70,10 @@ object DisplayProfileEngine {
     // Configured target, not measured game FPS.
     private const val TARGET_FPS = 60f
 
-    // ADMIN-TUNABLE (default = original hard-coded value)
-    val gameFps: Float get() {
-        val v = TARGET_FPS
-        return if (v > 0f) v else 30f
-    }
+    // Batch 6d: this was labelled as if it were admin-configurable but TARGET_FPS is a private
+    // const — nothing can tune it. Fixed value; the fallback branch is gone
+    // (it could never fire: TARGET_FPS is always 60f > 0f).
+    val gameFps: Float get() = TARGET_FPS
     val gameBudgetMs: Float get() = 1000f / gameFps
 
     @Volatile var panelHz = 60f; private set

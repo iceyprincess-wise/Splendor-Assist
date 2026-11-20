@@ -71,7 +71,8 @@ object DnsWarmupEngine {
     private val HOSTS = listOf(
         "www.konami.com", "www.google.com", "www.cloudflare.com", "one.one.one.one"
     )
-    // ADMIN-TUNABLE (default = original hard-coded value)
+    // Batch 6d: this was labelled as if it were admin-configurable but is a plain literal —
+    // nothing can tune it. Fixed re-warm interval (original value).
     private val REWARM_MS: Long get() = 90_000L
 
     private val lock = Object()

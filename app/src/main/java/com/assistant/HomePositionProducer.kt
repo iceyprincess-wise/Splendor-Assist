@@ -8,8 +8,10 @@ package com.assistant
  * screenH * 0.5f as the stopper home anchor, QH-6).
  *
  * Contract: in = formation + defender identity; out = home position per
- * defender; caller = FrameAssembler (for the tracked defender on the
- * frame); consumer = DefenseContributor (the stopper matrix home anchor).
+ * defender; caller = VisionCore (for the tracked defender on the frame —
+ * batch 6d: the old doc said FrameAssembler, but the live call site is
+ * VisionCore:320); consumer = DefenseContributor (the stopper matrix home
+ * anchor).
  *
  * The home is "return to the tight line in your own lateral lane": the
  * X is the user line's average (clamped to the line's own min/max, so a

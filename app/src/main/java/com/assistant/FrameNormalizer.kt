@@ -24,8 +24,10 @@ object FrameNormalizer {
     )
 
     /**
-     * OMEGA UPGRADE: High-performance core normalization engine.
-     * Incorporates frame-rate synchronization, sub-millisecond precision, and noise humanization.
+     * Normalization core: validates the capture buffer geometry and stamps
+     * per-frame timing metadata (capture timestamp + inter-frame delta).
+     * (Batch 6d: the old doc claimed this added noise — it adds none and
+     * humanizes nothing; it wraps the buffer + timing.)
      */
     fun normalize(
         buffer: ByteBuffer,

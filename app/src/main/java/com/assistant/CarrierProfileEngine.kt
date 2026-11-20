@@ -76,19 +76,16 @@ object CarrierProfileEngine {
     @Volatile var current: CarrierProfile = GENERIC
         private set
 
-    // ---- override-aware baselines (0 = auto: use the detected profile) ----
-    val baselineRttMs: Int get() {
-        val o = 0
-        return if (o > 0) o else current.expectedRttMs
-    }
-    val jitterTolMs: Int get() {
-        val o = 0
-        return if (o > 0) o else current.jitterToleranceMs
-    }
-    val keepAliveS: Int get() {
-        val o = 0
-        return if (o > 0) o else current.keepAliveSeconds
-    }
+    // ---- baselines (auto: from the detected profile) ----
+    // Batch 6d: the old getters claimed an admin override (a hardcoded
+    // zero with never-true branches) but no admin panel or preference ever
+    // wrote an override — the branches were dead code masquerading as a
+    // feature. The getters now delegate to the detected profile directly;
+    // behaviour is identical (o was always 0). If an admin override is
+    // ever wanted, it needs a real preference + writer first.
+    val baselineRttMs: Int get() = current.expectedRttMs
+    val jitterTolMs: Int get() = current.jitterToleranceMs
+    val keepAliveS: Int get() = current.keepAliveSeconds
 
     fun detect(ctx: Context): CarrierProfile {
         val op = try {
@@ -127,6 +124,8 @@ CongestionSentinelEngine
 /**
  * V2: reports BOTH edges. Onset warns before lag is felt; recovery (with how
  * long the dirty window lasted) tells the runtime when aggression is safe again.
- * V3: reads the override-aware wobble allowance, so an admin baseline override
- * re-tunes congestion detection on the next poll.
+ * V3: reads the jitter tolerance from the detected carrier profile
+ * (CarrierProfileEngine.jitterTolMs), so a carrier change re-tunes congestion
+ * detection on the next poll. (Batch 6d: the old doc claimed an admin baseline
+ * override re-tunes it — no such override exists.)
  */

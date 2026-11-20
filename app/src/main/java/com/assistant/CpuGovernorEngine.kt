@@ -70,14 +70,12 @@ import android.os.PowerManager
 
 // --- MERGED: DisplayProfileEngine.kt ---
 
-// V3 ADMIN-WIRED
-
 /**
  * Reads the REAL panel refresh rate and derives the two budgets that matter:
  * vsync budget (panel) and game budget (eFootball locked at 30fps = 33.3ms).
  * Every other lag engine grades against these instead of guessing 60Hz.
- * V3: the game frame rate is admin-tunable for the day the game changes
- * its lock - no rebuild needed (invalid/0 safely falls back to 30).
+ * (Batch 6d: the old header claimed the game frame rate is admin-tunable —
+ * TARGET_FPS is a private const, nothing can tune it. Fixed at 60f.)
  */
 
 object CpuGovernorEngine {
