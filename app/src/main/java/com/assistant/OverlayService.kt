@@ -813,7 +813,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
               com.assistant.RuntimeSelfHealEngine.start() } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("RuntimeSelfHealEngine init/start failed: ${t.message}", "OVERLAY") }
         // F37-D5: register contributors at service start, not only after the
         // first assembled frame — otherwise a never-started capture leaves
-        // the registry at 0/54 forever. The frame-path call stays as well.
+        // the registry at 0/55 forever. The frame-path call stays as well.
         try { com.assistant.AppContributorRegistration.ensureRegistered() } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("AppContributorRegistration.ensureRegistered at startup failed: ${t.message}", "OVERLAY") }
         try { com.assistant.CaptaincySkillEngine.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CaptaincySkillEngine.init failed: ${t.message}", "OVERLAY") }
         try { com.assistant.CrowdingZoneDetector.init(applicationContext) } catch (t: Throwable) { com.assistant.diagnostic.RuntimeLogger.log("CrowdingZoneDetector.init failed: ${t.message}", "OVERLAY") }

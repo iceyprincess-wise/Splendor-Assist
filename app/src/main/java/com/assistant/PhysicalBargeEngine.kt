@@ -12,7 +12,7 @@ import kotlin.math.hypot
  *
  * The channel is built here in the smallest form the terminal can
  * honestly render: EngineContribution gains `barge: Boolean = false`
- * (RuntimeFrame.kt — default false, so all 54 existing contributors
+ * (RuntimeFrame.kt — default false, so all 55 existing contributors
  * are unaffected), and RuntimeDecisionLoop.chooseRequest renders a
  * barge contribution as a SHORT, HARD swipe (duration clamped to
  * <= 20 ms) toward the carrier. The terminal has no tap button to

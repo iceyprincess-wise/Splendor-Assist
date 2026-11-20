@@ -278,7 +278,7 @@ data class EngineContribution(
     val targetEntityId: Int? = null,
     /*
      * G-M Physical Barge (batch 4, Q68-31): a physical barge request.
-     * Default false — all 54 pre-existing contributors are unaffected.
+     * Default false — all 55 pre-existing contributors are unaffected.
      * RuntimeDecisionLoop.chooseRequest renders barge=true as a short,
      * hard swipe (duration clamped to <= 20 ms); that clamp IS the
      * terminal support — the terminal dispatches swipes, and a barge is
@@ -303,7 +303,7 @@ interface GameplayContributor {
     fun contribute(frame: RuntimeFrame): EngineContribution?
     fun reset() {}
     // RF-D7 (batch 5): the shutdown() hook is removed — it had no caller
-    // and no override in any of the 54 contributors. Teardown is reset()
+    // and no override in any of the 55 contributors. Teardown is reset()
     // via GameplayEngineRegistry.resetAll(), wired through
     // RuntimeCoordinator.shutdown() (MainActivity Stop tap and
     // OverlayService.onDestroy).
