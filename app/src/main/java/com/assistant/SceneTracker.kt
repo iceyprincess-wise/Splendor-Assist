@@ -289,6 +289,12 @@ object SceneTracker {
                 goalkeeperY =
                     trackedGoalkeeper?.y ?: 0f,
 
+                goalkeeperVelocityX =
+                    trackedGoalkeeper?.velocityX ?: 0f,
+
+                goalkeeperVelocityY =
+                    trackedGoalkeeper?.velocityY ?: 0f,
+
                 goalkeeperHeading =
                     trackedGoalkeeper?.headingRadians ?: 0f,
 
@@ -310,6 +316,29 @@ object SceneTracker {
                 confidence = state.confidence,
                 goalkeeperConfidence = trackedGoalkeeper?.confidence ?: 0f
             )
+
+        // Batch-trajectory (B): feed the keeper predictor from the
+        // measured keeper track — same 6-frame look-ahead maths as the
+        // ball predictor (~300 ms at the 20 fps processed rate). Valid
+        // only when the keeper was seen on THIS frame
+        // (lastSeenFrame == frameCounter); a coasted keeper's velocity
+        // is stale, so the prediction is marked invalid and consumers
+        // fall back to the current position.
+        val keeper = trackedGoalkeeper
+        if (keeper != null && keeper.lastSeenFrame == frameCounter) {
+            KeeperTrajectoryPredictor.update(
+                keeper.x,
+                keeper.y,
+                keeper.velocityX,
+                keeper.velocityY,
+                keeper.x + keeper.velocityX * 6f,
+                keeper.y + keeper.velocityY * 6f,
+                hypot(keeper.velocityX, keeper.velocityY),
+                true
+            )
+        } else {
+            KeeperTrajectoryPredictor.update(0f, 0f, 0f, 0f, 0f, 0f, 0f, false)
+        }
 
         latest
     }

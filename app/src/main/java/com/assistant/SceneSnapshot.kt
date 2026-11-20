@@ -122,6 +122,14 @@ data class SceneSnapshot(
 
     val goalkeeperY: Float = 0f,
 
+    // Batch-trajectory (B): keeper velocity, px per FRAME — the same
+    // unit as BallTrajectoryPredictor, so the keeper predictor's
+    // 6-frame look-ahead multiplies by frames, never by a guessed fps.
+    // Read from trackedGoalkeeper.velocityX/Y in SceneTracker.update().
+    val goalkeeperVelocityX: Float = 0f,
+
+    val goalkeeperVelocityY: Float = 0f,
+
     val goalkeeperHeading: Float = 0f,
 
     val goalDetected: Boolean = false,

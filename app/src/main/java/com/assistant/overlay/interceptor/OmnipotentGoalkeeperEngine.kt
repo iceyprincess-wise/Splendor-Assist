@@ -58,7 +58,17 @@ object OmnipotentGoalkeeperEngine {
 
         // 1. MITIGATING SCENARIOS 1 & 5: Through-Balls and Composed 1v1 Breakaways
         // UNCONDITIONAL: Distance-based activation bypasses velocity/position gates
-        val attackerToGkDistance = hypot((nearestAttackerX - gkX).toDouble(), (nearestAttackerY - gkY).toDouble())
+        // Batch-trajectory (B): measure the rush from where the keeper
+        // WILL be in 6 frames (~300 ms at the 20 fps processed rate),
+        // not where he is. KeeperTrajectoryPredictor.interceptPosition
+        // returns the predicted position when fresh and the current
+        // position otherwise, so a stale prediction behaves exactly
+        // like today. A keeper already moving toward the attacker
+        // rushes on time instead of late; one moving away is not
+        // rushed on a distance he will never close.
+        val (rushGkX, rushGkY) =
+            com.assistant.KeeperTrajectoryPredictor.interceptPosition(gkX, gkY)
+        val attackerToGkDistance = hypot((nearestAttackerX - rushGkX).toDouble(), (nearestAttackerY - rushGkY).toDouble())
 
         if (attackerToGkDistance < 200.0) {
                 // Route GK RUSH through ContributionRegistry.offer - the emergency lane (Downward swipe on Pressure Button)
@@ -89,7 +99,7 @@ object OmnipotentGoalkeeperEngine {
                         "phase-100 goalkeeper rush submitted unchanged as shadow-observed emergency gesture"
                     )
                     lastGkLayerTimestamp = now
-                    com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER 1v1 rush bus-enqueued actionId=${rushRequest.actionId} dist=${attackerToGkDistance.toInt()}", "GOALKEEPER")
+                    com.assistant.diagnostic.RuntimeLogger.log("GK_LAYER 1v1 rush bus-enqueued actionId=${rushRequest.actionId} dist=${attackerToGkDistance.toInt()} predGk=(${rushGkX.toInt()},${rushGkY.toInt()})", "GOALKEEPER")
                     return true
                 }
         }
