@@ -126,6 +126,12 @@ class PerformanceEngineService : Service() {
         ignite({ PacketLossProbeEngine.start() })
         ignite({ PanelWatchEngine.start(this) })
         ignite({ RadioKeepAliveEngine.start() })
+        // Batch booster: the free booster engine (queue item 4). Its
+        // controller polls the match signal itself and only acts while a
+        // match is on; it never throttles a gameplay engine — it sheds
+        // its own work when the link degrades. Same ignite pattern as its
+        // neighbours; start is idempotent (running guard).
+        ignite({ FreeBoosterController.start(this) })
 
         // Start consolidated scheduler for adapter telemetry
         ignite({ PerformanceScheduler.start(this) })
@@ -140,7 +146,9 @@ class PerformanceEngineService : Service() {
         // Batch 6e: 23 -> 30 — the seven zero-caller starters above
         // (InputPriority, InputThermal, InputVsync, OOM, PacketLoss,
         // PanelWatch, RadioKeepAlive) are ignited here.
-        RuntimeLogger.log("Performance engine stack ignited: 30 engines + scheduler", "ENGINE")
+        // Batch booster: 30 -> 31 — FreeBoosterController is ignited
+        // above (queue item 4, free booster engine).
+        RuntimeLogger.log("Performance engine stack ignited: 31 engines + scheduler", "ENGINE")
     }
 
     /** O37-1 reader: the MachineLedger samples collected since onCreate. */
@@ -201,6 +209,10 @@ class PerformanceEngineService : Service() {
         try { PacketLossProbeEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
         try { PanelWatchEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
         try { RadioKeepAliveEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        // Batch booster: stop the controller this service started (it
+        // releases the transport request, the wake lock, the signal
+        // reader, the keepalive boost and the DNS pause).
+        try { FreeBoosterController.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
 
         NodeNotificationHub.detach(this, "performance_engine")
         RuntimeLogger.log("PerformanceEngineService destroyed", "ENGINE")

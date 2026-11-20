@@ -74,6 +74,15 @@ object RadioKeepAliveEngine {
     @Volatile private var running = false
     @Volatile private var sent = 0L
 
+    // Batch booster: match-mode boost, driven by FreeBoosterController.
+    // While a match is on the keepalive runs at the 4 s floor regardless
+    // of probe quality (today it sleeps 8/10/12 s when GOOD and halves
+    // only when dirty). The send path, the fastest-wins resolver target
+    // and the WIFI skip are unchanged; only the cadence moves.
+    @Volatile var matchBoost = false; private set
+
+    fun setMatchBoost(boost: Boolean) { matchBoost = boost }
+
     fun start() {
         if (running) return
         running = true
@@ -81,7 +90,8 @@ object RadioKeepAliveEngine {
             while (running) {
                 var cadence = CarrierProfileEngine.keepAliveS
                 if (CarrierProfileEngine.current.name != "WIFI") {
-                    if (NetProbeEngine.quality != "GOOD") cadence = maxOf(FLOOR_S, cadence / 2)
+                    if (matchBoost) cadence = FLOOR_S
+                    else if (NetProbeEngine.quality != "GOOD") cadence = maxOf(FLOOR_S, cadence / 2)
                     try {
                         // Batch 6b: the keepalive goes to the
                         // fastest-wins resolver NetProbeEngine selected

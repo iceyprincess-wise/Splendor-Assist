@@ -50,6 +50,14 @@ class MainActivity : AppCompatActivity() {
 
     private var permissionStage = PermissionStage.BATTERY
 
+    companion object {
+        // Batch booster: READ_PHONE_STATE is asked once per process in the
+        // notification stage. A denial never blocks the pipeline and is
+        // never re-asked (the booster then runs with signal unknown and
+        // logs the Settings path once).
+        private var phonePermissionAskedOnce = false
+    }
+
     private val hubRefreshHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val hubRefreshTick = object : Runnable {
         override fun run() {
@@ -412,6 +420,18 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 9001)
+            return
+        }
+
+        // Batch booster: ask for READ_PHONE_STATE once per process so the
+        // free booster can read real signal level/dBm. This check sits
+        // AFTER the notification gate, so a denial here can never loop
+        // the pipeline: onResume re-enters by stage, the flag is already
+        // set, and the flow proceeds to media projection.
+        if (!phonePermissionAskedOnce &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            phonePermissionAskedOnce = true
+            requestPermissions(arrayOf(Manifest.permission.READ_PHONE_STATE), 9002)
             return
         }
 

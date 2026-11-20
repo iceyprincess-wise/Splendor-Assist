@@ -78,6 +78,21 @@ object DnsWarmupEngine {
     private val lock = Object()
     @Volatile private var running = false
     @Volatile private var rounds = 0L
+
+    // Batch booster: pause flag, driven by FreeBoosterController. While
+    // paused the loop waits on the lock instead of resolving (woken by
+    // setPaused(false) / warmNow() / stop()). Pausing loses nothing — the
+    // warmup only fills the OS DNS cache, and the booster pauses it only
+    // while the link is degraded, to keep the radio quiet for the game.
+    // The saving is small (4 resolutions per 90 s) and is not claimed
+    // otherwise; the point is the principle, not the size.
+    @Volatile var paused = false; private set
+
+    fun setPaused(pause: Boolean) {
+        paused = pause
+        if (!pause) warmNow()
+    }
+
     private val reported = HashSet<String>()
 
     /** Wake the loop for an immediate re-warm (called on link change). */
@@ -88,6 +103,16 @@ object DnsWarmupEngine {
         running = true
         val t = Thread {
             while (running) {
+                // Batch booster: while paused, wait here instead of
+                // resolving. Woken by setPaused(false) / warmNow() /
+                // stop(); the 1 s cap re-checks `running` so stop() can
+                // never strand the thread behind a missed notify.
+                synchronized(lock) {
+                    while (paused && running) {
+                        try { lock.wait(1000L) } catch (_: InterruptedException) { }
+                    }
+                }
+                if (!running) break
                 var ok = 0
                 for (h in HOSTS) {
                     try { InetAddress.getByName(h); ok++ } catch (_: Throwable) {

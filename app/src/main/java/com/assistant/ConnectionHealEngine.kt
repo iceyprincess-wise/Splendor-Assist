@@ -72,6 +72,15 @@ object ConnectionHealEngine {
     @Volatile var healCount = 0; private set
     private const val COOLDOWN_MS = 15_000L
 
+    // Batch booster: the registered callback + manager are kept so
+    // stop() can unregister them. Before this fix stop() only cleared
+    // `running`, so the callback could still fire tryHeal() after the
+    // service was destroyed (the poll thread exits on its own sleep, but
+    // the callback had no teardown at all — unlike NetworkStateEngine,
+    // whose stop() unregisters).
+    private var connectivityManager: ConnectivityManager? = null
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+
     fun start(ctx: Context) {
         if (running) return
         running = true
@@ -80,7 +89,7 @@ object ConnectionHealEngine {
             val cm = appCtx.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val req = NetworkRequest.Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build()
-            cm.registerNetworkCallback(req, object : ConnectivityManager.NetworkCallback() {
+            val cb = object : ConnectivityManager.NetworkCallback() {
                 override fun onLost(network: Network) {
                     RuntimeLogger.log("ConnectionHeal: network LOST — healing", "NETHEAL")
                     tryHeal(appCtx)
@@ -91,7 +100,10 @@ object ConnectionHealEngine {
                         tryHeal(appCtx)
                     }
                 }
-            })
+            }
+            cm.registerNetworkCallback(req, cb)
+            connectivityManager = cm
+            networkCallback = cb
         } catch (t: Throwable) {
             RuntimeLogger.log("ConnectionHeal: callback failed: ${t.message}", "NETHEAL")
         }
@@ -105,7 +117,16 @@ object ConnectionHealEngine {
         RuntimeLogger.log("ConnectionHealEngine started", "NETHEAL")
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        val cm = connectivityManager
+        val cb = networkCallback
+        connectivityManager = null
+        networkCallback = null
+        if (cm != null && cb != null) {
+            try { cm.unregisterNetworkCallback(cb) } catch (_: Throwable) {}
+        }
+    }
 
     private fun tryHeal(ctx: Context) {
         val now = System.currentTimeMillis()
