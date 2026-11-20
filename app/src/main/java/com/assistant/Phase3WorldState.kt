@@ -132,6 +132,14 @@ data class Phase3WorldState(
     val defensiveCompactnessResult: DefensiveCompactnessResult =
         DefensiveCompactnessResult(),
 
+    // Midfield (queue item 5, batch midfield): the measured midfield
+    // line + its compactness over the band players only. Read by
+    // FrameAssembler (frame midfieldLineX/Spread/Found/Compactness/
+    // Confidence); the compactness is NOT fed to pressing/analytics.
+    val midfieldLine: MidfieldLineResult = MidfieldLineResult(false),
+    val midfieldCompactnessResult: MidfieldCompactnessResult =
+        MidfieldCompactnessResult(),
+
     val wingOverloadDetectionResult: WingOverloadDetectionResult =
         WingOverloadDetectionResult(),
 

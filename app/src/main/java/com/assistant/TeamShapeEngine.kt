@@ -97,17 +97,28 @@ object TeamShapeEngine {
 
     fun compute(
         scene: SceneSnapshot
+    ): TeamShapeResult = computeFor(scene.trackedPlayers)
+
+    /**
+     * Midfield (queue item 5, batch midfield): the same shape math over
+     * an explicit player list — VisionCore feeds the midfield band
+     * players here for the midfield compactness input. compute(scene)
+     * above delegates to this, so the whole-pitch behaviour is
+     * unchanged (same list, same order, same arithmetic).
+     */
+    fun computeFor(
+        players: List<TrackedPlayer>
     ): TeamShapeResult {
 
-        if (scene.trackedPlayers.isEmpty()) {
+        if (players.isEmpty()) {
             return TeamShapeResult(found = false)
         }
 
-        val minX = scene.trackedPlayers.minOf { it.x }
-        val maxX = scene.trackedPlayers.maxOf { it.x }
+        val minX = players.minOf { it.x }
+        val maxX = players.maxOf { it.x }
 
-        val minY = scene.trackedPlayers.minOf { it.y }
-        val maxY = scene.trackedPlayers.maxOf { it.y }
+        val minY = players.minOf { it.y }
+        val maxY = players.maxOf { it.y }
 
         val width = maxX - minX
         val depth = maxY - minY
@@ -117,19 +128,19 @@ object TeamShapeEngine {
         var sumX = 0.0
         var sumY = 0.0
         var sumConfidence = 0.0
-        for (i in scene.trackedPlayers.indices) {
-            val player = scene.trackedPlayers[i]
+        for (i in players.indices) {
+            val player = players[i]
             sumX += player.x.toDouble()
             sumY += player.y.toDouble()
             sumConfidence += player.confidence.toDouble()
         }
-        val centerX = (sumX / scene.trackedPlayers.size).toFloat()
-        val centerY = (sumY / scene.trackedPlayers.size).toFloat()
+        val centerX = (sumX / players.size).toFloat()
+        val centerY = (sumY / players.size).toFloat()
 
         val compactness =
             sqrt(width * width + depth * depth)
 
-        val confidence = (sumConfidence / scene.trackedPlayers.size).toFloat()
+        val confidence = (sumConfidence / players.size).toFloat()
 
         return TeamShapeResult(
             found = true,

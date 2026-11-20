@@ -180,6 +180,29 @@ data class RuntimeFrame(
     val userLineSpread: Float = 0f,
     val userLineFound: Boolean = false,
     /*
+     * Midfield (queue item 5, batch midfield): the MEASURED midfield
+     * line (MidfieldLineEngine — middle band of user players) + its
+     * compactness (MidfieldCompactnessEngine — band players only) +
+     * the STANCE-derived midfield (DefensiveStanceProducer — the D14
+     * tight-midfield numbers, dead until this batch). Readers:
+     * the hold contributor — the measured line is primary; the
+     * stance values are the fallback when no measured line was found
+     * this frame (midfieldFound=false). midfieldConfidence gates the
+     * compactness half of the hold: a spread-out reading with zero
+     * confidence must not hold the player. stanceMidfieldFound=false
+     * means "no stance — no fallback".
+     */
+    val midfieldLineX: Float = 0f,
+    val midfieldMinX: Float = 0f,
+    val midfieldMaxX: Float = 0f,
+    val midfieldSpread: Float = 0f,
+    val midfieldFound: Boolean = false,
+    val midfieldCompactness: Float = 0f,
+    val midfieldConfidence: Float = 0f,
+    val stanceMidfieldX: Float = 0f,
+    val stanceMidfieldSpread: Float = 0f,
+    val stanceMidfieldFound: Boolean = false,
+    /*
      * B4 Low-Block Wiring: the low-block movement list, one target per
      * defender (by defender id). lowBlockActive is false while QD-3
      * (Q68-27, Y→X axis rework) is unresolved — the movements are
@@ -278,7 +301,7 @@ data class EngineContribution(
     val targetEntityId: Int? = null,
     /*
      * G-M Physical Barge (batch 4, Q68-31): a physical barge request.
-     * Default false — all 55 pre-existing contributors are unaffected.
+     * Default false — all 56 pre-existing contributors are unaffected.
      * RuntimeDecisionLoop.chooseRequest renders barge=true as a short,
      * hard swipe (duration clamped to <= 20 ms); that clamp IS the
      * terminal support — the terminal dispatches swipes, and a barge is
@@ -303,7 +326,7 @@ interface GameplayContributor {
     fun contribute(frame: RuntimeFrame): EngineContribution?
     fun reset() {}
     // RF-D7 (batch 5): the shutdown() hook is removed — it had no caller
-    // and no override in any of the 55 contributors. Teardown is reset()
+    // and no override in any of the 56 contributors. Teardown is reset()
     // via GameplayEngineRegistry.resetAll(), wired through
     // RuntimeCoordinator.shutdown() (MainActivity Stop tap and
     // OverlayService.onDestroy).

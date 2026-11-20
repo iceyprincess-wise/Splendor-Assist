@@ -371,6 +371,28 @@ SceneTracker.update(
           teamShape
       )
 
+  // Midfield (queue item 5, batch midfield): the measured midfield
+  // line (middle band of user players, between the user line's back
+  // edge and the offensive mean) + its compactness over the band
+  // players only. Both edges exist by here (userLine above,
+  // offensiveLine above); the compactness call sits next to the
+  // defensive one, same cadence (every frame, unconditional).
+  val midfieldLine =
+      MidfieldLineEngine.compute(
+          scene,
+          userLine,
+          offensiveLine
+      )
+
+  val midfieldCompactnessResult =
+      MidfieldCompactnessEngine.compute(
+          scene,
+          midfieldLine,
+          TeamShapeEngine.computeFor(
+              MidfieldLineEngine.bandPlayers(scene, userLine, offensiveLine)
+          )
+      )
+
   val wingOverloadDetectionResult =
       WingOverloadDetectionEngine.compute(
           scene,
@@ -606,6 +628,9 @@ val offsideRiskEstimationResult =
             pressure = pressure,
             tacticalMapResult = tacticalMapResult,
             defensiveCompactnessResult = defensiveCompactnessResult,
+            // Midfield (queue item 5, batch midfield).
+            midfieldLine = midfieldLine,
+            midfieldCompactnessResult = midfieldCompactnessResult,
             wingOverloadDetectionResult = wingOverloadDetectionResult,
             centralOverloadDetectionResult = centralOverloadDetectionResult,
             passingGraph = passingGraph,

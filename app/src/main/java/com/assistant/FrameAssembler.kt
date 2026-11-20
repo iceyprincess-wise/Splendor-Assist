@@ -391,6 +391,18 @@ object FrameAssembler {
             userLineX = world.userLine.averageX,
             userLineSpread = (world.userLine.maxX - world.userLine.minX).coerceAtLeast(0f),
             userLineFound = world.userLine.found,
+            // Midfield (queue item 5, batch midfield): the measured line
+            // + its compactness, and the stance-derived fallback.
+            midfieldLineX = world.midfieldLine.averageX,
+            midfieldMinX = world.midfieldLine.minX,
+            midfieldMaxX = world.midfieldLine.maxX,
+            midfieldSpread = (world.midfieldLine.maxX - world.midfieldLine.minX).coerceAtLeast(0f),
+            midfieldFound = world.midfieldLine.found,
+            midfieldCompactness = world.midfieldCompactnessResult.compactness,
+            midfieldConfidence = world.midfieldCompactnessResult.confidence,
+            stanceMidfieldX = world.defensiveStance.midfieldX,
+            stanceMidfieldSpread = world.defensiveStance.midfieldSpread,
+            stanceMidfieldFound = world.defensiveStance.found,
             // B4: the low-block movement list. Active only while QD-3
             // is resolved — the movements are published regardless, but
             // no consumer may apply them until the axis rework lands.
@@ -533,6 +545,12 @@ object FrameAssembler {
             "stanceTight" to f.stanceTight,
             "dragOutHeld" to f.dragOutHeld,
             "homeFound" to f.homeFound,
+            // Midfield (queue item 5, batch midfield): the measured line
+            // + its compactness, and the stance-derived fallback X.
+            "midfieldLineX" to f.midfieldLineX,
+            "midfieldFound" to f.midfieldFound,
+            "midfieldCompactness" to f.midfieldCompactness,
+            "stanceMidfieldX" to f.stanceMidfieldX,
             // G-C/G-F/G-O (batch 4): match state + marking/overload plan.
             "matchMinute" to f.matchMinute,
             "matchScore" to "${f.matchScoreFor}-${f.matchScoreAgainst}",
