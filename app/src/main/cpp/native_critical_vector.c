@@ -63,6 +63,13 @@ Java_com_assistant_NativeBridge_nativeCriticalTrueTargetPass(
         jfloat screenWidth, jfloat screenHeight,
         jfloatArray outBuffer) {
     if (!splendor_array(env, outBuffer, 2)) return;
+    // 6a: finite-input contract (Task-5 class), mirroring
+    // nativeCriticalScoringVector above. passButtonX/Y and
+    // isLoftedContext are accepted but intentionally unused by the math
+    // (the target is the striker's velocity lead point, not the button);
+    // they stay in the signature because the JNI + Kotlin declarations
+    // carry them — removing them would break the ABI for no behaviour
+    // gain. Only the FINITE inputs are validated here.
     const jfloat contract_values[] = {passButtonX, passButtonY, activeStrikerX, activeStrikerY, strikerVx, strikerVy, screenWidth, screenHeight};
     if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
 

@@ -160,11 +160,6 @@ object ActionVerifier {
     }
 }
 
-/**
- * Horizontal attack-axis inference for the fixed user team.
- * A reliable detected goal sets the axis from the user-team centroid toward
- * that goal. Without a goal, three consecutive, possession-held ball advances
- * with the user centroid not materially ahead corroborate the axis. Confidence
- * below 0.62 is deliberately not actionable; callers retain their old fallback.
- * State is primitive-only, indexed scans allocate nothing on the frame path.
- */
+// 6a: the trailing KDoc below described AttackAxisModel (horizontal
+// attack-axis inference) — it was a mega-file split leftover at the
+// end of this file. Moved verbatim to AttackAxisModel.kt.

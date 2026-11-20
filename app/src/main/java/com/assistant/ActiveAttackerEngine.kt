@@ -115,7 +115,8 @@ object ActiveAttackerEngine{
     if(index !in scene.trackedPlayers.indices)return ActiveAttackerResult(found=false)
     val player=scene.trackedPlayers[index]
     if(!player.isUserTeam)return ActiveAttackerResult(found=false)
-    if(player.isUserTeam) AttackAxisModel.observe(scene,possession.hasPossession,com.assistant.vision.CameraProfile.captureWidthOrFallback())
+    // 6a: the !isUserTeam return above guarantees the owner is the user team here.
+    AttackAxisModel.observe(scene,possession.hasPossession,com.assistant.vision.CameraProfile.captureWidthOrFallback())
     val result=ActiveAttackerResult(true,player,index,possession.confidence)
     if(result.found&&result.confidence>0.30f){
       try{
@@ -146,7 +147,7 @@ object ActiveAttackerEngine{
         // no trace at this call site.
         val dispatched = GestureExecutionAuthority.execute(service,gesture,null,null)
         if (!dispatched) Log.w("ActiveAttackerEngine", "Directed push dispatch refused (see SMART_ASSIST gate log)")
-      }catch(e:Exception){Log.e("ActiveAttackerEngine","Directed push skipped: \${e.message}")}
+      }catch(e:Exception){Log.e("ActiveAttackerEngine","Directed push skipped: ${e.message}")}
     }
     return result
   }

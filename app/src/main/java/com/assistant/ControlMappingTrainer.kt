@@ -125,6 +125,38 @@ object ControlMappingTrainer {
     private val slotHits = IntArray(5)
     init { for (s in SLOTS) { slotX[s.id] = s.nx; slotY[s.id] = s.ny } }
 
+    // D7 (batch 6a): slot centres resolve through ButtonMappingEngine
+    // when the live capture is LANDSCAPE (w > h) — the SLOTS constants
+    // above are stale vs the measured layout (slots 3/4 probe OUTSIDE
+    // their measured discs, so Pass/Dash could never train; slots 1/2
+    // probe inside but off-centre). In PORTRAIT the rotation (CW vs
+    // CCW) is not recorded anywhere, so the engine cannot pick a
+    // mapping — the trained slotX/slotY arrays stay the fallback there.
+    // The JOYSTICK is NOT resolved here: its y is the open Q-N6-1
+    // probe (anchor vs measured) — see d7JoystickCenter() below.
+    private fun d7SlotButton(id: Int): ButtonMappingEngine.Button? = when (id) {
+        1 -> ButtonMappingEngine.Button.MATCHUP_THROUGH
+        2 -> ButtonMappingEngine.Button.TACKLE_SHOOT
+        3 -> ButtonMappingEngine.Button.SWITCH_PASS
+        4 -> ButtonMappingEngine.Button.DASH
+        else -> null
+    }
+
+    private fun d7SlotCenter(id: Int, w: Int, h: Int): Pair<Float, Float> {
+        val button = if (w > h) d7SlotButton(id) else null
+        return if (button != null) ButtonMappingEngine.center(button, ButtonMappingEngine.Orientation.LANDSCAPE)
+        else Pair(slotX[id], slotY[id])
+    }
+
+    // D7 joystick origin: the probe-gated centre. LANDSCAPE returns the
+    // ButtonMappingEngine resolved centre (the ANCHOR until the Q-N6-1
+    // probe records MEASURED); anything else returns the legacy anchor
+    // (JOY_NX/Y) unchanged. Identical values today — the probe moves it.
+    private fun d7JoystickCenter(w: Int, h: Int): Pair<Float, Float> {
+        if (w > h) return ButtonMappingEngine.resolvedJoystickCenter(ButtonMappingEngine.Orientation.LANDSCAPE)
+        return Pair(JOY_NX, JOY_NY)
+    }
+
     private val observed = AtomicLong(0)
     private val settingsFrames = AtomicLong(0)
     private val matchFrames = AtomicLong(0)
@@ -160,8 +192,15 @@ object ControlMappingTrainer {
         val now = System.currentTimeMillis()
         if (now - lastMaxDragMeasureMs < 1000L) return
         lastMaxDragMeasureMs = now
-        val cx = JOY_NX * w
-        val cy = JOY_NY * h
+        // D7: probe from the resolved joystick centre — the ANCHOR until
+        // the Q-N6-1 probe decides (identical values today). The
+        // min-of-valid-directions selection is what made the old
+        // anchor-origin probe survive the 21px top-edge offset: the
+        // upward rays from the edge return radius 0 and are dropped
+        // (radius > 0f filter), so the min comes from the in-disc rays.
+        val (joyX, joyY) = d7JoystickCenter(w, h)
+        val cx = joyX * w
+        val cy = joyY * h
         val radii = FloatArray(8)
         var valid = 0
         for (d in 0 until 8) {
@@ -235,7 +274,9 @@ object ControlMappingTrainer {
         b: java.nio.ByteBuffer, w: Int, h: Int, stride: Int, pixelStride: Int
     ) {
         val now = System.currentTimeMillis()
-        val slot1Green = probe(b, w, h, stride, slotX[1], slotY[1], pixelStride) && isGreen()
+        // D7: probe the resolved slot-1 centre (measured Through).
+        val (c1x, c1y) = d7SlotCenter(1, w, h)
+        val slot1Green = probe(b, w, h, stride, c1x, c1y, pixelStride) && isGreen()
         if (!slot1Green && UserTouchState.isTouching()) slot1OccludedFrames++ else slot1OccludedFrames = 0
         if (slot1OccludedFrames >= 2) {
             throughPressCandidateActive = true
@@ -278,7 +319,9 @@ object ControlMappingTrainer {
         b: java.nio.ByteBuffer, w: Int, h: Int, stride: Int, pixelStride: Int
     ) {
         val now = System.currentTimeMillis()
-        val slot4Green = probe(b, w, h, stride, slotX[4], slotY[4], pixelStride) && isGreen()
+        // D7: probe the resolved slot-4 centre (measured Dash).
+        val (c4x, c4y) = d7SlotCenter(4, w, h)
+        val slot4Green = probe(b, w, h, stride, c4x, c4y, pixelStride) && isGreen()
         if (!slot4Green && UserTouchState.isTouching()) slot4OccludedFrames++ else slot4OccludedFrames = 0
         if (slot4OccludedFrames >= 2) {
             dashHoldCandidateActive = true
@@ -306,14 +349,31 @@ object ControlMappingTrainer {
 
     fun isSlotTrained(id: Int): Boolean = id in 1..4 && slotHits[id] >= 3
 
-    fun slotCenter(id: Int): Pair<Float, Float> = Pair(slotX[id], slotY[id])
+    fun slotCenter(id: Int): Pair<Float, Float> {
+        // D7: resolve through the engine on the live capture dims;
+        // portrait falls back to the trained arrays (see d7SlotCenter).
+        val w = try { com.assistant.vision.CameraProfile.captureWidth } catch (_: Throwable) { 0 }
+        val h = try { com.assistant.vision.CameraProfile.captureHeight } catch (_: Throwable) { 0 }
+        return d7SlotCenter(id, w, h)
+    }
 
     // SPLENDOR_CONTROL_MAP_V1 - the joystick origin was hard-coded at
     // (250,550) in RuntimeDecisionLoop.chooseRequest and as the GK default. The
     // trainer already probes the real joystick at (JOY_NX,JOY_NY); expose it so
     // dispatch uses the measured point.
-    fun joystickCenterX(): Float = JOY_NX
-    fun joystickCenterY(): Float = JOY_NY
+    // D7 (6a): probe-gated — the ANCHOR until the Q-N6-1 probe records
+    // MEASURED (ButtonMappingEngine.resolvedJoystickCenter). Identical
+    // values today.
+    fun joystickCenterX(): Float {
+        val w = try { com.assistant.vision.CameraProfile.captureWidth } catch (_: Throwable) { 0 }
+        val h = try { com.assistant.vision.CameraProfile.captureHeight } catch (_: Throwable) { 0 }
+        return d7JoystickCenter(w, h).first
+    }
+    fun joystickCenterY(): Float {
+        val w = try { com.assistant.vision.CameraProfile.captureWidth } catch (_: Throwable) { 0 }
+        val h = try { com.assistant.vision.CameraProfile.captureHeight } catch (_: Throwable) { 0 }
+        return d7JoystickCenter(w, h).second
+    }
 
     fun labelFor(id: Int, attacking: Boolean): String =
         SLOTS.firstOrNull { it.id == id }?.let { if (attacking) it.attackLabel else it.defendLabel } ?: "none"
@@ -367,7 +427,10 @@ object ControlMappingTrainer {
         val backBlue = probe(buffer, w, h, rowStride, BACK_NX, BACK_NY, pixelStride) && isBlue()
         var green = 0
         for (s in SLOTS) {
-            if (probe(buffer, w, h, rowStride, slotX[s.id], slotY[s.id], pixelStride) && isGreen()) green++
+            // D7: probe the resolved centre (measured geometry in
+            // landscape; trained arrays in portrait).
+            val (cx, cy) = d7SlotCenter(s.id, w, h)
+            if (probe(buffer, w, h, rowStride, cx, cy, pixelStride) && isGreen()) green++
         }
         val joyGray = probe(buffer, w, h, rowStride, JOY_NX, JOY_NY, pixelStride) && (isGray() || isGreen())
         val next = when {
@@ -379,18 +442,30 @@ object ControlMappingTrainer {
         if (next == UiMode.SETTINGS) {
             settingsFrames.incrementAndGet()
             for (s in SLOTS) {
-                var bestNx = slotX[s.id]; var bestNy = slotY[s.id]; var bestScore = -1; var hit = false
+                // D7: search around the RESOLVED centre, not the stale
+                // SLOTS constants — the old ±0.02 window around (0.760,
+                // 0.740) / (0.879, 0.704) could never reach the true
+                // Pass/Dash buttons (off by 0.13 in ny). In landscape the
+                // engine is the source, so a hit only counts the training
+                // (no array to nudge); in portrait the arrays are nudged
+                // as before.
+                val (baseX, baseY) = d7SlotCenter(s.id, w, h)
+                var bestNx = baseX; var bestNy = baseY; var bestScore = -1; var hit = false
                 for (oy in -2..2 step 2) for (ox in -2..2 step 2) {
-                    val nx = s.nx + ox * 0.01f; val ny = s.ny + oy * 0.01f
+                    val nx = baseX + ox * 0.01f; val ny = baseY + oy * 0.01f
                     if (probe(buffer, w, h, rowStride, nx, ny, pixelStride) && isGreen()) {
                         val score = probeBuffer[1] - (probeBuffer[0] + probeBuffer[2]) / 2
                         if (score > bestScore) { bestScore = score; bestNx = nx; bestNy = ny; hit = true }
                     }
                 }
                 if (hit) {
-                    slotX[s.id] = slotX[s.id] * 0.7f + bestNx * 0.3f
-                    slotY[s.id] = slotY[s.id] * 0.7f + bestNy * 0.3f
-                    slotHits[s.id]++
+                    if (w > h) {
+                        slotHits[s.id]++
+                    } else {
+                        slotX[s.id] = slotX[s.id] * 0.7f + bestNx * 0.3f
+                        slotY[s.id] = slotY[s.id] * 0.7f + bestNy * 0.3f
+                        slotHits[s.id]++
+                    }
                 }
             }
             lastMove = "settings-training"

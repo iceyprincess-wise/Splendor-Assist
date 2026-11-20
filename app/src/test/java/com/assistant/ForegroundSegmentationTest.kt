@@ -30,11 +30,14 @@ class ForegroundSegmentationTest {
         CameraProfile.setCaptureScale(savedCaptureWidth, savedCaptureHeight, savedSourceWidth, savedSourceHeight)
     }
 
-    @Test fun saturatedRedAndBlueJerseysReachThePlayerDetector() {
+    @Test fun saturatedYellowAndBlueJerseysReachThePlayerDetector() {
+        // (6a: was saturatedRedAndBlue — red is no longer a team colour,
+        // the old red->USER rule is removed. The USER half is now the
+        // measured Dortmund yellow (179,150,42).)
         val width=8;val height=8;val row=width*4+8;val b=ByteBuffer.allocate(row*height)
         for(y in 0 until height) for(x in 0 until width) {
             val i=y*row+x*4
-            if(x<4) b.put(i,255.toByte()) else b.put(i+2,255.toByte())
+            if(x<4) { b.put(i,179.toByte()); b.put(i+1,150.toByte()); b.put(i+2,42.toByte()) } else b.put(i+2,255.toByte())
         }
         // No56-D2: the 8 padding bytes per row used to be zero, which the
         // scanner never retains — so a scanner that IGNORED rowStride and
@@ -47,11 +50,11 @@ class ForegroundSegmentationTest {
         val blobs=ConnectedComponentEngine.extract(FrameScanner.scan(f))
         assertEquals(2,blobs.size)
         // No56-D1: pin the split location and the channel assignment, not
-        // just the count — a red/blue byte-order swap in the scanner would
+        // just the count — a yellow/blue byte-order swap in the scanner would
         // still yield 2 blobs and 2 players, with the teams exchanged.
         val sorted=blobs.sortedBy { it.minX }
         assertEquals(0,sorted[0].minX);assertEquals(3,sorted[0].maxX)
-        assertEquals(255f,sorted[0].averageRed,0f);assertEquals(0f,sorted[0].averageBlue,0f)
+        assertEquals(179f,sorted[0].averageRed,0f);assertEquals(150f,sorted[0].averageGreen,0f);assertEquals(42f,sorted[0].averageBlue,0f)
         assertEquals(4,sorted[1].minX);assertEquals(7,sorted[1].maxX)
         assertEquals(0f,sorted[1].averageRed,0f);assertEquals(255f,sorted[1].averageBlue,0f)
         val detections=PlayerDetector.detect(blobs)
@@ -61,15 +64,16 @@ class ForegroundSegmentationTest {
         assertEquals(1.5f,detections.detections.first { it.x < 4f }.x,0f)
         assertEquals(5.5f,detections.detections.first { it.x > 4f }.x,0f)
     }
-    @Test fun colorBoundarySplitsRedAndWhiteIntoTwoBlobs() {
+    @Test fun colorBoundarySplitsYellowAndWhiteIntoTwoBlobs() {
         // No56-D3: renamed — the old name claimed a ball-vs-jersey split,
         // but no ball is ever identified here; what this pins is a
-        // colour-boundary split (red kind 2 vs white kind 1) in the
-        // connected-component pass.
+        // colour-boundary split (yellow kind 2 vs white kind 1) in the
+        // connected-component pass. (6a: was red kind 2 — red is no longer
+        // a team colour, so the USER side is now the measured yellow.)
         val b=ByteBuffer.allocate(8*4)
         for(x in 0 until 8) {
-            b.put(x*4,255.toByte())
-            if(x>=4) { b.put(x*4+1,255.toByte());b.put(x*4+2,255.toByte()) }
+            if(x<4) { b.put(x*4,179.toByte()); b.put(x*4+1,150.toByte()); b.put(x*4+2,42.toByte()) }
+            else { b.put(x*4,255.toByte()); b.put(x*4+1,255.toByte()); b.put(x*4+2,255.toByte()) }
         }
         val f=FrameNormalizer.NormalizedFrame(b,8,1,32,4,FrameNormalizer.FrameMetadata(1,0))
         assertEquals(2,ConnectedComponentEngine.extract(FrameScanner.scan(f)).size)

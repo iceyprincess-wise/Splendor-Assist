@@ -8,6 +8,14 @@ Jules investigation → Python 3 patch script → Termux execution → build/val
 
 Jules should normally investigate and produce the patch script. The human developer executes the generated patch in Termux and pushes the resulting changes.
 
+> 6a amendment (2026-11-19): the paragraph above is STALE for
+> Splendor-Assist. Ed (the human developer) authorised direct-repo
+> edit + commit + push on 2026-11-19 ~02:51 WAT: the agent edits the
+> repo directly, verifies in the sandbox (harness + Gradle), stages,
+> and pushes; Ed pulls in Termux. The f.py patch-script flow remains
+> the model ONLY for Range-engine, which still uses it. Do not
+> re-impose the f.py flow on Splendor-Assist work.
+
 Treat the current "main" branch as the authoritative source of truth.
 
 Investigation

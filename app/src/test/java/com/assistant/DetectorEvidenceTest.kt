@@ -23,10 +23,12 @@ class DetectorEvidenceTest {
     }
     @Test fun differentTeamBlobsInContactAreBothKept() {
         // No57-D3: renamed — the old name said "opponents in contact", but
-        // the fixture is one USER (red) and one OPPONENT (blue). What this
-        // pins is the NMS rule: suppression only fires between SAME-team
-        // detections, so cross-team blobs 2px apart are both kept.
-        val result = PlayerDetector.detect(listOf(blob(20,255f,0f,0f),blob(22,0f,0f,255f)))
+        // the fixture is one USER (yellow — 6a: red is no longer a team
+        // colour, the old red->USER rule is removed) and one OPPONENT
+        // (blue). What this pins is the NMS rule: suppression only fires
+        // between SAME-team detections, so cross-team blobs 2px apart are
+        // both kept.
+        val result = PlayerDetector.detect(listOf(blob(20,179f,150f,42f),blob(22,0f,0f,255f)))
         assertEquals(2,result.playerCount)
     }
     @Test fun sameTeamBlobsInContactAreMergedAsOnePlayer() {
@@ -44,9 +46,11 @@ class DetectorEvidenceTest {
         // the second detect()'s return, so it could never fail — detect()
         // builds fresh PlayerDetection objects per call. Capture both
         // results: the second must track the new frame (101.5) while the
-        // first still reads the old one (21.5).
-        val first = PlayerDetector.detect(listOf(blob(20,255f,0f,0f)))
-        val second = PlayerDetector.detect(listOf(blob(100,255f,0f,0f)))
+        // first still reads the old one (21.5). (6a: the fixture was red;
+        // red is no longer a team colour, so the blob is now the measured
+        // Dortmund yellow (179,150,42). Geometry and assertions unchanged.)
+        val first = PlayerDetector.detect(listOf(blob(20,179f,150f,42f)))
+        val second = PlayerDetector.detect(listOf(blob(100,179f,150f,42f)))
         assertEquals(21.5f,first.detections.first().x,0f)
         assertEquals(101.5f,second.detections.first().x,0f)
     }
@@ -63,20 +67,24 @@ class DetectorEvidenceTest {
         // No57-D4: the old fixture filled all 16 bytes with 255, so a
         // scanner that IGNORED rowStride or pixelStride read the same white
         // pixels at the same packed coordinates — count and coords were
-        // identical either way. Now row 0 is red, row 1 is blue, and the
+        // identical either way. Now row 0 is yellow, row 1 is blue, and the
         // buffer is exactly the 14 bytes `required` allows: a stride-6
         // reader hits the zero padding at byte 6 and loses a pixel
-        // (count 3), and the packed RGB pins the channel order.
+        // (count 3), and the packed RGB pins the channel order. (6a: row 0
+        // was red — red is no longer a team colour, so the scanner drops
+        // red pixels at the gate; the row is now the measured yellow.)
         val b = java.nio.ByteBuffer.allocate(14)
-        b.put(0, 255.toByte()); b.put(3, 255.toByte())
+        b.put(0, 179.toByte()); b.put(1, 150.toByte()); b.put(2, 42.toByte())
+        b.put(3, 179.toByte()); b.put(4, 150.toByte()); b.put(5, 42.toByte())
         b.put(10, 255.toByte()); b.put(13, 255.toByte())
         val f = FrameNormalizer.NormalizedFrame(b,2,2,8,3,FrameNormalizer.FrameMetadata(1,0))
         val result = FrameScanner.scan(f)
         assertEquals(4,result.count)
         assertEquals(listOf(0,1,0,1), (0 until result.count).map { ((result.data[it] shr 40) and 65535).toInt() })
         assertEquals(listOf(0,0,1,1), (0 until result.count).map { ((result.data[it] shr 24) and 65535).toInt() })
-        assertEquals(listOf(255,255,0,0), (0 until result.count).map { ((result.data[it] shr 16) and 255).toInt() })
-        assertEquals(listOf(0,0,255,255), (0 until result.count).map { (result.data[it] and 255).toInt() })
+        assertEquals(listOf(179,179,0,0), (0 until result.count).map { ((result.data[it] shr 16) and 255).toInt() })
+        assertEquals(listOf(150,150,0,0), (0 until result.count).map { ((result.data[it] shr 8) and 255).toInt() })
+        assertEquals(listOf(42,42,255,255), (0 until result.count).map { (result.data[it] and 255).toInt() })
     }
     @Test fun scannerRejectsTruncatedLayout() {
         val f = FrameNormalizer.NormalizedFrame(java.nio.ByteBuffer.allocate(10),2,2,8,3,FrameNormalizer.FrameMetadata(1,0))

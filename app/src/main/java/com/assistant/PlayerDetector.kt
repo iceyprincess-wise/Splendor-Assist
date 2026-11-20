@@ -98,6 +98,21 @@ object PlayerDetector {
     private const val MIN_PIXEL_COUNT = 10
     private const val MIN_ASPECT_RATIO = 0.15f
     private const val MIN_CANDIDATE_CONFIDENCE = 0.30f
+
+    // 6a (kits audit): blue-circle / direction-indicator ring cutoffs.
+    // A hollow blue blob is the indicator RING around the controlled
+    // player, not a blue shirt: its bbox is mostly NOT blue (the player
+    // inside it), so its density is low, and it is roughly circular. A
+    // solid blue-shirted opponent fills its bbox (density >= ~0.5).
+    // The 0.40 / 0.60 cutoffs are STRUCTURAL (ring circumference/area
+    // ~= 0.26 at capture scale vs solid >= 0.5), NOT measured — confirm
+    // on-device from ring-blob densities in the log before trusting
+    // them. INDICATOR_RING_CONFIDENCE is the fixed confidence of a
+    // ring-marked controlled-player detection (the ring centre IS the
+    // player's position).
+    private const val INDICATOR_RING_MAX_DENSITY = 0.40f
+    private const val INDICATOR_RING_MIN_ASPECT = 0.60f
+    private const val INDICATOR_RING_CONFIDENCE = 0.55f
     
     private val rawPool = Array(1000) { PlayerDetection(0f, 0f, 0f, false) }
     private val keptPool = Array(1000) { PlayerDetection(0f, 0f, 0f, false) }
@@ -157,6 +172,30 @@ object PlayerDetector {
                 blob.averageBlue
             )
 
+            // 6a (kits audit): indicator-ring keying. A blue blob that is
+            // hollow and roughly circular is the blue circle around the
+            // CONTROLLED player (Roboflow decision 2026-11-19: the blue
+            // circle is the reliable MyPlayer marker) — not an opponent.
+            // Emit it as a USER detection at the ring centre. This is
+            // what makes black-kit players visible at all: black is
+            // dropped at the FrameScanner gate (luminance ~28 < 128) and
+            // classifies UNKNOWN, so without the ring his 2nd/3rd-kit
+            // players would never appear. The existing same-team NMS
+            // below merges this with a real USER detection of the same
+            // player when the shirt is visible (yellow/light-blue).
+            if (jersey.team == JerseyColorSegmentation.Team.OPPONENT &&
+                density < INDICATOR_RING_MAX_DENSITY && aspectRatio >= INDICATOR_RING_MIN_ASPECT
+            ) {
+                if (rawCount < rawPool.size) {
+                    val pd = rawPool[rawCount]
+                    pd.x = centerX
+                    pd.y = centerY
+                    pd.confidence = INDICATOR_RING_CONFIDENCE
+                    pd.isUserTeam = true
+                    rawCount++
+                }
+                continue
+            }
             if (jersey.team != JerseyColorSegmentation.Team.USER && jersey.team != JerseyColorSegmentation.Team.OPPONENT) continue
             val sizeScore = (effectivePixelCount / 64f).coerceIn(0f, 1f)
             val densityScore = density.coerceIn(0f, 1f)

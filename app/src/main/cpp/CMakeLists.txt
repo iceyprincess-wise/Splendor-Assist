@@ -27,8 +27,10 @@ add_library(splendor_native SHARED
   native_sa_corrector.c
 
   native_critical_vector.c
-  native_speed_compensation.c
-
+  # 6a: native_speed_compensation.c removed — the TU held only two static
+  # helpers (branchless_coerce/select) with zero JNI exports, no Kotlin
+  # declaration, and no in-TU users. (Delete the file via delete_file;
+  # push_files cannot delete.)
   native_tactical_engines.c
 
 )

@@ -68,7 +68,9 @@ import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
 object ActionWindowEngine {
 
-    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    // 6a: NOT admin-tunable — these are plain literals; no admin store
+    // is read anywhere (same false-claim class as Q68-23, fixed in 5b).
+    // Values are the original hard-coded ones, kept as-is.
     private val POLL_MS: Long get() = 2000L
     private val HOLD_LOSS_PCT: Float get() = 10f
     private val GO_LOSS_PCT: Float get() = 2f
@@ -76,8 +78,10 @@ object ActionWindowEngine {
 
     @Volatile private var running = false
     @Volatile var verdict = "UNKNOWN"; private set
-    @Volatile private var sinceMs = 0L
-    @Volatile private var flips = 0L
+    // 6a: `sinceMs` removed with state() — it only fed state()'s held-seconds.
+    // 6a: `flips` removed — write-only (incremented, never read); `state()`
+    // below is removed with it (zero callers repo-wide; the live reader
+    // is ConnectionHealEngine on `verdict`).
 
     fun start() {
         if (running) return
@@ -94,8 +98,6 @@ object ActionWindowEngine {
                         else -> "CAUTION"
                     }
                     if (next != verdict) {
-                        flips++
-                        sinceMs = System.currentTimeMillis()
                         RuntimeLogger.log("WINDOW " + verdict + " -> " + next +
                             " (rtt=" + String.format("%.0f", NetProbeEngine.rtt) +
                             "ms jit=" + String.format("%.0f", NetProbeEngine.jitter) +
@@ -117,11 +119,6 @@ object ActionWindowEngine {
     }
 
     fun stop() { running = false }
-
-    fun state(): String {
-        val held = if (sinceMs > 0) (System.currentTimeMillis() - sinceMs) / 1000L else 0L
-        return verdict + "(" + held + "s)"
-    }
 }
 
 /* ========

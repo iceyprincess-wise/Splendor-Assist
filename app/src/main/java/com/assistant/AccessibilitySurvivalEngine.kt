@@ -145,6 +145,13 @@ class AccessibilitySurvivalEngine private constructor(
 
     fun protect() {
         synchronized(this) {
+            // 6a: release() quits the watchdog thread and nulls it, but the
+            // old protect() never restarted it — after an interrupt +
+            // reconnect the watchdog stayed dead for the rest of the
+            // process (no tick sync, no wake-lock renewal after the 10 min
+            // acquire expired). Restart it first so connected() below can
+            // elevate the fresh thread's priority (it no-ops on a null one).
+            if (watchdogThread == null) initializeWatchdog()
             connected()
             renewWakeLock()
         }

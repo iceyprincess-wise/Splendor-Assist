@@ -68,31 +68,16 @@ import kotlin.math.*
 
 import kotlin.math.abs
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/**
+ * Horizontal attack-axis inference for the fixed user team.
+ * A reliable detected goal sets the axis from the user-team centroid toward
+ * that goal. Without a goal, three consecutive, possession-held ball advances
+ * with the user centroid not materially ahead corroborate the axis. Confidence
+ * below 0.62 is deliberately not actionable; callers retain their old fallback.
+ * State is primitive-only, indexed scans allocate nothing on the frame path.
+ * (6a: moved here from the foot of ActionVerifier.kt, where the mega-file
+ * split had left it.)
+ */
 object AttackAxisModel {
     @Volatile private var direction: Int = 0
     @Volatile private var confidence: Float = 0f

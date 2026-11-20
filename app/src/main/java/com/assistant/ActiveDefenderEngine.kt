@@ -96,8 +96,8 @@ import kotlin.math.sqrt
 object ActiveDefenderEngine {
 
     // --- AMPLIFIED INPUT EFFECTIVENESS CONSTANTS ---
-    // Synchronized to 60/120Hz refresh boundaries for absolute injection precision
-    private const val BASE_TICK_RATE_MS = 16L
+    // 6a: BASE_TICK_RATE_MS removed — declared but never read (no tick
+    // uses it; the compute path is frame-driven, not timer-driven).
     private const val SERVER_TICK_COMPENSATION = 1.05f
     
     private const val MAX_TRACKING_DISTANCE = 1200.0f
@@ -106,7 +106,7 @@ object ActiveDefenderEngine {
     private const val PREDICTION_FRAMES = 3
 
     // --- INTERNAL ENGINE STATE ---
-    private var frameCounter = 0L
+    // 6a: frameCounter removed — incremented per compute() but never read.
     private var lastAttackerX = -1f
     private var lastAttackerY = -1f
 
@@ -126,7 +126,6 @@ object ActiveDefenderEngine {
             return ActiveDefenderResult(found = false)
         }
 
-        frameCounter++
         val attackerX = attacker.attacker.x
         val attackerY = attacker.attacker.y
         val attackerTeam = attacker.attacker.isUserTeam

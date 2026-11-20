@@ -89,9 +89,14 @@ object AggressiveMemoryHoarding {
         lastPurgeMs = now
         purgesExecuted.incrementAndGet()
         RuntimeLogger.log("Initiating memory purge...", "MEMORY_HOARDER")
-        // MASSIVE POWER: Force capture loop into survival mode (10fps) immediately
-        // Force capture loop into survival mode (10fps) immediately
-        // to prevent LMK kills while the purge runs and OS reclaims RAM.
+        // 6a: the old comment here claimed this "forces the capture loop
+        // into survival mode (10fps) immediately". That is FALSE: the bus
+        // captureThrottle field has no reader in the capture loop — the
+        // loop reads MemoryCaptureGateEngine.captureThrottle, driven by the
+        // memory tier (onTierChange), and D1 caps in-game capture at 33 ms
+        // anyway. This publish only surfaces on the dashboard
+        // (GameplayRoomActivity). The purge frees RAM by killing
+        // background processes; it does not slow capture.
         try { com.assistant.diagnostic.AdapterSignalBus.publishCaptureThrottle(3) } catch (_: Throwable) {}
 
         val activityManager =

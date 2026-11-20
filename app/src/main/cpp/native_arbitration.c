@@ -1,4 +1,5 @@
 #include "native_breadcrumb.h"
+#include "native_contract.h"
 #include <jni.h>
 #include <fcntl.h>
 #include <string.h>
@@ -39,6 +40,15 @@ Java_com_assistant_NativeBridge_nativeAuthorityArbitrate(
 #ifdef SPLENDOR_BREADCRUMBS
     splendor_native_breadcrumb("Java_com_assistant_NativeBridge_nativeAuthorityArbitrate");
 #endif
+
+    // 6a: finite-input contract (Task-5 class). The sibling native fns
+    // reject non-finite inputs via splendor_finite; this one did not, so
+    // a NaN coordinate propagated into the packed floats and reached the
+    // dispatch path as a NaN target.
+    {
+        const jfloat contract_values[] = {passX, passY, crossX, crossY, predictiveX, predictiveY, receiver, forward, recovery, shot, stability};
+        if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return 0;
+    }
 
     (void)env;
     (void)clazz;
