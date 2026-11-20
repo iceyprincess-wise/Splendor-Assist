@@ -144,6 +144,23 @@ class App : Application() {
             } catch (t: Throwable) {
                 faultSafe("AdapterRecoveryEngine.start", "${t.javaClass.simpleName}: ${t.message ?: "unknown"}")
             }
+            // ComplianceMonitor wire (Ed's call, 2026-11-20): start the
+            // 30 s COMPLIANCE heartbeat here, in the main process only,
+            // next to FilterEngine.start() / AdapterRecoveryEngine.start().
+            // App.onCreate runs on every process start, so the monitor
+            // must NOT start in :survival (it would log a second
+            // heartbeat from the headless process). The monitor only
+            // LOGS (ENGINE READY / BLOCKED: <permission>) — it never
+            // fixes, re-requests or changes anything. start() is
+            // idempotent (started flag) and self-schedules its 30 s
+            // re-post; the try/catch mirrors the blocks above so a
+            // monitor failure can never fail boot.
+            try {
+                com.assistant.compliance.ComplianceMonitor.start(this)
+                logSafe("App.onCreate: ComplianceMonitor started (main process)", "BOOT")
+            } catch (t: Throwable) {
+                faultSafe("ComplianceMonitor.start", "${t.javaClass.simpleName}: ${t.message ?: "unknown"}")
+            }
             // SPLENDOR_P7_APP_START_END
 
             if (!storageReady) {
