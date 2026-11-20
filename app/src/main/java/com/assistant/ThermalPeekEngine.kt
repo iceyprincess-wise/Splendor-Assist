@@ -68,7 +68,7 @@ import com.assistant.diagnostic.RuntimeLogger
 
 object ThermalPeekEngine {
 
-    // ADMIN-TUNABLE (default = original hard-coded value)
+    // Fixed poll interval (original hard-coded value; no setter exists).
     private val POLL_MS: Long get() = 10_000L
 
     @Volatile private var pm: PowerManager? = null

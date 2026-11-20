@@ -110,8 +110,6 @@ class ActiveGestureController(
         OptimizerLivenessReporter.noteTerminated()
     }
 
-    private val vsyncAnchor = VsyncInputAnchor { _ -> RuntimeLogger.log("VSync dispatch synchronized","SMART_ASSIST") }
-
     // D13: the controller owns the only LatencyDefeatingInputEngine, so
     // it binds it into the through-pass sanitizer gateway at creation —
     // the gateway (called from RuntimeDecisionLoop.onFrame) then has a

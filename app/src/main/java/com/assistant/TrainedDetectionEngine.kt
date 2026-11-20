@@ -334,18 +334,6 @@ object TrainedDetectionEngine {
         }
     }
 
-    fun trainedRuntimeSnapshot(): Map<String, Any> = mapOf(
-        "status" to status.name,
-        "inferences" to inferences.get(),
-        "failures" to failures.get(),
-        "ballsFound" to ballsFound.get(),
-        "divergences" to divergences.get(),
-        "lastLatencyMs" to lastLatencyMs,
-        "lastError" to lastError,
-        // Q68-95 (batch 5b): native-preprocess failure counters.
-        "preprocessFailures" to preprocessFailures.get(),
-        "lastPreprocessCode" to lastPreprocessCode
-    )
 }
 
 /* ========

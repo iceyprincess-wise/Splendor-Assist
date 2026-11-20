@@ -135,27 +135,11 @@ class SmartAssistPipeline {
                     ActionType.PASS
             }
 
-        val confidence =
-            (
-                0.75f +
-                (
-                    distance / 1000f
-                ).coerceAtMost(
-                    0.25f
-                )
-            ).coerceAtMost(1f)
-
         return VectorDecision(
             shouldAct =
                 actionType != ActionType.NONE,
-            priority =
-                (distance / 8f)
-                    .toInt()
-                    .coerceAtMost(100),
             actionType =
                 actionType,
-            confidence =
-                confidence,
             startX =
                 startX,
             startY =

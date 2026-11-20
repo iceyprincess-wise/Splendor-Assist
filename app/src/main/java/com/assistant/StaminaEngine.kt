@@ -49,8 +49,4 @@ object StaminaEngine {
     fun pressScale(frame: RuntimeFrame): Float =
         (MAX_PRESS_SCALE - 0.45f * fatigue(frame)).coerceIn(MIN_PRESS_SCALE, MAX_PRESS_SCALE)
 
-    /** Press scale from an already-computed fatigue value. Pure. */
-    fun pressScaleForFatigue(fatigue: Float): Float =
-        (MAX_PRESS_SCALE - 0.45f * fatigue.coerceIn(0f, 1f))
-            .coerceIn(MIN_PRESS_SCALE, MAX_PRESS_SCALE)
 }

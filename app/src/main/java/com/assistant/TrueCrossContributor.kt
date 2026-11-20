@@ -120,8 +120,8 @@ object TrueCrossContributor : GameplayContributor {
             frame.ballX, frame.ballY,
             receiver?.x ?: frame.passTargetX,
             receiver?.y ?: frame.passTargetY,
-            receiver?.velocityX ?: 0f,
-            receiver?.velocityY ?: 0f,
+            receiver?.velocityXPerSecond ?: 0f,
+            receiver?.velocityYPerSecond ?: 0f,
             goalCX, goalCY,
             frame.bestLaneConfidence.coerceAtLeast(0.1f)
         ) ?: return null

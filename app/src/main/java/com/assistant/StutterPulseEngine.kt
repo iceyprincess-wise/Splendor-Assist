@@ -6,11 +6,9 @@ package com.assistant
 
 
 
-import android.content.Context
 
 
 
-import android.hardware.display.DisplayManager
 
 
 
@@ -68,11 +66,10 @@ import com.assistant.diagnostic.RuntimeLogger
 
 object StutterPulseEngine {
 
-    // ADMIN-TUNABLE (defaults = original hard-coded values)
+    // Fixed thresholds (original hard-coded values; no setter exists).
     private val BURST_MULT: Float get() = 4f
     private val MIN_FRAMES: Int get() = 3
     private val SLICE_MS: Long get() = 1000L
-    private val PUBLISH_MS: Long get() = 5000L
 
     @Volatile private var running = false
     @Volatile var vsyncMs = 16.67f; private set
@@ -89,14 +86,6 @@ object StutterPulseEngine {
     @Volatile var lastBurstAtMs = 0L; private set
     @Volatile private var minuteBursts = 0
     @Volatile private var minuteStart = 0L
-
-    fun detectPanel(ctx: Context) {
-        try {
-            val dm = ctx.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-            val hz = dm.displays.firstOrNull()?.refreshRate ?: 60f
-            onPanelRate(hz)
-        } catch (_: Throwable) { }
-    }
 
     /** Called by PanelWatchEngine the instant the panel changes its rhythm. */
     fun onPanelRate(hz: Float) {
@@ -147,14 +136,6 @@ object StutterPulseEngine {
         Handler(Looper.getMainLooper()).post {
             Choreographer.getInstance().postFrameCallback(callback)
         }
-        // live readout for the admin Detector
-        val t = Thread {
-            while (running) {
-                val nap = PUBLISH_MS
-                try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }
-            }
-        }
-        t.isDaemon = true; t.name = "stutter-publish"; t.start()
     }
 
     fun stop() {
@@ -172,11 +153,11 @@ ActionWindowEngine
 // V3 INSTANT-REFLEX
 
 /**
- * THE OUTPUT OF THE WHOLE STACK: one verdict, refreshed on an admin-tunable
- * cadence.
+ * THE OUTPUT OF THE WHOLE STACK: one verdict, refreshed every 2000 ms
+ * (ActionWindowEngine POLL_MS, a plain literal).
  *   GO      - link clean: full-speed decisions are safe
  *   CAUTION - degraded: prefer shorter, safer actions
  *   HOLD    - spike/loss in progress: worst moment to commit a long play
- * Published for the main runtime to read non-blocking. V3: reads the
- * override-aware wobble allowance.
+ * Published for the main runtime to read non-blocking. V3: no wobble
+ * allowance exists in ActionWindowEngine — nothing reads one.
  */
