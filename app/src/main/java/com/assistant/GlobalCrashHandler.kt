@@ -484,7 +484,17 @@ class GlobalCrashHandler(
             out.appendLine("═══ LOAD SHED GOVERNOR ═══")
             try {
                 val lsg = Class.forName("com.assistant.LoadShedGovernor")
-                val level = lsg.getField("level").get(null) as? String ?: "UNKNOWN"
+                // Batch 6c (v219 item g): the old call read the level by
+                // direct reflective field access on the object class.
+                // That throws NoSuchFieldException two ways: the Kotlin
+                // backing field for `var level` is private (getField
+                // finds public fields only), and it is an INSTANCE field
+                // of the object, not a static — so the catch printed
+                // "[FAIL] LoadShedGovernor: level" (the exception message
+                // IS the field name) in all three v219 crash reports.
+                // Read it the way the neighbouring sections already do:
+                // the public getLevel() on the object INSTANCE.
+                val level = lsg.getMethod("getLevel").invoke(lsg.getField("INSTANCE").get(null)) as? String ?: "UNKNOWN"
                 out.appendLine("  current level     : $level")
                 out.appendLine("  NONE=full engines  LIGHT=minor shed  HEAVY=major shed (kills most gameplay compute)")
                 if (level == "HEAVY") {

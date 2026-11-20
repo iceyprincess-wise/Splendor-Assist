@@ -62,6 +62,15 @@ data class BusStatistics(
     val pendingCount: Int = 0,
     val isRunning: Boolean = false,
     val stoppedDrops: Long = 0,
+    // Batch 6c (v219 item a): ui-blocked drops are NOT stopped drops.
+    // The 2026-11-19 session dropped 28 GOALKEEPER submissions with the
+    // log line "submit dropped: stopped running=true uiBlocked=true" —
+    // the bus was running (running=true on all 28 lines); the only
+    // operative cause was the UI gate (foreground:com.miui.home). The
+    // old single "stopped" label + counter conflated the two causes, so
+    // ui-blocked drops get their own counter; stoppedDrops now counts
+    // only drops taken while running == false.
+    val uiBlockedDrops: Long = 0,
     val invalidDrops: Long = 0,
     val staleDrops: Long = 0,
     val capacityDrops: Long = 0,
@@ -100,6 +109,8 @@ object CentralExecutionBus {
     private val accepted = AtomicLong(0L)
     private val consumed = AtomicLong(0L)
     private val stoppedDrops = AtomicLong(0L)
+    // Batch 6c (v219 item a): see BusStatistics.uiBlockedDrops.
+    private val uiBlockedDrops = AtomicLong(0L)
     private val invalidDrops = AtomicLong(0L)
     private val staleDrops = AtomicLong(0L)
     private val capacityDrops = AtomicLong(0L)
@@ -136,11 +147,28 @@ object CentralExecutionBus {
         // D-26-06: the gate values are captured once and reused in the log,
         // so the logged values are the ones that took this branch (the old
         // code re-evaluated them and could log different values).
+        // Batch 6c (v219 item a): the old single branch logged BOTH causes
+        // as "stopped", so the 2026-11-19 session's 28 GOALKEEPER drops
+        // read "submit dropped: stopped running=true uiBlocked=true" —
+        // "stopped" while the bus was running. The two causes are split
+        // so the log names the cause that actually fired; the ui-blocked
+        // line also names the gate reason (e.g. foreground:com.miui.home),
+        // which UiExecutionGate already records but the drop never printed.
+        // Gating behaviour is UNCHANGED: a ui-blocked submit is still
+        // dropped (never queued — the gate wipes the queue on block and
+        // keeper requests go stale in 300 ms, so queueing would only
+        // produce stale drops on unblock). stop() is still called only
+        // from RuntimeCoordinator.shutdown.
         val runningNow = running.get()
         val uiBlocked = UiExecutionGate.blocked()
-        if (!runningNow || uiBlocked) {
+        if (!runningNow) {
             stoppedDrops.incrementAndGet()
-            RuntimeLogger.log("CentralExecutionBus submit dropped: stopped running=$runningNow uiBlocked=$uiBlocked source=${request.source} phase=${request.phase} actionId=${request.actionId}", "CentralExecutionBus")
+            RuntimeLogger.log("CentralExecutionBus submit dropped: stopped running=false uiBlocked=$uiBlocked source=${request.source} phase=${request.phase} actionId=${request.actionId}", "CentralExecutionBus")
+            return false
+        }
+        if (uiBlocked) {
+            uiBlockedDrops.incrementAndGet()
+            RuntimeLogger.log("CentralExecutionBus submit dropped: ui-blocked running=true uiBlocked=true reason=${UiExecutionGate.reason} source=${request.source} phase=${request.phase} actionId=${request.actionId}", "CentralExecutionBus")
             return false
         }
         val nowNanos = System.nanoTime()
@@ -349,7 +377,8 @@ object CentralExecutionBus {
                 _statistics.value = BusStatistics(
                     acceptedCount = accepted.get(), consumedCount = consumed.get(),
                     pendingCount = pendingCount(), isRunning = running.get(),
-                    stoppedDrops = stoppedDrops.get(), invalidDrops = invalidDrops.get(),
+                    stoppedDrops = stoppedDrops.get(), uiBlockedDrops = uiBlockedDrops.get(),
+                    invalidDrops = invalidDrops.get(),
                     staleDrops = staleDrops.get(), capacityDrops = capacityDrops.get(),
                     reservationDrops = reservationDrops.get(),
                     aimNullCompensations = aimNullCompensations.get()

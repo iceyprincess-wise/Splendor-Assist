@@ -356,6 +356,40 @@ object RuntimeSelfHealEngine {
                     // F37-D5: this branch spends no attempt, so it must not
                     // consume the attempt-budget throttle (lastRestartAttemptMs)
                     // — doing so poisoned canRetry and fired a false EXHAUSTED.
+                    // Batch 6c (v219 item b): STARTUP GRACE — this branch
+                    // fired a CRITICAL CAPTURE_IDLE three times in the
+                    // 2026-11-19 v219 session while capture was still
+                    // starting, not dead:
+                    //  - 16:34:15.321: InAppAgentCore cycle 12 drove
+                    //    runImmediateCheck() BEFORE OverlayService existed
+                    //    in pid 30702 ("OverlayService started" 16:34:16.399),
+                    //    so instance was null and captureState() fell back
+                    //    to IDLE (OverlayService.kt:104-105). 1.1 s later
+                    //    the service started and the first frame arrived
+                    //    16:34:17.040.
+                    //  - 16:35:54.823 (pid 962) + 16:51:27.732 (pid 20195):
+                    //    the agent thread's FIRST cycle after its 3 s grace
+                    //    (~3.3 s after start) ran while onStartCommand was
+                    //    still executing (FGS crash 0.35 s / 1.46 s later),
+                    //    so the instance's own captureState field was still
+                    //    its IDLE initial value. The 3 s grace in start()
+                    //    cannot cover either path: runImmediateCheck()
+                    //    bypasses it, and 3 s is shorter than a service
+                    //    start. The grace lives HERE, in the branch, on
+                    //    agent age (agentStartedMs, set in start()): under
+                    //    30 s old, a no-frame + IDLE reading is startup,
+                    //    not death — skip silently (no CRITICAL, no
+                    //    auto-heal, no throttle consumption). 30 s covers
+                    //    the session's slowest start (23 s to first frame)
+                    //    with margin, and matches this branch's own 30 s
+                    //    throttle; a genuinely dead capture still fires
+                    //    once the agent is older than 30 s. The ACTIVE /
+                    //    AUTHORIZED restart branch above is untouched.
+                    //    The detected text now carries the agent age so a
+                    //    future reader can tell startup from death.
+                    if (agentStartedMs > 0L && now - agentStartedMs < 30_000L) {
+                        return
+                    }
                     if (now - lastIdleHealMs > 30_000L || lastIdleHealMs == 0L) {
                         lastIdleHealMs = now
                         totalHeals++
@@ -365,7 +399,7 @@ object RuntimeSelfHealEngine {
                             record(HealEvent(
                                 timestamp = fmt.format(Date()),
                                 category = neverStartedCategory,
-                                detected = "No frame ever assembled and capture is $state (never started, or died before the first frame). capture=" + com.assistant.vision.CameraProfile.diagnostics() + ".",
+                                detected = "No frame ever assembled and capture is $state (never started, or died before the first frame). agentAge=${(now - agentStartedMs) / 1000L}s. capture=" + com.assistant.vision.CameraProfile.diagnostics() + ".",
                                 fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog). If the service was restarted without a token, tap the capture recovery prompt.",
                                 severity = "CRITICAL"
                             ))

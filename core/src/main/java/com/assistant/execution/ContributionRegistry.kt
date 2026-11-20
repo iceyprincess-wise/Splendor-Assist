@@ -180,6 +180,9 @@ object ContributionRegistry {
             "busConsumed" to stats.consumedCount,
             "busPending" to stats.pendingCount,
             "busStoppedDrops" to stats.stoppedDrops,
+            // Batch 6c (v219 item a): ui-blocked drops are counted
+            // separately from stopped drops (CentralExecutionBus).
+            "busUiBlockedDrops" to stats.uiBlockedDrops,
             "busInvalidDrops" to stats.invalidDrops,
             "busStaleDrops" to stats.staleDrops,
             "busCapacityDrops" to stats.capacityDrops,

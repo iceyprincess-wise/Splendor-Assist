@@ -40,6 +40,12 @@ object AdapterRecoveryEngine {
     @Volatile
     private var started = false
 
+    // Batch 6c (v219 item f): wall-clock ms this engine started, for the
+    // restart-aware relaunch below. Set once in start() alongside
+    // `started`; 0 means start() never ran (scan cannot run either).
+    @Volatile
+    private var startedMs = 0L
+
     private var appContext: Context? = null
 
     private val cooldowns =
@@ -188,8 +194,40 @@ object AdapterRecoveryEngine {
                                             snapshot
                                         )
 
+                                // Batch 6c (v219 item f): RESTART-AWARE
+                                // RELAUNCH. In the 2026-11-19 v219 session the
+                                // :survival publishers (PerformanceEngineService
+                                // engines: HEALTH/LAGFRAME/NETWINDOW/LOADSHED/
+                                // NETPROBE/MEMORY/LAGVERDICT/LAGRENDER) kept
+                                // publishing through C1/C2/C3 and died only with
+                                // the whole-app kill at ~17:01:10 — then the
+                                // main process came back (pid 27078, 17:01:13)
+                                // with this engine running, but no relaunch
+                                // happened within the logged 67 s: OFFLINE needs
+                                // a 120 s-stale heartbeat, so the first launch
+                                // could only fire ~17:03:10, past log end, and
+                                // the filter telemetry (perf_device.txt, read
+                                // by FilterEngine) stayed frozen meanwhile.
+                                // An adapter whose last heartbeat PREDATES this
+                                // engine's start died before this process did —
+                                // it is not a slow heartbeat, it is a known-dead
+                                // publisher set — so it is relaunched once it
+                                // crosses DEGRADED (30 s), not OFFLINE (120 s):
+                                // in the session that fires at the 17:01:43
+                                // scan instead of ~17:03:10. The steady-state
+                                // rule is unchanged (a live adapter heartbeats
+                                // within 30 s, so it never qualifies; the 120 s
+                                // OFFLINE threshold still governs adapters that
+                                // die while this process is running), and the
+                                // launch itself is unchanged (120 s cooldown,
+                                // activeLaunches guard; launching an
+                                // already-running service is a harmless
+                                // onStartCommand re-delivery per D31-5).
+                                val restartDead = startedMs > 0L &&
+                                    snapshot.lastHeartbeat < startedMs &&
+                                    status == "DEGRADED"
                                 if (
-                                    status == "OFFLINE"
+                                    status == "OFFLINE" || restartDead
                                 ) {
 
                                     offline++
@@ -288,6 +326,8 @@ object AdapterRecoveryEngine {
             return
 
         started = true
+        // Batch 6c (v219 item f): stamp the restart-aware relaunch clock.
+        startedMs = System.currentTimeMillis()
 
         appContext =
             context.applicationContext
