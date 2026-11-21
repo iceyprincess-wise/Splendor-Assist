@@ -53,8 +53,14 @@
 
         <!-- F37-D10: receiver for the capture-recovery prompt tap
              (com.assistant.REQUEST_PROJECTION). Previously no receiver
-             existed, so the tap did nothing. -->
-        <receiver android:name=".ProjectionRequestReceiver" android:exported="false">
+             existed, so the tap did nothing.
+             NAMESPACE TRAP (2026-11-21 crash loop): a relative name
+             resolves against the manifest namespace
+             (com.assistant.overlay), NOT the class package
+             (com.assistant) — the relative form pointed at a class
+             that does not exist and every recovery broadcast crashed
+             the process (ClassNotFoundException). Keep fully-qualified. -->
+        <receiver android:name="com.assistant.ProjectionRequestReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="com.assistant.REQUEST_PROJECTION" />
             </intent-filter>
