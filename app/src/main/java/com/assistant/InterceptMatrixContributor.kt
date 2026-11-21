@@ -132,11 +132,18 @@ object InterceptMatrixContributor : GameplayContributor {
             oppVy                = ovy,
             ballX                = frame.ballX,
             ballY                = frame.ballY,
-            // Ball velocity stays 0f: the matrix's lookAhead units (seconds
-            // vs frames) are unverified and the capture fps is unmeasured
-            // (Q67-6) — wiring px/s here would saturate the lead (QH-2).
-            ballVx               = 0f,
-            ballVy               = 0f,
+            // Queue item 11 (F1): the ball velocity is REAL now — the
+            // frame's dt-measured per-second velocity
+            // (PredictiveState.project). The matrix's lookAhead is a
+            // seconds horizon (0.14 s / 0.06 s, converted from the old
+            // 2.8f/1.2f frame counts at the 20 fps processed rate), so
+            // wiring px/s no longer saturates the lead (QH-2 resolved).
+            // isOpponentExecutingSkill stays false: no skill-move
+            // detector exists anywhere in the repo (only this call and
+            // the matrix mention skill) — the 0.06 s branch is
+            // unreachable until one is built (item 13).
+            ballVx               = frame.ballVelocityXPerSecond,
+            ballVy               = frame.ballVelocityYPerSecond,
             isOpponentExecutingSkill = false,
             // No68-H-D15: single dispatch — the matrix must not also offer
             // an emergency request; this contribution IS the dispatch path.

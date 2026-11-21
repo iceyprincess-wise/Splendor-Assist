@@ -99,6 +99,18 @@ object HybridOmnipotentMatrixEngine {
     // BALL_YV index consts removed — never written or read anywhere.
     @Volatile private var lastMatrixTimestamp = 0L
 
+    // Queue item 11 (F1): the lead horizons, in SECONDS. The 2.8f/1.2f
+    // they replace were FRAME counts from the per-frame era (the whole
+    // repo was per-frame then); the lateness batch converted TruePass /
+    // AutoEvade to per-second horizons the same way and left the matrix
+    // behind. 2.8 frames at the 20 fps processed rate = 0.14 s, 1.2
+    // frames = 0.06 s — a conversion, not a re-tune. The caller now
+    // passes per-second ball velocity (frame.ballVelocityXPerSecond,
+    // dt-measured by PredictiveState), so ball + v * horizon is the
+    // lead in px. The AGC caller passes 0,0 velocity and is unaffected.
+    private const val BALL_LEAD_HORIZON_SEC = 0.14f
+    private const val SKILL_LEAD_HORIZON_SEC = 0.06f
+
     fun computeGodspeedInterceptVector(
         myPlayerX:Float, myPlayerY:Float,
         oppPlayerX:Float, oppPlayerY:Float,
@@ -120,7 +132,10 @@ object HybridOmnipotentMatrixEngine {
         screenHeight:Float=com.assistant.vision.CameraProfile.captureHeightOrFallback()
     ): Long {
         val ballToOpp = hypot((ballX-oppPlayerX).toDouble(),(ballY-oppPlayerY).toDouble()).toFloat()
-        val lookAhead = if (isOpponentExecutingSkill) 1.2f else 2.8f
+        // Queue item 11 (F1): lookAhead is a TIME horizon in seconds
+        // (BALL_LEAD_HORIZON_SEC / SKILL_LEAD_HORIZON_SEC above) over the
+        // per-second ball velocity — the 2.8f/1.2f frame counts are gone.
+        val lookAhead = if (isOpponentExecutingSkill) SKILL_LEAD_HORIZON_SEC else BALL_LEAD_HORIZON_SEC
         val loose     = screenWidth * 0.045f
 
         val targetX: Float; val targetY: Float

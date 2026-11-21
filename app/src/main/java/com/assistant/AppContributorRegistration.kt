@@ -17,7 +17,7 @@ object AppContributorRegistration {
     // keep this count and EXPECTED_CONTRIBUTOR_NAMES in sync with the
     // listOf below; a stale count throws in check() and leaves the
     // registry EMPTY (proven by Ed's 2026-11-18 logs: 43 != 44, Gens 1-13).
-    const val EXPECTED_CONTRIBUTOR_COUNT = 56
+    const val EXPECTED_CONTRIBUTOR_COUNT = 57
 
     // HIGH: Completeness invariant - explicit set of expected names
     private val EXPECTED_CONTRIBUTOR_NAMES = setOf(
@@ -42,7 +42,11 @@ object AppContributorRegistration {
         // Batch midfield (queue item 5): MidfieldHold (hold the
         // controlled player on the midfield line when the midfield is
         // broken). Count 55 -> 56 with it.
-        "MidfieldHold"
+        "MidfieldHold",
+        // Queue item 11 (anticipation): Anticipation (pre-move to the
+        // predicted pass destination + cutback cover). Count 56 -> 57
+        // with it.
+        "Anticipation"
     )
 
     private val state = AtomicReference(RegistrationState.IDLE)
@@ -161,10 +165,11 @@ object AppContributorRegistration {
                         com.assistant.contributors.LegGapBlockerContributor,
                         com.assistant.contributors.BodyWeightPressContributor,
                         com.assistant.contributors.DecoyRunContributor,
-                        com.assistant.contributors.MidfieldHoldContributor
+                        com.assistant.contributors.MidfieldHoldContributor,
+                        com.assistant.contributors.AnticipationContributor
                     )
 
-                    // MEDIUM: Runtime assertion for 56-contributor contract
+                    // MEDIUM: Runtime assertion for 57-contributor contract
                     check(allContributors.size == EXPECTED_CONTRIBUTOR_COUNT) {
                         "CRITICAL: Hardcoded contributor list size (${allContributors.size}) != expected ($EXPECTED_CONTRIBUTOR_COUNT)"
                     }
