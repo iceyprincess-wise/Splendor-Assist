@@ -351,7 +351,7 @@ object FrameAssembler {
             entities = players.map { com.assistant.runtime.RuntimeEntity(it.id, it.x, it.y,
                 it.velocityX, it.velocityY, it.confidence, it.isUserTeam,
                 // B6: per-player px/s (SceneTracker / PlayerMotionProducer).
-                it.velocityXPerSecond, it.velocityYPerSecond) },
+                it.velocityXPerSecond, it.velocityYPerSecond, it.isGoalkeeper) },
             ownerId = world.ownership.takeIf { scene != null && it.hasOwner && it.confidence >= 0.2f }?.owner?.id,
             defenderId = world.defender.takeIf { scene != null && it.found }?.defender?.id,
             // L10: the learning-chain readout (see above).

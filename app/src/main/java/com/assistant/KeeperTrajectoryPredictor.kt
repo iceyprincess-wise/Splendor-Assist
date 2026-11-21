@@ -114,7 +114,15 @@ import kotlin.math.*
 // path where the keeper's position changes a decision.
 object KeeperTrajectoryPredictor {
 
-    private const val LOOK_AHEAD_FRAMES = 6f
+    // Item 12 (C2/K): the look-ahead horizon, now the single source of
+    // truth — SceneTracker used to hardcode 6f at its two feed sites.
+    const val LOOK_AHEAD_FRAMES = 6f
+
+    // Item 12 (C5): a prediction older than this is stale — without an
+    // expiry the last valid prediction was trusted indefinitely when
+    // vision stalled. 150 ms is 3 frames at the 20 fps processed rate
+    // (stated tuning).
+    const val PREDICTION_MAX_AGE_MS = 150L
 
     data class Prediction(
         val currentX: Float = 0f,
@@ -129,7 +137,10 @@ object KeeperTrajectoryPredictor {
         // False whenever the keeper was not seen on the feeding frame
         // (or never seen): the prediction is stale and consumers must
         // fall back to the current position.
-        val valid: Boolean = false
+        val valid: Boolean = false,
+        // Item 12 (C5): when this prediction was written, so
+        // interceptPosition() can expire it when vision stalls.
+        val updatedAtMs: Long = 0L
     )
 
     private var latest = Prediction()
@@ -142,7 +153,8 @@ object KeeperTrajectoryPredictor {
         predictedX: Float,
         predictedY: Float,
         speed: Float,
-        valid: Boolean = false
+        valid: Boolean = false,
+        updatedAtMs: Long = System.currentTimeMillis()
     ) {
         latest = Prediction(
             currentX,
@@ -152,7 +164,8 @@ object KeeperTrajectoryPredictor {
             predictedX,
             predictedY,
             speed,
-            valid
+            valid,
+            updatedAtMs
         )
     }
 
@@ -175,7 +188,13 @@ object KeeperTrajectoryPredictor {
      */
     fun interceptPosition(currentX: Float, currentY: Float): Pair<Float, Float> {
         val p = latest
-        return if (p.valid) p.predictedX to p.predictedY else currentX to currentY
+        // Item 12 (C5): expire a prediction the feeder has not refreshed
+        // — a stalled feed must fall back to the current position, not
+        // trust a point the keeper left frames ago.
+        val fresh = p.valid &&
+            p.updatedAtMs > 0L &&
+            System.currentTimeMillis() - p.updatedAtMs <= PREDICTION_MAX_AGE_MS
+        return if (fresh) p.predictedX to p.predictedY else currentX to currentY
     }
 }
 

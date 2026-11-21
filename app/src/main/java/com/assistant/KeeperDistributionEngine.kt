@@ -21,7 +21,12 @@ import kotlin.math.hypot
  *    the attack end.
  *  - HOLD: hard-pressed AND no upfield teammate exists — no safe
  *    distribution; the contributor stays silent (a hoofed ball to
- *    nobody is a turnover, and a held ball is not).
+ *    nobody is a turnover, and a held ball is not) — BUT only up to
+ *    HOLD_CLEAR_MS. Past that the keeper is stuck holding the ball
+ *    under pressure indefinitely (item 12 B8), so the engine clears
+ *    long upfield (KICK to a hoof point, no target entity). The 3 s
+ *    valve only fires after continuous HOLD; teammates reappearing
+ *    reset it.
  *
  * Honest mapping note: the app dispatches swipes, not buttons. A
  * throw vs a kick is expressed through the TARGET, exactly as a pass
@@ -47,7 +52,36 @@ object KeeperDistributionEngine {
     /** Opponent inside this of the keeper = hard-pressed. */
     const val PRESS_RADIUS_FRACTION_OF_WIDTH = 0.15f
 
+    // Item 12 (B8): HOLD expiry — a hoofed ball to nobody is a
+    // turnover, but a keeper holding the ball under pressure forever
+    // is worse. 3000 ms of continuous HOLD, then clear long. The clock
+    // resets whenever any other kind is chosen. Stated tuning.
+    private const val HOLD_CLEAR_MS = 3000L
+    @Volatile private var holdSinceMs: Long = 0L
+
     fun choose(frame: RuntimeFrame): KeeperDistributionDecision {
+        val decision = chooseInner(frame)
+        if (decision.kind != KeeperDistributionKind.HOLD) {
+            holdSinceMs = 0L
+            return decision
+        }
+        val now = System.currentTimeMillis()
+        if (holdSinceMs == 0L) holdSinceMs = now
+        if (now - holdSinceMs < HOLD_CLEAR_MS) return decision
+        holdSinceMs = 0L
+        // Clear long upfield along the KICK's attack axis (x * attack
+        // sign), mid-pitch height — a hoof with no target entity.
+        val attackSign = if (frame.attackDirection < 0) -1f else 1f
+        return KeeperDistributionDecision(
+            KeeperDistributionKind.KICK,
+            (frame.captureWidth * 0.5f + attackSign * frame.captureWidth * 0.4f)
+                .coerceIn(0f, frame.captureWidth),
+            (frame.captureHeight * 0.5f).coerceIn(0f, frame.captureHeight),
+            null
+        )
+    }
+
+    private fun chooseInner(frame: RuntimeFrame): KeeperDistributionDecision {
         val none = KeeperDistributionDecision(KeeperDistributionKind.NONE, 0f, 0f, null)
         if (!frame.trusted || !frame.hasBall) return none
         if (!frame.goalkeeperVisible) return none
@@ -56,7 +90,10 @@ object KeeperDistributionEngine {
         if (hypot(frame.ballX - frame.goalkeeperX, frame.ballY - frame.goalkeeperY) > reach) {
             return none
         }
-        val teammates = frame.entities.filter { it.teammate }
+        // Item 12 (F13): exclude the keeper himself — he is in
+        // frame.entities as a teammate, so the nearest "teammate" used
+        // to be his own position (distance 0) and THROW passed to him.
+        val teammates = frame.entities.filter { it.teammate && !it.isGoalkeeper }
         if (teammates.isEmpty()) {
             return KeeperDistributionDecision(KeeperDistributionKind.HOLD, 0f, 0f, null)
         }

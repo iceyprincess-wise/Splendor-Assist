@@ -178,7 +178,14 @@ object GoalkeeperActionRouter {
         // the action.
         val action: GoalkeeperAction =
             // Interception gate (restored): live read of the autoIntercept setting.
-            if (InterceptionRuntimeRegistry.armed && InterceptionRuntimeRegistry.autoIntercept && cross == CrossAction.PUNCH) {
+            // Item 12 (A7): the PUNCH gate used to pre-empt the whole
+            // matrix with no height or collision check, while CLAIM
+            // needed allowClaim and TOP claims prefer AERIAL (No66-D2).
+            // A TOP cross now falls through to the AERIAL arm, and a
+            // HIGH-collision cross no longer punches blind.
+            if (InterceptionRuntimeRegistry.armed && InterceptionRuntimeRegistry.autoIntercept && cross == CrossAction.PUNCH &&
+                decision.heightBand != HeightBand.TOP &&
+                CollisionAvoidanceEngine.allowClaim(collision)) {
                 GoalkeeperAction.PUNCH_CROSS
             } else if (InterceptionRuntimeRegistry.armed &&
                 InterceptionRuntimeRegistry.autoIntercept &&
@@ -209,31 +216,22 @@ object GoalkeeperActionRouter {
                     anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.BOTTOM && decision.normX > BOTTOM_DIVE_HIGH ->
                         GoalkeeperAction.DIVE_BOTTOM_RIGHT
 
-                    // No64-D24: the PANIC value is now read explicitly.
-                    // Behaviour-neutral: panicOverride (pri >= 150) already
-                    // implied anticipation == PANIC, and vice versa — the
-                    // conjunct only makes the read visible.
+                    // Item 12 (A14): panicSaves used to increment here,
+                    // on ROUTE — a cooling-dropped BLOCK still counted.
+                    // The increment lives at the accepted-offer site in
+                    // OmnipotentGoalkeeperEngine now (same pattern as the
+                    // REBOUND_SAVE increment there).
                     anticipation == AnticipationResult.PANIC &&
                         panicOverride &&
                         panic ==
-                        PanicAction.BLOCK_LEFT -> {
-                        GoalkeeperMetricsRegistry
-                            .panicSaves
-                            .incrementAndGet()
-
+                        PanicAction.BLOCK_LEFT ->
                         GoalkeeperAction.BLOCK_LEFT
-                    }
 
                     anticipation == AnticipationResult.PANIC &&
                         panicOverride &&
                         panic ==
-                        PanicAction.BLOCK_RIGHT -> {
-                        GoalkeeperMetricsRegistry
-                            .panicSaves
-                            .incrementAndGet()
-
+                        PanicAction.BLOCK_RIGHT ->
                         GoalkeeperAction.BLOCK_RIGHT
-                    }
 
                     panic ==
                         PanicAction.RUSH -> {
@@ -340,17 +338,16 @@ object GoalkeeperActionRouter {
                     // No66-D7: UNREACHABLE by the same shadowing as the
                     // post arms above (D17) — for anticipation==SAVE the
                     // matrix (plus the AERIAL arm) catches every band, so
-                    // this arm never fires and its panicSaves increment
-                    // never executes. Kept, behaviour-neutral (no64
+                    // this arm never fires. Kept, behaviour-neutral (no64
                     // precedent): OwnGoalAvoidanceEngine.evaluate's RISKY
                     // value therefore has no live routing effect — it is
                     // visible only in the GK_DECISION log line.
+                    // Item 12 (A14): the panicSaves increment that used
+                    // to sit here is removed with the BLOCK-arm ones — a
+                    // BLOCK is counted at accept in
+                    // OmnipotentGoalkeeperEngine, never at route.
                     safety == OwnGoalSafety.RISKY &&
                         anticipation == AnticipationResult.SAVE -> {
-                        GoalkeeperMetricsRegistry
-                            .panicSaves
-                            .incrementAndGet()
-
                         GoalkeeperAction.BLOCK_LEFT
                     }
 
@@ -360,9 +357,10 @@ object GoalkeeperActionRouter {
             }
 
         // No64-D22: the feedback counters increment only on a NEW episode
-        // (the returned action differs from the last routed action). The
-        // saveAttempts / panicSaves increments above are NOT feedback
-        // counters and stay per-route, as before.
+        // (the returned action differs from the last routed action).
+        // Item 12 (A14): there are no per-route saveAttempts /
+        // panicSaves increments left in this file — both counters moved
+        // to the accepted-offer site in OmnipotentGoalkeeperEngine.
         if (action != lastRoutedAction) {
             when (action) {
                 GoalkeeperAction.PUNCH_CROSS,

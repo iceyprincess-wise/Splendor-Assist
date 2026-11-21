@@ -113,12 +113,23 @@ object GoalkeeperExecutionEngine {
 
         // No64-D25 (F5): joystick-driven actions start on the trained
         // joystick centre, not on the fixed (0.50w, 0.72h) point — the old
-        // start touched no control. RUSH_OUT / CLAIM_CROSS / PUNCH_CROSS /
-        // AERIAL_CLAIM keep their current starts, as do JUMP_TOP_*,
-        // REBOUND_SAVE and the zero-length HOLD/TRACK/RECOVER vectors.
+        // start touched no control. Only the zero-length HOLD/TRACK/RECOVER
+        // vectors keep their (no-op) starts now — item 12 (C6) re-anchored
+        // JUMP_TOP_*, RUSH_OUT, CLAIM/PUNCH/AERIAL and REBOUND_SAVE too.
         // ControlMappingTrainer.joystickCenterX/Y() are the probed
         // constants (0.182, 0.648); a zero/unset centre falls back to the
         // engine's own start (the vector is left untouched).
+        //
+        // Item 12 (C6): that exclusion was the same defect in the other
+        // half — JUMP_TOP_* (the top-corner save, the stunning-shot
+        // family), RUSH_OUT, CLAIM/PUNCH/AERIAL and REBOUND_SAVE all
+        // start at the same off-control (0.50w, 0.72–0.82h) point, so
+        // their swipes could be dispatched yet touch no control. They
+        // are re-anchored here too. Ends are unchanged everywhere (the
+        // direction/height each action encodes). RushOutActionEngine's
+        // bias/adaptive start scaling is superseded by the anchor — it
+        // scaled a start that touched no control, so nothing live is
+        // lost; the rush END (0.20h) is untouched.
         return when (action) {
             GoalkeeperAction.DIVE_LEFT,
             GoalkeeperAction.DIVE_RIGHT,
@@ -130,7 +141,15 @@ object GoalkeeperExecutionEngine {
             GoalkeeperAction.REACH_RIGHT_CENTER,
             GoalkeeperAction.CATCH_CENTER,
             GoalkeeperAction.REFLEX_CENTER,
-            GoalkeeperAction.PARRY_BOTTOM_CENTER -> {
+            GoalkeeperAction.PARRY_BOTTOM_CENTER,
+            GoalkeeperAction.JUMP_TOP_LEFT,
+            GoalkeeperAction.JUMP_TOP_RIGHT,
+            GoalkeeperAction.JUMP_TOP_CENTER,
+            GoalkeeperAction.RUSH_OUT,
+            GoalkeeperAction.CLAIM_CROSS,
+            GoalkeeperAction.PUNCH_CROSS,
+            GoalkeeperAction.AERIAL_CLAIM,
+            GoalkeeperAction.REBOUND_SAVE -> {
                 val joyX = com.assistant.ControlMappingTrainer.joystickCenterX()
                 val joyY = com.assistant.ControlMappingTrainer.joystickCenterY()
                 if (joyX > 0f && joyY > 0f) {

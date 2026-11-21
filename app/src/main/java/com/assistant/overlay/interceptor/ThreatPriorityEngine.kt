@@ -40,7 +40,16 @@ object ThreatPriorityEngine {
         // LONG_BALL is trajectory-gated. Defaults to 0 (no trajectory)
         // so a caller without trajectory data gets CENTER, never a
         // long-ball claim it cannot support.
-        ballSpeedPxPerFrame: Float = 0f
+        ballSpeedPxPerFrame: Float = 0f,
+        // Item 12 (A4): predicted ball point (capture px) when a valid
+        // trajectory prediction exists. normX/heightBand then derive
+        // from the predicted impact point, not the current ball pixel,
+        // so a laterally moving shot is dived at where it will cross
+        // the line. Defaults preserve current-position behaviour for
+        // callers without a prediction.
+        predictedBallX: Float = 0f,
+        predictedBallY: Float = 0f,
+        hasBallPrediction: Boolean = false
     ): ThreatDecision {
         val direction = ShotDirectionEngine.detect(zone, threat, ballSpeedPxPerFrame)
 
@@ -52,13 +61,18 @@ object ThreatPriorityEngine {
         // and provably race-free.
         val outBuffer = FloatArray(3)
 
+        // Item 12 (A4): aim at the predicted point when one exists —
+        // priority is untouched (threat() does not use x/y for it).
+        val evalX = if (hasBallPrediction) predictedBallX.toInt() else x
+        val evalY = if (hasBallPrediction) predictedBallY.toInt() else y
+
         // Kotlin port (NativePorts.threat): no C threat function exists in app/src/main/cpp.
         com.assistant.NativePorts.threat(
             threat.score, zone.ordinal, direction.ordinal,
             InterceptionRuntimeRegistry.awareness, InterceptionRuntimeRegistry.prediction,
             GoalkeeperAdaptiveFeedbackEngine.interceptionBonus(),
             GoalkeeperAdaptiveFeedbackEngine.recoveryBonus(),
-            x, y, width, height, outBuffer
+            evalX, evalY, width, height, outBuffer
         )
 
         val priority = outBuffer[0].toInt()

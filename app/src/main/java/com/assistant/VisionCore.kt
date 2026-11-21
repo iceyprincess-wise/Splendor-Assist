@@ -171,7 +171,7 @@ ConfidenceHeatmap.update(ball.confidence)
 // better than dropping vision entirely). D1: capture is NOT slowed;
 // this path is strictly cheaper than full vision.
 if (MemoryCaptureGateEngine.shouldSkipFullVision()) {
-    val ballOnlyState = processBallOnly(filteredBlobs, ball)
+    val ballOnlyState = processBallOnly(filteredBlobs, ball, frame.width.toFloat(), frame.height.toFloat())
     reportVisionLatency(processStartedNanos)
     return ballOnlyState
 }
@@ -183,10 +183,13 @@ val goal =
 
 // L2 (batch 1): anchor the detected goal to its posts. The calibration
 // is stored in GoalPostCalibrationEngine.latest() for the keeper router.
+// Item 12 (C10): the blobs are in FRAME coordinates, so the
+// calibration must be checked against the frame's own size — the
+// 1650x720 fallback made a real frame's posts read outside-frame.
 GoalPostCalibrationEngine.calibrate(
     goal,
-    com.assistant.vision.CameraProfile.captureWidthOrFallback(),
-    com.assistant.vision.CameraProfile.captureHeightOrFallback()
+    frame.width.toFloat(),
+    frame.height.toFloat()
 )
 
 val field =
@@ -770,10 +773,15 @@ return state
 
     private fun processBallOnly(
         filteredBlobs: List<ConnectedComponentEngine.Blob>,
-        ball: BallDetectionResult
+        ball: BallDetectionResult,
+        // Item 12 (C10): the frame's own size — the ball-only path used
+        // the 1650x720 fallbacks, so the ball mode and the goal
+        // calibration were computed against a frame that does not exist.
+        frameWidth: Float,
+        frameHeight: Float
     ): GameStateSnapshot {
-        val width = com.assistant.vision.CameraProfile.captureWidthOrFallback()
-        val height = com.assistant.vision.CameraProfile.captureHeightOrFallback()
+        val width = frameWidth
+        val height = frameHeight
         val mode = BallOnlyDetector.modeFor(
             ball.x, width, AttackAxisModel.directionIfConfident()
         )

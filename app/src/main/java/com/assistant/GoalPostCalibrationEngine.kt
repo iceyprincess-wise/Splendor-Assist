@@ -64,6 +64,15 @@ object GoalPostCalibrationEngine {
     @Volatile private var latestCalibration = GoalPostCalibration(valid = false)
     @Volatile private var lastLogMs: Long = 0L
 
+    // Item 12 (C12): coast — a single missed frame used to overwrite a
+    // valid calibration with invalid, so anchoring flickered with
+    // detection noise. Keep the last valid calibration for up to
+    // COAST_VALID_MS after it was written; the fresh miss is still
+    // logged honestly below.
+    @Volatile private var lastValidCalibration = GoalPostCalibration(valid = false)
+    @Volatile private var lastValidMs: Long = 0L
+    private const val COAST_VALID_MS = 500L
+
     fun calibrate(
         detection: GoalDetectionResult,
         captureWidth: Float,
@@ -100,7 +109,20 @@ object GoalPostCalibrationEngine {
             goalEnd = end,
             confidence = detection.confidence.coerceIn(0f, 1f)
         )
-        latestCalibration = calibration
+        val nowMs = System.currentTimeMillis()
+        // Item 12 (C12): coast the last valid calibration (see header);
+        // the LOG below still prints the fresh miss with its reason.
+        val effective = when {
+            valid -> {
+                lastValidCalibration = calibration
+                lastValidMs = nowMs
+                calibration
+            }
+            lastValidCalibration.valid && nowMs - lastValidMs < COAST_VALID_MS ->
+                lastValidCalibration
+            else -> calibration
+        }
+        latestCalibration = effective
         try {
             val now = System.currentTimeMillis()
             if (now - lastLogMs >= 1000L) {
@@ -117,7 +139,7 @@ object GoalPostCalibrationEngine {
                 )
             }
         } catch (_: Throwable) { }
-        return calibration
+        return effective
     }
 
     fun latest(): GoalPostCalibration = latestCalibration

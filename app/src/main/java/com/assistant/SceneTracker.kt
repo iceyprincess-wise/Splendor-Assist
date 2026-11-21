@@ -186,11 +186,15 @@ object SceneTracker {
 
                 val keeper = trackedGoalkeeper!!
 
+                // Item 12 (C4): EMA-smooth the keeper velocity — the raw
+                // one-frame delta amplified 6x by the look-ahead turns
+                // one noisy detection into a 6x prediction jump. The
+                // 0.5/0.5 mix is stated tuning.
                 keeper.velocityX =
-                    state.goalkeeperX - keeper.x
+                    keeper.velocityX * 0.5f + (state.goalkeeperX - keeper.x) * 0.5f
 
                 keeper.velocityY =
-                    state.goalkeeperY - keeper.y
+                    keeper.velocityY * 0.5f + (state.goalkeeperY - keeper.y) * 0.5f
 
                 keeper.headingRadians =
                     kotlin.math.atan2(
@@ -255,6 +259,13 @@ object SceneTracker {
             }
         }
 
+        // Item 12 (C14): a coasted keeper's kinematics must not leak
+        // into the snapshot as if he were seen — readers that use X/Y
+        // without checking `visible` would steer on a stale keeper (up
+        // to 15 frames of coast). Zero them when invisible.
+        val gkVisible =
+            state.goalkeeperDetected && state.goalkeeperConfidence > 0f
+
         latest =
             SceneSnapshot(
                 frameNumber = frameCounter,
@@ -280,23 +291,22 @@ object SceneTracker {
 
                 trackedBallVisible = state.ballDetected,
 
-                goalkeeperVisible =
-                    state.goalkeeperDetected && state.goalkeeperConfidence > 0f,
+                goalkeeperVisible = gkVisible,
 
                 goalkeeperX =
-                    trackedGoalkeeper?.x ?: 0f,
+                    if (gkVisible) trackedGoalkeeper?.x ?: 0f else 0f,
 
                 goalkeeperY =
-                    trackedGoalkeeper?.y ?: 0f,
+                    if (gkVisible) trackedGoalkeeper?.y ?: 0f else 0f,
 
                 goalkeeperVelocityX =
-                    trackedGoalkeeper?.velocityX ?: 0f,
+                    if (gkVisible) trackedGoalkeeper?.velocityX ?: 0f else 0f,
 
                 goalkeeperVelocityY =
-                    trackedGoalkeeper?.velocityY ?: 0f,
+                    if (gkVisible) trackedGoalkeeper?.velocityY ?: 0f else 0f,
 
                 goalkeeperHeading =
-                    trackedGoalkeeper?.headingRadians ?: 0f,
+                    if (gkVisible) trackedGoalkeeper?.headingRadians ?: 0f else 0f,
 
                 goalDetected = state.goalDetected,
                 goalLeftX = state.goalLeftX,
@@ -331,8 +341,8 @@ object SceneTracker {
                 keeper.y,
                 keeper.velocityX,
                 keeper.velocityY,
-                keeper.x + keeper.velocityX * 6f,
-                keeper.y + keeper.velocityY * 6f,
+                keeper.x + keeper.velocityX * KeeperTrajectoryPredictor.LOOK_AHEAD_FRAMES,
+                keeper.y + keeper.velocityY * KeeperTrajectoryPredictor.LOOK_AHEAD_FRAMES,
                 hypot(keeper.velocityX, keeper.velocityY),
                 true
             )

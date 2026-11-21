@@ -104,10 +104,25 @@ object KeeperFeedbackContributor : GameplayContributor {
 
         // Use actual goalkeeper position when the detector has found one,
         // otherwise aim at ball position (intercepting path)
+        //
+        // Item 12 (B1): when the keeper is NOT visible, the old target
+        // was the ball itself — no range, threat or goal-line clamp, so
+        // a midfield ball dragged the keeper out of goal. Clamp the
+        // blind target into the goal area instead: X inside the goal
+        // span (calibrated posts when valid, else the 0.32–0.68 span),
+        // Y no higher than the six-yard top (0.75h). The keeper holds
+        // his line instead of chasing a ball he cannot see.
+        val w = if (frame.captureWidth > 0f) frame.captureWidth
+            else com.assistant.vision.CameraProfile.captureWidthOrFallback()
+        val h = if (frame.captureHeight > 0f) frame.captureHeight
+            else com.assistant.vision.CameraProfile.captureHeightOrFallback()
+        val posts = com.assistant.GoalPostCalibrationEngine.latest()
+        val spanLeft = if (posts.valid) posts.leftPostX else w * 0.32f
+        val spanRight = if (posts.valid) posts.rightPostX else w * 0.68f
         val targetX = if (frame.goalkeeperVisible && frame.goalkeeperX > 0f)
-            frame.goalkeeperX else frame.ballX.coerceAtLeast(0f)
+            frame.goalkeeperX else frame.ballX.coerceIn(spanLeft, spanRight)
         val targetY = if (frame.goalkeeperVisible && frame.goalkeeperY > 0f)
-            frame.goalkeeperY else frame.ballY.coerceAtLeast(0f)
+            frame.goalkeeperY else frame.ballY.coerceAtLeast(h * 0.75f)
 
         // Authority: scale with how much threat is present — but never require
         // defenderDensity >= 0.5f, which silenced the keeper on clean shots

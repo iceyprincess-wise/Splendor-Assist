@@ -37,7 +37,11 @@ data class RuntimeEntity(
     val id: Int, val x: Float, val y: Float,
     val velocityX: Float, val velocityY: Float,
     val confidence: Float, val teammate: Boolean,
-    val velocityXPerSecond: Float = 0f, val velocityYPerSecond: Float = 0f
+    val velocityXPerSecond: Float = 0f, val velocityYPerSecond: Float = 0f,
+    // Item 12 (F13): the keeper's own entity — set by FrameAssembler
+    // from TrackedPlayer.isGoalkeeper. Consumers that pick "a teammate"
+    // (distribution) must exclude him, or the keeper passes to himself.
+    val isGoalkeeper: Boolean = false
 )
 
 /** B4: one low-block movement target, addressed to a defender by id. */

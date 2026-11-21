@@ -95,9 +95,9 @@ import kotlin.math.*
 
 object GoalDetector {
 
-    // OMEGA FIX: Dynamic Wide Camera Scaling
-    // Expanded search region to rightmost 70% (0.30f fraction).
-    private const val GOAL_SCREEN_FRACTION = 0.30f
+    // OMEGA FIX: Dynamic Wide Camera Scaling — removed with the strip
+    // rule (item 12 C8): the goal box now comes from all white
+    // candidates, not the outer 30% strips.
     private const val MIN_GOAL_PIXELS = 15
 
     fun detect(
@@ -110,21 +110,25 @@ object GoalDetector {
 
         // Estimate screen width from the widest blob span seen this frame.
         val screenWidth = com.assistant.vision.CameraProfile.captureWidthOrFallback()
-        val goalRegionLeft = screenWidth * GOAL_SCREEN_FRACTION
 
-        // White blobs (goalposts/net) confined to the right goal region.
-        // This prevents white jerseys anywhere on screen from corrupting the box.
+        // Item 12 (C8/C9): the old strip rule only accepted goals jammed
+        // into the outer 30% strips (maxX < 0.30W or minX >= 0.70W) — a
+        // normal centred goal (posts ~0.32W/0.68W) matched neither side
+        // and read not-detected (581/605 in v220), and a single detected
+        // post read as a few-px-wide box ("width-too-narrow"). Take the
+        // box from ALL white candidates and require at least two blobs
+        // so one post alone cannot pose as a goal. The calibrator's
+        // width/frame checks downstream still bound the box (a stray
+        // white jersey widening it past 60% reads invalid, not
+        // fabricated).
         val candidates = blobs.filter {
             it.averageRed   > 220f &&
             it.averageGreen > 220f &&
-            it.averageBlue  > 220f &&
-            (it.minX.toFloat() >= goalRegionLeft || it.maxX < screenWidth * GOAL_SCREEN_FRACTION)
+            it.averageBlue  > 220f
         }
 
-        val leftCandidates = candidates.filter { it.maxX < screenWidth * GOAL_SCREEN_FRACTION }
-        val rightCandidates = candidates.filter { it.minX >= screenWidth * (1f - GOAL_SCREEN_FRACTION) }
-        val whiteBlobs = if (leftCandidates.sumOf { it.pixelCount } > rightCandidates.sumOf { it.pixelCount }) leftCandidates else rightCandidates
-        if (whiteBlobs.isEmpty()) {
+        val whiteBlobs = candidates
+        if (whiteBlobs.size < 2) {
             return GoalDetectionResult(false, 0f, 0f, 0f, 0f, 0f)
         }
 
@@ -135,7 +139,8 @@ object GoalDetector {
         val pixels = whiteBlobs.sumOf { it.pixelCount }
 
         return GoalDetectionResult(
-            detected   = pixels >= MIN_GOAL_PIXELS && right > left,
+            detected   = pixels >= MIN_GOAL_PIXELS && right > left &&
+                right - left >= screenWidth * 0.02f,
             leftX      = left,
             rightX     = right,
             topY       = top,

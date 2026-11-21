@@ -21,7 +21,12 @@ object NativePorts {
         var bias = 0
         if (zone == 4) bias = 1 else if (direction == 0) bias = 2 else if (direction == 1) bias = 3 else if (zone == 0) bias = 4 else if (zone == 1) bias = 5
         val offset = when (bias) { 2 -> -55f; 3 -> 55f; 4 -> -40f; 5 -> 40f; else -> 0f }
-        val valid = !(offset == 0f && bias != 0)
+        // Item 12 (B2): GOAL_AREA (bias 1) used to read invalid — offset
+        // 0 with bias != 0 — so KeeperBiasContributor returned null on
+        // the most dangerous zone and TIGHTEN_GOAL_AREA could never
+        // produce a bias contribution. A zero offset with a real bias is
+        // a hold at the ball position, not an invalid read.
+        val valid = !(offset == 0f && bias != 0 && bias != 1)
         var authority = priority / 150f
         if (authority < 0f) authority = 0f
         if (authority > 1f) authority = 1f
