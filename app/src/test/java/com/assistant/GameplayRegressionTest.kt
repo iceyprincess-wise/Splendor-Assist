@@ -8,13 +8,13 @@ import org.junit.Test
 
 class GameplayRegressionTest {
     @Before fun setUp() {
-        // No55-D4: BallPossessionEngine, SceneTracker and
-        // EntityAssociationEngine are stateful singletons with no reset
-        // before this round; the possession tests self-seeded with a
-        // compute(false) call and the snapshot test depended on an empty
-        // SceneTracker. Reset explicitly so JUnit's hash method order
-        // (not source order) can never flip a result.
-        BallPossessionEngine.reset()
+        // No55-D4: SceneTracker and EntityAssociationEngine are stateful
+        // singletons with no reset before this round; the snapshot test
+        // depended on an empty SceneTracker. Reset explicitly so JUnit's
+        // hash method order (not source order) can never flip a result.
+        // Item 15 (Letter B): BallPossessionEngine is stateless now (its
+        // possessionFrames/possessionChanged outputs were deleted), so
+        // its no53 reset() hook went with the state — nothing to reset.
         SceneTracker.reset()
         EntityAssociationEngine.reset()
     }
@@ -53,16 +53,29 @@ class GameplayRegressionTest {
         assertEquals(21f, tracks.first { !it.isUserTeam }.x, 0f)
     }
     @Test fun possessionSurvivesIndexReordering() {
+        // Item 15 (Letter B): the old asserts pinned possessionFrames /
+        // possessionChanged, which are deleted (no production reader).
+        // What this pins now is the surviving contract: possession follows
+        // the same owner across an index reorder.
         val p = player(10, true, 20f)
         BallPossessionEngine.compute(BallOwnershipResult(false))
-        BallPossessionEngine.compute(BallOwnershipResult(true, p, 0, 0f, 0.9f))
-        val second = BallPossessionEngine.compute(BallOwnershipResult(true, p, 1, 0f, 0.9f))
-        assertFalse(second.possessionChanged); assertEquals(2L, second.possessionFrames)
+        BallPossessionEngine.compute(BallOwnershipResult(true, p, 0, 0.9f))
+        val second = BallPossessionEngine.compute(BallOwnershipResult(true, p, 1, 0.9f))
+        assertTrue(second.hasPossession)
+        assertEquals(1, second.ownerIndex)
+        assertEquals(0.9f, second.confidence, 0f)
     }
     @Test fun possessionDetectsDifferentOwnerAtSameIndex() {
+        // Item 15 (Letter B): the old assert pinned possessionChanged,
+        // which is deleted. What this pins now is the surviving contract:
+        // a different owner at the same index is still a live possession
+        // with the new owner's index.
         BallPossessionEngine.compute(BallOwnershipResult(false))
-        BallPossessionEngine.compute(BallOwnershipResult(true, player(10, true, 20f), 0, 0f, 0.9f))
-        assertTrue(BallPossessionEngine.compute(BallOwnershipResult(true, player(11, true, 20f), 0, 0f, 0.9f)).possessionChanged)
+        BallPossessionEngine.compute(BallOwnershipResult(true, player(10, true, 20f), 0, 0.9f))
+        val third = BallPossessionEngine.compute(BallOwnershipResult(true, player(11, true, 20f), 0, 0.9f))
+        assertTrue(third.hasPossession)
+        assertEquals(0, third.ownerIndex)
+        assertEquals(0.9f, third.confidence, 0f)
     }
     @Test fun allNewEnginesRejectPanicAndUntrustedFrames() {
         val engines = listOf(DreadnoughtBumperEngine(), FormationsAnchorEngine(),

@@ -11,7 +11,7 @@ import com.assistant.diagnostic.RuntimeLogger
  * Owned exclusively by BoosterIgnition to prevent redeclaration conflicts.
  */
 enum class FleetLifecycleState {
-    COLD, PARTIAL, WARMING, READY, DEGRADED
+    COLD, WARMING, READY, DEGRADED
 }
 
 /*
@@ -73,13 +73,12 @@ object BoosterIgnition {
     }
 
     /**
-     * P1-B FIX: DashboardInjector calls this to get the current state for the
-     * live color-coded label.
-     */
-    fun currentState(): FleetLifecycleState = fleetState
-
-    /**
      * P1-B FIX: DashboardInjector calls this to get diagnostic snapshot data.
+     * Item 15 (Letter B): the old state accessor is deleted —
+     * zero callers; its doc comment claimed DashboardInjector called it,
+     * but the dashboard reads the state string via fleetSnapshot()["state"]
+     * (which it also needs for "ignited" and "fleetDegraded"), so
+     * fleetSnapshot() stays the single state surface.
      */
     fun fleetSnapshot(): Map<String, Any> = mapOf(
         "state" to fleetState.name,

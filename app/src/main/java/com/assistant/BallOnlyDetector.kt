@@ -9,11 +9,13 @@ package com.assistant
  * callers and no ball-only path existed to skip *to*.
  *
  * Contract: in = latest ball detection (+ goal / nearest players when the
- * mode asks for them); out = ball position + confidence + the mode that
- * produced it (`BallOnlyResult`); caller = VisionCore.process() on
- * CRITICAL (the first live caller of shouldSkipFullVision()); consumer =
- * BallTelemetryBridge (keeper scan + FrameAssembler trust path read the
- * published ball).
+ * mode asks for them); out = the mode that produced it (`BallOnlyMode`);
+ * caller = VisionCore.process() on CRITICAL (the first live caller of
+ * shouldSkipFullVision()); consumer = BallTelemetryBridge (keeper scan +
+ * FrameAssembler trust path read the published ball). Item 15 (Letter B):
+ * the old result struct + select() are deleted — the struct only
+ * echoed values already live through other paths, and the CRITICAL-memory
+ * diagnostic log now reads the locals directly in VisionCore.
  *
  * D3 (Ed, §5): the mode is ZONE-CONDITIONAL on ball position — the ball's
  * third along the attack axis (X: the goal sits at an X end) decides what
@@ -39,17 +41,6 @@ enum class BallOnlyMode {
     BALL_PLAYERS
 }
 
-data class BallOnlyResult(
-    val mode: BallOnlyMode,
-    val ballX: Float,
-    val ballY: Float,
-    val ballConfidence: Float,
-    val goalIncluded: Boolean,
-    val goalWidth: Float,
-    val playersIncluded: Boolean,
-    val nearestPlayerCount: Int
-)
-
 object BallOnlyDetector {
 
     /**
@@ -65,34 +56,5 @@ object BallOnlyDetector {
             else ballX > captureWidth * 2f / 3f
         if (opponentThird) return BallOnlyMode.BALL_PLAYERS
         return BallOnlyMode.BALL_ONLY
-    }
-
-    /**
-     * Selects what the ball-only path carries for this frame. Goal data is
-     * included only in BALL_GOAL mode, player data only in BALL_PLAYERS
-     * mode — a caller that passes goal/players in another mode gets them
-     * dropped, so the mode is the single authority on what was detected.
-     */
-    fun select(
-        ballX: Float,
-        ballY: Float,
-        ballConfidence: Float,
-        goalWidth: Float,
-        goalDetected: Boolean,
-        nearestPlayerCount: Int,
-        captureWidth: Float,
-        attackDirection: Int
-    ): BallOnlyResult {
-        val mode = modeFor(ballX, captureWidth, attackDirection)
-        return BallOnlyResult(
-            mode = mode,
-            ballX = ballX,
-            ballY = ballY,
-            ballConfidence = ballConfidence.coerceIn(0f, 1f),
-            goalIncluded = mode == BallOnlyMode.BALL_GOAL && goalDetected,
-            goalWidth = if (mode == BallOnlyMode.BALL_GOAL && goalDetected) goalWidth else 0f,
-            playersIncluded = mode == BallOnlyMode.BALL_PLAYERS,
-            nearestPlayerCount = if (mode == BallOnlyMode.BALL_PLAYERS) nearestPlayerCount.coerceAtLeast(0) else 0
-        )
     }
 }

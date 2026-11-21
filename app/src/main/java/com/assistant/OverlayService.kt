@@ -808,6 +808,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
         if (!visionInFlight.compareAndSet(true, false)) return
         val generation = visionGeneration.incrementAndGet()
         visionStuckHealArmed = false
+        // Item 15 (Letter B): the wedged generation's smoothed ball
+        // state belongs to the dead generation — its last position and
+        // coast budget must not pull the next generation's first
+        // detections toward a stale point. BallDetector.reset() is the
+        // production caller the no53 hook was waiting for.
+        try { BallDetector.reset() } catch (_: Throwable) { }
         val stuckMs = if (visionStartTimeMs > 0L) System.currentTimeMillis() - visionStartTimeMs else -1L
         try { RuntimeLogger.log("VISION_ABANDONED generation=$generation stage=$visionStage stageMs=${if (visionStageStartedMs > 0L) System.currentTimeMillis() - visionStageStartedMs else -1L} inFlightMs=$stuckMs busySkips=$visionBusySkips (wedged coroutine abandoned; next frame may start)", "OVERLAY") } catch (_: Throwable) {}
     }

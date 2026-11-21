@@ -802,12 +802,6 @@ return state
         } else {
             PlayerDetectionResult(false, 0, 0f, emptyList())
         }
-        val result = BallOnlyDetector.select(
-            ball.x, ball.y, ball.confidence,
-            goal.rightX - goal.leftX, goal.detected,
-            players.detections.size, width,
-            AttackAxisModel.directionIfConfident()
-        )
         val motion = MotionTracker.update(ball)
         BallTelemetryBridge.publish(ball)
         val state = GameStateFusion.fuse(
@@ -825,9 +819,9 @@ return state
             if (now - lastBallOnlyLogMs >= 1000L) {
                 lastBallOnlyLogMs = now
                 com.assistant.diagnostic.RuntimeLogger.log(
-                    "BALL_ONLY mode=${result.mode} ball=(${String.format("%.1f", result.ballX)}," +
-                        "${String.format("%.1f", result.ballY)}) goal=${result.goalIncluded} " +
-                        "players=${result.nearestPlayerCount}",
+                    "BALL_ONLY mode=${mode} ball=(${String.format("%.1f", ball.x)}," +
+                        "${String.format("%.1f", ball.y)}) goal=${mode == BallOnlyMode.BALL_GOAL && goal.detected} " +
+                        "players=${if (mode == BallOnlyMode.BALL_PLAYERS) players.detections.size else 0}",
                     "VISION"
                 )
             }

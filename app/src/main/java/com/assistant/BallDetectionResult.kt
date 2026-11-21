@@ -101,13 +101,7 @@ data class BallDetectionResult(
 
     val y: Float,
 
-    val radius: Float,
-
     val confidence: Float,
-
-    val searchPixels: Int,
-
-    val matchedPixels: Int,
     val observed: Boolean = detected
 
 )

@@ -104,18 +104,6 @@ object ButtonMappingEngine {
     const val TRAINED_JOY_NX = 0.182f
     const val TRAINED_JOY_NY = 0.648f
 
-    /** Anchor discrepancy, measured: the anchor y is this far above the true centre. */
-    const val ANCHOR_Y_ERROR_SOURCE_PX = 52f
-    const val ANCHOR_Y_ERROR_LANDSCAPE_PX = 21f
-
-    /** Landscape capture dims (x0.4 of the 1600x720 source). */
-    const val LANDSCAPE_CAPTURE_W = 640f
-    const val LANDSCAPE_CAPTURE_H = 288f
-
-    /** Portrait capture dims. */
-    const val PORTRAIT_CAPTURE_W = 288f
-    const val PORTRAIT_CAPTURE_H = 640f
-
     fun measured(button: Button): MeasuredButton =
         BUTTONS.first { it.button == button }
 
@@ -131,50 +119,6 @@ object ButtonMappingEngine {
             Orientation.PORTRAIT_CW -> Pair(1f - m.ny, m.nx)
             Orientation.PORTRAIT_CCW -> Pair(m.ny, 1f - m.nx)
         }
-    }
-
-    /**
-     * Centre in capture PIXELS for [orientation] given the live capture
-     * dims (w, h). Callers that already hold normalized coords should use
-     * [center] instead.
-     */
-    fun centerPx(button: Button, orientation: Orientation, w: Float, h: Float): Pair<Float, Float> {
-        val (nx, ny) = center(button, orientation)
-        return Pair(nx * w, ny * h)
-    }
-
-    /** Radius of [button] in pixels of the given capture space. */
-    fun radiusPx(button: Button, orientation: Orientation): Float {
-        val m = measured(button)
-        return when (orientation) {
-            Orientation.LANDSCAPE -> m.radiusSourcePx * 0.4f
-            // A portrait capture is the same physical pixels rotated:
-            // the radius in px is unchanged by the rotation.
-            Orientation.PORTRAIT_CW, Orientation.PORTRAIT_CCW -> m.radiusSourcePx * 0.4f
-        }
-    }
-
-    /**
-     * True when the normalized point (nx, ny) in [orientation] space lies
-     * inside [button]'s disc. Distances are compared in pixels (the
-     * normalized axes have different px scales).
-     */
-    fun contains(button: Button, orientation: Orientation, nx: Float, ny: Float, w: Float, h: Float): Boolean {
-        if (w <= 0f || h <= 0f) return false
-        val (cx, cy) = center(button, orientation)
-        val dx = (nx - cx) * w
-        val dy = (ny - cy) * h
-        val r = radiusPx(button, orientation)
-        return dx * dx + dy * dy <= r * r
-    }
-
-    /** Which orientation a live capture (w x h) is in, or null when unknown. */
-    fun orientationForCapture(w: Int, h: Int): Orientation? = when {
-        w <= 0 || h <= 0 -> null
-        w > h -> Orientation.LANDSCAPE
-        // Portrait: CW vs CCW is NOT recorded anywhere in-repo — the
-        // caller (or the Q-N6-1 probe) must supply it. Never guess.
-        else -> null
     }
 
     // ---- Q-N6-1 joystick probe hook ----

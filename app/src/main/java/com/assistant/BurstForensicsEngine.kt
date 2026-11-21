@@ -101,12 +101,10 @@ object BurstForensicsEngine {
     private val CALM_AFTER_MS: Long get() = 5000L
     private val DECAY_POLL_MS: Long get() = 2500L
 
-    @Volatile var state = "CALM"; private set
+    @Volatile private var state = "CALM"
     @Volatile private var decayRunning = false
     @Volatile private var lastLogMs = 0L
     private val recent = ArrayDeque<Long>()   // burst timestamps, last 60s
-
-    fun bursts60s(): Int = synchronized(this) { recent.size }
 
     @Synchronized
     fun record(frames: Int, worstMs: Float) {

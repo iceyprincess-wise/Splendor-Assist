@@ -68,8 +68,8 @@ class ObservedTacticsTest {
     @Test fun counterpressRequiresLossRatherThanTeammatePassOrRegain() {
         val scene=SceneSnapshot(ballVisible=true,confidence=0.8f)
         CounterPressRecognitionEngine.analyze(scene,BallPossessionResult(false),pressure(0.8f),1L)
-        assertFalse(CounterPressRecognitionEngine.analyze(scene,BallPossessionResult(true,possessionChanged=true),pressure(0.8f),2L).detected)
-        assertFalse(CounterPressRecognitionEngine.analyze(scene,BallPossessionResult(true,possessionChanged=true),pressure(0.8f),3L).detected)
+        assertFalse(CounterPressRecognitionEngine.analyze(scene,BallPossessionResult(true),pressure(0.8f),2L).detected)
+        assertFalse(CounterPressRecognitionEngine.analyze(scene,BallPossessionResult(true),pressure(0.8f),3L).detected)
         assertTrue(CounterPressRecognitionEngine.analyze(scene,BallPossessionResult(false),pressure(0.8f),4L).detected)
         // No54-D7: 900_000_004L is 900ms after the loss recorded at t=4
         // (900_000_000ns), not 900 seconds — outside the 800ms window, so

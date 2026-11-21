@@ -122,7 +122,6 @@ object BallOwnershipEngine {
                 hasOwner = false,
                 owner = closest.player,
                 ownerIndex = closest.index,
-                distanceToBall = closest.distance,
                 confidence = 0f
             )
         }
@@ -136,7 +135,6 @@ object BallOwnershipEngine {
             hasOwner = true,
             owner = closest.player,
             ownerIndex = closest.index,
-            distanceToBall = closest.distance,
             confidence = confidence
         )
     }

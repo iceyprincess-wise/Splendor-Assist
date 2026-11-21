@@ -110,10 +110,13 @@ object BallTrajectoryPredictor {
         // conservative values as before (velocity / speed zeroed on the
         // invalid frame, predicted = current). Readers that check it know
         // when the prediction is fresh vs stale.
-        val valid:Boolean=false,
-        // Batch-trajectory (A): true only on the frame the deflection
-        // was detected. The next frame re-anchors from the new velocity.
-        val deflectionDetected:Boolean=false
+        val valid:Boolean=false
+        // Item 15 (Letter B): the old deflection flag is gone.
+        // It carried no information beyond valid=false on the same
+        // frame, and no reader ever needed to distinguish "deflected"
+        // from "unobserved" — both mean "don't trust this prediction".
+        // MotionTracker's LOCAL deflection decision (zero the velocity,
+        // re-anchor) is untouched.
     )
 
     private var latest=Prediction()
@@ -126,8 +129,7 @@ object BallTrajectoryPredictor {
         predictedX:Float,
         predictedY:Float,
         speed:Float,
-        valid:Boolean=false,
-        deflectionDetected:Boolean=false
+        valid:Boolean=false
     ){
         latest=Prediction(
             currentX,
@@ -137,8 +139,7 @@ object BallTrajectoryPredictor {
             predictedX,
             predictedY,
             speed,
-            valid,
-            deflectionDetected
+            valid
         )
     }
 

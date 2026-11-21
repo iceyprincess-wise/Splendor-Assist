@@ -100,22 +100,23 @@ object BallDetector {
 
     private var lastBallX = 0f
     private var lastBallY = 0f
-    private var lastRadius = 0f
     private var lastConfidence = 0f
 
     private var initialized = false
     private var lostFrames = 0
 
     /**
-     * Test hook (no53 round): resets the smoothed ball state and the coast
-     * counter so unit tests start from a known state. No production caller
-     * uses it. Tests call it in @Before so JUnit's hash method order can
-     * never flip a result.
+     * Resets the smoothed ball state and the coast counter so unit tests
+     * start from a known state (no53 round). Production caller:
+     * OverlayService.abandonWedgedVision() — when a wedged vision
+     * generation is abandoned, the smoothed position and coast budget
+     * belong to the dead generation and must not pull the next one.
+     * Tests call it in @Before so JUnit's hash method order can never
+     * flip a result.
      */
     fun reset() {
         lastBallX = 0f
         lastBallY = 0f
-        lastRadius = 0f
         lastConfidence = 0f
         initialized = false
         lostFrames = 0
@@ -143,12 +144,10 @@ object BallDetector {
                 initialized = false
                 lastBallX = 0f
                 lastBallY = 0f
-                lastRadius = 0f
                 lastConfidence = 0f
                 return BallDetectionResult(
                     detected = false,
-                    x = 0f, y = 0f, radius = 0f, confidence = 0f,
-                    searchPixels = 0, matchedPixels = 0
+                    x = 0f, y = 0f, confidence = 0f
                 )
             }
             if (initialized) {
@@ -156,15 +155,13 @@ object BallDetector {
                 val coastConfidence = (lastConfidence * coastFraction).coerceIn(0f, 1f)
                 return BallDetectionResult(
                     detected = true,
-                    x = lastBallX, y = lastBallY, radius = lastRadius,
-                    confidence = coastConfidence, observed = false,
-                    searchPixels = 0, matchedPixels = 0
+                    x = lastBallX, y = lastBallY,
+                    confidence = coastConfidence, observed = false
                 )
             }
             return BallDetectionResult(
                 detected = false,
-                x = 0f, y = 0f, radius = 0f, confidence = 0f,
-                searchPixels = 0, matchedPixels = 0
+                x = 0f, y = 0f, confidence = 0f
             )
         }
 
@@ -185,12 +182,6 @@ object BallDetector {
             else
                 candidate.centerY
 
-        val filteredRadius =
-            if (initialized)
-                lastRadius * 0.45f + candidate.radius * 0.55f
-            else
-                candidate.radius
-
         val filteredConfidence =
             if (initialized)
                 lastConfidence * 0.40f + candidate.score * 0.60f
@@ -201,19 +192,13 @@ object BallDetector {
 
         lastBallX = filteredX
         lastBallY = filteredY
-        lastRadius = filteredRadius
         lastConfidence = filteredConfidence
-
-        val pixelArea = candidate.pixelCount.coerceAtLeast(0)
 
         return BallDetectionResult(
             detected = true,
             x = filteredX,
             y = filteredY,
-            radius = filteredRadius,
-            confidence = filteredConfidence.coerceIn(0f, 1f),
-            searchPixels = 0, // Search area is not supplied by candidate selection.
-            matchedPixels = pixelArea
+            confidence = filteredConfidence.coerceIn(0f, 1f)
         )
     }
 }

@@ -37,13 +37,6 @@ object BallTelemetryResync {
 
     enum class ResyncDecision { FRESH, RESYNCED, STALE }
 
-    data class ResyncOutcome(
-        val decision: ResyncDecision,
-        val ballX: Float,
-        val ballY: Float,
-        val ballAgeMs: Long
-    )
-
     @Volatile private var lastStaleLogMs = 0L
     @Volatile private var lastResyncLogMs = 0L
 
@@ -70,17 +63,27 @@ object BallTelemetryResync {
      * ball) when the telemetry slot is stale. Safe to call on every
      * scan: a fresh slot is a no-op, a stale slot with no fresh scene
      * ball logs BALL_STALE (throttled) and changes nothing.
+     *
+     * Item 15 (Letter B): returns Unit now — the old outcome
+     * struct was discarded at its only call site
+     * (OmnipotentGoalkeeperEngine:254) and every field duplicated a
+     * value the caller already held (FRESH = the slot ball, RESYNCED
+     * = the scene ball just written into the slot, STALE = the stale
+     * ball); both non-trivial outcomes are already logged here
+     * (BALL_STALE / BALL_RESYNC, throttled 60 s). The mutation —
+     * TelemetryCoordinator.updateBallMotion on RESYNCED — is untouched.
      */
-    fun resyncIfStale(nowMs: Long = System.currentTimeMillis()): ResyncOutcome {
+    fun resyncIfStale(nowMs: Long = System.currentTimeMillis()) {
         val telemetry = try { TelemetryRepository.current() } catch (_: Throwable) { null }
-            ?: return ResyncOutcome(ResyncDecision.STALE, 0f, 0f, Long.MAX_VALUE)
+            ?: return
         val ageMs = ballAgeMs(telemetry, nowMs)
         val scene = try { SceneTracker.current() } catch (_: Throwable) { null }
         val sceneFresh = scene != null && nowMs - scene.timestamp in 0L..MAX_BALL_AGE_MS
         val sceneVisible = scene?.trackedBallVisible == true
-        return when (decide(ageMs, sceneFresh, sceneVisible)) {
-            ResyncDecision.FRESH ->
-                ResyncOutcome(ResyncDecision.FRESH, telemetry.ballX, telemetry.ballY, ageMs)
+        when (decide(ageMs, sceneFresh, sceneVisible)) {
+            ResyncDecision.FRESH -> {
+                // Slot is fresh — nothing to do.
+            }
             ResyncDecision.STALE -> {
                 if (nowMs - lastStaleLogMs >= 60_000L) {
                     lastStaleLogMs = nowMs
@@ -91,7 +94,6 @@ object BallTelemetryResync {
                         )
                     } catch (_: Throwable) { }
                 }
-                ResyncOutcome(ResyncDecision.STALE, telemetry.ballX, telemetry.ballY, ageMs)
             }
             ResyncDecision.RESYNCED -> {
                 val s = scene!!
@@ -116,7 +118,6 @@ object BallTelemetryResync {
                         )
                     } catch (_: Throwable) { }
                 }
-                ResyncOutcome(ResyncDecision.RESYNCED, s.trackedBallX, s.trackedBallY, ageMs)
             }
         }
     }

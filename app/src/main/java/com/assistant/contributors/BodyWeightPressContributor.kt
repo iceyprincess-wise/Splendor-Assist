@@ -24,13 +24,36 @@ object BodyWeightPressContributor : GameplayContributor {
     override val engineName = "BodyWeightPress"
     override val capabilities = setOf(EngineCapability.DEFENSE)
 
+    // Item 15 (Letter B): lean-break diagnostics. BodyWeightWindow's
+    // closedReason + leanFrames had no production reader — the
+    // contributor only read .open/.presserId. The fields' documented
+    // purpose is "for the log / pins", so the contributor now logs the
+    // transition that ends a sustained lean (open -> closed): how many
+    // frames the lean held and why it broke. Transition-gated, so one
+    // line per lean at most — never per frame.
+    @Volatile private var wasOpen = false
+    @Volatile private var lastLeanFrames = 0
+
     override fun fastGate(frame: RuntimeFrame): Boolean =
         frame.trusted && !frame.hasBall
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || frame.hasBall) return null
         val window = BodyWeightPressEngine.window(frame)
-        if (!window.open) return null
+        if (!window.open) {
+            if (wasOpen) {
+                wasOpen = false
+                try {
+                    com.assistant.diagnostic.RuntimeLogger.log(
+                        "BODY_WEIGHT lean broke after ${lastLeanFrames}f: ${window.closedReason}",
+                        "BODY_WEIGHT"
+                    )
+                } catch (_: Throwable) { }
+            }
+            return null
+        }
+        wasOpen = true
+        lastLeanFrames = window.leanFrames
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.DEFEND,
@@ -44,6 +67,8 @@ object BodyWeightPressContributor : GameplayContributor {
     }
 
     override fun reset() {
+        wasOpen = false
+        lastLeanFrames = 0
         BodyWeightPressEngine.reset()
     }
 }

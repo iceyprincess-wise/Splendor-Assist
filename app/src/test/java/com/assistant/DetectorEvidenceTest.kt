@@ -55,12 +55,22 @@ class DetectorEvidenceTest {
         assertEquals(101.5f,second.detections.first().x,0f)
     }
     @Test fun candidateConfidenceDoesNotFabricatePixelMeasurements() {
-        val result = BallDetector.detect(BallCandidate(20f,20f,2f,17,1f,0.8f))
-        assertEquals(0,result.searchPixels); assertEquals(17,result.matchedPixels)
+        // Item 15 (Letter B): the old searchPixels/matchedPixels fields
+        // are deleted — searchPixels was permanently 0 (no search area
+        // exists) and matchedPixels duplicated the candidate's pixelCount.
+        // What this pins now is the honest remainder: a candidate above
+        // the confidence floor is a real detection with its measured
+        // position and confidence, and a null candidate is not observed.
+        val result = BallDetector.detect(BallCandidate(20f,20f,2f,17,0.8f))
+        assertTrue(result.detected)
+        assertEquals(20f, result.x, 0f)
+        assertEquals(20f, result.y, 0f)
+        assertEquals(0.8f, result.confidence, 0f)
+        assertTrue(result.observed)
         assertFalse(BallDetector.detect(null).observed)
     }
     @Test fun nanCandidateIsNotFreshDetection() {
-        assertFalse(BallDetector.detect(BallCandidate(Float.NaN,20f,2f,17,1f,0.8f)).observed)
+        assertFalse(BallDetector.detect(BallCandidate(Float.NaN,20f,2f,17,0.8f)).observed)
     }
 
     @Test fun scannerHonorsPaddingAndRgbPixelStride() {
@@ -91,12 +101,12 @@ class DetectorEvidenceTest {
         assertEquals(0,FrameScanner.scan(f).count)
     }
     @Test fun firstObservationAndReacquisitionDoNotCreatePhantomVelocity() {
-        MotionTracker.update(BallDetectionResult(false,0f,0f,0f,0f,0,0))
-        val first=MotionTracker.update(BallDetectionResult(true,100f,100f,2f,0.8f,0,0))
+        MotionTracker.update(BallDetectionResult(false,0f,0f,0f))
+        val first=MotionTracker.update(BallDetectionResult(true,100f,100f,0.8f))
         assertEquals(0f,first.speed)
-        assertTrue(MotionTracker.update(BallDetectionResult(true,110f,100f,2f,0.8f,0,0)).speed > 0f)
-        MotionTracker.update(BallDetectionResult(true,110f,100f,2f,0.3f,0,0,observed=false))
-        assertEquals(0f,MotionTracker.update(BallDetectionResult(true,200f,100f,2f,0.8f,0,0)).speed)
+        assertTrue(MotionTracker.update(BallDetectionResult(true,110f,100f,0.8f)).speed > 0f)
+        MotionTracker.update(BallDetectionResult(true,110f,100f,0.3f,observed=false))
+        assertEquals(0f,MotionTracker.update(BallDetectionResult(true,200f,100f,0.8f)).speed)
     }
     @Test fun whiteJerseyAreaDoesNotProvePitchGeometry() {
         val result=FieldLineDetector.detect(listOf(ConnectedComponentEngine.Blob(10,10,30,30,400,255f,255f,255f)))

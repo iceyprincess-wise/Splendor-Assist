@@ -145,7 +145,7 @@ object MotionTracker {
             initialized = false
             lastVx = 0f
             lastVy = 0f
-            BallTrajectoryPredictor.update(0f, 0f, 0f, 0f, 0f, 0f, 0f, false, false)
+            BallTrajectoryPredictor.update(0f, 0f, 0f, 0f, 0f, 0f, 0f, false)
 
             return MotionResult(
                 0f,
@@ -189,8 +189,7 @@ object MotionTracker {
                 ball.x,
                 ball.y,
                 0f,
-                false,
-                true
+                false
             )
 
             lastVx = vx
@@ -220,8 +219,7 @@ object MotionTracker {
             predictedX,
             predictedY,
             speed,
-            true,
-            false
+            true
         )
 
         lastVx = vx

@@ -95,49 +95,30 @@ import kotlin.math.*
 
 object BallPossessionEngine {
 
-    private var previousOwner = -1
-    private var possessionFrames = 0L
-
     /**
-     * Test hook (no53 round): resets the possession memory so unit tests
-     * start from a known state. No production caller uses it — in the
-     * live pipeline a lost-ownership frame resets the engine through
-     * compute() itself. Tests call it in @Before so JUnit's hash method
-     * order can never flip a result.
+     * Item 15 (Letter B): stateless since the old hold-duration outputs
+     * were deleted — no production reader ever consumed them (every live
+     * gate reads hasPossession / ownerIndex / confidence), and the
+     * change flag could not be wired into CounterPressRecognitionEngine:
+     * it fires on ANY owner change (including a gain or a swap), while
+     * the counter-press needs specifically a LOSS, which that engine
+     * already derives itself from hasPossession. The old owner-tracking
+     * state and the no53 reset() hook went with the fields — a pure
+     * function needs no reset.
      */
-    fun reset() {
-        previousOwner = -1
-        possessionFrames = 0L
-    }
-
     fun compute(
         ownership: BallOwnershipResult
     ): BallPossessionResult {
 
         if (!ownership.hasOwner || ownership.owner?.isUserTeam != true) {
-            previousOwner = -1
-            possessionFrames = 0L
-
             return BallPossessionResult(
                 hasPossession = false
             )
         }
 
-        val changed =
-            ownership.owner.id != previousOwner
-
-        if (changed) {
-            previousOwner = ownership.owner.id
-            possessionFrames = 1L
-        } else {
-            possessionFrames++
-        }
-
         return BallPossessionResult(
             hasPossession = true,
             ownerIndex = ownership.ownerIndex,
-            possessionFrames = possessionFrames,
-            possessionChanged = changed,
             confidence = ownership.confidence
         )
     }

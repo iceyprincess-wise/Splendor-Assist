@@ -276,7 +276,6 @@ object BallCandidateEngine {
                     centerY = (blob.minY + blob.maxY) * 0.5f,
                     radius = sqrt(pixels / Math.PI).toFloat(),
                     pixelCount = pixels,
-                    brightness = brightness,
                     score = score
                 )
 

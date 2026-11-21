@@ -93,7 +93,6 @@ object TrainedDetectionFusion {
             centerY = ball.centerY,
             radius = max(ball.width, ball.height) / 2f,
             pixelCount = 0, // Model box area is not a count of observed matching pixels.
-            brightness = 0f, // not measured by the trained path — never faked
             score = ball.confidence.coerceIn(0f, 1f)
         ).let {
             // radius is never zero: a degenerate box still needs a

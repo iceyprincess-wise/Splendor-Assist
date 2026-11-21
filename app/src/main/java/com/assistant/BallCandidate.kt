@@ -98,7 +98,6 @@ data class BallCandidate(
     val centerY: Float,
     val radius: Float,
     val pixelCount: Int,
-    val brightness: Float,
     val score: Float
 )
 
