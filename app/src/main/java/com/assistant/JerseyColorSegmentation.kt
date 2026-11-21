@@ -137,8 +137,9 @@ object JerseyColorSegmentation {
      *   FrameScanner gate, by design — the gate keeps kind!=1 pixels.
      *
      * ForegroundPixel.kind() delegates to this function, so the two
-     * live copies can never drift again. segment() below is DEAD (zero
-     * callers) and is deliberately NOT updated.
+     * live copies can never drift again. segment() was DELETED in
+     * item 13 (zero callers; its red->USER rule contradicted the 6a
+     * rules above) — do not revive as-is.
      */
     fun classify(
         red: Float,
@@ -170,75 +171,4 @@ object JerseyColorSegmentation {
                 )
         }
     }
-
-    fun segment(
-        frame: FrameNormalizer.NormalizedFrame
-    ): JerseySegmentationResult {
-
-        val buffer = frame.buffer
-        val width = frame.width
-        val height = frame.height
-
-        val stride = frame.rowStride
-
-        var userPixels = 0
-        var opponentPixels = 0
-        var goalkeeperPixels = 0
-
-        var y = 0
-
-        while (y < height) {
-
-            var x = 0
-
-            while (x < width) {
-
-                val index = y * stride + x * frame.pixelStride
-
-                if (index + 2 < buffer.limit()) {
-
-                    val r = buffer.get(index).toInt() and 0xFF
-                    val g = buffer.get(index + 1).toInt() and 0xFF
-                    val b = buffer.get(index + 2).toInt() and 0xFF
-
-                    if (r > g + 30 && r > b + 30) {
-                        userPixels++
-                    } else if (b > r + 30 && b > g + 30) {
-                        opponentPixels++
-                    } else if (g > r + 30 && g > b + 30) {
-                        goalkeeperPixels++
-                    }
-                }
-
-                x += 2
-            }
-
-            y += 2
-        }
-
-        val total =
-            userPixels +
-            opponentPixels +
-            goalkeeperPixels
-
-        return JerseySegmentationResult(
-
-            userPixels = userPixels,
-
-            opponentPixels = opponentPixels,
-
-            goalkeeperPixels = goalkeeperPixels,
-
-            confidence =
-                if (total == 0)
-                    0f
-                else
-                    (total / 1000f).coerceIn(0f,1f)
-
-        )
-    }
 }
-
-/* ========
-JerseySegmentationResult
-======== */

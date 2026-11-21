@@ -125,15 +125,12 @@ object KeeperTrajectoryPredictor {
     const val PREDICTION_MAX_AGE_MS = 150L
 
     data class Prediction(
-        val currentX: Float = 0f,
-        val currentY: Float = 0f,
         // px per FRAME — same unit as BallTrajectoryPredictor, so the
         // look-ahead multiplies by frames, never by a guessed fps.
         val velocityX: Float = 0f,
         val velocityY: Float = 0f,
         val predictedX: Float = 0f,
         val predictedY: Float = 0f,
-        val speed: Float = 0f,
         // False whenever the keeper was not seen on the feeding frame
         // (or never seen): the prediction is stale and consumers must
         // fall back to the current position.
@@ -146,38 +143,24 @@ object KeeperTrajectoryPredictor {
     private var latest = Prediction()
 
     fun update(
-        currentX: Float,
-        currentY: Float,
         velocityX: Float,
         velocityY: Float,
         predictedX: Float,
         predictedY: Float,
-        speed: Float,
         valid: Boolean = false,
         updatedAtMs: Long = System.currentTimeMillis()
     ) {
         latest = Prediction(
-            currentX,
-            currentY,
             velocityX,
             velocityY,
             predictedX,
             predictedY,
-            speed,
             valid,
             updatedAtMs
         )
     }
 
     fun current(): Prediction = latest
-
-    /**
-     * Test hook: resets the prediction to the never-seen state. No
-     * production caller uses it.
-     */
-    fun reset() {
-        latest = Prediction()
-    }
 
     /**
      * The position a save-path consumer should measure from: the

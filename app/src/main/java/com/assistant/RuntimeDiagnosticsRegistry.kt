@@ -107,33 +107,28 @@ object RuntimeDiagnosticsRegistry {
         // writer on that thread can change the state between claims).
         // Outside a cycle this always runs, exactly as before.
         if (!RefreshCycle.tryClaim("RuntimeDiagnosticsRegistry")) return
-        RuntimeOverlayHub.refresh()
-        VisionOverlayRegistry.refresh()
-        VisionDebugOverlay.refresh()
         RuntimeTuningPanel.reload()
 
         state = RuntimeDiagnosticsState(
             visionConfiguration = VisionConfigurationEngine.current(),
             trackingConfiguration = TrackingConfigurationEngine.current(),
-            runtimeOverlayHub = RuntimeOverlayHub.current(),
-            runtimeTuning = RuntimeTuningPanel.current(),
-            visionOverlay = VisionDebugOverlay.current(),
-            overlayRegistry = VisionOverlayRegistry.current()
+            runtimeTuning = RuntimeTuningPanel.current()
         )
     }
 
+    // Item 13 (half-effect): the hub calls are gone — the overlay
+    // toggles they enabled were deleted (no draw code ever read them),
+    // so enable/disable now just refresh the live snapshot.
     fun enableRuntimeDiagnostics() {
-        RuntimeOverlayHub.enableDiagnostics()
         refresh()
     }
 
     fun disableRuntimeDiagnostics() {
-        RuntimeOverlayHub.disableDiagnostics()
         refresh()
     }
 
     fun reset() {
-        RuntimeOverlayHub.reset()
+        RuntimeTuningPanel.reset()
         refresh()
     }
 }

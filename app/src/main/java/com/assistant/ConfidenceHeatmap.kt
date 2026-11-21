@@ -105,11 +105,12 @@ object ConfidenceHeatmap {
     }
 
     fun refresh(){
+        // Item 13 (half-effect): the state copy is gone — `enabled` was
+        // a dead config re-copy (confidenceHeatmapEnabled deleted) and
+        // `diagnostics` was a dead sub-snapshot (zero readers). refresh()
+        // now only runs the diagnostics refresh; confidence is written by
+        // update() unconditionally, as before.
         RuntimeDiagnosticsRegistry.refresh()
-        state = state.copy(
-            enabled = VisionConfigurationEngine.current().confidenceHeatmapEnabled,
-            diagnostics = RuntimeDiagnosticsRegistry.current()
-        )
     }
 }
 

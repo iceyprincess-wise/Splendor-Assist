@@ -100,14 +100,11 @@ object HybridResponseCompensationEngine {
         startY:Float,
         endX:Float,
         endY:Float,
-        duration:Long,
         strength:Int
     ): CompensationResult {
 
         val dx=endX-startX
         val dy=endY-startY
-
-        val distance=hypot(dx,dy)
 
         val worldState=
 
@@ -148,37 +145,14 @@ object HybridResponseCompensationEngine {
         val compensatedY =
             (endY + dy * predictiveFactor).coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback())
 
-        val durationScale=
-            (1f-(predictiveFactor*temporal.temporalConfidence))
-                .coerceIn(0.15f,1f)
-
-        val reducedDuration=
-            (duration*durationScale)
-                .toLong()
-                .coerceAtLeast(8L)
-
-        val confidence=
-            (
-                adaptiveConfidence+
-                temporal.temporalConfidence+
-                predictiveFactor
-            )/3f
-
-        val urgency=
-            (
-                (distance/8f)*
-                (1f+temporal.confidenceTrend)*
-                (1f+adaptationGain)
-            )
-                .toInt()
-                .coerceIn(0,100)
-
+        // Item 13: duration/confidence/urgency DELETED — computed every
+        // call and discarded by the only caller (it reads endX/endY
+        // only). The duration that reaches dispatch is the raw input
+        // through the boost/FrameDrop/tick-sync chain, never the
+        // reduced duration. Behaviour unchanged.
         return CompensationResult(
             compensatedX,
-            compensatedY,
-            reducedDuration,
-            confidence,
-            urgency
+            compensatedY
         )
     }
 }

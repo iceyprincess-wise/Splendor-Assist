@@ -10,8 +10,10 @@ import java.util.concurrent.atomic.AtomicLong
  * to re-run RuntimeDiagnosticsRegistry.refresh() 4-5x per cycle: once
  * directly, once via RuntimeVisualizationRegistry.refresh(), once via
  * FPSMonitor.refresh(), and once via ConfidenceHeatmap.refresh() — each
- * of those re-running RuntimeOverlayHub / VisionOverlayRegistry /
- * VisionDebugOverlay refreshes and a RuntimeTuningPanel reload. This
+ * of those re-running the diagnostics refresh and a
+ * RuntimeTuningPanel reload. (Item 13: the overlay-registry refreshes
+ * named here before — RuntimeOverlayHub / VisionOverlayRegistry /
+ * VisionDebugOverlay — are deleted with those registries.) This
  * object gives one coordinator refresh a shared cycle id: the first
  * refresh of each participant in a cycle runs, later claims in the
  * same cycle are skipped.

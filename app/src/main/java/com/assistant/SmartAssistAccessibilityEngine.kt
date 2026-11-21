@@ -254,7 +254,17 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 "actionId=${request.actionId} source=${request.source} phase=${request.phase} duration=$syncedDuration start=($screenStartX,$screenStartY) end=($screenEndX,$screenEndY)"
             )
 
-            FrameAssembler.current()?.takeIf { it.trusted }?.let { frame ->
+            // Queue item 13: the end-to-end leg's consume-frame hook.
+            // The trusted current frame is hoisted so the accepted branch
+            // below can record capture→execute latency for EVERY
+            // bus-consumed dispatch (RDL, keeper emergency, AGC legacy,
+            // OCR pipe, zero-latency) — SAAE:390 is the sole production
+            // consumer. Samples are consume-frame-based: the frame at
+            // consume time is not necessarily the frame that produced
+            // the request, so e2e understates the true capture→dispatch
+            // (see the ExecutionRequest.capturedAtNanos note in TRACE).
+            val dispatchFrame = FrameAssembler.current()?.takeIf { it.trusted }
+            dispatchFrame?.let { frame ->
                 ActionOutcomeVerifier.recordDispatch(request, frame)
             }
             val accepted = GestureExecutionAuthority.execute(
@@ -283,6 +293,14 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 releaseDispatch()
             } else {
                 recordDispatchForRate()
+                // Queue item 13: end-to-end latency — the ONLY record site
+                // now (RuntimeDecisionLoop's route-accept call is deleted
+                // in the same change, so each executed gesture records
+                // exactly once). e2e is capture→actual-gesture-dispatch
+                // (includes bus queue wait), the truer end-to-end.
+                dispatchFrame?.let {
+                    PipelineLatencyMonitor.recordDispatch(it.capturedAtNanos, System.nanoTime())
+                }
                 ControlMappingTrainer.recordDispatch(request.phase, request.duration)
             }
 

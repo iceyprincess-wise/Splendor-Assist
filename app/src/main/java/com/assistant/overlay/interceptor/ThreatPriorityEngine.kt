@@ -8,7 +8,12 @@ data class ThreatDecision(
     val direction: ShotDirection,
     val priority: Int,
     val heightBand: HeightBand = HeightBand.MID,
-    val normX: Float = 0.5f
+    val normX: Float = 0.5f,
+    // Queue item 13: true when the attacker is 1v1 with the keeper
+    // (PreShotRushEngine.shouldRush at the evaluate site — attacker
+    // <200px, in possession <60px, keeper not already closing). The
+    // SAVE-band RUSH arm reads it; all other callers default false.
+    val isOneVsOne: Boolean = false
 )
 
 // No64-D9: the single PANIC line (150) shared by the interceptor engines.
@@ -49,7 +54,11 @@ object ThreatPriorityEngine {
         // callers without a prediction.
         predictedBallX: Float = 0f,
         predictedBallY: Float = 0f,
-        hasBallPrediction: Boolean = false
+        hasBallPrediction: Boolean = false,
+        // Queue item 13: 1v1 flag for the SAVE-band router RUSH arm
+        // (see ThreatDecision.isOneVsOne). Defaults false — callers
+        // without attacker data never claim a 1v1.
+        isOneVsOne: Boolean = false
     ): ThreatDecision {
         val direction = ShotDirectionEngine.detect(zone, threat, ballSpeedPxPerFrame)
 
@@ -89,7 +98,8 @@ object ThreatPriorityEngine {
             direction = direction,
             priority = priority,
             heightBand = heightBand,
-            normX = normX
+            normX = normX,
+            isOneVsOne = isOneVsOne
         )
     }
 }

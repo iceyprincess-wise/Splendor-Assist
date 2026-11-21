@@ -206,6 +206,24 @@ object DashboardInjector {
                         .append(" skippedUndetected=").append(ballSnap["skippedUndetected"])
                         .append(" lastConfidence=").append(ballSnap["lastConfidence"])
                         .append(" lastUpdatedMs=").append(ballSnap["lastUpdatedMs"]).append("\n")
+                    // Item 13 (half-effect): the runtime snapshot states
+                    // (RuntimePerformanceState / RuntimeDiagnosticsState /
+                    // VisionLatencyMonitorState) were write-only — their
+                    // first reader. Point-in-time reads on the background
+                    // refresh thread, like the registries above.
+                    val perfSnap = com.assistant.RuntimePerformanceCoordinator.current()
+                    val diagSnap = com.assistant.RuntimeDiagnosticsRegistry.current()
+                    val latSnap = com.assistant.VisionLatencyMonitor.current()
+                    append("Runtime: fps=").append(perfSnap.fpsMonitor.fps)
+                        .append(" latencyMs=").append(latSnap.latencyMs)
+                        .append(" measured=").append(latSnap.hasMeasurement)
+                        .append(" latencyUpdatedMs=").append(latSnap.lastUpdatedMs)
+                        .append(" heat=").append(perfSnap.confidenceHeatmap.confidence)
+                        .append(" ts=").append(perfSnap.timestampMs).append("\n")
+                    append("Vision config: enabled=").append(diagSnap.visionConfiguration.enabled)
+                        .append(" blob=").append(diagSnap.visionConfiguration.blobThreshold)
+                        .append(" tflite=").append(diagSnap.visionConfiguration.trainedDetectionEnabled)
+                        .append(" trackingEnabled=").append(diagSnap.trackingConfiguration.enabled).append("\n")
                     // GER-D6 (batch 5): the last-accepted-contribution
                     // map was write-only — its first reader. Compact
                     // engine:action pairs (52 engines max, one line).

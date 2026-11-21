@@ -22,7 +22,6 @@ object GoalkeeperExecutionEngine {
             GoalkeeperAction.PUNCH_CROSS -> "CrossPunchActionEngine"
             GoalkeeperAction.RECOVER -> "HoldPositionActionEngine"
             GoalkeeperAction.TRACK -> "HoldPositionActionEngine"
-            GoalkeeperAction.HOLD -> "HoldPositionActionEngine"
             GoalkeeperAction.JUMP_TOP_CENTER -> "JumpTopCenterActionEngine"
             GoalkeeperAction.JUMP_TOP_LEFT -> "JumpTopLeftActionEngine"
             GoalkeeperAction.JUMP_TOP_RIGHT -> "JumpTopRightActionEngine"
@@ -75,9 +74,6 @@ object GoalkeeperExecutionEngine {
                 HoldPositionActionEngine.vector(width, height)
 
             GoalkeeperAction.TRACK ->
-                HoldPositionActionEngine.vector(width, height)
-
-            GoalkeeperAction.HOLD ->
                 HoldPositionActionEngine.vector(width, height)
 
             GoalkeeperAction.JUMP_TOP_CENTER ->

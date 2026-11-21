@@ -117,23 +117,10 @@ object VisionLatencyMonitor {
         )
     }
 
-    // No68-E2-D20: refresh() no longer re-runs the diagnostics-registry
-    // refresh — the full overlay/tuning refresh chain. All three call sites
-    // (RuntimePerformanceCoordinator.refresh,
-    // synchronizeRuntimePipeline, MainActivity
-    // .synchronizeApplicationRuntime) already refresh diagnostics first,
-    // so this was a redundant second (on the MainActivity path third)
-    // full refresh on every read.
-    // No68-E2-D21: update() and refresh() are @Synchronized so a refresh
-    // can no longer overwrite a concurrent latency write with the stale
-    // value it copied from.
-    @Synchronized
-    fun refresh() {
-        state = state.copy(
-            enabled = VisionConfigurationEngine.current().latencyMonitoringEnabled,
-            diagnostics = RuntimeDiagnosticsRegistry.current()
-        )
-    }
+    // Item 13 (half-effect): refresh() is gone — its only work was
+    // copying the dead `enabled` / `diagnostics` fields (deleted with
+    // VisionLatencyMonitorState's re-copies). The latency state needs no
+    // refresh: update() is the only writer and it writes unconditionally.
 }
 
 /* ========

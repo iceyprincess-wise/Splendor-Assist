@@ -337,17 +337,14 @@ object SceneTracker {
         val keeper = trackedGoalkeeper
         if (keeper != null && keeper.lastSeenFrame == frameCounter) {
             KeeperTrajectoryPredictor.update(
-                keeper.x,
-                keeper.y,
                 keeper.velocityX,
                 keeper.velocityY,
                 keeper.x + keeper.velocityX * KeeperTrajectoryPredictor.LOOK_AHEAD_FRAMES,
                 keeper.y + keeper.velocityY * KeeperTrajectoryPredictor.LOOK_AHEAD_FRAMES,
-                hypot(keeper.velocityX, keeper.velocityY),
                 true
             )
         } else {
-            KeeperTrajectoryPredictor.update(0f, 0f, 0f, 0f, 0f, 0f, 0f, false)
+            KeeperTrajectoryPredictor.update(0f, 0f, 0f, 0f, false)
         }
 
         latest

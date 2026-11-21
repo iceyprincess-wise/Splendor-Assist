@@ -147,5 +147,10 @@ object GoalPostCalibrationEngine {
     fun reset() {
         latestCalibration = GoalPostCalibration(valid = false)
         lastLogMs = 0L
+        // Queue item 13: the coast state survived reset — the first
+        // invalid calibrate() within 500 ms of the last valid write
+        // resurrected the stale valid calibration after a reset.
+        lastValidCalibration = GoalPostCalibration(valid = false)
+        lastValidMs = 0L
     }
 }

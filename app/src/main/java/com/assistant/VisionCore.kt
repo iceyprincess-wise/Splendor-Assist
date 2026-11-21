@@ -466,9 +466,7 @@ SceneTracker.update(
 
   val wingOverloadDetectionResult =
       WingOverloadDetectionEngine.compute(
-          scene,
-          occupancy,
-          pressure
+          scene
       )
 
   val centralOverloadDetectionResult =
@@ -790,7 +788,15 @@ return state
             GoalPostCalibrationEngine.calibrate(detected, width, height)
             detected
         } else {
-            GoalDetectionResult(false, 0f, 0f, 0f, 0f, 0f)
+            // Queue item 13: the ball-only path never called calibrate()
+            // outside BALL_GOAL mode, so latest() kept the previous
+            // calibration indefinitely (unbounded, not the 500 ms coast).
+            // Calibrate the not-detected result so the coast clock runs
+            // honestly: within 500 ms the last valid is still coasted,
+            // beyond it latest() goes invalid like the full-vision path.
+            val notDetected = GoalDetectionResult(false, 0f, 0f, 0f, 0f, 0f)
+            GoalPostCalibrationEngine.calibrate(notDetected, width, height)
+            notDetected
         }
         val players = if (mode == BallOnlyMode.BALL_PLAYERS) {
             PlayerDetector.detect(filteredBlobs)

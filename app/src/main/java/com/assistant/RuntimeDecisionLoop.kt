@@ -309,9 +309,12 @@ object RuntimeDecisionLoop {
         }
         if (accepted) {
             routed.incrementAndGet()
-            // Queue item 7 (F5): end-to-end latency measurement —
-            // capture→dispatch for this accepted dispatch.
-            PipelineLatencyMonitor.recordDispatch(frame.capturedAtNanos, System.nanoTime())
+            // Queue item 13: the route-accept recordDispatch call is
+            // DELETED — the end-to-end leg now records once per executed
+            // gesture at the consume site (SmartAssistAccessibilityEngine
+            // .executeDirectRequest), which covers every dispatch path
+            // (RDL's own accepted branch executed zero times in v220,
+            // so the leg never recorded). See PipelineLatencyMonitor.
             // L3 (batch 1): density telemetry at the dispatch decision.
             DensityTelemetryLogger.logDensity(
                 frame.defenderDensity,

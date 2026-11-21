@@ -95,18 +95,10 @@ import kotlin.math.*
 
 data class VisionConfiguration(
     val enabled:Boolean = true,
-    val debugOverlayEnabled:Boolean = false,
-    val boundingBoxOverlayEnabled:Boolean = false,
-    val confidenceHeatmapEnabled:Boolean = false,
-    val ballOverlayEnabled:Boolean = true,
-    val playerOverlayEnabled:Boolean = true,
-    val goalOverlayEnabled:Boolean = true,
     // No68-H-D42: the blob luminance threshold, previously hardcoded 0.50f
     // inside VisionPreprocessor.process() — now a config value (default
     // 0.50f, so default behaviour is unchanged).
     val blobThreshold:Float = 0.50f,
-    val latencyMonitoringEnabled:Boolean = true,
-    val fpsMonitoringEnabled:Boolean = true,
     // Queue item 21 (v3 TFLite detector): the trained-detection gate.
     // Default TRUE because file presence is the real opt-in — with no
     // model file placed the engine is MISSING_MODEL and behaviour is
@@ -125,6 +117,14 @@ data class VisionConfiguration(
     // zero readers and zero writers repo-wide (no overlay, monitor,
     // registry or engine ever read them), no positional constructions
     // and no copy() uses them, so deletion is source-safe.
+    // Item 13 (half-effect): the same deletion for the 8 overlay /
+    // monitor toggles (debugOverlayEnabled, boundingBoxOverlayEnabled,
+    // confidenceHeatmapEnabled, ballOverlayEnabled, playerOverlayEnabled,
+    // goalOverlayEnabled, latencyMonitoringEnabled, fpsMonitoringEnabled)
+    // — no draw code, monitor or engine ever read them; the only writers
+    // were enableAll/disableAll and the persistence seam, both removed
+    // with the fields. Behaviour is unchanged: the overlays were never
+    // drawn and the monitors update unconditionally.
 ) {
     init {
         require(blobThreshold in 0f..1f) { "blobThreshold must be in 0..1, was $blobThreshold" }

@@ -95,25 +95,12 @@ import kotlin.math.*
 
 object RuntimeVisualizationRegistry {
 
-    @Volatile
-    private var state = RuntimeVisualizationState()
-
-    fun current(): RuntimeVisualizationState = state
-
+    // Item 13 (half-effect): the state snapshot is gone
+    // (RuntimeVisualizationState deleted — write-only re-copy of the
+    // diagnostics registry). refresh() now only runs the leaf refreshes.
     fun refresh() {
         RuntimeDiagnosticsRegistry.refresh()
-        RuntimeOverlayHub.refresh()
-        VisionOverlayRegistry.refresh()
-        VisionDebugOverlay.refresh()
         RuntimeTuningPanel.reload()
-
-        state = RuntimeVisualizationState(
-            diagnostics = RuntimeDiagnosticsRegistry.current(),
-            overlayHub = RuntimeOverlayHub.current(),
-            overlayRegistry = VisionOverlayRegistry.current(),
-            visionOverlay = VisionDebugOverlay.current(),
-            runtimeTuning = RuntimeTuningPanel.current()
-        )
     }
 
     fun enableVisualization() {

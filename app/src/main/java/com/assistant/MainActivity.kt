@@ -28,8 +28,6 @@ import com.assistant.SmartAssistRepository
 import com.assistant.RuntimePerformanceCoordinator
 import com.assistant.RuntimeDiagnosticsRegistry
 import com.assistant.RuntimeVisualizationRegistry
-import com.assistant.RuntimeOverlayHub
-import com.assistant.VisionOverlayRegistry
 import com.assistant.FPSMonitor
 import com.assistant.VisionLatencyMonitor
 import com.assistant.ConfidenceHeatmap
@@ -177,10 +175,7 @@ class MainActivity : AppCompatActivity() {
         runCatching { RuntimePerformanceCoordinator.synchronizeRuntimePipeline() }
         runCatching { RuntimeDiagnosticsRegistry.refresh() }
         runCatching { RuntimeVisualizationRegistry.refresh() }
-        runCatching { VisionOverlayRegistry.enableAll() }
-        runCatching { RuntimeOverlayHub.enableDiagnostics() }
         runCatching { FPSMonitor.refresh() }
-        runCatching { VisionLatencyMonitor.refresh() }
         runCatching { ConfidenceHeatmap.refresh() }
     }
 

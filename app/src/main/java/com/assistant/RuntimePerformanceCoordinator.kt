@@ -137,20 +137,13 @@ object RuntimePerformanceCoordinator {
             RuntimeDiagnosticsRegistry.refresh()
             RuntimeVisualizationRegistry.refresh()
             FPSMonitor.refresh()
-            VisionLatencyMonitor.refresh()
             ConfidenceHeatmap.refresh()
 
             state = RuntimePerformanceState(
                 diagnostics = RuntimeDiagnosticsRegistry.current(),
-                visualization = RuntimeVisualizationRegistry.current(),
                 fpsMonitor = FPSMonitor.current(),
                 latencyMonitor = VisionLatencyMonitor.current(),
-                confidenceHeatmap = ConfidenceHeatmap.current(),
-                stutterSuppressionEnabled = true,
-                lagCompensationEnabled = true,
-                inputDelayReductionEnabled = true,
-                networkLatencyReductionEnabled = true,
-                fpsStabilizationEnabled = true
+                confidenceHeatmap = ConfidenceHeatmap.current()
             )
         } finally {
             RefreshCycle.end(cycle)
@@ -193,7 +186,6 @@ object RuntimePerformanceCoordinator {
             RuntimeVisualizationRegistry.refresh()
 
             FPSMonitor.refresh()
-            VisionLatencyMonitor.refresh()
             ConfidenceHeatmap.refresh()
 
             refresh()

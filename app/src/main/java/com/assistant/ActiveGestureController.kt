@@ -480,7 +480,6 @@ class ActiveGestureController(
                 startY,
                 endX,
                 endY,
-                duration,
                 strength
             )
 

@@ -14,7 +14,6 @@ import com.assistant.SmartAssistRepository
 import com.assistant.overlay.bridge.SmartAssistControlRoomBridge
 import com.assistant.RuntimePerformanceCoordinator
 import com.assistant.RuntimeVisualizationRegistry
-import com.assistant.RuntimeOverlayHub
 
 
 
@@ -194,19 +193,17 @@ setContentView(R.layout.activity_smartassist_control_room)
     private fun refreshEngineStatus() {
         // No66-D29: was six calls doing three idempotent jobs —
         // synchronizeExistingPerformanceEngines() just delegates to
-        // synchronizeRuntimePipeline(), enableVisualization() already
-        // enables diagnostics, and enableDiagnostics() already enables
-        // all overlays. Same end state, one call per job.
+        // synchronizeRuntimePipeline(), and enableVisualization()
+        // already enables diagnostics. Same end state, one call per job.
+        // Item 13 (half-effect): the enableDiagnostics() call is gone —
+        // the overlay toggles it enabled were deleted (no draw code ever
+        // read them), so there is nothing left to enable.
         runCatching {
             RuntimePerformanceCoordinator.synchronizeRuntimePipeline()
         }
 
         runCatching {
             RuntimeVisualizationRegistry.enableVisualization()
-        }
-
-        runCatching {
-            RuntimeOverlayHub.enableDiagnostics()
         }
     }
 

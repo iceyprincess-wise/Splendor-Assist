@@ -94,11 +94,7 @@ import kotlin.math.*
 
 
 data class VisionLatencyMonitorState(
-    val enabled:Boolean =
-        VisionConfigurationEngine.current().latencyMonitoringEnabled,
     val latencyMs:Float = 0f,
-    val diagnostics:RuntimeDiagnosticsState =
-        RuntimeDiagnosticsRegistry.current(),
     // No68-E2-D19: latencyMs == 0f used to be ambiguous — "0 ms latency"
     // or "never measured". hasMeasurement is false until update() has
     // received a real reading; lastUpdatedMs (0 = never) lets readers

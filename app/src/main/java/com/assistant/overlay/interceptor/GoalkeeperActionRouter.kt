@@ -10,7 +10,6 @@ enum class GoalkeeperAction {
     BLOCK_LEFT,
     BLOCK_RIGHT,
     RECOVER,
-    HOLD,
     DIVE_BOTTOM_LEFT,
     DIVE_BOTTOM_RIGHT,
     JUMP_TOP_CENTER,
@@ -258,6 +257,18 @@ object GoalkeeperActionRouter {
                     // RUSH_OUT below).
                     cross == CrossAction.CLAIM && decision.heightBand == HeightBand.TOP ->
                         GoalkeeperAction.AERIAL_CLAIM
+
+                    // Queue item 13: SAVE-band 1v1 rush — the defensive
+                    // layer rushes pre-shot, but a 1v1 that reaches the
+                    // shot evaluation without a rush (layer throttled,
+                    // attacker closed late) still waited for the shot.
+                    // decision.isOneVsOne is PreShotRushEngine.shouldRush
+                    // at the evaluate site, so the ball is still with
+                    // the attacker. SAVE band only ([100,150)): at PANIC
+                    // the panic arm already rushes, and below 100 the
+                    // INTERCEPT arm owns RUSH_OUT.
+                    decision.isOneVsOne && decision.priority >= 100 && decision.priority < PANIC_PRIORITY_THRESHOLD ->
+                        GoalkeeperAction.RUSH_OUT
 
                     // PRECISE 2D GOALMOUTH COVERAGE MATRIX
                     anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.TOP && decision.normX < MATRIX_SPLIT_LOW ->

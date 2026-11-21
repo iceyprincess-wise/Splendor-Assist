@@ -60,7 +60,7 @@ object OmnipotentGoalkeeperEngine {
     ): Boolean {
         if (!com.assistant.VisionTrust.isGameForeground() || !com.assistant.SmartAssistRepository.enabled() || !GoalkeeperRuntimeState.enabled) return false
         val now = System.currentTimeMillis()
-        if (now - lastGkLayerTimestamp < 8L) return false // BEAST MODE: 120Hz reaction throttle for 0.00ms threat response
+        if (now - lastGkLayerTimestamp < 8L) return false // 8 ms minimum inter-call gap (~0.16 of a 50 ms processed frame at 20 fps; binds only on same-frame re-entry, not a display cadence)
         lastGkLayerTimestamp = now
 
         // FABRICATED-THREAT GATE: Require valid detected positions
@@ -159,6 +159,26 @@ object OmnipotentGoalkeeperEngine {
         return false
     }
 
+    // Queue item 13: the nearest live opponent to the ball (same query
+    // runPreShotRushIfNeeded uses) — shared by the pre-shot rush and
+    // the SAVE-band router RUSH arm, so both read the same 1v1.
+    private fun nearestAttackerToBall(
+        ballX: Float,
+        ballY: Float,
+        scene: com.assistant.SceneSnapshot?
+    ): com.assistant.TrackedPlayer? {
+        if (scene == null) return null
+        var best: com.assistant.TrackedPlayer? = null
+        var bestDist = Float.MAX_VALUE
+        for (p in scene.trackedPlayers) {
+            if (p.isUserTeam || p.isGoalkeeper) continue
+            if (p.lastSeenFrame != scene.frameNumber) continue
+            val d = kotlin.math.hypot(p.x - ballX, p.y - ballY)
+            if (d < bestDist) { bestDist = d; best = p }
+        }
+        return best
+    }
+
     // Item 12 (12a) — PRE-SHOT 1v1 rush. Runs every frame on real
     // tracked positions (keeper + nearest opponent to the ball + ball),
     // with NO gauge input: the keeper must close on a 1v1 attacker
@@ -173,15 +193,7 @@ object OmnipotentGoalkeeperEngine {
         if (!hasRealGk) return
         if (t.ballX == 0f && t.ballY == 0f) return
         val scene = try { com.assistant.SceneTracker.current() } catch (_: Throwable) { null } ?: return
-        var best: com.assistant.TrackedPlayer? = null
-        var bestDist = Float.MAX_VALUE
-        for (p in scene.trackedPlayers) {
-            if (p.isUserTeam || p.isGoalkeeper) continue
-            if (p.lastSeenFrame != scene.frameNumber) continue
-            val d = kotlin.math.hypot(p.x - t.ballX, p.y - t.ballY)
-            if (d < bestDist) { bestDist = d; best = p }
-        }
-        val attacker = best ?: return
+        val attacker = nearestAttackerToBall(t.ballX, t.ballY, scene) ?: return
         // Keeper velocity is per-frame in the predictor — the same unit
         // PreShotRushEngine takes, so no fps is guessed.
         val pred = try { com.assistant.KeeperTrajectoryPredictor.current() } catch (_: Throwable) { null }
@@ -403,6 +415,18 @@ object OmnipotentGoalkeeperEngine {
             // heightBand aim at where the ball will cross the line,
             // not where it is now. The prediction is read once here.
             val ballPrediction = com.assistant.BallTrajectoryPredictor.current()
+            // Queue item 13: the 1v1 flag for the SAVE-band router RUSH
+            // arm — the same PreShotRushEngine test the pre-shot rush
+            // uses, so the router only rushes when the attacker still
+            // has the ball (a shot already in flight fails the
+            // possession check and dives instead).
+            val rushAttacker = nearestAttackerToBall(p10Tele.ballX, p10Tele.ballY, p10Scene)
+            val rushPred = try { com.assistant.KeeperTrajectoryPredictor.current() } catch (_: Throwable) { null }
+            val isOneVsOne = rushAttacker != null && PreShotRushEngine.shouldRush(
+                p10Tele.goalkeeperX, p10Tele.goalkeeperY,
+                rushPred?.velocityX ?: 0f, rushPred?.velocityY ?: 0f,
+                rushAttacker.x, rushAttacker.y, p10Tele.ballX, p10Tele.ballY
+            )
             val decision = ThreatPriorityEngine.evaluate(
                 detectedThreat,
                 ballZone,
@@ -415,7 +439,8 @@ object OmnipotentGoalkeeperEngine {
                 ballPrediction.speed,
                 ballPrediction.predictedX,
                 ballPrediction.predictedY,
-                ballPrediction.valid
+                ballPrediction.valid,
+                isOneVsOne
             )
 
             GoalkeeperDecisionRegistry.latestDecision = decision
@@ -486,7 +511,7 @@ object OmnipotentGoalkeeperEngine {
 
     private fun evaluateOpponentShotTrajectory(decision: ThreatDecision) {
         val now = System.currentTimeMillis()
-        if (now - lastShotEvaluationTimestamp < 8L) return // BEAST MODE: 120Hz evaluation throttle for instant rebound/shot reaction
+        if (now - lastShotEvaluationTimestamp < 8L) return // 8 ms minimum inter-call gap (~0.16 of a 50 ms processed frame at 20 fps; binds only on same-frame re-entry, not a display cadence)
         lastShotEvaluationTimestamp = now
 
         // Reaction speed control: a higher reaction value keeps the keeper
@@ -690,6 +715,34 @@ object OmnipotentGoalkeeperEngine {
                     executionCoordinates[1] = (vector[1] + positioningBias).coerceIn(0f, screenHeightBase)
                     executionCoordinates[2] = vector[2]
                     executionCoordinates[3] = (vector[3] + positioningBias).coerceIn(0f, screenHeightBase)
+
+                    // Queue item 13 (dive-end coverage): a dive's end is a
+                    // fixed screen point, so a laterally moving shot was
+                    // dived at where the fixed end sits, not where the ball
+                    // will cross the line. When the ball is predicted
+                    // goal-bound with a valid prediction, re-aim the dive
+                    // end X at the predicted crossing, clamped to the goal
+                    // span (0.32–0.68w fallback when the scene has no
+                    // posts). End Y keeps the dive's height band. The
+                    // reach-refusal gate is NOT built here: no dive-reach
+                    // constant exists in the repo — it needs a measured
+                    // dive-travel distance or Ed's number (queued).
+                    if (finalAction == GoalkeeperAction.DIVE_LEFT ||
+                        finalAction == GoalkeeperAction.DIVE_RIGHT ||
+                        finalAction == GoalkeeperAction.DIVE_BOTTOM_LEFT ||
+                        finalAction == GoalkeeperAction.DIVE_BOTTOM_RIGHT
+                    ) {
+                        if (goalBound && ballPred.valid) {
+                            val spanLeft =
+                                if (goalScene?.goalDetected == true) goalScene.goalLeftX
+                                else screenWidthBase * GoalBoundBallEngine.GOAL_AREA_LEFT_FRACTION
+                            val spanRight =
+                                if (goalScene?.goalDetected == true) goalScene.goalRightX
+                                else screenWidthBase * GoalBoundBallEngine.GOAL_AREA_RIGHT_FRACTION
+                            executionCoordinates[2] =
+                                ballPred.predictedX.coerceIn(spanLeft, spanRight)
+                        }
+                    }
 
                     ContributionRegistry.offer(
                         ExecutionRequest(

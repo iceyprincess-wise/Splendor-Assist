@@ -111,11 +111,12 @@ object FPSMonitor {
 
     @Synchronized
     fun refresh(){
+        // Item 13 (half-effect): the state copy is gone — `enabled` was
+        // a dead config re-copy (fpsMonitoringEnabled deleted) and
+        // `diagnostics` was a dead sub-snapshot (zero readers). refresh()
+        // now only runs the diagnostics refresh; fps is written by
+        // update() unconditionally, as before.
         RuntimeDiagnosticsRegistry.refresh()
-        state = state.copy(
-            enabled = VisionConfigurationEngine.current().fpsMonitoringEnabled,
-            diagnostics = RuntimeDiagnosticsRegistry.current()
-        )
     }
 }
 

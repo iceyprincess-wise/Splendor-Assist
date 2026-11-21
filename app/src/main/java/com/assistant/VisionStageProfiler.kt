@@ -15,9 +15,12 @@ package com.assistant
  * stage durations → DECISION slow (>100 ms, already logged by the
  * caller) / stuck (>1000 ms, logged here) / periodic summary →
  * MUTATION per-stage last/max/count + throttled summary lines →
- * CONSUMER the heal log + RuntimeSelfHealEngine (the next VISION_STUCK
- * line names the stage) → LIVE EFFECT the next wedged-coroutine log
- * names its blocking stage instead of only counting VISION_BUSY_SKIPs.
+ * CONSUMER the heal log (the next VISION_STUCK line names the stage)
+ * → LIVE EFFECT the next wedged-coroutine log names its blocking
+ * stage instead of only counting VISION_BUSY_SKIPs. (Item 13: the
+ * old header named a self-heal engine as a consumer — it is not;
+ * zero occurrences of this profiler in that engine. The log is the
+ * only consumer.)
  *
  * Class: diagnostic producer — it only measures. It never touches
  * visionInFlight, the generation, or any dispatch. Log volume is
@@ -75,7 +78,14 @@ object VisionStageProfiler {
             }
             if (nowMs - lastSummaryMs >= SUMMARY_INTERVAL_MS) {
                 lastSummaryMs = nowMs
-                summary = snapshotLine()
+                // Item 13 (half-effect): snapshotLine() inlined — it was
+                // a dead public fn (zero callers) whose only use was this
+                // summary. Same line, built inline; lastMs()/snapshot()
+                // are deleted (zero callers, no test/diagnostics reader).
+                summary = if (stats.isEmpty()) "VISION_STAGE (no stages recorded)"
+                else "VISION_STAGE " + stats.entries.joinToString(" ") { (name, s) ->
+                    "$name=${s.lastMs}ms(max=${s.maxMs}ms,n=${s.count})"
+                }
             }
         }
         if (stuck) {
@@ -93,18 +103,4 @@ object VisionStageProfiler {
         }
     }
 
-    /** One line naming every stage's last duration: `VISION_STAGE dedup=2ms ...`. */
-    fun snapshotLine(): String = synchronized(lock) {
-        if (stats.isEmpty()) return "VISION_STAGE (no stages recorded)"
-        val parts = stats.entries.joinToString(" ") { (name, s) ->
-            "$name=${s.lastMs}ms(max=${s.maxMs}ms,n=${s.count})"
-        }
-        "VISION_STAGE $parts"
-    }
-
-    /** Last recorded duration for one stage, or null when never recorded. */
-    fun lastMs(stage: String): Long? = synchronized(lock) { stats[stage]?.lastMs }
-
-    /** Full per-stage copy for tests / diagnostics readers. */
-    fun snapshot(): Map<String, StageStats> = synchronized(lock) { LinkedHashMap(stats) }
 }
