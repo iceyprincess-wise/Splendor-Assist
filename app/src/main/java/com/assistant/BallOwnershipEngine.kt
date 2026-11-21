@@ -95,7 +95,10 @@ import kotlin.math.*
 
 object BallOwnershipEngine {
 
-    private const val MAX_OWNERSHIP_DISTANCE = 60f
+    // Queue item 10: visibility widened (was private) so
+    // WingBlockContributor reuses this possession rule instead of
+    // duplicating the 60 px literal. Value unchanged.
+    const val MAX_OWNERSHIP_DISTANCE = 60f
 
     fun compute(
         ball: BallDetectionResult,
