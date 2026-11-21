@@ -53,12 +53,8 @@ object AdapterStatusRegistry {
 
     // AHC-D2 (batch 5): same shared lock. The render takes the shared
     // `now` so a combined read stamps ledger and counts identically.
-    fun snapshot(): String {
-        synchronized(AdapterHealthLock.lock) {
-            return renderSnapshot(System.currentTimeMillis())
-        }
-    }
-
+    // Item 44 (letter A): snapshot() deleted — zero callers; the live
+    // path is combinedSnapshot() through renderSnapshot().
     internal fun renderSnapshot(now: Long): String {
         adapters.entries.removeIf { now - it.value.updatedAtMs > STALE_AFTER_MS }
 

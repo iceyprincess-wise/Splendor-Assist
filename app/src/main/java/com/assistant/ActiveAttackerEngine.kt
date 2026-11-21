@@ -94,10 +94,15 @@ import kotlin.math.hypot
 
 
 object ActiveAttackerEngine{
-  data class AttackerActivationDiagnostics(val totalComputes:Long,val lastConfidence:Float,val lastTargetX:Float,val lastTargetY:Float,val lastUpdatedMs:Long)
-  @Volatile private var computeCalls=0L;@Volatile private var lastConfidence=0f
-  @Volatile private var lastTargetX=0f;@Volatile private var lastTargetY=0f;@Volatile private var lastUpdatedMs=0L
-  @Synchronized fun getAttackerDiagnostics()=AttackerActivationDiagnostics(computeCalls,lastConfidence,lastTargetX,lastTargetY,lastUpdatedMs)
+
+  // Letter A item 8: getAttackerDiagnostics() and its
+  // AttackerActivationDiagnostics surface deleted — zero callers, so
+  // the five diagnostics fields (totalComputes, lastConfidence,
+  // lastTargetX, lastTargetY, lastUpdatedMs) were written and never
+  // read. The per-compute counter writes inside the 5-arg overload go
+  // with them. The 5-arg overload itself is NOT deleted: it is the
+  // batch-1 L6 direct-execute bypass, PINNED by the batch-1 harness
+  // as caller-less — see its comment below.
 
   // L6 (batch 1, DECIDED not-needed): this 5-arg overload is the
   // DIRECT-EXECUTE bypass — it dispatches an unclamped gesture via
@@ -117,8 +122,11 @@ object ActiveAttackerEngine{
     if(!player.isUserTeam)return ActiveAttackerResult(found=false)
     // 6a: the !isUserTeam return above guarantees the owner is the user team here.
     AttackAxisModel.observe(scene,possession.hasPossession,com.assistant.vision.CameraProfile.captureWidthOrFallback())
-    val result=ActiveAttackerResult(true,player,index,possession.confidence)
-    if(result.found&&result.confidence>0.30f){
+    val result=ActiveAttackerResult(true,player,index)
+    // Letter A item 9: the gate reads possession.confidence directly —
+    // the value the result used to carry in its deleted confidence
+    // field, so the 0.30f threshold is unchanged.
+    if(result.found&&possession.confidence>0.30f){
       try{
         val worldState=try{Phase3WorldStateStore.current()}catch(_:Throwable){null}
         val bestLane=worldState?.passingGraph?.lanes?.filter{!it.blocked}?.maxByOrNull{it.score}
@@ -142,7 +150,6 @@ object ActiveAttackerEngine{
         val path=Path().apply{moveTo(currentX,currentY);lineTo(endX,endY)}
         val stroke=GestureDescription.StrokeDescription(path,0L,20L)
         val gesture=GestureDescription.Builder().addStroke(stroke).build()
-        synchronized(this){computeCalls++;lastConfidence=result.confidence;lastTargetX=targetX;lastTargetY=targetY;lastUpdatedMs=System.currentTimeMillis()}
         // F37-D2: the execute() result was discarded — a refusal here left
         // no trace at this call site.
         val dispatched = GestureExecutionAuthority.execute(service,gesture,null,null)
@@ -158,7 +165,7 @@ object ActiveAttackerEngine{
     if(index !in scene.trackedPlayers.indices)return ActiveAttackerResult(found=false)
     val player=scene.trackedPlayers[index]
     if(!player.isUserTeam)return ActiveAttackerResult(found=false)
-    return ActiveAttackerResult(true,player,index,possession.confidence)
+    return ActiveAttackerResult(true,player,index)
   }
 }
 

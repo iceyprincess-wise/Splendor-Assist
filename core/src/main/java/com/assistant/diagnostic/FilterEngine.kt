@@ -246,13 +246,19 @@ object FilterEngine {
             else -> 1.0f
         }
         aggressionMultiplier = (aggressionMultiplier * 0.7f) + (targetMultiplier * 0.3f)
-        AdapterSignalBus.publishFilterAggression(aggressionMultiplier)
+        // Letter A item 39: the AdapterSignalBus.publishFilterAggression
+        // call that was here is REMOVED — the bus value was write-only
+        // (zero readers; the bus is in-process only and the :survival
+        // consumers read the registry file). The registry mirror below is
+        // the live channel and is unchanged.
         // SPLENDOR_P7_XPROC_AGGRO_BEGIN
-        // Task 2C: the bus publish above is invisible to the :survival
+        // Task 2C: a bus publish here used to be invisible to the :survival
         // consumers (LagVerdictEngine, BurstForensicsEngine,
         // SpeedCompensationContributor read filterAggression in their own
-        // process). Mirror the multiplier into the cross-process registry
-        // file so those readers see it; stale (>15s) reads fall back to 1.0f.
+        // process) — that is why the bus publish was removed (Letter A
+        // item 39) and only this registry mirror remains. Mirror the
+        // multiplier into the cross-process registry file so those readers
+        // see it; stale (>15s) reads fall back to 1.0f.
         publishAggressionThrottled(aggressionMultiplier)
         // SPLENDOR_P7_XPROC_AGGRO_END
     }

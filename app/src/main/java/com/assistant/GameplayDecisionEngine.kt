@@ -234,7 +234,7 @@ object GameplayDecisionEngine {
 
         if (!hasBall) {
             publishGameplayDownstream("selectVisionAdaptiveMode")
-            return AdaptiveModeAuthority(0, shotAuthority, passAuthority, crossAuthority)
+            return AdaptiveModeAuthority(0)
         }
 
         // OMEGA UPGRADE: Replaced slow floating-point division (/ 6f) with pre-calculated inversion (* 0.16666667f)
@@ -277,7 +277,7 @@ object GameplayDecisionEngine {
         }
 
         publishGameplayDownstream("selectVisionAdaptiveMode")
-        return AdaptiveModeAuthority(mode, shotScore, passScore, crossScore)
+        return AdaptiveModeAuthority(mode)
     }
 
     fun decide(

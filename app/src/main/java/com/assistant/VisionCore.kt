@@ -298,7 +298,7 @@ SceneTracker.update(
 
   // The possession attacker is ours; defense needs the observed opponent owner.
   val defensiveAttacker = if (ownership.hasOwner && ownership.owner?.isUserTeam == false)
-      ActiveAttackerResult(true, ownership.owner, ownership.ownerIndex, ownership.confidence)
+      ActiveAttackerResult(true, ownership.owner, ownership.ownerIndex)
       else attacker
   val defender = ActiveDefenderEngine.compute(scene, defensiveAttacker)
   AttackAxisModel.observe(scene, possession.hasPossession, frame.width.toFloat())
@@ -688,7 +688,6 @@ val offsideRiskEstimationResult =
             closestPlayer = closestPlayer,
             ownership = ownership,
             possession = possession,
-            attacker = attacker,
             defender = defender,
             formation = formation,
             teamShape = teamShape,

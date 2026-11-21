@@ -46,13 +46,6 @@ object AccessibilityGateRecoveryEngine {
     @Volatile private var lastWaitingLogMs = 0L
     @Volatile private var lastRecoveredLogMs = 0L
 
-    /** Test hook: clears the lost-since / log state. No production caller uses it. */
-    fun reset() {
-        gateLostSinceMs = 0L
-        lastWaitingLogMs = 0L
-        lastRecoveredLogMs = 0L
-    }
-
     /**
      * Pure decision core (harness-pinned). `gateLostMs` is how long G1
      * has been continuously lost; `consumerAlive` is the service's bus

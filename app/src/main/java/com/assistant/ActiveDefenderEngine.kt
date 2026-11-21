@@ -185,9 +185,7 @@ object ActiveDefenderEngine {
             ActiveDefenderResult(
                 found = true,
                 defender = optimalDefender,
-                defenderIndex = optimalDefenderIndex,
-                distanceToAttacker = sqrt(trueDx * trueDx + trueDy * trueDy),
-                confidence = optimalDefender.confidence
+                distanceToAttacker = sqrt(trueDx * trueDx + trueDy * trueDy)
             )
         } else {
             ActiveDefenderResult(found = false)

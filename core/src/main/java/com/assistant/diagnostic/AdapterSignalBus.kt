@@ -61,7 +61,16 @@ object AdapterSignalBus {
         val executionBrake: Int = 0,
         val crowdingZone: Boolean = false,
         val crowdingLevel: Float = 0f,
-        val filterAggression: Float = 1.0f,
+        // Letter A item 39: the filterAggression field is DELETED (was
+        // here, default 1.0f, with its getter + publishFilterAggression
+        // below). FilterEngine published it, but the getter had zero
+        // readers anywhere — not even through snapshot() — because the
+        // cross-process consumers (LagVerdictEngine, BurstForensicsEngine,
+        // SpeedCompensationContributor) read the registry file via
+        // PerformanceTelemetryRegistry.currentFilterAggression(), and the
+        // bus is in-process only (see the class KDoc). The registry mirror
+        // (FilterEngine.publishAggressionThrottled) is the live channel
+        // and is untouched.
         // Batch 6b: wall-clock ms of the last publish (0 = never).
         // The liveness signal — see the class KDoc.
         val updatedMs: Long = 0L
@@ -146,7 +155,9 @@ object AdapterSignalBus {
         commit(state.copy(crowdingZone = zone, crowdingLevel = level.coerceIn(0f, 1f)))
     }
 
-    // FILTER ENGINE: Extremist push multiplier
-    val filterAggression: Float get() = state.filterAggression
-    fun publishFilterAggression(multiplier: Float) { commit(state.copy(filterAggression = multiplier.coerceIn(1.0f, 3.0f))) }
+    // FILTER ENGINE: Extremist push multiplier — Letter A item 39: the
+    // bus filterAggression getter + publishFilterAggression are DELETED
+    // (were here). The value was write-only on this bus; the live channel
+    // is PerformanceTelemetryRegistry (see the note on the snapshot field
+    // above and FilterEngine.publishAggressionThrottled).
 }

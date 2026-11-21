@@ -93,7 +93,13 @@ import kotlin.math.sin
 
 
 
-class AntiCutbackSubEngine(private val inputEngine:LatencyDefeatingInputEngine){
+// Letter A item 23: the LatencyDefeatingInputEngine constructor parameter
+// is REMOVED (was: class AntiCutbackSubEngine(private val inputEngine:
+// LatencyDefeatingInputEngine)). It was never referenced in the file body —
+// the engine offers through ContributionRegistry, it never injects a swipe
+// directly — so the parameter was dead. Sole call site updated:
+// ActiveGestureController.kt:122 now constructs AntiCutbackSubEngine().
+class AntiCutbackSubEngine(){
   companion object{@Volatile private var lastExecutionTimestamp=0L;private const val DEBOUNCE_COOLDOWN_MS=20L}
   fun blockCutbackPassingLanes(wingerX:Float,wingerY:Float,myNearestDefenderX:Float,myNearestDefenderY:Float,penaltyBoxCenterX:Float,penaltyBoxCenterY:Float,joystickX:Float,joystickY:Float,screenWidth:Float=com.assistant.vision.CameraProfile.captureWidthOrFallback(),screenHeight:Float=com.assistant.vision.CameraProfile.captureHeightOrFallback()):Boolean{
     val now=System.currentTimeMillis()

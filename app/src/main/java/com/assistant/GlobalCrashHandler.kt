@@ -240,7 +240,7 @@ class GlobalCrashHandler(
                             else       -> "[OFFLINE ]"
                         }
                         val desc = adapterDescriptions[snap.adapterName] ?: "no description"
-                        out.appendLine("  $status ${snap.adapterName.padEnd(24)} age=${age}s errors=${snap.errorCount}")
+                        out.appendLine("  $status ${snap.adapterName.padEnd(24)} age=${age}s errors=${snap.errorCount} recoveries=${snap.recoveryCount}")
                         out.appendLine("           purpose: $desc")
                         out.appendLine("           details: ${snap.details}")
                         if (effective == "OFFLINE") {
@@ -437,7 +437,6 @@ class GlobalCrashHandler(
                                 EngineEntry("CrossDeliveryContributor","com.assistant.contributors.CrossDeliveryContributor","ACTIVE","cross into goal box delivery"),
                 EngineEntry("HybridOmnipotentMatrixEngine","com.assistant.HybridOmnipotentMatrixEngine","ACTIVE","direct intercept injector; 16ms cooldown; bypasses contributor registry"),
                 EngineEntry("AntiCutbackSubEngine","com.assistant.AntiCutbackSubEngine","ACTIVE","anti-cutback defensive sub-engine"),
-                EngineEntry("AdaptiveLoftedThroughEngine","com.assistant.AdaptiveLoftedThroughEngine","ACTIVE","lofted through-ball emergency path"),
                 EngineEntry("CpuGovernorEngine","com.assistant.CpuGovernorEngine","ACTIVE","A75 core pinned to eFootball; A55 to Splendor"),
                 EngineEntry("ConnectionHealEngine","com.assistant.ConnectionHealEngine","ACTIVE","WiFi rescan+rebind on HOLD; 15s cooldown"),
                 EngineEntry("InputLatencyEngine","com.assistant.InputLatencyEngine","ACTIVE","main-thread dispatch latency; 6s boot suppress"),

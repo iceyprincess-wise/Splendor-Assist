@@ -119,7 +119,14 @@ object AgilityContributor : GameplayContributor {
 
         // V4 burst transition: the latch reads this frame's burstIntensity
         // and holds its state across frames. Escape wins only while latched.
-        val bursting = burstLatch.update(nativeAgilityOut[7])
+        // Letter A item 21: closingSpeed is the live gate on the burst.
+        // closingSpeed > 0 means the selected defender is actually closing
+        // the gap (px/s); <= 0 means the gap is widening or static, so
+        // there is no closing defender to escape from and the target stays
+        // on the shield angle. The latch still updates every frame (its
+        // state is not reset here), only the escape-angle switch is gated.
+        val latched = burstLatch.update(nativeAgilityOut[7])
+        val bursting = latched && observed.closingSpeed > 0f
         val angleDegrees = if (bursting) nativeAgilityOut[6] else nativeAgilityOut[3]
         val angleRad = Math.toRadians(angleDegrees.toDouble())
         val pushDist = 75.0f + turnAssist * 45.0f

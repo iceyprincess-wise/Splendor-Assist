@@ -119,7 +119,7 @@ class ActiveGestureController(
     private val latencyInputEngine = LatencyDefeatingInputEngine(service).also {
         ThroughPassSanitizerGateway.bind(it)
     }
-    private val antiCutbackEngine = AntiCutbackSubEngine(latencyInputEngine)
+    private val antiCutbackEngine = AntiCutbackSubEngine()
     private val autoEvadeEngine = AutoEvadeEngine()
 
 
@@ -754,16 +754,6 @@ class ActiveGestureController(
                 ?.y
                 ?: predictiveY
 
-        // B9: throughLead (the directionless scalar) is superseded by
-        // the lead VECTOR on the lane (leadX/leadY) — the scalar is kept
-        // on ThroughBallLane for the confidence math, but the arbitration
-        // below reads the vector, never this scalar.
-        @Suppress("UNUSED_VARIABLE")
-        val throughLead =
-            selectedThroughLane
-                ?.leadDistance
-                ?: 0f
-
         val blockedLanePredictionAnalysis =
             TrueTargetPassingEngine.currentBlockedLanePredictionAnalysis()
 
@@ -1084,16 +1074,17 @@ class ActiveGestureController(
         // V4 burst routing (per-gesture rule — AGC runs once per discrete
         // gesture, not per frame, so there is no latch here; the contributor
         // path holds the hysteresis latch instead): a burst exit
-        // (burstIntensity > 0.75) routes along the escape vector, an active
+        // (burstIntensity > BURST_ON) routes along the escape vector, an active
         // shield along the shield vector, otherwise the arbitration target
-        // stands. The 0.75 threshold matches AgilityBurstLatch.BURST_ON so
-        // both paths agree on when a burst is happening.
+        // stands. Letter A item 12: the 0.75f literal is replaced by
+        // AgilityBurstLatch.BURST_ON so both paths agree on when a burst
+        // is happening — one constant, not a duplicated threshold.
         val finalDeltaX = finalX - startX
         val finalDeltaY = finalY - startY
         val finalMagnitude =
             kotlin.math.hypot(finalDeltaX.toDouble(), finalDeltaY.toDouble()).toFloat()
         val burstActiveForTarget =
-            agility.shieldActive && agility.burstIntensity > 0.75f &&
+            agility.shieldActive && agility.burstIntensity > AgilityBurstLatch.BURST_ON &&
                 agilityEscapeDirX.isFinite() && agilityEscapeDirY.isFinite()
         val shieldActiveForTarget =
             agility.shieldActive && agilityShieldDirX.isFinite() && agilityShieldDirY.isFinite()

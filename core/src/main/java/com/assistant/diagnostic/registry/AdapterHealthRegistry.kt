@@ -28,7 +28,7 @@ object AdapterHealthRegistry {
         applicationContext =
             appContext
         // D31-1: restore() had no callers, so the local map started empty
-        // in every process and getAll()/get(name) read empty until this
+        // in every process and the local readers read empty until this
         // process's own adapters heartbeated - and the main process never
         // heartbeats at all (all three update() writers run in
         // :survival), so its local list was permanently empty. Seed the
@@ -80,20 +80,6 @@ object AdapterHealthRegistry {
     }
 
     /*
-     * Local-process snapshots only. Callers that gate on adapter health
-     * must use getAllLive(): a snapshot that lives only in another
-     * process's persistence file is invisible here. (Since the D31-1
-     * initialise wiring this list is seeded from the persisted file at
-     * startup, so it holds the last-known fleet state rather than
-     * nothing - but it still goes stale between restarts, while
-     * getAllLive() re-reads the file on every call.)
-     */
-    @Synchronized
-    fun getAll(): List<AdapterHealthSnapshot> {
-        return snapshots.values.toList()
-    }
-
-    /*
      * Cross-process truth. The three heartbeat writers
      * (gameplay_engine, performance_engine, adapter_watchdog) all run in
      * the :survival process, while the main process never heartbeats: a
@@ -107,6 +93,8 @@ object AdapterHealthRegistry {
      * neither is true. All three writers share :survival per the
      * manifest, and no net/lag/stutter adapter ever calls update();
      * the cross-process split that matters is main vs :survival.)
+     * Item 41 (letter A): the local-only getAll() and get(name) are
+     * deleted — zero callers, and this function subsumes them.
      */
     @Synchronized
     fun getAllLive(): List<AdapterHealthSnapshot> {
@@ -130,11 +118,6 @@ object AdapterHealthRegistry {
         }
 
         return merged.values.toList()
-    }
-
-    @Synchronized
-    fun get(name: String): AdapterHealthSnapshot? {
-        return snapshots[name]
     }
 
     @Synchronized

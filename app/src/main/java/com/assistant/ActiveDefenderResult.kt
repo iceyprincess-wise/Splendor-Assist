@@ -96,11 +96,11 @@ import kotlin.math.*
 data class ActiveDefenderResult(
     val found: Boolean,
     val defender: TrackedPlayer? = null,
-    val defenderIndex: Int = -1,
-    val distanceToAttacker: Float = Float.MAX_VALUE,
-    val confidence: Float = 0f
+    val distanceToAttacker: Float = Float.MAX_VALUE
 )
 
-/* ========
-AdaptiveLoftedThroughEngine
-======== */
+// Letter A item 11: defenderIndex and confidence deleted — written by
+// ActiveDefenderEngine.compute() but never read anywhere. The live
+// readers (DefenseAuthorityContributor, FrameAssembler, VisionCore)
+// readers (DefenseAuthorityContributor, FrameAssembler, VisionCore)
+// read found / defender / distanceToAttacker only.

@@ -15,8 +15,8 @@ package com.assistant.survival
  * contributes to none of the three counts - there is deliberately no
  * 4th count (that would need a 4th update() parameter and a
  * WatchdogAdapterService change, out of scope for this round).
- * Counts never expire on their own: snapshot() reports NO DATA YET before
- * the first update, and STALE once the last update is older than
+ * Counts never expire on their own: renderSnapshot() (via
+ * combinedSnapshot()) reports NO DATA YET before the first update, and STALE once the last update is older than
  * STALE_AFTER_MS (120s, the same bound as the sibling registry, 8 missed
  * 15s watchdog scans). AHC-D2 (batch 5, closed): the counts and the ledger
  * are now read atomically — both registries share AdapterHealthLock, and
@@ -75,12 +75,8 @@ object AdapterHealthCounts {
         }
     }
 
-    fun snapshot(): String {
-        synchronized(AdapterHealthLock.lock) {
-            return renderSnapshot(System.currentTimeMillis())
-        }
-    }
-
+    // Item 42 (letter A): snapshot() deleted — zero callers; the live
+    // path is combinedSnapshot() (atomic ledger + counts, DashboardInjector).
     internal fun renderSnapshot(now: Long): String {
         if (updatedAtMs == 0L)
             return "Counts: NO DATA YET"

@@ -96,9 +96,14 @@ import kotlin.math.*
 data class AgentDecision(
     val action: AgentAction,
     val priority: Int,
-    val reason: String,
-    val createdAtMs: Long = System.currentTimeMillis()
+    val reason: String
 )
+
+// Letter A item 16: the creation-timestamp field deleted — stamped
+// at construction but never read anywhere. A decision is executed in
+// the same InAppAgentCore tick that creates it, so a staleness check
+// on it could never observe a stale decision; the field had no live
+// consumer to wire.
 
 /**
  * Deterministic first-generation agent policy.

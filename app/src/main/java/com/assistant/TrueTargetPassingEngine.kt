@@ -100,8 +100,7 @@ object TrueTargetPassingEngine {
     // vPerSecond * travelS — no frame-rate constant anywhere. The old
     // 60 fps constant multiplied a px/frame velocity by 60, over-leading
     // 3x at the 20 fps processed rate (Q67-6); that question no longer
-    // gates this maths. The same unmeasured rate also moves
-    // AdaptiveLoftedThroughEngine's 27-frame look-ahead (No68-A-D1).
+    // gates this maths.
 
     /**
      * @param retention 0..1 fraction along (start->end) to land on.

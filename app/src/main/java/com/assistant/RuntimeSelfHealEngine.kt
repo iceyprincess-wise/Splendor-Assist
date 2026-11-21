@@ -201,7 +201,31 @@ object RuntimeSelfHealEngine {
         // B3: re-establish the gate's consumer when G1 is lost (never a
         // bus restart — the recovery engine only repairs the consumer
         // thread; the coordinator's G5 path re-enables the bus).
-        try { AccessibilityGateRecoveryEngine.checkAndRecover() } catch (_: Throwable) { }
+        // Letter A item 1: the RecoveryDecision return used to be
+        // discarded here — the decision (RECOVER_CONSUMER /
+        // WAIT_FOR_SERVICE) never reached any consumer. Read it now and
+        // record a heal event for every non-NO_ACTION decision, so the
+        // decision is visible in healEvents (AgentHubActivity last-20),
+        // the HealLog file and the AGENT log. NO_ACTION is not recorded
+        // (it fires on every healthy 5 s cycle). shouldLog() dedups to
+        // at most one event per 5 min for the category, so a stuck gate
+        // cannot flood the log. The event records the DECISION only —
+        // checkAndRecover() itself logs GATE_RECOVERED /
+        // GATE_RECOVERY_FAILED, which is where the outcome lives.
+        try {
+            val gateDecision = AccessibilityGateRecoveryEngine.checkAndRecover()
+            if (gateDecision != AccessibilityGateRecoveryEngine.RecoveryDecision.NO_ACTION &&
+                shouldLog("GATE_RECOVERY", gateDecision.name)
+            ) {
+                record(HealEvent(
+                    timestamp = fmt.format(Date()),
+                    category = "GATE_RECOVERY",
+                    detected = "accessibility gate recovery decision=$gateDecision (gate lost, capture alive, consumer dead)",
+                    fix = "RecoveryDecision consumed by self-heal: consumer restart attempted for RECOVER_CONSUMER; WAIT_FOR_SERVICE means no service instance exists (only the system can rebind it)",
+                    severity = if (gateDecision == AccessibilityGateRecoveryEngine.RecoveryDecision.RECOVER_CONSUMER) "INFO" else "WARNING"
+                ))
+            }
+        } catch (_: Throwable) { }
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -866,6 +890,11 @@ object RuntimeSelfHealEngine {
             }
 
             if (engines < com.assistant.AppContributorRegistration.EXPECTED_CONTRIBUTOR_COUNT && warmed && shouldLog("REGISTRY_GAP", "engines=$engines")) { /* SPLENDOR_P9_RSE_39B */
+                // Letter A item 25: AppContributorRegistration.retry() /
+                // registrationState() were zero-caller. The gap branch is
+                // their live caller: when registration itself reports
+                // FAILED or PARTIAL, retry it (retry() no-ops otherwise).
+                try { if (com.assistant.AppContributorRegistration.registrationState() == com.assistant.RegistrationState.FAILED || com.assistant.AppContributorRegistration.registrationState() == com.assistant.RegistrationState.PARTIAL) com.assistant.AppContributorRegistration.retry() } catch (_: Throwable) {}
                 record(HealEvent(
                     timestamp = fmt.format(Date()),
                     category = "REGISTRY_GAP",
@@ -873,7 +902,8 @@ object RuntimeSelfHealEngine {
                         "Collect cycles since last health check: $delta (0 = no cycles since the previous check, " +
                         "not proof of a frozen collector). " +
                         "Registration is asynchronous from the image-frame path; recheck after registration completes.",
-                    fix = "NONE in-memory — registration runs asynchronously from the image-frame path. " +
+                    fix = "Retried registration via AppContributorRegistration.retry() when registrationState() is FAILED/PARTIAL; " +
+                        "otherwise NONE in-memory — registration runs asynchronously from the image-frame path. " +
                         "Check if G2 (capture) + G1 (accessibility) gates both reached.",
                     severity = "CRITICAL"
                 ))

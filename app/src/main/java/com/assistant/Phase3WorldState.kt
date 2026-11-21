@@ -97,7 +97,11 @@ data class Phase3WorldState(
     val closestPlayer: ClosestPlayerResult = ClosestPlayerResult(false),
     val ownership: BallOwnershipResult = BallOwnershipResult(false),
     val possession: BallPossessionResult = BallPossessionResult(false),
-    val attacker: ActiveAttackerResult = ActiveAttackerResult(false),
+    // Letter A item 9: the stored `attacker` copy is deleted — written
+    // by VisionCore but read by nothing. The live attacker flows
+    // VisionCore → ActiveDefenderEngine.compute() directly (local
+    // `attacker` / `defensiveAttacker` above), never through this store;
+    // FrameAssembler never read world.attacker either.
     val defender: ActiveDefenderResult = ActiveDefenderResult(false),
     val formation: FormationResult = FormationResult(false),
     val teamShape: TeamShapeResult = TeamShapeResult(false),

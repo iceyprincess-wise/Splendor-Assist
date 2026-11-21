@@ -34,7 +34,6 @@ import android.os.Process
 
 
 
-import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
 
 
@@ -89,15 +88,15 @@ object AggressiveMemoryHoarding {
         lastPurgeMs = now
         purgesExecuted.incrementAndGet()
         RuntimeLogger.log("Initiating memory purge...", "MEMORY_HOARDER")
-        // 6a: the old comment here claimed this "forces the capture loop
-        // into survival mode (10fps) immediately". That is FALSE: the bus
-        // captureThrottle field has no reader in the capture loop — the
-        // loop reads MemoryCaptureGateEngine.captureThrottle, driven by the
-        // memory tier (onTierChange), and D1 caps in-game capture at 33 ms
-        // anyway. This publish only surfaces on the dashboard
-        // (GameplayRoomActivity). The purge frees RAM by killing
-        // background processes; it does not slow capture.
-        try { com.assistant.diagnostic.AdapterSignalBus.publishCaptureThrottle(3) } catch (_: Throwable) {}
+        // Letter A item 18: the publishCaptureThrottle(3) that used to sit
+        // here is REMOVED. It set the bus field without touching
+        // MemoryCaptureGateEngine.captureThrottle, which is what the
+        // capture loop actually reads (OverlayService + recommendedIntervalMs),
+        // so it never slowed capture — it only made the dashboard
+        // (GameplayRoomActivity) display throttle 3 after a purge. The live
+        // throttle is driven solely by MemoryCaptureGateEngine.onTierChange.
+        // The purge frees RAM by killing background processes; it does not
+        // slow capture.
 
         val activityManager =
             context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -148,14 +147,12 @@ object AggressiveMemoryHoarding {
         return info.availMem / 1048576L
     }
 
-    fun hoardingRuntimeSnapshot(): Map<String, Any> = mapOf(
-        "purgesExecuted" to purgesExecuted.get(),
-        "purgesSkippedCooldown" to purgesSkippedCooldown.get(),
-        "packagesKilled" to packagesKilled.get(),
-        "killFailures" to killFailures.get(),
-        "lastPurgeMs" to lastPurgeMs,
-        "lastReclaimedMb" to lastReclaimedMb
-    )
+    // Letter A item 18: hoardingRuntimeSnapshot() is DELETED (was here).
+    // It had zero callers repo-wide, so its six map keys (purgesExecuted,
+    // purgesSkippedCooldown, packagesKilled, killFailures, lastPurgeMs,
+    // lastReclaimedMb) were never read. The counters still exist and are
+    // still logged by executePurge; only the unread snapshot is gone.
+
 }
 
 

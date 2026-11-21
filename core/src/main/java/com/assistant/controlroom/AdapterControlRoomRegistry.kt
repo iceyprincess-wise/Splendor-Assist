@@ -14,14 +14,17 @@ import java.util.concurrent.ConcurrentHashMap
  * goalkeeper/interception `enabled` bulbs, `getAll().size` for the
  * future-rooms bulb. No control-room UI Activity reads this registry.
  *
- * Read census (verified at HEAD 598ed68e — see the round report, not
- * this file, for the full file:line list): of the five stored fields,
- * only `enabled` (goalkeeper, interception) and the room count are ever
- * read by live code. `displayName` is read only as the `getAll()` sort
- * key, and `category` and `intensity` are never read back anywhere —
- * they are written by bootstrap/sync and consumed by nobody. That is a
- * wiring gap in the readers (MainActivity / room-list UI), not a defect
- * in this registry: do not delete the fields to "fix" it, wire a reader.
+ * Read census (Letter A item 37 — the sentence below this paragraph
+ * was stale and is corrected here): of the five stored fields, `enabled`
+ * and `intensity` are read by MainActivity.refreshRoomBulbs
+ * (MainActivity.kt:287/296/305 read `intensity` for the bulb labels,
+ * :291/300 read `enabled`), and the room count via `getAll().size`.
+ * `displayName` is read only as a `getAll()` sort key, and `category`
+ * is now the primary `getAll()` sort key (category, then displayName),
+ * so every stored field has a live reader. The old claim that
+ * "`category` and `intensity` are never read back anywhere" was false
+ * for intensity (MainActivity reads it) and is now false for category
+ * too (the sort below reads it on every getAll call).
  *
  * Contract:
  * - Intensity invariant: every stored room has intensity in
@@ -42,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap
  *   bootstrap rooms for the process lifetime, nothing ever unregisters,
  *   and an uncalled remove() would itself be dead code.
  *
- * `getAll()` returns a fresh list sorted by displayName on every call
+ * `getAll()` returns a fresh list sorted by category, then displayName, on every call
  * (a snapshot; later writes do not mutate a returned list).
  */
 object AdapterControlRoomRegistry {
@@ -99,11 +102,13 @@ object AdapterControlRoomRegistry {
     ): AdapterControlRoom? =
         rooms[adapterId]
 
+    // Letter A item 37: `category` is the primary sort key (then
+    // displayName) — the live reader for the category field. Rooms group
+    // by category in every getAll() result (AdapterControlRoomSync.snapshot
+    // -> MainActivity.refreshRoomBulbs); enum order is declaration order.
     fun getAll():
         List<AdapterControlRoom> =
-        rooms.values.sortedBy {
-            it.displayName
-        }
+        rooms.values.sortedWith(compareBy({ it.category }, { it.displayName }))
 
     /**
      * Returns true if a room with this id existed and was updated,

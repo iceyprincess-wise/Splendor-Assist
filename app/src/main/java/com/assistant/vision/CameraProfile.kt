@@ -28,7 +28,6 @@ package com.assistant.vision
  *   - PassingLaneGraphEngine.kt:163 — 500f graph distance scale
  *   - TrueTargetPassingEngine.kt:167 — 750f px/s ball speed
  *   - TruePassContributor.kt:142 — 120 px advanced-branch radius
- *   - AdaptiveLoftedThroughEngine.kt:164 — 95f gesture radius
  * The general rule: any constant in px, px/s or px/frame in a gameplay
  * engine is a capture-geometry constant, not a device-independent one.
  * OPEN (Q62-1): the 1650x720 fallback is unverified — whether the

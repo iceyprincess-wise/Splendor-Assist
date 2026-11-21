@@ -200,13 +200,25 @@ class AutoEvadeEngine() {
         // false, so the timestamp must be set on the park, not on a
         // success that never comes. The evade still reaches the screen via
         // drainBest() when the contributor lane yields nothing.
+        //
+        // Item 31 (letter A): the return contract is "threat detected
+        // and an evade was parked", NOT "dispatched now". offer()'s
+        // false means parked-not-dispatched, not no-threat; returning
+        // it here kept the sole reader's evadeActive term
+        // (ActiveGestureController.kt, evadeActive * 0.2f in the
+        // arbitration stability sum) permanently 0.0f even on a real
+        // threat. Returning true on the park restores that term.
+        // No threshold, coefficient or cooldown changed: the threat
+        // test above (closingDistance < pressRadiusThreshold) is
+        // unchanged and reachable in play whenever an opponent closes
+        // inside ~8.5% of screen height.
         ContributionRegistry.offer(evadeRequest)
         lastEvadeTimestamp = now
         RuntimeLogger.log(
             "AUTO_EVADE dynamic_slip parked v=(${evadeTargetX.toInt()}, ${evadeTargetY.toInt()}) dur=${authoritativeDuration}ms pred_dist=${closingDistance.toInt()}",
             "SMART_ASSIST"
         )
-        return false
+        return true
     }
 }
 

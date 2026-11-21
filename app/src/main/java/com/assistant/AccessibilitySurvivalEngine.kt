@@ -5,7 +5,6 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.PowerManager
 import android.os.Process
-import android.os.SystemClock
 import android.util.Log
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -55,11 +54,6 @@ class AccessibilitySurvivalEngine private constructor(
         @JvmStatic
         fun interrupted() {
             engineState.set(STATE_INTERRUPTED)
-        }
-
-        @JvmStatic
-        fun missing() {
-            engineState.set(STATE_MISSING)
         }
 
         @JvmStatic
@@ -141,8 +135,6 @@ class AccessibilitySurvivalEngine private constructor(
         }
     }
 
-    fun isReady(): Boolean = active()
-
     fun protect() {
         synchronized(this) {
             // 6a: release() quits the watchdog thread and nulls it, but the
@@ -178,11 +170,10 @@ class AccessibilitySurvivalEngine private constructor(
         }
     }
 
-    /**
-     * SERVER-TICK SYNC: Provides sub-millisecond precision sync timestamp 
-     * for server-tick authoritative injection. Scaled dynamically with variance.
-     */
-    fun getTickSyncTimestamp(): Long {
-        return SystemClock.elapsedRealtimeNanos()
-    }
+    // Letter A item 2: getTickSyncTimestamp() deleted — zero callers;
+    // a bare SystemClock.elapsedRealtimeNanos() wrapper with no live
+    // consumer. Any future tick-sync consumer can call the clock
+    // directly. (missing() and isReady() deleted above for the same
+    // reason: no caller, and no consumer distinguishes MISSING from
+    // INTERRUPTED — active() only tests == CONNECTED.)
 }
