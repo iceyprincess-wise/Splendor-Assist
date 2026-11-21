@@ -149,11 +149,25 @@ class PredictionPolicyTest {
         }
         assertEquals(0.6f, p.confidenceFactor(ActionClass.SHOT), 0.001f)
     }
-    @Test fun leadBeyond100msIsClamped() {
+    // Queue item 22 (leadMs loophole fix, Ed's decision 2026-11-21): the
+    // blanket 100 ms clamp is gone. A STRAIGHT entity's requested lead is
+    // capped at 200 ms (the extension ceiling); a TURNING entity is still
+    // capped at 100 ms (today's behaviour). This pin used to assert 25
+    // (100 ms clamp for every entity); 35 (200 ms cap, straight) is the
+    // new correct value. The turning companion below pins the 100 ms cap.
+    @Test fun leadBeyond200msIsClampedForStraightEntity() {
         val p = PredictiveState()
         p.project(1, 10f, 10f, 1_000_000_000L, 500f, 640f, 288f)
         val next = p.project(1, 15f, 10f, 1_050_000_000L, 500f, 640f, 288f)
-        assertEquals(100f, next.vxPerSecond, 0.01f); assertEquals(25f, next.x, 0.01f)
+        assertEquals(100f, next.vxPerSecond, 0.01f); assertEquals(35f, next.x, 0.01f)
+    }
+    @Test fun leadBeyond100msIsClampedWhenTurning() {
+        val p = PredictiveState()
+        p.project(1, 10f, 10f, 1_000_000_000L, 500f, 640f, 288f)
+        p.project(1, 15f, 10f, 1_050_000_000L, 500f, 640f, 288f)
+        // 90-degree turn: (15,10) -> (15,15), v flips (100,0) -> (0,100).
+        val next = p.project(1, 15f, 15f, 1_100_000_000L, 500f, 640f, 288f)
+        assertEquals(100f, next.vyPerSecond, 0.01f); assertEquals(25f, next.y, 0.01f)
     }
     @Test fun aimEndpointReturnsNullOnInvalidMotion() {
         val zeroRadius = AimMotion(0f, 0f, 100f, 0f, 0f, 100f, 1_000_000_000L, 0f, 640f, 288f)

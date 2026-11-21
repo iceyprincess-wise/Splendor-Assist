@@ -435,6 +435,18 @@ object FrameAssembler {
         // passes it, with an acquire-time fallback). The 100 ms cap is a
         // tactical bound: do not re-tune either number silently.
         val leadMs = ((now - capturedAtNanos).coerceAtLeast(0) / 1e6f + PREDICTION_LEAD_MS).coerceAtMost(100f)
+        // Queue item 22 (leadMs loophole fix, Ed's decision 2026-11-21):
+        // leadMs above stays the 100 ms-capped FRAME lead — it feeds
+        // recordAssemble (so the PIPELINE_LATENCY sat rate keeps meaning
+        // "age + 50 exceeded 100") and predictedAtNanos (ExecutionPolicy
+        // clamps its dt to [0, 100 ms]). requestedLeadMs is the lead the
+        // projector may actually use: the same age + 50 ms, capped at
+        // 200. PredictiveState enforces the per-entity ceiling — a
+        // straight-moving entity may use up to 200 ms on a late frame,
+        // a turning entity is capped at 100 ms (today's behaviour).
+        // PREDICTION_LEAD_MS and the 100 ms cap are NOT re-tuned here.
+        val requestedLeadMs = ((now - capturedAtNanos).coerceAtLeast(0) / 1e6f + PREDICTION_LEAD_MS)
+            .coerceAtMost(com.assistant.runtime.PredictiveState.EXTENDED_CAP_MS)
         // Queue item 7 (F5): end-to-end latency measurement — record the
         // age at assemble time + whether the 100 ms cap bound the lead.
         // Measurement only; the cap and PREDICTION_LEAD_MS are unchanged.
@@ -453,10 +465,10 @@ object FrameAssembler {
                 predictor.reset(); predictionLayout = width to height
             }
         }
-        val ball = if (ballSeen) predictor.project(Int.MIN_VALUE, ballX, ballY, capturedAtNanos, leadMs, width, height)
+        val ball = if (ballSeen) predictor.project(Int.MIN_VALUE, ballX, ballY, capturedAtNanos, requestedLeadMs, width, height)
             else com.assistant.runtime.PredictedPoint(ballX, ballY, 0f, 0f)
         val projected = observedFrame.entities.map { entity ->
-            val point = predictor.project(entity.id, entity.x, entity.y, capturedAtNanos, leadMs, width, height)
+            val point = predictor.project(entity.id, entity.x, entity.y, capturedAtNanos, requestedLeadMs, width, height)
             entity.copy(x = point.x, y = point.y, velocityXPerSecond = point.vxPerSecond, velocityYPerSecond = point.vyPerSecond)
         }
         predictor.retain(projected.map { it.id }.toSet() + if (ballSeen) setOf(Int.MIN_VALUE) else emptySet())
