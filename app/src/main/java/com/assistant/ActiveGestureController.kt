@@ -1105,8 +1105,19 @@ class ActiveGestureController(
                 shieldActiveForTarget && finalMagnitude > 0.001f -> startY + agilityShieldDirY * finalMagnitude
                 else -> finalY
             }
+        // Queue item 8 (Gap 3): the tick-sync consumer — the online
+        // adapter's tickSyncMultiplier finally has a live reader. The
+        // value scales hold durations so inputs stretch across packet
+        // windows under high ping (engine comment). The stretch is the
+        // ping leg only (tickSyncStretch divides by the baseline): 1.0
+        // at good ping, so baseline behaviour is unchanged, rising to
+        // 3.0 at ping >= 100 ms. Applied to routedDuration only — the
+        // panic branch below still uses emergencyClearanceDuration()
+        // unstretched, because a clearance must stay fast.
+        val tickSyncMultiplier = worldState.onlineParameterAdaptationResult.tickSyncMultiplier
+        val tickSyncStretch = OnlineParameterAdaptationEngine.tickSyncStretch(tickSyncMultiplier)
         val routedDuration =
-            (boostedDuration * agilityDurationScale).toLong().coerceAtLeast(15L)
+            (boostedDuration * agilityDurationScale * tickSyncStretch).toLong().coerceAtLeast(15L)
 
         val safeRoutedEndXInitial = if (routedEndX.isFinite()) routedEndX else endX
         val safeRoutedEndYInitial = if (routedEndY.isFinite()) routedEndY else endY
@@ -1151,7 +1162,7 @@ class ActiveGestureController(
             HybridExecutionTerminal.route(request)
 
         RuntimeLogger.log(
-            "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()} cross=(${crossTargetX.toInt()},${crossTargetY.toInt()}) crossSrc=$crossSource",
+            "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()} tickSync=$tickSyncMultiplier stretch=$tickSyncStretch cross=(${crossTargetX.toInt()},${crossTargetY.toInt()}) crossSrc=$crossSource",
             "SMART_ASSIST"
         )
         // V4 burst log: the burst exit is the one event on this path the

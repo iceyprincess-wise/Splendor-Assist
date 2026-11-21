@@ -599,7 +599,14 @@ SceneTracker.update(
           OnlineParameterAdaptationEngine.analyze(
               runtimeConfidenceCalibrationResult,
               state,
-              temporalMemoryState
+              temporalMemoryState,
+              // Queue item 8 (Gap 2): feed NetProbeEngine's MEASURED RTT
+              // (EMA of TCP-connect medians, 2-5 s cadence) instead of the
+              // 15.0f default the engine used every frame until now.
+              // effectivePingMs() keeps the default only while rtt is 0f
+              // (never measured yet / just wiped on link change).
+              // Mode-blind on purpose (Ed's decision 1): no mode input.
+              networkPingMs = OnlineParameterAdaptationEngine.effectivePingMs(NetProbeEngine.rtt)
           )
 
 val offsideRiskEstimationResult =
