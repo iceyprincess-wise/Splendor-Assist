@@ -26,19 +26,11 @@ object CrashForensics {
     private val locations = Array(CAPACITY) { "unknown:0" }
 
     private val beats = LongArray(5)
-    private val nativeBreadcrumbRing = Array(64) { "" }
-    private var nativeBreadcrumbCursor = 0
-
-    @JvmStatic fun nativeBreadcrumb(entry: String) { synchronized(lock) { nativeBreadcrumbRing[nativeBreadcrumbCursor++ % nativeBreadcrumbRing.size] = entry.take(95) } }
     private fun nativeBreadcrumbText(): String = synchronized(lock) {
-        val jvm = run {
-            val count = minOf(nativeBreadcrumbCursor, nativeBreadcrumbRing.size)
-            (0 until count).joinToString("\n") {
-                nativeBreadcrumbRing[(nativeBreadcrumbCursor - count + it) % nativeBreadcrumbRing.size]
-            }
-        }
-        val native = try { NativeBridge.nativeBreadcrumbDump() } catch (_: Throwable) { "" }
-        listOf(jvm, native).filter { it.isNotBlank() }.joinToString("\n")
+        // The JVM-side ring is deleted with the single-argument overload
+        // below: it had zero callers, so the ring was always empty. The
+        // native dump (3-arg JNI path) is the only live breadcrumb source.
+        try { NativeBridge.nativeBreadcrumbDump() } catch (_: Throwable) { "" }
     }
     private val reported = LongArray(5)
     private val cursor = AtomicLong(0L)

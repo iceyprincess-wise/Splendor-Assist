@@ -78,7 +78,6 @@ class PerformanceEngineService : Service() {
         ignite({ LoadShedGovernor.start() })
         ignite({ LoadShedCaptureBrakeEngine.start() })
         ignite({ ThermalPeekEngine.init(this) })
-        ignite({ CpuGovernorEngine.start(this) }, "CPU OBSERVER EXCEPTION")
         ignite({ GcStallEngine.start() })
         ignite({ RenderThreadStallEngine.start() })
         ignite({ NetJitterEngine.start() })
@@ -184,7 +183,6 @@ class PerformanceEngineService : Service() {
         try { LagVerdictEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
         try { LoadShedGovernor.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
         try { LoadShedCaptureBrakeEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
-        try { CpuGovernorEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("CPU OBSERVER EXCEPTION: " + e.message, "ENGINE_FAULT") }
         try { GcStallEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
         try { RenderThreadStallEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
         try { NetJitterEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }

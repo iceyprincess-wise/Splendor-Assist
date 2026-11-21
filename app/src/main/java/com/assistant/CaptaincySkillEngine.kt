@@ -122,14 +122,15 @@ object CaptaincySkillEngine {
     @Volatile private var active            = false
     @Volatile private var lastUpdatedMs     = 0L
 
+    // Item 16 Letter C (B1): the result used to carry two more fields.
+    // Both are deleted, not wired: RuntimeDecisionLoop reads only
+    // active / teamLiftFactor / composureBoostMs, and the same values
+    // already reach the diagnostics screen via diagnostics() —
+    // lastFatigueProxy is displayed there and the inspired flag is
+    // derivable from lastTeamLift (>= 1.10). The locals are still
+    // computed (the log line below uses them).
     data class CaptaincyResult(
         val active: Boolean,
-
-        /**
-         * Estimated team fatigue level [0,1].
-         * Derived from: defender density + panic state + vision confidence.
-         */
-        val fatigueProxy: Float,
 
         /**
          * Local gesture-duration scale [1.00, 1.15], applied by RuntimeDecisionLoop.
@@ -141,12 +142,7 @@ object CaptaincySkillEngine {
          * Additional gesture duration [0, 8] ms.
          * Captain-inspired teams make more deliberate, composed inputs.
          */
-        val composureBoostMs: Long,
-
-        /**
-         * True when captain lift is significant (>= 1.10x).
-         */
-        val squadInspired: Boolean
+        val composureBoostMs: Long
     )
 
     fun evaluate(frame: RuntimeFrame): CaptaincyResult {
@@ -218,10 +214,8 @@ object CaptaincySkillEngine {
 
         return CaptaincyResult(
             active           = true,
-            fatigueProxy     = fatigueProxy,
             teamLiftFactor   = teamLiftFactor,
-            composureBoostMs = composureBoostMs,
-            squadInspired    = squadInspired
+            composureBoostMs = composureBoostMs
         )
     }
 
@@ -241,8 +235,10 @@ object CaptaincySkillEngine {
         } catch (_: Throwable) {}
     }
 
-    fun isActive(): Boolean = active
-
+    // Item 16 Letter C (B1): isActive() deleted — zero callers, and its
+    // value is already live via diagnostics()["active"], read by
+    // GameplayRoomActivity, and via evaluate()'s CaptaincyResult.active,
+    // read by RuntimeDecisionLoop. No live consumer needed a third copy.
     fun diagnostics(): Map<String, Any> = mapOf(
         "captainDesignated" to captainDesignated,
         "active"           to active,
@@ -255,10 +251,8 @@ object CaptaincySkillEngine {
 
     private fun inert() = CaptaincyResult(
         active           = false,
-        fatigueProxy     = lastFatigueProxy,
         teamLiftFactor   = MIN_TEAM_LIFT,
-        composureBoostMs = MIN_COMPOSURE_MS,
-        squadInspired    = false
+        composureBoostMs = MIN_COMPOSURE_MS
     )
 
     fun reset() {

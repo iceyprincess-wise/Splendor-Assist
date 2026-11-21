@@ -86,12 +86,12 @@ object CameraProfile {
     // as Q62-1: verify the fallbacks against a live unset-capture
     // session instead of guessing here.
     @JvmStatic
-    fun captureWidthOrFallback(fallback: Float = 1650f): Float =
-        if (captureWidth > 0) captureWidth.toFloat() else (if (sourceWidth > 0) sourceWidth.toFloat() else fallback)
+    fun captureWidthOrFallback(): Float =
+        if (captureWidth > 0) captureWidth.toFloat() else (if (sourceWidth > 0) sourceWidth.toFloat() else 1650f)
 
     @JvmStatic
-    fun captureHeightOrFallback(fallback: Float = 720f): Float =
-        if (captureHeight > 0) captureHeight.toFloat() else (if (sourceHeight > 0) sourceHeight.toFloat() else fallback)
+    fun captureHeightOrFallback(): Float =
+        if (captureHeight > 0) captureHeight.toFloat() else (if (sourceHeight > 0) sourceHeight.toFloat() else 720f)
 
     // SPLENDOR_CAPTURE_TO_SCREEN_V1 - the vision pipeline runs on a downscaled
     // capture surface (288x640 on a 720x1600 device, scale = 0.4) but

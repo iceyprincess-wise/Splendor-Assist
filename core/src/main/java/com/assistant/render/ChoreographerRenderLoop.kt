@@ -37,7 +37,10 @@ object ChoreographerRenderLoop : Choreographer.FrameCallback {
         synchronized(pendingUpdates) { pendingUpdates.add(update) }
     }
 
-    override fun doFrame(frameTimeNanos: Long) {
+    // Framework callback: Choreographer.FrameCallback fixes this
+    // signature, so the parameter stays — the underscore marks it
+    // explicitly unused (the loop never reads the frame timestamp).
+    override fun doFrame(_frameTimeNanos: Long) {
         if (!isRunning) return
         try {
             val updatesToRun = synchronized(pendingUpdates) {

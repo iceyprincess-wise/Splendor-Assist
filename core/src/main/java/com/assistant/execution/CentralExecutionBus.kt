@@ -38,7 +38,6 @@ data class ExecutionRequest(
     val createdAtNanos: Long = System.nanoTime(),
     val aimMotion: AimMotion? = null,
     val actionClass: com.assistant.runtime.ActionClass? = null,
-    val timestamp: Long = System.currentTimeMillis(),
     val actionId: String = "ACT-${java.util.UUID.randomUUID()}",
     var busAccepted: Boolean = false,
     var busConsumed: Boolean = false,
@@ -60,7 +59,6 @@ data class BusStatistics(
     val acceptedCount: Long = 0,
     val consumedCount: Long = 0,
     val pendingCount: Int = 0,
-    val isRunning: Boolean = false,
     val stoppedDrops: Long = 0,
     // Batch 6c (v219 item a): ui-blocked drops are NOT stopped drops.
     // The 2026-11-19 session dropped 28 GOALKEEPER submissions with the
@@ -376,7 +374,7 @@ object CentralExecutionBus {
             if (force || lastStatsUpdate.compareAndSet(last, now)) {
                 _statistics.value = BusStatistics(
                     acceptedCount = accepted.get(), consumedCount = consumed.get(),
-                    pendingCount = pendingCount(), isRunning = running.get(),
+                    pendingCount = pendingCount(),
                     stoppedDrops = stoppedDrops.get(), uiBlockedDrops = uiBlockedDrops.get(),
                     invalidDrops = invalidDrops.get(),
                     staleDrops = staleDrops.get(), capacityDrops = capacityDrops.get(),
@@ -403,11 +401,10 @@ object CentralExecutionBus {
         req.createdAtNanos <= nowNanos
 
     // Staleness is monotonic-clock only (System.nanoTime() vs createdAtNanos).
-    // The previous wall-clock term (now - timestamp) could stale a fresh
-    // request on a clock jump forward, or on a jump backward (age < 0).
-    // timestamp is kept as a record field only; it no longer decides
-    // staleness anywhere in the repo (ContributionRegistry.drainBest now
-    // uses the same budget and clock as this function).
+    // A wall-clock term could stale a fresh request on a clock jump
+    // forward, or on a jump backward (age < 0) — so no wall-clock field
+    // decides staleness anywhere in the repo (ContributionRegistry.drainBest
+    // now uses the same budget and clock as this function).
     //
     // Shared staleness budget per source (ms). Single source of truth for
     // requestIsStale() and ContributionRegistry.drainBest() - there is no

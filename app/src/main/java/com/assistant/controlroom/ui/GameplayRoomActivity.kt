@@ -14,6 +14,9 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.assistant.CaptaincySkillEngine
+import com.assistant.ConAIEngine
+import com.assistant.CongestionSentinelEngine
+import com.assistant.ConnectionHealEngine
 import com.assistant.CrowdingZoneDetector
 import com.assistant.DashboardInjector
 import com.assistant.RuntimeDecisionLoop
@@ -325,6 +328,7 @@ class GameplayRoomActivity : AppCompatActivity() {
                 "RouteRejected: $route_rej  ChooseNull: $choose_nl\n" +
                 "Last action: $lastAct\n" +
                 "Last weight: $lastWt\n" +
+                "ConAI meta : ${ConAIEngine.diagnostics()["metaDecisions"] ?: 0L} decisions / ${ConAIEngine.diagnostics()["metaOverrides"] ?: 0L} overrides\n" +
                 "Freshness  : $freshness"
             // ── Decision mirror (root SmartAssistMetrics) ───────────────
             // Wired in patch 4: the root mirror counters were never
@@ -390,6 +394,7 @@ class GameplayRoomActivity : AppCompatActivity() {
                 "input=${AdapterSignalBus.inputClassification}(${AdapterSignalBus.inputLatencyMs}ms)\n" +
                 "captureThrottle=${AdapterSignalBus.captureThrottle}  execBrake=${AdapterSignalBus.executionBrake}\n" +
                 "crowdingZone=${AdapterSignalBus.crowdingZone}(${AdapterSignalBus.crowdingLevel})\n" +
+                "netHeal=${ConnectionHealEngine.diagnostics()["healCount"] ?: 0} heals  congested=${CongestionSentinelEngine.diagnostics()["congested"] ?: false} ${CongestionSentinelEngine.diagnostics()["congestedForSecs"] ?: 0L}s\n" +
                 "envHostile=${AdapterSignalBus.environmentHostile}"
             busView?.text = busTxt
 

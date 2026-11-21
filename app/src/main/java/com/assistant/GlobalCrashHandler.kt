@@ -106,7 +106,10 @@ class GlobalCrashHandler(
             // attached or shared without parsing the appended mega-file.
             // saveLog never throws; a false return only means the copy
             // was dropped (storage not ready / write failed).
-            CrashInspector.saveLog(report)
+            // Item 16 Letter C (B1): the Boolean is acted on now — a
+            // dropped per-crash copy is logged so a silent storage
+            // failure on the crash path is visible instead of swallowed.
+            if (!CrashInspector.saveLog(report)) android.util.Log.e("GlobalCrashHandler", "per-crash file copy dropped (storage not ready / write failed)", null)
         }
 
         private fun getLogFile(baseName: String, append: Boolean): File {
@@ -437,7 +440,6 @@ class GlobalCrashHandler(
                                 EngineEntry("CrossDeliveryContributor","com.assistant.contributors.CrossDeliveryContributor","ACTIVE","cross into goal box delivery"),
                 EngineEntry("HybridOmnipotentMatrixEngine","com.assistant.HybridOmnipotentMatrixEngine","ACTIVE","direct intercept injector; 16ms cooldown; bypasses contributor registry"),
                 EngineEntry("AntiCutbackSubEngine","com.assistant.AntiCutbackSubEngine","ACTIVE","anti-cutback defensive sub-engine"),
-                EngineEntry("CpuGovernorEngine","com.assistant.CpuGovernorEngine","ACTIVE","A75 core pinned to eFootball; A55 to Splendor"),
                 EngineEntry("ConnectionHealEngine","com.assistant.ConnectionHealEngine","ACTIVE","WiFi rescan+rebind on HOLD; 15s cooldown"),
                 EngineEntry("InputLatencyEngine","com.assistant.InputLatencyEngine","ACTIVE","main-thread dispatch latency; 6s boot suppress"),
                 EngineEntry("InputPriorityEngine","com.assistant.InputPriorityEngine","ACTIVE","URGENT_DISPLAY priority; re-applies every 500ms"),

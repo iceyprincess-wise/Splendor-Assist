@@ -128,6 +128,14 @@ object ConnectionHealEngine {
         }
     }
 
+    // Item 16 Letter C (B1): first live reader for the heal count —
+    // GameplayRoomActivity displays it on the diagnostics screen.
+    // Before this it was read only by this file's own log lines.
+    fun diagnostics(): Map<String, Any> = mapOf(
+        "healCount" to healCount,
+        "running" to running
+    )
+
     private fun tryHeal(ctx: Context) {
         val now = System.currentTimeMillis()
         if (now - lastHealMs < COOLDOWN_MS) return

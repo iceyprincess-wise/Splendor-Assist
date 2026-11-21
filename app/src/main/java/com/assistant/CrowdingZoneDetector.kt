@@ -205,11 +205,16 @@ object CrowdingZoneDetector {
         publishZone(false, 0f)
     }
 
+    // Item 16 Letter C (B1): the diagnostics map used to carry an
+    // "enabled" entry that no reader ever consumed — GameplayRoomActivity
+    // reads only inCrowdedZone / crowdingLevel / detections, and the
+    // toggle state is already shown via isEnabled() at the switch.
+    // The inCrowdedZone / crowdingLevel properties stay: they are the
+    // backing store this map reads, so they reach the screen through it.
     fun diagnostics(): Map<String, Any> = mapOf(
         "inCrowdedZone" to inCrowdedZone,
         "crowdingLevel"  to crowdingLevel,
-        "detections"     to detections.get(),
-        "enabled" to enabled
+        "detections"     to detections.get()
     )
 }
 

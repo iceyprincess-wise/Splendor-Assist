@@ -25,10 +25,7 @@ import kotlin.math.hypot
  * outside the goal span by more than the D8 reach) and adjusts the
  * duration hint. CrossDeliveryContributor applies it.
  */
-enum class CrossVariant { LOW, DRIVEN, EARLY, FLOATED }
-
 data class CrossVariantDecision(
-    val variant: CrossVariant,
     val targetX: Float,
     val targetY: Float,
     val durationHintMs: Long
@@ -69,26 +66,22 @@ object CrossVariantEngine {
         }
         return when {
             boxOpponents >= CROWDED_BOX_MIN_OPPONENTS -> CrossVariantDecision(
-                variant = CrossVariant.LOW,
                 targetX = goalCx,
                 targetY = (nearPostY + (goalCy - nearPostY) * 0.15f)
                     .coerceIn(frame.goalTopY, frame.goalBottomY),
                 durationHintMs = 45L
             )
             shootingViable -> CrossVariantDecision(
-                variant = CrossVariant.DRIVEN,
                 targetX = goalCx,
                 targetY = goalCy,
                 durationHintMs = 35L
             )
             progress < EARLY_LINE_FRACTION_OF_WIDTH && runnerAhead -> CrossVariantDecision(
-                variant = CrossVariant.EARLY,
                 targetX = (baseTargetX + attackSign * w * 0.05f).coerceIn(0f, w),
                 targetY = baseTargetY.coerceIn(0f, frame.captureHeight),
                 durationHintMs = 50L
             )
             boxOpponents <= SPARSE_BOX_MAX_OPPONENTS -> CrossVariantDecision(
-                variant = CrossVariant.FLOATED,
                 targetX = goalCx,
                 // Floated: far post, close to the far-post edge of the
                 // mouth for the header (0.15 in from the post).
@@ -97,7 +90,6 @@ object CrossVariantEngine {
                 durationHintMs = 55L
             )
             else -> CrossVariantDecision(
-                variant = CrossVariant.DRIVEN,
                 targetX = baseTargetX,
                 targetY = baseTargetY,
                 durationHintMs = 50L

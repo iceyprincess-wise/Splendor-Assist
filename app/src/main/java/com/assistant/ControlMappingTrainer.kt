@@ -308,8 +308,9 @@ object ControlMappingTrainer {
     private var slot4OccludedFrames = 0
     private var lastDashHoldCandidateLogMs = 0L
 
-    /** Wall time of the last dash-hold candidate, or 0 when none. */
-    fun lastDashHoldMs(): Long = lastDashHoldMs
+    // B2 (item 16): the lastDashHoldMs() raw getter is DELETED — zero
+    // callers outside this file (grep-proven). The field stays: it backs
+    // the live dashHoldCandidateFresh() reader (DribbleContributor).
 
     /** True while a dash-hold candidate is fresh (within 250 ms). */
     fun dashHoldCandidateFresh(nowMs: Long = System.currentTimeMillis()): Boolean =
@@ -375,33 +376,18 @@ object ControlMappingTrainer {
         return d7JoystickCenter(w, h).second
     }
 
-    fun labelFor(id: Int, attacking: Boolean): String =
-        SLOTS.firstOrNull { it.id == id }?.let { if (attacking) it.attackLabel else it.defendLabel } ?: "none"
+    // B2 (item 16): labelFor() is DELETED — zero callers anywhere in
+    // the tree (grep-proven). Old through-pass label lookup with no live
+    // reader; the SLOTS attack/defend labels stay as the in-file source
+    // of truth for observe()/slot training.
 
-    fun resolveMove(slotId: Int, attacking: Boolean, ms: Long, dx: Float, dy: Float): String {
-        val s = SLOTS.firstOrNull { it.id == slotId } ?: return "none"
-        val dirOk = if (attacking) s.dirAttack else s.defendLabel.let { s.dirDefend }
-        val mag = hypot(dx.toDouble(), dy.toDouble()).toFloat()
-        val flick = dirOk && mag >= 40f && ms <= 250L
-        val hold = ms >= 120L
-        val label = if (attacking) s.attackLabel else s.defendLabel
-        val dir = if (flick) when {
-            dy <= -0.5f * mag -> "_UP"
-            dy >= 0.5f * mag -> "_DOWN"
-            dx < 0 -> "_LEFT"
-            else -> "_RIGHT"
-        } else ""
-        return when {
-            flick -> label + "_FLICK" + dir
-            hold && attacking && slotId == 2 -> "POWER_SHOT"
-            hold && attacking && slotId == 3 -> "LOFTED_PASS"
-            hold && attacking && slotId == 1 -> "LOFTED_THROUGH"
-            hold && !attacking && slotId == 4 -> "PRESSURE_DASH_HOLD"
-            hold && !attacking && slotId == 3 -> "MATCH_UP_HOLD"
-            hold -> label + "_HOLD"
-            else -> label + "_TAP"
-        }
-    }
+    // B2 (item 16): resolveMove() is DELETED — zero callers anywhere in
+    // the tree (grep-proven). Dead path from the old through-pass design
+    // (flick/hold label mapping: POWER_SHOT / LOFTED_PASS /
+    // LOFTED_THROUGH / PRESSURE_DASH_HOLD / MATCH_UP_HOLD); it was the
+    // sole producer of those strings and nothing consumed them. Its 5
+    // params die with it. The live through path is the slot-1 press
+    // candidate + ThroughPassSanitizerGateway.
 
     private fun px(b: ByteBuffer, idx: Int): Int = b.get(idx).toInt() and 0xFF
 
@@ -561,6 +547,15 @@ object ControlMappingTrainer {
         throughPressCandidateActive = false
         slot1OccludedFrames = 0
         lastThroughCandidateLogMs = 0L
+        // G-P (B2, item 16): a reset clears the dash-hold candidate the
+        // same way — the D13 block above cleared the through press but
+        // the dash-hold state (added later, batch 4) was never added
+        // here, so a stale candidate survived reset() and kept gating
+        // DribbleContributor's SKILL_MOVE after a reset.
+        lastDashHoldMs = 0L
+        dashHoldCandidateActive = false
+        slot4OccludedFrames = 0
+        lastDashHoldCandidateLogMs = 0L
         com.assistant.execution.DispatchBounds.setMaxDrag(null)
     }
 }

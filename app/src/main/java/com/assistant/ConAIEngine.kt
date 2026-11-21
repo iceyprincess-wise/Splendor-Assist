@@ -140,6 +140,8 @@ object ConAIEngine {
         }
     }
 
+    // Item 16 Letter C (B1): live reader is GameplayRoomActivity, which
+    // shows metaDecisions / metaOverrides on the diagnostics screen.
     fun diagnostics(): Map<String, Any> = mapOf(
         "metaDecisions" to metaDecisions.get(),
         "metaOverrides" to metaOverrides.get()

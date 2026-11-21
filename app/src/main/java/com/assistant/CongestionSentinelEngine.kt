@@ -114,6 +114,17 @@ object CongestionSentinelEngine {
     }
 
     fun stop() { running = false }
+
+    // Item 16 Letter C (B1): first live reader for the onset timestamp
+    // and the warning count — GameplayRoomActivity displays them on the
+    // diagnostics screen. Before this the timestamp was read only by
+    // this file's own CLEAR log line and the count only by the ONSET
+    // log line. congestedForSecs is derived here so the display stays dumb.
+    fun diagnostics(): Map<String, Any> = mapOf(
+        "congested" to congested,
+        "congestedForSecs" to if (congested) (System.currentTimeMillis() - congestedSinceMs) / 1000L else 0L,
+        "warnings" to warnings
+    )
 }
 
 /* ========

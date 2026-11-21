@@ -118,5 +118,4 @@ object CrossPrecisionEngine {
 /* ========
 CrossingLaneAnalysisEngine
 ======== */
-internal const val CROSSINGLANE_OMEGA_AUTHORITY_TAG = "CrossingLane.omega"
 
