@@ -35,5 +35,9 @@ object DispatchBounds {
         captureHeight = height
     }
 
+    // Item 17 (Letter D, D2-F07, WIRED by the lead as L-F02):
+    // HybridExecutionTerminal.clampToCapture now calls this predicate
+    // instead of inlining the same check (w <= 0f || h <= 0f) — the
+    // behaviour is identical (isSet is exactly w > 0 && h > 0).
     fun isSet(): Boolean = captureWidth > 0f && captureHeight > 0f
 }

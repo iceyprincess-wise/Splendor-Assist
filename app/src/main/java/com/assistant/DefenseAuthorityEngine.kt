@@ -94,23 +94,8 @@ import kotlin.math.pow
 
 
 object DefenseAuthorityEngine {
-    data class DefenseEvaluationDiagnostics(
-        val totalEvaluations: Long,
-        val maxContainmentObserved: Float,
-        val maxInterceptionObserved: Float,
-        val lastDistanceEvaluated: Float,
-        val lastUpdatedTimestamp: Long
-    )
 
     private val evaluationCount = AtomicLong(0L)
-    @Volatile private var peakContainment: Float = 0f
-    @Volatile private var peakInterception: Float = 0f
-    @Volatile private var lastDistance: Float = 0f
-    @Volatile private var lastUpdateMs: Long = 0L
-
-    fun getEvaluationDiagnostics() = DefenseEvaluationDiagnostics(
-        evaluationCount.get(), peakContainment, peakInterception, lastDistance, lastUpdateMs
-    )
 
     fun evaluate(distance: Float, strength: Int, recovery: Float, retention: Float): DefenseAuthorityResult {
         val ns = strength.coerceIn(0, 100) / 100f
@@ -124,10 +109,6 @@ object DefenseAuthorityEngine {
         val pressure = (containment + interception).coerceIn(0f, 20f)
 
         val count = evaluationCount.incrementAndGet()
-        if (containment > peakContainment) peakContainment = containment
-        if (interception > peakInterception) peakInterception = interception
-        lastDistance = distance
-        lastUpdateMs = System.currentTimeMillis()
 
         if (count % 500L == 0L) {
             Log.d("DefenseAuthorityEngine", "containment=$containment interception=$interception pressure=$pressure")

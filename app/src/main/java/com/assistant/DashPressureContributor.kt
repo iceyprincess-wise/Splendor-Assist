@@ -150,10 +150,21 @@ object DashPressureContributor : GameplayContributor {
         if (tx <= 0f && ty <= 0f) return null
         // No68-I-D32: the matrix already dispatched this press straight to
         // the bus (INTERCEPTION emergency lane) when it offered. A second
-        // ConAI contribution for the same press would double-dispatch — and
-        // this contribution never wins arbitration anyway (Defense ties it
-        // and is registered earlier). Skip it; the ConAI path below is the
-        // fallback for frames the matrix did not offer on.
+        // ConAI contribution for the same press would double-dispatch.
+        // D1-F05 (Letter D): the old note here said this contribution
+        // could never win at all — that is imprecise. The exact
+        // arithmetic (weight = authority x confidence; Defense authority
+        // = defenderDensity, this authority = defenderDensity x
+        // pressScale with pressScale in [0.55, 1.0], ConAI arbitrate
+        // picks maxByOrNull weight x authority with first-max winning
+        // ties, Defense registered before DashPressure) proves only
+        // that it can never beat Defense HEAD-TO-HEAD. It CAN win the
+        // DEFEND arm when Defense offers nothing (native stopper down:
+        // Defense returns null) — e.g. at full density and full stamina
+        // it ties DefenseAuthority and wins that tie on registration
+        // order. So this contribution is the live fallback for the
+        // frames the matrix did not offer on, not a dead offer. No
+        // number is re-tuned here: the formulas are Ed's, unchanged.
         // No68-MERGE NOTE: this check is intentionally INERT in the merged
         // tree. H-D22 makes this compute() pass offerEmergency = false, so
         // it never offers and the flag is always false here (the compute()

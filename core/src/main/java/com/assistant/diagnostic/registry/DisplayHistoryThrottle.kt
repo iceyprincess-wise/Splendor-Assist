@@ -49,10 +49,9 @@ class DisplayHistoryThrottle(private val minIntervalMs: Long = DEFAULT_MIN_INTER
         return false
     }
 
-    /** Test hook: clears the throttle state. No production caller uses it. */
-    @Synchronized
-    fun reset() {
-        lastAppendMs = 0L
-        lastVerdict = null
-    }
+    // Item 17 (Letter D, D2-F06): reset() is DELETED — it was a test
+    // hook with zero production callers, and tests get a clean state
+    // from a fresh DisplayHistoryThrottle() instance (default 5000 ms
+    // interval), so the hook buys nothing. shouldAppend is untouched.
+    // (No production caller existed to update.)
 }

@@ -26,6 +26,16 @@ object DribbleContributor : GameplayContributor {
     override val engineName = "Dribble"
     override val capabilities = setOf(EngineCapability.ATTACK, EngineCapability.MOVEMENT)
 
+    // Item 17 (Letter D, D2-F02): DribbleDecision.spaceAhead had no
+    // reader — the contributor read kind/targetX/targetY only. The
+    // field's purpose is the safety margin of the offered dribble, so
+    // the contributor now logs it on the kind transition that opens a
+    // dribble/skill offer (one line per transition, never per frame).
+    // Same pattern as BodyWeightPressContributor's lean-break log
+    // (Letter B, item 15). No gate or authority change: the value is
+    // diagnostic only; the engine's own pick already maximises it.
+    @Volatile private var lastKind = DribbleKind.NONE
+
     override fun fastGate(frame: RuntimeFrame): Boolean =
         frame.trusted && frame.hasBall
 
@@ -35,7 +45,20 @@ object DribbleContributor : GameplayContributor {
             ControlMappingTrainer.dashHoldCandidateFresh()
         } catch (_: Throwable) { false }
         val decision = DribbleEngine.decide(frame, dashHeld)
-        if (decision.kind == DribbleKind.NONE) return null
+        if (decision.kind == DribbleKind.NONE) {
+            lastKind = DribbleKind.NONE
+            return null
+        }
+        // D2-F02: kind-change read of spaceAhead.
+        if (decision.kind != lastKind) {
+            try {
+                com.assistant.diagnostic.RuntimeLogger.log(
+                    "DRIBBLE ${decision.kind} spaceAhead=${decision.spaceAhead} target=(${decision.targetX},${decision.targetY})",
+                    "DRIBBLE"
+                )
+            } catch (_: Throwable) { }
+        }
+        lastKind = decision.kind
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.MOVE,
@@ -45,5 +68,9 @@ object DribbleContributor : GameplayContributor {
             confidence = frame.confidence,
             durationHintMs = if (decision.kind == DribbleKind.SKILL_MOVE) 30L else 40L
         )
+    }
+
+    override fun reset() {
+        lastKind = DribbleKind.NONE
     }
 }

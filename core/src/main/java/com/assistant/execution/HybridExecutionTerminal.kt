@@ -109,7 +109,7 @@ object HybridExecutionTerminal {
     internal fun clampToCapture(request: ExecutionRequest): ExecutionRequest {
         val w = DispatchBounds.captureWidth
         val h = DispatchBounds.captureHeight
-        if (w <= 0f || h <= 0f) return request
+        if (!DispatchBounds.isSet()) return request
         if (!request.startX.isFinite() || !request.startY.isFinite() ||
             !request.endX.isFinite() || !request.endY.isFinite()) return request
         if (request.startX in 0f..w && request.startY in 0f..h &&

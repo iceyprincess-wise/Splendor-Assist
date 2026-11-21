@@ -128,7 +128,8 @@ object DeathWatch {
         // and DeathWatch was never armed for the process lifetime.
         installed = true
 
-        log("DeathWatch armed proc=" + procName + " pid=" + pidStr)
+        log("DeathWatch armed proc=" + procName + " pid=" + pidStr +
+            " watcherAlive=" + isWatcherAlive())
     }
 
     // ---------------- heartbeat ----------------
@@ -150,6 +151,18 @@ object DeathWatch {
                 fos.fd.sync()
             }
             tmp.renameTo(m)
+            // Item 17 (Letter D, D2-F03): lastHeartbeatFailure() had
+            // zero readers — the stored failure is now consumed here:
+            // the first good beat after a failure logs the recovery
+            // (and clears it), so a storage outage and its recovery
+            // are both visible in the log instead of the failure
+            // sitting unread in a field.
+            val prevFailure = lastHeartbeatFailure()
+            if (prevFailure != null) {
+                lastHeartbeatFailure = null
+                log("DeathWatch heartbeat recovered after failure: " +
+                    prevFailure.javaClass.simpleName + ": " + prevFailure.message)
+            }
         } catch (t: Throwable) {
             // SPLENDOR_P11_D1: a failed beat used to vanish silently, so a
             // storage outage looked exactly like a process death. Keep the

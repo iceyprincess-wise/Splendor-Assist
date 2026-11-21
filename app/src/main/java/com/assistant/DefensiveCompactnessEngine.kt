@@ -111,7 +111,7 @@ object DefensiveCompactnessEngine {
             !outBuffer[2].isFinite() || !outBuffer[3].isFinite()) {
             return DefensiveCompactnessResult()
         }
-        return DefensiveCompactnessResult(outBuffer[0], outBuffer[1], outBuffer[2], outBuffer[3])
+        return DefensiveCompactnessResult(compactness = outBuffer[2], confidence = outBuffer[3])
     }
 }
 

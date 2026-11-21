@@ -209,7 +209,6 @@ object DefenderInterceptionPredictionEngine {
                 result.add(
                     DefenderInterceptionPrediction(
                         lane = lane,
-                        interceptionRisk = maximumCalculatedRisk,
                         predictedInterceptX = finalInterceptX,
                         predictedInterceptY = finalInterceptY,
                         predictedIntercept = maximumCalculatedRisk >= 0.50f
@@ -218,8 +217,6 @@ object DefenderInterceptionPredictionEngine {
             }
         }
 
-        // In-place sort avoids creating extra List allocations
-        result.sortByDescending { it.interceptionRisk }
         return DefenderInterceptionPredictionAnalysis(result)
     }
 }

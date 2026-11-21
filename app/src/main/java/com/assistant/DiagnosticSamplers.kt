@@ -24,9 +24,13 @@ object DiagnosticSamplers {
     // 20 fps, so the old average mixed three different regimes and the
     // reported rate lagged a real drop by tens of seconds.
     private const val FPS_WINDOW_NANOS = 5_000_000_000L
+    // Item 17 (Letter D, D2-F04): the lastMeasuredFps() getter is
+    // DELETED — it had zero readers anywhere, and the value it returned
+    // is not lost: every fpsReport path already feeds it to
+    // FPSMonitor.update() (in-app display) and the F47FPS log line.
+    // The stored field below stays: it is the value those two live
+    // consumers are fed from.
     @Volatile private var lastMeasuredFps = 0f
-    /** Last measured capture rate in fps (0 = no frames in the last window). */
-    fun lastMeasuredFps(): Float = lastMeasuredFps
     private val frameLock = Any()
     private val frameTimes = LongArray(600)
     private var frameNext = 0

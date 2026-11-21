@@ -231,11 +231,17 @@ object DefenseContributor : GameplayContributor {
             targetY = finalY,
             authority = frame.defenderDensity.coerceIn(0f, 1f),
             confidence = frame.confidence,
-            // No68-H-D34: the native pacing duration (12–40ms; 12ms in
+            // D1-F04 (Letter D): the native pacing duration (12–40ms; 12ms in
             // close combat) was discarded for a hardcoded 30L. Wire it —
             // chooseRequest clamps the final duration to 15–85ms anyway.
-            // outStopper[2] (barge flag) still has no tap consumer (QH-5).
-            durationHintMs = if (outStopper[3].isFinite()) outStopper[3].toLong().coerceIn(15L, 85L) else 30L
+            // The native barge flag (outStopper[2], closeMask in
+            // native_stopper_matrix.c, 0 = no barge, >0 = barge) is wired
+            // to the contribution's barge channel: EngineContribution.barge
+            // is rendered by RuntimeDecisionLoop.chooseRequest as a short
+            // hard swipe (duration clamped to <= 20 ms). NaN is falsy
+            // (> 0f is false), so no extra finiteness guard is needed.
+            durationHintMs = if (outStopper[3].isFinite()) outStopper[3].toLong().coerceIn(15L, 85L) else 30L,
+            barge = outStopper[2] > 0f
         )
     }
 }

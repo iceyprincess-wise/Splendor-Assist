@@ -112,8 +112,8 @@ object DefensiveLineEngine {
             if (player.x > maxX) maxX = player.x
         }
         if (count == 0) return DefensiveLineResult(found=false)
-        return DefensiveLineResult(true, (sumX / count).toFloat(), minX, maxX,
-            count, (sumConfidence / count).toFloat())
+        return DefensiveLineResult(found = true, averageX = (sumX / count).toFloat(), minX = minX, maxX = maxX,
+            confidence = (sumConfidence / count).toFloat())
     }
 
     /** computeUserLine() — OUR back line.
@@ -157,8 +157,8 @@ object DefensiveLineEngine {
             if (player.x < minX) minX = player.x
             if (player.x > maxX) maxX = player.x
         }
-        return DefensiveLineResult(true, (sumX / keepCount).toFloat(), minX, maxX,
-            keepCount, (sumConfidence / keepCount).toFloat())
+        return DefensiveLineResult(found = true, averageX = (sumX / keepCount).toFloat(), minX = minX, maxX = maxX,
+            confidence = (sumConfidence / keepCount).toFloat())
     }
 }
 
