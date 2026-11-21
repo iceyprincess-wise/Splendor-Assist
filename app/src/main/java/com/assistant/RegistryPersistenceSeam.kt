@@ -36,6 +36,7 @@ object RegistryPersistenceSeam {
     private const val KEY_BLOB_THRESHOLD = "blobThreshold"
     private const val KEY_LATENCY_MONITORING = "latencyMonitoringEnabled"
     private const val KEY_FPS_MONITORING = "fpsMonitoringEnabled"
+    private const val KEY_TRAINED_DETECTION = "trainedDetectionEnabled"
 
     /** Pure conversion: config -> flat map (one entry per toggle). */
     fun toMap(config: VisionConfiguration): Map<String, Any> = mapOf(
@@ -48,7 +49,8 @@ object RegistryPersistenceSeam {
         KEY_GOAL_OVERLAY to config.goalOverlayEnabled,
         KEY_BLOB_THRESHOLD to config.blobThreshold,
         KEY_LATENCY_MONITORING to config.latencyMonitoringEnabled,
-        KEY_FPS_MONITORING to config.fpsMonitoringEnabled
+        KEY_FPS_MONITORING to config.fpsMonitoringEnabled,
+        KEY_TRAINED_DETECTION to config.trainedDetectionEnabled
     )
 
     private fun asBoolean(value: Any?, fallback: Boolean): Boolean = when (value) {
@@ -76,7 +78,11 @@ object RegistryPersistenceSeam {
             goalOverlayEnabled = asBoolean(values[KEY_GOAL_OVERLAY], fallback.goalOverlayEnabled),
             blobThreshold = asFloat(values[KEY_BLOB_THRESHOLD], fallback.blobThreshold).coerceIn(0f, 1f),
             latencyMonitoringEnabled = asBoolean(values[KEY_LATENCY_MONITORING], fallback.latencyMonitoringEnabled),
-            fpsMonitoringEnabled = asBoolean(values[KEY_FPS_MONITORING], fallback.fpsMonitoringEnabled)
+            fpsMonitoringEnabled = asBoolean(values[KEY_FPS_MONITORING], fallback.fpsMonitoringEnabled),
+            // Queue item 21: a saved profile from before this field
+            // keeps the fallback's value (default true — file presence
+            // is the real opt-in; see VisionConfiguration).
+            trainedDetectionEnabled = asBoolean(values[KEY_TRAINED_DETECTION], fallback.trainedDetectionEnabled)
         )
 
     /** Persists the config. Async apply: never blocks the caller. */

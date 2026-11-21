@@ -92,6 +92,26 @@ class App : Application() {
         // SharedPreferences, so each process restores its own copy.
         try { com.assistant.VisionConfigurationEngine.restore(applicationContext) } catch (_: Throwable) { }
 
+        // Queue item 21 (v3 TFLite detector): initialise the trained
+        // detector on a background thread — initialize() reads the 80 MB
+        // model file and must never block onCreate. Main process only:
+        // :survival / :telemetry run no vision, so loading the model
+        // there would waste memory on a 4 GB phone. Runs after
+        // SplendorStorageRoot.initialize() (file-first needs the storage
+        // root) and after VisionConfigurationEngine.restore() above.
+        // File-first side-load (/sdcard/Splendor-Assist/
+        // splendor_detector.tflite, SHA-pinned v3); with no file present
+        // the engine stays MISSING_MODEL and behaviour is identical to
+        // today. The async inference loop starts only after a successful
+        // load (inside initialize()).
+        if (isMainProcess) {
+            try {
+                Thread({
+                    try { TrainedDetectionEngine.initialize(applicationContext) } catch (_: Throwable) { }
+                }, "tflite-init").start()
+            } catch (_: Throwable) { }
+        }
+
         // Domain Backup Generator: Forces class loading for all 216+ engine objects
         // and verifies SMART_ASSIST (90) and STUTTER (80) execution sources.
         // FIX #1: Removed duplicate RuntimeLogger.reconcileExpired() since initialize() already calls it

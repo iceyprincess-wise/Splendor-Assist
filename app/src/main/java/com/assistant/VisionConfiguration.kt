@@ -106,7 +106,21 @@ data class VisionConfiguration(
     // 0.50f, so default behaviour is unchanged).
     val blobThreshold:Float = 0.50f,
     val latencyMonitoringEnabled:Boolean = true,
-    val fpsMonitoringEnabled:Boolean = true
+    val fpsMonitoringEnabled:Boolean = true,
+    // Queue item 21 (v3 TFLite detector): the trained-detection gate.
+    // Default TRUE because file presence is the real opt-in — with no
+    // model file placed the engine is MISSING_MODEL and behaviour is
+    // identical to today; the detector only activates after Splendor
+    // himself places the file (the test he authorized). Read in
+    // VisionCore.process() around the trained ball/keeper/players
+    // fusion; persisted via VisionConfigurationEngine.update/persist.
+    // Programmatic surface: VisionConfigurationEngine.update { it.copy(
+    // trainedDetectionEnabled = false) } (or RuntimeTuningPanel.
+    // updateVision). No rendered toggle UI exists today — the Mod Menu /
+    // smartassist room never renders individual VisionConfiguration
+    // fields (updateVision has no UI caller) — so this is open until a
+    // UI surface is built for it.
+    val trainedDetectionEnabled:Boolean = true
     // No68-H-D50: sceneTrackingEnabled + diagnosticsEnabled deleted —
     // zero readers and zero writers repo-wide (no overlay, monitor,
     // registry or engine ever read them), no positional constructions

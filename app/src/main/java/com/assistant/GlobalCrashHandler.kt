@@ -396,7 +396,7 @@ class GlobalCrashHandler(
                 EngineEntry("GoalkeeperDetector","com.assistant.GoalkeeperDetector","ACTIVE","runs every frame inside VisionCore"),
                 EngineEntry("GoalDetector","com.assistant.GoalDetector","ACTIVE","runs every frame; MIN_PIXEL_COUNT=12 score-based detection"),
                 EngineEntry("BallCandidateEngine","com.assistant.BallCandidateEngine","ACTIVE","runs every frame on filtered blobs"),
-                EngineEntry("TrainedDetectionEngine","com.assistant.TrainedDetectionEngine","PASSIVE","dormant: no .tflite model asset present; returns null always, falls back to heuristic"),
+                EngineEntry("TrainedDetectionEngine","com.assistant.TrainedDetectionEngine","PASSIVE","side-load only: reads /sdcard/Splendor-Assist/splendor_detector.tflite (SHA-pinned v3, AGPL-3.0) or the asset; MISSING_MODEL until placed, then async inference feeds VisionCore (ball/keeper/players) with the heuristic owning every frame"),
                 EngineEntry("ConnectedComponentEngine","com.assistant.ConnectedComponentEngine","ACTIVE","BFS blob extraction runs every frame"),
                 EngineEntry("FrameScanner","com.assistant.FrameScanner","ACTIVE","pixel scan hot-loop runs every frame"),
                 EngineEntry("MagneticFeetContributor","com.assistant.MagneticFeetContributor","ACTIVE","vision-backed possession movement assist; bounded MOVE contribution"),

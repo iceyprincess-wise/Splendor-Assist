@@ -194,18 +194,33 @@ TrainedDetectionEngine
  *   DISABLED      -> too many consecutive inference failures; engine shut
  *                    itself off loudly and heuristic took over again.
  *
- * MODEL CONTRACT (for whoever supplies the asset):
- *   file      assets/splendor_detector.tflite
- *   input     [1, 320, 320, 3] float32 RGB, 0..1, nearest-neighbor resized
- *             from the capture frame (assumed RGBA_8888 byte layout)
- *   output    [1, 25, 6] float32: cxNorm, cyNorm, wNorm, hNorm, score, class
- *             class 0 = ball. Other classes reserved (1 player, 2 keeper).
+ * MODEL CONTRACT (queue item 21, v3 — replaces the old 320 / [1,25,6]
+ * contract; the old file is gone):
+ *   file      side-load /sdcard/Splendor-Assist/splendor_detector.tflite
+ *             (SHA-256-pinned v3, AGPL-3.0), asset fallback of the same
+ *             name; the 80 MB model is never in the repo or the APK
+ *   input     [1, 640, 640, 3] float32 RGB, 0..1, LETTERBOX resized
+ *             (scale = min(640/w, 640/h), grey-114 pad) from the capture
+ *             frame (assumed RGBA_8888 byte layout) — stretch loses to
+ *             letterbox for this model (D2), so the native stretch path
+ *             is bypassed for v3 input
+ *   output    [1, 9, 8400] float32: rows 0-3 xywh in 640-space, rows 4-8
+ *             per-class scores (sigmoid already applied); classes
+ *             0 Ball, 1 Buttons, 2 Keeper, 3 MyPlayer, 4 OpponentPlayer
+ *             (hard-coded in Yolo11Decoder — the .tflite carries no
+ *             labels). Decode + NMS in Yolo11Decoder; fusion rules in
+ *             TrainedDetectionFusion.
  *
- * WIRING: VisionCore consults ballCandidateOrNull() BEFORE the heuristic
- * candidate is accepted. Trained wins only when ACTIVE and confident;
- * heuristic is computed every frame regardless, both as fallback and as a
- * cross-check - large disagreement is counted and logged, never hidden.
+ * WIRING: inference runs ASYNC on a dedicated loop (never inside
+ * VisionCore.process()). VisionCore offers each frame via submitFrame()
+ * (cadence-gated, 500 ms) and reads the latest result through
+ * fusedBall() / fusedKeeper() / mergedPlayers(), each gated on
+ * freshness (250 ms) + confidence; the heuristic is computed every
+ * frame regardless, both as fallback and as cross-check — a fresh
+ * trained ball that disagrees by > 80 px is counted and logged and
+ * the heuristic wins. Buttons are log-only (no consumer exists).
  *
  * PERFORMANCE (4GB device): input buffer and output arrays are
- * preallocated once - the per-frame inference path allocates nothing.
+ * preallocated once; the only per-submit allocation is the engine-owned
+ * frame snapshot (~737 KB at 288x640, at most one per 500 ms).
  */

@@ -120,16 +120,32 @@ val heuristicCandidate =
     )
 
 /*
- * Task C: trained detector first. When a real TFLite model is loaded AND
- * has produced a real on-device inference, its ball wins this frame; the
- * heuristic candidate above is still computed every frame as the always-on
- * fallback and cross-check reference. With no model asset present the
- * engine returns null and behaviour is IDENTICAL to the pure-heuristic
- * pipeline - nothing is faked in either direction.
+ * Task C (queue item 21, v3 TFLite detector): trained detector joins,
+ * never replaces. The inference runs ASYNC on a dedicated loop — never
+ * inside process() — so the frame below only (a) offers its snapshot
+ * to that loop and (b) reads the latest result through the fusion
+ * gates. The heuristic candidate above is still computed every frame
+ * as the always-on fallback and cross-check reference, and it owns the
+ * frame whenever the trained result is absent, stale, weak, or
+ * divergent. With no model file placed the engine is MISSING_MODEL and
+ * behaviour is IDENTICAL to the pure-heuristic pipeline - nothing is
+ * faked in either direction. The gate is VisionConfiguration.
+ * trainedDetectionEnabled (default true — file presence is the real
+ * opt-in); the CRITICAL-memory ball-only branch below still benefits,
+ * because the ball was fused before the branch.
  */
+val trainedDetectionEnabled = VisionConfigurationEngine.current().trainedDetectionEnabled
+if (trainedDetectionEnabled) {
+    TrainedDetectionEngine.submitFrame(frame)
+}
 val ballCandidate =
-    TrainedDetectionEngine.ballCandidateOrNull(frame, heuristicCandidate)
-        ?: heuristicCandidate
+    if (trainedDetectionEnabled) {
+        TrainedDetectionEngine.fusedBall(
+            heuristicCandidate, frame.width, frame.height, frame.metadata.timestampNanos
+        ) ?: heuristicCandidate
+    } else {
+        heuristicCandidate
+    }
 
 val ball =
     BallDetector.detect(
@@ -187,13 +203,38 @@ val motion =
 // FrameAssembler can mark the frame trusted and all contributors activate.
 BallTelemetryBridge.publish(ball)
 
-val players =
+val heuristicPlayers =
     PlayerDetector.detect(filteredBlobs)
 
-val goalkeeper =
+// Queue item 21: trained players MERGE, never replace — a trained
+// player with no heuristic match within 40 px is added; matched pairs
+// confirm the heuristic one. Full-vision path only; the CRITICAL-memory
+// ball-only path below stays heuristic-only by design (degraded path).
+val players =
+    if (trainedDetectionEnabled) {
+        TrainedDetectionEngine.mergedPlayers(
+            heuristicPlayers, frame.width, frame.height, frame.metadata.timestampNanos
+        )
+    } else {
+        heuristicPlayers
+    }
+
+val heuristicGoalkeeper =
     GoalkeeperDetector.detect(
         filteredBlobs
     )
+
+// Queue item 21: trained keeper wins when fresh + confident (>= 0.50),
+// via the fusion seam — GoalkeeperDetector.detect stays blob-only by
+// design and is untouched. Full-vision path only (same reason as above).
+val goalkeeper =
+    if (trainedDetectionEnabled) {
+        TrainedDetectionEngine.fusedKeeper(
+            frame.width, frame.height, frame.metadata.timestampNanos
+        ) ?: heuristicGoalkeeper
+    } else {
+        heuristicGoalkeeper
+    }
 
 val state =
     GameStateFusion.fuse(
