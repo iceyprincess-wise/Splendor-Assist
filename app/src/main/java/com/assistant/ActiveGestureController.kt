@@ -207,7 +207,12 @@ class ActiveGestureController(
             nearestOppEarly?.x ?: endX, nearestOppEarly?.y ?: endY,
             nearestOppEarly?.velocityXPerSecond ?: 0f, nearestOppEarly?.velocityYPerSecond ?: 0f)) 1.0f else 0.0f
         val scoreAim = CriticalAttackingVectorEngine.computeAbsoluteScoringVector(startX, startY, dynamicGkX, dynamicGkY, dynamicGoalLeftX, dynamicGoalLeftY, dynamicGoalRightX, dynamicGoalRightY)
-        val defensiveVectorPacked = OmnipotentDashPressureMatrix.computeHighAuthorityDefensiveVector(endX, endY, startX, startY, startX, startY + 50f, endX, endY, UserTouchState.isTouching())
+        // Queue item 9 (L3): the same line-broken signal the contributor
+        // path passes — the emergency lane must not drag a man off an
+        // already-broken line either. Read off the world store (this
+        // legacy path has no frame; the store is what it already reads
+        // for ownership below).
+        val defensiveVectorPacked = OmnipotentDashPressureMatrix.computeHighAuthorityDefensiveVector(endX, endY, startX, startY, startX, startY + 50f, endX, endY, UserTouchState.isTouching(), dragOutHeld = Phase3WorldStateStore.current().defensiveStance.dragOutHeld)
         // No68-I-D36: the last argument above was a hardcoded `true`, so the
         // matrix's direct INTERCEPTION offer fired on the legacy path even
         // when the user was NOT holding pressure. Pass the real touch state

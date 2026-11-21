@@ -129,7 +129,12 @@ object OmnipotentDashPressureMatrix {
         // matrix is a pure function and offers nothing (see No68-H-D15).
         offerEmergency: Boolean = true,
         screenWidth: Float = com.assistant.vision.CameraProfile.captureWidthOrFallback(),
-        screenHeight: Float = com.assistant.vision.CameraProfile.captureHeightOrFallback()
+        screenHeight: Float = com.assistant.vision.CameraProfile.captureHeightOrFallback(),
+        // Queue item 9 (L3): the line is already stretched past the D14
+        // 25% bound (DefensiveStanceProducer.dragOutHeld, via the frame).
+        // Default false keeps every existing caller compiling; both
+        // live callers pass the real value.
+        dragOutHeld: Boolean = false
     ): Long {
         val safeWidth = screenWidth.coerceAtLeast(1f)
         val safeHeight = screenHeight.coerceAtLeast(1f)
@@ -149,7 +154,18 @@ object OmnipotentDashPressureMatrix {
         var targetX: Float
         var targetY: Float
 
-        if (isPlayerHoldingPressure) {
+        if (dragOutHeld) {
+            // Queue item 9 (L3): recovery priority. The line is already
+            // broken — the press must not pull this man further off it.
+            // The press target is the line home, not the ball, whether
+            // or not the user is holding pressure: the touch still
+            // drives the player, but toward the line. The 0.25–0.85
+            // aggression interpolation and the 22 px close-range push
+            // are both skipped while the line is broken; the press
+            // resumes when the line is whole again (dragOutHeld false).
+            targetX = defHomeX.coerceIn(0f, safeWidth)
+            targetY = defHomeY.coerceIn(0f, safeHeight)
+        } else if (isPlayerHoldingPressure) {
             if (distanceToOpponent > compactThreshold) {
                 val interceptAggression = (1f - (distanceToOpponent / safeWidth))
                     .coerceIn(0.25f, 0.85f)

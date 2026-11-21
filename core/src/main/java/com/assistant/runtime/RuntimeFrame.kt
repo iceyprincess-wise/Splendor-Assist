@@ -163,6 +163,13 @@ data class RuntimeFrame(
     val stanceTight: Boolean = false,
     val dragOutHeld: Boolean = false,
     /*
+     * Queue item 9 (L1): the vacated slot on the tight line when
+     * dragOutHeld is true (DefensiveStanceProducer.dragOutGapX) — the
+     * X the controlled defender recovers to / covers. 0f when no
+     * drag-out is held. Read live by DefenseContributor.
+     */
+    val dragOutGapX: Float = 0f,
+    /*
      * L14 Home Position Producer: the tracked defender's home on the
      * tight line. homeFound=false means "no line — use the historical
      * screen-centre fallback" (DefenseContributor).
@@ -204,10 +211,11 @@ data class RuntimeFrame(
     val stanceMidfieldFound: Boolean = false,
     /*
      * B4 Low-Block Wiring: the low-block movement list, one target per
-     * defender (by defender id). lowBlockActive is false while QD-3
-     * (Q68-27, Y→X axis rework) is unresolved — the movements are
-     * published and observable, but no consumer applies them until Ed
-     * defines the X-geometry, or the wired positions are wrong.
+     * defender (by defender id). Queue item 9 (L2) resolved QD-3
+     * (Q68-27, Y→X axis rework): lowBlockActive is true only when the
+     * engine reports the block engaged (ball deep on the X axis, own
+     * goal known) — the movements are published regardless, but no
+     * consumer applies them while the block is inactive.
      */
     val lowBlockMovements: List<LowBlockMovement> = emptyList(),
     val lowBlockActive: Boolean = false,

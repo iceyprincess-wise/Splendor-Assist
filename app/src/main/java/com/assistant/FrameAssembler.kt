@@ -383,6 +383,8 @@ object FrameAssembler {
             defensiveLineSpread = world.defensiveStance.lineSpread,
             stanceTight = world.defensiveStance.tight,
             dragOutHeld = world.defensiveStance.dragOutHeld,
+            // Queue item 9 (L1): the vacated slot X (0f when no drag-out).
+            dragOutGapX = world.defensiveStance.dragOutGapX,
             // L14: the tracked defender's home on the tight line.
             homeX = world.defenderHome.x,
             homeY = world.defenderHome.y,
@@ -403,11 +405,14 @@ object FrameAssembler {
             stanceMidfieldX = world.defensiveStance.midfieldX,
             stanceMidfieldSpread = world.defensiveStance.midfieldSpread,
             stanceMidfieldFound = world.defensiveStance.found,
-            // B4: the low-block movement list. Active only while QD-3
-            // is resolved — the movements are published regardless, but
-            // no consumer may apply them until the axis rework lands.
+            // B4: the low-block movement list. Queue item 9 (L2) resolved
+            // QD-3: the gate is the engine's own active flag (ball deep
+            // on the X axis, own goal known), not list non-emptiness —
+            // the list is non-empty even while inactive (hold positions),
+            // so isNotEmpty() would have made the block "active" on
+            // every frame with defenders tracked.
             lowBlockMovements = world.lowBlockMovements,
-            lowBlockActive = LowBlockContainmentEngine.QD3_AXIS_RESOLVED && world.lowBlockMovements.isNotEmpty(),
+            lowBlockActive = LowBlockContainmentEngine.QD3_AXIS_RESOLVED && world.lowBlockActive,
             // D13: the user's through-press state + the B9 lead target.
             // throughPressed is a candidate, not a confirmed press.
             throughPressed = ControlMappingTrainer.throughPressCandidateFresh(),
@@ -548,6 +553,7 @@ object FrameAssembler {
             "defensiveLineX" to f.defensiveLineX,
             "stanceTight" to f.stanceTight,
             "dragOutHeld" to f.dragOutHeld,
+            "dragOutGapX" to f.dragOutGapX,
             "homeFound" to f.homeFound,
             // Midfield (queue item 5, batch midfield): the measured line
             // + its compactness, and the stance-derived fallback X.

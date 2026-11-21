@@ -148,6 +148,33 @@ object DefenseContributor : GameplayContributor {
         // real signal is the user's touch, same as DashPressureContributor.
         val holdingPressure = UserTouchState.isTouching()
 
+        // Queue item 9 (L1): the drag-out answer. When the stance reports
+        // the line stretched past the D14 25% bound (frame.dragOutHeld),
+        // the controlled defender is ANSWERED, not left chasing the ball:
+        // he is driven to the vacated slot (frame.dragOutGapX) at his
+        // current Y. If he is the dragged-out man this is his recovery
+        // to the line; if another man was dragged out, this is the cover
+        // rotation filling the gap — one target, one joystick, either
+        // way. Authority is the same defenderDensity as the normal
+        // stopper offer, so this wins the ConAI DEFEND arm over the
+        // press (DashPressure authority is defenderDensity x pressScale
+        // <= defenderDensity, and Defense is registered first, so a tie
+        // goes to Defense). The native stopper is bypassed on purpose:
+        // a dragged-out defender must re-form the line, not chase the
+        // ball. Precedence: a broken line outranks the low-block anchor
+        // below — the block's movements assume a formed line.
+        if (frame.dragOutHeld && frame.dragOutGapX.isFinite()) {
+            return EngineContribution(
+                engine = engineName,
+                actionClass = ActionClass.DEFEND,
+                targetX = frame.dragOutGapX.coerceIn(0f, screenW),
+                targetY = defY.coerceIn(0f, screenH),
+                authority = frame.defenderDensity.coerceIn(0f, 1f),
+                confidence = frame.confidence,
+                durationHintMs = 40L
+            )
+        }
+
         // B4: the low-block movement for THIS defender is the home
         // anchor while the low block is active (frame.lowBlockActive —
         // false while QD-3 is unresolved, so the L14 home below is what

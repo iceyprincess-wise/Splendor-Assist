@@ -138,7 +138,10 @@ object DashPressureContributor : GameplayContributor {
             joystickY = com.assistant.vision.CameraProfile.captureHeightOrFallback() * ControlMappingTrainer.joystickCenterY(),
             // No68-H-D22: single dispatch — the matrix must not also offer
             // an emergency request; this contribution IS the dispatch path.
-            offerEmergency = false
+            offerEmergency = false,
+            // Queue item 9 (L3): the line-broken signal — the press
+            // targets the line home while the line is stretched.
+            dragOutHeld = frame.dragOutHeld
         )
 
         val tx = OmnipotentDashPressureMatrix.unpackX(packed)

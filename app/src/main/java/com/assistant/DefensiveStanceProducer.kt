@@ -26,6 +26,14 @@ package com.assistant
  *     does NOT follow the dragged player: the spread stays clamped and
  *     dragOutHeld=true names the hold. The line holds its shape instead
  *     of breaking.
+ *   - dragOutGapX (queue item 9, L1) names WHERE the hold is: the vacated
+ *     slot on the tight line — the band end (average ± half the 25%
+ *     band) on the outlier side (the line end further from the average).
+ *     The controlled player is driven to it by DefenseContributor: if
+ *     he is the dragged-out man this is his recovery to the line; if
+ *     another man was dragged out, this is the cover rotation filling
+ *     the gap. One target, one joystick, either way. 0f when no
+ *     drag-out is held.
  * The stance is a pure function of the user line + ball X: no threat
  * input is needed for the geometry (the ThreatDecision selects which
  * defensive behaviour runs; the stance only says where the line stands).
@@ -40,7 +48,8 @@ data class DefensiveStance(
     val midfieldX: Float = 0f,
     val midfieldSpread: Float = 0f,
     val tight: Boolean = false,
-    val dragOutHeld: Boolean = false
+    val dragOutHeld: Boolean = false,
+    val dragOutGapX: Float = 0f
 )
 
 object DefensiveStanceProducer {
@@ -64,6 +73,15 @@ object DefensiveStanceProducer {
         val dragOutHeld = rawSpread > maxLineSpread
         val lineSpread = rawSpread.coerceAtMost(maxLineSpread)
         val lineX = userLine.averageX.coerceIn(0f, captureWidth)
+        // Queue item 9 (L1): the vacated slot on the tight line. The
+        // outlier is the line end further from the average; the slot is
+        // the tight-band end (average ± half the 25% band) on that side.
+        // Clamped to the capture; 0f when no drag-out is held.
+        val dragOutGapX = if (dragOutHeld) {
+            val outlierHigh = (userLine.maxX - lineX) >= (lineX - userLine.minX)
+            val halfBand = maxLineSpread * 0.5f
+            (lineX + (if (outlierHigh) halfBand else -halfBand)).coerceIn(0f, captureWidth)
+        } else 0f
         val ahead = if (ballX >= lineX) 1f else -1f
         val midfieldX = (lineX + ahead * captureWidth * MIDFIELD_AHEAD_FRACTION).coerceIn(0f, captureWidth)
         val midfieldSpread = (rawSpread * 1.2f).coerceAtMost(maxMidfieldSpread)
@@ -74,7 +92,8 @@ object DefensiveStanceProducer {
             midfieldX = midfieldX,
             midfieldSpread = midfieldSpread,
             tight = true,
-            dragOutHeld = dragOutHeld
+            dragOutHeld = dragOutHeld,
+            dragOutGapX = dragOutGapX
         )
     }
 }

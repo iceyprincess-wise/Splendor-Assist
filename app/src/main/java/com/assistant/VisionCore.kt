@@ -334,31 +334,58 @@ SceneTracker.update(
   // B4: the low-block wiring — the FIRST live caller of
   // LowBlockContainmentEngine (zero callers before this round). The
   // defenders are our tracked players; the movements are published to
-  // the world store (frame → DefenseContributor). QD-3 is UNRESOLVED,
-  // so the frame's lowBlockActive gate stays false and no consumer
-  // applies these movements yet — they are computed + published, not
-  // acted on, until Ed defines the X-geometry.
-  val lowBlockMovements =
-      run {
-          val defenders = scene.trackedPlayers.filter { it.isUserTeam }
-          if (defenders.isEmpty()) {
-              emptyList<com.assistant.runtime.LowBlockMovement>()
-          } else {
-              val result = LowBlockContainmentEngine.applyLowBlockContainment(
-                  ball.x,
-                  ball.y,
-                  com.assistant.vision.CameraProfile.captureWidthOrFallback(),
-                  com.assistant.vision.CameraProfile.captureHeightOrFallback(),
-                  defenders.map { Pair(it.x, it.y) }
-              )
-              result.movements.mapIndexed { index, target ->
-                  com.assistant.runtime.LowBlockMovement(
-                      defenderId = defenders[index].id,
-                      targetX = target.first,
-                      targetY = target.second
-                  )
-              }
+  // the world store (frame → DefenseContributor). Queue item 9 (L2)
+  // resolved QD-3: the engine is X-axis now, and its own active flag
+  // (not list non-emptiness) drives the frame gate.
+  // Our goal on the X axis — MarkingEngine convention: the detected
+  // goal centre when a goal is detected, else the attack-direction
+  // edge (attacking left puts our goal at the right edge). Neither
+  // available → ownGoalKnown=false → the engine holds position
+  // rather than shaping a line at a guessed side.
+  val ownGoalX: Float
+  val ownGoalKnown: Boolean
+  run {
+      val attackDir = AttackAxisModel.directionIfConfident()
+      when {
+          scene.goalDetected -> {
+              ownGoalX = (scene.goalLeftX + scene.goalRightX) * 0.5f
+              ownGoalKnown = true
           }
+          attackDir < 0 -> {
+              ownGoalX = com.assistant.vision.CameraProfile.captureWidthOrFallback()
+              ownGoalKnown = true
+          }
+          attackDir > 0 -> {
+              ownGoalX = 0f
+              ownGoalKnown = true
+          }
+          else -> {
+              ownGoalX = 0f
+              ownGoalKnown = false
+          }
+      }
+  }
+  val lowBlockDefenders = scene.trackedPlayers.filter { it.isUserTeam }
+  val lowBlockResult = if (lowBlockDefenders.isEmpty()) {
+      DefensiveContainmentResult(emptyList(), active = false)
+  } else {
+      LowBlockContainmentEngine.applyLowBlockContainment(
+          ball.x,
+          ball.y,
+          com.assistant.vision.CameraProfile.captureWidthOrFallback(),
+          com.assistant.vision.CameraProfile.captureHeightOrFallback(),
+          lowBlockDefenders.map { Pair(it.x, it.y) },
+          ownGoalX = ownGoalX,
+          ownGoalKnown = ownGoalKnown
+      )
+  }
+  val lowBlockMovements =
+      lowBlockResult.movements.mapIndexed { index, target ->
+          com.assistant.runtime.LowBlockMovement(
+              defenderId = lowBlockDefenders[index].id,
+              targetX = target.first,
+              targetY = target.second
+          )
       }
 
   // L14 (batch 1): the tracked defender's home on the tight line. The
@@ -668,8 +695,10 @@ val offsideRiskEstimationResult =
             defensiveStance = defensiveStance,
             // B5: the user line itself, as a store field (first publish).
             userLine = userLine,
-            // B4: the low-block movement list (computed above).
+            // B4: the low-block movement list (computed above) + its
+            // engaged flag (queue item 9, L2).
             lowBlockMovements = lowBlockMovements,
+            lowBlockActive = lowBlockResult.active,
             defenderHome = defenderHome,
             offensiveLine = offensiveLine,
             occupancy = occupancy,

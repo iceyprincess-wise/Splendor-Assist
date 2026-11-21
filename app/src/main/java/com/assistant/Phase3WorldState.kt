@@ -113,10 +113,11 @@ data class Phase3WorldState(
     // B4 (batch 2): the low-block movement list, one target per defender
     // (by defender id), computed in VisionCore from
     // LowBlockContainmentEngine. Read by FrameAssembler. The movements
-    // are published even while QD-3 is unresolved; the frame's
-    // lowBlockActive gate (not this list) decides whether a consumer
-    // may apply them.
+    // are published even while the block is inactive (hold positions);
+    // lowBlockActive (queue item 9, L2) is the engine's own engaged
+    // flag — the frame's lowBlockActive gate reads this, not the list.
     val lowBlockMovements: List<com.assistant.runtime.LowBlockMovement> = emptyList(),
+    val lowBlockActive: Boolean = false,
     // L14 (batch 1): the tracked defender's home on the tight line
     // (HomePositionProducer), computed in VisionCore. Read by
     // FrameAssembler; DefenseContributor uses it as the stopper anchor.

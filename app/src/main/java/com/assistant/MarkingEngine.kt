@@ -72,8 +72,26 @@ object MarkingEngine {
         val dy = goalCy - opponent.y
         val dist = hypot(dx, dy).coerceAtLeast(1f)
         val step = (dist * 0.12f).coerceAtMost(40f)
-        val tx = (opponent.x + dx / dist * step).coerceIn(0f, frame.captureWidth)
+        // Queue item 9 (L1b): the D14 guard this header always claimed
+        // but assignmentFor never enforced — before this round the target
+        // was clamped only to screen bounds, so a mark could drag its
+        // man off the tight line (a drag-out SOURCE). The target must
+        // never cross the tight line toward the attack end: the line is
+        // the stance band [lineX ± spread/2] (frame.defensiveLineX /
+        // defensiveLineSpread), the goal side is goalCx. Guarded on
+        // stanceTight: without a measured stance there is no line to
+        // clamp to, and the screen clamp below still applies.
+        val rawTx = opponent.x + dx / dist * step
+        val tx = if (frame.stanceTight) {
+            val halfSpread = frame.defensiveLineSpread * 0.5f
+            if (goalCx <= frame.defensiveLineX) {
+                rawTx.coerceAtMost(frame.defensiveLineX + halfSpread)
+            } else {
+                rawTx.coerceAtLeast(frame.defensiveLineX - halfSpread)
+            }
+        } else rawTx
+        val txClamped = tx.coerceIn(0f, frame.captureWidth)
         val ty = (opponent.y + dy / dist * step).coerceIn(0f, frame.captureHeight)
-        return MarkingAssignment(defenderId, opponent.id, tx, ty, overloadSecondary)
+        return MarkingAssignment(defenderId, opponent.id, txClamped, ty, overloadSecondary)
     }
 }
