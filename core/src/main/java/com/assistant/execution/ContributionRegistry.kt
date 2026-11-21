@@ -44,7 +44,15 @@ object ContributionRegistry {
     private val superseded = AtomicLong(0L)
     private val drained = AtomicLong(0L)
     private val expired = AtomicLong(0L)
+    // Queue item 7 (F4): fresh non-best entries used to be destroyed by
+    // drainBest() (droppedNonBest). They are now RETAINED in the map for
+    // a later drain — the parked lane is the fallback when ConAI has no
+    // best, so destroying its entries on a frame that does not need them
+    // kills the fallback. droppedNonBest is kept (field + snapshot key)
+    // for compatibility and is now structurally 0; retainedNonBest below
+    // is the live counter. No code reads droppedNonBest (grep-proven).
     private val droppedNonBest = AtomicLong(0L)
+    private val retainedNonBest = AtomicLong(0L)
 
     private val emergencyOffered = AtomicLong(0L)
     private val emergencyAccepted = AtomicLong(0L)
@@ -89,7 +97,19 @@ object ContributionRegistry {
     }
 
     /*
-     * Returns the highest-priority fresh contribution and clears pending requests.
+     * Returns the highest-priority fresh contribution.
+     *
+     * Queue item 7 (F4): a drained-but-unpicked entry used to be destroyed
+     * here even though it was still fresh — the parked lane is the fallback
+     * when ConAI has no best, so destroying its entries on a frame that
+     * does not need them kills the fallback. Expired entries are removed;
+     * the best fresh entry is removed and returned; every other fresh
+     * entry STAYS parked for a later drain. Bounded: one entry per
+     * (source, phase) key (latest-wins replacement), and the 250/300 ms
+     * bus staleness budget expires a retained entry on the next drain.
+     * Only the caller that needs the fallback drains (RDL drains lazily,
+     * only when best == null), so a retained entry is not consumed-and-
+     * dropped by a frame that already has a live best.
      */
     @Synchronized fun drainBest(): ExecutionRequest? {
         if (pending.isEmpty()) return null
@@ -102,17 +122,17 @@ object ContributionRegistry {
         // jump could expire a fresh entry or revive a stale one. The bus
         // timestamp field is now record-only repo-wide.
         val nowNanos = System.nanoTime()
-        val snapshot = pending.entries.toList()
-        for (entry in snapshot) pending.remove(entry.key, entry.value)
-
         // F37-D8: per-call loss deltas, for the drain log below.
         val expiredBefore = expired.get()
-        val droppedBefore = droppedNonBest.get()
+        val retainedBefore = retainedNonBest.get()
         var best: ExecutionRequest? = null
         var freshCount = 0
-        for (entry in snapshot) {
+        val iterator = pending.entries.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
             val candidate = entry.value
             if (nowNanos - candidate.createdAtNanos > CentralExecutionBus.maxAgeMs(candidate.source) * 1_000_000L) {
+                iterator.remove()
                 expired.incrementAndGet()
                 continue
             }
@@ -126,20 +146,25 @@ object ContributionRegistry {
             }
         }
 
-        // Fresh entries that lost arbitration are dropped, not re-queued;
-        // count them so a lost contribution is visible instead of silent.
-        if (freshCount > 1) droppedNonBest.addAndGet((freshCount - 1).toLong())
-        // F37-D8: expiry/arbitration losses were counted but never logged,
-        // so a parked request could vanish with no trace in the bundle.
-        val expiredNow = expired.get() - expiredBefore
-        val droppedNow = droppedNonBest.get() - droppedBefore
-        if (expiredNow > 0L || droppedNow > 0L) {
-            com.assistant.diagnostic.RuntimeLogger.log(
-                "ContributionRegistry drain dropped expired=$expiredNow nonBest=$droppedNow", "CONTRIBUTION"
-            )
-        }
+        // The returned entry leaves the map (remove by key+value, so a
+        // re-offer of the same key parked after this drain is not
+        // clobbered). Fresh entries that did not win STAY parked; count
+        // them so a retained fallback is visible instead of silent.
         if (best != null) {
+            pending.remove(key(best), best)
             drained.incrementAndGet()
+        }
+        val retainedNow = (freshCount - if (best != null) 1 else 0).toLong()
+        if (retainedNow > 0L) retainedNonBest.addAndGet(retainedNow)
+        // F37-D8: expiry losses were counted but never logged, so a parked
+        // request could vanish with no trace in the bundle. Retention is
+        // logged with the same line when it happens alongside an expiry.
+        val expiredDelta = expired.get() - expiredBefore
+        val retainedDelta = retainedNonBest.get() - retainedBefore
+        if (expiredDelta > 0L || retainedDelta > 0L) {
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "ContributionRegistry drain dropped expired=$expiredDelta retainedNonBest=$retainedDelta", "CONTRIBUTION"
+            )
         }
         return best
     }
@@ -156,6 +181,7 @@ object ContributionRegistry {
         drained.set(0L)
         expired.set(0L)
         droppedNonBest.set(0L)
+        retainedNonBest.set(0L)
         emergencyOffered.set(0L)
         emergencyAccepted.set(0L)
         emergencyRejected.set(0L)
@@ -172,6 +198,10 @@ object ContributionRegistry {
             "drained" to drained.get(),
             "expired" to expired.get(),
             "droppedNonBest" to droppedNonBest.get(),
+            // Queue item 7 (F4): fresh non-best entries are retained, not
+            // dropped — droppedNonBest above is now structurally 0 and
+            // this is the live retained count.
+            "retainedNonBest" to retainedNonBest.get(),
             "pending" to pending.size,
             // Bus statistics are read here so the CentralExecutionBus flow has
             // a live consumer (MainActivity / RuntimeHealthMonitor / control

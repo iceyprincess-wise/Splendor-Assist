@@ -100,7 +100,10 @@ object ActionOutcomeVerifier {
     // can run the frame-effect compare (pre vs post). Bounded at 64 and
     // swept with the 800 ms window below; a missing pre-frame means the
     // policy verdict stands alone (see verify()).
-    private val confirmedPreFrames = linkedMapOf<String, Pair<RuntimeFrame, ActionClass?>>()
+    // Queue item 7 (F5): the third element is the dispatch time
+    // (Pending.at, recordDispatch time) so verify() can measure the
+    // dispatch→effect-observed latency — the dispatch→on-screen proxy.
+    private val confirmedPreFrames = linkedMapOf<String, Triple<RuntimeFrame, ActionClass?, Long>>()
     private val policy = com.assistant.execution.OutcomePolicy()
     private var dispatched = 0L; private var macroObserved = 0L; private var heuristicFailure = 0L
     private var effectConfirmedCount = 0L; private var effectFailedCount = 0L
@@ -144,9 +147,10 @@ object ActionOutcomeVerifier {
                 return
             }
         policy.dispatched(actionId, phase, item.frame.ownerId, item.frame.hasBall, System.nanoTime())
-        // L5 (batch 1): keep the pre-frame for the frame-effect compare.
+        // L5 (batch 1): keep the pre-frame for the frame-effect compare,
+        // plus the dispatch time for the F5 latency measurement.
         if (confirmedPreFrames.size >= 64) confirmedPreFrames.remove(confirmedPreFrames.keys.first())
-        confirmedPreFrames[actionId] = item.frame to phase
+        confirmedPreFrames[actionId] = Triple(item.frame, phase, item.at)
         dispatched++
     }
     @Synchronized fun cancelDispatch(actionId: String) { pending.remove(actionId); policy.cancel(actionId) }
@@ -187,6 +191,10 @@ object ActionOutcomeVerifier {
             val effect = effectConfirmed ?: observed
             if (effectConfirmed != null) {
                 if (effectConfirmed) effectConfirmedCount++ else effectFailedCount++
+                // Queue item 7 (F5): dispatch→effect-observed latency —
+                // the dispatch→on-screen proxy. pre.third is the dispatch
+                // time (Pending.at); only confirmed effects sample.
+                pre?.let { PipelineLatencyMonitor.recordEffect(it.third, now, it.first.frameId, currentFrame.frameId) }
             }
             GestureExecutionAuthority.recordEffectObserved(id, effect)
             RuntimeLogger.log(

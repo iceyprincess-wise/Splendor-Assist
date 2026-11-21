@@ -228,7 +228,15 @@ object RuntimeDecisionLoop {
         // one. The threat + rate gates live in maybeTriggerParkedLane.
         if (best == null) maybeTriggerParkedLane(frame)
 
-        val parked = ContributionRegistry.drainBest()
+        // Queue item 7 (F4): drain the parked lane LAZILY — only when the
+        // fallback is actually needed (best == null). drainBest() used to
+        // run on every frame and destroy the parked entry even when ConAI
+        // had a best (chooseRequest ignores a parked entry unless best is
+        // null), so a fallback offered on one frame never survived to a
+        // frame that needed it, and a route rejection left nothing parked
+        // for the next frame. Skipping the drain when best != null costs
+        // nothing: parked is useless on those frames.
+        val parked = if (best == null) ContributionRegistry.drainBest() else null
 
         val rawRequest = chooseRequest(best, parked, frame)
         val request = rawRequest?.copy(gestureEnvelope = mintOrRefreshGestureEnvelope(android.os.SystemClock.elapsedRealtime()))
@@ -301,6 +309,9 @@ object RuntimeDecisionLoop {
         }
         if (accepted) {
             routed.incrementAndGet()
+            // Queue item 7 (F5): end-to-end latency measurement —
+            // capture→dispatch for this accepted dispatch.
+            PipelineLatencyMonitor.recordDispatch(frame.capturedAtNanos, System.nanoTime())
             // L3 (batch 1): density telemetry at the dispatch decision.
             DensityTelemetryLogger.logDensity(
                 frame.defenderDensity,

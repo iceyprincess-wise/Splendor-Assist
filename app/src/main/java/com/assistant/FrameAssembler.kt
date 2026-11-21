@@ -430,6 +430,10 @@ object FrameAssembler {
         // passes it, with an acquire-time fallback). The 100 ms cap is a
         // tactical bound: do not re-tune either number silently.
         val leadMs = ((now - capturedAtNanos).coerceAtLeast(0) / 1e6f + PREDICTION_LEAD_MS).coerceAtMost(100f)
+        // Queue item 7 (F5): end-to-end latency measurement — record the
+        // age at assemble time + whether the 100 ms cap bound the lead.
+        // Measurement only; the cap and PREDICTION_LEAD_MS are unchanged.
+        PipelineLatencyMonitor.recordAssemble(capturedAtNanos, now, leadMs)
         val width = observedFrame.captureWidth; val height = observedFrame.captureHeight
         // PS-D3 (batch 5): the layout check + predictor reset + layout
         // assign used to be three unsynchronised steps on shared singleton

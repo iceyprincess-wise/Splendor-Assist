@@ -214,6 +214,23 @@ class OverlayService : Service(), ComponentCallbacks2 {
     // V51: Vision Watchdog to prevent LOOP_FROZEN from coroutine death
     private var visionStartTimeMs = 0L
 
+    // Queue item 7 (pipeline resilience, F1): the stuck-vision heal
+    // threshold. It used to be 5 s (~100 dropped frames at 20 fps). 5 s
+    // was deliberately generous when the old 500 ms watchdog was removed
+    // for a data race — it unblocked the frame pump while the coroutine
+    // was still reading the shared vision buffer. That race is closed by
+    // the N4 generation guards: abandonWedgedVision() bumps the
+    // generation, the listener allocates a FRESH buffer when the
+    // generation advanced, and late stages return early on a stale
+    // generation — so abandoning at 1 s cannot overwrite a live
+    // coroutine's bytes or clear a fresh frame's flag. 1 s is still ~20
+    // frames at 20 fps and ~20-50x a normal tens-of-ms vision pass, so a
+    // healthy but slow frame is not abandoned. It also matches
+    // VisionStageProfiler.STUCK_STAGE_MS (1000 ms) — the profiler's own
+    // definition of "stuck". Used at both the arm condition and the
+    // posted re-check below; change it in one place.
+    private val VISION_STUCK_HEAL_MS = 1_000L
+
     // No68-C-D18: one-shot arm for the stuck-vision heal (see the
     // VISION_BUSY branch in imageAvailableListener). Reset in the vision
     // coroutine's finally block when the in-flight frame completes.
@@ -362,7 +379,15 @@ class OverlayService : Service(), ComponentCallbacks2 {
             image.close()
             return@OnImageAvailableListener
         }
-        lastFrameProcessedMs = captureNow
+        // Queue item 7 (F3): the admit stamp used to be taken here, before
+        // the single-flight check — so a VISION_BUSY_SKIP consumed the
+        // 16 ms admit slot and pushed the next admit out, and the first
+        // frame after a stuck-heal could itself be dropped by the interval
+        // gate because a dropped frame had just stamped. The stamp now
+        // lives where a frame actually starts vision (the startVision
+        // branch below) and where the ForegroundGate intentionally skips
+        // it; a busy drop stamps nothing. The gate still rate-limits
+        // STARTS to one per interval.
         captureFrameCount++
 
         com.assistant.SplendorCaptureRecovery.markFrame()
@@ -371,6 +396,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
         OverlaySurvivalEngine.heartbeat()
 
         if (com.assistant.vision.ForegroundGate.shouldSkipCapture()) {
+            // Queue item 7 (F3): capture is alive while the app's own UI
+            // is up (frames arrive, intentionally skipped), so stamp the
+            // admit here — otherwise the keepalive's >10 s staleness
+            // check would fire a spurious surface recreate during a long
+            // UI-open period.
+            lastFrameProcessedMs = captureNow
             image.close()
             return@OnImageAvailableListener
         }
@@ -393,6 +424,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
         val startVision = visionInFlight.compareAndSet(false, true)
 
             if (startVision) {
+                // Queue item 7 (F3): stamp the admit only when a frame
+                // actually starts vision (see the note at the interval
+                // gate above). A busy drop must not consume the slot.
+                lastFrameProcessedMs = captureNow
                 visionStartTimeMs = System.currentTimeMillis()
                 // REMOVED: 500ms Watchdog caused data-race by unblocking frame pump while coroutine was still reading reusableVisionBuffer
             } else {
@@ -410,15 +445,18 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 // coroutine was still reading the shared buffer) and
                 // nothing replaced it — so a hung vision coroutine dropped
                 // every later frame FOREVER with only the throttled log
-                // above. If the in-flight frame has been stuck > 5 s
-                // (vision work is normally tens of ms), ask the main
-                // thread to recreate the capture surfaces: that cancels
-                // visionScope children, whose finally block resets
-                // visionInFlight. One attempt per stall; the flag resets
-                // when a frame completes. The 5 s line is deliberately
-                // generous — this is a liveness net, not a performance
-                // throttle, and it never touches visionInFlight itself.
-                if (visionStartTimeMs > 0L && busyNow - visionStartTimeMs > 5_000L && !visionStuckHealArmed) {
+                // above. If the in-flight frame has been stuck >
+                // VISION_STUCK_HEAL_MS (1 s; vision work is normally tens
+                // of ms), ask the main thread to recreate the capture
+                // surfaces: that cancels visionScope children, whose
+                // finally block resets visionInFlight. One attempt per
+                // stall; the flag resets when a frame completes. The 1 s
+                // line is generous — this is a liveness net, not a
+                // performance throttle, and it never touches
+                // visionInFlight itself. (Queue item 7, F1: 5 s -> 1 s;
+                // the race that forced 5 s is closed by the N4 generation
+                // guards — see the VISION_STUCK_HEAL_MS comment.)
+                if (visionStartTimeMs > 0L && busyNow - visionStartTimeMs > VISION_STUCK_HEAL_MS && !visionStuckHealArmed) {
                     visionStuckHealArmed = true
                     // B1: name the blocking stage — the last stage the
                     // wedged coroutine reached (visionStage) is the
@@ -435,7 +473,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             // visionStartTimeMs is fresh and must NOT be
                             // abandoned. recreateCaptureSurfaces() still
                             // runs unconditionally (pre-existing behaviour).
-                            if (visionStartTimeMs > 0L && System.currentTimeMillis() - visionStartTimeMs > 5_000L) {
+                            if (visionStartTimeMs > 0L && System.currentTimeMillis() - visionStartTimeMs > VISION_STUCK_HEAL_MS) {
                                 abandonWedgedVision()
                             }
                             recreateCaptureSurfaces()
@@ -611,13 +649,32 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 com.assistant.CrashForensics.setEngineStage(5)
                 val frame = com.assistant.FrameAssembler.assemble(opticalVariance, capturedAtNanos)
                 stage("assemble", t0); t0 = System.nanoTime()
+                // Queue item 7 (F5): end-to-end latency measurement —
+                // queue leg (capture → vision start) + vision leg
+                // (vision start → assemble-end). t0 here IS the
+                // assemble-end timestamp. Measurement only.
+                com.assistant.PipelineLatencyMonitor.recordVision(capturedAtNanos, visionStartedNanos, t0)
                 // F37-D7: cross-process capture heartbeat for LagVerdictEngine
                 // (:survival cannot see FrameAssembler — a main-process object).
                 try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishCaptureHeartbeat() } catch (_: Throwable) {}
                 com.assistant.CrashForensics.mark(6, 3, captureFrameCount)
+                // Queue item 7 (F2): the N4 generation guards stop an
+                // abandoned frame after dedup and after visionCore — but
+                // a frame abandoned while in assemble() could still reach
+                // onFrame() and dispatch on a >1 s-old frame: the bus
+                // stamps createdAtNanos at chooseRequest time, so its
+                // staleness check cannot see the frame's age. Return early
+                // on a stale generation before the dispatch-capable
+                // segment, same pattern as the guards above.
+                if (frameGeneration != visionGeneration.get()) return@launch
                 com.assistant.RuntimeDecisionLoop.onFrame(frame)
                 stage("onFrame", t0); t0 = System.nanoTime()
                 com.assistant.CrashForensics.mark(6, 3, captureFrameCount)
+                // Queue item 7 (F2): same guard before the post-decision
+                // keeper scan — its defensive layer offers keeper
+                // rush/reflex requests, so a stale frame must not reach
+                // it either.
+                if (frameGeneration != visionGeneration.get()) return@launch
                 // WIRE SILOED GK ENGINES: Activate Dive, Claim, Rush, and Block action engines
                 com.assistant.GameStateBuilder.update(state)
                 com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(visionBuffer, width, height, rowStride)
