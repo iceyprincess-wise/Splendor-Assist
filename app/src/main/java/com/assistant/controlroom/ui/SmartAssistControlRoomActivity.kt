@@ -186,7 +186,8 @@ setContentView(R.layout.activity_smartassist_control_room)
                 append("Execution Requested=${execution["requested"]} Accepted=${execution["accepted"]} Failed=${execution["failed"]}\n")
                 append("Registry Engines=${registry["engines"]} CollectCycles=${registry["collectCycles"]}\n")
                 append("Registry Names=${registry["names"]}\n")
-                append("Registry Contributed=${registry["contributed"]}")
+                append("Registry Contributed=${registry["contributed"]}\n")
+                append("Registry Capabilities=${registry["capabilities"]}")
             }
     }
 

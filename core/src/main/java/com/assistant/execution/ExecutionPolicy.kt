@@ -34,7 +34,7 @@ data class AimMotion(val originX: Float, val originY: Float, val targetX: Float,
 object UiExecutionGate {
     @Volatile private var blockedUntilNanos = 0L
     @Volatile var reason: String = "none"; private set
-    fun blocked(now: Long = System.nanoTime()) = now < blockedUntilNanos
+    fun blocked() = System.nanoTime() < blockedUntilNanos
     // B24-02: the gate and the bus use separate monitors, so check-then-act
     // is not atomic across them. A submit that passed the gate check before
     // this block runs is wiped by clearPending() below (its verifier entry
@@ -44,7 +44,8 @@ object UiExecutionGate {
     // one phantom verifier entry) and no lock change can close the window,
     // because execution happens after consume() returns; the gate
     // guarantees only that no NEW queued request executes after a block.
-    @Synchronized fun block(reason: String, now: Long = System.nanoTime(), durationMs: Long = 1500L) {
+    @Synchronized fun block(reason: String, durationMs: Long = 1500L) {
+        val now = System.nanoTime()
         this.reason = reason
         RuntimeLogger.log("UiExecutionGate blocked: $reason", "UiExecutionGate")
         // SPLENDOR_P11_D04: wipe the bus queue only on a genuine transition

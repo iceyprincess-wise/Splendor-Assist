@@ -33,24 +33,4 @@ object EngineData {
         set(value) { 
             _intent = value
         }
-
-    /**
-     * Consumes and returns the intent, then immediately nullifies the reference 
-     * to free memory. Use this instead of direct property access when the intent 
-     * is meant for one-time execution.
-     */
-    fun consumeIntent(): Intent? {
-        val target = _intent
-        _intent = null
-        return target
-    }
-
-    /**
-     * Explicitly clears all held references to free memory 
-     * when the engine is stopped or the app goes to the background.
-     */
-    fun clear() {
-        _code = 0
-        _intent = null
-    }
 }
