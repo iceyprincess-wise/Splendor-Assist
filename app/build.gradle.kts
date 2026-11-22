@@ -22,8 +22,8 @@ android {
     }
 
     lint {
-        disable += listOf("SetTextI18n", "UnusedResources", "ObsoleteSdkInt", "Overdraw", "GradleDependency", "OldTargetApi", "VectorPath", "ChromeOsAbiSupport", "ScopedStorage", "StaticFieldLeak", "SdCardPath", "UseSwitchCompatOrMaterialCode", "ConstantLocale", "InlinedApi", "IconLocation", "IconDuplicatesConfig", "TypographyEllipsis", "HardcodedText", "ButtonStyle", "ProtectedPermissions", "ExportedService", "MissingClass", "SuspiciousIndentation")
-        checkReleaseBuilds = false
+        disable += listOf()
+        checkReleaseBuilds = true
         abortOnError = true
         warningsAsErrors = true
     }
