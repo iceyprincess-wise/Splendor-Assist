@@ -54,6 +54,11 @@ class MainActivity : AppCompatActivity() {
         // never re-asked (the booster then runs with signal unknown and
         // logs the Settings path once).
         private var phonePermissionAskedOnce = false
+
+        // F-AUTOSTART-1: keys for the permission-pipeline state saved
+        // across the settings round-trip (see onSaveInstanceState).
+        private const val KEY_PIPELINE_ACTIVE = "permissionPipelineActive"
+        private const val KEY_PERMISSION_STAGE = "permissionStage"
     }
 
     private val hubRefreshHandler = android.os.Handler(android.os.Looper.getMainLooper())
@@ -134,6 +139,24 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         GlobalCrashHandler.install(this)
+
+        // F-AUTOSTART-1: restore the permission-pipeline state if the
+        // process died while Ed was in a settings page (HyperOS kills
+        // background apps aggressively, and this app has no battery
+        // exemption or autostart yet at that point). Without this the
+        // pipeline was silently dead on return and the app just sat
+        // there — "the app will just off". The bundle is only delivered
+        // when the system recreates this activity after it was stopped,
+        // never when the user swipes the app away, so this cannot
+        // auto-resume the pipeline on a fresh launch.
+        savedInstanceState?.let { state ->
+            permissionPipelineActive = state.getBoolean(KEY_PIPELINE_ACTIVE, false)
+            runCatching {
+                permissionStage = PermissionStage.valueOf(
+                    state.getString(KEY_PERMISSION_STAGE) ?: PermissionStage.BATTERY.name
+                )
+            }
+        }
 
         setContentView(com.assistant.overlay.R.layout.activity_main)
 
@@ -591,5 +614,18 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         hubRefreshHandler.removeCallbacks(hubRefreshTick)
         super.onPause()
+    }
+
+    // F-AUTOSTART-1: save the permission-pipeline state so the flow
+    // survives the settings round-trip even if HyperOS kills the
+    // process while Ed is in a settings page. onResume re-enters the
+    // stage machine from the restored stage, so the flow continues
+    // instead of dying silently. When the pipeline completes (or the
+    // user taps Stop) permissionPipelineActive is already false, so
+    // nothing stale is ever restored.
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(KEY_PIPELINE_ACTIVE, permissionPipelineActive)
+        outState.putString(KEY_PERMISSION_STAGE, permissionStage.name)
     }
 }
