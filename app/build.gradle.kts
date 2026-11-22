@@ -43,7 +43,7 @@ android {
         applicationId = "com.assistant.overlay"
         minSdk = 26
         targetSdk = 36
-        versionCode = 222
+        versionCode = 223
         versionName = "1.0-SECURE-LOCKED"
         
         externalNativeBuild {
