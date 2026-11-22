@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Dashboard Stop button (UI-1): ghost (transparent fill, purple
+  outline, white ripple) with an 8dp corner instead of the pill —
+  matches button_dashboard_filled. Scoped to the dashboard
+  Start/Stop buttons only; btn_ghost (used elsewhere) is untouched.
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#55FFFFFF">
+  <item>
+    <shape android:shape="rectangle">
+      <solid android:color="@android:color/transparent" />
+      <corners android:radius="8dp" />
+      <stroke android:width="1dp" android:color="#7C4DFF" />
+    </shape>
+  </item>
+</ripple>

@@ -2,14 +2,12 @@
 <!--
   In-app update screen (File No 96) — round no60, premium re-touch.
 
-  ORPHANED (PROVEN): no activity inflates this layout — no
-  UpdateActivity exists, no code references R.layout.activity_update
-  or any of its four ids (updateProgressBar, progressText,
-  btnDownloadUpdate, btnSkipUpdate), and no update-check code exists
-  in app/ or core/ (grep, HEAD 850341fe). The REQUEST_INSTALL_PACKAGES
-  permission is declared, but nothing drives this screen. Kept and
-  upgraded, not deleted (no-delete rule). Wiring it to a real update
-  flow is Ed's call (queued).
+  WIRED (Piece 3): UpdateActivity inflates this layout and
+  SplashActivity starts it when UpdateChecker confirms an update.
+  (Was ORPHANED at HEAD 850341fe — no activity, no code refs to the
+  layout or its four ids, no update-check code. Kept and upgraded,
+  not deleted, per the no-delete rule.) The REQUEST_INSTALL_PACKAGES
+  permission is declared; Piece 4 drives the download + install.
 
   NO60-D21: every hardcoded colour -> theme token (background
   ?android:attr/colorBackground, title ?attr/colorOnSurface, subtitle
@@ -32,7 +30,7 @@
   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
       android:text="@string/auto_extracted_41" android:textColor="?attr/colorOnSurface"
       android:textAppearance="@style/TextAppearance.SplendorAssist.Display" />
-  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+  <TextView android:id="@+id/updateSubtitle" android:layout_width="wrap_content" android:layout_height="wrap_content"
       android:text="@string/auto_extracted_42" android:textColor="?attr/colorOnSurfaceVariant"
       android:textAppearance="@style/TextAppearance.SplendorAssist.Body"
       android:layout_marginTop="10dp" android:layout_marginBottom="40dp" />

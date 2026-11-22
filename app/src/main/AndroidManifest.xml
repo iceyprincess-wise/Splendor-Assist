@@ -41,13 +41,40 @@
         <activity android:name="com.assistant.controlroom.ui.FutureRoomsActivity" android:exported="false" />
         <activity android:name="com.assistant.controlroom.ui.AgentHubActivity" android:exported="false" />
         <activity android:name="com.assistant.controlroom.ui.GameplayRoomActivity" android:exported="false" />
+        <!-- UI-2: Diagnosis Room (live engine/file status, no logs) and
+             Notification Room (app issues, tap one to see the diagnosis). -->
+        <activity android:name="com.assistant.controlroom.ui.DiagnosisRoomActivity" android:exported="false" />
+        <activity android:name="com.assistant.controlroom.ui.NotificationRoomActivity" android:exported="false" />
+        <activity android:name="com.assistant.UpdateActivity" android:exported="false" />
 
-        <activity android:name="com.assistant.MainActivity" android:exported="true">
+        <!-- Updater Piece 4: FileProvider for the install intent — the
+             downloaded release APK lives in the app's external files
+             Download/ dir and is shared with the package installer via
+             authority com.assistant.overlay.fileprovider. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.assistant.overlay.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- UI-2: the launch splash is now the LAUNCHER — it shows the
+             logo page loading, then proceeds to MainActivity (and, from
+             the updater piece, to the update page only when an update
+             is confirmed available). MainActivity keeps exported=true
+             (ProjectionRequestReceiver starts it) but is no longer the
+             launcher entry point. -->
+        <activity android:name="com.assistant.SplashActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name="com.assistant.MainActivity" android:exported="true" />
         
         <activity android:name="com.assistant.SplendorReauthActivity" android:exported="false" android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 

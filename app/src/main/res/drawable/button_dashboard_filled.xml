@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Dashboard Start button (UI-1): same premium gradient as
+  button_premium (#7C4DFF -> #5C6BFF -> #00E5FF, 135deg, white ripple,
+  hairline stroke) but an 8dp corner instead of the 27dp pill — Ed:
+  the Start/Stop buttons are too round. Scoped to the dashboard
+  Start/Stop buttons only; button_premium (used by the control rooms
+  and elsewhere) is untouched.
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#55FFFFFF">
+  <item>
+    <shape android:shape="rectangle">
+      <gradient android:startColor="#7C4DFF" android:centerColor="#5C6BFF" android:endColor="#00E5FF" android:angle="135" />
+      <corners android:radius="8dp" />
+      <stroke android:width="1dp" android:color="#40FFFFFF" />
+    </shape>
+  </item>
+</ripple>

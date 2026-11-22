@@ -71,8 +71,11 @@
     <string name="auto_extracted_32">DIAGNOSTICS</string>
     <string name="auto_extracted_33">●</string>
     <string name="auto_extracted_34">30 ROOMS</string>
-    <string name="auto_extracted_35">➕</string>
-    <string name="auto_extracted_36">FUTURE</string>
+    <string name="auto_extracted_35">⚙️</string>
+    <string name="auto_extracted_36">SETTINGS</string>
+    <string name="settings_card_subtitle">App &amp; updates</string>
+    <string name="diagnosis_card_label">DIAGNOSIS</string>
+    <string name="diagnosis_card_subtitle">All live</string>
     <string name="auto_extracted_37">Runtime</string>
     <string name="auto_extracted_38">Vision</string>
     <string name="auto_extracted_39">Diagnostics</string>

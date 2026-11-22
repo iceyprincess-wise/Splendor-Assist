@@ -15,12 +15,17 @@ import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.assistant.controlroom.AdapterControlRoomRegistry
 import com.assistant.controlroom.ui.FutureRoomsActivity
 import com.assistant.controlroom.ui.AgentHubActivity
 import com.assistant.controlroom.ui.GameplayRoomActivity
+import com.assistant.controlroom.ui.DiagnosisRoomActivity
+import com.assistant.controlroom.ui.NotificationRoomActivity
 import com.assistant.controlroom.ui.GoalkeeperControlRoomActivity
 import com.assistant.controlroom.ui.InterceptionControlRoomActivity
 import com.assistant.controlroom.ui.SmartAssistControlRoomActivity
@@ -165,37 +170,31 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // UI-1: edge-to-edge (targetSdk 36 enforces it) — draw behind the
+        // system bars; the insets are applied to dashboardRoot below so
+        // content is never hidden behind the status / navigation bars.
+        enableEdgeToEdge()
         setContentView(com.assistant.overlay.R.layout.activity_main)
+        applyDashboardInsets()
 
         projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         bindHomeButtons()
-        
-        // UPGRADE: Consolidated 4 redundant UI update methods into one 
-        // to eliminate unnecessary findViewById calls and Main Thread overhead.
-        refreshStaticUI()
+
         refreshRoomBulbs()
         refreshRuntimeHub()
     }
 
-    // UPGRADE: Replaces updateLiveRuntimeMetrics, refreshDashboardStatus, 
-    // refreshRuntimeDashboard, and updateRuntimeDashboardCards.
-    // Patch 4: the three labels used to be unconditional literals set once
-    // in onCreate. They now read live state every time this runs (and this
-    // runs on the 3s hub tick): RuntimeCoordinator for runtime readiness,
-    // RuntimeHealthMonitor for vision (frame flow) and diagnostics health.
-    private fun refreshStaticUI() {
-        runCatching {
-            val health = com.assistant.RuntimeHealthMonitor.snapshot()
-            val runtime = com.assistant.RuntimeCoordinator.runtimeState()
-            val runtimeReady = runtime["runtimeReady"] as? Boolean ?: false
-            findViewById<android.widget.TextView>(com.assistant.overlay.R.id.txtRuntimeStatus).text =
-                if (runtimeReady) "Runtime Online" else "Runtime Offline"
-            findViewById<android.widget.TextView>(com.assistant.overlay.R.id.txtVisionStatus).text =
-                if (health.frameAlive) "Vision Ready" else "Vision Idle"
-            findViewById<android.widget.TextView>(com.assistant.overlay.R.id.txtDiagnosticsStatus).text =
-                if (health.degradedReasons.isEmpty()) "Diagnostics Active"
-                else "Diagnostics Degraded: ${health.degradedReasons.joinToString(",")}"
+    // UI-1: edge-to-edge insets — the ScrollView root gets the system-bars
+    // insets as padding (top = status bar, bottom = navigation bar) so no
+    // dashboard content sits under a system bar. The inner content keeps
+    // its own 24dp padding; this only adds the bars.
+    private fun applyDashboardInsets() {
+        val root = findViewById<android.view.View>(com.assistant.overlay.R.id.dashboardRoot) ?: return
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            insets
         }
     }
 
@@ -292,15 +291,24 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<View>(com.assistant.overlay.R.id.cardOverlay).setOnClickListener { startActivity(Intent(this, GameplayRoomActivity::class.java)) }
         findViewById<View>(com.assistant.overlay.R.id.cardAccessibility).setOnClickListener { startActivity(Intent(this, AgentHubActivity::class.java)) }
-        findViewById<View>(com.assistant.overlay.R.id.cardNotifications).setOnClickListener { startActivity(Intent(this, AgentHubActivity::class.java)) }
         findViewById<View>(com.assistant.overlay.R.id.cardMediaProjection).setOnClickListener {
             // F-PERMS-4: arm the pipeline — without this, onResume never
             // re-enters after the first settings page and the flow stalls.
             permissionPipelineActive = true
             checkBatteryAndProceed()
         }
-        findViewById<View>(com.assistant.overlay.R.id.cardDiagnostics).setOnClickListener { startActivity(Intent(this, GameplayRoomActivity::class.java)) }
-        findViewById<View>(com.assistant.overlay.R.id.cardFutureRooms).setOnClickListener { openFutureRoom() }
+        // UI-1: cardDiagnostics removed (duplicate of cardOverlay). The
+        // Future Rooms card is now Settings (opens FutureRoomsActivity
+        // for now; the full Settings page is a later piece).
+        findViewById<View>(com.assistant.overlay.R.id.cardSettings).setOnClickListener { openFutureRoom() }
+        // UI-2: Diagnosis Room (live engine/file status) and Notification
+        // Room (app issues; the badge shows how many there are).
+        findViewById<View>(com.assistant.overlay.R.id.cardDiagnosis).setOnClickListener {
+            startActivity(Intent(this, DiagnosisRoomActivity::class.java))
+        }
+        findViewById<View>(com.assistant.overlay.R.id.cardNotifications).setOnClickListener {
+            startActivity(Intent(this, NotificationRoomActivity::class.java))
+        }
     }
 
     private fun refreshRoomBulbs() {
@@ -337,13 +345,6 @@ class MainActivity : AppCompatActivity() {
             if (interceptionReady) "ACTIVE ${interception?.intensity ?: 50}%" else "OFF"
         )
 
-        val roomCount = rooms.size
-        setBulb(
-            com.assistant.overlay.R.id.tvFutureBulb,
-            com.assistant.overlay.R.id.tvFutureState,
-            roomCount > 0,
-            "$roomCount ROOMS"
-        )
     }
 
     private fun setBulb(bulbId: Int, stateId: Int, active: Boolean, label: String) {
@@ -400,6 +401,18 @@ class MainActivity : AppCompatActivity() {
                 Intent().apply {
                     component = ComponentName("com.miui.securitycenter", "com.miui.powercenter.PowerSettings")
                 },
+                // Battery-page fix: the explicit AOSP app-info activity
+                // opens the NEW-style editable page (battery usage can be
+                // changed there). Ed confirmed in Termux that
+                // InstalledAppDetails opens it; the generic
+                // ACTION_APPLICATION_DETAILS_SETTINGS below resolves to
+                // the OLD MIUI page, where the battery setting cannot be
+                // edited. Tried before the generic intent; launchIfExists
+                // falls through if the component is absent.
+                Intent().apply {
+                    component = ComponentName("com.android.settings", "com.android.settings.applications.InstalledAppDetails")
+                    data = Uri.parse("package:$packageName")
+                },
                 Intent().apply {
                     action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                     data = Uri.parse("package:$packageName")
@@ -413,6 +426,13 @@ class MainActivity : AppCompatActivity() {
 
         val fallback = listOf(
             Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
+            // Battery-page fix: explicit AOSP app-info activity first (see
+            // the vendor list above — it opens the NEW-style editable
+            // page); the generic intent below it is the fallback.
+            Intent().apply {
+                component = ComponentName("com.android.settings", "com.android.settings.applications.InstalledAppDetails")
+                data = Uri.parse("package:$packageName")
+            },
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
         )
 
@@ -587,47 +607,216 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    // UI-1: the dashboard bulbs. Same live sources the old monospace dump
+    // read (RuntimeCoordinator.runtimeState, RuntimeHealthMonitor.
+    // runtimeHealthSnapshot, GameplayEngineRegistry.registryRuntimeSnapshot)
+    // — the values are identical, only the presentation changed from a
+    // key=value dump to bulbs. Runs on the 3s hub tick (when live refresh
+    // is allowed) and on resume, like the dump did. NOTE: the old dump
+    // also surfaced ControlMappingTrainer + EventHubs snapshots; those no
+    // longer appear on the dashboard (they remain in the file logs).
     private fun refreshRuntimeHub() {
-        val view = findViewById<android.widget.TextView>(com.assistant.overlay.R.id.txtRuntimeHub) ?: return
-
         val runtime = com.assistant.RuntimeCoordinator.runtimeState()
-        val contributions = com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot()
-        val execution = com.assistant.GestureExecutionAuthority.executionRuntimeSnapshot()
         val health = com.assistant.RuntimeHealthMonitor.runtimeHealthSnapshot()
-        val frame = com.assistant.FrameAssembler.frameRuntimeSnapshot()
-        val decision = com.assistant.RuntimeDecisionLoop.decisionRuntimeSnapshot()
         val registry = com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot()
+        renderRuntimeBulbs(runtime)
+        renderHealthBulbs(health)
+        renderRegistryBulbs(registry)
+        // UI-2: the Notifications badge and the Diagnosis card subtitle
+        // read the SAME health snapshot the HEALTH bulbs just rendered —
+        // one evaluation per tick, and the badge always agrees with the
+        // Notification Room (same degraded-reasons source).
+        updateIssueBadges(health)
+    }
 
-        view.text = buildString {
-            append("=== RUNTIME ===\n")
-            runtime.forEach { (k, v) -> append("$k = $v\n") }
-            append("\n=== HEALTH ===\n")
-            health.forEach { (k, v) -> append("$k = $v\n") }
-            append("\n=== FRAME ===\n")
-            frame.forEach { (k, v) -> append("$k = $v\n") }
-            append("\n=== DECISION ===\n")
-            decision.forEach { (k, v) -> append("$k = $v\n") }
-            append("\n=== CONTRIBUTIONS ===\n")
-            contributions.forEach { (k, v) -> append("$k = $v\n") }
-            append("\n=== EXECUTION ===\n")
-            execution.forEach { (k, v) -> append("$k = $v\n") }
-            append("\n=== REGISTRY ===\n")
-            registry.forEach { (k, v) -> append("$k = $v\n") }
-            // SPLENDOR_P10_SLOTS: control-slot training decides
-            // whether PASS/CROSS/SHOT contributions survive the
-            // RuntimeDecisionLoop slot filter at all (untrained slots
-            // discard them before arbitration). The filter report.txt
-            // writer (core FilterEngine) cannot read this app-module
-            // trainer, so the values surface here in the routine live
-            // Runtime Hub diagnostics dump (3s tick) instead.
-            append("\n=== CONTROL MAPPING ===\n")
-            ControlMappingTrainer.mappingRuntimeSnapshot().forEach { (k, v) -> append("$k = $v\n") }
-            append("\n=== EVENTS ===\n")
-            com.assistant.events.EventHubs.eventRuntimeSnapshot().forEach { (k, v) -> append("$k = $v\n") }
+    // UI-2: the Notifications badge is the count of active issues (the
+    // health monitor's degraded reasons); the Diagnosis card subtitle
+    // shows the same count, or "All live" when there are none. Hidden
+    // badge when zero — no fake notifications.
+    private fun updateIssueBadges(health: Map<String, Any>) {
+        val reasons = (health["degradedReasons"] as? String ?: "")
+            .split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        val count = reasons.size
+        val badge = findViewById<android.widget.TextView>(com.assistant.overlay.R.id.tvNotificationsBadge)
+        if (count > 0) {
+            badge.text = "$count"
+            badge.visibility = android.view.View.VISIBLE
+        } else {
+            badge.visibility = android.view.View.GONE
         }
-        // Patch 4: keep the three status labels live on the 3s tick instead
-        // of frozen at their onCreate values.
-        refreshStaticUI()
+        val diagnosisState = findViewById<android.widget.TextView>(com.assistant.overlay.R.id.tvDiagnosisState)
+        if (count > 0) {
+            diagnosisState.text = "$count issue${if (count == 1) "" else "s"}"
+            diagnosisState.setTextColor(android.graphics.Color.parseColor("#FF5252"))
+        } else {
+            diagnosisState.text = getString(com.assistant.overlay.R.string.diagnosis_card_subtitle)
+            diagnosisState.setTextColor(themeColor(android.R.attr.textColorSecondary))
+        }
+    }
+
+    // UI-1 bulb model: GREEN = true/alive (or a live counter > 0),
+    // YELLOW = false/waiting (or a counter at 0), RED = an issue — a
+    // health value that is false AND has a matching degraded reason.
+    // Nothing here is hardcoded: every value comes from the live
+    // snapshot maps passed in.
+    private enum class BulbState { GREEN, YELLOW, RED }
+
+    private data class BulbEntry(val label: String, val state: BulbState, val value: String)
+
+    private fun bulbColor(state: BulbState): Int = when (state) {
+        BulbState.GREEN -> android.graphics.Color.parseColor("#00E676")
+        BulbState.YELLOW -> android.graphics.Color.parseColor("#FFC107")
+        BulbState.RED -> android.graphics.Color.parseColor("#FF5252")
+    }
+
+    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
+
+    private fun themeColor(attr: Int): Int {
+        val tv = android.util.TypedValue()
+        theme.resolveAttribute(attr, tv, true)
+        return tv.data
+    }
+
+    private fun renderBulbSection(containerId: Int, entries: List<BulbEntry>) {
+        val container = findViewById<android.widget.LinearLayout>(containerId) ?: return
+        container.removeAllViews()
+        entries.chunked(2).forEach { row ->
+            val rowLayout = android.widget.LinearLayout(this).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dp(4); bottomMargin = dp(4) }
+            }
+            row.forEach { entry -> rowLayout.addView(buildBulbCell(entry)) }
+            if (row.size == 1) {
+                rowLayout.addView(android.view.View(this).apply {
+                    layoutParams = android.widget.LinearLayout.LayoutParams(0, 1, 1f)
+                })
+            }
+            container.addView(rowLayout)
+        }
+    }
+
+    private fun buildBulbCell(entry: BulbEntry): android.widget.LinearLayout {
+        val cell = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f
+            ).apply { marginStart = dp(4); marginEnd = dp(4) }
+            setBackgroundResource(com.assistant.overlay.R.drawable.panel_surface)
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+        }
+        val top = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+        val dot = android.widget.TextView(this).apply {
+            text = "●"
+            textSize = 14f
+            setTextColor(bulbColor(entry.state))
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { marginEnd = dp(6) }
+        }
+        val label = android.widget.TextView(this).apply {
+            text = entry.label
+            textSize = 12f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setTextColor(themeColor(android.R.attr.textColorPrimary))
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f
+            )
+        }
+        top.addView(dot)
+        top.addView(label)
+        val value = android.widget.TextView(this).apply {
+            text = entry.value
+            textSize = 11f
+            setTextColor(themeColor(android.R.attr.textColorSecondary))
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(2) }
+        }
+        cell.addView(top)
+        cell.addView(value)
+        return cell
+    }
+
+    private fun renderRuntimeBulbs(runtime: Map<String, Any>) {
+        fun bool(key: String, label: String): BulbEntry {
+            val v = runtime[key] as? Boolean ?: false
+            return BulbEntry(label, if (v) BulbState.GREEN else BulbState.YELLOW, if (v) "Ready" else "Waiting")
+        }
+        val pending = (runtime["busPending"] as? Number)?.toLong() ?: 0L
+        renderBulbSection(
+            com.assistant.overlay.R.id.runtimeBulbGrid,
+            listOf(
+                bool("permissionsVerified", "Permissions"),
+                bool("accessibilityReady", "Accessibility"),
+                bool("captureReady", "Capture"),
+                bool("boosterReady", "Booster"),
+                bool("enginesWarm", "Engines warm"),
+                bool("busEnabled", "Bus"),
+                bool("runtimeReady", "Runtime ready"),
+                BulbEntry("Bus pending", if (pending == 0L) BulbState.GREEN else BulbState.YELLOW, "$pending pending")
+            )
+        )
+    }
+
+    private fun renderHealthBulbs(health: Map<String, Any>) {
+        val reasons = health["degradedReasons"]?.toString() ?: ""
+        fun alive(key: String, label: String, reason: String): BulbEntry {
+            val v = health[key] as? Boolean ?: false
+            val state = when {
+                v -> BulbState.GREEN
+                reason.isNotEmpty() && reasons.contains(reason) -> BulbState.RED
+                else -> BulbState.YELLOW
+            }
+            val value = when (state) {
+                BulbState.GREEN -> "Alive"
+                BulbState.RED -> "Issue"
+                BulbState.YELLOW -> "Waiting"
+            }
+            return BulbEntry(label, state, value)
+        }
+        val evaluations = (health["evaluations"] as? Number)?.toLong() ?: 0L
+        renderBulbSection(
+            com.assistant.overlay.R.id.healthBulbGrid,
+            listOf(
+                alive("accessibilityAlive", "Accessibility", "accessibility-not-ready"),
+                alive("overlayAlive", "Overlay", "overlay"),
+                alive("frameAlive", "Frame", "frame-stale"),
+                alive("decisionAlive", "Decision", "decision-stale"),
+                alive("busAlive", "Bus", "bus-idle"),
+                alive("dispatchAlive", "Dispatch", "dispatch"),
+                alive("gameplayAlive", "Gameplay", "gameplay-idle"),
+                alive("boosterAlive", "Booster", "booster-not-ready"),
+                BulbEntry("Health checks", if (evaluations > 0) BulbState.GREEN else BulbState.YELLOW, "$evaluations checks")
+            )
+        )
+    }
+
+    private fun renderRegistryBulbs(registry: Map<String, Any>) {
+        fun count(key: String, label: String): BulbEntry {
+            val v = (registry[key] as? Number)?.toLong() ?: 0L
+            return BulbEntry(label, if (v > 0) BulbState.GREEN else BulbState.YELLOW, "$v")
+        }
+        renderBulbSection(
+            com.assistant.overlay.R.id.registryBulbGrid,
+            listOf(
+                count("engines", "Engines"),
+                count("collectCycles", "Collect cycles"),
+                count("contributed", "Contributed"),
+                count("generation", "Generation"),
+                count("collisions", "Collisions")
+            )
+        )
     }
 
     override fun onPause() {
