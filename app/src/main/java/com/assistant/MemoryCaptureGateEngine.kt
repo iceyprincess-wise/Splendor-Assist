@@ -1,70 +1,8 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.VisionTrust
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object MemoryCaptureGateEngine {
 
@@ -153,7 +91,3 @@ object MemoryCaptureGateEngine {
      */
     fun shouldSkipFullVision(): Boolean = captureThrottle >= 3
 }
-
-/* ========
-MemoryMonitorEngine
-======== */

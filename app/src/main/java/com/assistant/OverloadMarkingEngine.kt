@@ -11,9 +11,8 @@ import kotlin.math.hypot
  * names the top threat and picks its TWO markers (nearest teammate =
  * primary, second-nearest = secondary). The plan is published on the
  * frame (FrameAssembler: overloadOpponentId / overloadSecondaryId, and
- * the secondary assignment inside markingAssignments with
- * overloadSecondary=true) so it is observable in the frame snapshot
- * and the log.
+ * the secondary assignment inside markingAssignments) so it is
+ * observable in the frame snapshot and the log.
  *
  * BLOCKER (reported, not worked around): the app controls ONE player.
  * There is no second-player control mechanism anywhere in the repo —

@@ -19,8 +19,8 @@ import kotlin.math.hypot
  * goal-side position, not the opponent's exact pixel).
  *
  * The assignments are published on the frame (FrameAssembler) so the
- * defensive-line contributors and the LowBlock engine can read the same
- * plan, and MarkingContributor drives the controlled defender to his
+ * defensive-line contributors can read the same plan, and
+ * MarkingContributor drives the controlled defender to his
  * assignment. D14 guard: marking never drags the line — the assignment
  * target is clamped to stay on the goal side of the opponent and never
  * beyond the tight defensive line toward the attack end; the line
@@ -63,8 +63,7 @@ object MarkingEngine {
         opponent: RuntimeEntity,
         goalCx: Float,
         goalCy: Float,
-        frame: RuntimeFrame,
-        overloadSecondary: Boolean = false
+        frame: RuntimeFrame
     ): MarkingAssignment {
         // Stand between the opponent and our goal, half a step off him:
         // 12% of the opponent-to-goal distance toward the goal.
@@ -92,6 +91,6 @@ object MarkingEngine {
         } else rawTx
         val txClamped = tx.coerceIn(0f, frame.captureWidth)
         val ty = (opponent.y + dy / dist * step).coerceIn(0f, frame.captureHeight)
-        return MarkingAssignment(defenderId, opponent.id, txClamped, ty, overloadSecondary)
+        return MarkingAssignment(defenderId, opponent.id, txClamped, ty)
     }
 }

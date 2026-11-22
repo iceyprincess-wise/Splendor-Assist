@@ -60,16 +60,15 @@ enum class MatchPhase { UNKNOWN, EARLY, MID, LATE, FULLTIME }
 
 /**
  * G-F marking assignment (batch 4): one defender marking one
- * opponent, at a goal-side point next to the man. overloadSecondary
- * marks the SECOND marker on a G-O 2v1 (published, not driven — no
- * second-player control exists; see OverloadMarkingEngine).
+ * opponent, at a goal-side point next to the man. The G-O 2v1 second
+ * marker is named by overloadSecondaryId on the frame (published, not
+ * driven — no second-player control exists; see OverloadMarkingEngine).
  */
 data class MarkingAssignment(
     val defenderId: Int,
     val opponentId: Int,
     val targetX: Float,
-    val targetY: Float,
-    val overloadSecondary: Boolean = false
+    val targetY: Float
 )
 
 data class RuntimeFrame(

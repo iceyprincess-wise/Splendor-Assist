@@ -38,6 +38,14 @@ data class MemoryAttribution(
 object MemoryAttributionEngine {
 
     /**
+     * Phase M (M-10): the latest attribution, kept for the diagnostics
+     * screen (DashboardInjector "Memory attribution:" line) — the first
+     * production reader for these six fields. Set by
+     * MemoryMonitorEngine.attributeAvailDrop alongside the log call.
+     */
+    @Volatile var lastAttribution: MemoryAttribution? = null
+
+    /**
      * Splits an avail drop across the three known processes. Any PSS of
      * -1 means "unreadable on this sample" (Android returns no data for
      * another uid's process): it contributes 0 and flags unknown.

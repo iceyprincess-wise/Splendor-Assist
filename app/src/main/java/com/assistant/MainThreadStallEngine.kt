@@ -1,70 +1,10 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import android.os.Handler
-
 
 import android.os.Looper
 
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object MainThreadStallEngine {
 
@@ -105,8 +45,23 @@ object MainThreadStallEngine {
         }
     }
 
+    @Volatile private var reportThread: Thread? = null
+
     fun start() {
         if (running) return
+        // Phase M (M-4): D18-class double-start — a previous report thread
+        // still winding down must be dead before a new one starts, or two
+        // reporters publish spikesPerMin and race to reset winSpikes/winMax.
+        // Wait briefly; give up (no start) rather than run two reporters.
+        // (Same pattern as LagVerdictEngine Phase L L-1; the restart is
+        // real: AdapterRecoveryEngine relaunches PerformanceEngineService
+        // in-process on a stale heartbeat, and onCreate re-ignites these
+        // singleton objects.)
+        val old = reportThread
+        if (old?.isAlive == true) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         running = true
         val cad = if (CADENCE_MS > 0) CADENCE_MS else 1L
         probe.expected = System.currentTimeMillis() + cad
@@ -125,12 +80,15 @@ object MainThreadStallEngine {
                 winSpikes = 0L; winMax = 0L
             }
         }
-        t.isDaemon = true; t.name = "lag-stall-report"; t.start()
+        t.isDaemon = true; t.name = "lag-stall-report"; reportThread = t; t.start()
     }
 
     fun stop() {
         running = false
         handler.removeCallbacks(probe)
+        // Phase M (M-4): wake the sleeper so it exits now instead of up
+        // to 10 s later (and cannot be resurrected by a quick restart).
+        reportThread?.interrupt()
     }
 }
 

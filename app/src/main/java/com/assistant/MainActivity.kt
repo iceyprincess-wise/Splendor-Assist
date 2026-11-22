@@ -75,7 +75,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private var permissionPipelineStarted = false
     private var permissionPipelineActive = false
     private var projectionRecoveryFlow = false
 
@@ -228,14 +227,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun bindHomeButtons() {
         findViewById<Button>(com.assistant.overlay.R.id.btnStartEngine).setOnClickListener {
-            permissionPipelineStarted = true
             permissionPipelineActive = true
             checkBatteryAndProceed()
         }
 
         findViewById<Button>(com.assistant.overlay.R.id.btnStopEngine).setOnClickListener {
             permissionPipelineActive = false
-            permissionPipelineStarted = false
             // L4 (batch 1): teardown attribution — the Stop tap is a user
             // teardown event; record it BEFORE shutdown() so the TEARDOWN
             // line can correlate this shutdown to the tap.

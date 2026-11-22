@@ -460,8 +460,7 @@ object FrameAssembler {
                 defenderId = overload.secondaryDefenderId,
                 opponentId = overload.opponentId,
                 targetX = overload.targetX,
-                targetY = overload.targetY,
-                overloadSecondary = true
+                targetY = overload.targetY
             )
         } else marking
         val enriched = frame.copy(
@@ -543,7 +542,7 @@ object FrameAssembler {
             "matchPhase" to f.matchPhase.name,
             "markingAssignments" to f.markingAssignments.size,
             "overloadOpponent" to (f.overloadOpponentId ?: -1),
-            "overloadSecondary" to (f.overloadSecondaryId ?: -1),
+            "overloadSecondaryId" to (f.overloadSecondaryId ?: -1),
             // Q68-80 (batch 5b): overload balance — which side the
             // overload favours (0 = no measured advantage).
             "centralControl" to f.centralControl,

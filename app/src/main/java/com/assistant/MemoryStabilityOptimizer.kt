@@ -1,84 +1,13 @@
 package com.assistant
 
-
-
 import android.app.ActivityManager
-
-
-
 
 import android.content.ComponentCallbacks2
 import android.content.Context
 
-
 import android.content.res.Configuration
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import java.util.concurrent.atomic.AtomicBoolean
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -87,21 +16,15 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 
-
-
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-
+// Phase M (M-8): the memory-state listener interface is deleted — it
+// had zero implementers tree-wide and the only construction passed no
+// listener, so the three notification call sites were no-ops in effect.
 class MemoryStabilityOptimizer(
-    private val context: Context,
-    private val memoryStateListener: MemoryStateListener? = null
+    private val context: Context
 ) : ComponentCallbacks2 {
-
-    interface MemoryStateListener {
-        fun onMemoryCritical(availableMegabytes: Long)
-        fun onMemoryRestored()
-    }
 
     private val isInitialized = AtomicBoolean(false)
     private val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -111,9 +34,6 @@ class MemoryStabilityOptimizer(
     private var coroutineScope = newScope()
     private fun newScope() = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var monitorJob: Job? = null
-    // No68-E1-D23: the listener was notified on EVERY 3s healthy poll, so
-    // onMemoryRestored() fired ~20x/minute forever. Notify on transition.
-    @Volatile private var wasCritical = false
 
     fun initialize() {
         if (isInitialized.compareAndSet(false, true)) {
@@ -134,7 +54,6 @@ class MemoryStabilityOptimizer(
             monitorJob?.cancel()
             monitorJob = null
             coroutineScope.cancel()
-            wasCritical = false
         }
     }
 
@@ -154,22 +73,9 @@ class MemoryStabilityOptimizer(
 
         // Calculate a critical threshold (15% safety buffer above the OS fatal kill threshold)
         val criticalThreshold = memoryInfo.threshold + (memoryInfo.threshold * 0.15)
-        val availableMb = memoryInfo.availMem / (1024 * 1024)
 
         if (memoryInfo.availMem <= criticalThreshold || memoryInfo.lowMemory) {
             executeAggressiveCleanup()
-            // No68-E1-D23b: notify critical on transition only; the poll
-            // repeats every 3s and the old code re-fired the listener
-            // (and the GC) on every critical poll too.
-            if (!wasCritical) {
-                wasCritical = true
-                memoryStateListener?.onMemoryCritical(availableMb)
-            }
-        } else {
-            if (wasCritical) {
-                wasCritical = false
-                memoryStateListener?.onMemoryRestored()
-            }
         }
     }
 
@@ -179,14 +85,6 @@ class MemoryStabilityOptimizer(
             ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW,
             ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
                 executeAggressiveCleanup()
-
-                val memoryInfo = ActivityManager.MemoryInfo()
-                activityManager.getMemoryInfo(memoryInfo)
-                // No68-E1-D23c: keep the poll's transition flag in sync, so
-                // an OS trim does not make the next healthy poll re-fire
-                // a stale "restored" for a state that was never reported.
-                wasCritical = true
-                memoryStateListener?.onMemoryCritical(memoryInfo.availMem / (1024 * 1024))
             }
             ComponentCallbacks2.TRIM_MEMORY_MODERATE,
             ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE,
@@ -206,10 +104,6 @@ class MemoryStabilityOptimizer(
 
     override fun onLowMemory() {
         executeAggressiveCleanup()
-        val memoryInfo = ActivityManager.MemoryInfo()
-        activityManager.getMemoryInfo(memoryInfo)
-        wasCritical = true
-        memoryStateListener?.onMemoryCritical(memoryInfo.availMem / (1024 * 1024))
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -231,7 +125,3 @@ class MemoryStabilityOptimizer(
         }
     }
 }
-
-/* ========
-NativePipelineCache
-======== */

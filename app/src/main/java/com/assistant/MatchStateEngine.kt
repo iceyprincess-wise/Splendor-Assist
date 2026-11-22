@@ -92,12 +92,6 @@ object MatchStateEngine {
         return next
     }
 
-    /** True when we are losing and the state is known. */
-    fun losing(s: MatchState = state): Boolean = s.known && s.scoreFor < s.scoreAgainst
-
-    /** True when we are winning and the state is known. */
-    fun winning(s: MatchState = state): Boolean = s.known && s.scoreFor > s.scoreAgainst
-
     fun reset() {
         state = MatchState()
     }

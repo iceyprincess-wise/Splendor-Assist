@@ -1,77 +1,29 @@
 package com.assistant
 
-
 import android.app.ActivityManager
-
-
-
 
 import android.content.Context
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 object MemoryMonitorEngine {
     @Volatile private var running = false
+    @Volatile private var pollThread: Thread? = null
     private var appContext: android.content.Context? = null
 
     fun start(ctx: android.content.Context) {
         if (running) return
+        // Phase M (M-5): D18-class double-start — a previous poll thread
+        // still winding down must be dead before a new one starts, or two
+        // pollers publish tiers, attribute drops and evict caches side by
+        // side. Wait briefly; give up (no start) rather than run two
+        // pollers. (Same pattern as LagVerdictEngine Phase L L-1; the
+        // restart is real: AdapterRecoveryEngine relaunches
+        // PerformanceEngineService in-process on a stale heartbeat, and
+        // onCreate re-ignites these singleton objects.)
+        val old = pollThread
+        if (old?.isAlive == true) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         running = true
         appContext = ctx.applicationContext
         // Batch 6e: OptimizerLivenessReporter.reportStartup() had zero
@@ -124,10 +76,15 @@ object MemoryMonitorEngine {
                 try { Thread.sleep(5000L) } catch (_: Throwable) { return@Thread }
             }
         }
-        t.isDaemon = true; t.name = "mem-monitor"; t.start()
+        t.isDaemon = true; t.name = "mem-monitor"; pollThread = t; t.start()
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        // Phase M (M-5): wake the sleeper so it exits now instead of up
+        // to 5 s later (and cannot be resurrected by a quick restart).
+        pollThread?.interrupt()
+    }
 
     // L7 (batch 1): per-process PSS snapshot for attribution. Own PSS via
     // Debug.getPss(); :survival + game via getProcessMemoryInfo (returns
@@ -162,6 +119,10 @@ object MemoryMonitorEngine {
                 prevSurvivalPssMb, survivalPssMb,
                 prevGamePssMb, gamePssMb
             )
+            // Phase M (M-10): keep the latest attribution for the
+            // diagnostics screen (DashboardInjector "Memory attribution:"
+            // line) alongside the log call below.
+            MemoryAttributionEngine.lastAttribution = attribution
             try {
                 com.assistant.diagnostic.RuntimeLogger.log(
                     MemoryAttributionEngine.logLine(attribution), "MEMORY"
@@ -196,7 +157,3 @@ object MemoryMonitorEngine {
         }
     }
 }
-
-/* ========
-MemoryPressureBusEngine
-======== */

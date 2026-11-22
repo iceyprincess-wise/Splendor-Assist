@@ -277,6 +277,23 @@ object DashboardInjector {
                     // suppressing, one line; the list is small (one rect
                     // per masked UI element).
                     append("Self-mask rects: ").append(com.assistant.vision.OverlaySelfMask.mask().joinToString(", ")).append("\n")
+                    // Phase M (M-9): MachineLedger.latest()/sampleCount()
+                    // had zero production readers — the heap/CPU samples
+                    // were collected into a ring and never read. First
+                    // live reader: this line. Point-in-time reads on the
+                    // background refresh thread, like the lines above;
+                    // latest()/sampleCount() are @Synchronized.
+                    val machine = com.assistant.diagnostic.MachineLedger.latest()
+                    append("Machine: ").append(if (machine == null) "no samples yet" else "heapFree=${machine.freeMemoryBytes / 1048576L}MB heapTotal=${machine.totalMemoryBytes / 1048576L}MB heapMax=${machine.maxMemoryBytes / 1048576L}MB cpus=${machine.availableProcessors} samples=${com.assistant.diagnostic.MachineLedger.sampleCount()}").append("\n")
+                    // Phase M (M-10): MemoryAttributionEngine's six
+                    // fields had zero readers outside logLine — the
+                    // breakdown of which process ate the RAM only ever
+                    // reached the log. First live reader: this line,
+                    // from lastAttribution (set by MemoryMonitorEngine
+                    // on every avail drop). "none yet" before the first
+                    // drop; the log line stays as the proof record.
+                    val memAttr = com.assistant.MemoryAttributionEngine.lastAttribution
+                    append("Memory attribution: ").append(if (memAttr == null) "none yet" else "drop=${memAttr.availDropMb}MB app=${memAttr.appMb}MB survival=${memAttr.survivalMb}MB game=${memAttr.gameMb}MB system=${memAttr.systemMb}MB" + if (memAttr.unknown) " unknown=1" else "").append("\n")
                 }
                 
                 val statusText = ComplianceState.summary(activity)
