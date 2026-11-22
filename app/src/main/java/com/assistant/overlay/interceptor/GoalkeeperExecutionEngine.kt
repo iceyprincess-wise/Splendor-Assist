@@ -8,8 +8,14 @@ object GoalkeeperExecutionEngine {
     // shadowing; Q65-5 reorder, Ed's call, would revive them). They are
     // kept deliberately: both `when`s must be exhaustive over
     // GoalkeeperAction, so deleting a branch would need an else/throw.
-    // The RECOVER branch IS live — OmnipotentGoalkeeperEngine produces
-    // RECOVER (item 12 A9) and vectorFor(RECOVER) is its fallback vector.
+    // The RECOVER *action* is live — OmnipotentGoalkeeperEngine produces
+    // RECOVER (item 12 A9) — but its live vector is RecoveryVectorEngine's,
+    // not vectorFor(RECOVER): the fallback at the offer site never fires
+    // (finalAction==RECOVER implies recoveryVector != null, and the router
+    // never emits RECOVER). The RECOVER and TRACK arms below are
+    // exhaustive-mapping entries only, same status as DIVE_LEFT/DIVE_RIGHT:
+    // TRACK is "do nothing" (the offer is skipped at the Omnipotent
+    // engine), and both arms are kept so the `when`s stay exhaustive.
     // No64-D32: the producing action engine's name, for the dispatch log.
     // GK save offers used to carry engine="OmnipotentGoalkeeperEngine" (the
     // offerer), so a dispatch line could never say which action engine

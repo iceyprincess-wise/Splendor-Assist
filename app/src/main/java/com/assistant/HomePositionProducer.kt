@@ -41,6 +41,20 @@ object HomePositionProducer {
         if (!userLine.found || captureWidth <= 0f || captureHeight <= 0f) {
             return HomePosition(found = false)
         }
+        // Phase H (H-1): guard the coerceIn precondition before it.
+        // Float.coerceIn(min, max) THROWS when min > max, and that state
+        // is reachable by construction: DefensiveLineEngine starts
+        // minX=+Inf / maxX=-Inf and folds a player in only when
+        // player.x < minX / player.x > maxX — a NaN x fails both, so if
+        // EVERY kept player's x is NaN the line reports found=true with
+        // minX=+Inf, maxX=-Inf, and the throw lands inside VisionCore's
+        // per-frame compute. With >=1 real player min <= max always, so
+        // this is behaviour-identical for every real input. (The finite
+        // check below catches a NaN *average*, but it never runs when
+        // coerceIn throws first.)
+        if (userLine.minX > userLine.maxX) {
+            return HomePosition(found = false)
+        }
         val homeX = userLine.averageX.coerceIn(userLine.minX, userLine.maxX)
             .coerceIn(0f, captureWidth)
         val homeY = defenderY.coerceIn(0f, captureHeight)
