@@ -59,6 +59,13 @@ class MainActivity : AppCompatActivity() {
         // across the settings round-trip (see onSaveInstanceState).
         private const val KEY_PIPELINE_ACTIVE = "permissionPipelineActive"
         private const val KEY_PERMISSION_STAGE = "permissionStage"
+
+        // F-PERMS2-1: the autostart confirm is ONE-TIME — Ed confirms
+        // once and is never asked again. Persisted in SharedPreferences
+        // (not the instance-state bundle) so it survives process death,
+        // app restarts and any re-entry into AUTOSTART_WAIT.
+        private const val PREFS_NAME = "splendor_permissions"
+        private const val KEY_AUTOSTART_CONFIRMED = "autostartConfirmed"
     }
 
     private val hubRefreshHandler = android.os.Handler(android.os.Looper.getMainLooper())
@@ -553,11 +560,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAutoStartConfirmation() {
+        // F-PERMS2-1: one-time confirm — if Ed already confirmed, never
+        // show this dialog again; go straight to the next stage.
+        if (getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .getBoolean(KEY_AUTOSTART_CONFIRMED, false)) {
+            permissionStage = PermissionStage.ACCESSIBILITY
+            checkAccessibilityAndProceed()
+            return
+        }
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Background Auto Start")
             .setMessage("Before continuing, please confirm that you enabled:\n\n• Auto Start\n• Background Activity\n• No Restrictions (if available)")
             .setCancelable(false)
             .setPositiveButton("Done") { _, _ ->
+                // F-PERMS2-1: persist the confirm — this dialog is never
+                // shown again after the first "Done".
+                getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+                    .putBoolean(KEY_AUTOSTART_CONFIRMED, true).apply()
                 permissionStage = PermissionStage.ACCESSIBILITY
                 checkAccessibilityAndProceed()
             }
