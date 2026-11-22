@@ -34,9 +34,6 @@ object NativeBridge {
     private var nativePreprocessProofLogged: Boolean = false
 
     @Volatile
-    private var nativeAuthorityProofLogged: Boolean = false
-
-    @Volatile
     private var nativeTruthLogged: Boolean = false
 
     @JvmStatic
@@ -82,17 +79,6 @@ object NativeBridge {
             nativePreprocessProofLogged = true
             try {
                 com.assistant.diagnostic.RuntimeLogger.log("NATIVE_VISION_PREPROCESS_ACTIVE", "NATIVE_VISION")
-            } catch (_: Throwable) {
-            }
-        }
-    }
-
-    @JvmStatic
-    fun logNativeAuthorityProofOnce() {
-        if (!nativeAuthorityProofLogged) {
-            nativeAuthorityProofLogged = true
-            try {
-                com.assistant.diagnostic.RuntimeLogger.log("AUTHORITY_NATIVE_ACTIVE", "NATIVE_ARBITRATION")
             } catch (_: Throwable) {
             }
         }
@@ -196,17 +182,6 @@ object NativeBridge {
         outputBlobs: IntArray
     ): Int
     // SPLENDOR_V25_NATIVE_TRUTH_END
-
-
-    @JvmStatic
-    external fun nativeAnalyzeFrame(
-        byteBuffer: java.nio.ByteBuffer,
-        width: Int,
-        height: Int,
-        rowStride: Int,
-        pixelStride: Int,
-        outBuffer: FloatArray
-    )
 init {
         try {
             System.loadLibrary(LIBRARY)
@@ -339,25 +314,6 @@ init {
     private external fun nativeDirectInputHookImpl(
         xCoords: FloatArray, yCoords: FloatArray, eventTimes: FloatArray,
         pointCount: Int, screenW: Float, screenH: Float, outFlat: FloatArray
-    )
-
-
-    @JvmStatic
-    fun nativePredictiveFrameInterp(
-        prevX: FloatArray, prevY: FloatArray,
-        currX: FloatArray, currY: FloatArray,
-        dt: Float, playerCount: Int,
-        outX: FloatArray, outY: FloatArray
-    ) {
-        if (!nativeReady.get()) { logFailureOnce(); return }
-        nativePredictiveFrameInterpImpl(prevX, prevY, currX, currY, dt, playerCount, outX, outY)
-    }
-    @JvmStatic
-    private external fun nativePredictiveFrameInterpImpl(
-        prevX: FloatArray, prevY: FloatArray,
-        currX: FloatArray, currY: FloatArray,
-        dt: Float, playerCount: Int,
-        outX: FloatArray, outY: FloatArray
     )
 
 

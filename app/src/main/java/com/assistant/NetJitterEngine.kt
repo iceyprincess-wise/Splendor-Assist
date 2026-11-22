@@ -1,71 +1,5 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * Item 26 (Builder B) — REAL implementation, driven by NetProbe's measured
  * jitter. The Patch 4 stub was start()/stop() only: the polling loop was
@@ -86,9 +20,10 @@ package com.assistant
  * single spike cannot flap it. Log lines fire only on a flip (proof of
  * life, per Ed's doctrine: the verdict is the product, the log is the
  * proof). Live state (jitterMs / verdict / sustainedJittery) is readable
- * by any :survival consumer; no consumer is wired in this round — the
- * hand-rolled jitter checks in ActionWindowEngine/CongestionSentinelEngine
- * are theirs to adopt, not this engine's to rewire from here.
+ * by any :survival consumer; CongestionSentinelEngine reads
+ * sustainedJittery (item 27 adoption). ActionWindowEngine's
+ * hand-rolled jitter check stays deliberately unadopted (item 27 —
+ * its 2x HOLD bar is a severity threshold, a different test).
  *
  * Doctrine (Ed, 2026-11-22): the performance engine holds the DEVICE so
  * gameplay continues at full power. This engine holds nothing back and
@@ -148,21 +83,3 @@ object NetJitterEngine {
         }
     }
 }
-
-/* ========
-BurstForensicsEngine
-======== */
-// V3 ADMIN-WIRED - every classification line answers the admin store live
-
-/**
- * Classifies each burst and keeps a 60s picture:
- *   HICCUP      isolated burst, recovers next slice
- *   OSCILLATION several bursts inside the watch window - rhythmic micro-stutter
- *   SEIZURE     burst with a frame past the freeze line - a felt freeze
- * Publishes one state for the lag governor's FAST path (a SEIZURE here
- * escalates the rescue to HEAVY immediately). Aggregated logging only.
- *
- * V3: the freeze line, oscillation count + window, calm-restore time and
- * calm-check rhythm are all admin-tunable, re-read on every burst - no
- * restart needed. State changes publish instantly for the admin Detector.
- */

@@ -4,14 +4,6 @@ import com.assistant.GoalPostCalibration
 
 object NearPostCoverageEngine {
 
-    fun shouldCover(
-        decision: ThreatDecision
-    ): Boolean {
-
-        return decision.direction ==
-            ShotDirection.NEAR_POST
-    }
-
     /**
      * L2 (batch 1): the anchored overload — same rule as
      * FarPostCoverageEngine: no valid calibration, no post to cover.

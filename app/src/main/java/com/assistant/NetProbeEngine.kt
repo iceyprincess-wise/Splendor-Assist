@@ -1,70 +1,11 @@
 package com.assistant
 
-
-
-
-
-
-
 import android.content.Context
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
-
-
-
-
-
-
-
-
-
 import java.net.InetSocketAddress
 import java.net.Socket
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object NetProbeEngine {
 
@@ -80,6 +21,12 @@ object NetProbeEngine {
 
     private val lock = Object()
     @Volatile private var running = false
+    // Phase N (N-1): D18-class double-start — the probe thread was never
+    // kept, so stop() could not join it; a restart inside the 2-5 s wait
+    // left TWO probers publishing concurrently. The reference is kept so
+    // start() joins the old thread (500 ms) and gives up rather than
+    // running two probers (Phase L L-1 pattern).
+    @Volatile private var probeThread: Thread? = null
     @Volatile var rtt = 0f; private set
     @Volatile var jitter = 0f; private set
     @Volatile var quality = "UNKNOWN"; private set
@@ -128,6 +75,13 @@ object NetProbeEngine {
 
     fun start(ctx: Context) {
         if (running) return
+        // Phase N (N-1): a previous probe thread still sleeping out its
+        // 2-5 s wait after stop() must be dead before a new one starts.
+        val old = probeThread
+        if (old?.isAlive == true) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         running = true
         PerformanceTelemetryRegistry.initialize(ctx.applicationContext)
         val t = Thread {
@@ -149,10 +103,17 @@ object NetProbeEngine {
                 } catch (_: InterruptedException) { }
             }
         }
-        t.isDaemon = true; t.name = "net-probe"; t.start()
+        t.isDaemon = true; t.name = "net-probe"; probeThread = t; t.start()
     }
 
-    fun stop() { running = false; wake() }
+    fun stop() {
+        running = false
+        // Phase N (N-1): interrupt the kept thread so it exits its wait
+        // now instead of sleeping out the nap; wake() notifies the lock
+        // for the same reason (belt-and-braces — either suffices).
+        probeThread?.interrupt()
+        wake()
+    }
 
     /** Link changed: wipe history and probe again NOW - no waiting out the nap. */
     fun onLinkChanged() {
@@ -231,17 +192,3 @@ object NetProbeEngine {
         " resolver=" + preferredResolver +
         " probes=" + probes + " fail=" + failures
 }
-
-/* ========
-NetworkStateEngine
-======== */
-// V3 INSTANT-REFLEX
-
-/**
- * V3: the OS now TELLS us the instant the network changes (default network
- * callback) instead of us noticing up to 10s late on a poll. On every change
- * the carrier profile re-selects, the probe engine wipes history and
- * re-probes immediately, and DNS re-warms - the whole stack re-learns the
- * new link in about one second. The poll remains only as a belt-and-braces
- * fallback and its cadence is admin-tunable.
- */

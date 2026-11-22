@@ -1,70 +1,10 @@
 package com.assistant
 
-
-
-
-
-
-
 import android.content.Context
-
-
-
-
-
-
-
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object NetworkStateEngine {
 
@@ -162,16 +102,3 @@ object NetworkStateEngine {
         pollThread?.interrupt()
     }
 }
-
-/* ========
-PacketLossProbeEngine
-======== */
-// V3 INSTANT-REFLEX
-
-/**
- * Measures PACKET LOSS - the metric TCP probes cannot see. Sends real UDP DNS
- * queries and counts replies. V3: queries alternate between two independent
- * resolvers (8.8.8.8 / 1.1.1.1) so a single resolver hiccup no longer reads
- * as link loss; the gap between queries is admin-tunable; live loss is
- * published for the admin Detector.
- */

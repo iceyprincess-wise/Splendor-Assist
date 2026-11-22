@@ -109,9 +109,6 @@ object NodeNotificationHub {
     /** F39-D6: read API so diagnostics/watchdog can verify the hub state instead of trusting it. */
     fun activeNodeCount(): Int = activeNodes.size
 
-    /** F39-D6: read API so diagnostics/watchdog can verify the hub state instead of trusting it. */
-    fun isAttached(nodeName: String): Boolean = activeNodes.contains(nodeName)
-
     private fun ensureChannel(service: Service) {
         val channel = NotificationChannel(
             CHANNEL_ID,

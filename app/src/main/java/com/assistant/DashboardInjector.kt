@@ -294,6 +294,13 @@ object DashboardInjector {
                     // drop; the log line stays as the proof record.
                     val memAttr = com.assistant.MemoryAttributionEngine.lastAttribution
                     append("Memory attribution: ").append(if (memAttr == null) "none yet" else "drop=${memAttr.availDropMb}MB app=${memAttr.appMb}MB survival=${memAttr.survivalMb}MB game=${memAttr.gameMb}MB system=${memAttr.systemMb}MB" + if (memAttr.unknown) " unknown=1" else "").append("\n")
+                    // Phase N (N-7): NodeNotificationHub.activeNodeCount()
+                    // had zero production readers — the hub knew how many
+                    // foundation nodes were attached and nobody ever read
+                    // it. First live reader: this line. Point-in-time read
+                    // on the background refresh thread, like the lines
+                    // above; activeNodes is a ConcurrentHashMap set.
+                    append("Foundation nodes: ").append(com.assistant.diagnostic.notification.NodeNotificationHub.activeNodeCount()).append(" active\n")
                 }
                 
                 val statusText = ComplianceState.summary(activity)

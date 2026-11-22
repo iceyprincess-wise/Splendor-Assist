@@ -14,9 +14,6 @@ object NativePorts {
         out[1] = y - (40f * boost)
         out[2] = coerce(0.60f + (boost * 0.40f), 0f, 1f)
     }
-    fun crossLead(v: Float): Float = v * 0.5f
-    fun crossSwipe(): Float = 320f
-    fun crossDuration(): Long = 45L
     fun keeper(zone: Int, direction: Int, priority: Int, x: Float, y: Float, out: FloatArray) {
         var bias = 0
         if (zone == 4) bias = 1 else if (direction == 0) bias = 2 else if (direction == 1) bias = 3 else if (zone == 0) bias = 4 else if (zone == 1) bias = 5
