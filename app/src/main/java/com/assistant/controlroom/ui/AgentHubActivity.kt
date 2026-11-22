@@ -172,6 +172,11 @@ class AgentHubActivity : AppCompatActivity() {
                         "IN-APP AGENT CORE\n" +
                         "Running    : ${core.running}\n" +
                         "Cycles     : ${core.cycles}\n" +
+                        // Phase I (I-6): lastObservationMs was written by
+                        // snapshot() and read by nobody — its first live
+                        // reader. Wall clock: RuntimeObservation
+                        // timestampMs is System.currentTimeMillis().
+                        "Last obs   : ${if (core.lastObservationMs > 0L) "${System.currentTimeMillis() - core.lastObservationMs}ms ago" else "—"}\n" +
                         "Last action: ${core.lastAction}\n" +
                         "Reason     : ${core.lastReason}\n" +
                         "Verified   : ${core.lastVerified}\n" +

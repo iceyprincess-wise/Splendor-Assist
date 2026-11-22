@@ -71,8 +71,23 @@ object InputPriorityEngine {
     @Volatile private var running = false
     @Volatile var reapplyCount = 0; private set
 
+    // Phase I (I-2): same D18 class as InputLatencyEngine (no68) — stop()
+    // only cleared the flag, so a restart within the 500ms sleep left the
+    // old thread polling alongside the new one. Keep the thread so stop()
+    // can wake it and start() can join it.
+    @Volatile private var pollThread: Thread? = null
+
     fun start() {
         if (running) return
+        // Phase I (I-2): a previous poll thread still winding down must be
+        // dead before a new one starts — otherwise two threads poll and
+        // publish concurrently. Wait briefly; give up (no start) rather
+        // than run two pollers. (Same pattern as InputLatencyEngine D18.)
+        val old = pollThread
+        if (old?.isAlive == true) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         running = true
         applyPriority()
 
@@ -108,12 +123,18 @@ object InputPriorityEngine {
         t.isDaemon = true
         t.name = "input-priority"
         t.priority = Thread.MAX_PRIORITY
+        pollThread = t
         t.start()
 
         RuntimeLogger.log("InputPriorityEngine started — HARDWORKING BOOSTER MODE (500ms cycle)", "INPUT")
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        // Phase I (I-2): wake the sleeper so it exits now instead of up
+        // to 500ms later (and cannot be resurrected by a quick restart).
+        pollThread?.interrupt()
+    }
 
     private fun applyPriority() {
         try { 

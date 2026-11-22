@@ -71,8 +71,23 @@ object InputThermalEliminatorEngine {
     @Volatile private var running = false
     @Volatile var thermalStatus = "UNKNOWN"; private set
 
+    // Phase I (I-4): same D18 class as InputLatencyEngine (no68) — stop()
+    // only cleared the flag, so a restart within the 1000ms sleep left the
+    // old thread polling alongside the new one. Keep the thread so stop()
+    // can wake it and start() can join it.
+    @Volatile private var pollThread: Thread? = null
+
     fun start(context: Context) {
         if (running) return
+        // Phase I (I-4): a previous poll thread still winding down must be
+        // dead before a new one starts — otherwise two threads poll and
+        // publish concurrently. Wait briefly; give up (no start) rather
+        // than run two pollers. (Same pattern as InputLatencyEngine D18.)
+        val old = pollThread
+        if (old?.isAlive == true) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         running = true
         val pm = context.applicationContext.getSystemService(Context.POWER_SERVICE) as? PowerManager
 
@@ -125,11 +140,17 @@ object InputThermalEliminatorEngine {
         t.isDaemon = true
         t.name = "input-thermal-eliminator"
         t.priority = Thread.MAX_PRIORITY
+        pollThread = t
         t.start()
         RuntimeLogger.log("InputThermalEliminatorEngine started (Hardworking Eliminator Mode)", "INPUT")
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        // Phase I (I-4): wake the sleeper so it exits now instead of up
+        // to 1000ms later (and cannot be resurrected by a quick restart).
+        pollThread?.interrupt()
+    }
 }
 
 /* ========

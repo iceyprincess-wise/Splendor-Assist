@@ -71,14 +71,21 @@ object InputVsyncEliminatorEngine {
     @Volatile private var running = false
     @Volatile var lastFrameDelayMs = 0L; private set
 
+    // Phase I (I-3): same D18 class as InputLatencyEngine (no68) — stop()
+    // only cleared the flag, so a restart within the 1s re-post window let
+    // the pending runnable fire after the new start() and reschedule
+    // itself, leaving two runnables cycling. Keep the handler + runnable
+    // so stop() can remove the pending callback.
+    private val handler = Handler(Looper.getMainLooper())
+    private var checkRunnable: Runnable? = null
+
     fun start() {
         if (running) return
         running = true
-        
-        val handler = Handler(Looper.getMainLooper())
+
         val checkIntervalMs = 1000L
-        
-        val checkRunnable = object : Runnable {
+
+        val runnable = object : Runnable {
             override fun run() {
                 if (!running) return
                 
@@ -117,11 +124,22 @@ object InputVsyncEliminatorEngine {
             }
         }
         
-        handler.post(checkRunnable)
+        checkRunnable = runnable
+        handler.post(runnable)
         RuntimeLogger.log("InputVsyncEliminatorEngine started (Hardworking Eliminator Mode)", "INPUT")
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        // Phase I (I-3): remove the pending re-post so it cannot fire
+        // after a restart and reschedule a second cycle. Null-guarded:
+        // removeCallbacks(null) would clear the whole main queue.
+        val r = checkRunnable
+        if (r != null) {
+            try { handler.removeCallbacks(r) } catch (_: Throwable) {}
+        }
+        checkRunnable = null
+    }
 }
 
 /* ========

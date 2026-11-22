@@ -30,7 +30,9 @@ package com.assistant.diagnostic
  *   - GameplayRoomActivity — 2s refresh; this one ALSO appended a line
  *     to gameplaylogs.txt on every cycle, so stopping it stops that
  *     write too (manual "Refresh Now" still refreshes + logs once).
- *   - FutureRoomsActivity agent screen — 3s heal-events refresh.
+ *   - (Phase I: the FutureRoomsActivity agent screen listed here was
+ *     removed by No66-D44 — the room now only navigates to
+ *     AgentHubActivity, which is gated above. No refresh exists there.)
  *
  * STAYS (not loggers — user-initiated one-shot views, no timer):
  *   - CrashInspectorActivity — opens a crash file when the user taps
