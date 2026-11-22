@@ -263,7 +263,12 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(com.assistant.overlay.R.id.cardOverlay).setOnClickListener { startActivity(Intent(this, GameplayRoomActivity::class.java)) }
         findViewById<View>(com.assistant.overlay.R.id.cardAccessibility).setOnClickListener { startActivity(Intent(this, AgentHubActivity::class.java)) }
         findViewById<View>(com.assistant.overlay.R.id.cardNotifications).setOnClickListener { startActivity(Intent(this, AgentHubActivity::class.java)) }
-        findViewById<View>(com.assistant.overlay.R.id.cardMediaProjection).setOnClickListener { checkBatteryAndProceed() }
+        findViewById<View>(com.assistant.overlay.R.id.cardMediaProjection).setOnClickListener {
+            // F-PERMS-4: arm the pipeline — without this, onResume never
+            // re-enters after the first settings page and the flow stalls.
+            permissionPipelineActive = true
+            checkBatteryAndProceed()
+        }
         findViewById<View>(com.assistant.overlay.R.id.cardDiagnostics).setOnClickListener { startActivity(Intent(this, GameplayRoomActivity::class.java)) }
         findViewById<View>(com.assistant.overlay.R.id.cardFutureRooms).setOnClickListener { openFutureRoom() }
     }
@@ -338,6 +343,21 @@ class MainActivity : AppCompatActivity() {
 
         val manufacturer = Build.MANUFACTURER.lowercase()
         val brand = Build.BRAND.lowercase()
+
+        // F-PERMS-3: the direct exemption request FIRST — it opens the
+        // system allow dialog for this exact app (the page
+        // ComplianceState.battery() checks). The old code only tried the
+        // MIUI autostart activities and the system app LIST, so Ed landed
+        // on a list and had to find the app by hand. Only when the
+        // exemption is not yet granted; the "Open Settings Again" path
+        // (battery already granted) goes straight to the vendor pages.
+        if (!ComplianceState.battery(this)) {
+            val direct = Intent(
+                Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                Uri.parse("package:$packageName")
+            )
+            if (launchIfExists(direct)) return true
+        }
 
         if (manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || 
             manufacturer.contains("poco") || brand.contains("xiaomi") || 
@@ -415,6 +435,10 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        checkPhoneStateAndProceed()
+    }
+
+    private fun checkPhoneStateAndProceed() {
         // Batch booster: ask for READ_PHONE_STATE once per process so the
         // free booster can read real signal level/dBm. This check sits
         // AFTER the notification gate, so a denial here can never loop
@@ -485,6 +509,22 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (requestCode == 9001) {
+            // F-PERMS-1: re-enter the notification stage when granted, so
+            // the READ_PHONE_STATE prompt (9002) still comes up — the old
+            // code jumped straight to media projection, so 9002 never
+            // appeared when the notification prompt was shown first.
+            // When denied, go to the phone-state gate directly: re-entering
+            // checkNotificationAndProceed would re-prompt 9001 forever.
+            if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+                checkNotificationAndProceed()
+            } else {
+                checkPhoneStateAndProceed()
+            }
+        }
+
+        if (requestCode == 9002) {
+            // F-PERMS-2: 9002 was unhandled — the flow only recovered via
+            // onResume re-entry. Advance explicitly.
             checkMediaProjectionAndProceed()
         }
     }

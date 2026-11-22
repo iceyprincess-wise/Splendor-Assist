@@ -5,8 +5,13 @@
     android:insetRight="13%"
     android:insetBottom="13%">
 
+    <!-- Logo fix: gravity was "center", which draws the 1254px bitmap at
+         intrinsic size and clips it to the 80dp inset box, so only the
+         center 6.4% (the gold hub) ever showed — the gold disc in the
+         drawer and AOSP app info. "fill" scales the bitmap to the box,
+         so the whole compass logo shows. -->
     <bitmap
-        android:gravity="center"
+        android:gravity="fill"
         android:src="@drawable/splendor_assist_logo"/>
 
 </inset>
