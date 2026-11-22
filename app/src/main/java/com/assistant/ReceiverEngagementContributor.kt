@@ -1,97 +1,11 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
 import com.assistant.runtime.ActionClass
 import com.assistant.runtime.EngineCapability
 import com.assistant.runtime.EngineContribution
 import com.assistant.runtime.GameplayContributor
-
 import com.assistant.runtime.RuntimeFrame
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
 import kotlin.math.hypot
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object ReceiverEngagementContributor : GameplayContributor {
     override val engineName = "ReceiverEngagement"
@@ -108,9 +22,3 @@ object ReceiverEngagementContributor : GameplayContributor {
             r.confidence.coerceIn(0f, 1f), 42L)
     }
 }
-
-/* ========
-ShotAnticipationContributor
-======== */
-/* Threat-anticipation defensive claim. Frame-derived so it never needs a
-   ThreatDecision from another engine, preserving isolation. */

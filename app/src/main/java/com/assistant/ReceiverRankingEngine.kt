@@ -1,97 +1,6 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
 import kotlin.math.hypot
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object ReceiverRankingEngine{
 
@@ -129,7 +38,3 @@ object ReceiverRankingEngine{
         return ReceiverRankingResult(ranked)
     }
 }
-
-/* ========
-RunPredictionEngine
-======== */

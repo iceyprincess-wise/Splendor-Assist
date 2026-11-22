@@ -1,97 +1,6 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 data class RuntimeObservation(
     val timestampMs: Long,
@@ -136,7 +45,3 @@ data class RuntimeObservation(
         }
     }
 }
-
-/* ========
-SceneSnapshot
-======== */

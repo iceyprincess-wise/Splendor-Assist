@@ -1,97 +1,10 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
 import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ContributionRegistry
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
 import com.assistant.runtime.GameplayEngineRegistry
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import java.util.concurrent.atomic.AtomicBoolean
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object RuntimeCoordinator {
 
@@ -283,6 +196,12 @@ object RuntimeCoordinator {
         // No66-D40: same treatment for the runtime metrics counters — without
         // this the dashboard snapshot mixed epochs after an in-process restart.
         try { com.assistant.diagnostic.RuntimeMetricsRegistry.reset() } catch (_: Throwable) {}
+        // R-7 (Phase R): RuntimePerformanceCoordinator.reset() existed with
+        // no production caller (Q68-53/G4 precedent, same pattern as
+        // TelemetryRepository above). Without it the coordinator's state
+        // (diagnostics/visualization registries + FPS/confidence snapshots)
+        // survived a session reset and read stale into the next epoch.
+        try { RuntimePerformanceCoordinator.reset() } catch (_: Throwable) {}
     }
 
     @Synchronized
@@ -394,7 +313,3 @@ object RuntimeCoordinator {
         }
     }
 }
-
-/* ========
-RuntimeDiagnosticsRegistry
-======== */

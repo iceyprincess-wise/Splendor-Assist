@@ -1,99 +1,18 @@
 package com.assistant
-
 // F49_PATCH_V1
-
-
-
-
-
-
-
-
-
-import android.content.Context
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
-
-
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
 import com.assistant.runtime.GameplayEngineRegistry
-
-
 import com.assistant.storage.SplendorStorageRoot
 import java.io.File
 import java.io.FileWriter
 import java.lang.ref.WeakReference
-
-
-
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.CopyOnWriteArrayList
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object RuntimeSelfHealEngine {
 
@@ -116,6 +35,13 @@ object RuntimeSelfHealEngine {
         private set
 
     @Volatile private var running = false
+    // D18 (Phase R): the agent thread is kept so stop() can interrupt its
+    // 3 s grace / 5 s cycle sleeps and start() can join the old one
+    // instead of running two self-heal agents. Reachability:
+    // OverlayService.onCreate starts it, InAppAgentCore also starts it,
+    // OverlayService.onDestroy stops it; in-process service relaunch
+    // re-ignites (same as Phase L L-1).
+    private var agentThread: Thread? = null
     @Volatile private var agentStartedMs: Long = 0L
     private var contextRef: WeakReference<android.content.Context>? = null
     private val fmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
@@ -137,6 +63,11 @@ object RuntimeSelfHealEngine {
     fun start() {
         if (running) return
         running = true
+        val old = agentThread
+        if (old != null && old.isAlive) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         agentStartedMs = System.currentTimeMillis()
         agentStatus = "STARTING"
         val t = Thread {
@@ -161,10 +92,15 @@ object RuntimeSelfHealEngine {
         t.isDaemon = true
         t.name = "splendor-self-heal-agent"
         t.start()
+        agentThread = t
         RuntimeLogger.log("RuntimeSelfHealEngine started — AI agent daemon online", "AGENT")
     }
 
-    fun stop() { running = false; agentStatus = "IDLE" }
+    fun stop() {
+        running = false
+        agentThread?.interrupt()
+        agentStatus = "IDLE"
+    }
 
     fun isRunning(): Boolean = running
 
@@ -1065,7 +1001,3 @@ object RuntimeSelfHealEngine {
         } catch (e: Throwable) { "AGENT STATUS ERROR: ${e.message}" }
     }
 }
-
-/* ========
-RuntimeTuningPanel
-======== */

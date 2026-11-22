@@ -1,70 +1,9 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
-
-
-
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object RadioKeepAliveEngine {
 
@@ -73,6 +12,12 @@ object RadioKeepAliveEngine {
 
     @Volatile private var running = false
     @Volatile private var sent = 0L
+
+    // D18 (Phase R): the keepalive thread is kept so stop() can interrupt
+    // it and start() can join the old one instead of running two senders.
+    // Reachability: PerformanceEngineService ignites/stops it; the service
+    // is relaunched in-process on a stale heartbeat (same as Phase L L-1).
+    private var keepAliveThread: Thread? = null
 
     // Batch booster: match-mode boost, driven by FreeBoosterController.
     // While a match is on the keepalive runs at the 4 s floor regardless
@@ -86,6 +31,11 @@ object RadioKeepAliveEngine {
     fun start() {
         if (running) return
         running = true
+        val old = keepAliveThread
+        if (old != null && old.isAlive) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         val t = Thread {
             while (running) {
                 var cadence = CarrierProfileEngine.keepAliveS
@@ -111,21 +61,11 @@ object RadioKeepAliveEngine {
             }
         }
         t.isDaemon = true; t.name = "net-keepalive"; t.start()
+        keepAliveThread = t
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        keepAliveThread?.interrupt()
+    }
 }
-
-/* ========
-SpikeBurstEngine
-======== */
-// V3 INSTANT-REFLEX
-
-/**
- * When the sentinel flags congestion, this fires a rapid probe burst to map
- * the spike (depth + floor) and then watches for recovery at 1s resolution -
- * so the runtime knows the link is clean again SECONDS before the slow
- * cadence would notice. V3: burst size, burst gap and the clean line are
- * fixed literals in code (BURST_SAMPLES, BURST_GAP_MS, CLEAN_MULT) — none
- * is set from outside the code.
- */

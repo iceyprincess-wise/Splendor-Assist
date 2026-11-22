@@ -1,99 +1,19 @@
 package com.assistant
-
 // F49_PATCH_V1
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import android.os.SystemClock
-
-
-
 import com.assistant.diagnostic.AdapterSignalBus
-
-
-
-
 import com.assistant.execution.CentralExecutionBus
 import com.assistant.execution.ContributionRegistry
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
 import com.assistant.execution.HybridExecutionTerminal
-
-import com.assistant.runtime.*
 import com.assistant.runtime.ActionClass
-
 import com.assistant.runtime.EngineContribution
-
 import com.assistant.runtime.GameplayEngineRegistry
 import com.assistant.runtime.RuntimeFrame
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import java.util.concurrent.atomic.AtomicLong
-
-import kotlin.math.*
-
-
-
-
-
 import kotlin.math.hypot
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object RuntimeDecisionLoop {
 
@@ -146,7 +66,6 @@ object RuntimeDecisionLoop {
     }
 
     @JvmStatic fun invalidateGestureEnvelopeOnManualTouch() { activeGestureEnvelope = null }
-
 
     /* Called once per assembled frame by OverlayService's capture loop. */
     @Synchronized fun onFrame(frame: RuntimeFrame): Boolean {
@@ -601,14 +520,3 @@ object RuntimeDecisionLoop {
         "mappingTrainedSlots" to ControlMappingTrainer.trainedSlots()
     )
 }
-
-/* ========
-RuntimeObservation
-======== */
-/**
- * Immutable runtime observation consumed by InAppAgentCore.
- *
- * This is deliberately a snapshot:
- * gameplay engines remain owners of gameplay state;
- * the agent only observes authoritative runtime surfaces.
- */

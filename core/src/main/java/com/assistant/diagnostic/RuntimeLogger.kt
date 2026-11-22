@@ -109,10 +109,12 @@ object RuntimeLogger {
         if (sessionHeaderWritten) return
         sessionHeaderWritten = true
 
-        // F40-D2: dropped writes were counted and never surfaced anywhere
-        // (droppedWriteCount() has zero callers repo-wide). The running
-        // total is now stamped on the session header when non-zero, and
-        // the rejection handler below logs each drop to logcat.
+        // F40-D2: dropped writes were counted and never surfaced anywhere.
+        // The running total is now stamped on the session header when
+        // non-zero, and the rejection handler below logs each drop to
+        // logcat. (R-8, Phase R: the "zero callers" claim is stale —
+        // droppedWriteCount() has a live caller, DashboardInjector:259,
+        // wired in Phase I I-5.)
         val dropped = droppedWrites.get()
         val droppedNote = if (dropped > 0L) " (prior dropped writes: $dropped)" else ""
         val timestamp = sessionTimestamp()
