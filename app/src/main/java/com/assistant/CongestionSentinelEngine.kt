@@ -90,9 +90,12 @@ object CongestionSentinelEngine {
                 try {
                     val j = NetProbeEngine.jitter
                     val tol = CarrierProfileEngine.jitterTolMs.toFloat()
-                    val rising = j > lastJitter * RISE_FACTOR && j > tol * RISE_FRACTION
-                    val over = j > tol
-                    val now = rising || over
+                    // Item 27: the `over` arm is NetJitter's sustained verdict —
+                    // the same test as jitter > tol, with 2-sample flip
+                    // hysteresis — so a single spiked sample no longer flips
+                    // congestion on and off. The `rising` arm (fast ramp) is
+                    // untouched and still fires immediately.
+                    val now = decideCongested(j, lastJitter, tol, NetJitterEngine.sustainedJittery)
                     if (now && !congested) {
                         congestedSinceMs = System.currentTimeMillis()
                         warnings++
@@ -114,6 +117,21 @@ object CongestionSentinelEngine {
     }
 
     fun stop() { running = false }
+
+    /**
+     * Item 27 — pure congestion decision for one poll sample.
+     * `rising` is the fast-ramp early warning (jitter up 1.5x and above
+     * 60% of tolerance). `over` is NetJitter's sustained verdict — the
+     * same threshold as jitter > tol, but it only flips after 2
+     * consecutive samples on one side, so an isolated spike cannot flap
+     * congestion. A sustained verdict still drives the decision even if
+     * this instant's sample is calm: that is the hysteresis working.
+     */
+    fun decideCongested(jitter: Float, lastJitter: Float, tolMs: Float, sustainedJittery: Boolean): Boolean {
+        val rising = jitter > lastJitter * RISE_FACTOR && jitter > tolMs * RISE_FRACTION
+        val over = sustainedJittery
+        return rising || over
+    }
 
     // Item 16 Letter C (B1): first live reader for the onset timestamp
     // and the warning count — GameplayRoomActivity displays them on the
