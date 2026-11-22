@@ -103,6 +103,7 @@ object BurstForensicsEngine {
 
     @Volatile private var state = "CALM"
     @Volatile private var decayRunning = false
+    @Volatile private var decayThread: Thread? = null
     @Volatile private var lastLogMs = 0L
     private val recent = ArrayDeque<Long>()   // burst timestamps, last 60s
 
@@ -270,8 +271,18 @@ object BurstForensicsEngine {
 
     /** decay back to CALM after an admin-tunable quiet time */
     fun startDecay() {
-        if (decayRunning) return
-        decayRunning = true
+        if (decayRunning) return; decayRunning = true
+        // Task 5 (gate): D18 double-start fix, R-1/R-3 shape (GcStall T-14).
+        // stopDecay() used to be bare `decayRunning = false` with no stored
+        // thread and no interrupt: a restart inside the decay sleep left the
+        // old decay thread alive beside the new one. Join the old thread
+        // 500 ms and give up - with decayRunning left true the old thread
+        // keeps decaying on its own, so startDecay() is a safe no-op.
+        val old = decayThread
+        if (old != null && old.isAlive) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         val t = Thread {
             while (decayRunning) {
                 try {
@@ -292,9 +303,10 @@ object BurstForensicsEngine {
             }
         }
         t.isDaemon = true; t.name = "stutter-decay"; t.start()
+        decayThread = t
     }
 
-    fun stopDecay() { decayRunning = false }
+    fun stopDecay() { decayRunning = false; decayThread?.interrupt() }
 }
 
 /* ========

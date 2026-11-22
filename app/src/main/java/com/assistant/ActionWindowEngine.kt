@@ -77,6 +77,7 @@ object ActionWindowEngine {
     private val HOLD_JITTER_MULT: Float get() = 2f
 
     @Volatile private var running = false
+    @Volatile private var pollThread: Thread? = null
     @Volatile var verdict = "UNKNOWN"; private set
     // 6a: `sinceMs` removed with state() — it only fed state()'s held-seconds.
     // 6a: `flips` removed — write-only (incremented, never read); `state()`
@@ -84,8 +85,19 @@ object ActionWindowEngine {
     // is ConnectionHealEngine on `verdict`).
 
     fun start() {
-        if (running) return
-        running = true
+        if (running) return; running = true
+        // Task 5 (gate): D18 double-start fix, R-1/R-3 shape (GcStall T-14).
+        // stop() used to be bare `running = false` with no stored thread
+        // and no interrupt: a restart inside the poll sleep left the old
+        // poller alive beside the new one (both looping forever, since the
+        // old thread wakes to running == true again). Join the old thread
+        // 500 ms and give up - with running left true the old poller keeps
+        // the engine alive on its own, so start() is a safe no-op.
+        val old = pollThread
+        if (old != null && old.isAlive) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         val t = Thread {
             while (running) {
                 try {
@@ -116,9 +128,10 @@ object ActionWindowEngine {
             }
         }
         t.isDaemon = true; t.name = "net-window"; t.start()
+        pollThread = t
     }
 
-    fun stop() { running = false }
+    fun stop() { running = false; pollThread?.interrupt() }
 }
 
 /* ========
