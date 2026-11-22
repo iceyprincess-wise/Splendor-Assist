@@ -102,7 +102,7 @@ object AttackingVectorContributor:GameplayContributor{
     if(!frame.trusted||!frame.hasBall)return null
     val goalDetected=frame.goalDetected&&frame.goalConfidence>0.25f&&frame.goalRightX>frame.goalLeftX
     val gkX:Float;val gkY:Float;val lpX:Float;val lpY:Float;val rpX:Float;val rpY:Float
-    if(goalDetected){gkX=(frame.goalLeftX+frame.goalRightX)*0.5f;gkY=(frame.goalTopY+frame.goalBottomY)*0.5f;lpX=frame.goalLeftX;lpY=frame.goalTopY;rpX=frame.goalRightX;rpY=frame.goalBottomY}
+    if(goalDetected){val keeper=ShotTargetMath.keeperPosition(frame.goalkeeperVisible,frame.goalkeeperX,frame.goalkeeperY,frame.goalCenterX,frame.goalCenterY);gkX=keeper.x;gkY=keeper.y;lpX=frame.goalLeftX;lpY=frame.goalTopY;rpX=frame.goalRightX;rpY=frame.goalBottomY}
     /* SPLENDOR_CAPTURE_TO_SCREEN_V1 - this branch used to test frame.ballX>=825f
        against a logical 1650x720 landscape pitch, but frame.ballX is measured
        on the capture buffer (e.g. 288x640). 825 was therefore unreachable and
@@ -116,7 +116,10 @@ object AttackingVectorContributor:GameplayContributor{
     val proximity=(1f-dist/MAX_SHOT_RANGE).coerceIn(0f,1f)
     val clearance=(1f-frame.defenderDensity*0.4f).coerceIn(0f,1f)
     val authority=(MIN_AUTHORITY+proximity*0.35f+clearance*0.10f).coerceIn(MIN_AUTHORITY,0.95f)
-    return EngineContribution(engineName,ActionClass.SHOT,point.x.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),point.y.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),authority,frame.confidence,35L)
+    // Q-C3-1 (F07): shot duration is type-correct via ShotTypeEngine —
+    // POWER 35 / FINESSE 30 / CHIP 25; 35L fallback when select() returns
+    // null (e.g. no goal detected, so the fallback geometry above applies).
+    return EngineContribution(engineName,ActionClass.SHOT,point.x.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),point.y.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),authority,frame.confidence,ShotTypeEngine.select(frame,point.x,point.y)?.durationHintMs?:35L)
   }
 }
 

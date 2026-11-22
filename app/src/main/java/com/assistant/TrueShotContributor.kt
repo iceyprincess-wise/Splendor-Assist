@@ -132,6 +132,12 @@ object TrueShotContributor : GameplayContributor {
         if (outBuffer[0] < 0.5f) return null // Invalid gate
 
         val boost = ENABLED_BOOST
+        // B2-1 (item 23): align the duration hint to ShotTypeEngine — the
+        // same rule ShotContributor already uses. The 30L literal matched
+        // FINESSE only: close-range POWER wants 35L (this fired 5ms soft)
+        // and keeper-stranded CHIP wants 25L (this fired 5ms long). Aim
+        // stays the native outBuffer aim (B1's domain); duration only.
+        val durationHintMs = ShotTypeEngine.select(frame, outBuffer[1], outBuffer[2])?.durationHintMs ?: 30L
         return EngineContribution(
             engine = engineName,
             actionClass = ActionClass.SHOT,
@@ -142,7 +148,7 @@ object TrueShotContributor : GameplayContributor {
             // Q67-18 (D13) — a weak goal sighting must discount the shot,
             // not be trusted at full frame confidence.
             confidence = minOf(frame.confidence, frame.goalConfidence).coerceIn(0f, 1f),
-            durationHintMs = 30L
+            durationHintMs = durationHintMs
         )
     }
 }

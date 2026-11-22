@@ -38,12 +38,29 @@ Java_com_assistant_NativeBridge_nativeCriticalScoringVector(
     float gkDistToLeft = hypotf(goalLeftPostX - gkX, goalLeftPostY - gkY);
     float gkDistToRight = hypotf(goalRightPostX - gkX, goalRightPostY - gkY);
 
-    // BRANCHLESS TARGET SELECTION
-    float leftBias = branchless_coerce((gkDistToRight - gkDistToLeft) * 0.01f, 0.0f, 1.0f);
+    // BRANCHLESS TARGET SELECTION — Q-C3-1 (F01/F02/F03).
+    // F01: bias flipped to the FAR post (was: gkDistToRight - gkDistToLeft,
+    // which targeted the NEAR post in both cases). The old 0.01f blend gain
+    // is superseded by the hard-pick step below, per the delegated design.
+    // F02: hard pick of the farther corner — a saturated branchless step, so
+    // the pick is 0 or 1 and the target is one inset corner or the other,
+    // never the midpoint (a centred keeper + a blend aims at the keeper's
+    // body). Tie -> left (deterministic): at tie the difference is 0, so
+    // leftBias = coerce(1 + 0) = 1 -> left post. Keeper near the left post
+    // (diff < 0) -> leftBias 0 -> right post (far); keeper near the right
+    // post (diff > 0) -> leftBias 1 -> left post (far).
+    // NOTE: the pick rule here MUST stay identical to ShotTargetMath.kt's
+    // farCornerTarget (farther post, tie -> left, same 35/15 insets) — the
+    // Kotlin side computes the radius to the corner this picks, so if the
+    // two ever disagree the native lands off-target.
+    float leftBias = branchless_coerce(1.0f + (gkDistToLeft - gkDistToRight) * 1000.0f, 0.0f, 1.0f);
     float rightBias = 1.0f - leftBias;
 
     float targetPostX = (goalLeftPostX + 35.0f) * leftBias + (goalRightPostX - 35.0f) * rightBias;
-    float targetPostY = (goalLeftPostY + 15.0f) * leftBias + (goalRightPostY + 15.0f) * rightBias;
+    // F03: right-post Y inset is -15, not +15. Y grows downward in capture
+    // space and the right post is the BOTTOM post, so +15 landed 15px
+    // OUTSIDE the mouth. Left post is the TOP post: +15 stays inward.
+    float targetPostY = (goalLeftPostY + 15.0f) * leftBias + (goalRightPostY - 15.0f) * rightBias;
 
     float firingAngle = atan2f(targetPostY - strikerY, targetPostX - strikerX);
 

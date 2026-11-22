@@ -98,14 +98,17 @@ object CriticalAttackingVectorEngine {
     private val outPass = FloatArray(2)
 
     fun computeAbsoluteScoringVector(strikerX: Float, strikerY: Float, gkX: Float, gkY: Float, goalLeftPostX: Float, goalLeftPostY: Float, goalRightPostX: Float, goalRightPostY: Float): PointF {
-        // The three trailing control args are deleted, not defaulted: both
-        // live callers passed only the 8 positional args, so the only
-        // values ever supplied were the 0f defaults. The 0f literals go
-        // straight to the native call, so the computed vector is
-        // bit-identical. (Consequence, QUEUED not fixed here: with a
-        // zero radius the native formula returns (0,0) on every call —
-        // see TRACE-B3 queue item Q-C3-1.)
-        com.assistant.NativeBridge.nativeCriticalScoringVector(strikerX, strikerY, gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY, 0f, 0f, 0f, outScoring)
+        // Q-C3-1 FIX (was: 0f, 0f, 0f as control origin/radius, so the
+        // native formula returned (0,0) on every call — see TRACE-B3 queue
+        // item Q-C3-1). The control origin is now the striker and the
+        // radius is the distance striker -> far inset corner (via
+        // ShotTargetMath, same pick rule as the native), so the native
+        // returns exactly the far inset corner by construction: the firing
+        // angle points striker -> corner, and origin + unit(angle) * radius
+        // = corner. JNI signature unchanged (ABI).
+        val target = ShotTargetMath.farCornerTarget(gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY)
+        val radius = ShotTargetMath.scoringRadius(strikerX, strikerY, target.x, target.y)
+        com.assistant.NativeBridge.nativeCriticalScoringVector(strikerX, strikerY, gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY, strikerX, strikerY, radius, outScoring)
         return PointF(outScoring[0], outScoring[1])
     }
 

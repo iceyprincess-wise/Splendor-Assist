@@ -130,9 +130,15 @@ object ShotOpportunityContributor : GameplayContributor {
         // goalCenterY could exceed captureWidth/captureHeight and the
         // dispatch would aim off-screen. Clamp both axes to the capture,
         // same form as D5; unchanged for any on-screen goal.
+        // B2-2 (item 23): align the duration hint to ShotTypeEngine — the
+        // same rule ShotContributor already uses. The 35L literal matched
+        // POWER only: mid/long FINESSE wants 30L (this fired 5ms long)
+        // and keeper-stranded CHIP wants 25L (this fired 10ms long). Aim
+        // stays the open-side inset aim above; duration only.
+        val durationHintMs = ShotTypeEngine.select(frame, aimX, frame.goalCenterY)?.durationHintMs ?: 35L
         return EngineContribution(engineName, ActionClass.SHOT,
             aimX.coerceIn(0f, frame.captureWidth), frame.goalCenterY.coerceIn(0f, frame.captureHeight),
-            (r.openSideScore / 4f).coerceIn(0f, 1f), r.confidence.coerceIn(0f, 1f), 35L)
+            (r.openSideScore / 4f).coerceIn(0f, 1f), r.confidence.coerceIn(0f, 1f), durationHintMs)
     }
 }
 
