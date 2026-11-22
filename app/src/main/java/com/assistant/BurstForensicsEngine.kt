@@ -136,6 +136,11 @@ object BurstForensicsEngine {
         // SPLENDOR_P7_AGGRO_READ_BURST_END
         if (next == "SEIZURE") {
             try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(2) } catch (_: Throwable) {}
+            // U1 (item 26, g54a): SEIZURE sets this engine's fast-brake
+            // latch slot so the capture-brake engine holds brake=2
+            // (recommendedIntervalMs 100 ms) instead of re-deriving 0
+            // from the still-unarmed governor on its next 500 ms poll.
+            try { LoadShedCaptureBrakeEngine.requestFastBrakeStutter(2) } catch (_: Throwable) {}
             // SPLENDOR_P7_DEVICE_BRAKE_BURST_BEGIN
             // Mirror into the cross-process device snapshot so main-process
             // FilterEngine reports the real brake.
@@ -152,6 +157,8 @@ object BurstForensicsEngine {
             if (changed) tryReassertMove()
         } else if (next == "CALM") {
             try { com.assistant.diagnostic.AdapterSignalBus.publishExecutionBrake(0) } catch (_: Throwable) {}
+            // U1 (item 26, g54a): release this engine's latch slot.
+            try { LoadShedCaptureBrakeEngine.requestFastBrakeStutter(0) } catch (_: Throwable) {}
             // SPLENDOR_P7_DEVICE_BRAKE_BURST_CALM
             try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceBrake(0) } catch (_: Throwable) {}
         }

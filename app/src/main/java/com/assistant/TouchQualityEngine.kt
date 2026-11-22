@@ -124,6 +124,11 @@ object TouchQualityEngine {
                                         // log line below already prints:
                                         // cycles x poll interval in ms.
                                         AdapterSignalBus.publishInput("TOUCH_IRQ_STALL", emptyIrqCycles * POLL_MS)
+                                        // L-F02 (item 26 lead): mirror to the registry DeviceState
+                                        // so MainProcessBusMirror can copy TOUCH_IRQ_STALL to the
+                                        // main process (0.7x revival). Same pattern as
+                                        // InputVsyncEliminatorEngine's VSYNC_STARVATION publish.
+                                        try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceInput("TOUCH_IRQ_STALL") } catch (_: Throwable) {}
 
                                         // Force boost priority to fight HyperOS cgroup throttling
                                         try {
@@ -142,6 +147,9 @@ object TouchQualityEngine {
                                 irqDropDetected = false
                                 // Signal Queen Bee to restore full performance
                                 AdapterSignalBus.publishInput("TOUCH_IRQ_RECOVERED", 0L)
+                                // L-F02 (item 26 lead): mirror the recovery too, so the
+                                // main-process copy clears when the stall clears.
+                                try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceInput("TOUCH_IRQ_RECOVERED") } catch (_: Throwable) {}
                                 RuntimeLogger.log("TouchQuality: TOUCH IRQ RECOVERED — kernel events restored.", "INPUT")
                             }
                         }

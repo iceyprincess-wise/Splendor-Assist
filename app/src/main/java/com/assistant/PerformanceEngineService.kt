@@ -131,6 +131,15 @@ class PerformanceEngineService : Service() {
         // its own work when the link degrades. Same ignite pattern as its
         // neighbours; start is idempotent (running guard).
         ignite({ FreeBoosterController.start(this) })
+        // Item 26 amendment A (Builder C, g54c): the two new engines.
+        // FrameDropPreventionEngine answers a measured gap spike (~1 s);
+        // FpsStabilisationEngine answers a sustained low measured rate
+        // (2 s + hysteresis). Both shed only the overlay's own capture
+        // work, via the brake channel (hunk H-C1 pending in
+        // LoadShedCaptureBrakeEngine); neither touches a gameplay pick.
+        // Both starts are idempotent (running guard).
+        ignite({ FrameDropPreventionEngine.start() })
+        ignite({ FpsStabilisationEngine.start() })
 
         // Start consolidated scheduler for adapter telemetry
         ignite({ PerformanceScheduler.start(this) })
@@ -147,7 +156,17 @@ class PerformanceEngineService : Service() {
         // PanelWatch, RadioKeepAlive) are ignited here.
         // Batch booster: 30 -> 31 — FreeBoosterController is ignited
         // above (queue item 4, free booster engine).
-        RuntimeLogger.log("Performance engine stack ignited: 31 engines + scheduler", "ENGINE")
+        // Item 26 amendment A (Builder C, g54c): 31 -> 33 —
+        // FrameDropPreventionEngine + FpsStabilisationEngine are ignited
+        // above. Recount (PROVEN by grep, not guessed): 34 ignite() calls
+        // in this file = 1 MachineLedger + 1 registry + 29 pre-existing
+        // engines + 2 new engines + 1 scheduler; the log counts the 33
+        // non-scheduler calls as "engines", the same basis as the old 31
+        // (MachineLedger and the registry counted as engines there too —
+        // that is the 31-vs-32 discrepancy the audit noted: 32 calls,
+        // 31 non-scheduler). No other site names the total (repo-wide
+        // grep for "31 engines" hits only this line).
+        RuntimeLogger.log("Performance engine stack ignited: 33 engines + scheduler", "ENGINE")
     }
 
     /** O37-1 reader: the MachineLedger samples collected since onCreate. */
@@ -211,6 +230,11 @@ class PerformanceEngineService : Service() {
         // releases the transport request, the wake lock, the signal
         // reader, the keepalive boost and the DNS pause).
         try { FreeBoosterController.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        // Item 26 amendment A (Builder C, g54c): stop the two new engines
+        // this service started (each HAS a stop(); without these their
+        // threads survive destruction too).
+        try { FrameDropPreventionEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
+        try { FpsStabilisationEngine.stop() } catch (e: Throwable) { RuntimeLogger.log("TRUTH SERUM EXCEPTION: " + e.message, "ENGINE_FAULT") }
 
         NodeNotificationHub.detach(this, "performance_engine")
         RuntimeLogger.log("PerformanceEngineService destroyed", "ENGINE")

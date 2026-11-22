@@ -36,6 +36,17 @@ object MainProcessBusMirror {
                 if (device.thermalStatus >= 0) AdapterSignalBus.publishThermal(device.thermalStatus)
                 if (device.batteryLevel >= 0) AdapterSignalBus.publishBattery(device.batteryLevel, device.batteryCharging)
                 AdapterSignalBus.publishExecutionBrake(device.executionBrake)
+                // U2 (item 26, g54a): mirror inputClassification — the
+                // one field this bridge never copied. The :survival
+                // publishers (InputVsync / InputThermal) write it into
+                // the device snapshot via publishDeviceInput(); the
+                // main-process SpeedCompensationContributor reads it
+                // from this bus copy. Latency is 0L: the registry
+                // carries no latency (publishers disagree on its
+                // meaning) and no main-process reader uses it. CLEAR /
+                // OK values are mirrored too — otherwise the bus would
+                // stick at a starvation value after the cause clears.
+                if (device.inputClassification != "UNKNOWN") AdapterSignalBus.publishInput(device.inputClassification, 0L)
             }
             // Net window has no single-value registry reader; the history's
             // newest entry is the current verdict (publishActionWindow

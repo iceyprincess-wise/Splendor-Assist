@@ -74,6 +74,50 @@ object LoadShedCaptureBrakeEngine {
     @Volatile var executionBrake = 0; private set
     @Volatile private var lastLevel = "NONE"
 
+    // U1 (item 26, g54a): FAST-PATH LATCH — the governor arm is 2 s poll
+    // + 4-poll arm (8 s) + 8 s hold, so a hang is over before it arms.
+    // LagVerdict CHOKING already published brake=2 to the bus, but this
+    // engine's poll() re-derived the brake from the governor level ONLY
+    // and re-published brake=0 within 500 ms — and OverlayService's
+    // capture gate reads recommendedIntervalMs() from THIS engine's own
+    // field, never the bus. So CHOKING (and BurstForensics SEIZURE)
+    // reached SpeedCompensation but NEVER the capture gate: the fast
+    // path existed on the bus and died here. Two independent latch
+    // slots (lag verdict vs stutter forensics) so one source going
+    // CALM/SMOOTH cannot clear the other's live brake. Wiring only —
+    // no governor threshold or timing number is changed.
+    @Volatile private var fastBrakeLag = 0
+    @Volatile private var fastBrakeStutter = 0
+    // L-F03 (item 26 lead, hunk H-C1 per Builder C spec TRACE-C §6): own
+    // latch slots for the two new engines, so neither can clear the
+    // other's live brake — same pattern as lag/stutter above.
+    @Volatile private var fastBrakeFrameDrop = 0
+    @Volatile private var fastBrakeFpsStab = 0
+
+    /** LagVerdict CHOKING sets 2; any non-CHOKING verdict sets 0. */
+    fun requestFastBrakeLag(level: Int) { fastBrakeLag = level.coerceIn(0, 2) }
+
+    /** BurstForensics SEIZURE sets 2; CALM sets 0. */
+    fun requestFastBrakeStutter(level: Int) { fastBrakeStutter = level.coerceIn(0, 2) }
+
+    /** FrameDropPreventionEngine: measured gap burst sets 2, guard 1, calm 0. */
+    fun requestFastBrakeFrameDrop(level: Int) { fastBrakeFrameDrop = level.coerceIn(0, 2) }
+
+    /** FpsStabilisationEngine: sustained low measured rate sets 2/1, recovered 0. */
+    fun requestFastBrakeFpsStab(level: Int) { fastBrakeFpsStab = level.coerceIn(0, 2) }
+
+    /** Effective brake: governor level OR either fast-path latch, whichever sheds most. */
+    internal fun computeBrake(governorLevel: String): Int {
+        val govBrake = when (governorLevel) {
+            "HEAVY" -> 2
+            "LIGHT" -> 1
+            else -> 0
+        }
+        return maxOf(govBrake, fastBrakeLag, fastBrakeStutter, fastBrakeFrameDrop, fastBrakeFpsStab)
+    }
+
+    internal fun pollOnce() { poll() }
+
     fun start() {
         if (running) return
         running = true
@@ -93,11 +137,7 @@ object LoadShedCaptureBrakeEngine {
 
     private fun poll() {
         val level = LoadShedGovernor.level
-        val brake = when (level) {
-            "HEAVY" -> 2
-            "LIGHT" -> 1
-            else    -> 0
-        }
+        val brake = computeBrake(level)
         val changed = brake != executionBrake || level != lastLevel
         executionBrake = brake
         lastLevel = level

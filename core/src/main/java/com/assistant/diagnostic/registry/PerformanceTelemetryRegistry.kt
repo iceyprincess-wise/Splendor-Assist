@@ -257,6 +257,61 @@ object PerformanceTelemetryRegistry {
         return if (now - shedReadCacheMs < 15_000L) shedReadCache else "NONE"
     }
 
+    // ---- FRAME RATE (item 26, upgrade 3, Builder B) ----
+    // F47FPS is measured in the MAIN process (DiagnosticSamplers, fed by
+    // OverlayService ImageReader arrivals) but the LoadShedGovernor runs
+    // in :survival — a direct read of the sampler's in-process value would
+    // read the :survival copy's permanent 0 (its fpsReport never sees an
+    // arrival) and shed HEAVY forever. Same file-backed pattern as
+    // currentLoadShed: the measuring process publishes, the deciding
+    // process reads with a 15 s freshness window (3 missed 5 s reports)
+    // and a 2 s read throttle. Only a real measurement is ever published
+    // (see DiagnosticSamplers): the :survival sampler copy publishes
+    // nothing, so it can never clobber the real value with 0. -1f means
+    // "no fresh sample" — never 0 fps, so the absence of a measurement
+    // is never mistaken for a dead capture.
+    @Volatile private var frameRate = -1f
+    @Volatile private var frameRateMs = 0L
+    @Volatile private var frfile: File? = null
+    @Volatile private var frameRateReadAt = 0L
+    @Volatile private var frameRateReadCache = -1f
+    @Volatile private var frameRateReadCacheMs = 0L
+
+    @JvmStatic
+    fun publishFrameRate(fps: Float) {
+        frameRate = fps; frameRateMs = System.currentTimeMillis()
+        ensureFile()
+        try {
+            if (frfile == null) frfile = file?.parentFile?.let { File(it, "perf_framerate.txt") }
+            frfile?.writeText(fps.toString() + "|" + frameRateMs)
+        } catch (_: Throwable) { }
+    }
+
+    /** Fresh in-memory value wins, else a throttled file read. -1f when no fresh sample exists. */
+    @JvmStatic
+    fun currentFrameRate(): Float {
+        val now = System.currentTimeMillis()
+        if (now - frameRateMs < 15_000L) return frameRate
+        if (now - frameRateReadAt < 2_000L) return if (now - frameRateReadCacheMs < 15_000L) frameRateReadCache else -1f
+        frameRateReadAt = now
+        ensureFile()
+        try {
+            if (frfile == null) frfile = file?.parentFile?.let { File(it, "perf_framerate.txt") }
+            val f = frfile?.takeIf { it.exists() } ?: return if (now - frameRateReadCacheMs < 15_000L) frameRateReadCache else -1f
+            val p = f.readText().split("|")
+            if (p.isNotEmpty() && p[0].isNotEmpty()) {
+                val ts = if (p.size >= 2) p[1].toLongOrNull() ?: 0L else 0L
+                if (ts > 0L && now - ts < 15_000L) {
+                    frameRateReadCache = p[0].toFloatOrNull() ?: -1f; frameRateReadCacheMs = ts
+                } else {
+                    frameRateReadCache = -1f; frameRateReadCacheMs = 0L
+                }
+            }
+        } catch (_: Throwable) {
+        }
+        return if (now - frameRateReadCacheMs < 15_000L) frameRateReadCache else -1f
+    }
+
     // ---- CAPTURE HEARTBEAT (F37-D7) ----
     @JvmStatic
     fun publishCaptureHeartbeat() {
@@ -486,7 +541,17 @@ object PerformanceTelemetryRegistry {
         val lagVerdict: String, val stutterState: String, val thermalStatus: Int,
         val memoryTier: String, val memoryAvailMb: Long,
         val batteryLevel: Int, val batteryCharging: Boolean,
-        val executionBrake: Int, val updatedMs: Long
+        val executionBrake: Int,
+        // U2 (item 26, g54a): inputClassification — the bus field the
+        // mirror never copied because no registry channel carried it.
+        // Appended AFTER executionBrake (10th pipe field); old 9-field
+        // files still parse (input reads "UNKNOWN"). Publishers:
+        // InputVsyncEliminatorEngine + InputThermalEliminatorEngine
+        // call publishDeviceInput() beside their bus publishInput().
+        // Latency is NOT carried: the :survival publishers disagree on
+        // its meaning (real ms for VSYNC, 0L for thermal) and the main
+        // process reads only the classification.
+        val inputClassification: String, val updatedMs: Long
     )
 
     // B30-D6: batteryCharging was `true` in the unknown sentinel, so a
@@ -496,7 +561,7 @@ object PerformanceTelemetryRegistry {
     // repo acts on the charging flag (report line only), and the
     // CpuGovernorEngine default is also false. No tri-state Boolean
     // exists here; the -1 level already marks the reading unknown.
-    private val DEVICE_EMPTY = DeviceState("UNKNOWN", "UNKNOWN", -1, "UNKNOWN", -1L, -1, false, 0, 0L)
+    private val DEVICE_EMPTY = DeviceState("UNKNOWN", "UNKNOWN", -1, "UNKNOWN", -1L, -1, false, 0, "UNKNOWN", 0L)
 
     @Volatile private var device: DeviceState = DEVICE_EMPTY
     @Volatile private var devFile: File? = null
@@ -512,7 +577,7 @@ object PerformanceTelemetryRegistry {
         lagVerdict: String? = null, stutterState: String? = null, thermalStatus: Int? = null,
         memoryTier: String? = null, memoryAvailMb: Long? = null,
         batteryLevel: Int? = null, batteryCharging: Boolean? = null,
-        executionBrake: Int? = null
+        executionBrake: Int? = null, inputClassification: String? = null
     ) {
         ensureFile()
         val now = System.currentTimeMillis()
@@ -531,6 +596,7 @@ object PerformanceTelemetryRegistry {
             batteryLevel = batteryLevel ?: device.batteryLevel,
             batteryCharging = batteryCharging ?: device.batteryCharging,
             executionBrake = executionBrake ?: device.executionBrake,
+            inputClassification = inputClassification ?: device.inputClassification,
             updatedMs = now
         )
         if (now - devWriteAt < DEVICE_WRITE_THROTTLE_MS) return
@@ -540,7 +606,7 @@ object PerformanceTelemetryRegistry {
             val d = device
             devFile?.writeText(d.lagVerdict + "|" + d.stutterState + "|" + d.thermalStatus + "|" +
                 d.memoryTier + "|" + d.memoryAvailMb + "|" + d.batteryLevel + "|" +
-                d.batteryCharging + "|" + d.executionBrake + "|" + d.updatedMs)
+                d.batteryCharging + "|" + d.executionBrake + "|" + d.inputClassification + "|" + d.updatedMs)
         } catch (_: Throwable) { }
     }
 
@@ -559,7 +625,11 @@ object PerformanceTelemetryRegistry {
             if (p.size >= 9) devReadCache = DeviceState(
                 p[0], p[1], p[2].toIntOrNull() ?: -1, p[3], p[4].toLongOrNull() ?: -1L,
                 p[5].toIntOrNull() ?: -1, p[6] == "true",
-                p[7].toIntOrNull() ?: 0, p[8].toLongOrNull() ?: 0L)
+                p[7].toIntOrNull() ?: 0,
+                // U2 (item 26, g54a): 10th field — see DeviceState KDoc.
+                // Old 9-field files: input UNKNOWN, updatedMs at [8].
+                if (p.size >= 10) p[8] else "UNKNOWN",
+                (if (p.size >= 10) p[9] else p[8]).toLongOrNull() ?: 0L)
         } catch (_: Throwable) { }
         return devReadCache
     }
@@ -569,6 +639,11 @@ object PerformanceTelemetryRegistry {
     @JvmStatic fun publishDeviceMemory(tier: String, availMb: Long) { updateDeviceState(memoryTier = tier, memoryAvailMb = availMb) }
     @JvmStatic fun publishDeviceBattery(level: Int, charging: Boolean) { updateDeviceState(batteryLevel = level, batteryCharging = charging) }
     @JvmStatic fun publishDeviceBrake(level: Int) { updateDeviceState(executionBrake = level) }
+    // U2 (item 26, g54a): cross-process channel for the bus
+    // inputClassification field (VSYNC_STARVATION /
+    // THERMAL_THROTTLE_ACTIVE / ...). Called beside publishInput()
+    // by the :survival publishers; read by MainProcessBusMirror.
+    @JvmStatic fun publishDeviceInput(classification: String) { updateDeviceState(inputClassification = classification) }
 
     // ---- FILTER AGGRESSION (FilterEngine in main process -> :survival consumers) ----
     // SPLENDOR_P7_XPROC_AGGRO_REG_BEGIN

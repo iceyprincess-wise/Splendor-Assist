@@ -95,10 +95,18 @@ object InputVsyncEliminatorEngine {
                         // If frame callback is delayed by > 66ms (1 frame at 15fps)
                         if (delay > 66L) {
                             AdapterSignalBus.publishInput("VSYNC_STARVATION", delay)
+                            // U2 (item 26, g54a): cross-process copy so
+                            // the main-process mirror can carry this to
+                            // SpeedCompensationContributor / diagnostics.
+                            try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceInput("VSYNC_STARVATION") } catch (_: Throwable) {}
                             // Force boost main thread priority to clear compositor backlog
                             try { Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY) } catch (_: Throwable) {}
                         } else {
                             AdapterSignalBus.publishInput("VSYNC_OK", delay)
+                            // U2 (item 26, g54a): clear the mirrored
+                            // value too, or the main-process bus would
+                            // stick at VSYNC_STARVATION forever.
+                            try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceInput("VSYNC_OK") } catch (_: Throwable) {}
                         }
                     }
                 } catch (_: Throwable) {}

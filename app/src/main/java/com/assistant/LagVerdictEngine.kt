@@ -78,6 +78,41 @@ object LagVerdictEngine {
     private val CHOKE_SPIKES: Float get() = 15f
     private val CONFIRM_POLLS: Int get() = 1 // Instant confirmation for severe spikes
 
+    // U2 (item 26, g54a): the four dead stall signals, read live here.
+    // All four publishers run in :survival (PerformanceEngineService
+    // ignites them), same process as this engine, so same-process reads
+    // are valid — no IPC, no new channel. VSYNC_STARVATION /
+    // THERMAL_THROTTLE_ACTIVE / LAGGING / TOUCH_IRQ_STALL all ride the
+    // one bus inputClassification field (last writer wins); any of
+    // them means the input path is starved. RenderThreadStall's
+    // gpuQueueStallsPerMin is graded against the existing CHOKE_STALLS
+    // (same unit, stalls/min — no new threshold). GcStall's
+    // memoryPressure is the :survival heap, not the device: HIGH is
+    // JITTERY (GC stall risk), CRITICAL is CHOKING.
+    internal val starvedInputClassifications = setOf(
+        "VSYNC_STARVATION", "THERMAL_THROTTLE_ACTIVE", "LAGGING", "TOUCH_IRQ_STALL"
+    )
+
+    // Rule B (item 26 amendment, Ed 2026-11-22): ThermalPeek was PROVEN
+    // log-only — its only readers were two log strings in this file.
+    // Its status string is now a live verdict input: SEVERE and above
+    // (the same cut as AdapterSignalBus.thermalIsSevere, status >= 3)
+    // is CHOKING. MODERATE is not mapped here — it already reaches
+    // CHOKING through InputThermalEliminator's THERMAL_THROTTLE_ACTIVE.
+    internal val severeThermalPeek = setOf("SEVERE", "CRITICAL", "EMERGENCY", "SHUTDOWN")
+
+    internal fun classify(
+        jit: Float, stab: Float, stallRate: Float, mtStall: Float, spm: Float,
+        inputClass: String, gpuStalls: Float, memPressure: String, thermalPeek: String
+    ): String = when {
+        stallRate > CHOKE_STALLS || mtStall > CHOKE_MTSTALL_MS ||
+            spm > CHOKE_SPIKES || inputClass in starvedInputClassifications ||
+            gpuStalls > CHOKE_STALLS || memPressure == "CRITICAL" ||
+            thermalPeek in severeThermalPeek -> "CHOKING"
+        jit > JITTER_MS || stab < STABILITY_PCT || memPressure == "HIGH" -> "JITTERY"
+        else -> "PENDING_SMOOTH"
+    }
+
     @Volatile private var running = false
     @Volatile var verdict = "UNKNOWN"; private set
     @Volatile private var candidate = "UNKNOWN"
@@ -108,12 +143,20 @@ object LagVerdictEngine {
                     val stallRate = FramePacingEngine.stallsPerMin
                     val mtStall = MainThreadStallEngine.avgLatenessMs
                     val spm = MainThreadStallEngine.spikesPerMin
-                    val raw = when {
-                        stallRate > CHOKE_STALLS || mtStall > CHOKE_MTSTALL_MS ||
-                            spm > CHOKE_SPIKES -> "CHOKING"
-                        jit > JITTER_MS || stab < STABILITY_PCT -> "JITTERY"
-                        FramePacingEngine.avgGapMs > 0f && captureAlive() -> "SMOOTH"
-                        else -> "UNKNOWN"
+                    // U2 (item 26, g54a): live reads of the four dead
+                    // stall signals (same :survival process — see
+                    // classify() KDoc). Each read is guarded: a
+                    // throwing reader must never kill the verdict loop.
+                    val inputClass = try { AdapterSignalBus.inputClassification } catch (_: Throwable) { "UNKNOWN" }
+                    val gpuStalls = try { RenderThreadStallEngine.gpuQueueStallsPerMin } catch (_: Throwable) { 0f }
+                    val memPressure = try { GcStallEngine.memoryPressure } catch (_: Throwable) { "LOW" }
+                    // Rule B (item 26 amendment): ThermalPeek status is a
+                    // live verdict input now, not a log string.
+                    val thermalPeek = try { ThermalPeekEngine.status } catch (_: Throwable) { "?" }
+                    val decision = classify(jit, stab, stallRate, mtStall, spm, inputClass, gpuStalls, memPressure, thermalPeek)
+                    val raw = when (decision) {
+                        "CHOKING", "JITTERY" -> decision
+                        else -> if (FramePacingEngine.avgGapMs > 0f && captureAlive()) "SMOOTH" else "UNKNOWN"
                     }
                     if (raw == candidate) streak++ else { candidate = raw; streak = 1 }
                     // Crowded zone (penalty box / corner) temporarily
@@ -139,9 +182,18 @@ object LagVerdictEngine {
                             "ms stability=" + String.format("%.0f", stab) +
                             "% stalls/min=" + String.format("%.1f", stallRate) +
                             " mtStall=" + String.format("%.0f", mtStall) +
-                            "ms therm=" + ThermalPeekEngine.status + ")", "LAGVERDICT")
+                            "ms input=" + inputClass +
+                            " gpuStalls/min=" + String.format("%.1f", gpuStalls) +
+                            " gcMem=" + memPressure +
+                            " therm=" + ThermalPeekEngine.status + ")", "LAGVERDICT")
                         verdict = candidate
                         lastHeartbeat = now
+                        // U1 (item 26, g54a): CHOKING takes the fast
+                        // SEIZURE path — the capture-brake latch, not
+                        // the 8 s governor arm. Any other verdict
+                        // releases this engine's latch slot (the
+                        // stutter slot is independent).
+                        try { LoadShedCaptureBrakeEngine.requestFastBrakeLag(if (candidate == "CHOKING") 2 else 0) } catch (_: Throwable) {}
                         
                         // MASSIVE POWER: Performance Bee Intervention
                         // SPLENDOR_P7_AGGRO_READ_LAG_BEGIN

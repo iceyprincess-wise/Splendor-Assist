@@ -10,6 +10,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.PowerManager
 import com.assistant.diagnostic.LogMirror
+import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 import java.io.File
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -28,8 +29,11 @@ object DiagnosticSamplers {
     // DELETED — it had zero readers anywhere, and the value it returned
     // is not lost: every fpsReport path already feeds it to
     // FPSMonitor.update() (in-app display) and the F47FPS log line.
-    // The stored field below stays: it is the value those two live
-    // consumers are fed from.
+    // Item 26 upgrade 3 (Builder B): the real-measurement path below
+    // ALSO publishes it to PerformanceTelemetryRegistry, so the
+    // :survival LoadShedGovernor can read it — that is the first
+    // decision engine to consume the measured rate. The stored field
+    // below stays: it is the value those live consumers are fed from.
     @Volatile private var lastMeasuredFps = 0f
     private val frameLock = Any()
     private val frameTimes = LongArray(600)
@@ -95,6 +99,18 @@ object DiagnosticSamplers {
                         // Feed it: the in-app FPS display now shows the real
                         // measured rate instead of a permanent 0.
                         try { FPSMonitor.update(fps.toFloat()) } catch (_: Throwable) { }
+                        // Item 26 upgrade 3 (Builder B): publish the real
+                        // measurement for the :survival LoadShedGovernor.
+                        // ONLY this branch publishes — the two zero-sample
+                        // branches below must never publish: this sampler
+                        // also runs in :survival (App.onCreate per process)
+                        // where it never sees an arrival, so a 0 published
+                        // from there would clobber the real main-process
+                        // value in the shared file with a permanent 0.
+                        // A dead main-process capture goes stale instead
+                        // (15 s freshness window) and the governor ignores
+                        // a stale/missing sample rather than reading 0.
+                        try { PerformanceTelemetryRegistry.publishFrameRate(fps.toFloat()) } catch (_: Throwable) { }
                         LogMirror.mirror("F47FPS", android.util.Log.INFO,
                             "samples=${gaps.size} avg_fps=${"%.2f".format(java.util.Locale.US, fps)} p95_frame_gap_ms=${"%.2f".format(java.util.Locale.US, p95 / 1_000_000.0)} jitter_stddev_ms=${"%.2f".format(java.util.Locale.US, sd / 1_000_000.0)}")
                     } else {

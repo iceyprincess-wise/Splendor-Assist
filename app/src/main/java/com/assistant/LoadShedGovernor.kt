@@ -76,12 +76,44 @@ object LoadShedGovernor {
     private val ARM_POLLS: Int get() = 4
     private val RELEASE_POLLS: Int get() = 5
 
+    // Item 26 upgrade 3 (Builder B): F47FPS cut points. NEW numbers,
+    // not a re-tune of any existing knob — no existing threshold above
+    // changes. Anchored to Ed's calibrated processed rate of 20 fps
+    // (FPS target build): LIGHT below 75% of it, HEAVY below 50% of
+    // it; 0 fps (dead capture — the sampler ran and saw no arrivals
+    // in its 5 s window) is HEAVY. -1f (no fresh sample) is ignored,
+    // never treated as a reading.
+    private val FPS_LIGHT_BELOW: Float get() = 15f
+    private val FPS_HEAVY_BELOW: Float get() = 10f
+
     @Volatile private var running = false
     @Volatile var level = "NONE"; private set
     @Volatile private var candidate = "NONE"
     @Volatile private var streak = 0
     @Volatile private var lastChangeMs = 0L
     @Volatile private var startTimeMs = 0L
+
+    /**
+     * Item 26 upgrade 3 (Builder B): the pure LoadShed want-decision,
+     * extracted so the harness can pin it without starting the poll
+     * thread. Same NONE/LIGHT/HEAVY shape the loop always consumed;
+     * F47FPS joins as a third input alongside the stutter state and
+     * the LagVerdict verdict. Precedence: SEIZURE/CHOKING first
+     * (unchanged), then a falling processed rate (dead capture, or
+     * below half the calibrated 20 fps rate) forces HEAVY, JITTERY
+     * stays LIGHT, a rate below three-quarters of the calibrated
+     * rate is LIGHT, anything else is NONE. frameFps < 0 means "no
+     * fresh sample" and is ignored — the absence of a measurement
+     * must never shed load on its own.
+     */
+    fun decideWant(burst: String, verdict: String, frameFps: Float): String = when {
+        burst == "SEIZURE" -> "HEAVY"
+        verdict == "CHOKING" -> "HEAVY"
+        frameFps >= 0f && frameFps < FPS_HEAVY_BELOW -> "HEAVY"
+        verdict == "JITTERY" -> "LIGHT"
+        frameFps >= 0f && frameFps < FPS_LIGHT_BELOW -> "LIGHT"
+        else -> "NONE"
+    }
 
     fun start() {
         if (running) return
@@ -103,12 +135,14 @@ object LoadShedGovernor {
                     // filter boot transients, so a single startup stutter
                     // cannot shed load on its own.
                     if(startTimeMs>0L&&bootAge<10_000L&&burst!="SEIZURE"){try{Thread.sleep(POLL_MS.coerceAtLeast(1L))}catch(_:Throwable){return@Thread};continue}
-                    val want = when {
-                        burst == "SEIZURE" -> "HEAVY"
-                        LagVerdictEngine.verdict == "CHOKING" -> "HEAVY"
-                        LagVerdictEngine.verdict == "JITTERY" -> "LIGHT"
-                        else -> "NONE"
-                    }
+                    // Item 26 upgrade 3 (Builder B): F47FPS as a live
+                    // third input, read from the registry file channel —
+                    // never from the sampler object directly (the
+                    // governor runs in :survival, where the sampler
+                    // copy never sees an arrival and would read a
+                    // permanent 0). -1f = no fresh sample, ignored.
+                    val frameFps = try { PerformanceTelemetryRegistry.currentFrameRate() } catch (_: Throwable) { -1f }
+                    val want = decideWant(burst, LagVerdictEngine.verdict, frameFps)
                     if (want == candidate) streak++ else { candidate = want; streak = 1 }
                     val arm = if (ARM_POLLS < 1) 1 else ARM_POLLS
                     val rel = if (RELEASE_POLLS < 1) 1 else RELEASE_POLLS
@@ -117,7 +151,7 @@ object LoadShedGovernor {
                     if (candidate != level && streak >= need &&
                         (lastChangeMs == 0L || now - lastChangeMs >= MIN_HOLD_MS)) {
                         RuntimeLogger.log("LOAD SHED " + level + " -> " + candidate +
-                            " (device=" + LagVerdictEngine.verdict + ")", "LOADSHED")
+                            " (device=" + LagVerdictEngine.verdict + " fps=" + frameFps + ")", "LOADSHED")
                         level = candidate
                         lastChangeMs = now
                     }

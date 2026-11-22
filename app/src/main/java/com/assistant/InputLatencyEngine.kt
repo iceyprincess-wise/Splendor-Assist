@@ -182,6 +182,12 @@ object InputLatencyEngine {
         }
 
         AdapterSignalBus.publishInput(classification, latencyMs)
+        // L-F01 (item 26 lead): mirror the classification to the registry
+        // DeviceState (NOT the bus — this does not overwrite the bus value
+        // above) so MainProcessBusMirror can copy it to the main process,
+        // completing the 0.7x revival for LAGGING. Same pattern as
+        // InputVsyncEliminatorEngine's VSYNC_STARVATION publish.
+        try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceInput(classification) } catch (_: Throwable) {}
 
         // CONDITIONLESS ACTIVE MITIGATION:
         // No warmup delays. If main thread is congested, immediately trigger purges.

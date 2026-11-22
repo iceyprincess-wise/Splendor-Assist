@@ -107,9 +107,13 @@ object InputThermalEliminatorEngine {
                         // thermal state change, so 0L on both branches.
                         if (status == "MODERATE" || status == "SEVERE" || status == "CRITICAL" || status == "EMERGENCY" || status == "SHUTDOWN") {
                             AdapterSignalBus.publishInput("THERMAL_THROTTLE_ACTIVE", 0L)
+                            // U2 (item 26, g54a): cross-process copy for the mirror.
+                            try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceInput("THERMAL_THROTTLE_ACTIVE") } catch (_: Throwable) {}
                             RuntimeLogger.log("THERMAL THROTTLE DETECTED: $status — Signaling Queen Bee for Survival Mode", "INPUT")
                         } else {
                             AdapterSignalBus.publishInput("THERMAL_THROTTLE_CLEAR", 0L)
+                            // U2 (item 26, g54a): clear the mirrored value too.
+                            try { com.assistant.diagnostic.registry.PerformanceTelemetryRegistry.publishDeviceInput("THERMAL_THROTTLE_CLEAR") } catch (_: Throwable) {}
                             RuntimeLogger.log("THERMAL THROTTLE CLEARED: $status — Restoring full performance", "INPUT")
                         }
                     }

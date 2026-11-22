@@ -210,6 +210,12 @@ object NetProbeEngine {
         // Live ping quality was measured here but never published to the bus
         // that consumers read, so AdapterSignalBus.pingQuality stayed "UNKNOWN".
         com.assistant.diagnostic.AdapterSignalBus.publishPing(quality)
+        // Item 26 (Builder B): feed the measured jitter to NetJitterEngine
+        // on this probe's cadence. No new thread/socket/poll — the hook is
+        // the zero-cost path; without it NetJitter would need its own poll
+        // re-reading the same volatile. Tolerance is the detected carrier's
+        // own (CarrierProfileEngine.jitterTolMs), not a new number.
+        try { NetJitterEngine.onSample(jitter, CarrierProfileEngine.jitterTolMs.toFloat()) } catch (_: Throwable) { }
     }
 
     private fun tcpRtt(host: String, port: Int): Long = try {
