@@ -1,99 +1,5 @@
 package com.assistant
-
 // F49_PATCH_V1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import android.os.SystemClock
-
-
-
-
-import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import java.util.concurrent.atomic.AtomicLong
-
-import kotlin.math.*
-
-
-
-
-import kotlin.math.cos
-
-
-import kotlin.math.max
-
-
-
-
-
-import kotlin.math.sqrt
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object VisionTrust {
 
@@ -232,8 +138,6 @@ object VisionTrust {
         lastBallConfidence = confidence.coerceIn(0f, 1f)
     }
 
-
-
     /** confidence faded by how long ago we actually saw the ball */
     @JvmStatic
     @JvmOverloads
@@ -351,4 +255,3 @@ object VisionTrust {
         try { com.assistant.diagnostic.RuntimeLogger.log(diagnostics(), "VISIONTRUST") } catch (_: Throwable) { }
     }
 }
-

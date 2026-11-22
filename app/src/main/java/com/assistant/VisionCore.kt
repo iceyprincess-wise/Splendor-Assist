@@ -1,97 +1,6 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object VisionCore {
 
@@ -819,7 +728,3 @@ return state
 
     // PHASE8 CLOSED-LOOP TEMPORAL HOOK
 }
-
-/* ========
-VisionDebugOverlay
-======== */
