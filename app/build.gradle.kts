@@ -3,7 +3,24 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+// Release signing (Updater Round, Piece 1): reads KEYSTORE_FILE, KEYSTORE_PASSWORD,
+// KEY_ALIAS, KEY_PASSWORD from env or gradle properties. CI injects these from
+// GitHub Actions secrets. Without them the release build stays unsigned (as before).
+val releaseKeystoreFile: String? = System.getenv("KEYSTORE_FILE") ?: (project.findProperty("KEYSTORE_FILE") as String?)
+val releaseKeystorePassword: String? = System.getenv("KEYSTORE_PASSWORD") ?: (project.findProperty("KEYSTORE_PASSWORD") as String?)
+val releaseKeyAlias: String? = System.getenv("KEY_ALIAS") ?: (project.findProperty("KEY_ALIAS") as String?)
+val releaseKeyPassword: String? = System.getenv("KEY_PASSWORD") ?: (project.findProperty("KEY_PASSWORD") as String?)
+
 android {
+    signingConfigs {
+        create("release") {
+            if (releaseKeystoreFile != null) storeFile = file(releaseKeystoreFile)
+            if (releaseKeystorePassword != null) storePassword = releaseKeystorePassword
+            if (releaseKeyAlias != null) keyAlias = releaseKeyAlias
+            if (releaseKeyPassword != null) keyPassword = releaseKeyPassword
+        }
+    }
+
     lint {
         disable += listOf("SetTextI18n", "UnusedResources", "ObsoleteSdkInt", "Overdraw", "GradleDependency", "OldTargetApi", "VectorPath", "ChromeOsAbiSupport", "ScopedStorage", "StaticFieldLeak", "SdCardPath", "UseSwitchCompatOrMaterialCode", "ConstantLocale", "InlinedApi", "IconLocation", "IconDuplicatesConfig", "TypographyEllipsis", "HardcodedText", "ButtonStyle", "ProtectedPermissions", "ExportedService", "MissingClass", "SuspiciousIndentation")
         checkReleaseBuilds = false
@@ -60,6 +77,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (releaseKeystoreFile != null && releaseKeystorePassword != null && releaseKeyAlias != null && releaseKeyPassword != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             isMinifyEnabled = false
