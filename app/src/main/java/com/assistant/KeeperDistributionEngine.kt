@@ -111,11 +111,12 @@ object KeeperDistributionEngine {
             )
         }
         // Kick: farthest-upfield teammate toward the attack end.
+        // (teammates is non-empty here — the empty case returned HOLD
+        // above — so maxByOrNull cannot return null; the ?: keeps the
+        // HOLD fallback for the impossible case.)
         val attackSign = if (frame.attackDirection < 0) -1f else 1f
         val upfield = teammates.maxByOrNull { t -> t.x * attackSign }
-        if (upfield == null) {
-            return KeeperDistributionDecision(KeeperDistributionKind.HOLD, 0f, 0f, null)
-        }
+            ?: return KeeperDistributionDecision(KeeperDistributionKind.HOLD, 0f, 0f, null)
         return KeeperDistributionDecision(
             KeeperDistributionKind.KICK, upfield.x, upfield.y, upfield.id
         )

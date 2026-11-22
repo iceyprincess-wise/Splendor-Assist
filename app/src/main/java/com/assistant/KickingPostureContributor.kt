@@ -1,102 +1,18 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.runtime.*
 import com.assistant.runtime.ActionClass
 import com.assistant.runtime.EngineCapability
 import com.assistant.runtime.EngineContribution
 import com.assistant.runtime.GameplayContributor
-
 import com.assistant.runtime.RuntimeFrame
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
 import kotlin.math.hypot
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object KickingPostureContributor : GameplayContributor {
     override val engineName = "KickingPosture"
     // No68-I-D4: only PASS/SHOT are ever emitted below; DEFENSE was a
-    // decorative capability (nothing in the repo reads `capabilities`).
+    // decorative capability value. (Capabilities are read by
+    // GameplayEngineRegistry diagnostics, batch 5b Q68-75.)
     override val capabilities = setOf(
         EngineCapability.PASSING,
         EngineCapability.ATTACK
@@ -191,7 +107,3 @@ object KickingPostureContributor : GameplayContributor {
         )
     }
 }
-
-/* ========
-ShotOpportunityContributor
-======== */
