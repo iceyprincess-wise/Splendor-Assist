@@ -1,97 +1,7 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
 import kotlin.math.abs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object PlayerDetector {
 
@@ -137,7 +47,6 @@ object PlayerDetector {
         if (blobs.isEmpty()) {
             return PlayerDetectionResult(
                 detected = false,
-                playerCount = 0,
                 confidence = 0f,
                 detections = emptyList()
             )
@@ -253,13 +162,8 @@ object PlayerDetector {
 
         return PlayerDetectionResult(
             detected = keptCount > 0,
-            playerCount = keptCount,
             confidence = aggregateConfidence,
             detections = (0 until keptCount).map { i -> keptPool[i].let { PlayerDetection(it.x, it.y, it.confidence, it.isUserTeam) } }
         )
     }
 }
-
-/* ========
-RuntimeConfidenceCalibrationResult
-======== */

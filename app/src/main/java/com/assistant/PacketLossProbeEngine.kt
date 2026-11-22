@@ -1,69 +1,10 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
 import java.io.ByteArrayOutputStream
-
-
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.random.Random
 
 object PacketLossProbeEngine {
@@ -81,9 +22,21 @@ object PacketLossProbeEngine {
     @Volatile var lossPct = 0f; private set
     @Volatile private var rounds = 0L
     @Volatile private var seq = 0L
+    // Phase P (P-1): D18 double-start fix. The probe thread used to be a
+    // local never stored, and stop() only cleared `running` — a stop/start
+    // inside the 4 s round sleep left the old thread alive, it woke, saw
+    // running==true (set by the new start) and kept probing: TWO live UDP
+    // probers writing lossPct. start() now joins the old thread (500 ms)
+    // and gives up rather than running two; stop() interrupts the sleep.
+    private var probeThread: Thread? = null
 
     fun start() {
         if (running) return
+        val old = probeThread
+        if (old != null && old.isAlive) {
+            try { old.join(500L) } catch (_: Throwable) { }
+            if (old.isAlive) return
+        }
         running = true
         val t = Thread {
             while (running) {
@@ -110,9 +63,13 @@ object PacketLossProbeEngine {
             }
         }
         t.isDaemon = true; t.name = "net-loss"; t.start()
+        probeThread = t
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        try { probeThread?.interrupt() } catch (_: Throwable) { }
+    }
 
     private fun queryOnce(): Boolean = try {
         val host = RESOLVERS[(seq++ % RESOLVERS.size).toInt()]
@@ -144,17 +101,3 @@ object PacketLossProbeEngine {
         return b.toByteArray()
     }
 }
-
-/* ========
-RadioKeepAliveEngine
-======== */
-// V3 INSTANT-REFLEX
-
-/**
- * V2: cadence adapts - when the link is dirty the radio is pinned at high
- * power MORE often (every rhythm/2 s, floor = a fixed literal), because a dirty
- * link plus a sleepy radio compounds into the worst first-touch latency.
- * V3: the base rhythm comes from the detected carrier profile
- * (CarrierProfileEngine.keepAliveS). The rhythm is profile-detected and
- * the floor is a literal — neither is set from outside the code.
- */

@@ -1,70 +1,10 @@
 package com.assistant
 
-
-
-
-
-
-
 import android.content.Context
-
-
-
 import android.hardware.display.DisplayManager
-
-
-
-
-
-
-
-
-
-
 import android.os.Handler
-
-
 import android.os.Looper
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object PanelWatchEngine {
 
@@ -74,9 +14,21 @@ object PanelWatchEngine {
     @Volatile private var running = false
     private var dm: DisplayManager? = null
     private var listener: DisplayManager.DisplayListener? = null
+    // Phase P (P-2): D18 double-start fix. Same shape as P-1: the sweep
+    // thread was a local never stored, stop() only cleared `running` — a
+    // stop/start inside the 5 s sweep sleep left the old thread alive, it
+    // woke, saw running==true and kept sweeping: TWO live sweepers
+    // calling onPanelRate. start() now joins the old thread (500 ms) and
+    // gives up rather than running two; stop() interrupts the sleep.
+    private var sweepThread: Thread? = null
 
     fun start(ctx: Context) {
         if (running) return
+        val old = sweepThread
+        if (old != null && old.isAlive) {
+            try { old.join(500L) } catch (_: Throwable) { }
+            if (old.isAlive) return
+        }
         running = true
         val app = ctx.applicationContext
         try {
@@ -101,6 +53,7 @@ object PanelWatchEngine {
             }
         }
         t.isDaemon = true; t.name = "stutter-panelwatch"; t.start()
+        sweepThread = t
     }
 
     private fun apply() {
@@ -110,25 +63,8 @@ object PanelWatchEngine {
 
     fun stop() {
         running = false
+        try { sweepThread?.interrupt() } catch (_: Throwable) { }
         try { listener?.let { dm?.unregisterDisplayListener(it) } } catch (_: Throwable) { }
         listener = null
     }
 }
-
-
-/* ========
-StutterPulseEngine
-======== */
-// V3: every knob is a fixed literal in code, publishes for the Detector
-
-/**
- * Sub-second burst radar. Lag grades long windows; this watches EVERY slice
- * (default 1s). A burst = enough frames in one slice blowing past the burst
- * line (screen beat x multiplier, beat read from the REAL panel and updated
- * live by PanelWatchEngine). Catches the 3-5 frame hiccups an average washes
- * out - the felt micro-stutter.
- *
- * V3: burst line, frames-per-slice, slice length and readout rhythm are all
- * fixed literals in code (BURST_MULT, MIN_FRAMES, SLICE_MS, PUBLISH_MS) —
- * none is set from outside the code. Publishes live burst truth for the Detector.
- */

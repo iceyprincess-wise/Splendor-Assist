@@ -1,70 +1,9 @@
 package com.assistant
 
-
-
-
-
-
-
 import android.content.Context
-
-
-
-
-
-
-
-
-
-
-
-
-
 import android.os.Build
-
-
-
-
-
-
 import android.os.PerformanceHintManager
-
 import android.os.Process
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object PerformanceHintEngine {
     @Volatile private var captureActive = false
@@ -162,7 +101,3 @@ object PerformanceHintEngine {
         }
     }
 }
-
-/* ========
-RehydratedStateSnapshot
-======== */

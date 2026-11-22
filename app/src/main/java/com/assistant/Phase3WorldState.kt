@@ -1,100 +1,18 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 data class Phase3WorldState(
-    val closestPlayer: ClosestPlayerResult = ClosestPlayerResult(false),
+    // Phase P (P-6): 11 stored fields deleted — written by VisionCore but
+    // read by nothing (no `state.<field>` reader tree-wide; the audit's
+    // `attacker` was already deleted by Letter A item 9). The VisionCore
+    // LOCALS stay: they feed live downstream (BuildUp, TacticalBehavior,
+    // the TacticalAnalytics native call, TemporalMemory). Only the store
+    // copies go. The deleted names: closestPlayer, formation, teamShape,
+    // defensiveLine, offensiveLine, occupancy, tacticalMapResult,
+    // defensiveCompactnessResult, pressingRecognitionResult,
+    // counterPressRecognitionResult, tacticalBehaviorRecognitionResult.
+    // `pressure` is NOT in that list: ActiveGestureController:247 reads
+    // worldState.pressure live (pressureMap columns/rows/array) — the
+    // audit's "read nowhere" claim was wrong for it, so the field stays.
     val ownership: BallOwnershipResult = BallOwnershipResult(false),
     val possession: BallPossessionResult = BallPossessionResult(false),
     // Letter A item 9: the stored `attacker` copy is deleted — written
@@ -103,9 +21,6 @@ data class Phase3WorldState(
     // `attacker` / `defensiveAttacker` above), never through this store;
     // FrameAssembler never read world.attacker either.
     val defender: ActiveDefenderResult = ActiveDefenderResult(false),
-    val formation: FormationResult = FormationResult(false),
-    val teamShape: TeamShapeResult = TeamShapeResult(false),
-    val defensiveLine: DefensiveLineResult = DefensiveLineResult(false),
     // L13 (batch 1): the tight defensive stance (DefensiveStanceProducer),
     // computed in VisionCore from computeUserLine. Read by FrameAssembler.
     val defensiveStance: DefensiveStance = DefensiveStance(false),
@@ -126,17 +41,11 @@ data class Phase3WorldState(
     // (HomePositionProducer), computed in VisionCore. Read by
     // FrameAssembler; DefenseContributor uses it as the stopper anchor.
     val defenderHome: HomePosition = HomePosition(false),
-    val offensiveLine: OffensiveLineResult = OffensiveLineResult(false),
-    val occupancy: SpaceOccupancyResult =
-        SpaceOccupancyResult(0,0, emptyArray()),
+    // Kept (P-6 correction): `pressure` is read live by
+    // ActiveGestureController:247 (pressureMap) — see the P-6 comment
+    // above. The VisionCore local feeds it, as before.
     val pressure: PressureFieldResult =
         PressureFieldResult(0,0, emptyArray()),
-    val tacticalMapResult: TacticalMapResult =
-        TacticalMapResult(),
-
-    val defensiveCompactnessResult: DefensiveCompactnessResult =
-        DefensiveCompactnessResult(),
-
     // Midfield (queue item 5, batch midfield): the measured midfield
     // line + its compactness over the band players only. Read by
     // FrameAssembler (frame midfieldLineX/Spread/Found/Compactness/
@@ -190,12 +99,6 @@ data class Phase3WorldState(
     val offsideRiskEstimationResult: OffsideRiskEstimationResult =
         OffsideRiskEstimationResult(),
 
-    val pressingRecognitionResult: PressingRecognitionResult =
-        PressingRecognitionResult(),
-
-    val counterPressRecognitionResult: CounterPressRecognitionResult =
-        CounterPressRecognitionResult(),
-
     val buildUpRecognitionResult: BuildUpRecognitionResult =
         BuildUpRecognitionResult(),
 
@@ -204,9 +107,6 @@ data class Phase3WorldState(
 
     val tacticalAnalyticsResult: TacticalAnalyticsResult =
         TacticalAnalyticsResult(),
-
-    val tacticalBehaviorRecognitionResult: TacticalBehaviorRecognitionResult =
-        TacticalBehaviorRecognitionResult(),
 
     val tacticalIntelligenceResult: TacticalIntelligenceResult =
         TacticalIntelligenceResult(),

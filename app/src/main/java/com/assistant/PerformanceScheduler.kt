@@ -1,70 +1,16 @@
 package com.assistant
 
-
-
-
-
-
-
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-
-
-
-
-
-
-
-
-
-
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
-
-
-
-
-
 import android.os.PowerManager
 import android.os.Process
-
-
-
 import com.assistant.VisionTrust
 import com.assistant.diagnostic.AdapterSignalBus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object PerformanceScheduler {
     private var schedulerThread: android.os.HandlerThread? = null

@@ -273,12 +273,6 @@ SceneTracker.update(
       TelemetryCoordinator.updateGoalkeeperPosition(0f, 0f, 0f)
   }
 
-  val closestPlayer =
-      ClosestPlayerEngine.compute(
-          ball,
-          scene
-      )
-
   val ownership =
       BallOwnershipEngine.compute(
           ball,
@@ -692,13 +686,9 @@ val offsideRiskEstimationResult =
 
     Phase3WorldStateStore.update(
         Phase3WorldState(
-            closestPlayer = closestPlayer,
             ownership = ownership,
             possession = possession,
             defender = defender,
-            formation = formation,
-            teamShape = teamShape,
-            defensiveLine = defensiveLine,
             defensiveStance = defensiveStance,
             // B5: the user line itself, as a store field (first publish).
             userLine = userLine,
@@ -707,11 +697,7 @@ val offsideRiskEstimationResult =
             lowBlockMovements = lowBlockMovements,
             lowBlockActive = lowBlockResult.active,
             defenderHome = defenderHome,
-            offensiveLine = offensiveLine,
-            occupancy = occupancy,
             pressure = pressure,
-            tacticalMapResult = tacticalMapResult,
-            defensiveCompactnessResult = defensiveCompactnessResult,
             // Midfield (queue item 5, batch midfield).
             midfieldLine = midfieldLine,
             midfieldCompactnessResult = midfieldCompactnessResult,
@@ -730,12 +716,9 @@ val offsideRiskEstimationResult =
             counterattackDetectionResult = counterattackDetectionResult,
             fastBreakDetectionResult = fastBreakDetectionResult,
             offsideRiskEstimationResult = offsideRiskEstimationResult,
-            pressingRecognitionResult = pressingRecognitionResult,
-            counterPressRecognitionResult = counterPressRecognitionResult,
             buildUpRecognitionResult = buildUpRecognitionResult,
             possessionStyleRecognitionResult = possessionStyleRecognitionResult,
             tacticalAnalyticsResult = tacticalAnalyticsResult,
-            tacticalBehaviorRecognitionResult = tacticalBehaviorRecognitionResult,
             tacticalIntelligenceResult = tacticalIntelligenceResult,
             opponentBehaviourLearningResult = opponentBehaviourLearningResult,
             playerTendencyLearningResult = playerTendencyLearningResult,
@@ -807,7 +790,7 @@ return state
         val players = if (mode == BallOnlyMode.BALL_PLAYERS) {
             PlayerDetector.detect(filteredBlobs)
         } else {
-            PlayerDetectionResult(false, 0, 0f, emptyList())
+            PlayerDetectionResult(false, 0f, emptyList())
         }
         val motion = MotionTracker.update(ball)
         BallTelemetryBridge.publish(ball)

@@ -306,6 +306,14 @@ object DashboardInjector {
                     // on the background refresh thread, like the lines
                     // above; activeNodes is a ConcurrentHashMap set.
                     append("Foundation nodes: ").append(com.assistant.diagnostic.notification.NodeNotificationHub.activeNodeCount()).append(" active\n")
+                    // Phase P (P-5): PerformanceHintEngine.hintRuntimeSnapshot()
+                    // had zero readers — the ADPF failure counter (No68-E-D45:
+                    // a failed hint session must not vanish silently) was
+                    // counted and exposed only through this unread snapshot.
+                    // First live reader: this line. Point-in-time read on
+                    // the background refresh thread, like the lines above;
+                    // non-zero means ADPF never engaged on this device.
+                    append("ADPF failed: ").append(com.assistant.PerformanceHintEngine.hintRuntimeSnapshot()["failedAttempts"] ?: 0).append("\n")
                 }
                 
                 val statusText = ComplianceState.summary(activity)

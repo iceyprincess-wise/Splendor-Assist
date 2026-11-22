@@ -169,7 +169,6 @@ object TrainedDetectionFusion {
         if (merged.size == heuristic.detections.size) return heuristic
         return PlayerDetectionResult(
             detected = merged.isNotEmpty(),
-            playerCount = merged.size,
             confidence = max(heuristic.confidence, bestAddedConf),
             detections = merged
         )

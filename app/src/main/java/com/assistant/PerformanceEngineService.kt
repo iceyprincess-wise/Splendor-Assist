@@ -65,8 +65,11 @@ class PerformanceEngineService : Service() {
         // No68-E-D30 (O37-1, CLOSES the open queue item): MachineLedger
         // had a start/stop/snapshot surface and zero callers — its samples
         // were never collected. This service owns the monitoring loop, so
-        // it starts the ledger here and stops it in onDestroy; the
-        // snapshot reader is machineLedgerSnapshot() below.
+        // it starts the ledger here and stops it in onDestroy. The live
+        // reader is DashboardInjector's "Machine:" line (Phase M, M-9),
+        // which reads MachineLedger.latest()/sampleCount() directly; the
+        // two delegating wrappers that used to live below were deleted
+        // in Phase P (P-4) — zero callers, the wire already exists.
         ignite({ MachineLedger.startMonitoring() })
 
         // IGNITE CONSOLIDATED PERFORMANCE ENGINES
@@ -168,11 +171,6 @@ class PerformanceEngineService : Service() {
         // grep for "31 engines" hits only this line).
         RuntimeLogger.log("Performance engine stack ignited: 33 engines + scheduler", "ENGINE")
     }
-
-    /** O37-1 reader: the MachineLedger samples collected since onCreate. */
-    fun machineLedgerSnapshot(): List<MachineLedger.MachineSample> = MachineLedger.snapshot()
-
-    fun machineLedgerSampleCount(): Int = MachineLedger.sampleCount()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return START_STICKY

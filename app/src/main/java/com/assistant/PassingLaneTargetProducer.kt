@@ -28,11 +28,14 @@ object PassingLaneTargetProducer {
     /** A pass target must be at least this confident (same bar as crossing). */
     const val MIN_CONFIDENCE = 0.40f
 
+    // Phase P (P-3): `confidence` deleted — it was written on every best
+    // candidate and read only inside targetFor itself (the comparison
+    // below); no outside caller ever read it. The running best is now
+    // tracked by a local.
     data class PassingTarget(
         val targetX: Float,
         val targetY: Float,
-        val receiverId: Int,
-        val confidence: Float
+        val receiverId: Int
     )
 
     /**
@@ -42,17 +45,18 @@ object PassingLaneTargetProducer {
      */
     fun targetFor(graph: PassingLaneGraph): PassingTarget? {
         var best: PassingTarget? = null
+        var bestConfidence = 0f
         for (lane in graph.lanes) {
             if (lane.blocked) continue
             if (!lane.receiver.x.isFinite() || !lane.receiver.y.isFinite()) continue
             val confidence = (lane.score * (1f - lane.pressure)).coerceIn(0f, 1f)
             if (confidence < MIN_CONFIDENCE) continue
-            if (best == null || confidence > best.confidence) {
+            if (best == null || confidence > bestConfidence) {
+                bestConfidence = confidence
                 best = PassingTarget(
                     targetX = lane.receiver.x,
                     targetY = lane.receiver.y,
-                    receiverId = lane.receiver.id,
-                    confidence = confidence
+                    receiverId = lane.receiver.id
                 )
             }
         }

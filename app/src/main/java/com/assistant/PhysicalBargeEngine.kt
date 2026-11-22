@@ -30,8 +30,7 @@ import kotlin.math.hypot
  * it as a DEFEND-class contribution with barge=true.
  */
 data class BargeWindow(
-    val open: Boolean,
-    val presserId: Int?
+    val open: Boolean
 )
 
 object PhysicalBargeEngine {
@@ -44,7 +43,11 @@ object PhysicalBargeEngine {
     const val FROM_BEHIND_DOT = 0.5f
 
     fun window(frame: RuntimeFrame): BargeWindow {
-        val closed = BargeWindow(false, null)
+        // Phase P (P-7): `presserId` deleted from BargeWindow — written on
+        // every open window and read by nobody (the contributor reads only
+        // .open; BodyWeightPressContributor's presserId belongs to
+        // BodyWeightPressEngine's own window, not this one).
+        val closed = BargeWindow(false)
         if (!frame.trusted || frame.hasBall) return closed
         if (frame.captureWidth <= 0f || frame.captureHeight <= 0f) return closed
         val ballSpeed = hypot(frame.ballVelocityXPerSecond, frame.ballVelocityYPerSecond)
@@ -69,6 +72,6 @@ object PhysicalBargeEngine {
                 (ay / aLen) * (frame.ballVelocityYPerSecond / mLen)
             if (dot > FROM_BEHIND_DOT) return closed
         }
-        return BargeWindow(true, presser.id)
+        return BargeWindow(true)
     }
 }
