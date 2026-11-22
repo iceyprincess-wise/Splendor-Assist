@@ -1,97 +1,6 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
 import kotlin.math.max
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object OffsideRiskEstimationEngine {
 
@@ -172,10 +81,3 @@ object OffsideRiskEstimationEngine {
         return OffsideRiskEstimationResult(result)
     }
 }
-
-/* ========
-OmnipotentDashPressureMatrix
-======== */
-/**
- * Dash pressure matrix and anchor preservation.
- */

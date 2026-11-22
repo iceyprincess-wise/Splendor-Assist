@@ -223,14 +223,19 @@ object DashboardInjector {
                     // Phase I (I-5): first live readers for five
                     // previously write-only input counters — the latency
                     // measurement/lag-event counts, the priority reapply
-                    // count, the last vsync delay and the thermal status
-                    // string. Point-in-time reads on the background
+                    // count, the last vsync delay, the thermal status
+                    // string, and the OOM throttle's live outputs
+                    // (O-2: first live readers for oomScore/oomHostile/
+                    // reapplyCount). Point-in-time reads on the background
                     // refresh thread, like the lines above.
                     append("Input: latencyMeasurements=").append(com.assistant.InputLatencyEngine.measurements)
                         .append(" lagEvents=").append(com.assistant.InputLatencyEngine.lagEvents)
                         .append(" priorityReapplies=").append(com.assistant.InputPriorityEngine.reapplyCount)
                         .append(" vsyncLastDelayMs=").append(com.assistant.InputVsyncEliminatorEngine.lastFrameDelayMs)
-                        .append(" thermal=").append(com.assistant.InputThermalEliminatorEngine.thermalStatus).append("\n")
+                        .append(" thermal=").append(com.assistant.InputThermalEliminatorEngine.thermalStatus)
+                        .append(" oomScore=").append(com.assistant.OomAdaptiveThrottleEngine.oomScore)
+                        .append(" oomHostile=").append(com.assistant.OomAdaptiveThrottleEngine.oomHostile)
+                        .append(" oomReapplies=").append(com.assistant.OomAdaptiveThrottleEngine.reapplyCount).append("\n")
                     // F3 (Letter F): first live readers for three
                     // previously write-only outputs — ForegroundGate
                     // stats, FilterEngine score, FreeBooster counters.

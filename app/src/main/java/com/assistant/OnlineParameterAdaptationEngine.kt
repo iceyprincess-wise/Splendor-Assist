@@ -1,97 +1,6 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
 import kotlin.math.max
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object OnlineParameterAdaptationEngine {
 
@@ -208,7 +117,3 @@ object OnlineParameterAdaptationEngine {
         return if (value < minVal) minVal else if (value > maxVal) maxVal else value
     }
 }
-
-/* ========
-OnlineParameterAdaptationResult
-======== */
