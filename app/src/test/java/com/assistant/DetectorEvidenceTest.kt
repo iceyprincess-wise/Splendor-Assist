@@ -19,7 +19,7 @@ class DetectorEvidenceTest {
     private fun blob(x: Int, r: Float, g: Float, b: Float) = ConnectedComponentEngine.Blob(x, 20, x+3, 28, 30, r,g,b)
     @Test fun unknownAndKeeperBlobsAreNotOpponents() {
         val result = PlayerDetector.detect(listOf(blob(20, 100f,100f,100f),blob(60,0f,220f,0f)))
-        assertEquals(0, result.playerCount)
+        assertEquals(0, result.detections.size)
     }
     @Test fun differentTeamBlobsInContactAreBothKept() {
         // No57-D3: renamed — the old name said "opponents in contact", but
@@ -29,7 +29,7 @@ class DetectorEvidenceTest {
         // between SAME-team detections, so cross-team blobs 2px apart are
         // both kept.
         val result = PlayerDetector.detect(listOf(blob(20,179f,150f,42f),blob(22,0f,0f,255f)))
-        assertEquals(2,result.playerCount)
+        assertEquals(2,result.detections.size)
     }
     @Test fun sameTeamBlobsInContactAreMergedAsOnePlayer() {
         // No57-D3: the companion pin — two OPPONENT (blue) blobs 2px apart
@@ -38,7 +38,7 @@ class DetectorEvidenceTest {
         // close opponents ever need separate tracks, the NMS radius
         // (3..12px from captureHeightOrFallback) is the knob, not this test.
         val result = PlayerDetector.detect(listOf(blob(20,0f,0f,255f),blob(22,0f,0f,255f)))
-        assertEquals(1,result.playerCount)
+        assertEquals(1,result.detections.size)
         assertEquals(21.5f,result.detections.first().x,0f)
     }
     @Test fun publishedDetectionsRemainStableOnNextFrame() {
@@ -87,7 +87,7 @@ class DetectorEvidenceTest {
         b.put(0, 179.toByte()); b.put(1, 150.toByte()); b.put(2, 42.toByte())
         b.put(3, 179.toByte()); b.put(4, 150.toByte()); b.put(5, 42.toByte())
         b.put(10, 255.toByte()); b.put(13, 255.toByte())
-        val f = FrameNormalizer.NormalizedFrame(b,2,2,8,3,FrameNormalizer.FrameMetadata(1,0))
+        val f = FrameNormalizer.NormalizedFrame(b,2,2,8,3,FrameNormalizer.FrameMetadata(1))
         val result = FrameScanner.scan(f)
         assertEquals(4,result.count)
         assertEquals(listOf(0,1,0,1), (0 until result.count).map { ((result.data[it] shr 40) and 65535).toInt() })
@@ -97,7 +97,7 @@ class DetectorEvidenceTest {
         assertEquals(listOf(42,42,255,255), (0 until result.count).map { (result.data[it] and 255).toInt() })
     }
     @Test fun scannerRejectsTruncatedLayout() {
-        val f = FrameNormalizer.NormalizedFrame(java.nio.ByteBuffer.allocate(10),2,2,8,3,FrameNormalizer.FrameMetadata(1,0))
+        val f = FrameNormalizer.NormalizedFrame(java.nio.ByteBuffer.allocate(10),2,2,8,3,FrameNormalizer.FrameMetadata(1))
         assertEquals(0,FrameScanner.scan(f).count)
     }
     @Test fun firstObservationAndReacquisitionDoNotCreatePhantomVelocity() {

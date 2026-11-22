@@ -40,7 +40,7 @@ class ObservedTacticsTest {
         CameraProfile.setCaptureScale(640,300,1600,750)
         val ours = (1..3).map { player(it,true,30f) }; val theirs=(4..6).map { player(it,false,270f) }
         val scene=SceneSnapshot(frameNumber=1,playerCount=6,trackedPlayers=ours+theirs,confidence=0.8f)
-        val wing=WingOverloadDetectionEngine.compute(scene,SpaceOccupancyResult(2,2,Array(2) { IntArray(2) }),pressure(0.2f))
+        val wing=WingOverloadDetectionEngine.compute(scene)
         assertEquals(1f,wing.leftWingAdvantage);assertEquals(-1f,wing.rightWingAdvantage);assertTrue(wing.overloaded)
         assertFalse(CentralOverloadDetectionEngine.compute(scene).overloaded)
         val center=scene.copy(trackedPlayers=ours.map { it.copy(y=150f) })

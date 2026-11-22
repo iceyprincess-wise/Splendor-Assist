@@ -46,7 +46,7 @@ class ForegroundSegmentationTest {
         // stride-ignoring scanner reads it as a third, green blob, while
         // the correct scanner never touches it.
         for(y in 0 until height) { b.put(y*row+33,255.toByte()); b.put(y*row+37,255.toByte()) }
-        val f=FrameNormalizer.NormalizedFrame(b,width,height,row,4,FrameNormalizer.FrameMetadata(1,0))
+        val f=FrameNormalizer.NormalizedFrame(b,width,height,row,4,FrameNormalizer.FrameMetadata(1))
         val blobs=ConnectedComponentEngine.extract(FrameScanner.scan(f))
         assertEquals(2,blobs.size)
         // No56-D1: pin the split location and the channel assignment, not
@@ -58,7 +58,7 @@ class ForegroundSegmentationTest {
         assertEquals(4,sorted[1].minX);assertEquals(7,sorted[1].maxX)
         assertEquals(0f,sorted[1].averageRed,0f);assertEquals(255f,sorted[1].averageBlue,0f)
         val detections=PlayerDetector.detect(blobs)
-        assertEquals(2,detections.playerCount)
+        assertEquals(2,detections.detections.size)
         assertTrue(detections.detections.first { it.x < 4f }.isUserTeam)
         assertFalse(detections.detections.first { it.x > 4f }.isUserTeam)
         assertEquals(1.5f,detections.detections.first { it.x < 4f }.x,0f)
@@ -75,7 +75,7 @@ class ForegroundSegmentationTest {
             if(x<4) { b.put(x*4,179.toByte()); b.put(x*4+1,150.toByte()); b.put(x*4+2,42.toByte()) }
             else { b.put(x*4,255.toByte()); b.put(x*4+1,255.toByte()); b.put(x*4+2,255.toByte()) }
         }
-        val f=FrameNormalizer.NormalizedFrame(b,8,1,32,4,FrameNormalizer.FrameMetadata(1,0))
+        val f=FrameNormalizer.NormalizedFrame(b,8,1,32,4,FrameNormalizer.FrameMetadata(1))
         assertEquals(2,ConnectedComponentEngine.extract(FrameScanner.scan(f)).size)
     }
     @Test fun pitchSizedGreenBlobIsNotKeeperEvidence() {
