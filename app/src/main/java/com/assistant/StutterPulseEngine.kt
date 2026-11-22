@@ -1,68 +1,9 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import android.os.Handler
-
-
 import android.os.Looper
-
-
-
-
-
-
-
 import android.view.Choreographer
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object StutterPulseEngine {
 
@@ -145,19 +86,3 @@ object StutterPulseEngine {
         }
     }
 }
-
-
-/* ========
-ActionWindowEngine
-======== */
-// V3 INSTANT-REFLEX
-
-/**
- * THE OUTPUT OF THE WHOLE STACK: one verdict, refreshed every 2000 ms
- * (ActionWindowEngine POLL_MS, a plain literal).
- *   GO      - link clean: full-speed decisions are safe
- *   CAUTION - degraded: prefer shorter, safer actions
- *   HOLD    - spike/loss in progress: worst moment to commit a long play
- * Published for the main runtime to read non-blocking. V3: no wobble
- * allowance exists in ActionWindowEngine — nothing reads one.
- */

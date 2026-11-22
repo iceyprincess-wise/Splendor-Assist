@@ -1,97 +1,7 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.*
-
-
 import kotlin.math.atan2
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object SceneTracker {
 
@@ -353,7 +263,3 @@ object SceneTracker {
     fun current(): SceneSnapshot =
         latest
 }
-
-/* ========
-SmartAssistMetrics
-======== */

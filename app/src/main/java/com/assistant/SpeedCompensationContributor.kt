@@ -1,97 +1,14 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.AdapterSignalBus
-
-
-
-
-
-
-
-
-
-
 import com.assistant.runtime.*
 import com.assistant.runtime.ActionClass
 import com.assistant.runtime.EngineCapability
 import com.assistant.runtime.EngineContribution
 import com.assistant.runtime.GameplayContributor
-
 import com.assistant.runtime.RuntimeFrame
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.*
-
-
 import kotlin.math.atan2
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object SpeedCompensationContributor : GameplayContributor {
     override val engineName = "SpeedCompensation"
@@ -174,7 +91,3 @@ object SpeedCompensationContributor : GameplayContributor {
         )
     }
 }
-
-/* ========
-SupportContributor
-======== */

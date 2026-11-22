@@ -37,19 +37,18 @@ object SnapshotBufferPool {
 
     private val pool = ArrayDeque<Bitmap>()
     private var scratch: ByteBuffer? = null
-    private var createdCount = 0L
-    private var reusedCount = 0L
-    private var evictedBytesTotal = 0L
 
+    // S-4 (Phase S): PoolStats.created/reused/evictedBytesTotal deleted —
+    // stats() is read only for .pooled (NonEssentialCacheEvictor:79);
+    // the three counters had no reader anywhere (6f verdicts recorded
+    // them dead). PoolStats is now pooled-only; the counters and their
+    // increments are gone with the fields.
     data class PoolStats(
-        val pooled: Int,
-        val created: Long,
-        val reused: Long,
-        val evictedBytesTotal: Long
+        val pooled: Int
     )
 
     fun stats(): PoolStats = synchronized(this) {
-        PoolStats(pool.size, createdCount, reusedCount, evictedBytesTotal)
+        PoolStats(pool.size)
     }
 
     /** Test hook: recycles every pooled bitmap and clears the counters. No production caller uses it. */
@@ -59,9 +58,6 @@ object SnapshotBufferPool {
         }
         pool.clear()
         scratch = null
-        createdCount = 0L
-        reusedCount = 0L
-        evictedBytesTotal = 0L
     }
 
     /**
@@ -76,11 +72,9 @@ object SnapshotBufferPool {
             val b = it.next()
             if (!b.isRecycled && b.width == width && b.height == height && b.config == config) {
                 it.remove()
-                reusedCount++
                 return b
             }
         }
-        createdCount++
         Bitmap.createBitmap(width, height, config)
     }
 
@@ -141,7 +135,6 @@ object SnapshotBufferPool {
         }
         pool.clear()
         scratch = null
-        evictedBytesTotal += freed
         freed
     }
 }

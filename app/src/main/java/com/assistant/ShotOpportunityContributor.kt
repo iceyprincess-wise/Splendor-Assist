@@ -1,97 +1,12 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.runtime.*
 import com.assistant.runtime.ActionClass
 import com.assistant.runtime.EngineCapability
 import com.assistant.runtime.EngineContribution
 import com.assistant.runtime.GameplayContributor
-
 import com.assistant.runtime.RuntimeFrame
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object ShotOpportunityContributor : GameplayContributor {
     override val engineName = "ShotOpportunity"
@@ -141,7 +56,3 @@ object ShotOpportunityContributor : GameplayContributor {
             (r.openSideScore / 4f).coerceIn(0f, 1f), r.confidence.coerceIn(0f, 1f), durationHintMs)
     }
 }
-
-/* ========
-SmartAssistUltimateCorrectorContributor
-======== */

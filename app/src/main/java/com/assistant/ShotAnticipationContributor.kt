@@ -1,97 +1,11 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.runtime.*
 import com.assistant.runtime.ActionClass
 import com.assistant.runtime.EngineCapability
 import com.assistant.runtime.EngineContribution
 import com.assistant.runtime.GameplayContributor
-
 import com.assistant.runtime.RuntimeFrame
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object ShotAnticipationContributor : GameplayContributor {
     override val engineName = "ShotAnticipation"
@@ -110,7 +24,3 @@ object ShotAnticipationContributor : GameplayContributor {
             (frame.defenderDensity * 0.85f).coerceIn(0f, 1f), frame.confidence, 30L)
     }
 }
-
-/* ========
-KickingPostureContributor
-======== */

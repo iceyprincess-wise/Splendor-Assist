@@ -8,25 +8,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.assistant.overlay.R
-
-
 import com.assistant.SmartAssistRepository
 import com.assistant.overlay.bridge.SmartAssistControlRoomBridge
 import com.assistant.RuntimePerformanceCoordinator
 import com.assistant.RuntimeVisualizationRegistry
 
-
-
-
-
-
-
-
 class SmartAssistControlRoomActivity : AppCompatActivity() {
 
-    
 override fun onCreate(savedInstanceState: Bundle?) {
-
 
         super.onCreate(savedInstanceState)
 setContentView(R.layout.activity_smartassist_control_room)
@@ -82,7 +71,6 @@ setContentView(R.layout.activity_smartassist_control_room)
 
             refreshEngineStatus()
         }
-
 
         findViewById<Button>(R.id.btnSave).setOnClickListener {
 

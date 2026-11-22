@@ -1,97 +1,10 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
 import android.content.Context
-
 import android.content.SharedPreferences
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
-
-
 
 class SmartAssistRepository(context: Context) {
     companion object {
@@ -195,7 +108,3 @@ class SmartAssistRepository(context: Context) {
 
 fun getCurrentState(): SmartAssistState = _state.value
 }
-
-/* ========
-SpaceOccupancyEngine
-======== */

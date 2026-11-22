@@ -1,111 +1,13 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.execution.ExecutionRequest
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import java.util.concurrent.atomic.AtomicLong
 
-import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 object SmartAssistMetrics {
-    data class GoalkeeperShadowDiagnostics(
-        val observations: Long,
-        val lastPhase: Int,
-        val lastStartX: Float,
-        val lastStartY: Float,
-        val lastEndX: Float,
-        val lastEndY: Float,
-        val lastDuration: Long,
-        val lastReason: String,
-        val lastUpdatedMs: Long
-    )
-
+    // S-2/S-3 (Phase S): GoalkeeperShadowDiagnostics + BusExecutionDiagnostics
+    // data classes deleted — never constructed anywhere in the repo (only
+    // their declarations existed); both snapshot functions return Maps
+    // built from the private vars below, so the classes had no consumer.
     private var goalkeeperShadowObservations: Long = 0L
     private var goalkeeperShadowLastPhase: Int = 0
     private var goalkeeperShadowLastStartX: Float = 0f
@@ -142,21 +44,6 @@ object SmartAssistMetrics {
             "lastReason" to goalkeeperShadowLastReason,
             "lastUpdatedMs" to goalkeeperShadowLastUpdatedMs
         )
-
-    data class BusExecutionDiagnostics(
-        val consumed: Long,
-        val dispatched: Long,
-        val failed: Long,
-        val lastSource: String,
-        val lastPhase: Int,
-        val lastDuration: Long,
-        val lastStartX: Float,
-        val lastStartY: Float,
-        val lastEndX: Float,
-        val lastEndY: Float,
-        val lastReason: String,
-        val lastUpdatedMs: Long
-    )
 
     private var busConsumed: Long = 0L
     private var busDispatched: Long = 0L
@@ -424,7 +311,3 @@ object SmartAssistMetrics {
     }
 
 }
-
-/* ========
-TacticalBehaviorRecognitionResult
-======== */

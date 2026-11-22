@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.StateFlow
 import com.assistant.SmartAssistRepository
 import com.assistant.SmartAssistState
 
-
 class SmartAssistControlRoomBridge(
     private val repository: SmartAssistRepository
 ) {
@@ -44,8 +43,7 @@ class SmartAssistControlRoomBridge(
             false
         }
     }
-    
-    fun getCurrentSettings(): SmartAssistState {
-        return repository.getCurrentState()
-    }
+    // S-1 (Phase S): getCurrentSettings() deleted — zero callers anywhere
+    // in the repo (declaration only); the read path is repository.state /
+    // getCurrentState() directly.
 }

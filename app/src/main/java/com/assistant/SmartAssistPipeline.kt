@@ -1,97 +1,12 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
-
-
 import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.*
-
 import kotlin.math.abs
 import kotlin.math.atan2
-
-
 import kotlin.math.hypot
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class SmartAssistPipeline {
 
@@ -203,7 +118,3 @@ class SmartAssistPipeline {
         )
     }
 }
-
-/* ========
-SpaceOccupancyResult
-======== */
