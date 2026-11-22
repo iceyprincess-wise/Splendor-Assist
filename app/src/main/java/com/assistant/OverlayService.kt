@@ -1441,7 +1441,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 var pooledSnapshot: Bitmap? = null
                 var pooled = false
                 try {
-                    val acquired = com.assistant.SnapshotBufferPool.acquire(source.width, source.height, source.config)
+                    val acquired = com.assistant.SnapshotBufferPool.acquire(source.width, source.height, source.config ?: Bitmap.Config.ARGB_8888)
                     if (com.assistant.SnapshotBufferPool.fill(acquired, source)) {
                         pooledSnapshot = acquired
                         pooled = true
@@ -1449,7 +1449,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                         try { acquired.recycle() } catch (_: Throwable) {}
                     }
                 } catch (_: Throwable) {}
-                val snapshot = pooledSnapshot ?: source.copy(source.config, false)
+                val snapshot = pooledSnapshot ?: source.copy(source.config ?: Bitmap.Config.ARGB_8888, false)
                 val snapshotForClosure = snapshot
                 val pooledForClosure = pooled
                 

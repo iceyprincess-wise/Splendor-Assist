@@ -35,12 +35,14 @@ android {
     }
 
     namespace = "com.assistant.overlay"
-    compileSdk = 34
+    compileSdk = 36
+    buildToolsVersion = "36.0.0"
+    ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId = "com.assistant.overlay"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 222
         versionName = "1.0-SECURE-LOCKED"
         

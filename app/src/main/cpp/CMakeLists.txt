@@ -64,6 +64,8 @@ target_link_options(splendor_native PRIVATE
   "-B${SPLENDOR_SHIM_DIR}"
   "-Wl,-Bdynamic"
   "-Wl,--no-as-needed"
+  "-Wl,-z,max-page-size=16384"
+  "-Wl,-z,common-page-size=16384"
 )
 
 target_link_libraries(splendor_native PRIVATE

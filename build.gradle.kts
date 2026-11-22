@@ -10,6 +10,6 @@
 //   here: there is no buildscript block, no clean task (Gradle provides it),
 //   and no subproject configuration.
 plugins {
-    id("com.android.application") version "8.2.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+    id("com.android.application") version "8.9.1" apply false
+    id("org.jetbrains.kotlin.android") version "2.0.20" apply false
 }
