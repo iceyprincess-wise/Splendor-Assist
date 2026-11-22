@@ -274,12 +274,7 @@ object FrameAssembler {
         } catch (_: Throwable) { false }
         val goalLeft = scene?.goalLeftX ?: 0f
         val goalRight = scene?.goalRightX ?: 0f
-        val goalTop = scene?.goalTopY ?: 0f
-        val goalBottom = scene?.goalBottomY ?: 0f
-        val goalCentreX = (goalLeft + goalRight) * 0.5f
-        val goalCentreY = (goalTop + goalBottom) * 0.5f
         val captureW = com.assistant.vision.CameraProfile.captureWidthOrFallback()
-        val captureH = com.assistant.vision.CameraProfile.captureHeightOrFallback()
         val ballWide = ballY < pitchH * 0.33f || ballY > pitchH * 0.67f
         val receiverX = bestLane?.lane?.receiver?.x ?: Float.NaN
         val receiverInBox = goalDetected && receiverX.isFinite() &&

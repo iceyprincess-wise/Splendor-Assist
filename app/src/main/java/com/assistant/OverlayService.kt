@@ -47,7 +47,6 @@ import android.view.View
 import android.view.WindowManager
 import android.view.ViewTreeObserver
 import android.widget.TextView
-import com.assistant.CallOverlayRepository
 import androidx.core.app.NotificationCompat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -637,7 +636,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 targetBuf.flip()
                 com.assistant.ControlMappingTrainer.observe(visionBuffer, width, height, rowStride, pixelStride)
                 stage("observe", t0); t0 = System.nanoTime()
-                val state = com.assistant.VisionCore.process(normalized)
+                com.assistant.VisionCore.process(normalized)
                 stage("visionCore", t0); t0 = System.nanoTime()
                 // N4: late return from VisionCore after an abandon — do not
                 // train, ignite, assemble, or dispatch on a stale frame.
@@ -1074,7 +1073,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         if (!::txtEngineStatus.isInitialized) return
         if (txtEngineStatus.visibility != View.VISIBLE) return
         ChoreographerRenderLoop.postUpdate {
-            txtEngineStatus.text = if (CallOverlayRepository.incomingCallVisible) "[CALL PROTECTED] " + text else text
+            txtEngineStatus.text = text
             txtEngineStatus.setTextColor(color)
         }
     }
