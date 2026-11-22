@@ -549,6 +549,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
 
         // Launch Vision Coroutine with SAFE copied buffer
         if (startVision) visionScope.launch {
+            // Letter G: feed the coexistence governor every frame so its
+            // pressure level (and the OCR/analytics/diagnostics gates) is
+            // driven by the real frame cadence, not left at GREEN forever.
+            com.assistant.GameCoexistenceGovernor.onFrameStart()
             val visionStartedNanos = System.nanoTime()
             // N4: the generation this coroutine belongs to. Abandoning a
             // wedged coroutine bumps visionGeneration; this coroutine must
@@ -676,7 +680,6 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 // it either.
                 if (frameGeneration != visionGeneration.get()) return@launch
                 // WIRE SILOED GK ENGINES: Activate Dive, Claim, Rush, and Block action engines
-                com.assistant.GameStateBuilder.update(state)
                 com.assistant.overlay.interceptor.OmnipotentGoalkeeperEngine.scanFrameForOpponentAnimation(visionBuffer, width, height, rowStride)
                 stage("gameState+keeperScan", t0)
             } catch (t: Throwable) {
@@ -690,6 +693,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     this@OverlayService, System.nanoTime() - visionStartedNanos,
                     com.assistant.MemoryCaptureGateEngine.targetFps
                 )
+                // Letter G: throttled governor diagnostics — at most every
+                // 600th frame, and only when diagnostics may run (never RED).
+                // Diagnostics must never break the frame path.
+                if (captureFrameCount % 600L == 0L && com.assistant.GameCoexistenceGovernor.shouldRunDiagnostics()) {
+                    try { com.assistant.GameCoexistenceGovernor.logState() } catch (_: Throwable) {}
+                }
                 // N4: only the CURRENT generation may clear the flag and
                 // re-arm the heal. An abandoned coroutine returning late
                 // used to clear a fresh frame's flag here, dropping every
@@ -715,7 +724,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // the next frame can be acquired; processBitmapForOCR then reads
         // the latest bitmap, which is the right frame for advisory OCR at
         // a 1.5 s cadence.
-        if (ocrReady) {
+        // Letter G: advisory OCR is non-critical work — under RED pressure
+        // the governor skips it for this frame (YELLOW: every 4th frame).
+        if (ocrReady && com.assistant.GameCoexistenceGovernor.shouldRunOcr()) {
             lastOcrTime = System.currentTimeMillis()
             val ocrHandler = ocrIoHandler ?: ocrIoThread?.looper?.let { Handler(it) }
             if (ocrHandler != null) ocrHandler.post { processBitmapForOCR() } else processBitmapForOCR()
@@ -1506,8 +1517,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             // just a boolean). Route it into the bus when shouldAct:
                             // the bus still gates it (reservations, UiExecutionGate),
                             // and the 5s match-detection cooldown above limits the rate.
+                            // G2 (item 20): bind the request so its actionId is
+                            // available for the timing-feedback submit leg.
                             val submitted = if (dec?.shouldAct == true) {
-                                com.assistant.execution.HybridExecutionTerminal.route(pipe.createExecutionRequest(dec))
+                                val ocrRequest = pipe.createExecutionRequest(dec)
+                                val ok = com.assistant.execution.HybridExecutionTerminal.route(ocrRequest)
+                                if (ok) GestureTimingFeedbackEngine.recordSubmission(ocrRequest.actionId)
+                                ok
                             } else {
                                 false
                             }

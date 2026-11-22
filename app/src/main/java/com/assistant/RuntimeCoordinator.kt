@@ -272,6 +272,14 @@ object RuntimeCoordinator {
         // No64-D23: zero the keeper feedback counters (they had no reset
         // and inflated the adaptive bonuses for the whole session).
         try { com.assistant.overlay.interceptor.GoalkeeperMetricsRegistry.reset() } catch (_: Throwable) {}
+        // G4 (Letter G): GoalPostCalibrationEngine.reset() and
+        // GoalkeeperDetector.reset() existed with no production caller
+        // (Q68-53 precedent, same pattern as TelemetryRepository above).
+        // Without them the calibration coast (500 ms) and the detector's
+        // smoothed keeper position / coast survived a session reset and
+        // read stale into the next epoch.
+        try { GoalPostCalibrationEngine.reset() } catch (_: Throwable) {}
+        try { GoalkeeperDetector.reset() } catch (_: Throwable) {}
         // No66-D40: same treatment for the runtime metrics counters — without
         // this the dashboard snapshot mixed epochs after an in-process restart.
         try { com.assistant.diagnostic.RuntimeMetricsRegistry.reset() } catch (_: Throwable) {}

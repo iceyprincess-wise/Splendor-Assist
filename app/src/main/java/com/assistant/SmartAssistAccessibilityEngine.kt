@@ -405,9 +405,16 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 // a new episode and logs again (batch 6b).
                 lastPreemptKey = null
 
+                // G2 (item 20): expire submissions never dispatched, once per
+                // 9ms poll, before consuming — bus queue pressure shows here
+                // first (120ms), before the bus's own 250-350ms staleness drop.
+                GestureTimingFeedbackEngine.checkExpiry()
                 val request = CentralExecutionBus.consume()
                 if (request != null) {
                     SmartAssistMetrics.recordBusConsumed(request)
+                    // G2 (item 20): timing-feedback dispatch leg — submit to
+                    // consume latency for this actionId.
+                    GestureTimingFeedbackEngine.recordDispatch(request.actionId)
 
                     val accepted = executeDirectRequest(request)
                     if (!accepted) CentralExecutionBus.complete(request.actionId)
@@ -494,6 +501,10 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             }, 5_000L)
         } catch (_: Throwable) {}
 
+        // G2 (item 20): fresh timing state for this bus-loop session —
+        // stale pending submissions from a previous session must not
+        // poison the new session's averages or expiry counts.
+        GestureTimingFeedbackEngine.reset()
         RuntimeCoordinator.attachExecutionLoop(
             start = { busHandler.post(busRunnable) },
             stop = { stopExecutionLoop() }

@@ -583,16 +583,23 @@ SceneTracker.update(
       )
 
   val tacticalAnalyticsResult =
-      TacticalAnalyticsEngine.analyze(
-          tacticalMapResult,
-          defensiveCompactnessResult,
-          wingOverloadDetectionResult,
-          centralOverloadDetectionResult,
-          pressingRecognitionResult,
-          counterPressRecognitionResult,
-          buildUpRecognitionResult,
-          possessionStyleRecognitionResult
-      )
+      if (GameCoexistenceGovernor.shouldRunAnalytics()) {
+          TacticalAnalyticsEngine.analyze(
+              tacticalMapResult,
+              defensiveCompactnessResult,
+              wingOverloadDetectionResult,
+              centralOverloadDetectionResult,
+              pressingRecognitionResult,
+              counterPressRecognitionResult,
+              buildUpRecognitionResult,
+              possessionStyleRecognitionResult
+          )
+      } else {
+          // Letter G: under RED pressure the non-critical analytics pass is
+          // skipped; the default zero-confidence result keeps the downstream
+          // behaviour/tactics chain (and the world-state store) well-formed.
+          TacticalAnalyticsResult()
+      }
 
   val tacticalBehaviorRecognitionResult =
       TacticalBehaviorRecognitionEngine.analyze(

@@ -29,8 +29,8 @@ object GameCoexistenceGovernor {
     @Volatile
     private var lastFrameTimeMs = 0L
 
-    fun onFrameStart() {
-        val now = SystemClock.elapsedRealtime()
+    fun onFrameStart(nowMs: Long = SystemClock.elapsedRealtime()) {
+        val now = nowMs
         if (lastFrameTimeMs > 0) {
             val deltaMs = now - lastFrameTimeMs
             // If frame delta exceeds 22ms (~45 FPS dropped), step up pressure
@@ -49,23 +49,23 @@ object GameCoexistenceGovernor {
     fun getPressure(): PressureLevel = currentPressure
 
     fun shouldRunOcr(): Boolean {
-        if (currentPressure == PressureLevel.RED) return false
-        if (currentPressure == PressureLevel.YELLOW) {
+        if (getPressure() == PressureLevel.RED) return false
+        if (getPressure() == PressureLevel.YELLOW) {
             return frameCounter.get() % 4 == 0
         }
         return true
     }
 
     fun shouldRunAnalytics(): Boolean {
-        if (currentPressure == PressureLevel.RED) return false
-        if (currentPressure == PressureLevel.YELLOW) {
+        if (getPressure() == PressureLevel.RED) return false
+        if (getPressure() == PressureLevel.YELLOW) {
             return frameCounter.get() % 2 == 0
         }
         return true
     }
 
     fun shouldRunDiagnostics(): Boolean {
-        return currentPressure != PressureLevel.RED
+        return getPressure() != PressureLevel.RED
     }
 
     fun logState() {

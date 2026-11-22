@@ -175,15 +175,13 @@ object GameplayDecisionEngine {
     fun gameplayAmplificationSnapshot(): Pair<Long, Float> =
         amplifiedDecisionCycles.get() to lastAmplifiedAuthority
 
-    fun rapidPrimeExecutionCapacity(stage: String, authority: Float): Float {
-        assertGameplayDecisionPrimeAuthority("rapidPrimeExecutionCapacity")
-        check(stage.isNotBlank()) { "Rapid prime execution stage must be explicit" }
-        check(GAMEPLAY_DECISION_ENGINE_RAPID_EXECUTION_TAG.isNotBlank()) {
-            "Gameplay decision rapid execution marker missing before $stage"
-        }
-        val amplified = authority * 1000.0f
-        return if (amplified < 0f) 0f else if (amplified > 10000f) 10000f else amplified
-    }
+    // Letter G item 1 (G3): the rapid-prime capacity probe deleted — it
+    // had zero callers tree-wide (its only hits were its own definition
+    // and the assert inside it) and its parameters were unconsumed (the
+    // stage only fed check messages; the authority was just scaled
+    // *1000 and clamped). No live path should call a capacity probe
+    // nothing reads. assertGameplayDecisionPrimeAuthority stays:
+    // selectVisionAdaptiveMode and decide still use it.
 
     private fun assertGameplayDecisionPrimeAuthority(stage: String) {
         check(stage.isNotBlank()) { "Gameplay decision prime authority stage must be explicit" }

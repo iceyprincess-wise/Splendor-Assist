@@ -215,7 +215,14 @@ object SmartAssistMetrics {
             "lastEndX" to busLastEndX,
             "lastEndY" to busLastEndY,
             "lastReason" to busLastReason,
-            "lastUpdatedMs" to busLastUpdatedMs
+            "lastUpdatedMs" to busLastUpdatedMs,
+            // G2 (item 20): gesture timing feedback — read live here so the
+            // published vars have a metrics consumer (control-room line via
+            // AppContributorRegistration); avg also drives the LAGGING signal.
+            "gestureAvgDispatchMs" to GestureTimingFeedbackEngine.avgDispatchMs,
+            "gestureLastDispatchMs" to GestureTimingFeedbackEngine.lastDispatchMs,
+            "gestureMeasuredCount" to GestureTimingFeedbackEngine.measuredCount,
+            "gestureExpiredCount" to GestureTimingFeedbackEngine.expiredCount
         )
 
     fun gameplayDownstreamRuntimeSnapshot(): Map<String, Any> {

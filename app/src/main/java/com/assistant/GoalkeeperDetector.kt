@@ -108,10 +108,12 @@ object GoalkeeperDetector {
     @Volatile private var lostFrames = 0
 
     /**
-     * Test hook (no53 round): resets the smoothed keeper state and the
-     * coast counter so unit tests start from a known state. No production
-     * caller uses it. Tests call it in @Before so JUnit's hash method
-     * order can never flip a result.
+     * Test hook (no53 round) AND production reset (G4): resets the
+     * smoothed keeper state and the coast counter so unit tests start
+     * from a known state, and so a session shutdown (via
+     * RuntimeCoordinator.resetRuntimeState) cannot leak a stale keeper
+     * position / coast into the next session. Tests call it in @Before
+     * so JUnit's hash method order can never flip a result.
      */
     fun reset() {
         initialized = false

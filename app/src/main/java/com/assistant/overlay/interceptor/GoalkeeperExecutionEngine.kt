@@ -2,6 +2,14 @@ package com.assistant.overlay.interceptor
 
 object GoalkeeperExecutionEngine {
 
+    // Letter G (G3): the DIVE_LEFT / DIVE_RIGHT branches below are
+    // exhaustive-mapping entries for enum values the router currently
+    // never emits (its post arms were deleted as proven-unreachable
+    // shadowing; Q65-5 reorder, Ed's call, would revive them). They are
+    // kept deliberately: both `when`s must be exhaustive over
+    // GoalkeeperAction, so deleting a branch would need an else/throw.
+    // The RECOVER branch IS live — OmnipotentGoalkeeperEngine produces
+    // RECOVER (item 12 A9) and vectorFor(RECOVER) is its fallback vector.
     // No64-D32: the producing action engine's name, for the dispatch log.
     // GK save offers used to carry engine="OmnipotentGoalkeeperEngine" (the
     // offerer), so a dispatch line could never say which action engine

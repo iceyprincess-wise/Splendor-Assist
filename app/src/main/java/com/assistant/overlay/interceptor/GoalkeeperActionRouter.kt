@@ -162,9 +162,12 @@ object GoalkeeperActionRouter {
         // goal-area threats, so BLOCKED is intentionally NOT vetoed here —
         // vetoing would make the keeper stand still (TRACK) on point-blank
         // shots, which is strictly worse. The two pipelines are
-        // complementary, not contradictory. `safety` is therefore read only
-        // by the RISKY+SAVE arm below (which is itself unreachable — see
-        // its note; safety's live effect is the GK_DECISION log line only).
+        // complementary, not contradictory. Letter G (G3): the RISKY+SAVE
+        // arm that used to read `safety` is deleted below (proven
+        // unreachable — the matrix catches every SAVE first), so safety's
+        // live effect is the GK_DECISION log line only. A live RISKY
+        // routing effect (where a RISKY threat should divert a SAVE) is
+        // a tactical decision queued for Ed, not invented here.
         val safety =
             OwnGoalAvoidanceEngine.evaluate(
                 decision.direction,
@@ -301,37 +304,22 @@ object GoalkeeperActionRouter {
                     anticipation == AnticipationResult.SAVE && decision.heightBand == HeightBand.BOTTOM && decision.normX in BOTTOM_DIVE_LOW..BOTTOM_DIVE_HIGH ->
                         GoalkeeperAction.PARRY_BOTTOM_CENTER
 
-                    // No65-D17: the two post arms below are UNREACHABLE by
-                    // shadowing — for anticipation==SAVE every heightBand
-                    // is fully covered by the 2D-matrix arms above (TOP →
-                    // JUMP_TOP_*, MID → REACH/REFLEX/CATCH, BOTTOM →
-                    // DIVE_BOTTOM_*/PARRY, with normX fully partitioned in
-                    // each band), so a SAVE never reaches them. The
-                    // post-coverage inputs (nearPostCoverage,
-                    // farPostCoverage, PROTECT_* bias) are therefore dead
-                    // inputs on the SAVE path — same class as the no64
-                    // RISKY-arm shadowing. Kept, behaviour-neutral:
-                    // reordering post-coverage above the band arms would
-                    // CHANGE behaviour (a TOP far-post SAVE would DIVE_LEFT
-                    // instead of JUMP_TOP_LEFT — a tactical call for Ed,
-                    // queued as Q65-5. Do not delete them silently.
-                    anticipation ==
-                        AnticipationResult.SAVE &&
-                    (
-                        farPostCoverage ||
-                        activeBias ==
-                            KeeperBias.PROTECT_FAR_POST
-                    ) ->
-                        GoalkeeperAction.DIVE_LEFT
-
-                    anticipation ==
-                        AnticipationResult.SAVE &&
-                    (
-                        nearPostCoverage ||
-                        activeBias ==
-                            KeeperBias.PROTECT_NEAR_POST
-                    ) ->
-                        GoalkeeperAction.DIVE_RIGHT
+                    // Letter G (G3): the two post arms that used to sit
+                    // here (SAVE + far-post coverage or PROTECT-far bias
+                    // -> DIVE_LEFT, SAVE + near-post coverage or
+                    // PROTECT-near bias -> DIVE_RIGHT) are DELETED, proven unreachable by
+                    // shadowing (No65-D17): for anticipation==SAVE the
+                    // 2D-matrix arms above partition every band fully
+                    // (TOP, MID, BOTTOM with normX fully partitioned in
+                    // each), so a SAVE never reached them. Behaviour-neutral
+                    // deletion — they never fired. Reordering post-coverage
+                    // above the matrix would CHANGE behaviour (a TOP
+                    // far-post SAVE would DIVE_LEFT instead of
+                    // JUMP_TOP_LEFT) and stays Ed's tactical call (Q65-5);
+                    // the arms return from git history if he approves it.
+                    // farPostCoverage/nearPostCoverage/activeBias are still
+                    // live inputs to the GK_DECISION log line below, and
+                    // activeBias still routes the INTERCEPT arm.
 
                     anticipation ==
                         AnticipationResult.INTERCEPT &&
@@ -346,21 +334,16 @@ object GoalkeeperActionRouter {
                         GoalkeeperAction.RUSH_OUT
                     }
 
-                    // No66-D7: UNREACHABLE by the same shadowing as the
-                    // post arms above (D17) — for anticipation==SAVE the
-                    // matrix (plus the AERIAL arm) catches every band, so
-                    // this arm never fires. Kept, behaviour-neutral (no64
-                    // precedent): OwnGoalAvoidanceEngine.evaluate's RISKY
-                    // value therefore has no live routing effect — it is
-                    // visible only in the GK_DECISION log line.
-                    // Item 12 (A14): the panicSaves increment that used
-                    // to sit here is removed with the BLOCK-arm ones — a
-                    // BLOCK is counted at accept in
-                    // OmnipotentGoalkeeperEngine, never at route.
-                    safety == OwnGoalSafety.RISKY &&
-                        anticipation == AnticipationResult.SAVE -> {
-                        GoalkeeperAction.BLOCK_LEFT
-                    }
+                    // Letter G (G3): the RISKY+SAVE arm that used to sit
+                    // here (safety==RISKY && anticipation==SAVE ->
+                    // BLOCK_LEFT) is DELETED, proven unreachable by the
+                    // same shadowing (No66-D7): the matrix catches every
+                    // SAVE before it. Behaviour-neutral — it never fired.
+                    // BLOCK_LEFT stays reachable via the PANIC arm above.
+                    // OwnGoalAvoidanceEngine.evaluate still runs and its
+                    // RISKY value is still visible in the GK_DECISION log
+                    // line; giving RISKY a live routing effect is queued
+                    // for Ed (tactical call, see the safety note above).
 
                     else ->
                         GoalkeeperAction.TRACK

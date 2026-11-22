@@ -14,7 +14,17 @@ import com.assistant.diagnostic.RuntimeLogger
  * goalWidth + handedness (which screen end the goal sits at, and which
  * post is which); caller = VisionCore (after GoalDetector.detect);
  * consumer = FarPost/NearPostCoverageEngine (via GoalkeeperActionRouter,
- * which passes latest()) + the GK log (goalWidth is now logged).
+ * which passes latest()) + the GK log (goalWidth is now logged) +
+ * KeeperFeedbackContributor (reads leftPostX/rightPostX live to clamp
+ * the blind-keeper target into the calibrated goal span).
+ *
+ * G4 (Letter G): the near/far-post derived getters and the
+ * confidence passthrough were deleted — zero readers anywhere (the
+ * coverage engines return Boolean from direction + valid and have no
+ * coordinate to aim; a far-post gate would be tautological since valid
+ * already implies posts inside the frame). goalWidth/goalEnd/
+ * invalidReason are read only by the GOAL_POSTS log line; that line is
+ * their designed diagnostic consumer (Batch 6b).
  *
  * A calibration is VALID only when the detected box is sane: detected,
  * right > left, width within [2%, 60%] of the capture width, posts inside
@@ -42,7 +52,6 @@ data class GoalPostCalibration(
     val rightPostX: Float = 0f,
     val goalWidth: Float = 0f,
     val goalEnd: GoalEnd = GoalEnd.NONE,
-    val confidence: Float = 0f,
     /*
      * Batch 6b: WHY this calibration is invalid — the first failing
      * clause, e.g. "not-detected" / "width-too-wide". The v219 session
@@ -52,12 +61,7 @@ data class GoalPostCalibration(
      * names the failed check.
      */
     val invalidReason: String = ""
-) {
-    /** Near post for this goal end; 0f when unanchored. */
-    val nearPostX: Float get() = if (!valid) 0f else if (goalEnd == GoalEnd.LEFT) leftPostX else rightPostX
-    /** Far post for this goal end; 0f when unanchored. */
-    val farPostX: Float get() = if (!valid) 0f else if (goalEnd == GoalEnd.LEFT) rightPostX else leftPostX
-}
+)
 
 object GoalPostCalibrationEngine {
 
@@ -106,8 +110,7 @@ object GoalPostCalibrationEngine {
             leftPostX = detection.leftX,
             rightPostX = detection.rightX,
             goalWidth = width,
-            goalEnd = end,
-            confidence = detection.confidence.coerceIn(0f, 1f)
+            goalEnd = end
         )
         val nowMs = System.currentTimeMillis()
         // Item 12 (C12): coast the last valid calibration (see header);

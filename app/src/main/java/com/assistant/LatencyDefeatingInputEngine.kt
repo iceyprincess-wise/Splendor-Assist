@@ -143,6 +143,8 @@ fun injectZeroLatencySwipe(
     // is a pure passthrough to CentralExecutionBus.submit, so this is
     // behaviour-identical.
     val accepted = HybridExecutionTerminal.route(request)
+    // G2 (item 20): timing-feedback submit leg — only when the bus accepts.
+    if (accepted) GestureTimingFeedbackEngine.recordSubmission(request.actionId)
     if (!accepted) RuntimeLogger.log("injectZeroLatencySwipe rejected by bus, swipe lost", "LatencyDefeatingInputEngine")
     return accepted
     }

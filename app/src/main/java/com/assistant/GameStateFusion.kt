@@ -125,9 +125,6 @@ object GameStateFusion {
             ballX = ball.x,
             ballY = ball.y,
 
-            ballVelocityX = motion.velocityX,
-            ballVelocityY = motion.velocityY,
-
             goalkeeperDetected =
                 goalkeeper.detected,
 
@@ -141,7 +138,6 @@ object GameStateFusion {
                 goalkeeper.confidence,
 
             ballSpeed = motion.speed,
-            ballDirection = motion.directionRadians,
 
             goalDetected = goal.detected,
             goalLeftX = goal.leftX,

@@ -94,8 +94,6 @@ import kotlin.math.*
 
 
 data class GameStateSnapshot(
-    val timestamp: Long = System.currentTimeMillis(),
-
     val ballDetected: Boolean = false,
     val playerDetected: Boolean = false,
     val goalkeeperDetected: Boolean = false,
@@ -110,10 +108,7 @@ data class GameStateSnapshot(
     val ballX: Float = 0f,
     val ballY: Float = 0f,
 
-    val ballVelocityX: Float = 0f,
-    val ballVelocityY: Float = 0f,
     val ballSpeed: Float = 0f,
-    val ballDirection: Float = 0f,
 
     val goalDetected: Boolean = false,
     val goalLeftX: Float = 0f,

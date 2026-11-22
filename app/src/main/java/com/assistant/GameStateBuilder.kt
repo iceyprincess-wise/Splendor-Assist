@@ -93,21 +93,9 @@ import kotlin.math.*
 
 
 
-object GameStateBuilder {
-
-    @Volatile
-    private var latest = GameStateSnapshot()
-
-    fun update(
-        snapshot: GameStateSnapshot
-    ) {
-        latest = snapshot
-    }
-
-    fun current(): GameStateSnapshot {
-        return latest
-    }
-}
+// Letter G (2026-11-22): the write-only snapshot store that lived here was
+// removed — it had no reader anywhere in the repo (see TRACE-G1.md).
+// Do not resurrect it without a proven consumer.
 
 /* ========
 GameStateFusion
