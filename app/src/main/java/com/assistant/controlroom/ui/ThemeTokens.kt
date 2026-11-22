@@ -48,7 +48,6 @@ object ThemeTokens {
 
     val BG: Int = Color.parseColor(BG_HEX)
     val SURFACE: Int = Color.parseColor(SURFACE_HEX)
-    val ACCENT: Int = Color.parseColor(ACCENT_HEX)
     val ACCENT_TEXT: Int = Color.parseColor(ACCENT_TEXT_HEX)
     val TEXT: Int = Color.parseColor(TEXT_HEX)
     val TEXT_MUTED: Int = Color.parseColor(TEXT_MUTED_HEX)
@@ -88,10 +87,6 @@ object ThemeTokens {
 
     fun bg(context: Context): Int =
         resolve(context, android.R.attr.colorBackground, BG_HEX)
-    fun surface(context: Context): Int =
-        resolve(context, com.google.android.material.R.attr.colorSurface, SURFACE_HEX)
-    fun accent(context: Context): Int =
-        resolve(context, com.google.android.material.R.attr.colorPrimary, ACCENT_HEX)
     fun text(context: Context): Int =
         resolve(context, com.google.android.material.R.attr.colorOnSurface, TEXT_HEX)
     fun textMuted(context: Context): Int =

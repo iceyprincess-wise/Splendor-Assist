@@ -1,97 +1,10 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.*
-
-
 import kotlin.math.atan2
-
 import kotlin.math.cos
 import kotlin.math.hypot
-
-
-
-
-
-
 import kotlin.math.sin
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object TrueTargetPassingEngine {
     // Queue item 6 (F1): the lead is now rate-independent. The receiver
@@ -206,7 +119,3 @@ object TrueTargetPassingEngine {
     fun currentFastBreakDetectionResult()            = Phase3WorldStateStore.current().fastBreakDetectionResult
     fun currentOffsideRiskEstimationResult()         = Phase3WorldStateStore.current().offsideRiskEstimationResult
 }
-
-/* ========
-VisionConfiguration
-======== */

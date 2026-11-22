@@ -4,6 +4,22 @@ import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 
+// No68-C-D36 (false claim corrected — this KDoc used to sit as an
+// orphan block at the end of FramePacingEngine.kt; moved here by Phase T,
+// T-13): the old "V3 ADMIN-WIRED - every threshold live" line was
+// false. LagVerdictEngine's thresholds (POLL_MS, JITTER_MS, STABILITY_PCT,
+// CHOKE_STALLS, CHOKE_MTSTALL_MS, CHOKE_SPIKES, CONFIRM_POLLS) are getters
+// returning literals and no admin store is read anywhere in that file —
+// nothing is re-read each poll. A re-tune changes the literal.
+
+/**
+ * The judge: reads every lag measurement and names the state -
+ * SMOOTH / JITTERY / CHOKING. A change must be seen on N consecutive polls
+ * before it flips (no whipsawing on a single blip). Each poll also
+ * publishes the full live lag snapshot the admin Detector reads. The poll
+ * rhythm and every threshold line are hard-coded literals, not admin
+ * tunables (see No68-C-D36).
+ */
 object LagVerdictEngine {
 
     // OMEGA FIX: Zero-Delay Micro-Defect Elimination

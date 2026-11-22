@@ -1,97 +1,7 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.sqrt
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object TeamShapeEngine {
 
@@ -125,17 +35,11 @@ object TeamShapeEngine {
 
         // Match Float.average(): ordered Double accumulation and one Float cast.
         // Indexed traversal avoids iterator and mapped-list allocations.
-        var sumX = 0.0
-        var sumY = 0.0
         var sumConfidence = 0.0
         for (i in players.indices) {
             val player = players[i]
-            sumX += player.x.toDouble()
-            sumY += player.y.toDouble()
             sumConfidence += player.confidence.toDouble()
         }
-        val centerX = (sumX / players.size).toFloat()
-        val centerY = (sumY / players.size).toFloat()
 
         val compactness =
             sqrt(width * width + depth * depth)
@@ -146,14 +50,8 @@ object TeamShapeEngine {
             found = true,
             width = width,
             depth = depth,
-            centerX = centerX,
-            centerY = centerY,
             compactness = compactness,
             confidence = confidence
         )
     }
 }
-
-/* ========
-TeamShapeResult
-======== */

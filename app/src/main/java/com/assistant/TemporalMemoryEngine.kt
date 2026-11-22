@@ -1,97 +1,7 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.*
-
 import kotlin.math.abs
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.sqrt
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object TemporalMemoryEngine {
 
@@ -126,14 +36,10 @@ object TemporalMemoryEngine {
         // --- 2. HIGH-PERFORMANCE STATISTICAL PASS ---
         // O(N) single-pass extraction replacing multiple fold/map/sum chaining
         var sum = 0f
-        var minConf = confidence
-        var maxConf = confidence
-        
+
         for (i in 0 until validSamples) {
             val v = nextHistory[(nextIndex - i + window) % window]
             sum += v
-            if (v < minConf) minConf = v
-            if (v > maxConf) maxConf = v
         }
 
         val mean = if (validSamples == 0) 0f else sum / validSamples.toFloat()
@@ -144,9 +50,8 @@ object TemporalMemoryEngine {
             val d = v - mean
             varianceSum += d * d
         }
-        
+
         val variance = if (validSamples == 0) 0f else varianceSum / validSamples.toFloat()
-        val stddev = sqrt(variance)
 
         // --- 3. EXPONENTIAL MOVING AVERAGE & KINEMATICS ---
         val ema = if (previous.sampleCount == 0) {
@@ -156,8 +61,6 @@ object TemporalMemoryEngine {
         }
 
         val trend = ema - previous.exponentialMovingAverage
-        val evolution = ema - previous.temporalConfidence
-        val age = previous.observationAge + 1
         val decayed = ema * previous.decayFactor
 
         // Optimized boundary coercion
@@ -167,27 +70,17 @@ object TemporalMemoryEngine {
 
         val historyStability = (varBounded * 0.50f + trendBounded * 0.30f + emaBounded * 0.20f).coerceIn(0f, 1f)
 
-        
-        
-
         return TemporalMemoryState(
             historyWindow = window,
             sampleCount = nextSampleCount,
-            rollingConfidence = mean,
             exponentialMovingAverage = ema,
             confidenceTrend = trend,
             confidenceVariance = variance,
             historyStability = historyStability,
             confidenceSlope = trend,
-            confidenceEvolution = evolution,
-            observationAge = age,
             decayFactor = previous.decayFactor,
-            minConfidence = minConf,
-            maxConfidence = maxConf,
             temporalConfidence = decayed.coerceIn(0f, 1f),
             rollingMean = mean,
-            rollingStdDev = stddev,
-            onlineUpdateCount = previous.onlineUpdateCount + 1,
             history = nextHistory,
             historyIndex = nextIndex,
         )
@@ -203,21 +96,14 @@ object TemporalMemoryEngine {
         return TemporalMemoryState(
             historyWindow = historyWindow,
             sampleCount = 0,
-            rollingConfidence = 0f,
             exponentialMovingAverage = 0f,
             confidenceTrend = 0f,
             confidenceVariance = 0f,
             historyStability = 0f,
             confidenceSlope = 0f,
-            confidenceEvolution = 0f,
-            observationAge = 0,
             decayFactor = decayFactor,
-            minConfidence = 0f,
-            maxConfidence = 0f,
             temporalConfidence = 0f,
             rollingMean = 0f,
-            rollingStdDev = 0f,
-            onlineUpdateCount = 0,
             history = FloatArray(historyWindow), // Allocates once per initialization
             historyIndex = 0,
         )
@@ -225,7 +111,3 @@ object TemporalMemoryEngine {
 
     // PHASE8 CLOSED-LOOP TEMPORAL HOOK
 }
-
-/* ========
-TrueTargetPassingEngine
-======== */

@@ -1,98 +1,7 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.RuntimeLogger
 import java.util.concurrent.atomic.AtomicLong
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object TelemetryCoordinator {
 
@@ -103,7 +12,6 @@ object TelemetryCoordinator {
     // repository update below stays per-frame; only the log line is
     // throttled to 1 Hz per updater.
     private const val TELEMETRY_LOG_MIN_INTERVAL_MS = 1000L
-    private val lastPlayerLogMs = AtomicLong(0L)
     private val lastBallLogMs = AtomicLong(0L)
     private val lastGoalkeeperLogMs = AtomicLong(0L)
 
@@ -115,34 +23,12 @@ object TelemetryCoordinator {
         RuntimeLogger.telemetry(details)
     }
 
-    fun updatePlayerMotion(
-        velocity: Float,
-        opponentDistance: Float
-    ) {
-        // No68-E2-D9: the old updater stamped neither the timestamp nor
-        // the capture geometry (unlike the ball/GK updaters), so a
-        // player-motion-only write left a stale timestamp and unset
-        // geometry behind. Non-finite inputs fall back to the
-        // no-data sentinels instead of poisoning the repository.
-        // (Still zero callers repo-wide — the producer is QE2-2.)
-        val safeVelocity = if (velocity.isFinite()) velocity else 0f
-        val safeDistance = if (opponentDistance.isFinite()) opponentDistance else Float.MAX_VALUE
-        // B2 / Q68-54: this writer stamps only the legacy shared
-        // timestamp — never ballTimestampMs / goalkeeperTimestampMs.
-        // A player-motion write must not refresh ball or keeper
-        // freshness (that was the shared-timestamp defect).
-        TelemetryRepository.update { current ->
-            current.copy(
-                playerVelocity = safeVelocity,
-                opponentDistance = safeDistance,
-                timestamp = System.currentTimeMillis(),
-                captureWidth = com.assistant.vision.CameraProfile.captureWidth,
-                captureHeight = com.assistant.vision.CameraProfile.captureHeight
-            )
-        }
-
-        logThrottled(lastPlayerLogMs, "playerVelocity=$safeVelocity opponentDistance=$safeDistance")
-    }
+    // T-7 (Phase T): updatePlayerMotion DELETED - zero callers repo-wide
+    // (the producer is QE2-2, never built). The fields playerVelocity /
+    // opponentDistance STAY: LiveVectorResolver reads them live, so they
+    // sit at their no-data defaults until a producer exists (QE2-2
+    // carried - wire a real producer or delete the fields + the
+    // duration term; a gameplay-behaviour decision for Ed).
 
     fun updateBallMotion(
         x: Float,
@@ -202,12 +88,7 @@ object TelemetryCoordinator {
             current.copy(
                 goalkeeperX = safeX,
                 goalkeeperY = safeY,
-                goalkeeperConfidence = safeConfidence,
                 timestamp = if (realDetection) System.currentTimeMillis() else current.timestamp,
-                // B2 / Q68-54: the keeper writer stamps only the keeper
-                // field, and only on a real detection (same rule as the
-                // legacy stamp above).
-                goalkeeperTimestampMs = if (realDetection) System.currentTimeMillis() else current.goalkeeperTimestampMs,
                 captureWidth = com.assistant.vision.CameraProfile.captureWidth,
                 captureHeight = com.assistant.vision.CameraProfile.captureHeight
             )
@@ -216,7 +97,3 @@ object TelemetryCoordinator {
         logThrottled(lastGoalkeeperLogMs, "goalkeeper=($safeX,$safeY)")
     }
 }
-
-/* ========
-TelemetryRepository
-======== */

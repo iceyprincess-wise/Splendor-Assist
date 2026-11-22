@@ -424,9 +424,7 @@ SceneTracker.update(
           scene,
           occupancy,
           pressure,
-          teamShape,
-          defensiveLine,
-          offensiveLine
+          teamShape
       )
 
   val defensiveCompactnessResult =

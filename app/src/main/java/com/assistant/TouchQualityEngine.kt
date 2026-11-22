@@ -1,70 +1,10 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import android.os.Process
-
-
-
-
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
 import java.io.BufferedReader
-
-
-
 import java.io.FileReader
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object TouchQualityEngine {
 
@@ -77,10 +17,20 @@ object TouchQualityEngine {
 
     @Volatile private var running = false
     @Volatile var irqDropDetected = false; private set
+    // T-2 (Phase T): D18 double-start fix — the poller used to live in a
+    // local, so stop() could not interrupt it and a restart inside the
+    // 500 ms sleep left the old thread polling alongside the new one.
+    @Volatile private var pollThread: Thread? = null
 
     fun start() {
         if (running) return
         running = true
+        // T-2: join the old poller (500 ms) and give up rather than run two.
+        val old = pollThread
+        if (old != null && old.isAlive) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         val t = Thread {
             // Conditionlessly boost this polling thread immediately
             try { Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO) } catch (_: Throwable) {}
@@ -164,10 +114,14 @@ object TouchQualityEngine {
         t.name = "input-touch-quality"
         t.priority = Thread.MAX_PRIORITY
         t.start()
+        pollThread = t
         RuntimeLogger.log("TouchQualityEngine started (Hardworking Eliminator Mode - 500ms cycle)", "INPUT")
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        pollThread?.interrupt()
+    }
 
     private fun readTouchIrqCount(): Long = try {
         val kw = listOf("touch", "fts", "focal", "hid", "i2c", "input")
@@ -186,7 +140,3 @@ object TouchQualityEngine {
         if (found) total else -1L
     } catch (_: Throwable) { -1L }
 }
-
-/* ========
-CompressedSnapshot
-======== */

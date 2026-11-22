@@ -64,9 +64,11 @@ object TeardownAttributionEngine {
     /**
      * Resolves the cause for a shutdown happening now and logs the
      * correlation line. Called from RuntimeCoordinator.shutdown().
-     * Returns the cause string for the caller (log-only use).
+     * T-8 (Phase T): returns Unit now — the old String return was
+     * discarded by the only caller; the TEARDOWN line is the output.
+     * reset() deleted with it (zero callers).
      */
-    fun attributeShutdown(caller: String, nowMs: Long = System.currentTimeMillis()): String {
+    fun attributeShutdown(caller: String, nowMs: Long = System.currentTimeMillis()) {
         val userStopAge = nowMs - lastUserStopMs
         val accessibilityAge = nowMs - lastAccessibilityOffMs
         val destroyAge = nowMs - lastServiceDestroyMs
@@ -88,15 +90,5 @@ object TeardownAttributionEngine {
                 "RUNTIME"
             )
         } catch (_: Throwable) { }
-        return cause
-    }
-
-    fun reset() {
-        lastUserStopMs = 0L
-        lastUserStopSource = ""
-        lastAccessibilityOffMs = 0L
-        lastAccessibilityOffSource = ""
-        lastServiceDestroyMs = 0L
-        lastInterruptMs = 0L
     }
 }

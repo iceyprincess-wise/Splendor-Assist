@@ -122,7 +122,7 @@ object DefensiveLineEngine {
      *  No68-D-D15: the old code sorted by Y ("deepest by Y"), but depth
      *  in this codebase is X — the goal sits at an X end of the frame
      *  (ThreatPriority zoneOf, F38-D4 live session: 8,018 pairs, goalCX
-     *  at the X ends; TacticalMap defensiveDepth is ballX minus line
+     *  at the X ends; defensive depth is ballX minus line
      *  averageX; AttackAxisModel derives direction from goalX minus
      *  userX). Sorting by Y picked the players nearest the BOTTOM of
      *  the screen — the touchline, not our goal — so the "back line"

@@ -1,70 +1,9 @@
 package com.assistant
 
-
-
-
-
-
-
 import android.content.Context
-
-
-
-
-
-
-
-
-
-
-
-
-
 import android.os.Build
-
-
-
-
-
-
-
 import android.os.PowerManager
-
-
-
-
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object ThermalPeekEngine {
 
@@ -74,10 +13,20 @@ object ThermalPeekEngine {
     @Volatile private var pm: PowerManager? = null
     @Volatile private var running = false
     @Volatile var status = "?"; private set
+    // T-1 (Phase T): D18 double-start fix — the poller used to live in a
+    // local, so stop() could not interrupt it and a re-init inside the
+    // 10 s sleep left the old thread polling alongside the new one.
+    @Volatile private var peekThread: Thread? = null
 
     fun init(ctx: Context) {
         if (running) return
         running = true
+        // T-1: join the old poller (500 ms) and give up rather than run two.
+        val old = peekThread
+        if (old != null && old.isAlive) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         pm = ctx.applicationContext.getSystemService(Context.POWER_SERVICE) as? PowerManager
         val t = Thread {
             var last = ""
@@ -106,9 +55,13 @@ object ThermalPeekEngine {
             }
         }
         t.isDaemon = true; t.name = "lag-thermal-peek"; t.start()
+        peekThread = t
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        peekThread?.interrupt()
+    }
 }
 
 // --- NEW: GcStallEngine ---

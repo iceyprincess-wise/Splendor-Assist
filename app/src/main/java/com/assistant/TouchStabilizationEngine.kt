@@ -1,98 +1,15 @@
 package com.assistant
 
 import android.accessibilityservice.AccessibilityService
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.*
-
-
-
-
-
-
-
 import kotlin.math.max
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/**
+ * TOUCH STABILIZATION ENGINE (moved here by Phase T, T-13 — it used to
+ * sit as an orphan block at the end of ThroughPassSanitizer.kt).
+ * Bypasses standard Android input latency queues by directly injecting
+ * mathematically smoothed, high-priority GestureDescriptions.
+ */
 object TouchStabilizationEngine {
 
     // L6 (batch 1, DECIDED not-needed): this object is a
@@ -139,7 +56,3 @@ object TouchStabilizationEngine {
         return com.assistant.input.NativeInputBridge.injectSwipe(service, startX, startY, endX, endY, safeDuration)
     }
 }
-
-/* ========
-TrackedPlayer
-======== */

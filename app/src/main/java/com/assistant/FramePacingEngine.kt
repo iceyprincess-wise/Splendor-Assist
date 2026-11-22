@@ -1,70 +1,10 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import android.os.Handler
-
-
 import android.os.Looper
-
-
-
-
-
-
-
 import android.view.Choreographer
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.max
-
-
-
+import java.util.concurrent.atomic.AtomicBoolean
 
 object FramePacingEngine {
 
@@ -75,7 +15,7 @@ object FramePacingEngine {
     private val REPORT_EVERY_MS: Long get() = 20_000L
     private val STALL_MS: Float get() = 100f
 
-    @Volatile private var running = false
+    @Volatile private var running = AtomicBoolean(false)
     @Volatile var avgGapMs = 0f; private set
     @Volatile var jitterMs = 0f; private set
     @Volatile var stabilityPct = 100f; private set
@@ -90,10 +30,11 @@ object FramePacingEngine {
     private val bucket = LongArray(4)
     @Volatile private var winStalls = 0L
     @Volatile private var winFrames = 0L
+    @Volatile private var reportThread: Thread? = null
 
     private val callback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
-            if (!running) return
+            if (!running.get()) return
             if (lastNanos > 0L) {
                 val gap = (frameTimeNanos - lastNanos) / 1_000_000f
                 frames++; winFrames++
@@ -118,13 +59,35 @@ object FramePacingEngine {
     }
 
     fun start() {
-        if (running) return
-        running = true
+        // T-15 (Phase T, Q-L1): D18 double-start fix — TWO vectors.
+        // (1) Callback: the old `if (running) return; running = true`
+        // guard was a racy check-then-set, and start() posts the SAME
+        // callback object again: two concurrent starts (or a restart
+        // while an in-flight doFrame re-posts) register it twice and
+        // every frame is then counted twice forever (each doFrame
+        // re-posts). StutterPulse's proven shape — atomic getAndSet —
+        // closes it: a start while running is a no-op before any post.
+        // (2) Report thread ("lag-frame-report", 20 s sleep) was never
+        // stored and stop() never interrupted it: a restart inside the
+        // sleep window left the old reporter beside the new one, both
+        // resetting the 20 s buckets. R-1/R-3 shape: join the old
+        // thread 500 ms, give up if alive (running stays true, the old
+        // reporter keeps the engine alive on its own, callback already
+        // posted above — no second reporter, no lost measurement).
+        // Measurement logic (doFrame + the 20 s report) is untouched;
+        // LagVerdict + FrameDropPreventionEngine read the same four
+        // volatile outputs as before.
+        if (running.getAndSet(true)) return
         Handler(Looper.getMainLooper()).post {
             Choreographer.getInstance().postFrameCallback(callback)
         }
+        val old = reportThread
+        if (old != null && old.isAlive) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         val t = Thread {
-            while (running) {
+            while (running.get()) {
                 val windowMs = REPORT_EVERY_MS
                 try { Thread.sleep(windowMs) } catch (_: Throwable) { return@Thread }
                 try {
@@ -146,31 +109,14 @@ object FramePacingEngine {
             }
         }
         t.isDaemon = true; t.name = "lag-frame-report"; t.start()
+        reportThread = t
     }
 
     fun stop() {
-        running = false
+        running.set(false)
+        reportThread?.interrupt()
         Handler(Looper.getMainLooper()).post {
             Choreographer.getInstance().removeFrameCallback(callback)
         }
     }
 }
-
-// --- MERGED: LagVerdictEngine.kt ---
-
-// No68-C-D36 (false claim corrected — this trailing KDoc is
-// LagVerdictEngine's header, physically pasted here by the repo's merged
-// file layout): the old "V3 ADMIN-WIRED - every threshold live" line was
-// false. LagVerdictEngine's thresholds (POLL_MS, JITTER_MS, STABILITY_PCT,
-// CHOKE_STALLS, CHOKE_MTSTALL_MS, CHOKE_SPIKES, CONFIRM_POLLS) are getters
-// returning literals and no admin store is read anywhere in that file —
-// nothing is re-read each poll. A re-tune changes the literal.
-
-/**
- * The judge: reads every lag measurement and names the state -
- * SMOOTH / JITTERY / CHOKING. A change must be seen on N consecutive polls
- * before it flips (no whipsawing on a single blip). Each poll also
- * publishes the full live lag snapshot the admin Detector reads. The poll
- * rhythm and every threshold line are hard-coded literals, not admin
- * tunables (see No68-C-D36).
- */

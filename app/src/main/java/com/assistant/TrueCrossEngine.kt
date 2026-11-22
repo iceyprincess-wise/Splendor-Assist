@@ -1,97 +1,7 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.*
-
-
-
-
-
 import kotlin.math.hypot
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object TrueCrossEngine {
     private const val CROSS_BALL_SPEED_PX_S=720f; private const val ARRIVAL_BUFFER_S=0.06f
@@ -113,7 +23,3 @@ object TrueCrossEngine {
         return TrueCrossResult(tx,ty,(laneScore*0.78f+(1f-dist/MAX_CROSS_DIST)*0.22f).coerceIn(0f,1f))
     }
 }
-
-/* ========
-TrueShotEngine
-======== */

@@ -1,98 +1,23 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.runtime.*
 import com.assistant.runtime.ActionClass
 import com.assistant.runtime.EngineCapability
 import com.assistant.runtime.EngineContribution
 import com.assistant.runtime.GameplayContributor
-
 import com.assistant.runtime.RuntimeFrame
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.*
-
-
-
-
-
 import kotlin.math.hypot
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/**
+ * TruePassContributor (moved here by Phase T, T-13 — it used to sit as
+ * an orphan block at the end of TrueCrossContributor.kt).
+ *
+ * Upgraded zero-allocation GameplayContributor.
+ * - Uses direct indexed array loop over tracked players to eliminate GC allocations.
+ * - Leverages TrueTargetPassingEngine.optimizeWithAdvancedTactics for run prediction
+ *   and defender density offset.
+ */
 object TruePassContributor : GameplayContributor {
     override val engineName = "TruePass"
     override val capabilities = setOf(EngineCapability.PASSING, EngineCapability.ATTACK)
@@ -216,4 +141,3 @@ object TruePassContributor : GameplayContributor {
         )
     }
 }
-

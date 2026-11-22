@@ -23,10 +23,11 @@ package com.assistant
  * a velocity) → CONSUMER keeper scan + FrameAssembler trust → LIVE
  * EFFECT the keeper scan reads a live ball instead of the frozen one.
  *
- * Q68-54: TelemetrySnapshot now carries ballTimestampMs +
- * goalkeeperTimestampMs beside the legacy shared `timestamp`. The ball
- * writer stamps only the ball field, the keeper writer only the keeper
- * field; consumers read the split fields (legacy `timestamp` is kept
+ * Q68-54: TelemetrySnapshot now carries ballTimestampMs beside the
+ * legacy shared `timestamp` (the keeper split stamp,
+ * goalkeeperTimestampMs, was DELETED by Phase T, T-6: zero readers —
+ * no consumer ever gated on keeper freshness). The ball writer stamps
+ * only the ball field; consumers read it (legacy `timestamp` is kept
  * for old readers and still stamped by both writers). A player-motion
  * write never touches either split field.
  */

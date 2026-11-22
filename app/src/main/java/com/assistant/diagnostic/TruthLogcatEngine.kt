@@ -7,7 +7,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 object TruthLogcatEngine {
     private val running = AtomicBoolean(false)
-    private var tailThread: Thread? = null
 
     // No66-D36: the truth file was a `by lazy` val that cached null FOREVER
     // when SplendorStorageRoot was not ready at first access (isReady() is
@@ -25,7 +24,10 @@ object TruthLogcatEngine {
 
     fun start() {
         if (running.getAndSet(true)) return
-        tailThread = Thread({
+        // T-12 (Phase T): stop() deleted (zero callers) and the stored
+        // tailThread with it — the thread runs until process death, as
+        // before. The getAndSet guard above already prevents double-start.
+        Thread({
             // No66-D37: the source file is resolved inside the poll loop, not
             // once at thread start: if storage is not ready yet, the poll
             // fails, logs, and retries 500ms later instead of the thread
@@ -78,14 +80,15 @@ object TruthLogcatEngine {
                     }
                     Thread.sleep(500) // Poll every 500ms
                 } catch (t: Throwable) {
-                    // No66-D38: a normal stop() interrupts the sleep above;
-                    // that used to land here and log a scary "tail thread
+                    // No66-D38: a stop interrupts the sleep above; that
+                    // used to land here and log a scary "tail thread
                     // died" error for a clean shutdown. Exit quietly when
                     // stopped. A real poll failure while running still logs
                     // loudly (SPLENDOR_P11_D7) — but the tailer now RETRIES
                     // on the next poll instead of freezing Truth_logcat.txt
-                    // forever with no restart path (stop() has zero callers,
-                    // so nothing ever restarted a dead tailer).
+                    // forever with no restart path (T-12: stop() is deleted
+                    // — zero callers — so nothing ever restarted a dead
+                    // tailer; the retry below is the recovery).
                     if (!running.get()) break
                     android.util.Log.e("TruthLogcatEngine", "tail poll failed; retrying", t)
                     sourceFile = null
@@ -97,11 +100,6 @@ object TruthLogcatEngine {
             priority = Thread.MIN_PRIORITY
             start()
         }
-    }
-
-    fun stop() {
-        running.set(false)
-        tailThread?.interrupt()
     }
 
     private fun writeTruth(line: String) {

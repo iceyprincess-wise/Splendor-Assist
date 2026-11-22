@@ -1,97 +1,10 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import kotlin.math.*
-
 import kotlin.math.abs
 import kotlin.math.atan2
-
 import kotlin.math.cos
-
-
-
-
-
-
-
 import kotlin.math.sin
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class ThroughPassSanitizer(
     private val inputEngine:LatencyDefeatingInputEngine
@@ -220,12 +133,3 @@ class ThroughPassSanitizer(
         )
     }
 }
-
-/* ========
-TouchStabilizationEngine
-======== */
-/**
- * TOUCH STABILIZATION ENGINE
- * Bypasses standard Android input latency queues by directly injecting 
- * mathematically smoothed, high-priority GestureDescriptions.
- */

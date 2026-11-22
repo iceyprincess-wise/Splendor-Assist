@@ -81,6 +81,22 @@ import org.tensorflow.lite.Interpreter
  * exists — a future letterbox-capable native path re-enables it with
  * one const flip. The gate is a runtime const check, so the code stays
  * compiled and the pins stay live.
+ *
+ * HONEST STATUS CONTRACT (moved here by Phase T, T-13 — it used to sit
+ * as an orphan block at the end of ThroughBallLaneAnalysisEngine.kt):
+ * this engine never lies about what it is:
+ *
+ *   UNINITIALIZED -> initialize() not yet called.
+ *   MISSING_MODEL -> no model asset on device. The heuristic pipeline runs
+ *                    EXACTLY as before; this engine is a no-op.
+ *   LOAD_ERROR    -> asset exists but failed to load; heuristic unchanged.
+ *   LOADED        -> interpreter ready, ZERO inferences run yet. Still not
+ *                    claimed as active.
+ *   ACTIVE        -> at least one REAL on-device inference has completed
+ *                    and is logged ("TFLITE ACTIVE"). Only this state may
+ *                    ever be reported as "trained model running".
+ *   DISABLED      -> too many consecutive inference failures; engine shut
+ *                    itself off loudly and heuristic took over again.
  */
 object TrainedDetectionEngine {
 
@@ -112,7 +128,6 @@ object TrainedDetectionEngine {
     @Volatile private var interpreter: Interpreter? = null
 
     private val inferences = AtomicLong(0L)
-    private val failures = AtomicLong(0L)
     private val ballsFound = AtomicLong(0L)
     private val divergences = AtomicLong(0L)
     // Q68-95 (batch 5b): native-preprocess failure counters — the C return
@@ -505,7 +520,6 @@ object TrainedDetectionEngine {
                 }
             }
         } catch (e: Throwable) {
-            failures.incrementAndGet()
             consecutiveFailures++
             lastError = e.message ?: e.javaClass.simpleName
             if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
