@@ -252,6 +252,13 @@ object DashboardInjector {
                     // session-header + logcat only — its first in-app
                     // reader. Non-zero means log lines were lost.
                     append("Dropped log writes: ").append(com.assistant.diagnostic.RuntimeLogger.droppedWriteCount()).append("\n")
+                    // Phase L (L-7): LogMirror.droppedCount() had zero
+                    // readers — the dropped-records counter was maintained
+                    // on every loss and read by nobody. First live reader.
+                    // Point-in-time read on the background refresh thread,
+                    // like the line above. Non-zero means log lines were
+                    // lost (queue full or pre-init).
+                    append("LogMirror dropped: ").append(com.assistant.diagnostic.LogMirror.droppedCount()).append("\n")
                     // Q68-51 (batch 5b): eight SmartAssistMetrics snapshot
                     // fns had zero readers — their first readers. One
                     // compact line each; the maps are small counter maps,

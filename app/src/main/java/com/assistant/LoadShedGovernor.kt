@@ -1,70 +1,7 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object LoadShedGovernor {
 
@@ -96,6 +33,7 @@ object LoadShedGovernor {
     private val HEAVY_RATIO: Float get() = FPS_HEAVY_BELOW / FALLBACK_BASELINE_FPS
 
     @Volatile private var running = false
+    @Volatile private var pollThread: Thread? = null
     @Volatile var level = "NONE"; private set
     @Volatile private var candidate = "NONE"
     @Volatile private var streak = 0
@@ -143,6 +81,21 @@ object LoadShedGovernor {
 
     fun start() {
         if (running) return
+        // Phase L (L-2): a previous poll thread still winding down must be
+        // dead before a new one starts — otherwise two threads share
+        // candidate/streak and the 4-poll arm completes in ~half the time.
+        // Wait briefly; give up (no start) rather than run two pollers.
+        // (Same pattern as InputLatencyEngine D18 / Phase I I-2; the
+        // restart is real: AdapterRecoveryEngine relaunches
+        // PerformanceEngineService in-process on a stale heartbeat, and
+        // onCreate re-ignites these singleton objects. The interrupt
+        // wakes the 2000 ms sleep immediately, so the 500 ms join is
+        // plenty.)
+        val old = pollThread
+        if (old?.isAlive == true) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         running = true
         startTimeMs = System.currentTimeMillis()
         val t = Thread {
@@ -197,10 +150,15 @@ object LoadShedGovernor {
                 try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }
             }
         }
-        t.isDaemon = true; t.name = "lag-loadshed"; t.start()
+        t.isDaemon = true; t.name = "lag-loadshed"; pollThread = t; t.start()
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        // Phase L (L-2): wake the sleeper so it exits now instead of up
+        // to 2000ms later (and cannot be resurrected by a quick restart).
+        pollThread?.interrupt()
+    }
 }
 
 // --- MERGED: MainThreadStallEngine.kt ---

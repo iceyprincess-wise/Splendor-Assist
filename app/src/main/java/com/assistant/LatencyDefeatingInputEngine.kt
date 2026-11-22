@@ -1,101 +1,14 @@
 package com.assistant
 
-import android.accessibilityservice.AccessibilityService
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
 import com.assistant.execution.HybridExecutionTerminal
-
 import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
 
-
-import com.assistant.runtime.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import kotlin.math.*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class LatencyDefeatingInputEngine(
-    private val service: AccessibilityService
-) {
+// Phase L (L-9): the service constructor parameter is gone —
+// the class body never read it (the swipe routes through
+// HybridExecutionTerminal); the only construction site passes nothing now.
+class LatencyDefeatingInputEngine {
     private companion object {
         const val MIN_STROKE_DURATION_MS = 1L
         // Phase 100 is a dedicated zero-latency reservation key, NOT an

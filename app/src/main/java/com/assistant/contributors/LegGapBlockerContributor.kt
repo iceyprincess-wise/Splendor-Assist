@@ -19,12 +19,30 @@ object LegGapBlockerContributor : GameplayContributor {
     override val engineName = "LegGapBlocker"
     override val capabilities = setOf(EngineCapability.DEFENSE)
 
+    // Phase L (L-6): LegGapWindow.closedReason had no production reader —
+    // the window's diagnostic trail. Log the transition that closes the
+    // window (a new rejection reason while closed): one line per reason
+    // change at most — never per frame. Same pattern as
+    // DecoyRunContributor (item 17 D2-F01) and BodyWeightPressContributor
+    // (item 15).
+    @Volatile private var lastClosedReason = ""
+
     override fun fastGate(frame: RuntimeFrame): Boolean =
         frame.trusted && !frame.hasBall
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || frame.hasBall) return null
         val window = LegGapBlockerEngine.window(frame)
+        // L-6: transition-gated read of closedReason.
+        if (!window.open && window.closedReason != lastClosedReason) {
+            try {
+                com.assistant.diagnostic.RuntimeLogger.log(
+                    "LEG_GAP closed: ${window.closedReason}",
+                    "LEG_GAP"
+                )
+            } catch (_: Throwable) { }
+        }
+        lastClosedReason = window.closedReason
         if (!window.open) return null
         return EngineContribution(
             engine = engineName,

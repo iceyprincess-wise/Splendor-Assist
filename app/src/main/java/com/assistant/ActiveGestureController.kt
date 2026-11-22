@@ -116,7 +116,7 @@ class ActiveGestureController(
     // real engine to sanitize Ed's through presses with. Bound here with
     // .also (not in an init block): the init blocks above run before
     // this property is initialized, so a bind there would see null.
-    private val latencyInputEngine = LatencyDefeatingInputEngine(service).also {
+    private val latencyInputEngine = LatencyDefeatingInputEngine().also {
         ThroughPassSanitizerGateway.bind(it)
     }
     private val antiCutbackEngine = AntiCutbackSubEngine()

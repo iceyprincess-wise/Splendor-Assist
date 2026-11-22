@@ -61,9 +61,10 @@ object LogBatcher {
     private val sinks = HashMap<File, Sink>()
 
     /**
-     * Appends [text] to [file]'s batched stream. [maxBytes] is accepted
-     * for symmetry with the rotation call sites but rotation itself stays
-     * the caller's job (flush first, then rotate, then append).
+     * Appends [text] to [file]'s batched stream. [urgent] lines flush
+     * immediately; routine lines flush on the byte/age thresholds.
+     * Rotation stays the caller's job (flush first, then rotate, then
+     * append) — this object never rotates.
      */
     fun append(file: File, text: String, urgent: Boolean) {
         val nowMs = System.currentTimeMillis()

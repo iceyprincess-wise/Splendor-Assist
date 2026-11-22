@@ -1,76 +1,14 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object LoadShedCaptureBrakeEngine {
 
     private const val POLL_MS = 500L
 
     @Volatile private var running = false
+    @Volatile private var pollThread: Thread? = null
     @Volatile var executionBrake = 0; private set
     @Volatile private var lastLevel = "NONE"
 
@@ -120,6 +58,18 @@ object LoadShedCaptureBrakeEngine {
 
     fun start() {
         if (running) return
+        // Phase L (L-3): a previous poll thread still winding down must be
+        // dead before a new one starts — otherwise two threads poll and
+        // publish concurrently. Wait briefly; give up (no start) rather
+        // than run two pollers. (Same pattern as InputLatencyEngine D18 /
+        // Phase I I-2; the restart is real: AdapterRecoveryEngine
+        // relaunches PerformanceEngineService in-process on a stale
+        // heartbeat, and onCreate re-ignites these singleton objects.)
+        val old = pollThread
+        if (old?.isAlive == true) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         running = true
         val t = Thread {
             while (running) {
@@ -129,11 +79,17 @@ object LoadShedCaptureBrakeEngine {
         }
         t.isDaemon = true
         t.name = "lag-capture-brake"
+        pollThread = t
         t.start()
         RuntimeLogger.log("LoadShedCaptureBrakeEngine started", "LOADSHED")
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        // Phase L (L-3): wake the sleeper so it exits now instead of up
+        // to 500ms later (and cannot be resurrected by a quick restart).
+        pollThread?.interrupt()
+    }
 
     private fun poll() {
         val level = LoadShedGovernor.level

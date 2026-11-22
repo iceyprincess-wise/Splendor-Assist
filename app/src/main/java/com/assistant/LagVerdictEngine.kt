@@ -1,70 +1,8 @@
 package com.assistant
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
-
-
-
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 object LagVerdictEngine {
 
@@ -114,6 +52,7 @@ object LagVerdictEngine {
     }
 
     @Volatile private var running = false
+    @Volatile private var pollThread: Thread? = null
     @Volatile var verdict = "UNKNOWN"; private set
     @Volatile private var candidate = "UNKNOWN"
     @Volatile private var streak = 0
@@ -134,6 +73,18 @@ object LagVerdictEngine {
 
     fun start() {
         if (running) return
+        // Phase L (L-1): a previous poll thread still winding down must be
+        // dead before a new one starts — otherwise two threads poll and
+        // publish concurrently. Wait briefly; give up (no start) rather
+        // than run two pollers. (Same pattern as InputLatencyEngine D18 /
+        // Phase I I-2; the restart is real: AdapterRecoveryEngine
+        // relaunches PerformanceEngineService in-process on a stale
+        // heartbeat, and onCreate re-ignites these singleton objects.)
+        val old = pollThread
+        if (old?.isAlive == true) {
+            try { old.join(500L) } catch (_: Throwable) {}
+            if (old.isAlive) return
+        }
         running = true
         val t = Thread {
             while (running) {
@@ -235,10 +186,15 @@ object LagVerdictEngine {
                 try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }
             }
         }
-        t.isDaemon = true; t.name = "lag-verdict"; t.start()
+        t.isDaemon = true; t.name = "lag-verdict"; pollThread = t; t.start()
     }
 
-    fun stop() { running = false }
+    fun stop() {
+        running = false
+        // Phase L (L-1): wake the sleeper so it exits now instead of up
+        // to 500ms later (and cannot be resurrected by a quick restart).
+        pollThread?.interrupt()
+    }
 }
 
 // --- MERGED: LoadShedCaptureBrakeEngine.kt ---

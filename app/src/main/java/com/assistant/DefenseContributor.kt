@@ -177,9 +177,9 @@ object DefenseContributor : GameplayContributor {
 
         // B4: the low-block movement for THIS defender is the home
         // anchor while the low block is active (frame.lowBlockActive —
-        // false while QD-3 is unresolved, so the L14 home below is what
-        // runs until Ed defines the X-geometry). A movement addressed
-        // to another defender must never move this one.
+        // true while the ball is deep and the goal is known, QD-3
+        // resolved by queue item 9). A movement addressed to another
+        // defender must never move this one.
         val lowBlockMove = if (frame.lowBlockActive) {
             frame.lowBlockMovements.firstOrNull { it.defenderId == frame.defenderId }
         } else null

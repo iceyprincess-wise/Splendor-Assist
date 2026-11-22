@@ -520,6 +520,12 @@ object FrameAssembler {
             "opponentAggression" to f.opponentAggression,
             "offsideRisk" to f.offsideRisk,
             "counterattack" to f.counterattackDetected,
+            // Phase L (L-5): temporalConfidence was the one surviving
+            // learning field with no reader anywhere and no snapshot
+            // entry — the RuntimeFrame comment's "reach frameRuntimeSnapshot
+            // (display)" claim was false for it. First live reader:
+            // MainActivity's diagnostics dump iterates the whole map.
+            "temporalConfidence" to f.temporalConfidence,
             "defensiveLineX" to f.defensiveLineX,
             "stanceTight" to f.stanceTight,
             "dragOutHeld" to f.dragOutHeld,
