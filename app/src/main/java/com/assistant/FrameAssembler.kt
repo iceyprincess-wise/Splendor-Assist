@@ -101,21 +101,11 @@ internal const val GAMEPLAY_DECISION_ENGINE_PRIME_AUTHORITY_TAG = "GameplayDecis
 
 internal const val MAX_TELEMETRY_AGE_MS = 250L
 
-internal const val SERVER_TICK_RATE_MS = 33.33333f // 30Hz Authoritative Tick Window
-
-internal const val DISPLAY_REFRESH_120HZ_MS = 8.333333f
-
 // No68-C-D15: prediction horizon (see assemble()). 50 ms ahead of the
 // measured pipeline latency, capped at 100 ms total by the leadMs clamp.
 internal const val PREDICTION_LEAD_MS = 50f
 
 internal const val ADHESION_COEFFICIENT = 1.25f       // Magnetic retention pull factor
-
-internal const val DRIFT_FILTER_BETA = 0.90f          // Jitter filter strength
-
-internal const val MIN_PULSE_INTERVAL_NS = 7_000_000L // ~142Hz micro-tick limit (7ms)
-
-internal const val OMEGA_TURNING_THRESHOLD = 6.0f     // Joystick displacement speed threshold
 
 
 object FrameAssembler {
@@ -295,26 +285,15 @@ object FrameAssembler {
         val receiverInBox = goalDetected && receiverX.isFinite() &&
             receiverX >= goalLeft - captureW * 0.12f &&
             receiverX <= goalRight + captureW * 0.12f
-        val (crossType, crossTargetX, crossTargetY) = when {
-            !hasBall && ballWide -> Triple(
-                CrossType.OPPONENT_PUNCH,
-                if (goalDetected) goalCentreX else captureW * 0.5f,
-                if (goalDetected) goalCentreY else captureH * 0.5f
-            )
-            hasBall && shootingViable -> Triple(
-                CrossType.SHOT,
-                if (goalDetected) goalCentreX else bestLane?.targetX ?: passTargetX,
-                if (goalDetected) goalCentreY else bestLane?.targetY ?: passTargetY
-            )
-            hasBall && bestLane != null && receiverInBox -> Triple(
-                // HEAD: the cross target is the CROSSING lane's target
-                // (receiver.y − 40), not the passing target (B8).
-                CrossType.HEAD, bestLane.targetX, bestLane.targetY
-            )
-            hasBall && bestLane != null -> Triple(
-                CrossType.PASS, bestLane.targetX, bestLane.targetY
-            )
-            else -> Triple(CrossType.NONE, 0f, 0f)
+        // Letter F (item 19): crossTargetX/Y deleted — zero frame
+        // readers (ActiveGestureController computes its own cross
+        // target from the lanes). Only the type survives on the frame.
+        val crossType: CrossType = when {
+            !hasBall && ballWide -> CrossType.OPPONENT_PUNCH
+            hasBall && shootingViable -> CrossType.SHOT
+            hasBall && bestLane != null && receiverInBox -> CrossType.HEAD
+            hasBall && bestLane != null -> CrossType.PASS
+            else -> CrossType.NONE
         }
 
         val observedFrame = RuntimeFrame(
@@ -358,26 +337,11 @@ object FrameAssembler {
             opponentAggression = learning.opponentAggression,
             opponentPressFrequency = learning.opponentPressFrequency,
             opponentBehaviourConfidence = learning.opponentBehaviourConfidence,
-            playerPassBias = learning.playerPassBias,
-            playerDribbleBias = learning.playerDribbleBias,
-            playerShootBias = learning.playerShootBias,
-            playerTendencyConfidence = learning.playerTendencyConfidence,
-            shootingHabitConfidence = learning.shootingHabitConfidence,
-            formationAdaptationScore = learning.formationAdaptationScore,
-            formationStable = learning.formationStable,
-            formationConfidence = learning.formationConfidence,
             offsideRisk = learning.offsideRisk,
-            offsideSafeLanes = learning.offsideSafeLanes,
             counterattackDetected = learning.counterattackDetected,
-            counterattackConfidence = learning.counterattackConfidence,
-            preferredPassingConfidence = learning.preferredPassingConfidence,
             temporalConfidence = learning.temporalConfidence,
-            onlineAdaptationGain = learning.onlineAdaptationGain,
-            tickSyncMultiplier = learning.tickSyncMultiplier,
             // D8: the cross type + its own target (see above).
             crossType = crossType,
-            crossTargetX = crossTargetX,
-            crossTargetY = crossTargetY,
             // L13: the tight defensive stance (VisionCore).
             defensiveLineX = world.defensiveStance.lineX,
             defensiveLineSpread = world.defensiveStance.lineSpread,
@@ -390,9 +354,8 @@ object FrameAssembler {
             homeY = world.defenderHome.y,
             homeFound = world.defenderHome.found,
             // B5: the raw user line (VisionCore → world store).
-            userLineX = world.userLine.averageX,
-            userLineSpread = (world.userLine.maxX - world.userLine.minX).coerceAtLeast(0f),
-            userLineFound = world.userLine.found,
+            // Letter F (item 19): userLineX/Spread/Found deleted —
+            // zero frame readers; the derived stance above stays live.
             // Midfield (queue item 5, batch midfield): the measured line
             // + its compactness, and the stance-derived fallback.
             midfieldLineX = world.midfieldLine.averageX,

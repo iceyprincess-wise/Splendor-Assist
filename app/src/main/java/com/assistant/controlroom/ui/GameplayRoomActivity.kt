@@ -340,7 +340,7 @@ class GameplayRoomActivity : AppCompatActivity() {
                 "Mirror last  : ${mirror["lastDecisionTimeMs"] ?: 0L}ms"
             decisionView?.text = decTxt + "\n" + mirrorTxt
 
-            // ── Amplifiers: FightingSpirit + Captaincy ───────────────────
+            // ── Amplifiers: Captaincy ───────────────────────────────────
             val capDiag  = CaptaincySkillEngine.diagnostics()
             val capDesig = capDiag["captainDesignated"] as? Boolean ?: false
             val capActive= capDiag["active"] as? Boolean ?: false
@@ -350,7 +350,6 @@ class GameplayRoomActivity : AppCompatActivity() {
             val capComp  = capDiag["lastComposureMs"] ?: 0L
 
             // Effectiveness verdict
-            val fsVerdict = "Model only — no gameplay input applied"
             val capVerdict = when {
                 !capDesig                             -> "⬜ NO CAPTAIN DESIGNATED (toggle above)"
                 !capActive && (capActiv as Long) == 0L -> "🟡 DESIGNATED but not yet firing"
@@ -360,9 +359,6 @@ class GameplayRoomActivity : AppCompatActivity() {
             }
 
             val ampTxt =
-                "── FightingSpiritEngine ──\n" +
-                "  Status     : $fsVerdict\n" +
-                "  In-game accuracy changes are not observed.\n\n" +
                 "── CaptaincySkillEngine ──\n" +
                 "  Status     : $capVerdict\n" +
                 "  Designated : $capDesig\n" +

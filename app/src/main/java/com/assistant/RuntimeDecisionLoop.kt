@@ -298,6 +298,8 @@ object RuntimeDecisionLoop {
         // Register before publishing: the bus consumer runs on another thread.
         ActionOutcomeVerifier.recordDispatch(terminalRequest, frame)
         val accepted = HybridExecutionTerminal.route(terminalRequest)
+        // G2 (item 20): timing-feedback submit leg — only when the bus accepts.
+        if (accepted) GestureTimingFeedbackEngine.recordSubmission(terminalRequest.actionId)
         if (!accepted) {
             routeRejected.incrementAndGet()
             ActionOutcomeVerifier.cancelDispatch(terminalRequest.actionId)
@@ -567,7 +569,6 @@ object RuntimeDecisionLoop {
         activeGestureEnvelope = null
         ActionOutcomeVerifier.reset()
         decisions.set(0L); routed.set(0L)
-        FightingSpiritEngine.reset()
         CaptaincySkillEngine.reset()
         CrowdingZoneDetector.reset()
         lastParkedTriggerMs = 0L

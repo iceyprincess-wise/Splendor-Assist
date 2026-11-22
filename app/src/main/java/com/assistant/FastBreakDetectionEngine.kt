@@ -113,7 +113,6 @@ object FastBreakDetectionEngine{
 
         return FastBreakDetectionResult(
             detected=confidence>=0.55f,
-            speed=speed,
             confidence=confidence
         )
     }

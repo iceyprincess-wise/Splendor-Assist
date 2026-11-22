@@ -883,14 +883,13 @@ class ActiveGestureController(
                     magneticFeet.touchRetention +
                         (magneticPossessionAuthority * 1.25f) +
                         (counterattackDetectionResult.confidence * 0.15f) +
-                        (fastBreakDetectionResult.confidence * 0.10f) -
+                        (if (fastBreakDetectionResult.detected) fastBreakDetectionResult.confidence * 0.10f else 0f) -
                         ((safestLane?.risk ?: 0f) * 0.10f)
                 ).coerceIn(0.0f, 10.0f)
             )
 
         val forwardRun =
             ForwardRunOpportunityEngine.evaluate(
-                distance,
                 strength
             )
 
@@ -951,7 +950,16 @@ class ActiveGestureController(
         val boostedDuration =
             FrameDropCompensationEngine.compensate(
                 safeBoostedBaseDuration,
-                strength
+                strength,
+                // Letter F (item 19): the two defaulted params finally
+                // get real inputs — display rate from
+                // DisplayProfileEngine.panelHz, measured RTT from
+                // NetProbeEngine.rtt (same ping signal ActionWindowEngine
+                // already reads). On a 60 Hz panel is120Hz stays false;
+                // rtt is 0 until the first probe, so no behaviour change
+                // before measurement exists.
+                DisplayProfileEngine.panelHz >= 120f,
+                NetProbeEngine.rtt.toLong()
             )
         val inputDiagnostics =
             InputAccumulationDiagnosticsEngine.analyze(
@@ -1155,6 +1163,8 @@ class ActiveGestureController(
             )
         val accepted =
             HybridExecutionTerminal.route(request)
+        // G2 (item 20): timing-feedback submit leg — only when the bus accepts.
+        if (accepted) GestureTimingFeedbackEngine.recordSubmission(request.actionId)
 
         RuntimeLogger.log(
             "SmartAssist queued mode=$mode distance=${distance.toInt()} strength=$strength accepted=$accepted panic=${SmartAssistRepository.panicActive()} tickSync=$tickSyncMultiplier stretch=$tickSyncStretch cross=(${crossTargetX.toInt()},${crossTargetY.toInt()}) crossSrc=$crossSource",

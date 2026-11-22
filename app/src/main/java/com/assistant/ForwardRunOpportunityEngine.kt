@@ -96,7 +96,6 @@ import kotlin.math.*
 object ForwardRunOpportunityEngine {
 
     fun evaluate(
-        distance:Float,
         strength:Int
     ):ForwardRunResult {
 
@@ -106,10 +105,6 @@ object ForwardRunOpportunityEngine {
         return ForwardRunResult(
             runBoost=
                 1f + (factor * 0.80f),
-
-            laneScore=
-                (distance/1000f)
-                    .coerceAtMost(1f),
 
             confidence=
                 (0.65f + factor*0.35f)

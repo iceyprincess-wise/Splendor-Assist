@@ -259,8 +259,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, InterceptionControlRoomActivity::class.java))
         }
 
-        fun openFutureRoom(label: String) {
-            startActivity(Intent(this, FutureRoomsActivity::class.java).putExtra("room_label", label))
+        fun openFutureRoom() {
+            startActivity(Intent(this, FutureRoomsActivity::class.java))
         }
 
         findViewById<View>(com.assistant.overlay.R.id.cardOverlay).setOnClickListener { startActivity(Intent(this, GameplayRoomActivity::class.java)) }
@@ -268,7 +268,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(com.assistant.overlay.R.id.cardNotifications).setOnClickListener { startActivity(Intent(this, AgentHubActivity::class.java)) }
         findViewById<View>(com.assistant.overlay.R.id.cardMediaProjection).setOnClickListener { checkBatteryAndProceed() }
         findViewById<View>(com.assistant.overlay.R.id.cardDiagnostics).setOnClickListener { startActivity(Intent(this, GameplayRoomActivity::class.java)) }
-        findViewById<View>(com.assistant.overlay.R.id.cardFutureRooms).setOnClickListener { openFutureRoom("Future Rooms") }
+        findViewById<View>(com.assistant.overlay.R.id.cardFutureRooms).setOnClickListener { openFutureRoom() }
     }
 
     private fun refreshRoomBulbs() {

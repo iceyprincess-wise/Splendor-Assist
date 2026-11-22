@@ -130,33 +130,3 @@ object FieldLineDetector {
     }
 
 }
-
-/* ========
-FightingSpiritEngine
-======== */
-/**
- * FightingSpiritEngine
- *
- * Models the documented eFootball Fighting Spirit behaviour as a
- * pressure-resilience signal.
- *
- * VERIFIED GAMEPLAY BASIS:
- * Fighting Spirit reduces the deterioration of shooting and passing
- * accuracy when the player is under pressure, such as when opposing
- * players are nearby.
- *
- * IMPORTANT:
- * This engine does not claim to reproduce KONAMI's private server-side
- * implementation. RuntimeFrame provides only the local pressure signals
- * available to this application.
- *
- * DESIGN:
- * - pressure is continuous rather than a single hard trigger;
- * - pressure below the activation floor is inert;
- * - stronger pressure produces stronger accuracy-retention resistance;
- * - no artificial gesture-duration extension;
- * - no arbitrary 1.35x "power" multiplier;
- * - no network/server-state modification;
- * - cooldown prevents repeated activation logging;
- * - trusted frames are required.
- */

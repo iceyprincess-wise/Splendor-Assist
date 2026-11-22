@@ -5,7 +5,7 @@ enum class EngineCapability { ATTACK, DEFENSE, MOVEMENT, PASSING, KEEPER, SUPPOR
 
 /**
  * D8 (Ed, §5): the four cross types the frame must distinguish, each with
- * its own target (crossTargetX/Y). PASS = cross as a pass to a receiver;
+ * its own target. PASS = cross as a pass to a receiver;
  * SHOT = cross to a shooter; HEAD = cross to a header in the box;
  * OPPONENT_PUNCH = a cross from the opponent, which the keeper punches
  * (target = the goal centre). NONE = no cross is on. The old frame
@@ -122,41 +122,30 @@ data class RuntimeFrame(
     val ballVelocityXPerSecond: Float = 0f,
     val ballVelocityYPerSecond: Float = 0f,
     val passTargetId: Int? = null,
-    /*
-     * L10 Learning-Chain Reader: the learning/tactical scalars
-     * LearningChainReader copies out of Phase3WorldStateStore. Every
-     * value defaults to "no learning yet" (0 / false / tickSync 1.0) and
-     * every consumer gates on the matching confidence, so an unlearned
-     * frame behaves exactly as before. These are advisory inputs, not
-     * trust inputs — `trusted` below deliberately does not check them.
-     */
+    // L10 (batch 1): the learning-chain readout — the first read of
+    // the learning/tactical results into the frame (repo map G2: the
+    // assembler used to read only crossingLaneAnalysis + possession).
+    // Letter F (item 19): 13 learning-mirror fields deleted here —
+    // playerPass/Dribble/ShootBias, playerTendencyConfidence,
+    // shootingHabitConfidence, formationAdaptationScore/Stable/
+    // Confidence, offsideSafeLanes, counterattackConfidence,
+    // preferredPassingConfidence, onlineAdaptationGain,
+    // tickSyncMultiplier — PROVEN zero frame readers (only the
+    // LearningReadout source + this copy); the world-state results
+    // remain the live source. Survivors above have live readers or
+    // reach frameRuntimeSnapshot (display).
     val opponentAggression: Float = 0f,
     val opponentPressFrequency: Float = 0f,
     val opponentBehaviourConfidence: Float = 0f,
-    val playerPassBias: Float = 0f,
-    val playerDribbleBias: Float = 0f,
-    val playerShootBias: Float = 0f,
-    val playerTendencyConfidence: Float = 0f,
-    val shootingHabitConfidence: Float = 0f,
-    val formationAdaptationScore: Float = 0f,
-    val formationStable: Boolean = false,
-    val formationConfidence: Float = 0f,
     val offsideRisk: Float = 0f,
-    val offsideSafeLanes: Int = 0,
     val counterattackDetected: Boolean = false,
-    val counterattackConfidence: Float = 0f,
-    val preferredPassingConfidence: Float = 0f,
     val temporalConfidence: Float = 0f,
-    val onlineAdaptationGain: Float = 0f,
-    val tickSyncMultiplier: Float = 1f,
     /*
      * D8 four cross types: the cross kind on this frame + its own target.
      * passTarget (crossing-lane target) is unchanged; crossTarget is the
      * type's target (for OPPONENT_PUNCH: the goal centre, the punch target).
      */
     val crossType: CrossType = CrossType.NONE,
-    val crossTargetX: Float = 0f,
-    val crossTargetY: Float = 0f,
     /*
      * L13 Defensive Stance Producer: the tight line/midfield stance
      * VisionCore computed from computeUserLine. dragOutHeld names a
@@ -181,15 +170,11 @@ data class RuntimeFrame(
     val homeX: Float = 0f,
     val homeY: Float = 0f,
     val homeFound: Boolean = false,
-    /*
-     * B5 User-Line Publisher: the raw user line (DefensiveLineEngine.
-     * computeUserLine, published to the world store by VisionCore) —
-     * the stance above is derived from it. userLineFound=false means
-     * no user line was computed this frame.
-     */
-    val userLineX: Float = 0f,
-    val userLineSpread: Float = 0f,
-    val userLineFound: Boolean = false,
+    // B5 User-Line Publisher: DELETED Letter F (item 19) — the raw
+    // user line (userLineX/Spread/Found) had zero frame readers; the
+    // stance derived from it (defensiveLineX/Spread, dragOutHeld)
+    // remains live above, and the world-store userLine remains the
+    // source for any future reader.
     /*
      * Midfield (queue item 5, batch midfield): the MEASURED midfield
      * line (MidfieldLineEngine — middle band of user players) + its

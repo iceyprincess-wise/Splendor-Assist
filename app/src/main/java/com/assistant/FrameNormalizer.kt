@@ -3,15 +3,14 @@ package com.assistant
 // F49_PATCH_V1
 
 import java.nio.ByteBuffer
-import java.util.concurrent.atomic.AtomicLong
 
 object FrameNormalizer {
 
-    private val lastProcessTimeNanos = AtomicLong(0)
-
     data class FrameMetadata(
+        // Letter F (item 19): deltaNanos deleted — PROVEN zero readers
+        // tree-wide; timestampNanos stays (read live by VisionCore
+        // :144/:219/:236 and TrainedDetectionEngine:319).
         val timestampNanos: Long,
-        val deltaNanos: Long,
     )
 
     data class NormalizedFrame(
@@ -40,13 +39,10 @@ object FrameNormalizer {
         require(width > 0 && height > 0 && pixelStride >= 3 && rowStride.toLong() >= width.toLong() * pixelStride)
         require((height - 1L) * rowStride + (width - 1L) * pixelStride + 3 <= buffer.limit())
         val currentTime = capturedAtNanos
-        val lastTime = lastProcessTimeNanos.getAndSet(currentTime)
-        val deltaNanos = if (lastTime > 0) currentTime - lastTime else 0L
 
 
         val metadata = FrameMetadata(
             timestampNanos = currentTime,
-            deltaNanos = deltaNanos
         )
 
         return NormalizedFrame(

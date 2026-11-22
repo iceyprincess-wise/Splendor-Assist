@@ -95,7 +95,6 @@ import kotlin.math.*
 
 data class FastBreakDetectionResult(
     val detected:Boolean=false,
-    val speed:Float=0f,
     val confidence:Float=0f
 )
 

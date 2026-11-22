@@ -95,7 +95,6 @@ import kotlin.math.*
 
 data class ForwardRunResult(
     val runBoost:Float,
-    val laneScore:Float,
     val confidence:Float
 )
 

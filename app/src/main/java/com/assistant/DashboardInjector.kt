@@ -220,6 +220,14 @@ object DashboardInjector {
                         .append(" latencyUpdatedMs=").append(latSnap.lastUpdatedMs)
                         .append(" heat=").append(perfSnap.confidenceHeatmap.confidence)
                         .append(" ts=").append(perfSnap.timestampMs).append("\n")
+                    // F3 (Letter F): first live readers for three
+                    // previously write-only outputs — ForegroundGate
+                    // stats, FilterEngine score, FreeBooster counters.
+                    // Point-in-time reads on the background refresh
+                    // thread, like the registries above.
+                    append("Foreground gate: ").append(com.assistant.vision.ForegroundGate.stats()).append("\n")
+                    append("Filter: active=").append(com.assistant.diagnostic.FilterEngine.isActive).append(" score=").append(com.assistant.diagnostic.FilterEngine.effectivenessScore).append(" aggression=").append(com.assistant.diagnostic.FilterEngine.aggressionMultiplier).append("x\n")
+                    append("Booster: inMatch=").append(com.assistant.FreeBoosterEngine.isInMatch()).append(" matches=").append(com.assistant.FreeBoosterEngine.matchesBoosted).append(" sheds=").append(com.assistant.FreeBoosterEngine.shedsApplied).append(" droppedLines=").append(com.assistant.FreeBoosterEngine.routineLinesDropped).append(" droppedBytes=").append(com.assistant.FreeBoosterEngine.routineBytesDropped).append("\n")
                     append("Vision config: enabled=").append(diagSnap.visionConfiguration.enabled)
                         .append(" blob=").append(diagSnap.visionConfiguration.blobThreshold)
                         .append(" tflite=").append(diagSnap.visionConfiguration.trainedDetectionEnabled)

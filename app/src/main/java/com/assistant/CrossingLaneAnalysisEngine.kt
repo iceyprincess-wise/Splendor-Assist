@@ -167,7 +167,7 @@ CrowdingZoneDetector
  *
  * Detects penalty-box and corner-kick scenarios where defenderDensity
  * peaks near 1.0 and confidence collapses simultaneously. In these
- * situations every upstream gameplay engine (FightingSpirit, Captaincy,
+ * situations every upstream gameplay engine (Captaincy,
  * MagneticFeet) peaks at once because they share the same frame signals.
  * Device rendering load also spikes (many player models) causing real
  * FPS stalls that LagVerdictEngine cannot distinguish from device stress.

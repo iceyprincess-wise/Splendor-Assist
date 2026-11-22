@@ -105,7 +105,6 @@ fun estimate(
     if (players.size < 4) {
         return FormationResult(
             found = false,
-            name = "Unknown",
             confidence = 0f
         )
     }
@@ -116,7 +115,6 @@ fun estimate(
     if (user.size < 4) {
         return FormationResult(
             found = false,
-            name = "Unknown",
             confidence = 0f
         )
     }
@@ -151,10 +149,9 @@ fun estimate(
         "3-4-3" to intArrayOf(1,3,4,3)
     )
 
-    var best = "UNKNOWN"
     var bestScore = Int.MAX_VALUE
 
-    templates.forEach { (name, ref) ->
+    templates.forEach { (_, ref) ->
 
         var score = 0
 
@@ -163,7 +160,6 @@ fun estimate(
 
         if (score < bestScore) {
             bestScore = score
-            best = name
         }
     }
 
@@ -173,7 +169,6 @@ fun estimate(
 
     return FormationResult(
         found = true,
-        name = best,
         confidence = confidence
     )
 }

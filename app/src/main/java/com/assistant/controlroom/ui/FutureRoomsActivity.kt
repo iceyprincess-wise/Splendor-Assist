@@ -28,11 +28,10 @@ import androidx.appcompat.app.AppCompatActivity
  *
  * Future stubs: 15 planned rooms listed below active rooms.
  *
- * Navigation: launched with intent.extra "room_label" (e.g. "Future
- * Rooms" from the home card). No deep-link screen is selected from it:
- * the old "agent" value had zero callers repo-wide (only "Future Rooms"
- * is ever passed, and the activity is exported=false, so no external
- * caller can pass it either) — the branch was dead and is removed.
+ * Navigation: launched plain from the home card (MainActivity).
+ * No intent extra is read: the old "room_label" extra (single value
+ * "Future Rooms", activity exported=false) was deleted in the Letter F
+ * fix phase (F3-2) — it selected no screen.
  */
 class FutureRoomsActivity : AppCompatActivity() {
 

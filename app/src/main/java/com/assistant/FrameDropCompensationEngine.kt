@@ -100,8 +100,8 @@ object FrameDropCompensationEngine {
     private const val SERVER_TICK_WINDOW_MS = 33L // Assumption for standard 30Hz server authoritative netcode
 
     // --- 2. ADAPTIVE NOISE CONSTANTS ---
-    private const val MIN_HUMAN_VARIANCE_MS = -3L
-    private const val MAX_HUMAN_VARIANCE_MS = 7L
+    // Letter F (item 19): MIN/MAX_HUMAN_VARIANCE_MS deleted — the
+    // noise step was removed, PROVEN zero readers tree-wide.
 
     // --- 3. HARD BOUNDARY LIMITS ---
     private const val ABSOLUTE_MINIMUM_MS = 4L
