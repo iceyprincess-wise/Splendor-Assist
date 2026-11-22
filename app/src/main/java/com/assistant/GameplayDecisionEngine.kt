@@ -440,7 +440,4 @@ GestureExecutionAuthority
  * have not yet been onboarded are counted as "unattributed" instead of
  * taxing every action to find out who they were. Passing real origins is
  * part of the per-engine onboarding pass.
- *
- * GridRecentsInterceptor is a separate accessibility UI domain and is
- * deliberately NOT routed through this authority.
  */

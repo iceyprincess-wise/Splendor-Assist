@@ -450,7 +450,6 @@ class GlobalCrashHandler(
                 EngineEntry("LagVerdictEngine","com.assistant.LagVerdictEngine","ACTIVE","SMOOTH/JITTERY/CHOKING verdict; CHOKE_STALLS=18"),
                 EngineEntry("LoadShedGovernor","com.assistant.LoadShedGovernor","ACTIVE","load shed; 10s boot grace; ARM_POLLS=4"),
                 EngineEntry("FramePacingEngine","com.assistant.FramePacingEngine","ACTIVE","vsync bucket mixture analysis; real stall detection"),
-                EngineEntry("GridRecentsInterceptor","com.assistant.overlay.interceptor.GridRecentsInterceptor","STATIC","REMOVED Phase3 — user confirmed not needed; empty stub"),
                 EngineEntry("SpeedCompensationEngine","com.assistant.SpeedCompensationEngine","ACTIVE","speed compensation math; called by SpeedCompensationContributor"),
                 EngineEntry("AutoEvadeEngine","com.assistant.AutoEvadeEngine","ACTIVE","auto-evade evasion path")
             )
