@@ -725,9 +725,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
+    // UI-BULBS: framework text colours (textColorPrimary/Secondary)
+    // resolve to a ColorStateList, not a plain colour — TypedValue.data
+    // is 0 for the CSL reference, and setTextColor(0) is fully
+    // transparent. That is why the v231 dashboard bulb boxes showed only
+    // the dot (hardcoded colour) with invisible label/value text, while
+    // XML-inflated text on the same screen (headers, room cards, the
+    // Diagnosis Room boxes) rendered fine. Resolve the CSL and take its
+    // default colour; fall back to the theme's on-surface colour if the
+    // attribute does not resolve at all.
     private fun themeColor(attr: Int): Int {
         val tv = android.util.TypedValue()
-        theme.resolveAttribute(attr, tv, true)
+        if (!theme.resolveAttribute(attr, tv, true)) return "#E8EEF9".toColorInt()
+        if (tv.resourceId != 0) {
+            return try {
+                resources.getColorStateList(tv.resourceId, theme)?.defaultColor ?: tv.data
+            } catch (_: Exception) {
+                tv.data
+            }
+        }
         return tv.data
     }
 
