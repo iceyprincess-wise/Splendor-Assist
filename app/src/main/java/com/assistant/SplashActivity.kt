@@ -48,6 +48,13 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Updater cleanup piece (Ed's requirement): delete the
+        // downloaded APK after the install, so APKs do not pile up in
+        // storage. Runs on every launch, including the auto-restart
+        // after an install. The helper refuses to delete while a
+        // download is pending or an install has not completed yet, so
+        // this cannot break an in-flight download or install.
+        UpdateActivity.deleteDownloadedApk(this)
         // UI-2: edge-to-edge (targetSdk 36 enforces it) — draw behind
         // the system bars; the insets are applied to the content frame
         // below so the logo and loading text never sit under a system bar.

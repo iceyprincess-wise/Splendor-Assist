@@ -49,8 +49,12 @@ import java.io.File
  * is not a check failure.
  *
  * After the install intent fires, the app schedules its own restart
- * (AlarmManager, ~5s, relaunching SplashActivity) and closes, so the
- * update takes effect on its own. The installed update is recorded
+ * (AlarmManager, ~30s, relaunching SplashActivity) and closes, so the
+ * update takes effect on its own. The downloaded APK is deleted on
+ * the next app launch (SplashActivity calls
+ * UpdateActivity.deleteDownloadedApk) once the install is confirmed
+ * complete — it is never deleted while a download is pending or an
+ * install is still in progress. The installed update is recorded
  * in SharedPreferences (version + time) so Settings can show the
  * update history (the Settings page itself is a later piece).
  */
@@ -73,7 +77,15 @@ class UpdateActivity : AppCompatActivity() {
         private const val HISTORY_MAX_ENTRIES = 20
         private const val APK_FILE_NAME = "app-release.apk"
         private const val PROGRESS_POLL_MS = 500L
-        private const val RESTART_DELAY_MS = 5000L
+        // Updater cleanup piece: 30s (was 5s). The alarm fires after
+        // the install INTENT, not after the install completes — the
+        // user still has to confirm in the package installer UI. 5s
+        // fired before most users could confirm, relaunching the OLD
+        // version, which re-prompted for the update. 30s gives time to
+        // confirm + install so the NEW version is what reopens. If the
+        // user is slower than 30s, the old version relaunches and
+        // re-prompts — self-correcting, same as before.
+        private const val RESTART_DELAY_MS = 30000L
 
         /**
          * The recorded update history, newest first, as
@@ -93,6 +105,45 @@ class UpdateActivity : AppCompatActivity() {
                     version to at
                 }
             }
+        }
+
+        /**
+         * Deletes the updater's downloaded APK (updater cleanup piece,
+         * Ed's requirement: the APK must not pile up in storage after
+         * the install). Called from SplashActivity on every app launch
+         * (including the auto-restart after an install).
+         *
+         * The APK lives in the app's own external files dir
+         * (getExternalFilesDir(DOWNLOADS)/app-release.apk), which the
+         * app owns — File.delete() needs no permission. Only this one
+         * file is ever deleted, nothing else. The file is also the only
+         * APK the updater ever writes (same name every update, so it
+         * can never pile up — but Ed wants it gone after install).
+         *
+         * Two guards, both fail-closed (do NOT delete):
+         * 1. A download is pending (KEY_PENDING_DOWNLOAD_ID set) — the
+         *    DownloadManager is still writing this file, or
+         *    UpdateActivity will resume it. Pending state is cleared
+         *    on download success, so after a completed download there
+         *    is no pending state.
+         * 2. An install is still pending — the newest history entry is
+         *    the version whose install intent fired. If the running
+         *    version is still older than that, the install has not
+         *    completed (the installer may still need the file).
+         * Returns true when the file is gone (deleted, or was never
+         * there); false when a guard blocked it or the delete failed.
+         */
+        fun deleteDownloadedApk(context: Context): Boolean {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            if (prefs.getLong(KEY_PENDING_DOWNLOAD_ID, -1L) >= 0) return false
+            val installed = UpdateChecker.installedVersionCode(context)
+            val latestRecorded = readHistory(context).firstOrNull()?.first ?: 0L
+            if (installed < 0 || installed < latestRecorded) return false
+            val apkFile = File(
+                context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), APK_FILE_NAME
+            )
+            if (!apkFile.exists()) return true
+            return runCatching { apkFile.delete() }.getOrDefault(false)
         }
     }
 
@@ -333,10 +384,11 @@ class UpdateActivity : AppCompatActivity() {
     /**
      * Auto-restart (Ed's Piece 4 requirement): after the install, the
      * app restarts on its own so the update takes effect. An alarm
-     * relaunches the splash (~5s — enough time to confirm the install
-     * in the package installer UI). If the user is slower than that,
-     * the alarm relaunches the old version, which re-prompts for the
-     * update via the splash check — not broken, just re-prompted.
+     * relaunches the splash (~30s — enough time to confirm the install
+     * in the package installer UI; the 5s delay in Piece 4 fired
+     * before most users could confirm). If the user is slower than
+     * that, the alarm relaunches the old version, which re-prompts for
+     * the update via the splash check — not broken, just re-prompted.
      * setAndAllowWhileIdle fires even in Doze and needs no exact-alarm
      * permission (setExact would need SCHEDULE_EXACT_ALARM granted).
      */
