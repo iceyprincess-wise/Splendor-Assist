@@ -338,12 +338,14 @@ object OmnipotentGoalkeeperEngine {
                 // for the attacker and the trainer's live pressure-button cell
                 // for the button.
                 val pressureSlot = com.assistant.ControlMappingTrainer.slotCenter(4)
-                // Item 12 (F3): the "attacker" used to be the gauge
-                // pixel itself (UI, not a player) — the rush distance
-                // was gauge-to-keeper, not attacker-to-keeper. Prefer
-                // the nearest real tracked opponent to the ball; fall
-                // back to the gauge pixel only when no opponent is
-                // tracked this frame.
+                // Item 12 (F3) — CLOSED (lag fix, 2026-11-23): the
+                // "attacker" used to be the gauge pixel itself (UI, not
+                // a player) — the rush distance was gauge-to-keeper, not
+                // attacker-to-keeper. Use the nearest real tracked
+                // opponent to the ball; if no real opponent is tracked
+                // this frame, there is no rush at all (see the
+                // bestOppDist guard below) — the gauge pixel is never
+                // the rush target.
                 val sceneNow = try { com.assistant.SceneTracker.current() } catch (_: Throwable) { null }
                 var attackerX = detectedX.toFloat()
                 var attackerY = detectedY.toFloat()
@@ -356,6 +358,15 @@ object OmnipotentGoalkeeperEngine {
                         if (d < bestOppDist) { bestOppDist = d; attackerX = p.x; attackerY = p.y }
                     }
                 }
+                // DEDUP-GAUGE (lag fix, 2026-11-23): no real opponent
+                // was tracked this frame, so there is no rush. The gauge
+                // pixel (UI, not a player) must never be the rush target —
+                // the old fallback fired the rush from a UI pixel and
+                // auto-swiped the pressure button (ghost swipe). Skip the
+                // defensive layer entirely instead of falling back to it.
+                // return@run exits only this run block (its result is not
+                // read); the save evaluation below still runs.
+                if (bestOppDist == Float.MAX_VALUE) return@run false
                 processGoalkeeperDefensiveLayer(
                     ballX = t.ballX,
                     ballY = t.ballY,

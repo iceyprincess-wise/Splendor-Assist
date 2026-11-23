@@ -77,6 +77,35 @@ object HybridExecutionTerminal {
      * ContributionRegistry monitor from offer(), and RuntimeLogger never
      * takes that monitor, so no cycle.
      */
+    // DEDUP state: the last routed vector (source + start/end +
+    // duration) and when it was routed. Guarded by dedupLock; route()
+    // is called from several threads (RDL, emergency lane, OCR pipe).
+    // The dedup lock is a leaf: only the key compare/update happens
+    // inside it, never logging or bus calls, so it cannot cycle with
+    // the ContributionRegistry monitor.
+    private const val DEDUP_WINDOW_MS = 500L
+    private val dedupLock = Any()
+    @Volatile private var lastVectorKey: String? = null
+    @Volatile private var lastVectorMs: Long = 0L
+
+    // Returns true if this request is an identical vector to the last
+    // one routed within the window (and records this one as the last
+    // when it is not a duplicate). The key uses integer (pixel) coords,
+    // matching dispatchLine's truncation: two gestures to the same pixel
+    // are the same physical swipe.
+    private fun isDuplicateVector(request: ExecutionRequest): Boolean {
+        val key = "${request.source}|${request.startX.toInt()},${request.startY.toInt()}->${request.endX.toInt()},${request.endY.toInt()}|${request.duration}"
+        val now = System.currentTimeMillis()
+        return synchronized(dedupLock) {
+            val dup = (key == lastVectorKey && now - lastVectorMs < DEDUP_WINDOW_MS)
+            if (!dup) {
+                lastVectorKey = key
+                lastVectorMs = now
+            }
+            dup
+        }
+    }
+
     fun route(
         request: ExecutionRequest
     ): Boolean {
@@ -87,6 +116,26 @@ object HybridExecutionTerminal {
         // Clamp, do not drop: a clamped endpoint still executes as an
         // edge swipe (the H-D5 physical-clamp behaviour, made visible).
         val bounded = clampToCapture(request)
+        // DEDUP (lag fix, 2026-11-23): the identical swipe re-queued
+        // every decision (~15x/s; 6,974 identical in the fresh logs) —
+        // the AGC re-offers the same vector while the ball is anchored
+        // at one point, and there was no dedup on the gesture itself.
+        // route() is the single choke point every dispatch flows through
+        // (RDL, ContributionRegistry emergency lane, AGC, OCR pipe,
+        // zero-latency injector), so one dedup here covers every source.
+        // An identical vector (same source, same start/end, same
+        // duration) is dropped if one was routed within the window.
+        // The decision loop keeps deciding; only the repeated identical
+        // dispatch is suppressed. A different target, direction, source
+        // or duration passes through unchanged.
+        if (isDuplicateVector(bounded)) {
+            try {
+                com.assistant.diagnostic.RuntimeLogger.log("DEDUP_DROP source=${bounded.source} from=(${bounded.startX.toInt()},${bounded.startY.toInt()}) to=(${bounded.endX.toInt()},${bounded.endY.toInt()}) dur=${bounded.duration}ms id=${bounded.actionId}", "Dispatch")
+            } catch (_: Throwable) {
+                // A logging failure must never fail a dispatch.
+            }
+            return false
+        }
         val accepted = CentralExecutionBus.submit(bounded)
         try {
             com.assistant.diagnostic.RuntimeLogger.log(dispatchLine(bounded, accepted), "Dispatch")
