@@ -154,6 +154,29 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         }
     }
 
+    // Keeper fix (Ed, 2026-11-23): the keeper/interception emergency
+    // lane — the same definition ContributionRegistry.isEmergencySource
+    // uses (GOALKEEPER/INTERCEPTION, the bus high ring). v231 showed
+    // emergency offers accepted=412 into the bus but Execution
+    // accepted=0, because the dispatch gates refused everything while
+    // Smart Assist was OFF. The emergency lane dispatches even when SA
+    // is OFF; the RDL flood (SMART_ASSIST) and STUTTER still require
+    // SA ON. The touch gate in GestureExecutionAuthority.execute() is
+    // unchanged: Bypass OFF still rejects unless the user is touching.
+    private fun isEmergencySource(source: ExecutionSource): Boolean =
+        source == ExecutionSource.GOALKEEPER ||
+            source == ExecutionSource.INTERCEPTION
+
+    // Keeper fix (Ed, 2026-11-23): true only when the queue head is an
+    // emergency save waiting to dispatch. peekSource() returns the
+    // highest-priority non-stale head (high ring first), so a GK/INT
+    // head means an emergency is pending; anything else (SMART_ASSIST,
+    // STUTTER, empty) means no emergency is waiting.
+    private fun hasEmergencyHead(): Boolean {
+        val head = CentralExecutionBus.peekSource()
+        return head != null && isEmergencySource(head)
+    }
+
     @Synchronized fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
         // FINAL EXECUTION GATE
         // Never turn a stale bus request into an Accessibility gesture
@@ -167,7 +190,12 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             )
             return false
         }
-        if (!SmartAssistRepository.enabled()) {
+        // Keeper fix (Ed, 2026-11-23): the emergency lane (GOALKEEPER /
+        // INTERCEPTION) dispatches even when Smart Assist is OFF — the
+        // v231 evidence is emergency offers accepted=412 into the bus
+        // with Execution accepted=0. SMART_ASSIST (RDL flood, OCR pipe,
+        // legacy paths) and STUTTER still require SA ON.
+        if (!SmartAssistRepository.enabled() && !isEmergencySource(request.source)) {
             RuntimeLogger.log(
                 "Direct dispatch blocked: SmartAssist disabled",
                 "SMART_ASSIST"
@@ -346,9 +374,16 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 // F38-D1: the idle branch used to return silently, so a
                 // loop parked here looked identical to a dead loop. Log
                 // once per reason, and once when it clears.
+                // Keeper fix (Ed, 2026-11-23): when Smart Assist is OFF
+                // the loop still runs to serve a waiting emergency save
+                // (GOALKEEPER/INTERCEPTION head, see hasEmergencyHead)
+                // — v231 showed emergency offers accepted=412 into the
+                // bus while this branch parked the loop. SMART_ASSIST /
+                // STUTTER heads still park here when SA is OFF, and the
+                // UI gate above still idles everything.
                 val busIdleReason = when {
                     com.assistant.execution.UiExecutionGate.blocked() -> "uiGate:${com.assistant.execution.UiExecutionGate.reason}"
-                    !SmartAssistRepository.enabled() -> "smartAssistDisabled"
+                    !SmartAssistRepository.enabled() && !hasEmergencyHead() -> "smartAssistDisabled"
                     else -> null
                 }
                 if (busIdleReason != null) {
