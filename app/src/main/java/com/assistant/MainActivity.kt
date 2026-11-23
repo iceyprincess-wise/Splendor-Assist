@@ -666,16 +666,23 @@ class MainActivity : AppCompatActivity() {
     // runtimeHealthSnapshot, GameplayEngineRegistry.registryRuntimeSnapshot)
     // — the values are identical, only the presentation changed from a
     // key=value dump to bulbs. Runs on the 3s hub tick (when live refresh
-    // is allowed) and on resume, like the dump did. NOTE: the old dump
-    // also surfaced ControlMappingTrainer + EventHubs snapshots; those no
-    // longer appear on the dashboard (they remain in the file logs).
+    // is allowed) and on resume, like the dump did. UI-3 restores the
+    // FRAME (FrameAssembler.frameRuntimeSnapshot) and DECISION
+    // (RuntimeDecisionLoop.decisionRuntimeSnapshot) sections the old
+    // dump had. NOTE: the old dump also surfaced CONTRIBUTIONS,
+    // EXECUTION, CONTROL MAPPING and EVENTS snapshots; those are the
+    // next piece, not this one (they remain in the file logs for now).
     private fun refreshRuntimeHub() {
         val runtime = com.assistant.RuntimeCoordinator.runtimeState()
         val health = com.assistant.RuntimeHealthMonitor.runtimeHealthSnapshot()
         val registry = com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot()
+        val frame = com.assistant.FrameAssembler.frameRuntimeSnapshot()
+        val decision = com.assistant.RuntimeDecisionLoop.decisionRuntimeSnapshot()
         renderRuntimeBulbs(runtime)
         renderHealthBulbs(health)
         renderRegistryBulbs(registry)
+        renderFrameBulbs(frame)
+        renderDecisionBulbs(decision)
         // UI-2: the Notifications badge and the Diagnosis card subtitle
         // read the SAME health snapshot the HEALTH bulbs just rendered —
         // one evaluation per tick, and the badge always agrees with the
@@ -771,6 +778,10 @@ class MainActivity : AppCompatActivity() {
     private fun buildBulbCell(entry: BulbEntry): android.widget.LinearLayout {
         val cell = android.widget.LinearLayout(this).apply {
             orientation = android.widget.LinearLayout.VERTICAL
+            // UI-3 (Ed): the bulb sections are CENTERED, not left-aligned.
+            // The cell centres its children (the dot+label row and the
+            // value) horizontally.
+            gravity = android.view.Gravity.CENTER_HORIZONTAL
             layoutParams = android.widget.LinearLayout.LayoutParams(
                 0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f
             ).apply { marginStart = dp(4); marginEnd = dp(4) }
@@ -779,8 +790,11 @@ class MainActivity : AppCompatActivity() {
         }
         val top = android.widget.LinearLayout(this).apply {
             orientation = android.widget.LinearLayout.HORIZONTAL
+            // Wrap-content so the cell's CENTER_HORIZONTAL gravity centres
+            // the dot+label group as a unit (a match-parent row would fill
+            // the cell and the group would stay left).
             layoutParams = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
                 android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
             )
         }
@@ -798,8 +812,13 @@ class MainActivity : AppCompatActivity() {
             textSize = 12f
             setTypeface(null, android.graphics.Typeface.BOLD)
             setTextColor(themeColor(android.R.attr.textColorPrimary))
+            // Wrap-content (not weight 1f) so the dot+label group stays a
+            // compact unit the cell can centre; single line so a long
+            // label never wraps and breaks the centring.
+            maxLines = 1
             layoutParams = android.widget.LinearLayout.LayoutParams(
-                0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
             )
         }
         top.addView(dot)
@@ -808,6 +827,10 @@ class MainActivity : AppCompatActivity() {
             text = entry.value
             textSize = 11f
             setTextColor(themeColor(android.R.attr.textColorSecondary))
+            // Full-width row with centred text, so a long value (e.g. a
+            // last-action name) wraps on centred lines instead of
+            // overflowing the cell.
+            gravity = android.view.Gravity.CENTER_HORIZONTAL
             layoutParams = android.widget.LinearLayout.LayoutParams(
                 android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
                 android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
@@ -885,6 +908,64 @@ class MainActivity : AppCompatActivity() {
                 count("contributed", "Contributed"),
                 count("generation", "Generation"),
                 count("collisions", "Collisions")
+            )
+        )
+    }
+
+    // UI-3: FRAME bulbs, from FrameAssembler.frameRuntimeSnapshot() — the
+    // same live source the old dump's FRAME section read. The snapshot
+    // carries "state" = "cold" only while no frame has ever been
+    // assembled; once a frame exists the map has no "state" key, so the
+    // bulb shows "live". Nothing here is hardcoded: every value comes
+    // from the live snapshot map passed in.
+    private fun renderFrameBulbs(frame: Map<String, Any>) {
+        fun count(key: String, label: String): BulbEntry {
+            val v = (frame[key] as? Number)?.toLong() ?: 0L
+            return BulbEntry(label, if (v > 0) BulbState.GREEN else BulbState.YELLOW, "$v")
+        }
+        fun flag(key: String, label: String, on: String, off: String): BulbEntry {
+            val v = frame[key] as? Boolean ?: false
+            return BulbEntry(label, if (v) BulbState.GREEN else BulbState.YELLOW, if (v) on else off)
+        }
+        val state = frame["state"]?.toString() ?: "live"
+        renderBulbSection(
+            com.assistant.overlay.R.id.frameBulbGrid,
+            listOf(
+                count("frames", "Frames"),
+                BulbEntry("State", if (state == "live") BulbState.GREEN else BulbState.YELLOW, state),
+                flag("trusted", "Trusted", "Trusted", "Untrusted"),
+                flag("hasBall", "Ball", "Seen", "Not seen"),
+                count("players", "Players"),
+                count("opponents", "Opponents")
+            )
+        )
+    }
+
+    // UI-3: DECISION bulbs, from RuntimeDecisionLoop.
+    // decisionRuntimeSnapshot() — the same live source the old dump's
+    // DECISION section read. The idle counters say WHY decisions are not
+    // routing (untrusted frame, no contribution, gate blocked, route
+    // rejected, choose-null); a counter that is counting is GREEN, a
+    // counter at 0 is YELLOW (waiting), same rule as the REGISTRY
+    // counters. Nothing here is hardcoded: every value comes from the
+    // live snapshot map passed in.
+    private fun renderDecisionBulbs(decision: Map<String, Any>) {
+        fun count(key: String, label: String): BulbEntry {
+            val v = (decision[key] as? Number)?.toLong() ?: 0L
+            return BulbEntry(label, if (v > 0) BulbState.GREEN else BulbState.YELLOW, "$v")
+        }
+        val lastAction = decision["lastAction"]?.toString() ?: "none"
+        renderBulbSection(
+            com.assistant.overlay.R.id.decisionBulbGrid,
+            listOf(
+                count("decisions", "Decisions"),
+                count("routed", "Routed"),
+                count("idleUntrusted", "Idle untrusted"),
+                count("idleNoContribution", "Idle no-contribution"),
+                count("gateBlocked", "Gate blocked"),
+                count("routeRejected", "Route rejected"),
+                count("chooseNull", "Choose null"),
+                BulbEntry("Last action", if (lastAction != "none") BulbState.GREEN else BulbState.YELLOW, lastAction)
             )
         )
     }
