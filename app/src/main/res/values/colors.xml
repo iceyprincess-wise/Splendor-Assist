@@ -21,6 +21,4 @@
     <color name="splendor_success">#00E676</color>
     <!-- Dim text: footers, version line, disabled/ghost labels. -->
     <color name="splendor_text_dim">#5C7399</color>
-    <!-- Scrim for dialogs/sheets: the app background at 60% opacity. -->
-    <color name="splendor_scrim">#99070B14</color>
 </resources>

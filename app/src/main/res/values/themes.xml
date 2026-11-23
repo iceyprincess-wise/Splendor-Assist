@@ -139,10 +139,6 @@
         <item name="android:textSize">11sp</item>
         <item name="android:fontFamily">monospace</item>
     </style>
-    <style name="TextAppearance.SplendorAssist.Caption" parent="TextAppearance.Material3.BodySmall">
-        <item name="android:textSize">11sp</item>
-        <item name="android:letterSpacing">0.08</item>
-    </style>
     <style name="TextAppearance.SplendorAssist.Button" parent="TextAppearance.Material3.LabelLarge">
         <item name="android:textSize">15sp</item>
         <item name="android:textStyle">bold</item>

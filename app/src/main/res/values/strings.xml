@@ -38,13 +38,8 @@
 <resources>
 
     <string name="accessibility_service_description">[SECURITY LOCK] Engine Assist Interceptor</string>
-    <string name="auto_extracted_1">ENGINE FATAL ERROR</string>
-    <string name="auto_extracted_2">COPY LOG TO CLIPBOARD</string>
-    <string name="auto_extracted_3">SPLENDOR ASSIST</string>
-    <string name="auto_extracted_4">Runtime Control Center</string>
     <string name="auto_extracted_5">START ENGINE</string>
     <string name="auto_extracted_6">STOP ENGINE</string>
-    <string name="auto_extracted_7">Runtime cold</string>
     <string name="auto_extracted_9">SET YOUR OPTIMIZATION</string>
     <string name="auto_extracted_10">Configure engine rooms before runtime startup.</string>
     <string name="auto_extracted_11">●</string>
@@ -68,17 +63,11 @@
     <string name="auto_extracted_29">🎮</string>
     <string name="auto_extracted_30">GAMEPLAY</string>
     <string name="auto_extracted_31">📊</string>
-    <string name="auto_extracted_32">DIAGNOSTICS</string>
-    <string name="auto_extracted_33">●</string>
-    <string name="auto_extracted_34">30 ROOMS</string>
     <string name="auto_extracted_35">⚙️</string>
     <string name="auto_extracted_36">SETTINGS</string>
     <string name="settings_card_subtitle">App &amp; updates</string>
     <string name="diagnosis_card_label">DIAGNOSIS</string>
     <string name="diagnosis_card_subtitle">All live</string>
-    <string name="auto_extracted_37">Runtime</string>
-    <string name="auto_extracted_38">Vision</string>
-    <string name="auto_extracted_39">Diagnostics</string>
     <string name="auto_extracted_40">v1.0-SECURE-LOCKED • Adapter Build</string>
     <string name="auto_extracted_41">SPLENDOR ASSIST</string>
     <string name="auto_extracted_42">A new premium update is available.</string>
@@ -97,17 +86,6 @@
     <string name="auto_extracted_55">Runtime Authority</string>
     <string name="auto_extracted_56">50%</string>
     <string name="auto_extracted_57">Save</string>
-    <string name="auto_extracted_58">⚙️</string>
-    <string name="auto_extracted_59">ROOM</string>
-    <string name="auto_extracted_60">Tuning panel</string>
-    <string name="auto_extracted_61">ENABLE ROOM</string>
-    <string name="auto_extracted_62">INTENSITY</string>
-    <string name="auto_extracted_63">SAVE</string>
-    <string name="auto_extracted_64">BACK</string>
-    <string name="auto_extracted_65">➕</string>
-    <string name="auto_extracted_66">FUTURE ROOMS</string>
-    <string name="auto_extracted_67">Planned expansion rooms</string>
-    <string name="auto_extracted_68">BACK</string>
     <string name="auto_extracted_69">Goalkeeper Control Room</string>
     <string name="auto_extracted_70">Enable Goalkeeper</string>
     <string name="auto_extracted_71">Aggressive Mode</string>
@@ -128,7 +106,5 @@
     <string name="auto_extracted_86">Save Settings</string>
     <string name="splendor_authority">Authority</string>
     <!-- NO61-D3 (new string): splendor_tuning ("TUNING") — the section label in activity_room_tuner.xml was hardcoded "TUNING" because no string existed for it. Same pattern as NO60-D16 splendor_authority. -->
-    <string name="splendor_tuning">TUNING</string>
     <!-- NO60-D15: dead string, zero references (see header). Kept per the no-delete rule; removal is Ed's call. -->
-    <string name="crash_logs">Crash Logs...</string>
 </resources>
