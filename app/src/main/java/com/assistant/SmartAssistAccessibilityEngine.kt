@@ -452,7 +452,23 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     GestureTimingFeedbackEngine.recordDispatch(request.actionId)
 
                     val accepted = executeDirectRequest(request)
-                    if (!accepted) CentralExecutionBus.complete(request.actionId)
+                    // Bus-reservation release (Ed, 2026-11-23): the
+                    // reservation for (source, phase) releases as soon as
+                    // the dispatch decision is made — accepted or not —
+                    // instead of being held until the gesture's completion
+                    // callback fires. That callback can be lost/late (up
+                    // to ~750 ms on the stuck-grace path), and while it was
+                    // held every same-phase submit dropped as
+                    // "reservation" (7,326 drops vs 715 dispatches in the
+                    // 2026-11-23 session). The dispatch LATCH
+                    // (isDispatching, released by the callback or the stuck
+                    // guard) still serializes live strokes — this only
+                    // stops the bus reservation from being a second,
+                    // longer-lived lock. complete() is by actionId value,
+                    // so it can never release another request's
+                    // reservation; the callback's later releaseDispatch()
+                    // is a safe no-op for the bus.
+                    CentralExecutionBus.complete(request.actionId)
 
                     SmartAssistMetrics.recordBusDispatchResult(request, accepted)
                     if (accepted) {

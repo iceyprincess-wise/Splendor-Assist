@@ -241,6 +241,21 @@ class ModMenuController(private val context: Context) {
         val frame = FrameAssembler.frameRuntimeSnapshot()
         val decision = RuntimeDecisionLoop.decisionRuntimeSnapshot()
         val execution = GestureExecutionAuthority.executionRuntimeSnapshot()
+        // Truthful counters (Ed, 2026-11-23): DEC/ROUTED/EXEC above read
+        // only the RDL + GEA snapshots, so they are structurally blind to
+        // the keeper/interception emergency lane, which bypasses the RDL.
+        // The lane's offers ARE counted here — bus accepted/consumed and
+        // the emergency offered/accepted/rejected, from the same live
+        // contribution snapshot the control rooms read. Display only:
+        // DEC/ROUTED/EXEC counting itself is unchanged.
+        val contributions =
+            com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot()
+        val busAccepted = (contributions["busAccepted"] as? Number)?.toLong() ?: 0L
+        val busConsumed = (contributions["busConsumed"] as? Number)?.toLong() ?: 0L
+        val resvDrops = (contributions["busReservationDrops"] as? Number)?.toLong() ?: 0L
+        val emgOffered = (contributions["emergencyOffered"] as? Number)?.toLong() ?: 0L
+        val emgAccepted = (contributions["emergencyAccepted"] as? Number)?.toLong() ?: 0L
+        val emgRejected = (contributions["emergencyRejected"] as? Number)?.toLong() ?: 0L
         val trusted = frame["trusted"] as? Boolean ?: false
         val capture = runtime["captureReady"] as? Boolean ?: false
         val accepted = (execution["accepted"] as? Number)?.toLong() ?: 0L
@@ -262,6 +277,13 @@ class ModMenuController(private val context: Context) {
         statusLine.append(" ROUTED=").append(routed)
         statusLine.append(" EXEC=").append(accepted).append("/").append(rejected)
         statusLine.append(" BYP=").append(onOff(InterceptionRuntimeRegistry.bypassTouchGate))
+        statusLine.append("\n")
+        statusLine.append("BUS=").append(busAccepted).append("/").append(busConsumed)
+        statusLine.append(" RESV_DROP=").append(resvDrops)
+        statusLine.append("\n")
+        // EMG order is offered/accepted/rejected — the keeper lane's
+        // offers, which ROUTED above never sees.
+        statusLine.append("EMG=").append(emgOffered).append("/").append(emgAccepted).append("/").append(emgRejected)
         statusLine.append("\n")
         statusLine.append("AWR=").append(InterceptionRuntimeRegistry.awareness)
         statusLine.append(" AUTH=").append(SmartAssistRepository.configuration().authority)
