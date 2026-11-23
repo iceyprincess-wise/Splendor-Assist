@@ -6,9 +6,8 @@
 # the APK attached. The release tag is the version source the in-app
 # updater checks.
 #
-# SDK levels — API 36 update: change the three env values below only;
-# the rest of the workflow reads them. Current main is targetSdk 34 /
-# AGP 8.2.2 / NDK 25.1.8937393; the API 36 edits are not on main yet.
+# SDK levels — API 36 is current: change the three env values below only;
+# the rest of the workflow reads them.
 name: Build release
 
 on:
@@ -33,18 +32,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: "17"
           distribution: temurin
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           packages: "platforms;android-${{ env.ANDROID_API_LEVEL }} build-tools;${{ env.ANDROID_BUILD_TOOLS }} ndk;${{ env.ANDROID_NDK_VERSION }}"
           accept-android-sdk-licenses: true
@@ -82,7 +81,7 @@ jobs:
         run: ./gradlew :app:assembleRelease --no-daemon -Pkotlin.compiler.execution.strategy=in-process
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.bump.outputs.version }}
           name: v${{ steps.bump.outputs.version }}
