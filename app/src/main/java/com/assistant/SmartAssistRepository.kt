@@ -22,18 +22,25 @@ class SmartAssistRepository(context: Context) {
         
         fun enabled(): Boolean = staticState.enabled
         fun panicActive(): Boolean = staticState.panicMode
+        // AUTO-PANIC GATE: the user's Panic switch choice. True only when
+        // the user turned Panic on in the mod menu or the Smart Assist
+        // control room. The OCR match-detection gates on this.
+        fun panicUserEnabled(): Boolean = staticState.panicUserEnabled
         fun configuration(): SmartAssistConfiguration = staticState.configuration
         
         // PHASE10_PANIC_PERSISTENCE_FINAL_MARKER
+        // System-only: activate panic without touching the user's switch
+        // choice. Must NOT go through updatePanicMode() — that is the
+        // user's write and would record a system activation as consent.
         fun activatePanic() {
-            instance?.updatePanicMode(true)
+            instance?.setPanicActive(true)
                 ?: run {
                     staticState = staticState.copy(panicMode = true)
                 }
         }
         
         fun clearPanic() {
-            instance?.updatePanicMode(false)
+            instance?.setPanicActive(false)
                 ?: run {
                     staticState = staticState.copy(panicMode = false)
                 }
@@ -87,7 +94,14 @@ class SmartAssistRepository(context: Context) {
     }
     
     fun updateEnabled(enabled: Boolean) = saveState(_state.value.copy(enabled = enabled))
-    fun updatePanicMode(panic: Boolean) = saveState(_state.value.copy(panicMode = panic))
+    // User write (mod-menu Panic toggle, Smart Assist control room): records
+    // the user's switch choice AND the live panic state. This is the ONLY
+    // writer of panicUserEnabled — the system paths (activatePanic /
+    // clearPanic) go through setPanicActive() and never touch it.
+    fun updatePanicMode(panic: Boolean) = saveState(_state.value.copy(panicMode = panic, panicUserEnabled = panic))
+    // System-only: set the live panic state without touching the user's
+    // switch choice. Used by activatePanic() / clearPanic().
+    fun setPanicActive(active: Boolean) = saveState(_state.value.copy(panicMode = active))
     // No66-D17: no clamp — any caller could persist an out-of-range threshold
     // that later crashes the control-room sliders. The repo is the choke
     // point (all writers go through here, incl. ModMenu); clamp here.

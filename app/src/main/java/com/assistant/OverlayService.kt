@@ -1498,7 +1498,20 @@ class OverlayService : Service(), ComponentCallbacks2 {
                             System.currentTimeMillis() - lastMatchDetectionTime >= 5000L
                         ) {
                             lastMatchDetectionTime = System.currentTimeMillis()
-                            SmartAssistRepository.activatePanic()
+                            // AUTO-PANIC GATE: the OCR match-detection may
+                            // only sustain panic the user enabled. It must
+                            // never turn panic on by itself — before this
+                            // gate it re-activated panic every ~5s after
+                            // match detection even when the user had the
+                            // Panic switch OFF (panic 90-99.7% despite the
+                            // switches being OFF), feeding the panic flood.
+                            // panicUserEnabled is set only by the user's
+                            // Panic toggle, so with the switch OFF this
+                            // block still routes the OCR vector below but
+                            // leaves panic alone.
+                            if (SmartAssistRepository.panicUserEnabled()) {
+                                SmartAssistRepository.activatePanic()
+                            }
                             val lv = com.assistant.LiveVectorResolver.resolve(
                                 reusableBitmap?.width?.toFloat() ?: 1080f,
                                 reusableBitmap?.height?.toFloat() ?: 2400f
