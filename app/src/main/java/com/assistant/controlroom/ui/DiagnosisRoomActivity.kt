@@ -13,6 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.assistant.RuntimeCoordinator
@@ -64,10 +65,10 @@ class DiagnosisRoomActivity : AppCompatActivity() {
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
     private fun statusColor(status: DiagStatus): Int = when (status) {
-        DiagStatus.LIVE -> Color.parseColor("#00E676")
-        DiagStatus.DEAD -> Color.parseColor("#FF5252")
-        DiagStatus.WIRED -> Color.parseColor("#FFC107")
-        DiagStatus.OFF -> Color.parseColor("#9FB3D1")
+        DiagStatus.LIVE -> "#00E676".toColorInt()
+        DiagStatus.DEAD -> "#FF5252".toColorInt()
+        DiagStatus.WIRED -> "#FFC107".toColorInt()
+        DiagStatus.OFF -> "#9FB3D1".toColorInt()
     }
 
     private fun statusLabel(status: DiagStatus): String = when (status) {
@@ -333,7 +334,7 @@ class DiagnosisRoomActivity : AppCompatActivity() {
             }
 
             summaryView?.text = "Live $live · Dead $dead · Wired $wired · Off $off"
-            summaryView?.setTextColor(if (dead > 0) Color.parseColor("#FF5252") else ThemeTokens.TEXT_MUTED)
+            summaryView?.setTextColor(if (dead > 0) "#FF5252".toColorInt() else ThemeTokens.TEXT_MUTED)
         } catch (t: Throwable) {
             try { android.util.Log.w("DiagnosisRoom", "refreshNow failed", t) } catch (_: Throwable) {}
             try { summaryView?.text = "Refresh failed: ${t.message ?: t.javaClass.simpleName}" } catch (_: Throwable) {}

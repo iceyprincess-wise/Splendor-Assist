@@ -64,6 +64,7 @@ import com.assistant.runtime.ZoneDistribution
 
 
 
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicLong
 
 import kotlin.math.*
@@ -236,9 +237,9 @@ object FrameAssembler {
                     lastTrustRejectLogMs = nowTrustMs
                     com.assistant.diagnostic.RuntimeLogger.log(
                         "TRUST_REJECT ballSeen=$ballSeen trustedFrame=$isTrustedFrame " +
-                            "ballTrust=${String.format("%.3f", ballTrustNow)} " +
+                            "ballTrust=${String.format(Locale.US, "%.3f", ballTrustNow)} " +
                             "players=${players.size} opponents=$opponents " +
-                            "optVar=${String.format("%.3f", opticalVariance)}",
+                            "optVar=${String.format(Locale.US, "%.3f", opticalVariance)}",
                         "VISIONTRUST"
                     )
                 }

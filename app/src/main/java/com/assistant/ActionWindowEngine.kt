@@ -40,6 +40,7 @@ import com.assistant.diagnostic.RuntimeLogger
 
 
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
+import java.util.Locale
 
 
 
@@ -111,9 +112,9 @@ object ActionWindowEngine {
                     }
                     if (next != verdict) {
                         RuntimeLogger.log("WINDOW " + verdict + " -> " + next +
-                            " (rtt=" + String.format("%.0f", NetProbeEngine.rtt) +
-                            "ms jit=" + String.format("%.0f", NetProbeEngine.jitter) +
-                            "ms loss=" + String.format("%.0f", loss) + "%)", "NETWINDOW")
+                            " (rtt=" + String.format(Locale.US, "%.0f", NetProbeEngine.rtt) +
+                            "ms jit=" + String.format(Locale.US, "%.0f", NetProbeEngine.jitter) +
+                            "ms loss=" + String.format(Locale.US, "%.0f", loss) + "%)", "NETWINDOW")
                         verdict = next
                     }
                     AdapterSignalBus.publishNet(verdict)

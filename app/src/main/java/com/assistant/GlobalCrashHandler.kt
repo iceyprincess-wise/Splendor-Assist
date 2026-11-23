@@ -132,6 +132,7 @@ class GlobalCrashHandler(
             return File(baseDir, "${name}_${ts}$ext")
         }
 
+        @Suppress("DEPRECATION")
         private fun buildReport(ctx: Context, thread: Thread, e: Throwable): String {
             val sb = StringBuilder()
             val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(Date())

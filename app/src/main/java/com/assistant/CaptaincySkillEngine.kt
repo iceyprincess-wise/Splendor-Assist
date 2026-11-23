@@ -11,6 +11,7 @@ package com.assistant
 import android.content.Context
 
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 
 
@@ -221,7 +222,7 @@ object CaptaincySkillEngine {
 
     fun setCaptainDesignated(enabled: Boolean) {
         captainDesignated = enabled
-        try { prefs?.edit()?.putBoolean("captaincy_designated", enabled)?.apply() } catch (_: Throwable) {}
+        try { prefs?.edit { putBoolean("captaincy_designated", enabled) } } catch (_: Throwable) {}
     }
 
     // V6 FIX (field bug: switch showed OFF while engine stayed ON).

@@ -1,6 +1,7 @@
 package com.assistant
 
 import com.assistant.diagnostic.RuntimeLogger
+import java.util.Locale
 
 /**
  * L2 — Goal-Post Calibration (GoalPostCalibrationEngine).
@@ -131,9 +132,9 @@ object GoalPostCalibrationEngine {
             if (now - lastLogMs >= 1000L) {
                 lastLogMs = now
                 RuntimeLogger.log(
-                    "GOAL_POSTS width=${String.format("%.1f", calibration.goalWidth)} " +
-                        "left=${String.format("%.1f", calibration.leftPostX)} " +
-                        "right=${String.format("%.1f", calibration.rightPostX)} " +
+                    "GOAL_POSTS width=${String.format(Locale.US, "%.1f", calibration.goalWidth)} " +
+                        "left=${String.format(Locale.US, "%.1f", calibration.leftPostX)} " +
+                        "right=${String.format(Locale.US, "%.1f", calibration.rightPostX)} " +
                         "end=${calibration.goalEnd} valid=${calibration.valid}" +
                         // Batch 6b: the reason an invalid calibration
                         // failed — without it the line cannot say why.

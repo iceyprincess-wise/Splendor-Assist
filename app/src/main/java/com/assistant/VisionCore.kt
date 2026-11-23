@@ -1,6 +1,7 @@
 package com.assistant
 
 import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
+import java.util.Locale
 
 object VisionCore {
 
@@ -716,8 +717,8 @@ return state
             if (now - lastBallOnlyLogMs >= 1000L) {
                 lastBallOnlyLogMs = now
                 com.assistant.diagnostic.RuntimeLogger.log(
-                    "BALL_ONLY mode=${mode} ball=(${String.format("%.1f", ball.x)}," +
-                        "${String.format("%.1f", ball.y)}) goal=${mode == BallOnlyMode.BALL_GOAL && goal.detected} " +
+                    "BALL_ONLY mode=${mode} ball=(${String.format(Locale.US, "%.1f", ball.x)}," +
+                        "${String.format(Locale.US, "%.1f", ball.y)}) goal=${mode == BallOnlyMode.BALL_GOAL && goal.detected} " +
                         "players=${if (mode == BallOnlyMode.BALL_PLAYERS) players.detections.size else 0}",
                     "VISION"
                 )

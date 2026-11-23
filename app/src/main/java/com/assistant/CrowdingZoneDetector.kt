@@ -11,6 +11,7 @@ package com.assistant
 import android.content.Context
 
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 
 
@@ -123,7 +124,7 @@ object CrowdingZoneDetector {
 
     fun setEnabled(value: Boolean) {
         enabled = value
-        try { prefs?.edit()?.putBoolean("crowding_enabled", value)?.apply() } catch (_: Throwable) {}
+        try { prefs?.edit { putBoolean("crowding_enabled", value) } } catch (_: Throwable) {}
         if (!value) reset()
     }
 

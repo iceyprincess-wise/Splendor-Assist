@@ -3,6 +3,7 @@ package com.assistant
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
+import java.util.Locale
 
 // No68-C-D36 (false claim corrected — this KDoc used to sit as an
 // orphan block at the end of FramePacingEngine.kt; moved here by Phase T,
@@ -145,12 +146,12 @@ object LagVerdictEngine {
                     val now = System.currentTimeMillis()
                     if (candidate != verdict && streak >= need) {
                         RuntimeLogger.log("DEVICE " + verdict + " -> " + candidate +
-                            " (jitter=" + String.format("%.1f", jit) +
-                            "ms stability=" + String.format("%.0f", stab) +
-                            "% stalls/min=" + String.format("%.1f", stallRate) +
-                            " mtStall=" + String.format("%.0f", mtStall) +
+                            " (jitter=" + String.format(Locale.US, "%.1f", jit) +
+                            "ms stability=" + String.format(Locale.US, "%.0f", stab) +
+                            "% stalls/min=" + String.format(Locale.US, "%.1f", stallRate) +
+                            " mtStall=" + String.format(Locale.US, "%.0f", mtStall) +
                             "ms input=" + inputClass +
-                            " gpuStalls/min=" + String.format("%.1f", gpuStalls) +
+                            " gpuStalls/min=" + String.format(Locale.US, "%.1f", gpuStalls) +
                             " gcMem=" + memPressure +
                             " therm=" + ThermalPeekEngine.status + ")", "LAGVERDICT")
                         verdict = candidate
@@ -190,8 +191,8 @@ object LagVerdictEngine {
                     } else if (now - lastHeartbeat >= 60_000L) {
                         lastHeartbeat = now
                         RuntimeLogger.log("DEVICE " + verdict +
-                            " (jitter=" + String.format("%.1f", jit) +
-                            "ms stability=" + String.format("%.0f", stab) +
+                            " (jitter=" + String.format(Locale.US, "%.1f", jit) +
+                            "ms stability=" + String.format(Locale.US, "%.0f", stab) +
                             "% therm=" + ThermalPeekEngine.status + ")", "LAGVERDICT")
                     }
                     AdapterSignalBus.publishLag(verdict)

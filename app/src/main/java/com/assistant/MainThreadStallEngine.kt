@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 
 import com.assistant.diagnostic.RuntimeLogger
+import java.util.Locale
 
 object MainThreadStallEngine {
 
@@ -74,7 +75,7 @@ object MainThreadStallEngine {
                 spikesPerMin = if (winMin > 0f) winSpikes / winMin else 0f
                 if (winSpikes > 0L) {
                     RuntimeLogger.log("stalls n=" + winSpikes + " max=" + winMax +
-                        "ms avg=" + String.format("%.0f", avgLatenessMs) +
+                        "ms avg=" + String.format(Locale.US, "%.0f", avgLatenessMs) +
                         "ms total=" + totalSpikes, "LAGSTALL")
                 }
                 winSpikes = 0L; winMax = 0L

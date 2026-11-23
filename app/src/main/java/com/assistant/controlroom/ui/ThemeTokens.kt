@@ -1,9 +1,9 @@
 package com.assistant.controlroom.ui
 
 import android.content.Context
-import android.graphics.Color
 import android.util.TypedValue
 import androidx.annotation.AttrRes
+import androidx.core.graphics.toColorInt
 
 /**
  * Single palette source for the control-room activities and the mod menu.
@@ -46,18 +46,18 @@ object ThemeTokens {
     const val PANEL_BG_HEX = "#EE0A0E17"
     const val ORB_BG_HEX = "#CC0A0E17"
 
-    val BG: Int = Color.parseColor(BG_HEX)
-    val SURFACE: Int = Color.parseColor(SURFACE_HEX)
-    val ACCENT_TEXT: Int = Color.parseColor(ACCENT_TEXT_HEX)
-    val TEXT: Int = Color.parseColor(TEXT_HEX)
-    val TEXT_MUTED: Int = Color.parseColor(TEXT_MUTED_HEX)
-    val TEXT_DIM: Int = Color.parseColor(TEXT_DIM_HEX)
-    val WARN: Int = Color.parseColor(WARN_HEX)
-    val SUCCESS: Int = Color.parseColor(SUCCESS_HEX)
-    val BUTTON: Int = Color.parseColor(BUTTON_HEX)
-    val BUTTON_ALT: Int = Color.parseColor(BUTTON_ALT_HEX)
-    val BUTTON_NEUTRAL: Int = Color.parseColor(BUTTON_NEUTRAL_HEX)
-    val DANGER: Int = Color.parseColor(DANGER_HEX)
+    val BG: Int = BG_HEX.toColorInt()
+    val SURFACE: Int = SURFACE_HEX.toColorInt()
+    val ACCENT_TEXT: Int = ACCENT_TEXT_HEX.toColorInt()
+    val TEXT: Int = TEXT_HEX.toColorInt()
+    val TEXT_MUTED: Int = TEXT_MUTED_HEX.toColorInt()
+    val TEXT_DIM: Int = TEXT_DIM_HEX.toColorInt()
+    val WARN: Int = WARN_HEX.toColorInt()
+    val SUCCESS: Int = SUCCESS_HEX.toColorInt()
+    val BUTTON: Int = BUTTON_HEX.toColorInt()
+    val BUTTON_ALT: Int = BUTTON_ALT_HEX.toColorInt()
+    val BUTTON_NEUTRAL: Int = BUTTON_NEUTRAL_HEX.toColorInt()
+    val DANGER: Int = DANGER_HEX.toColorInt()
 
     /**
      * Q61-2/Q66-B4 (batch 5b): ?attr/ resolution layer. The hex constants
@@ -81,7 +81,7 @@ object ThemeTokens {
             out.type <= TypedValue.TYPE_LAST_COLOR_INT) {
             out.data
         } else {
-            Color.parseColor(fallbackHex)
+            fallbackHex.toColorInt()
         }
     }
 

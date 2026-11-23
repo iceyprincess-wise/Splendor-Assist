@@ -6,6 +6,7 @@ import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.util.Locale
 
 object NetProbeEngine {
 
@@ -186,8 +187,8 @@ object NetProbeEngine {
     } catch (_: Throwable) { -1L }
 
     fun summary(): String =
-        "rtt=" + String.format("%.0f", rtt) + "ms jitter=" + String.format("%.0f", jitter) +
-        "ms " + quality + " loss=" + String.format("%.0f", PacketLossProbeEngine.lossPct) +
+        "rtt=" + String.format(Locale.US, "%.0f", rtt) + "ms jitter=" + String.format(Locale.US, "%.0f", jitter) +
+        "ms " + quality + " loss=" + String.format(Locale.US, "%.0f", PacketLossProbeEngine.lossPct) +
         "% carrier=" + CarrierProfileEngine.current.name +
         " resolver=" + preferredResolver +
         " probes=" + probes + " fail=" + failures

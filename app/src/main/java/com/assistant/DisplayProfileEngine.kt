@@ -36,6 +36,7 @@ import android.hardware.display.DisplayManager
 
 
 import com.assistant.diagnostic.RuntimeLogger
+import java.util.Locale
 
 
 
@@ -85,9 +86,9 @@ object DisplayProfileEngine {
             val d = dm.displays.firstOrNull() ?: return
             panelHz = d.refreshRate
             vsyncBudgetMs = 1000f / panelHz
-            RuntimeLogger.log("Display profile: panel=" + String.format("%.0f", panelHz) +
-                "Hz vsyncBudget=" + String.format("%.1f", vsyncBudgetMs) +
-                "ms gameBudget=" + String.format("%.1f", gameBudgetMs) + "ms", "LAGPROF")
+            RuntimeLogger.log("Display profile: panel=" + String.format(Locale.US, "%.0f", panelHz) +
+                "Hz vsyncBudget=" + String.format(Locale.US, "%.1f", vsyncBudgetMs) +
+                "ms gameBudget=" + String.format(Locale.US, "%.1f", gameBudgetMs) + "ms", "LAGPROF")
         } catch (_: Throwable) { }
     }
 }

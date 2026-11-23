@@ -4,6 +4,7 @@ import android.os.Process
 
 import com.assistant.diagnostic.AdapterSignalBus
 import com.assistant.diagnostic.RuntimeLogger
+import java.util.Locale
 
 object GestureTimingFeedbackEngine {
 
@@ -100,7 +101,7 @@ object GestureTimingFeedbackEngine {
 
         if (measuredCount % LOG_EVERY_N == 0L) {
             RuntimeLogger.log(
-                "GestureDispatch avg=${String.format("%.1f", avgDispatchMs)}ms " +
+                "GestureDispatch avg=${String.format(Locale.US, "%.1f", avgDispatchMs)}ms " +
                     "last=${elapsed}ms expired=$expiredCount measured=$measuredCount",
                 "INPUT"
             )

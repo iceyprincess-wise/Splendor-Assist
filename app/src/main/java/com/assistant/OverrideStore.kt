@@ -1,6 +1,7 @@
 package com.assistant
 
 import android.content.Context
+import androidx.core.content.edit
 
 /** Persistent AUTO/FORCE_ON/FORCE_OFF runtime overrides. Writes use commit(). */
 object OverrideStore {
@@ -21,7 +22,9 @@ object OverrideStore {
     }
     @JvmStatic fun setMode(flag: String, mode: Mode): Boolean {
         val key = if (flag.equals("GAME", true)) GAME_KEY else TRUST_KEY
-        return store()?.edit()?.putString(key, mode.name)?.commit() ?: false
+        val prefs = store() ?: return false
+        prefs.edit(commit = true) { putString(key, mode.name) }
+        return true
     }
     @JvmStatic fun resolve(flag: String, automatic: Boolean): Boolean = when (mode(flag)) {
         Mode.AUTO -> automatic

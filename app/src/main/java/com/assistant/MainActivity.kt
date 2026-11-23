@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.ComponentName
 import android.media.projection.MediaProjectionManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -18,6 +17,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
+import androidx.core.graphics.toColorInt
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.assistant.controlroom.AdapterControlRoomRegistry
@@ -352,8 +354,8 @@ class MainActivity : AppCompatActivity() {
         val state = findViewById<android.widget.TextView>(stateId)
 
         bulb.setTextColor(
-            if (active) android.graphics.Color.parseColor("#00E676")
-            else android.graphics.Color.parseColor("#C7D2E5")
+            if (active) "#00E676".toColorInt()
+            else "#C7D2E5".toColorInt()
         )
         state.text = label
     }
@@ -385,7 +387,7 @@ class MainActivity : AppCompatActivity() {
         if (!ComplianceState.battery(this)) {
             val direct = Intent(
                 Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                Uri.parse("package:$packageName")
+                "package:$packageName".toUri()
             )
             if (launchIfExists(direct)) return true
         }
@@ -411,11 +413,11 @@ class MainActivity : AppCompatActivity() {
                 // falls through if the component is absent.
                 Intent().apply {
                     component = ComponentName("com.android.settings", "com.android.settings.applications.InstalledAppDetails")
-                    data = Uri.parse("package:$packageName")
+                    data = "package:$packageName".toUri()
                 },
                 Intent().apply {
                     action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                    data = Uri.parse("package:$packageName")
+                    data = "package:$packageName".toUri()
                 }
             )
 
@@ -431,9 +433,9 @@ class MainActivity : AppCompatActivity() {
             // page); the generic intent below it is the fallback.
             Intent().apply {
                 component = ComponentName("com.android.settings", "com.android.settings.applications.InstalledAppDetails")
-                data = Uri.parse("package:$packageName")
+                data = "package:$packageName".toUri()
             },
-            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:$packageName".toUri())
         )
 
         fallback.forEach {
@@ -514,7 +516,7 @@ class MainActivity : AppCompatActivity() {
         permissionStage = PermissionStage.OVERLAY
 
         if (!Settings.canDrawOverlays(this)) {
-            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:$packageName".toUri()))
             return
         }
         checkAllFilesAndProceed()
@@ -524,7 +526,7 @@ class MainActivity : AppCompatActivity() {
         permissionStage = PermissionStage.ALL_FILES
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !android.os.Environment.isExternalStorageManager()) {
-            val appIntent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:$packageName"))
+            val appIntent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, "package:$packageName".toUri())
             try {
                 startActivity(appIntent)
             } catch (_: Exception) {
@@ -595,8 +597,9 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Done") { _, _ ->
                 // F-PERMS2-1: persist the confirm — this dialog is never
                 // shown again after the first "Done".
-                getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
-                    .putBoolean(KEY_AUTOSTART_CONFIRMED, true).apply()
+                getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
+                    putBoolean(KEY_AUTOSTART_CONFIRMED, true)
+                }
                 permissionStage = PermissionStage.ACCESSIBILITY
                 checkAccessibilityAndProceed()
             }
@@ -647,7 +650,7 @@ class MainActivity : AppCompatActivity() {
         val diagnosisState = findViewById<android.widget.TextView>(com.assistant.overlay.R.id.tvDiagnosisState)
         if (count > 0) {
             diagnosisState.text = "$count issue${if (count == 1) "" else "s"}"
-            diagnosisState.setTextColor(android.graphics.Color.parseColor("#FF5252"))
+            diagnosisState.setTextColor("#FF5252".toColorInt())
         } else {
             diagnosisState.text = getString(com.assistant.overlay.R.string.diagnosis_card_subtitle)
             diagnosisState.setTextColor(themeColor(android.R.attr.textColorSecondary))
@@ -664,9 +667,9 @@ class MainActivity : AppCompatActivity() {
     private data class BulbEntry(val label: String, val state: BulbState, val value: String)
 
     private fun bulbColor(state: BulbState): Int = when (state) {
-        BulbState.GREEN -> android.graphics.Color.parseColor("#00E676")
-        BulbState.YELLOW -> android.graphics.Color.parseColor("#FFC107")
-        BulbState.RED -> android.graphics.Color.parseColor("#FF5252")
+        BulbState.GREEN -> "#00E676".toColorInt()
+        BulbState.YELLOW -> "#FFC107".toColorInt()
+        BulbState.RED -> "#FF5252".toColorInt()
     }
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()

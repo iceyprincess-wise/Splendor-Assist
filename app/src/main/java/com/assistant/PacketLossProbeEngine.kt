@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
+import java.util.Locale
 import kotlin.random.Random
 
 object PacketLossProbeEngine {
@@ -53,10 +54,10 @@ object PacketLossProbeEngine {
                     lossPct = lossPct * (1 - a) + roundLoss * a
                     rounds++
                     if (roundLoss >= 50f)
-                        RuntimeLogger.log("LOSS SPIKE " + String.format("%.0f", roundLoss) +
-                            "% this round (avg " + String.format("%.0f", lossPct) + "%)", "NETLOSS")
+                        RuntimeLogger.log("LOSS SPIKE " + String.format(Locale.US, "%.0f", roundLoss) +
+                            "% this round (avg " + String.format(Locale.US, "%.0f", lossPct) + "%)", "NETLOSS")
                     else if (rounds % 15L == 0L)
-                        RuntimeLogger.log("loss avg=" + String.format("%.0f", lossPct) + "% rounds=" + rounds, "NETLOSS")
+                        RuntimeLogger.log("loss avg=" + String.format(Locale.US, "%.0f", lossPct) + "% rounds=" + rounds, "NETLOSS")
                 } catch (_: Throwable) { }
                 val nap = ROUND_MS
                 try { Thread.sleep(if (nap > 0) nap else 1L) } catch (_: Throwable) { return@Thread }

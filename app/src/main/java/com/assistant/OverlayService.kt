@@ -1574,6 +1574,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         trajectoryHandler.post(trajectoryRunnable!!)
     }
 
+    @Suppress("DEPRECATION")
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW || level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {

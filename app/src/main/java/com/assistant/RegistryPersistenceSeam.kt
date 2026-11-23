@@ -1,6 +1,7 @@
 package com.assistant
 
 import android.content.Context
+import androidx.core.content.edit
 
 /**
  * L15 — Registry Persistence Seam (RegistryPersistenceSeam).
@@ -65,14 +66,14 @@ object RegistryPersistenceSeam {
     fun save(context: Context, config: VisionConfiguration) {
         try {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val editor = prefs.edit()
-            for ((key, value) in toMap(config)) {
-                when (value) {
-                    is Boolean -> editor.putBoolean(key, value)
-                    is Float -> editor.putFloat(key, value)
+            prefs.edit {
+                for ((key, value) in toMap(config)) {
+                    when (value) {
+                        is Boolean -> putBoolean(key, value)
+                        is Float -> putFloat(key, value)
+                    }
                 }
             }
-            editor.apply()
         } catch (_: Throwable) { }
     }
 

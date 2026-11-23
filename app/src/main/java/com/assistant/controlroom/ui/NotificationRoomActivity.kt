@@ -12,6 +12,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.assistant.RuntimeHealthMonitor
@@ -188,7 +189,7 @@ class NotificationRoomActivity : AppCompatActivity() {
         }
         top.addView(TextView(this).apply {
             text = "●"; textSize = 14f
-            setTextColor(Color.parseColor("#FF5252"))
+            setTextColor("#FF5252".toColorInt())
             val lp = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             lp.marginEnd = dp(8); layoutParams = lp
@@ -234,7 +235,7 @@ class NotificationRoomActivity : AppCompatActivity() {
                 })
             } else {
                 summaryView?.text = "${issues.size} issue${if (issues.size == 1) "" else "s"}"
-                summaryView?.setTextColor(Color.parseColor("#FF5252"))
+                summaryView?.setTextColor("#FF5252".toColorInt())
                 issues.forEach { issueBox(it) }
             }
         } catch (t: Throwable) {

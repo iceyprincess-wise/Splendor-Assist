@@ -79,6 +79,7 @@ class MemoryStabilityOptimizer(
         }
     }
 
+    @Suppress("DEPRECATION")
     override fun onTrimMemory(level: Int) {
         when (level) {
             ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
@@ -102,6 +103,7 @@ class MemoryStabilityOptimizer(
         }
     }
 
+    @Deprecated("onLowMemory is deprecated in the platform; this override exists only to receive the callback.")
     override fun onLowMemory() {
         executeAggressiveCleanup()
     }

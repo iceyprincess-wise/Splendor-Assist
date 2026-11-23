@@ -1,6 +1,7 @@
 package com.assistant
 
 import com.assistant.diagnostic.RuntimeLogger
+import java.util.Locale
 
 /**
  * Item 26 amendment A (Builder C, g54c) — FRAME-DROP PREVENTION engine.
@@ -113,11 +114,11 @@ object FrameDropPreventionEngine {
             lastLoggedBrake = level
             try {
                 RuntimeLogger.log(
-                    "FrameDropPrevention: worst=" + String.format("%.1f", worstGapMs) +
-                        "ms avg=" + String.format("%.1f", avgGapMs) +
-                        "ms jitter=" + String.format("%.1f", jitterMs) +
-                        "ms budget=" + String.format("%.1f", vsyncBudgetMs) +
-                        "ms stalls/min=" + String.format("%.1f", stallsPerMin) +
+                    "FrameDropPrevention: worst=" + String.format(Locale.US, "%.1f", worstGapMs) +
+                        "ms avg=" + String.format(Locale.US, "%.1f", avgGapMs) +
+                        "ms jitter=" + String.format(Locale.US, "%.1f", jitterMs) +
+                        "ms budget=" + String.format(Locale.US, "%.1f", vsyncBudgetMs) +
+                        "ms stalls/min=" + String.format(Locale.US, "%.1f", stallsPerMin) +
                         " -> requestedBrake=" + level + " state=" + state,
                     "FRAMEDROP"
                 )

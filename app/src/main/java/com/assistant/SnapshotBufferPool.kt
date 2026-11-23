@@ -1,6 +1,7 @@
 package com.assistant
 
 import android.graphics.Bitmap
+import androidx.core.graphics.createBitmap
 import java.nio.ByteBuffer
 
 /**
@@ -75,7 +76,7 @@ object SnapshotBufferPool {
                 return b
             }
         }
-        Bitmap.createBitmap(width, height, config)
+        createBitmap(width, height, config)
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.assistant
 
 import com.assistant.diagnostic.RuntimeLogger
+import java.util.Locale
 
 /**
  * L3 — Defender-Density Telemetry Producer (DensityTelemetryLogger).
@@ -23,7 +24,7 @@ object DensityTelemetryLogger {
     fun logDensity(density: Float, actionName: String) {
         try {
             RuntimeLogger.log(
-                "density=${String.format("%.3f", density)} action=$actionName",
+                "density=${String.format(Locale.US, "%.3f", density)} action=$actionName",
                 "DENSITY"
             )
         } catch (_: Throwable) { }

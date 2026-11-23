@@ -1,4 +1,5 @@
 package com.assistant
+import java.util.Locale
 // F49_PATCH_V1
 
 object VisionTrust {
@@ -239,10 +240,10 @@ object VisionTrust {
     @JvmStatic
     fun diagnostics(): String =
         "fg=" + foregroundIsGame + " pkg=" + lastForegroundPkg +
-        " ballTrust=" + (if (isGameForeground()) String.format("%.3f", ballTrust()) else "n/a(non-game)") +
-        " lane=" + String.format("%.3f", laneConfidence()) +
-        " stability=" + String.format("%.3f", directionStability()) +
-        " spread=" + String.format("%.3f", laneSpread) +
+        " ballTrust=" + (if (isGameForeground()) String.format(Locale.US, "%.3f", ballTrust()) else "n/a(non-game)") +
+        " lane=" + String.format(Locale.US, "%.3f", laneConfidence()) +
+        " stability=" + String.format(Locale.US, "%.3f", directionStability()) +
+        " spread=" + String.format(Locale.US, "%.3f", laneSpread) +
         " insaneRejects=" + insaneRejects
 
     @JvmStatic

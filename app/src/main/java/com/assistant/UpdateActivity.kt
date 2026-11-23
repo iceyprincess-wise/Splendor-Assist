@@ -5,7 +5,6 @@ import android.app.DownloadManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
@@ -17,6 +16,8 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import java.io.File
@@ -195,7 +196,7 @@ class UpdateActivity : AppCompatActivity() {
             pendingUnknownSources = true
             setProgressText("Enable 'Allow from this source', then return here.")
             val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
-                data = Uri.parse("package:$packageName")
+                data = "package:$packageName".toUri()
             }
             startActivity(intent)
             return
@@ -206,7 +207,7 @@ class UpdateActivity : AppCompatActivity() {
     /** Enqueues the APK download and starts progress polling. */
     private fun beginDownload() {
         val url = apkDownloadUrl ?: return
-        val request = DownloadManager.Request(Uri.parse(url)).apply {
+        val request = DownloadManager.Request(url.toUri()).apply {
             setTitle("Splendor Assist update")
             setDescription("Downloading version $latestVersionCode")
             setNotificationVisibility(
@@ -220,10 +221,10 @@ class UpdateActivity : AppCompatActivity() {
         val manager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         downloadId = manager.enqueue(request)
         downloadInProgress = true
-        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
-            .putLong(KEY_PENDING_DOWNLOAD_ID, downloadId)
-            .putLong(KEY_PENDING_DOWNLOAD_VERSION, latestVersionCode)
-            .apply()
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
+            putLong(KEY_PENDING_DOWNLOAD_ID, downloadId)
+            putLong(KEY_PENDING_DOWNLOAD_VERSION, latestVersionCode)
+        }
         setDownloadingUi(true)
         setProgressText("Downloading… 0%")
         pollHandler.post(pollRunnable)
@@ -296,10 +297,10 @@ class UpdateActivity : AppCompatActivity() {
     }
 
     private fun clearPendingDownload() {
-        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
-            .remove(KEY_PENDING_DOWNLOAD_ID)
-            .remove(KEY_PENDING_DOWNLOAD_VERSION)
-            .apply()
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
+            remove(KEY_PENDING_DOWNLOAD_ID)
+            remove(KEY_PENDING_DOWNLOAD_VERSION)
+        }
     }
 
     /**
@@ -372,7 +373,7 @@ class UpdateActivity : AppCompatActivity() {
         existing.add(0, entry)
         val stored = existing.take(HISTORY_MAX_ENTRIES)
             .joinToString(";") { "${it.first}|${it.second}" }
-        prefs.edit().putString(KEY_HISTORY, stored).apply()
+        prefs.edit { putString(KEY_HISTORY, stored) }
     }
 
     private fun setDownloadingUi(downloading: Boolean) {

@@ -36,6 +36,7 @@ package com.assistant
 
 
 import com.assistant.diagnostic.RuntimeLogger
+import java.util.Locale
 
 
 
@@ -111,12 +112,12 @@ object CongestionSentinelEngine {
                     if (now && !congested) {
                         congestedSinceMs = System.currentTimeMillis()
                         warnings++
-                        RuntimeLogger.log("CONGESTION ONSET jitter=" + String.format("%.0f", j) +
+                        RuntimeLogger.log("CONGESTION ONSET jitter=" + String.format(Locale.US, "%.0f", j) +
                             "ms tol=" + tol.toInt() + "ms n=" + warnings, "NET")
                     } else if (!now && congested) {
                         val dur = (System.currentTimeMillis() - congestedSinceMs) / 1000L
                         RuntimeLogger.log("CONGESTION CLEARED after " + dur + "s jitter=" +
-                            String.format("%.0f", j) + "ms", "NET")
+                            String.format(Locale.US, "%.0f", j) + "ms", "NET")
                     }
                     congested = now
                     lastJitter = j

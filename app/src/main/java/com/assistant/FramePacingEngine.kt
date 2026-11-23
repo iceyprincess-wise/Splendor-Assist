@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
 import com.assistant.diagnostic.RuntimeLogger
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 object FramePacingEngine {
@@ -98,10 +99,10 @@ object FramePacingEngine {
                     stallsPerMin = winStalls / winMin
                     val mix = bucket.joinToString("/") { (it * 100 / counted).toString() }
                     RuntimeLogger.log("frames=" + frames +
-                        " mix=" + mix + "% stability=" + String.format("%.0f", stabilityPct) +
-                        "% jitter=" + String.format("%.1f", jitterMs) +
-                        "ms worst=" + String.format("%.0f", worstGapMs) +
-                        "ms stalls/min=" + String.format("%.1f", stallsPerMin) +
+                        " mix=" + mix + "% stability=" + String.format(Locale.US, "%.0f", stabilityPct) +
+                        "% jitter=" + String.format(Locale.US, "%.1f", jitterMs) +
+                        "ms worst=" + String.format(Locale.US, "%.0f", worstGapMs) +
+                        "ms stalls/min=" + String.format(Locale.US, "%.1f", stallsPerMin) +
                         " total=" + totalStalls, "LAGFRAME")
                     for (i in bucket.indices) bucket[i] = 0L
                     winStalls = 0L; winFrames = 0L; worstGapMs = 0f

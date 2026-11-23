@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
 import com.assistant.diagnostic.RuntimeLogger
+import java.util.Locale
 
 object StutterPulseEngine {
 
@@ -34,8 +35,8 @@ object StutterPulseEngine {
         if (Math.abs(hz - panelHz) < 0.5f) return
         panelHz = hz
         vsyncMs = 1000f / hz
-        RuntimeLogger.log("panel=" + String.format("%.0f", hz) +
-            "Hz budget=" + String.format("%.1f", vsyncMs) + "ms (radar re-tuned live)", "STUTTER")
+        RuntimeLogger.log("panel=" + String.format(Locale.US, "%.0f", hz) +
+            "Hz budget=" + String.format(Locale.US, "%.1f", vsyncMs) + "ms (radar re-tuned live)", "STUTTER")
     }
 
     private val callback = object : Choreographer.FrameCallback {

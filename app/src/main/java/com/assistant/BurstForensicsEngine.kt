@@ -45,6 +45,7 @@ import com.assistant.execution.ExecutionRequest
 import com.assistant.execution.ExecutionSource
 import com.assistant.execution.HybridExecutionTerminal
 import com.assistant.runtime.ActionClass
+import java.util.Locale
 
 
 
@@ -168,7 +169,7 @@ object BurstForensicsEngine {
         if (changed || now - lastLogMs >= 30_000L) {
             lastLogMs = now
             RuntimeLogger.log("burst " + state + " frames=" + frames +
-                " worst=" + String.format("%.0f", worstMs) +
+                " worst=" + String.format(Locale.US, "%.0f", worstMs) +
                 "ms bursts60s=" + recent.size + " inWindow=" + inWindow, "STUTTER")
         }
     }

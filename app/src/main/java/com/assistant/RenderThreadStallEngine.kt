@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
 import com.assistant.diagnostic.RuntimeLogger
+import java.util.Locale
 
 object RenderThreadStallEngine {
     @Volatile private var running = false
@@ -42,7 +43,7 @@ object RenderThreadStallEngine {
                 try { Thread.sleep(10_000L) } catch (_: Throwable) { return@Thread }
                 val winMin = 10_000L / 60000f
                 gpuQueueStallsPerMin = winStalls / winMin
-                if (winStalls > 0) RuntimeLogger.log("RenderThread/GPU stalls/min=" + String.format("%.1f", gpuQueueStallsPerMin), "LAGRENDER")
+                if (winStalls > 0) RuntimeLogger.log("RenderThread/GPU stalls/min=" + String.format(Locale.US, "%.1f", gpuQueueStallsPerMin), "LAGRENDER")
                 winStalls = 0L
             }
         }

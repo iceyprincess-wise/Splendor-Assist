@@ -95,6 +95,7 @@ object CrashForensics {
 
     /** Called before the platform handler, while the VM can still write a report. */
     @JvmStatic
+    @Suppress("DEPRECATION")
     fun onUncaught(thread: Thread, error: Throwable) {
         try {
             val trace = java.io.StringWriter()

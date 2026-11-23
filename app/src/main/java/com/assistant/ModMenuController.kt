@@ -17,6 +17,8 @@ import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
+import androidx.core.content.edit
+import androidx.core.graphics.toColorInt
 
 import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
 import com.assistant.overlay.repository.GoalkeeperRepository
@@ -181,9 +183,9 @@ class ModMenuController(private val context: Context) {
             }
         }.apply {
             text = "\u2699"
-            setTextColor(Color.parseColor(ACCENT))
+            setTextColor(ACCENT.toColorInt())
             textSize = 20f
-            setBackgroundColor(Color.parseColor(ORB_BG))
+            setBackgroundColor(ORB_BG.toColorInt())
             setPadding(24, 12, 24, 12)
         }
         orb.setOnTouchListener { view, event ->
@@ -302,7 +304,7 @@ class ModMenuController(private val context: Context) {
 
         val mainLayout = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(Color.parseColor(PANEL_BG))
+            setBackgroundColor(PANEL_BG.toColorInt())
             setPadding(24, 20, 24, 20)
         }
 
@@ -315,7 +317,7 @@ class ModMenuController(private val context: Context) {
 
         val title = TextView(context).apply {
             text = "⚡ SPLENDOR MOD MENU"
-            setTextColor(Color.parseColor(ACCENT))
+            setTextColor(ACCENT.toColorInt())
             textSize = 15f
             setTypeface(null, Typeface.BOLD)
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
@@ -352,7 +354,7 @@ class ModMenuController(private val context: Context) {
 
         val swPanic = Switch(context).apply {
             text = "Panic Emergency Mode"
-            setTextColor(Color.parseColor("#FF5252"))
+            setTextColor("#FF5252".toColorInt())
             isChecked = SmartAssistRepository.panicActive()
             setOnCheckedChangeListener { _, isChecked ->
                 smartRepo.updatePanicMode(isChecked)
@@ -398,14 +400,14 @@ class ModMenuController(private val context: Context) {
             isChecked = InterceptionRuntimeRegistry.bypassTouchGate
             setOnCheckedChangeListener { _, isChecked ->
                 InterceptionRuntimeRegistry.bypassTouchGate = isChecked
-                fpsPreferences.edit().putBoolean("bypass_touch_gate", isChecked).apply()
+                fpsPreferences.edit { putBoolean("bypass_touch_gate", isChecked) }
                 RuntimeLogger.log("ModMenu bypassTouchGate toggled source=ModMenu switch value=$isChecked", "SMART_ASSIST")
             }
         }
         contentContainer.addView(swTouchGateBypass)
 
         val targetFpsLabel = TextView(context).apply {
-            setTextColor(Color.parseColor(TEXT_MUTED))
+            setTextColor(TEXT_MUTED.toColorInt())
             textSize = 12f
             setPadding(0, 12, 0, 4)
         }
@@ -422,7 +424,7 @@ class ModMenuController(private val context: Context) {
                     targetFpsLabel.text = "Target capture FPS: $fps"
                     if (fromUser) {
                         com.assistant.MemoryCaptureGateEngine.setTargetFps(fps)
-                        fpsPreferences.edit().putInt("target_fps", fps).apply()
+                        fpsPreferences.edit { putInt("target_fps", fps) }
                     }
                 }
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -447,7 +449,7 @@ class ModMenuController(private val context: Context) {
 
         val tvAuthority = TextView(context).apply {
             text = "Engine Authority Level: ${SmartAssistRepository.configuration().authority}"
-            setTextColor(Color.parseColor(TEXT_MUTED))
+            setTextColor(TEXT_MUTED.toColorInt())
             textSize = 12f
             setPadding(0, 16, 0, 4)
         }
@@ -474,7 +476,7 @@ class ModMenuController(private val context: Context) {
 
         val tvPass = TextView(context).apply {
             text = "Pass Force Threshold: ${SmartAssistRepository.configuration().passThreshold}"
-            setTextColor(Color.parseColor(TEXT_MUTED))
+            setTextColor(TEXT_MUTED.toColorInt())
             textSize = 12f
             setPadding(0, 12, 0, 4)
         }
@@ -499,7 +501,7 @@ class ModMenuController(private val context: Context) {
 
         val tvShot = TextView(context).apply {
             text = "Shot Force Threshold: ${SmartAssistRepository.configuration().shotThreshold}"
-            setTextColor(Color.parseColor(TEXT_MUTED))
+            setTextColor(TEXT_MUTED.toColorInt())
             textSize = 12f
             setPadding(0, 12, 0, 4)
         }
@@ -524,7 +526,7 @@ class ModMenuController(private val context: Context) {
 
         val tvCross = TextView(context).apply {
             text = "Cross Force Threshold: ${SmartAssistRepository.configuration().crossThreshold}"
-            setTextColor(Color.parseColor(TEXT_MUTED))
+            setTextColor(TEXT_MUTED.toColorInt())
             textSize = 12f
             setPadding(0, 12, 0, 4)
         }
@@ -549,7 +551,7 @@ class ModMenuController(private val context: Context) {
 
         val tvStatus = TextView(context).apply {
             text = liveStatusLine()
-            setTextColor(Color.parseColor("#00E676"))
+            setTextColor("#00E676".toColorInt())
             textSize = 11f
             setTypeface(null, Typeface.BOLD)
             setPadding(0, 20, 0, 0)
@@ -573,7 +575,7 @@ class ModMenuController(private val context: Context) {
 
         val tvKeeperPositioning = TextView(context).apply {
             text = "Keeper Positioning: " + GoalkeeperRuntimeState.positioning
-            setTextColor(Color.parseColor(TEXT_MUTED))
+            setTextColor(TEXT_MUTED.toColorInt())
             textSize = 12f
             setPadding(0, 12, 0, 4)
         }
@@ -595,7 +597,7 @@ class ModMenuController(private val context: Context) {
 
         val tvKeeperReactions = TextView(context).apply {
             text = "Keeper Reactions: " + GoalkeeperRuntimeState.reactions
-            setTextColor(Color.parseColor(TEXT_MUTED))
+            setTextColor(TEXT_MUTED.toColorInt())
             textSize = 12f
             setPadding(0, 12, 0, 4)
         }
@@ -617,7 +619,7 @@ class ModMenuController(private val context: Context) {
 
         val tvAwareness = TextView(context).apply {
             text = "Awareness: ${InterceptionRuntimeRegistry.awareness}"
-            setTextColor(Color.parseColor(TEXT_MUTED))
+            setTextColor(TEXT_MUTED.toColorInt())
             textSize = 12f
             setPadding(0, 12, 0, 4)
         }
@@ -652,7 +654,7 @@ class ModMenuController(private val context: Context) {
 
         val tvPrediction = TextView(context).apply {
             text = "Prediction: ${InterceptionRuntimeRegistry.prediction}"
-            setTextColor(Color.parseColor(TEXT_MUTED))
+            setTextColor(TEXT_MUTED.toColorInt())
             textSize = 12f
             setPadding(0, 12, 0, 4)
         }

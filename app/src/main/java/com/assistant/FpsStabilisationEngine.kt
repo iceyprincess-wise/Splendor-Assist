@@ -2,6 +2,7 @@ package com.assistant
 
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.registry.PerformanceTelemetryRegistry
+import java.util.Locale
 
 /**
  * Item 26 amendment A (Builder C, g54c) — FPS-STABILISATION engine.
@@ -111,8 +112,8 @@ object FpsStabilisationEngine {
             lastLoggedBrake = level
             try {
                 RuntimeLogger.log(
-                    "FpsStabilisation: measuredFps=" + String.format("%.1f", measuredFps) +
-                        " panel=" + String.format("%.0f", panelHz) +
+                    "FpsStabilisation: measuredFps=" + String.format(Locale.US, "%.1f", measuredFps) +
+                        " panel=" + String.format(Locale.US, "%.0f", panelHz) +
                         "Hz -> requestedBrake=" + level + " state=" + state,
                     "FPSSTAB"
                 )

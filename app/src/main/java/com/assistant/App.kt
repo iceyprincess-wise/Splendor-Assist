@@ -67,6 +67,7 @@ class App : Application() {
         installF47CrashMirror()
         registerComponentCallbacks(object : ComponentCallbacks2 {
             override fun onTrimMemory(level: Int) = DiagnosticSamplers.onTrimMemory(level)
+            @Suppress("DEPRECATION")
             override fun onLowMemory() = DiagnosticSamplers.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_COMPLETE)
             override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {}
         })

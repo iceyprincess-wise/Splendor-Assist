@@ -176,6 +176,7 @@ object DiagnosticSamplers {
         }
     }
 
+    @Suppress("DEPRECATION")
     fun onTrimMemory(level: Int) {
         // N7: level 20 is TRIM_MEMORY_UI_HIDDEN (routine), not pressure;
         // name it so the next audit does not misread it as an emergency.

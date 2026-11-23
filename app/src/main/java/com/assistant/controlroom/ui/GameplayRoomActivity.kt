@@ -318,7 +318,7 @@ class GameplayRoomActivity : AppCompatActivity() {
                 else             -> "STALE (${ageMs}ms ago) — engine may be idle"
             }
             val routePct = if (decisions > 0L)
-                String.format("%.1f%%", routed * 100.0 / decisions) else "—"
+                String.format(Locale.US, "%.1f%%", routed * 100.0 / decisions) else "—"
 
             val decTxt =
                 "Decisions  : $decisions\n" +
