@@ -45,6 +45,11 @@
              Notification Room (app issues, tap one to see the diagnosis). -->
         <activity android:name="com.assistant.controlroom.ui.DiagnosisRoomActivity" android:exported="false" />
         <activity android:name="com.assistant.controlroom.ui.NotificationRoomActivity" android:exported="false" />
+        <!-- F-PERMS3: in-app Permissions overview (every permission the
+             app needs, granted/missing from the real APIs, tap to fix).
+             The system's App permissions page only lists the two runtime
+             permissions, so this room is the one place Ed can see them all. -->
+        <activity android:name="com.assistant.controlroom.ui.PermissionsRoomActivity" android:exported="false" />
         <activity android:name="com.assistant.UpdateActivity" android:exported="false" />
 
         <!-- Updater Piece 4: FileProvider for the install intent — the

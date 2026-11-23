@@ -28,6 +28,7 @@ import com.assistant.controlroom.ui.AgentHubActivity
 import com.assistant.controlroom.ui.GameplayRoomActivity
 import com.assistant.controlroom.ui.DiagnosisRoomActivity
 import com.assistant.controlroom.ui.NotificationRoomActivity
+import com.assistant.controlroom.ui.PermissionsRoomActivity
 import com.assistant.controlroom.ui.GoalkeeperControlRoomActivity
 import com.assistant.controlroom.ui.InterceptionControlRoomActivity
 import com.assistant.controlroom.ui.SmartAssistControlRoomActivity
@@ -96,6 +97,13 @@ class MainActivity : AppCompatActivity() {
 
     private var permissionPipelineActive = false
     private var projectionRecoveryFlow = false
+
+    // F-PERMS3: the All files access prompt fires at most once per
+    // MainActivity instance — "Later" (or a return from Settings
+    // without granting) never re-prompts in the same instance, so it
+    // can never loop the way a pipeline re-dispatch would. The
+    // Permissions room stays reachable from Settings for a later fix.
+    private var allFilesPromptShown = false
 
 
     private lateinit var projectionManager: MediaProjectionManager
@@ -248,6 +256,11 @@ class MainActivity : AppCompatActivity() {
                 else -> checkBatteryAndProceed()
             }
         }
+
+        // F-PERMS3: surface a missing All files access on open (see
+        // maybePromptAllFilesAccess). Runs only when the pipeline is NOT
+        // active — while it runs, its own ALL_FILES stage owns this.
+        maybePromptAllFilesAccess()
 
         synchronizeApplicationRuntime()
         refreshRoomBulbs()
@@ -607,6 +620,44 @@ class MainActivity : AppCompatActivity() {
                 permissionStage = PermissionStage.AUTOSTART_WAIT
                 openBatteryOptimizationManager()
             }
+            .show()
+    }
+
+    // F-PERMS3: surface a missing All files access when the app opens.
+    // The permission pipeline only runs when Ed taps Start Engine, so
+    // a revoked (or never-granted) All files access otherwise sits
+    // silent while log writing fails — Ed had to hunt through Settings
+    // himself to enable it. This prompt opens only the All files access
+    // page (or the Permissions room, which lists every permission); it
+    // never runs the pipeline and never starts the engine or the
+    // media-projection flow. Guarded out while the pipeline is active
+    // (its own ALL_FILES stage owns the prompt then) and below API 30
+    // (no all-files gate there).
+    private fun maybePromptAllFilesAccess() {
+        if (allFilesPromptShown) return
+        if (permissionPipelineActive) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
+        if (android.os.Environment.isExternalStorageManager()) return
+        allFilesPromptShown = true
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Storage access needed")
+            .setMessage("Splendor Assist needs All files access to write logs to storage. It is off right now — open settings to turn it on, or see every permission the app needs.")
+            .setCancelable(true)
+            .setPositiveButton("Open settings") { _, _ ->
+                try {
+                    startActivity(Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, "package:$packageName".toUri()))
+                } catch (_: Exception) {
+                    try {
+                        startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION))
+                    } catch (_: Exception) {
+                        Toast.makeText(this, "Could not open settings", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNeutralButton("All permissions") { _, _ ->
+                startActivity(Intent(this, PermissionsRoomActivity::class.java))
+            }
+            .setNegativeButton("Later", null)
             .show()
     }
 

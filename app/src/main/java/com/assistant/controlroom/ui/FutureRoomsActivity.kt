@@ -130,6 +130,15 @@ class FutureRoomsActivity : AppCompatActivity() {
         }
         text(root, "   Detects and fixes broken engine states while you play. Logs every fix to SplendorHealLog.txt", 11f, color = paletteTextMuted)
 
+        // F-PERMS3: the Permissions room — every permission the app needs
+        // with granted / missing status, tap a missing one to open its
+        // settings page. Lives here because the Settings card opens this
+        // page (the full Settings page is a later piece).
+        btn(root, "🔐   Permissions", paletteButtonAlt) {
+            startActivity(Intent(this, PermissionsRoomActivity::class.java))
+        }
+        text(root, "   Every permission the app needs, with granted / missing status. Tap a missing one to open its settings page — the system's App info page only lists Notifications and Phone.", 11f, color = paletteTextMuted)
+
         text(root, "  ⚙️  Admin Settings — removed", 11f, color = ThemeTokens.TEXT_DIM)
 
         divider(root)
