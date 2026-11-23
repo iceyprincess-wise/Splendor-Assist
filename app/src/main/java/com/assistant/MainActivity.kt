@@ -669,20 +669,31 @@ class MainActivity : AppCompatActivity() {
     // is allowed) and on resume, like the dump did. UI-3 restores the
     // FRAME (FrameAssembler.frameRuntimeSnapshot) and DECISION
     // (RuntimeDecisionLoop.decisionRuntimeSnapshot) sections the old
-    // dump had. NOTE: the old dump also surfaced CONTRIBUTIONS,
-    // EXECUTION, CONTROL MAPPING and EVENTS snapshots; those are the
-    // next piece, not this one (they remain in the file logs for now).
+    // dump had. UI-4 restores the last four sections the old dump had —
+    // CONTRIBUTIONS (ContributionRegistry.contributionRuntimeSnapshot),
+    // EXECUTION (GestureExecutionAuthority.executionRuntimeSnapshot),
+    // CONTROL MAPPING (ControlMappingTrainer.mappingRuntimeSnapshot) and
+    // EVENTS (EventHubs.eventRuntimeSnapshot). The dashboard now has all
+    // nine old sections; nothing from the dump is left unrestored.
     private fun refreshRuntimeHub() {
         val runtime = com.assistant.RuntimeCoordinator.runtimeState()
         val health = com.assistant.RuntimeHealthMonitor.runtimeHealthSnapshot()
         val registry = com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot()
         val frame = com.assistant.FrameAssembler.frameRuntimeSnapshot()
         val decision = com.assistant.RuntimeDecisionLoop.decisionRuntimeSnapshot()
+        val contributions = com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot()
+        val execution = com.assistant.GestureExecutionAuthority.executionRuntimeSnapshot()
+        val mapping = com.assistant.ControlMappingTrainer.mappingRuntimeSnapshot()
+        val events = com.assistant.events.EventHubs.eventRuntimeSnapshot()
         renderRuntimeBulbs(runtime)
         renderHealthBulbs(health)
         renderRegistryBulbs(registry)
         renderFrameBulbs(frame)
         renderDecisionBulbs(decision)
+        renderContributionsBulbs(contributions)
+        renderExecutionBulbs(execution)
+        renderMappingBulbs(mapping)
+        renderEventsBulbs(events)
         // UI-2: the Notifications badge and the Diagnosis card subtitle
         // read the SAME health snapshot the HEALTH bulbs just rendered —
         // one evaluation per tick, and the badge always agrees with the
@@ -967,6 +978,154 @@ class MainActivity : AppCompatActivity() {
                 count("chooseNull", "Choose null"),
                 BulbEntry("Last action", if (lastAction != "none") BulbState.GREEN else BulbState.YELLOW, lastAction)
             )
+        )
+    }
+
+    // UI-4: CONTRIBUTIONS bulbs, from ContributionRegistry.
+    // contributionRuntimeSnapshot() (core) — the same live source the old
+    // dump's CONTRIBUTIONS section read; all 20 keys are shown. Colour
+    // rule differs by kind, because a drop counter is not a flow counter:
+    // flow counters (offered, drained, accepted, consumed, emergency
+    // offered/accepted) are GREEN when counting, YELLOW at 0; drop
+    // counters (expired, stopped, UI-blocked, invalid, stale, capacity,
+    // reservation, aim-null) are GREEN at 0 (nothing lost) and YELLOW
+    // when dropping; pending is GREEN at 0 (nothing stuck). Emergency
+    // rejected is RED when > 0 — it is the same "emergency-rejected"
+    // degraded reason the health monitor and the Notification Room flag
+    // as the app's one issue. droppedNonBest is structurally 0 (retained
+    // non-best is the live counter) and shows as 0, truthfully.
+    private fun renderContributionsBulbs(contributions: Map<String, Any>) {
+        fun flow(key: String, label: String): BulbEntry {
+            val v = (contributions[key] as? Number)?.toLong() ?: 0L
+            return BulbEntry(label, if (v > 0) BulbState.GREEN else BulbState.YELLOW, "$v")
+        }
+        fun drops(key: String, label: String): BulbEntry {
+            val v = (contributions[key] as? Number)?.toLong() ?: 0L
+            return BulbEntry(label, if (v == 0L) BulbState.GREEN else BulbState.YELLOW, "$v")
+        }
+        val pending = (contributions["pending"] as? Number)?.toLong() ?: 0L
+        val busPending = (contributions["busPending"] as? Number)?.toLong() ?: 0L
+        val emergencyRejected = (contributions["emergencyRejected"] as? Number)?.toLong() ?: 0L
+        renderBulbSection(
+            com.assistant.overlay.R.id.contributionsBulbGrid,
+            listOf(
+                flow("offered", "Offered"),
+                flow("superseded", "Superseded"),
+                flow("drained", "Drained"),
+                drops("expired", "Expired"),
+                drops("droppedNonBest", "Dropped non-best"),
+                flow("retainedNonBest", "Retained non-best"),
+                BulbEntry("Pending", if (pending == 0L) BulbState.GREEN else BulbState.YELLOW, "$pending"),
+                flow("busAccepted", "Accepted"),
+                flow("busConsumed", "Consumed"),
+                BulbEntry("Bus pending", if (busPending == 0L) BulbState.GREEN else BulbState.YELLOW, "$busPending"),
+                drops("busStoppedDrops", "Stopped drops"),
+                drops("busUiBlockedDrops", "UI-blocked drops"),
+                drops("busInvalidDrops", "Invalid drops"),
+                drops("busStaleDrops", "Stale drops"),
+                drops("busCapacityDrops", "Capacity drops"),
+                drops("busReservationDrops", "Reservation drops"),
+                drops("busAimNull", "Aim null"),
+                flow("emergencyOffered", "Emergency offered"),
+                flow("emergencyAccepted", "Emergency accepted"),
+                BulbEntry("Emergency rejected", if (emergencyRejected == 0L) BulbState.GREEN else BulbState.RED, "$emergencyRejected")
+            )
+        )
+    }
+
+    // UI-4: EXECUTION bulbs, from GestureExecutionAuthority.
+    // executionRuntimeSnapshot() — the same live source the old dump's
+    // EXECUTION section read and the mod menu reads. Requested/accepted
+    // are flow counters (GREEN when counting); rejected/failed are loss
+    // counters (GREEN at 0, YELLOW when > 0 — rejected > 0 is the normal
+    // state when Bypass is OFF, so it is attention, not an error).
+    // lastUpdatedMs (a raw epoch) and lastActionTelemetry (a nested map)
+    // are NOT shown: a bulb cannot show a raw epoch or a nested map
+    // meaningfully, and the old dump showed them only as raw text.
+    private fun renderExecutionBulbs(execution: Map<String, Any>) {
+        fun count(key: String, label: String): BulbEntry {
+            val v = (execution[key] as? Number)?.toLong() ?: 0L
+            return BulbEntry(label, if (v > 0) BulbState.GREEN else BulbState.YELLOW, "$v")
+        }
+        val rejected = (execution["rejected"] as? Number)?.toLong() ?: 0L
+        val failed = (execution["failed"] as? Number)?.toLong() ?: 0L
+        val lastOrigin = execution["lastOrigin"]?.toString() ?: "none"
+        val lastAccepted = execution["lastAccepted"] as? Boolean ?: false
+        renderBulbSection(
+            com.assistant.overlay.R.id.executionBulbGrid,
+            listOf(
+                count("requested", "Requested"),
+                count("accepted", "Accepted"),
+                BulbEntry("Rejected", if (rejected == 0L) BulbState.GREEN else BulbState.YELLOW, "$rejected"),
+                BulbEntry("Failed", if (failed == 0L) BulbState.GREEN else BulbState.YELLOW, "$failed"),
+                BulbEntry("Last origin", if (lastOrigin != "none") BulbState.GREEN else BulbState.YELLOW, lastOrigin),
+                BulbEntry("Last accepted", if (lastAccepted) BulbState.GREEN else BulbState.YELLOW, if (lastAccepted) "Accepted" else "Not accepted")
+            )
+        )
+    }
+
+    // UI-4: CONTROL MAPPING bulbs, from ControlMappingTrainer.
+    // mappingRuntimeSnapshot() — the same live source the old dump's
+    // CONTROL MAPPING section read. UI mode is GREEN only in a match
+    // (IN_MATCH); max drag is GREEN once measured, YELLOW while
+    // "unmeasured". lastThroughPressMs (a raw epoch) is NOT shown, for
+    // the same reason as EXECUTION's lastUpdatedMs.
+    private fun renderMappingBulbs(mapping: Map<String, Any>) {
+        fun count(key: String, label: String): BulbEntry {
+            val v = (mapping[key] as? Number)?.toLong() ?: 0L
+            return BulbEntry(label, if (v > 0) BulbState.GREEN else BulbState.YELLOW, "$v")
+        }
+        fun flag(key: String, label: String, on: String, off: String): BulbEntry {
+            val v = mapping[key] as? Boolean ?: false
+            return BulbEntry(label, if (v) BulbState.GREEN else BulbState.YELLOW, if (v) on else off)
+        }
+        val uiMode = mapping["uiMode"]?.toString() ?: "UNKNOWN"
+        val maxDragPx = mapping["maxDragPx"]?.toString() ?: "unmeasured"
+        val lastMove = mapping["lastMove"]?.toString() ?: "none"
+        renderBulbSection(
+            com.assistant.overlay.R.id.mappingBulbGrid,
+            listOf(
+                BulbEntry("UI mode", if (uiMode == "IN_MATCH") BulbState.GREEN else BulbState.YELLOW, uiMode),
+                flag("matchActive", "Match active", "Active", "Inactive"),
+                count("observedFrames", "Observed frames"),
+                count("settingsFrames", "Settings frames"),
+                count("matchFrames", "Match frames"),
+                count("probesRead", "Probes read"),
+                count("trainedSlots", "Trained slots"),
+                BulbEntry("Max drag", if (maxDragPx != "unmeasured") BulbState.GREEN else BulbState.YELLOW, maxDragPx),
+                flag("maxDragProbeActive", "Drag probe", "Active", "Inactive"),
+                count("maxDragProbeSamples", "Drag probe samples"),
+                flag("throughPressCandidateActive", "Through-press", "Active", "Inactive"),
+                BulbEntry("Last move", if (lastMove != "none") BulbState.GREEN else BulbState.YELLOW, lastMove)
+            )
+        )
+    }
+
+    // UI-4: EVENTS bulbs, from EventHubs.eventRuntimeSnapshot() (core) —
+    // the three channels (system, runtime, gameplay) the old dump's
+    // EVENTS section read, each with its emitted count and last event
+    // name. Per channel, lastUpdatedMs (a raw epoch) and history (the
+    // bounded-ring size, capped at 120) are NOT shown: neither is a live
+    // signal a bulb can show meaningfully.
+    private fun renderEventsBulbs(events: Map<String, Any>) {
+        fun channel(key: String, label: String): List<BulbEntry> {
+            val ch = events[key] as? Map<*, *>
+            if (ch == null) {
+                return listOf(
+                    BulbEntry("$label emitted", BulbState.YELLOW, "0"),
+                    BulbEntry("$label last", BulbState.YELLOW, "none")
+                )
+            }
+            val emitted = (ch["emitted"] as? Number)?.toLong() ?: 0L
+            val lastName = ch["lastName"]?.toString() ?: "none"
+            return listOf(
+                BulbEntry("$label emitted", if (emitted > 0) BulbState.GREEN else BulbState.YELLOW, "$emitted"),
+                BulbEntry("$label last", if (lastName != "none") BulbState.GREEN else BulbState.YELLOW, lastName)
+            )
+        }
+        renderBulbSection(
+            com.assistant.overlay.R.id.eventsBulbGrid,
+            channel("system", "System") + channel("runtime", "Runtime") + channel("gameplay", "Gameplay")
         )
     }
 

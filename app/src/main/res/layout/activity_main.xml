@@ -9,15 +9,21 @@
     (8dp corners, same premium gradient) instead of the 27dp pill.
     button_premium / btn_ghost (used by the control rooms) untouched.
   - The raw monospace key=value dump (txtRuntimeHub) is GONE. In its place
-    five design banners — RUNTIME, HEALTH, REGISTRY, FRAME, DECISION —
-    each followed by a bulb grid that MainActivity fills from the SAME live
-    snapshots the dump used (RuntimeCoordinator.runtimeState,
+    nine design banners — RUNTIME, HEALTH, REGISTRY, FRAME, DECISION,
+    CONTRIBUTIONS, EXECUTION, CONTROL MAPPING, EVENTS — each followed by a
+    bulb grid that MainActivity fills from the SAME live snapshots the dump
+    used (RuntimeCoordinator.runtimeState,
     RuntimeHealthMonitor.runtimeHealthSnapshot, GameplayEngineRegistry.
     registryRuntimeSnapshot, FrameAssembler.frameRuntimeSnapshot,
-    RuntimeDecisionLoop.decisionRuntimeSnapshot). Bulb colours: true/alive
-    = green, false/waiting = yellow, issue = red. Counters live inside
-    their bulb. (UI-3 added FRAME + DECISION; CONTRIBUTIONS, EXECUTION,
-    CONTROL MAPPING and EVENTS are the next piece.)
+    RuntimeDecisionLoop.decisionRuntimeSnapshot,
+    ContributionRegistry.contributionRuntimeSnapshot,
+    GestureExecutionAuthority.executionRuntimeSnapshot,
+    ControlMappingTrainer.mappingRuntimeSnapshot,
+    EventHubs.eventRuntimeSnapshot). Bulb colours: true/alive = green,
+    false/waiting = yellow, issue = red. Counters live inside their bulb.
+    (UI-3 added FRAME + DECISION; UI-4 restores CONTRIBUTIONS, EXECUTION,
+    CONTROL MAPPING and EVENTS — the dashboard now has all nine old
+    sections.)
   - Duplicate room cards REMOVED: cardNotifications (same destination as
     cardAccessibility -> AgentHub) and cardDiagnostics (same destination as
     cardOverlay -> GameplayRoom). One card per room.
@@ -119,6 +125,42 @@
           android:text="DECISION" android:textColor="?attr/colorOnSurface" android:textStyle="bold"
           android:textSize="13sp" android:letterSpacing="0.12" android:gravity="center"/>
       <LinearLayout android:id="@+id/decisionBulbGrid"
+          android:layout_width="match_parent" android:layout_height="wrap_content"
+          android:orientation="vertical" android:layout_marginTop="8dp"/>
+
+      <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+          android:layout_marginTop="16dp" android:padding="14dp"
+          android:background="@drawable/banner_premium"
+          android:text="CONTRIBUTIONS" android:textColor="?attr/colorOnSurface" android:textStyle="bold"
+          android:textSize="13sp" android:letterSpacing="0.12" android:gravity="center"/>
+      <LinearLayout android:id="@+id/contributionsBulbGrid"
+          android:layout_width="match_parent" android:layout_height="wrap_content"
+          android:orientation="vertical" android:layout_marginTop="8dp"/>
+
+      <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+          android:layout_marginTop="16dp" android:padding="14dp"
+          android:background="@drawable/banner_premium"
+          android:text="EXECUTION" android:textColor="?attr/colorOnSurface" android:textStyle="bold"
+          android:textSize="13sp" android:letterSpacing="0.12" android:gravity="center"/>
+      <LinearLayout android:id="@+id/executionBulbGrid"
+          android:layout_width="match_parent" android:layout_height="wrap_content"
+          android:orientation="vertical" android:layout_marginTop="8dp"/>
+
+      <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+          android:layout_marginTop="16dp" android:padding="14dp"
+          android:background="@drawable/banner_premium"
+          android:text="CONTROL MAPPING" android:textColor="?attr/colorOnSurface" android:textStyle="bold"
+          android:textSize="13sp" android:letterSpacing="0.12" android:gravity="center"/>
+      <LinearLayout android:id="@+id/mappingBulbGrid"
+          android:layout_width="match_parent" android:layout_height="wrap_content"
+          android:orientation="vertical" android:layout_marginTop="8dp"/>
+
+      <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+          android:layout_marginTop="16dp" android:padding="14dp"
+          android:background="@drawable/banner_premium"
+          android:text="EVENTS" android:textColor="?attr/colorOnSurface" android:textStyle="bold"
+          android:textSize="13sp" android:letterSpacing="0.12" android:gravity="center"/>
+      <LinearLayout android:id="@+id/eventsBulbGrid"
           android:layout_width="match_parent" android:layout_height="wrap_content"
           android:orientation="vertical" android:layout_marginTop="8dp"/>
 
