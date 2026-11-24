@@ -130,6 +130,22 @@ object UserIntentVision {
         }
     }
 
+    // ProximityHold PROX log (button half): 1 Hz throttle, shared by
+    // slots 2/3. confirmMs is the ms from the START event to this
+    // frame's confirm.
+    private var lastProxLogMs = 0L
+
+    private fun logProx(slot: Int, vote: Float, now: Long) {
+        if (now - lastProxLogMs < ControlMappingTrainer.PROXIMITY_LOG_MIN_INTERVAL_MS) return
+        lastProxLogMs = now
+        try {
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "PROX slot=$slot vote=$vote confirmMs=${now - UserTouchState.lastTouchStartMs()}",
+                "PROX"
+            )
+        } catch (_: Throwable) { }
+    }
+
     private fun HoldState.fresh(now: Long): Boolean = active && now - lastMs <= CANDIDATE_FRESH_MS
 
     /** Per-frame pixel observation. Called only from the trainer's IN_MATCH branch. */
@@ -157,6 +173,25 @@ object UserIntentVision {
             val rgb = ControlMappingTrainer.probePixel(b, w, h, stride, cx, cy, pixelStride)
             val occluded = rgb != null && !isGreenRgb(rgb) && touching
             updateHold(state, occluded, now)
+            // ProximityHold (button half): a strong window vote while
+            // touching confirms on THIS frame — set the counter to the
+            // confirm bar. Runs whenever touching and not already
+            // confirmed, so it also catches an edge press the centre
+            // pixel missed. The joystick hold below is untouched (its
+            // fast-confirm rides the staged knob reader, not this
+            // piece). active/lastMs are set here so the hold is
+            // visible in THIS frame's mask (heldSlotMask is read when
+            // the frame is assembled); updateHold's own confirm block
+            // re-asserts them on the following frames exactly as today.
+            if (touching && state.occludedFrames < OCCLUDED_FRAMES_TO_CONFIRM) {
+                val vote = ControlMappingTrainer.probeWindow(b, w, h, stride, cx, cy, pixelStride)
+                if (vote >= ControlMappingTrainer.PROXIMITY_VOTE_THRESHOLD) {
+                    state.occludedFrames = OCCLUDED_FRAMES_TO_CONFIRM
+                    state.active = true
+                    state.lastMs = now
+                    logProx(slot, vote, now)
+                }
+            }
         }
         // Joystick: measured-centre pixel leaving grey-or-green while
         // touching (finger occludes the knob/base). Same 2-frame rule.

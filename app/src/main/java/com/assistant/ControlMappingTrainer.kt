@@ -283,6 +283,19 @@ object ControlMappingTrainer {
         val (c1x, c1y) = d7SlotCenter(1, w, h)
         val slot1Green = probe(b, w, h, stride, c1x, c1y, pixelStride) && isGreen()
         if (!slot1Green && UserTouchState.isTouching()) slot1OccludedFrames++ else slot1OccludedFrames = 0
+        // ProximityHold (button half): a strong window vote while
+        // touching confirms on THIS frame — set the counter to the
+        // confirm bar instead of incrementing by 1. Runs whenever
+        // touching and not already confirmed, so it also catches an
+        // edge press the centre pixel missed (counter still 0). Weak
+        // votes keep the 2-frame rule above; a zero vote resets it.
+        if (UserTouchState.isTouching() && slot1OccludedFrames < 2) {
+            val vote = probeWindow(b, w, h, stride, c1x, c1y, pixelStride)
+            if (vote >= PROXIMITY_VOTE_THRESHOLD) {
+                slot1OccludedFrames = 2
+                logProx(1, vote)
+            }
+        }
         if (slot1OccludedFrames >= 2) {
             throughPressCandidateActive = true
             lastThroughPressMs = now
@@ -329,6 +342,14 @@ object ControlMappingTrainer {
         val (c4x, c4y) = d7SlotCenter(4, w, h)
         val slot4Green = probe(b, w, h, stride, c4x, c4y, pixelStride) && isGreen()
         if (!slot4Green && UserTouchState.isTouching()) slot4OccludedFrames++ else slot4OccludedFrames = 0
+        // ProximityHold (button half): same fast-confirm as slot 1.
+        if (UserTouchState.isTouching() && slot4OccludedFrames < 2) {
+            val vote = probeWindow(b, w, h, stride, c4x, c4y, pixelStride)
+            if (vote >= PROXIMITY_VOTE_THRESHOLD) {
+                slot4OccludedFrames = 2
+                logProx(4, vote)
+            }
+        }
         if (slot4OccludedFrames >= 2) {
             dashHoldCandidateActive = true
             lastDashHoldMs = now
@@ -424,6 +445,58 @@ object ControlMappingTrainer {
     fun probePixel(b: ByteBuffer, w: Int, h: Int, stride: Int, nx: Float, ny: Float, pixelStride: Int): IntArray? {
         if (!probe(b, w, h, stride, nx, ny, pixelStride)) return null
         return intArrayOf(probeBuffer[0], probeBuffer[1], probeBuffer[2])
+    }
+    /**
+     * ProximityHold window vote (button half): the fraction of a 5x5
+     * window around normalized centre (cx, cy) whose pixels have left
+     * the at-rest green. Step is 4 px at capture scale, window ±8 px —
+     * inside every button (radius 27.2 px) and far from any neighbour
+     * (nearest centres 46.3 px apart; 8+8=16 < 46.3, zones cannot
+     * overlap). Reuses probe() + probeBuffer (no allocation per call);
+     * each sample's isGreen() is read immediately after its probe(),
+     * the same shape as the SETTINGS training window above. A failed
+     * probe is an invalid sample, never a changed one; fewer than
+     * PROXIMITY_MIN_SAMPLES valid samples votes 0 (cannot confirm).
+     * Public so UserIntentVision (slots 2/3) shares the trainer's
+     * pixel path, like probePixel.
+     */
+    const val PROXIMITY_VOTE_THRESHOLD = 0.6f
+    const val PROXIMITY_LOG_MIN_INTERVAL_MS = 1000L
+    private const val PROXIMITY_WINDOW_RADIUS_PX = 8f
+    private const val PROXIMITY_WINDOW_STEP_PX = 4f
+    private const val PROXIMITY_MIN_SAMPLES = 13
+
+    fun probeWindow(b: ByteBuffer, w: Int, h: Int, stride: Int, cx: Float, cy: Float, pixelStride: Int): Float {
+        val halfSteps = (PROXIMITY_WINDOW_RADIUS_PX / PROXIMITY_WINDOW_STEP_PX).toInt()
+        val stepNx = PROXIMITY_WINDOW_STEP_PX / w
+        val stepNy = PROXIMITY_WINDOW_STEP_PX / h
+        var changed = 0
+        var sampled = 0
+        for (oy in -halfSteps..halfSteps) for (ox in -halfSteps..halfSteps) {
+            if (probe(b, w, h, stride, cx + ox * stepNx, cy + oy * stepNy, pixelStride)) {
+                sampled++
+                if (!isGreen()) changed++
+            }
+        }
+        return if (sampled >= PROXIMITY_MIN_SAMPLES) changed.toFloat() / sampled else 0f
+    }
+
+    // ProximityHold PROX log: one line per confirm at most, 1 Hz
+    // throttle shared by slots 1/4 (the diagnostic is "a fast
+    // confirm happened", not a per-slot counter). confirmMs is the
+    // ms from the START event to this frame's confirm.
+    private var lastProxLogMs = 0L
+
+    private fun logProx(slot: Int, vote: Float) {
+        val now = System.currentTimeMillis()
+        if (now - lastProxLogMs < PROXIMITY_LOG_MIN_INTERVAL_MS) return
+        lastProxLogMs = now
+        try {
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "PROX slot=$slot vote=$vote confirmMs=${now - UserTouchState.lastTouchStartMs()}",
+                "PROX"
+            )
+        } catch (_: Throwable) { }
     }
 
     fun observe(buffer: ByteBuffer, w: Int, h: Int, rowStride: Int, pixelStride: Int = 4) {
@@ -585,6 +658,7 @@ object ControlMappingTrainer {
         dashHoldCandidateActive = false
         slot4OccludedFrames = 0
         lastDashHoldCandidateLogMs = 0L
+        lastProxLogMs = 0L
         com.assistant.execution.DispatchBounds.setMaxDrag(null)
     }
 }

@@ -39,6 +39,11 @@ object UserTouchState {
     // field's semantics if they ever change.
     private val lastTouchStartMs = AtomicLong(0L)
 
+    // ProximityHold PROX log: wall time of the most recent
+    // TYPE_TOUCH_INTERACTION_START, or 0 when none. Read-only
+    // accessor — the field and its write path are unchanged.
+    fun lastTouchStartMs(): Long = lastTouchStartMs.get()
+
     fun setTouching(value: Boolean) {
         touching.set(value)
         if (value) {
