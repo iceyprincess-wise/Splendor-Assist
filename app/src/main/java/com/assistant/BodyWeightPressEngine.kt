@@ -19,11 +19,10 @@ import kotlin.math.hypot
  * What this engine does: when the Beast window is open (same
  * foul-risk gates, same D14 guard — reused, not re-invented) AND the
  * presser is inside CONTACT distance of the carrier (the barge
- * contact radius, 6% of capture height — bodies can touch), it
- * counts consecutive frames of contact. The offer opens only after
- * SUSTAINED_FRAMES (3) frames with the SAME presser in contact —
- * a passing brush never qualifies — and stays open, re-offered every
- * frame, while contact holds. That re-offer IS the sustained state:
+ * contact radius, 6% of capture height — bodies can touch), the
+ * offer opens on the first frame of contact and stays open,
+ * re-offered every frame, while contact holds. That re-offer IS the
+ * sustained state:
  * the terminal renders each frame's offer (duration hint 85 ms, the
  * most RuntimeDecisionLoop honours — its duration clamp is
  * [15, 85] ms), so the controlled defender keeps leaning into the
@@ -37,10 +36,6 @@ import kotlin.math.hypot
  *   line (D14 guard). Any closed reason closes this window too.
  * - PhysicalBargeEngine.CONTACT_RADIUS_FRACTION_OF_HEIGHT (0.06):
  *   presser inside contact distance of the ball/carrier.
- * - SUSTAINED_FRAMES = 3: contact must hold 3 consecutive frames
- *   with the same presser. At the 20 fps processed rate that is
- *   ~150 ms of real contact before the lean starts — a brush (1-2
- *   frames) never opens it.
  *
  * Output is a DEFEND-class offer at authority 0.80 (below Beast's
  * 0.90 hard tackle — a lean is not a tackle) with duration hint
@@ -52,7 +47,8 @@ import kotlin.math.hypot
  * State: leanFrames + lastPresserId live on this object and are
  * reset by reset() (called from the contributor's reset(), which
  * the registry calls via resetAll()). A presser change restarts
- * the count at 1 — the new presser must earn his own 3 frames.
+ * the count at 1. The count is diagnostic only (lean length in
+ * the "lean broke" log) — the offer no longer waits on it.
  */
 data class BodyWeightWindow(
     val open: Boolean,
@@ -65,8 +61,6 @@ data class BodyWeightWindow(
 
 object BodyWeightPressEngine {
 
-    /** Contact must hold this many consecutive frames to count as sustained. */
-    const val SUSTAINED_FRAMES = 3
     /** Duration hint: the most RuntimeDecisionLoop honours ([15, 85] ms). */
     const val LEAN_DURATION_HINT_MS = 85L
 
@@ -96,13 +90,12 @@ object BodyWeightPressEngine {
             ?: return closed("presser-gone")
         val dist = hypot(presser.x - frame.ballX, presser.y - frame.ballY)
         if (dist > radius) return closed("out-of-contact")
-        // Sustained: same presser, consecutive frames.
+        // Count consecutive frames with the same presser (diagnostic
+        // only: lean length in the "lean broke" log). The offer opens
+        // on the first contact frame — no sustain wait.
         if (lastPresserId == presserId) leanFrames++ else {
             leanFrames = 1
             lastPresserId = presserId
-        }
-        if (leanFrames < SUSTAINED_FRAMES) {
-            return BodyWeightWindow(false, "building:$leanFrames", presserId, leanFrames)
         }
         return BodyWeightWindow(true, "", presserId, leanFrames)
     }

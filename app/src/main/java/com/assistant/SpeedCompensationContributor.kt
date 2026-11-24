@@ -32,7 +32,6 @@ object SpeedCompensationContributor : GameplayContributor {
 
         // authority from executionBoost — max is 35.0 in engine
         val authority = (result.executionBoost / 35f).coerceIn(0f, 1f)
-        if (authority <= 0f) return null
 
         // Target: toward pass lane when open, toward ball when defending
         val targetX = if (frame.hasBall && frame.passTargetX > 0f)

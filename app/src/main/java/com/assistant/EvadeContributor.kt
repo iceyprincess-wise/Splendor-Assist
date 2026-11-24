@@ -99,7 +99,6 @@ object EvadeContributor : GameplayContributor {
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
-        if (frame.defenderDensity < 0.5f) return null
 
         // Evade toward the best passing lane / open space.
         // Sending the player to ballX/ballY (where they already ARE) is a no-op.

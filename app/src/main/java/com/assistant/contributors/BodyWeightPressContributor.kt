@@ -7,9 +7,9 @@ import com.assistant.runtime.*
  * Batch 6b — Body-Weight Press contributor.
  *
  * Holds a sustained lean/shoulder against a shielding carrier
- * (BodyWeightPressEngine): the offer opens only after 3 consecutive
- * frames of the same presser in contact, and is re-offered every
- * frame while contact holds — that re-offer IS the sustained state,
+ * (BodyWeightPressEngine): the offer opens on the first frame of
+ * the same presser in contact, and is re-offered every frame while
+ * contact holds — that re-offer IS the sustained state,
  * unlike Beast's one-shot 20 ms tackle. DEFEND, authority 0.80
  * (below Beast's 0.90 — a lean is not a tackle), 85 ms duration
  * hint (the most RuntimeDecisionLoop honours). The foul-risk gates
