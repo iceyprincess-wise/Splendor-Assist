@@ -204,6 +204,10 @@ object GestureExecutionAuthority {
 
         val wrappedCallback = object : AccessibilityService.GestureResultCallback() {
             override fun onCompleted(gestureDescription: GestureDescription?) {
+                // TOUCHSOURCE-DISCRIMINATOR (Phase 0 #1): close the dispatch
+                // window so touch events arriving after our gesture ends are
+                // no longer attributed to us (guard margin still applies).
+                TouchSourceDiscriminator.completeDispatch(actionId, System.currentTimeMillis())
                 RuntimeLogger.log("GestureExecutionAuthority gesture completed actionId=$actionId", "SMART_ASSIST")
                 val curr = currentActionTelemetry
                 if (curr != null && curr.actionId == actionId) {
@@ -217,6 +221,10 @@ object GestureExecutionAuthority {
                 callback?.onCompleted(gestureDescription)
             }
             override fun onCancelled(gestureDescription: GestureDescription?) {
+                // TOUCHSOURCE-DISCRIMINATOR (Phase 0 #1): close the dispatch
+                // window on cancel too — a cancelled gesture is no longer
+                // live, and its events must not be attributed to us.
+                TouchSourceDiscriminator.completeDispatch(actionId, System.currentTimeMillis())
                 RuntimeLogger.log("GestureExecutionAuthority gesture cancelled actionId=$actionId; cancelling outcome verification", "SMART_ASSIST")
                 ActionOutcomeVerifier.cancelDispatch(actionId)
                 val curr = currentActionTelemetry
@@ -246,6 +254,9 @@ object GestureExecutionAuthority {
         }
 
         return try {
+            // TOUCHSOURCE-DISCRIMINATOR (Phase 0 #1): capture the dispatch
+            // start so the window covers the whole live gesture.
+            val dispatchStartMs = System.currentTimeMillis()
             val result = service.dispatchGesture(gesture, wrappedCallback, handler)
             // SPLENDOR_F31_EVIDENCE: dispatch boundary state for every attempt.
             RuntimeLogger.log(
@@ -259,6 +270,10 @@ object GestureExecutionAuthority {
                 accepted.incrementAndGet()
                 // Anchor outcome verification to actual dispatch boundary
                 ActionOutcomeVerifier.confirmDispatch(actionId)
+                // TOUCHSOURCE-DISCRIMINATOR (Phase 0 #1): register the
+                // dispatch window. Only on result==true — a rejected
+                // dispatch never becomes a live gesture.
+                TouchSourceDiscriminator.registerDispatch(actionId, dispatchStartMs)
             } else {
                 rejected.incrementAndGet()
             }

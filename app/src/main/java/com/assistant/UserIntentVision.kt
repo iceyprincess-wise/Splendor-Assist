@@ -136,6 +136,15 @@ object UserIntentVision {
     fun observeFrame(b: ByteBuffer, w: Int, h: Int, stride: Int, pixelStride: Int) {
         if (w <= 0 || h <= 0) return
         val now = System.currentTimeMillis()
+        // TOUCHSOURCE-DISCRIMINATOR (Phase 0 #1): our own injected gesture
+        // renders the joystick/buttons pressed identically to a real finger.
+        // If we counted occlusion during our own dispatch, we would confirm
+        // a hold on the slot we are driving and the RDL would suppress our
+        // own next request (A3 autopilot self-suppression). Skip hold
+        // confirmation while our own gesture is live. Pre-existing holds
+        // are untouched (their freshness is time-based), and a genuine user
+        // hold is confirmed on the frames after our gesture ends.
+        if (TouchSourceDiscriminator.isAppGestureActive(now)) return
         val touching = UserTouchState.isTouching()
         // Slots 2 (Shoot) and 3 (Pass): centre pixel leaving its
         // at-rest green while touching. A failed probe is "unknown",

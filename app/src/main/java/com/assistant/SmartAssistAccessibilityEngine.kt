@@ -649,11 +649,28 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         if (event == null) return
         when (event.eventType) {
             AccessibilityEvent.TYPE_TOUCH_INTERACTION_START -> {
-                UserTouchState.setTouching(true)
-                RuntimeDecisionLoop.invalidateGestureEnvelopeOnManualTouch()
+                // TOUCHSOURCE-DISCRIMINATOR (Phase 0 #1): if our own injected
+                // gesture is live, this START is our own output re-entering
+                // as an accessibility event — NOT a user touch. Skipping
+                // both setTouching(true) and the envelope invalidation
+                // breaks the self-authorizing loop (GHOST-3) and the
+                // self-invalidation (A2). Trade-off: a genuine user touch
+                // that lands during our stroke is ignored — fail-closed for
+                // authorization is the correct direction.
+                if (!TouchSourceDiscriminator.isAppGestureActive(System.currentTimeMillis())) {
+                    UserTouchState.setTouching(true)
+                    RuntimeDecisionLoop.invalidateGestureEnvelopeOnManualTouch()
+                }
             }
-            AccessibilityEvent.TYPE_TOUCH_INTERACTION_END ->
-                UserTouchState.setTouching(false)
+            AccessibilityEvent.TYPE_TOUCH_INTERACTION_END -> {
+                // TOUCHSOURCE-DISCRIMINATOR (Phase 0 #1): an END for our own
+                // gesture must not clear a genuine user touch that is still
+                // down. If the user is not touching, the flag is already
+                // false/old, so skipping is a no-op.
+                if (!TouchSourceDiscriminator.isAppGestureActive(System.currentTimeMillis())) {
+                    UserTouchState.setTouching(false)
+                }
+            }
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
                 val pkg = event.packageName?.toString() ?: return
                 try {
