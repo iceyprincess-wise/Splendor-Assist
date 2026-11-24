@@ -909,20 +909,58 @@ object OmnipotentGoalkeeperEngine {
                 val promotedAction =
                     if (goalBound && (action == GoalkeeperAction.TRACK || action == GoalkeeperAction.CATCH_CENTER)) {
                         GoalkeeperActionRouter.route(decision.copy(priority = 100))
+                    } else if (goalBound && action == GoalkeeperAction.RUSH_OUT &&
+                        !decision.isOneVsOne && decision.direction == ShotDirection.LONG_BALL) {
+                        // No-signal save (2026-11-24): the router's
+                        // INTERCEPT arm rushes the keeper at an
+                        // in-flight long ball (direction alone, no
+                        // opponent/possession check) — 644 such
+                        // RUSH_OUTs in the morning logs. A goal-bound
+                        // one is a shot, not an interception: re-route
+                        // it at priority 100, where the router's own
+                        // matrix picks the dive instead (SAVE band,
+                        // matrix above the INTERCEPT arm). Genuine 1v1
+                        // rushes (isOneVsOne) are excluded, as are
+                        // CROSS-direction rushes.
+                        GoalkeeperActionRouter.route(decision.copy(priority = 100))
                     } else {
                         action
                     }
 
+                // No-signal save (2026-11-24): the effective save
+                // verdict. The goal-bound promote above re-routes a
+                // TRACK/CATCH_CENTER/RUSH_OUT at priority 100, but the
+                // confidence gate below reads saveDecision — computed
+                // by DetectionConfidenceEngine from the UN-promoted
+                // priority — so a promoted dive is vetoed back to
+                // TRACK whenever the gauge priority says TRACK (a lone
+                // 0.7 trajectory-only shot at priority 75-99). A
+                // promoted dive-family action IS the save verdict:
+                // when the promote actually re-routed (goal-bound,
+                // and the action was one of the three the promote
+                // handles), the effective verdict is SAVE; otherwise
+                // the caller's verdict stands untouched.
+                val effectiveSaveDecision =
+                    if (goalBound && promotedAction in DIVE_FAMILY_ACTIONS &&
+                        (action == GoalkeeperAction.TRACK || action == GoalkeeperAction.CATCH_CENTER || action == GoalkeeperAction.RUSH_OUT)
+                    ) {
+                        DetectionConfidenceEngine.SaveDecision.SAVE
+                    } else {
+                        saveDecision
+                    }
+
                 // Phase 3 REVIVE-DIVE: the dive promotion sits between
                 // the goal-bound promote above and the confidence gate
-                // below, so the gate still guards the promoted DIVE
-                // exactly like any other dive-family action (non-SAVE
-                // -> TRACK; SAVE -> offer). A promoted DIVE flows on
-                // through the re-aim block, the state machine (DIVE is
-                // already in DIVE_FAMILY_ACTIONS) and the rebound
-                // override, unchanged from any other dive-family save.
+                // below. It reads the EFFECTIVE verdict, not the
+                // caller's: a promoted dive carries its own SAVE
+                // (see the no-signal note above), so condition (1)
+                // of the trigger passes for it. A promoted DIVE
+                // flows on through the re-aim block, the state
+                // machine (DIVE is already in DIVE_FAMILY_ACTIONS)
+                // and the rebound override, unchanged from any
+                // other dive-family save.
                 val diveAction = divePromotionFor(
-                    promotedAction, decision, saveDecision, fused, mouth,
+                    promotedAction, decision, effectiveSaveDecision, fused, mouth,
                     keeperX, keeperY, screenWidthBase, screenHeightBase
                 )
 
@@ -944,10 +982,10 @@ object OmnipotentGoalkeeperEngine {
                 //    the dive for a corroborated 75-99 shot instead of
                 //    standing still (this is the G2 kill).
                 val confidenceAction = when {
-                    saveDecision == DetectionConfidenceEngine.SaveDecision.SAVE &&
+                    effectiveSaveDecision == DetectionConfidenceEngine.SaveDecision.SAVE &&
                         diveAction == GoalkeeperAction.TRACK ->
                         GoalkeeperActionRouter.route(decision.copy(priority = 100))
-                    saveDecision != DetectionConfidenceEngine.SaveDecision.SAVE &&
+                    effectiveSaveDecision != DetectionConfidenceEngine.SaveDecision.SAVE &&
                         diveAction in DIVE_FAMILY_ACTIONS ->
                         GoalkeeperAction.TRACK
                     else -> diveAction
