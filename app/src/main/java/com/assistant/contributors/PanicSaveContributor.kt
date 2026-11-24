@@ -1,5 +1,6 @@
 package com.assistant.contributors
 import com.assistant.NativePorts
+import com.assistant.SmartAssistRepository
 
 
 import com.assistant.overlay.interceptor.*
@@ -10,6 +11,12 @@ object PanicSaveContributor : GameplayContributor {
     override val capabilities = setOf(EngineCapability.KEEPER, EngineCapability.DEFENSE)
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
+        // PANIC GATE: the KEEPER panic-save claim only fires when the user
+        // enabled Panic. Same flag the OCR auto-panic gate reads
+        // (OverlayService.kt:1512, SmartAssistRepository.panicUserEnabled).
+        // Without this, panic saves emit through ConAI even with the Panic
+        // switch OFF. Also skips the decisionOf computation when off.
+        if (!SmartAssistRepository.panicUserEnabled()) return null
         if (frame.confidence < 0.05f) return null
         val possessionWeight = if (!frame.hasBall) 1.0f else 0.2f
         // RF-D9 (batch 5): the trustWeight fallback (0.7f on untrusted) was
