@@ -15,6 +15,7 @@ object TrueCrossContributor : GameplayContributor {
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
+        if (!frame.goalDetected) return null
         if (frame.viableLaneCount <= 0 && frame.bestLaneConfidence <= 0f) return null
 
         val scene = try { SceneTracker.current() } catch (_: Throwable) { null }
@@ -27,10 +28,8 @@ object TrueCrossContributor : GameplayContributor {
                 )
             }
 
-        val goalCX = if (frame.goalDetected)
-            (frame.goalLeftX + frame.goalRightX) * 0.5f else com.assistant.vision.CameraProfile.captureWidthOrFallback()
-        val goalCY = if (frame.goalDetected)
-            (frame.goalTopY + frame.goalBottomY) * 0.5f else frame.ballY
+        val goalCX = (frame.goalLeftX + frame.goalRightX) * 0.5f
+        val goalCY = (frame.goalTopY + frame.goalBottomY) * 0.5f
 
         val result = TrueCrossEngine.compute(
             frame.ballX, frame.ballY,
