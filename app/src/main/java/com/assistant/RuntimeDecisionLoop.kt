@@ -318,22 +318,62 @@ object RuntimeDecisionLoop {
 
     // SLEW LIMITER tuning (design parameters for this new engine; the
     // deflection ceiling above is the only measured value in this
-    // stage): deadband 5° (ignore sub-5° jitter), max 45°/frame (a
-    // full 180° reversal takes ~8 frames / ~400 ms at the 20 fps
+    // stage): deadband 5° (ignore sub-5° jitter), max 45°/frame settled
+    // (a full 180° reversal takes ~8 frames / ~400 ms at the 20 fps
     // processed rate — the clamp alone would allow 4 frames / 200 ms,
     // but the EMA halves the effective swing), EMA alpha 0.5 (halve
     // the remaining angle each frame). The slew clamp is an upper
     // bound — the EMA makes the effective per-frame swing smaller,
     // which is the safe direction.
+    //
+    // URGENCY-AWARE SLEW (step 4, 2026-11-24): a reactive winner turns
+    // the stick twice as fast. The effective swing per frame is
+    // ~clamp/2 (EMA alpha 0.5 halves the clamped swing), so a 180°
+    // reversal takes 180/(90/2) = 4 frames / 200 ms at the urgent
+    // 90° clamp vs 180/(45/2) = 8 frames / 400 ms at the settled
+    // 45° clamp (20 fps processed rate). 90° — not a bypass — keeps
+    // the turn slewed: the stick still cannot snap in one frame, and
+    // the EMA still smooths every step. INVARIANT: the clamp only
+    // ever WIDENS with urgency, never narrows below today's 45° —
+    // an unknown or missing urgency signal falls back to the settled
+    // clamp (fail-open; see isUrgentTurn).
     private const val SLEW_DEADBAND_DEG = 5f
     private const val SLEW_MAX_DEG_PER_FRAME = 45f
+    private const val SLEW_MAX_DEG_PER_FRAME_URGENT = 90f
     private const val SLEW_EMA_ALPHA = 0.5f
+
+    // Urgency signal for the slew limiter: the winning contribution's
+    // action class (typed enum, read at the chooseRequest call site
+    // where `best` is in scope). KEEPER = keeper save/rush — the
+    // panic save itself is a KEEPER move (PanicSaveContributor);
+    // DEFEND = interception and defensive engagement (InstantIntercept
+    // :164/:170, InterceptMatrix, ShotAnticipation :22, Defense
+    // Contributor — all DEFEND); EVADE = dodging an opponent
+    // (EvadeContributor). All three are reactive: the situation
+    // changed under the player, so the stick must catch up. MOVE /
+    // PASS / SHOT / CROSS / THROUGH / NONE are settled-possession
+    // moves and keep the 45° clamp.
+    // REJECTED signals: frame.panic (RuntimeFrame.kt:93) is the
+    // user's panic-mode toggle (FrameAssembler.kt:211,
+    // SmartAssistRepository.panicActive()), a global setting, not
+    // per-request urgency; best.weight (authority x confidence) is
+    // arbitration strength, not urgency — a settled MOVE can win at
+    // 0.95; best.engine is a free-form string ("PanicSave",
+    // "InstantIntercept") — fragile matching for what the typed
+    // action class already says. A future action class lands in
+    // `else` and keeps the settled clamp.
+    private fun isUrgentTurn(actionClass: ActionClass): Boolean = when (actionClass) {
+        ActionClass.KEEPER, ActionClass.DEFEND, ActionClass.EVADE -> true
+        else -> false
+    }
 
     // Returns the slew-limited unit direction for this frame.
     // newDirX/newDirY must already be a unit vector. A possession flip
     // resets the limiter so the stick snaps to the new situation
-    // instead of slewing through the flip.
-    private fun slewLimitDirection(newDirX: Float, newDirY: Float, hasBall: Boolean): Pair<Float, Float> {
+    // instead of slewing through the flip. `urgent` widens the
+    // per-frame clamp (90° vs 45°) — it never narrows it; false keeps
+    // exactly today's behaviour.
+    private fun slewLimitDirection(newDirX: Float, newDirY: Float, hasBall: Boolean, urgent: Boolean = false): Pair<Float, Float> {
         if (slewHasPrevBall && slewPrevHasBall != hasBall) slewHasPrev = false
         slewPrevHasBall = hasBall
         slewHasPrevBall = true
@@ -353,8 +393,10 @@ object RuntimeDecisionLoop {
         // accumulated angle exceeds the deadband.
         if (angleDeg < SLEW_DEADBAND_DEG) return prevX to prevY
         // Slew clamp: rotate the previous direction toward the new one
-        // by at most the per-frame maximum.
-        val clamped = rotateToward(prevX, prevY, newDirX, newDirY, SLEW_MAX_DEG_PER_FRAME)
+        // by at most the per-frame maximum — 90° on an urgent turn,
+        // 45° settled. The wide value is never below the settled one.
+        val maxDeg = if (urgent) SLEW_MAX_DEG_PER_FRAME_URGENT else SLEW_MAX_DEG_PER_FRAME
+        val clamped = rotateToward(prevX, prevY, newDirX, newDirY, maxDeg)
         // EMA: blend the previous direction toward the clamped target.
         val bx = prevX + (clamped.first - prevX) * SLEW_EMA_ALPHA
         val by = prevY + (clamped.second - prevY) * SLEW_EMA_ALPHA
@@ -434,7 +476,7 @@ object RuntimeDecisionLoop {
             //    (distance), bounded by the measured max drag.
             val dirX = dx / distance
             val dirY = dy / distance
-            val (slewX, slewY) = slewLimitDirection(dirX, dirY, frame.hasBall)
+            val (slewX, slewY) = slewLimitDirection(dirX, dirY, frame.hasBall, isUrgentTurn(best.actionClass))
             deflectionRadius = analogDeflectionRadius(distance)
             leadX = (startX + slewX * deflectionRadius).coerceIn(0f, frameWidth() - 1f)
             leadY = (startY + slewY * deflectionRadius).coerceIn(0f, frameHeight() - 1f)
