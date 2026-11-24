@@ -628,7 +628,7 @@ object OmnipotentGoalkeeperEngine {
                 )
                 val gaugeForFusion = if (gaugeHit.found) gaugeHit else null
                 fused = DetectionFusionEngine.fuse(
-                    trajectory, gaugeForFusion, null, mouth, orientation
+                    trajectory, gaugeForFusion, liveFrame?.let { ShotIntentProxy.evaluate(com.assistant.BallTrajectoryPredictor.current(), it, mouth) }, mouth, orientation
                 )
                 DetectionConfidenceEngine.record(fused)
                 // Learning loop (classifier KDoc: learn() takes ONLY a
