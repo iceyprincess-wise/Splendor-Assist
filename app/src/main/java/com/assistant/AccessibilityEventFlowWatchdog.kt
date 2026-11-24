@@ -43,22 +43,25 @@ object AccessibilityEventFlowWatchdog {
             // Re-assert the exact XML values (mirror of the touch fix's
             // onServiceConnected block). Only when wrong — a blind
             // re-assert every cycle would churn the system binding.
+            // CI #64-#68 fix: same as the touch fix — the two
+            // capability assignments did not compile (getter-only val /
+            // unresolved; javap, API 34/36) and capabilities live only
+            // in the XML config. Reuse the EFFECTIVE info read above so
+            // both capabilities ride along untouched; null skips.
             try {
-                val info = android.accessibilityservice.AccessibilityServiceInfo().apply {
-                    eventTypes = required
-                    feedbackType = android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_HAPTIC
-                    notificationTimeout = 0L
-                    flags = 0
-                    canRetrieveWindowContent = true
-                    canPerformGestures = true
-                }
-                service.setServiceInfo(info)
-                if (nowMs - lastHealLogMs >= HEALTH_LOG_INTERVAL_MS) {
-                    lastHealLogMs = nowMs
-                    com.assistant.diagnostic.RuntimeLogger.log(
-                        "A11Y_MASK_HEAL maskOk=false reasserted eventTypes=$required (effective was ${effective?.eventTypes})",
-                        "SMART_ASSIST"
-                    )
+                effective?.let { info ->
+                    info.eventTypes = required
+                    info.feedbackType = android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_HAPTIC
+                    info.notificationTimeout = 0L
+                    info.flags = 0
+                    service.setServiceInfo(info)
+                    if (nowMs - lastHealLogMs >= HEALTH_LOG_INTERVAL_MS) {
+                        lastHealLogMs = nowMs
+                        com.assistant.diagnostic.RuntimeLogger.log(
+                            "A11Y_MASK_HEAL maskOk=false reasserted eventTypes=$required (effective was ${effective?.eventTypes})",
+                            "SMART_ASSIST"
+                        )
+                    }
                 }
             } catch (_: Throwable) { }
         }

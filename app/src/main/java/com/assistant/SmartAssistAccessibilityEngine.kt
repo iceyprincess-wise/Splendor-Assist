@@ -529,18 +529,22 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // mask cannot starve UserTouchState again. Values mirror
         // accessibility_service_config.xml exactly (no flags attribute
         // declared there, so flags stays at its default 0).
+        // CI #64-#68 fix: canRetrieveWindowContent is a getter-only
+        // val and canPerformGestures does not exist (javap, API 34/36);
+        // capabilities live only in the XML config. Mutate the
+        // EFFECTIVE info so both capabilities ride along untouched —
+        // a fresh info would carry capabilities 0. Null skips (the
+        // watchdog backstops on its 5 s cycle).
         try {
-            val info = android.accessibilityservice.AccessibilityServiceInfo().apply {
-                eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
+            serviceInfo?.let { info ->
+                info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
                     AccessibilityEvent.TYPE_TOUCH_INTERACTION_START or
                     AccessibilityEvent.TYPE_TOUCH_INTERACTION_END
-                feedbackType = android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_HAPTIC
-                notificationTimeout = 0L
-                flags = 0
-                canRetrieveWindowContent = true
-                canPerformGestures = true
+                info.feedbackType = android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_HAPTIC
+                info.notificationTimeout = 0L
+                info.flags = 0
+                setServiceInfo(info)
             }
-            setServiceInfo(info)
         } catch (_: Throwable) {}
         try {
             val windowManager = getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager
