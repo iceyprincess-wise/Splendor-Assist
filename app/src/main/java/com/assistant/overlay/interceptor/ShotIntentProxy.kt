@@ -141,9 +141,7 @@ object ShotIntentProxy {
                 (if (ballSpeedSpike) 1 else 0)
     }
 
-    companion object {
-        val NO_INTENT = DetectionFusionEngine.IntentHint(isShotIntent = false, confidence = 0f)
-    }
+    val NO_INTENT = DetectionFusionEngine.IntentHint(isShotIntent = false, confidence = 0f)
 
     /**
      * Pure evaluation: no singleton reads, no mouth resolution — the
