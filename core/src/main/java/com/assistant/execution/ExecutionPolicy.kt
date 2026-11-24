@@ -6,7 +6,15 @@ import kotlin.math.hypot
 
 data class AimMotion(val originX: Float, val originY: Float, val targetX: Float, val targetY: Float,
     val relativeVx: Float, val relativeVy: Float, val predictedAtNanos: Long,
-    val radius: Float, val width: Float, val height: Float) {
+    val radius: Float, val width: Float, val height: Float,
+    // LatencyBudgetLead: measured forward latency (dispatch → on-screen
+    // effect) in nanos, supplied by the app layer at construction time
+    // (RuntimeDecisionLoop reads PipelineLatencyMonitor.effectMeanMs()).
+    // :core cannot read the app-module monitor (app depends on :core,
+    // never the reverse), so the latency travels as data on the request.
+    // Default 0 keeps existing call sites and tests compiling and means
+    // "no measurement yet" — the age term alone, as before.
+    val forwardLatencyNanos: Long = 0L) {
     fun endpoint(startX: Float, startY: Float, nowNanos: Long): Pair<Float, Float>? {
         // B24-01: the start point is copied into the compensated request
         // verbatim, so a non-finite start must reject here - the bus
@@ -17,7 +25,18 @@ data class AimMotion(val originX: Float, val originY: Float, val targetX: Float,
         if (listOf(originX, originY, targetX, targetY, relativeVx, relativeVy, radius, width, height).any { !it.isFinite() } ||
             !startX.isFinite() || !startY.isFinite() ||
             radius <= 0f || width <= 0f || height <= 0f) return null
-        val dt = ((nowNanos - predictedAtNanos).coerceIn(0L, 100_000_000L)) / 1e9f
+        // LatencyBudgetLead: the lead is prediction age PLUS the measured
+        // forward latency (dispatch → on-screen effect). The age term
+        // covers capture → consume; the latency term covers consume →
+        // effect, which the age term cannot see (endpoint runs at consume
+        // time, the effect lands later). The latency is a window mean, so
+        // a single spike cannot yank the lead; it is clamped to 150 ms
+        // (3 frames at 20 fps) and the total lead to 250 ms, so a slow
+        // pipeline cannot throw the target off-screen (the endpoint is
+        // additionally clamped to screen bounds below).
+        val ageNanos = (nowNanos - predictedAtNanos).coerceIn(0L, 100_000_000L)
+        val latencyNanos = forwardLatencyNanos.coerceIn(0L, 150_000_000L)
+        val dt = (ageNanos + latencyNanos) / 1e9f
         val dx = targetX - originX + relativeVx * dt
         val dy = targetY - originY + relativeVy * dt
         val length = hypot(dx, dy)

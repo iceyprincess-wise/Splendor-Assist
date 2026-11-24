@@ -254,6 +254,21 @@ object PipelineLatencyMonitor {
      */
     fun e2ePercentile(p: Double): Long = synchronized(lock) { e2ePercentileLocked(p) }
 
+    /**
+     * LatencyBudgetLead: mean dispatch → confirmed-effect delay (ms) for
+     * the current window, or -1 when no effect has been confirmed in the
+     * window. Allocation-free (a single Long, same pattern as
+     * e2ePercentile) so the lead can read it on the dispatch path. The
+     * AimMotion lead consumes this — it is the forward latency from
+     * dispatch to on-screen effect, the part of the pipeline delay the
+     * prediction-age lead does not cover. A single spike cannot yank the
+     * lead: this is a window mean, and the consumer clamps it to 150 ms.
+     * No measurement yet (effectCount == 0) contributes zero.
+     */
+    fun effectMeanMs(): Long = synchronized(lock) {
+        if (effectCount > 0L) effectSumMs / effectCount else -1L
+    }
+
     /** Full window copy for tests / diagnostics readers. */
     fun snapshot(): Map<String, Long> = synchronized(lock) {
         mapOf(

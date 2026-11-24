@@ -309,9 +309,19 @@ object RuntimeDecisionLoop {
         val origin = frame.entities.firstOrNull { it.id == best.aimEntityId } ?: if (controlSlot == 0) mover else null
         val originVx = origin?.velocityXPerSecond ?: frame.ballVelocityXPerSecond
         val originVy = origin?.velocityYPerSecond ?: frame.ballVelocityYPerSecond
+        // LatencyBudgetLead: pass the measured forward latency
+        // (dispatch → on-screen effect) into AimMotion so endpoint()
+        // leads by prediction age PLUS real pipeline delay. The monitor
+        // returns -1 when no effect has been confirmed in the window —
+        // that contributes zero (age term alone, as before). The read is
+        // a single synchronized Long, no allocation.
+        val forwardLatencyNanos = PipelineLatencyMonitor.effectMeanMs().let {
+            if (it < 0L) 0L else it * 1_000_000L
+        }
         val motion = com.assistant.execution.AimMotion(aimOriginX, aimOriginY, best.targetX, best.targetY,
             (target?.velocityXPerSecond ?: 0f) - originVx, (target?.velocityYPerSecond ?: 0f) - originVy,
-            frame.predictedAtNanos, minOf(frameWidth(), frameHeight()) * 0.08f, frameWidth(), frameHeight())
+            frame.predictedAtNanos, minOf(frameWidth(), frameHeight()) * 0.08f, frameWidth(), frameHeight(),
+            forwardLatencyNanos = forwardLatencyNanos)
         return ExecutionRequest(
             aimMotion = motion,
             actionClass = best.actionClass,
