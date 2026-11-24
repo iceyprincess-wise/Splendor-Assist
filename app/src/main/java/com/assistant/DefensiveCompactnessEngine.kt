@@ -105,6 +105,11 @@ object DefensiveCompactnessEngine {
     // zeros instead of stale data, and the finite guard below keeps NaN
     // out of the result entirely.
     fun compute(scene: SceneSnapshot, defensiveLine: DefensiveLineResult, teamShape: TeamShapeResult): DefensiveCompactnessResult {
+        // Phase 1 NativeReadinessGuard (part-1 pattern, AuthorityArbitrationEngine.kt:25):
+        // a library-load failure must not fault VisionCore.process() every frame.
+        // Return the zero result — the same fallback as the finite guard below —
+        // and let gameplay continue on vision-only data.
+        if (!com.assistant.NativeBridge.isNativeReady()) return DefensiveCompactnessResult()
         val outBuffer = FloatArray(4)
         com.assistant.NativeBridge.nativeDefensiveCompactness(scene.fieldConfidence, defensiveLine.confidence, teamShape.confidence, teamShape.width, teamShape.depth, teamShape.compactness, com.assistant.vision.CameraProfile.captureWidthOrFallback(), com.assistant.vision.CameraProfile.captureHeightOrFallback(), outBuffer)
         if (!outBuffer[0].isFinite() || !outBuffer[1].isFinite() ||

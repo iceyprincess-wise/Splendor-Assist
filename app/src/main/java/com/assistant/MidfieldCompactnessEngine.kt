@@ -36,6 +36,10 @@ object MidfieldCompactnessEngine {
         teamShape: TeamShapeResult
     ): MidfieldCompactnessResult {
         if (!midfieldLine.found || !teamShape.found) return MidfieldCompactnessResult()
+        // Phase 1 NativeReadinessGuard (part-1 pattern, AuthorityArbitrationEngine.kt:25):
+        // a library-load failure must not fault VisionCore.process() every frame.
+        // Return the zero result — the same fallback as the not-found line above.
+        if (!com.assistant.NativeBridge.isNativeReady()) return MidfieldCompactnessResult()
         val outBuffer = FloatArray(4)
         com.assistant.NativeBridge.nativeDefensiveCompactness(
             scene.fieldConfidence, midfieldLine.confidence, teamShape.confidence,
