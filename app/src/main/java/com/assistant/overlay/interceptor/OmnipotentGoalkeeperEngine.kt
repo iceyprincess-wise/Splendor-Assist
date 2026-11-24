@@ -598,9 +598,14 @@ object OmnipotentGoalkeeperEngine {
             // Any fault anywhere in this block -> TRACK (no offer, no
             // crash): the old behaviour for a frame with no anomaly.
             var fused = DetectionFusionEngine.FusedShotHypothesis.NO_SHOT
+            // Phase 3 REVIVE-DIVE: the mouth must survive the fusion
+            // try block to the evaluate call below (same shape as `fused`
+            // above) — on any fault it stays the invalid UNAVAILABLE
+            // mouth, and the dive trigger fails open to REACH.
+            var mouth = GoalMouthGeometry.GoalMouth(valid = false, source = GoalMouthGeometry.GoalMouthSource.UNAVAILABLE)
             val saveDecision: DetectionConfidenceEngine.SaveDecision = try {
                 val liveFrame = try { com.assistant.FrameAssembler.current() } catch (_: Throwable) { null }
-                val mouth = if (liveFrame != null) {
+                mouth = if (liveFrame != null) {
                     GoalMouthGeometry.resolve(liveFrame, width.toFloat(), height.toFloat())
                 } else {
                     GoalMouthGeometry.fromBox(
@@ -661,7 +666,13 @@ object OmnipotentGoalkeeperEngine {
                     " fused=" + fused.isShot + ":" + fused.confidence + " src=" + fused.sources + " save=" + saveDecision,
                 "GOALKEEPER")
 
-            evaluateOpponentShotTrajectory(decision, saveDecision)
+            // Phase 3 REVIVE-DIVE: keeper position is the real tracked
+            // keeper from this frame's telemetry (p10Tele, same source
+            // the pre-shot rush uses) — never a fabricated point.
+            evaluateOpponentShotTrajectory(
+                decision, saveDecision, fused, mouth,
+                p10Tele.goalkeeperX, p10Tele.goalkeeperY
+            )
         }
     }
 
@@ -678,6 +689,14 @@ object OmnipotentGoalkeeperEngine {
     // No64-D27: save-offer stroke duration — 15 ms, the floor the loop
     // enforces for SMART_ASSIST requests (was 8L, below that floor).
     private const val SAVE_OFFER_DURATION_MS = 15L
+
+    // Phase 3 REVIVE-DIVE: the MID mouth split — a fused impact in the
+    // LOWER half of the goal mouth dives (end 0.38h, keeper to ground),
+    // the UPPER half keeps the reach (end 0.55h, standing save).
+    // impactFrac 0 = crossbar, 1 = goal line. 0.5 is the geometric
+    // midpoint of the mouth itself — TUNABLE, not a proven tactical
+    // boundary; phone logs (GK_DIVE impactFrac) validate or move it.
+    private const val DIVE_MID_SPLIT_FRACTION = 0.5f
 
     // No65-D14: the dive-family set is hoisted — it used to be built with
     // setOf(...) inside `if (accepted)` on EVERY accepted save (a fresh
@@ -714,9 +733,83 @@ object OmnipotentGoalkeeperEngine {
     // interceptions.)
     @Volatile private var lastRecoveryTarget: RecoveryTarget? = null
 
+    // Phase 3 REVIVE-DIVE: the 8-condition dive trigger. Returns
+    // DIVE_LEFT/DIVE_RIGHT when every condition holds, else the input
+    // action unchanged. Fail open by construction — any false condition
+    // or any fault returns the input action; the trigger never
+    // produces TRACK and never suppresses a save. No travel number is
+    // baked in here: `reachable` comes from GoalMouthGeometry's
+    // diveReachPx (gesture travel, coarse filter only — live dive
+    // travel is asymmetric per side and neither side equals it).
+    private fun divePromotionFor(
+        action: GoalkeeperAction,
+        decision: ThreatDecision,
+        saveDecision: DetectionConfidenceEngine.SaveDecision,
+        fused: DetectionFusionEngine.FusedShotHypothesis,
+        mouth: GoalMouthGeometry.GoalMouth,
+        keeperX: Float,
+        keeperY: Float,
+        width: Float,
+        height: Float
+    ): GoalkeeperAction {
+        try {
+            // (1) SAVE — the confidence arbiter has decided this fused shot saves.
+            if (saveDecision != DetectionConfidenceEngine.SaveDecision.SAVE) return action
+            // (2) MID — evaluated-point ny in [0.40, 0.90). TOP/BOTTOM keep their arms.
+            if (decision.heightBand != HeightBand.MID) return action
+            // (3) MID side REACH — the router already chose a side save.
+            if (action != GoalkeeperAction.REACH_LEFT_CENTER &&
+                action != GoalkeeperAction.REACH_RIGHT_CENTER) return action
+            // (4) FRAME mouth — height is needed for the Y split (geometry contract).
+            if (!mouth.valid || mouth.source != GoalMouthGeometry.GoalMouthSource.FRAME) return action
+            // (5) Positional fused shot inside the mouth — INTENT-only fused
+            // shots carry impact (0f, 0f), "save, no aim point", and never dive.
+            val positional = DetectionFusionEngine.ShotSource.TRAJECTORY in fused.sources ||
+                DetectionFusionEngine.ShotSource.GAUGE in fused.sources
+            if (!fused.isShot || !positional) return action
+            if (!mouth.isInsideMouth(fused.impactX, fused.impactY)) return action
+            // (6) G7 reach gate — the dive target must exist, be valid, and
+            // be within gesture dive reach of the real tracked keeper.
+            val target = mouth.diveTargetFor(
+                fused.impactX, fused.impactY, keeperX, keeperY, width, height
+            ) ?: return action
+            if (!target.valid || !target.reachable) return action
+            // (7) Goal-relative side must match the router's side (the
+            // router's normX 0.33/0.66 split is a rough full-frame test;
+            // the mouth split at goalCenterX is the goal-relative one).
+            val diveAction = when {
+                action == GoalkeeperAction.REACH_LEFT_CENTER && target.side == GoalMouthGeometry.DiveSide.LEFT ->
+                    GoalkeeperAction.DIVE_LEFT
+                action == GoalkeeperAction.REACH_RIGHT_CENTER && target.side == GoalMouthGeometry.DiveSide.RIGHT ->
+                    GoalkeeperAction.DIVE_RIGHT
+                else -> return action
+            }
+            // (8) Lower half of the mouth — the dive (end 0.38h) is the
+            // lower save, the reach (end 0.55h) the standing higher one.
+            // impactFrac 0 = crossbar, 1 = goal line (bounded [0, 1] by
+            // the isInsideMouth check at (5) above).
+            val impactFrac = (fused.impactY - mouth.goalTopY) / mouth.goalHeightPx
+            if (!impactFrac.isFinite() || impactFrac < DIVE_MID_SPLIT_FRACTION) return action
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "GK_DIVE promote=" + action + "->" + diveAction +
+                    " impactFrac=" + impactFrac +
+                    " distancePx=" + target.distancePx +
+                    " reachable=" + target.reachable +
+                    " side=" + target.side,
+                "GOALKEEPER")
+            return diveAction
+        } catch (_: Throwable) {
+            return action
+        }
+    }
+
     private fun evaluateOpponentShotTrajectory(
         decision: ThreatDecision,
-        saveDecision: DetectionConfidenceEngine.SaveDecision
+        saveDecision: DetectionConfidenceEngine.SaveDecision,
+        fused: DetectionFusionEngine.FusedShotHypothesis,
+        mouth: GoalMouthGeometry.GoalMouth,
+        keeperX: Float,
+        keeperY: Float
     ) {
         val now = System.currentTimeMillis()
         if (now - lastShotEvaluationTimestamp < 8L) return // 8 ms minimum inter-call gap (~0.16 of a 50 ms processed frame at 20 fps; binds only on same-frame re-entry, not a display cadence)
@@ -820,6 +913,19 @@ object OmnipotentGoalkeeperEngine {
                         action
                     }
 
+                // Phase 3 REVIVE-DIVE: the dive promotion sits between
+                // the goal-bound promote above and the confidence gate
+                // below, so the gate still guards the promoted DIVE
+                // exactly like any other dive-family action (non-SAVE
+                // -> TRACK; SAVE -> offer). A promoted DIVE flows on
+                // through the re-aim block, the state machine (DIVE is
+                // already in DIVE_FAMILY_ACTIONS) and the rebound
+                // override, unchanged from any other dive-family save.
+                val diveAction = divePromotionFor(
+                    promotedAction, decision, saveDecision, fused, mouth,
+                    keeperX, keeperY, screenWidthBase, screenHeightBase
+                )
+
                 // W (Phase 2): DetectionConfidenceEngine is the SAVE
                 // arbiter — it replaces ShotAnticipationEngine's fixed
                 // priority >= 100 bar for fused shots (G2/QF-8). Two
@@ -839,12 +945,12 @@ object OmnipotentGoalkeeperEngine {
                 //    standing still (this is the G2 kill).
                 val confidenceAction = when {
                     saveDecision == DetectionConfidenceEngine.SaveDecision.SAVE &&
-                        promotedAction == GoalkeeperAction.TRACK ->
+                        diveAction == GoalkeeperAction.TRACK ->
                         GoalkeeperActionRouter.route(decision.copy(priority = 100))
                     saveDecision != DetectionConfidenceEngine.SaveDecision.SAVE &&
-                        promotedAction in DIVE_FAMILY_ACTIONS ->
+                        diveAction in DIVE_FAMILY_ACTIONS ->
                         GoalkeeperAction.TRACK
-                    else -> promotedAction
+                    else -> diveAction
                 }
 
                 // Item 12 (A9): RECOVER is now produced — on a quiet
