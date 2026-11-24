@@ -406,6 +406,20 @@ object ControlMappingTrainer {
     private fun isGray() = kotlin.math.abs(probeBuffer[0] - probeBuffer[1]) <= 14 && kotlin.math.abs(probeBuffer[1] - probeBuffer[2]) <= 14 && probeBuffer[0] in 110..215
     private fun isBlue() = probeBuffer[2] > probeBuffer[0] + 50 && probeBuffer[2] > 140
 
+    /**
+     * UserIntentVision pixel read: the RGB at normalized coords, or
+     * null when the probe is out of bounds / the buffer is too short.
+     * Wraps probe() so the engine shares the trainer's pixel path (and
+     * its probesRead telemetry); the copy protects probeBuffer from
+     * clobbering the trainer's own isGreen()/isGray() checks — the
+     * engine calls this only after the trainer's per-frame probes,
+     * from observe()'s IN_MATCH branch.
+     */
+    fun probePixel(b: ByteBuffer, w: Int, h: Int, stride: Int, nx: Float, ny: Float, pixelStride: Int): IntArray? {
+        if (!probe(b, w, h, stride, nx, ny, pixelStride)) return null
+        return intArrayOf(probeBuffer[0], probeBuffer[1], probeBuffer[2])
+    }
+
     fun observe(buffer: ByteBuffer, w: Int, h: Int, rowStride: Int, pixelStride: Int = 4) {
         if (w <= 0 || h <= 0) return
         observed.incrementAndGet()
@@ -466,6 +480,9 @@ object ControlMappingTrainer {
             // G-P (batch 4, D11): record the dash-hold state the same way
             // (slot-4 pixel + touch signal → hold candidate).
             recordDashHoldState(buffer, w, h, rowStride, pixelStride)
+            // UserIntentVision (Tier 2): per-slot hold intent (Shoot /
+            // Pass + joystick) on the same buffer, same in-match branch.
+            UserIntentVision.observeFrame(buffer, w, h, rowStride, pixelStride)
         }
     }
 

@@ -375,6 +375,9 @@ object FrameAssembler {
             // D13: the user's through-press state + the B9 lead target.
             // throughPressed is a candidate, not a confirmed press.
             throughPressed = ControlMappingTrainer.throughPressCandidateFresh(),
+            // UserIntentVision (Tier 2): per-slot hold mask, same
+            // candidate semantics as throughPressed (0 = none held).
+            userIntentMask = UserIntentVision.heldSlotMask(),
             throughReceiverX = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.lane?.receiver?.x ?: 0f,
             throughReceiverY = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.lane?.receiver?.y ?: 0f,
             throughLeadX = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.leadX ?: 0f,

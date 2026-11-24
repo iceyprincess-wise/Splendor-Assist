@@ -258,7 +258,19 @@ data class RuntimeFrame(
      */
     val centralControl: Float = 0f,
     val leftWingAdvantage: Float = 0f,
-    val rightWingAdvantage: Float = 0f
+    val rightWingAdvantage: Float = 0f,
+    /*
+     * UserIntentVision (Tier 2): the per-slot user-hold mask on this
+     * frame — bit 0 = joystick, bits 1-4 = buttons 1-4 (Through, Shoot,
+     * Pass, Dash). A set bit is a HOLD CANDIDATE (centre-pixel
+     * occlusion + touch, 2 frames, 250 ms fresh), never a confirmed
+     * hardware press. 0 = no hold detected (fail-open: consumers must
+     * treat 0 as "nothing to suppress on"). Copied by FrameAssembler
+     * from UserIntentVision.heldSlotMask(); read by
+     * RuntimeDecisionLoop's never-fight-the-user gate. Appended last
+     * so positional RuntimeFrame construction in tests keeps working.
+     */
+    val userIntentMask: Int = 0
 ) {
     // RF-D1/RF-D2: the old gate trusted a frame with a 0x0 capture size
     // (reachable before the camera profile populates), a confidence above

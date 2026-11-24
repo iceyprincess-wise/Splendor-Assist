@@ -63,6 +63,9 @@ object RuntimeDecisionLoop {
     @Volatile private var slewHasPrev: Boolean = false
     @Volatile private var slewPrevHasBall: Boolean = false
     @Volatile private var slewHasPrevBall: Boolean = false
+    // USER-INTENT (UserIntentVision, Tier 2): requests held because
+    // the user is holding that slot's control (see the gate below).
+    private val intentHeld = AtomicLong(0L)
 
     @Volatile private var lastAction: String = "none"
     @Volatile private var lastWeight: Float = 0f
@@ -225,6 +228,29 @@ object RuntimeDecisionLoop {
         if (HybridExecutionTerminal.isMovementHold(terminalRequest) && !UserTouchState.isTouching()) {
             moveHeldNoTouch.incrementAndGet()
             lastAction = "idle-no-touch-move"
+            return false
+        }
+
+        // USER-INTENT (UserIntentVision, Tier 2): never fight a control
+        // the user is holding. If this request's slot is in the frame's
+        // hold mask, hold it — the user's own press/drag does that job
+        // (a second assist gesture on the same control would double-fire
+        // or steer against their drag). Slot map is requiredControlSlot's
+        // (THROUGH=1, SHOT=2, PASS/CROSS=3, MOVE/EVADE=0 joystick);
+        // DEFEND/KEEPER have no slot and are never held here (the keeper
+        // must save while the user holds a button). CONSEQUENCE: a MOVE
+        // is held whenever the joystick is held — the assist steers only
+        // when the user's hands are off the stick (the ghost-touch gate
+        // above already holds MOVE when not touching at all). The knob's
+        // drag DIRECTION is not pixel-readable while held (the finger
+        // occludes the knob), so this gate is hold-based, not
+        // direction-aware. Fail-open: mask 0 suppresses nothing.
+        // Checked BEFORE recordDispatch so a held request leaves no
+        // pending entry.
+        val requestSlot = slotForRequest(terminalRequest.actionClass)
+        if (requestSlot >= 0 && frame.userIntentMask and UserIntentVision.slotBit(requestSlot) != 0) {
+            intentHeld.incrementAndGet()
+            lastAction = "idle-intent-held"
             return false
         }
 
@@ -580,6 +606,19 @@ object RuntimeDecisionLoop {
             else -> 0
         }
 
+    /*
+     * UserIntentVision slot for a routed request's action class, or -1
+     * when the class has no user control (DEFEND/KEEPER/NONE). Mirrors
+     * requiredControlSlot's mapping; MOVE/EVADE are the joystick (0).
+     */
+    private fun slotForRequest(actionClass: ActionClass?): Int = when (actionClass) {
+        ActionClass.THROUGH -> 1
+        ActionClass.SHOT -> 2
+        ActionClass.PASS, ActionClass.CROSS -> 3
+        ActionClass.MOVE, ActionClass.EVADE -> 0
+        else -> -1
+    }
+
     private fun frameWidth() = com.assistant.vision.CameraProfile.captureWidthOrFallback()
     private fun frameHeight() = com.assistant.vision.CameraProfile.captureHeightOrFallback()
 
@@ -617,7 +656,7 @@ object RuntimeDecisionLoop {
         idleNoContribution.set(0L); idleUntrusted.set(0L)
         idleUntrustedFg.set(0L); idleUntrustedFrame.set(0L); idleUntrustedVariance.set(0L)
         gateBlocked.set(0L); staleFrame.set(0L); settingsExit.set(0L); routeRejected.set(0L); chooseNull.set(0L)
-        moveHeldNoTouch.set(0L)
+        moveHeldNoTouch.set(0L); intentHeld.set(0L)
         lastAction = "none"; lastWeight = 0f; lastUpdatedMs = 0L
     }
 
@@ -635,6 +674,7 @@ object RuntimeDecisionLoop {
         "routeRejected" to routeRejected.get(),
         "chooseNull" to chooseNull.get(),
         "moveHeldNoTouch" to moveHeldNoTouch.get(),
+        "intentHeld" to intentHeld.get(),
         "lastAction" to lastAction,
         "lastWeight" to lastWeight,
         "lastUpdatedMs" to lastUpdatedMs,
