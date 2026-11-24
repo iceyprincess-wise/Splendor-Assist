@@ -2,8 +2,11 @@ package com.assistant.controlroom.ui
 
 
 import android.content.Intent
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Button
@@ -11,6 +14,11 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.assistant.UpdateActivity
+import com.assistant.UpdateChecker
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * PHASE4 UPGRADE: FutureRoomsActivity
@@ -27,6 +35,10 @@ import androidx.appcompat.app.AppCompatActivity
  *     button genuinely forces a cycle via InAppAgentCore.runNow()).
  *
  * Future stubs: 15 planned rooms listed below active rooms.
+ *
+ * App info: read-only app details (name, version, package, SDKs,
+ * install dates, update channel, in-app update history) at the top —
+ * UI piece 2. Every value is read live at runtime; no toggles here.
  *
  * Navigation: launched plain from the home card (MainActivity).
  * No intent extra is read: the old "room_label" extra (single value
@@ -113,6 +125,93 @@ class FutureRoomsActivity : AppCompatActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────────
+    // APP INFO — read-only app details (UI piece 2)
+    // ─────────────────────────────────────────────────────────────────────
+    // Every value is read LIVE at runtime (PackageManager /
+    // UpdateChecker / UpdateActivity history) — nothing is hardcoded, so
+    // nothing goes stale when a new release lands. No toggles, no
+    // controls: this is an info page, not an admin page. No sensitive
+    // info (no keystore, signing, or token details) is shown here.
+    private fun infoRow(list: LinearLayout, label: String, value: String) {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+            setPadding(0, dp(2), 0, dp(2))
+        }
+        row.addView(TextView(this).apply {
+            text = label; textSize = 12f; setTextColor(ThemeTokens.TEXT_DIM)
+            layoutParams = LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        })
+        row.addView(TextView(this).apply {
+            text = value; textSize = 12f; setTextColor(paletteText)
+            layoutParams = LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 2f)
+        })
+        list.addView(row)
+    }
+
+    private fun packageInfo(): PackageInfo? {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageManager.getPackageInfo(
+                    packageName, PackageManager.PackageInfoFlags.of(0))
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getPackageInfo(packageName, 0)
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun fmtTime(millis: Long): String =
+        SimpleDateFormat("d MMM yyyy, HH:mm", Locale.US).format(Date(millis))
+
+    private fun showAppInfo(root: LinearLayout) {
+        text(root, "APP INFO", 13f, bold = true, color = paletteSuccess)
+
+        val pi = packageInfo()
+        val appName = try {
+            applicationInfo.loadLabel(packageManager).toString()
+        } catch (e: Exception) {
+            packageName
+        }
+        infoRow(root, "App", appName)
+        val versionName = pi?.versionName ?: "Unknown"
+        val versionCode = UpdateChecker.installedVersionCode(this)
+        infoRow(root, "Version",
+            if (versionCode >= 0) "$versionName ($versionCode)" else versionName)
+        infoRow(root, "Package", packageName)
+        infoRow(root, "Target SDK", applicationInfo.targetSdkVersion.toString())
+        infoRow(root, "Minimum SDK", applicationInfo.minSdkVersion.toString())
+        if (pi != null) {
+            infoRow(root, "Installed", fmtTime(pi.firstInstallTime))
+            infoRow(root, "Last updated", fmtTime(pi.lastUpdateTime))
+        }
+        infoRow(root, "Updates", "GitHub releases")
+
+        // Update history, newest first — recorded by the in-app updater
+        // (UpdateActivity.readHistory). Empty until the first update
+        // lands through the in-app updater.
+        val history = UpdateActivity.readHistory(this)
+        if (history.isEmpty()) {
+            text(root, "   No updates installed through the in-app updater yet",
+                11f, color = paletteTextMuted)
+        } else {
+            text(root, "   Recent updates", 12f, color = paletteTextMuted)
+            for ((version, at) in history.take(3)) {
+                text(root, "   v$version — ${fmtTime(at)}",
+                    11f, color = paletteTextMuted)
+            }
+        }
+
+        divider(root)
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
     // HOME SCREEN — Room Cards
     // ─────────────────────────────────────────────────────────────────────
     private fun showHome() {
@@ -122,6 +221,10 @@ class FutureRoomsActivity : AppCompatActivity() {
         text(root, "Control centers for every subsystem", 12f, color = ThemeTokens.TEXT_DIM)
 
         divider(root)
+
+        // UI piece 2: app info/details first — the details a settings
+        // room for this app needs (all read live, no toggles).
+        showAppInfo(root)
 
         text(root, "ACTIVE ROOMS", 13f, bold = true, color = paletteSuccess)
 
