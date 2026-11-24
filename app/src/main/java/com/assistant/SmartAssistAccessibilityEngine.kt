@@ -28,6 +28,15 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         @Volatile
         var isDispatching = false
 
+        // A11Y-FLOW (watchdog): arrival stamps — the ONLY in-app record
+        // of when an accessibility event last arrived. Nothing else in
+        // the repo tracks event flow (G1/survival measure bind state,
+        // not events).
+        @Volatile
+        var lastAccessibilityEventMs = 0L
+        @Volatile
+        var lastTouchInteractionMs = 0L
+
         @Volatile
         private var dispatchStartedMs = 0L
         @Volatile
@@ -671,6 +680,15 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // accessibility_service_config.xml already declares
         // typeWindowStateChanged, so these events are delivered.
         if (event == null) return
+        // A11Y-FLOW: stamp arrival BEFORE the when — this measures
+        // DELIVERY (did the system send the event), not handling.
+        // The touch-fix diagnostic lines log START/END handling; this
+        // stamp is what the watchdog reads to prove flow.
+        lastAccessibilityEventMs = System.currentTimeMillis()
+        if (event.eventType == AccessibilityEvent.TYPE_TOUCH_INTERACTION_START ||
+            event.eventType == AccessibilityEvent.TYPE_TOUCH_INTERACTION_END) {
+            lastTouchInteractionMs = lastAccessibilityEventMs
+        }
         when (event.eventType) {
             AccessibilityEvent.TYPE_TOUCH_INTERACTION_START -> {
                 // TOUCHSOURCE-DISCRIMINATOR (Phase 0 #1): if our own injected

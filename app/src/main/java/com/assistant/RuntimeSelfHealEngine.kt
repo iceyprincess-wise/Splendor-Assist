@@ -162,6 +162,13 @@ object RuntimeSelfHealEngine {
                 ))
             }
         } catch (_: Throwable) { }
+        // A11Y-FLOW: the gate-recovery engine above only heals a LOST
+        // gate (G1 false). A bound service with a stale event mask
+        // (G1 true, zero touch events) is invisible to it — that is the
+        // 2026-11-24 failure exactly. The watchdog verifies the
+        // EFFECTIVE mask every cycle and re-asserts it when wrong, and
+        // logs the event-flow ages so starvation is provable.
+        try { AccessibilityEventFlowWatchdog.check() } catch (_: Throwable) { }
     }
 
     // ─────────────────────────────────────────────────────────────────────
