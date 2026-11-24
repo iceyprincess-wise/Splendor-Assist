@@ -587,10 +587,51 @@ SceneTracker.update(
               networkPingMs = OnlineParameterAdaptationEngine.effectivePingMs(NetProbeEngine.rtt)
           )
 
-val offsideRiskEstimationResult =
-      OffsideRiskEstimationEngine.analyze(
-          passingGraph
-      )
+      // Offside line (DecoyRun TRACE §1): VisionCore used to call analyze()
+      // with NO lastDefenderX, so the stored result used the fixed 1200f
+      // default and could not discriminate lanes. Pass the REAL measured
+      // line — the deepest outfield opponent along the attack axis — so the
+      // stored result discriminates for every consumer. analyze() assumes
+      // attack +x, so a -x attack mirrors the lane geometry into a +x frame
+      // (same transform as DecoyRunEngine.analyzeWithRealLine) and maps the
+      // verdicts back onto the original lanes by receiver id. No opponents
+      // or no confident attack direction → the default call (unchanged).
+val offsideRiskEstimationResult = run {
+    val attackSign = AttackAxisModel.directionIfConfident().toFloat()
+    val opponents = scene.trackedPlayers.filter { p ->
+        !p.isUserTeam && !p.isGoalkeeper &&
+            p.lastSeenFrame == scene.frameNumber &&
+            p.x.isFinite() && p.y.isFinite()
+    }
+    val lastDefender = opponents.maxByOrNull { it.x * attackSign }
+    if (attackSign == 0f || lastDefender == null) {
+        OffsideRiskEstimationEngine.analyze(passingGraph)
+    } else if (attackSign > 0f) {
+        OffsideRiskEstimationEngine.analyze(passingGraph, lastDefender.x)
+    } else {
+        val w = frame.width.toFloat()
+        val mirrored = passingGraph.lanes.map { lane ->
+            PassingLane(
+                passer = lane.passer.copy(x = w - lane.passer.x, velocityX = -lane.passer.velocityX),
+                receiver = lane.receiver.copy(x = w - lane.receiver.x, velocityX = -lane.receiver.velocityX),
+                distance = lane.distance,
+                pressure = lane.pressure,
+                blocked = lane.blocked,
+                score = lane.score
+            )
+        }
+        val scored = OffsideRiskEstimationEngine.analyze(
+            PassingLaneGraph(mirrored), w - lastDefender.x
+        )
+        val byReceiver = scored.lanes.associateBy { it.lane.receiver.id }
+        OffsideRiskEstimationResult(
+            passingGraph.lanes.mapNotNull { lane ->
+                val verdict = byReceiver[lane.receiver.id] ?: return@mapNotNull null
+                OffsideRisk(lane, verdict.risk, verdict.safe)
+            }
+        )
+    }
+}
 
     Phase3WorldStateStore.update(
         Phase3WorldState(
