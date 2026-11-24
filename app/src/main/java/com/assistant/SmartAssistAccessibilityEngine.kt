@@ -35,7 +35,12 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // No68-H-D2: dispatchingSource removed — written on every dispatch,
         // never read anywhere (write-only field).
         private const val DISPATCH_LATCH_TIMEOUT_MS = 250L
-        private const val LATCH_STUCK_GRACE_MS = 500L // grace after first stuck report before force-release
+        // Latch/GK budget: the stuck-grace force-release must fire INSIDE
+        // the 300 ms GK stale budget (CentralExecutionBus.maxAgeMs), or a
+        // queued GK save expires before the latch releases. Timeout 250 ms
+        // + grace 25 ms = 275 ms nominal (~293 ms worst case with the
+        // 9 ms poll granularity), still inside 300 ms.
+        private const val LATCH_STUCK_GRACE_MS = 25L // grace after first stuck report before force-release
 
         private fun latchStuck(): Boolean =
             isDispatching &&
@@ -223,7 +228,15 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             return false
         }
 
-        val category = request.actionClass ?: if (request.source == ExecutionSource.GOALKEEPER) com.assistant.runtime.ActionClass.KEEPER else null
+        // INT cooling: INTERCEPTION offers carry a null actionClass (like
+        // GK), so without a fallback they skip cooling entirely. Map them
+        // to DEFEND — the same fallback ActionOutcomeVerifier uses for an
+        // INTERCEPTION source (ActionOutcomeVerifier.kt:60) — so INT
+        // dispatches get the same 150 ms cooling window as GK.
+        val category = request.actionClass
+            ?: if (request.source == ExecutionSource.GOALKEEPER) com.assistant.runtime.ActionClass.KEEPER
+            else if (request.source == ExecutionSource.INTERCEPTION) com.assistant.runtime.ActionClass.DEFEND
+            else null
         if (category != null && ActionOutcomeVerifier.cooling(category)) {
             // SPLENDOR_P11_D02: was a silent early return — the only trace
             // of a cooling-dropped dispatch was the absence of a
