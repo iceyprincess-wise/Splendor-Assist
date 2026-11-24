@@ -128,7 +128,7 @@ object DashPressureContributor : GameplayContributor {
             defHomeY = if (frame.homeFound) frame.homeY else screenH * 0.5f,
             oppX   = oppX,
             oppY   = oppY,
-            isPlayerHoldingPressure = UserTouchState.isTouching(),
+            isPlayerHoldingPressure = (UserIntentVision.heldSlotMask() and UserIntentVision.slotBit(UserIntentVision.SLOT_DASH)) != 0,
             // No68-I-D35: the matrix's emergency offer used to start from the
             // hardcoded joystick defaults (250, 550) while the contributor
             // path starts from the trained slot centre — the same press

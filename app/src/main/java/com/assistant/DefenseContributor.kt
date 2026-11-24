@@ -146,7 +146,7 @@ object DefenseContributor : GameplayContributor {
         // No68-H-D38: isHoldingPressure was frame.hasBall — inverted
         // (pressure applied while attacking, absent while defending). The
         // real signal is the user's touch, same as DashPressureContributor.
-        val holdingPressure = UserTouchState.isTouching()
+        val holdingPressure = (UserIntentVision.heldSlotMask() and UserIntentVision.slotBit(UserIntentVision.SLOT_DASH)) != 0
 
         // Queue item 9 (L1): the drag-out answer. When the stance reports
         // the line stretched past the D14 25% bound (frame.dragOutHeld),
