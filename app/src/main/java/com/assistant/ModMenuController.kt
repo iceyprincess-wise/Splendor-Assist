@@ -94,6 +94,32 @@ class ModMenuController(private val context: Context) {
     private val goalkeeperRepo by lazy { GoalkeeperRepository.shared(context) }
     private val interceptionRepo by lazy { InterceptionRepository.shared(context) }
 
+    // Hide-button position memory: the menu and its launcher orb reopen
+    // where the user last left them, in the "splendor_capture" store
+    // alongside target_fps / bypass_touch_gate / joystick_use_measured_centre.
+    // Missing keys -> (40, 120), today's fixed spot. A corrupt read or a
+    // negative stored value -> clamped to >= 0, else the default. Never
+    // throws: a bad read falls back to the default, so the menu and orb
+    // can never be left unreachable. (No display size is read here — the
+    // file uses no display metrics, so there is no upper-bound clamp;
+    // the orb stays draggable and can be pulled back by hand.)
+    private fun restoredMenuX(): Int = try {
+        fpsPreferences.getInt("modmenu_x", 40).coerceAtLeast(0)
+    } catch (_: Throwable) { 40 }
+
+    private fun restoredMenuY(): Int = try {
+        fpsPreferences.getInt("modmenu_y", 120).coerceAtLeast(0)
+    } catch (_: Throwable) { 120 }
+
+    private fun persistMenuPosition(x: Int, y: Int) {
+        try {
+            fpsPreferences.edit {
+                putInt("modmenu_x", x.coerceAtLeast(0))
+                putInt("modmenu_y", y.coerceAtLeast(0))
+            }
+        } catch (_: Throwable) {}
+    }
+
     fun show() {
         if (isShown) return
         windowManager = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
@@ -112,8 +138,8 @@ class ModMenuController(private val context: Context) {
             width = WindowManager.LayoutParams.WRAP_CONTENT
             height = WindowManager.LayoutParams.WRAP_CONTENT
             gravity = Gravity.TOP or Gravity.START
-            x = 40
-            y = 120
+            x = restoredMenuX()
+            y = restoredMenuY()
         }
 
         menuView = createView()
@@ -164,8 +190,8 @@ class ModMenuController(private val context: Context) {
             width = WindowManager.LayoutParams.WRAP_CONTENT
             height = WindowManager.LayoutParams.WRAP_CONTENT
             gravity = Gravity.TOP or Gravity.START
-            x = 40
-            y = 120
+            x = restoredMenuX()
+            y = restoredMenuY()
         }
 
         var dragX = 0
@@ -205,7 +231,7 @@ class ModMenuController(private val context: Context) {
                     true
                 }
                 MotionEvent.ACTION_UP -> {
-                    if (!moved) view.performClick()
+                    if (moved) persistMenuPosition(lp.x, lp.y) else view.performClick()
                     true
                 }
                 else -> false
@@ -761,7 +787,11 @@ class ModMenuController(private val context: Context) {
                     windowManager?.updateViewLayout(mainLayout, lp)
                     true
                 }
-                MotionEvent.ACTION_UP -> { view.performClick(); true }
+                MotionEvent.ACTION_UP -> {
+                    persistMenuPosition(lp.x, lp.y)
+                    view.performClick()
+                    true
+                }
                 else -> false
             }
         }
