@@ -108,7 +108,14 @@ object CriticalAttackingVectorEngine {
         // = corner. JNI signature unchanged (ABI).
         val target = ShotTargetMath.farCornerTarget(gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY)
         val radius = ShotTargetMath.scoringRadius(strikerX, strikerY, target.x, target.y)
-        com.assistant.NativeBridge.nativeCriticalScoringVector(strikerX, strikerY, gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY, strikerX, strikerY, radius, outScoring)
+        // NATIVE-GUARD: the native returns the far inset corner by construction,
+        // so when it is unavailable the pure-Kotlin corner is the exact neutral.
+        if (!com.assistant.NativeBridge.isNativeReady()) return PointF(target.x, target.y)
+        try {
+            com.assistant.NativeBridge.nativeCriticalScoringVector(strikerX, strikerY, gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY, strikerX, strikerY, radius, outScoring)
+        } catch (t: Throwable) {
+            return PointF(target.x, target.y)
+        }
         return PointF(outScoring[0], outScoring[1])
     }
 
@@ -116,7 +123,14 @@ object CriticalAttackingVectorEngine {
         // Screen-size defaults deleted: the only caller passed 7 args, so
         // the defaults were the only values ever supplied. The profile
         // fallbacks are read directly inside now — same values, same call.
-        com.assistant.NativeBridge.nativeCriticalTrueTargetPass(passButtonX, passButtonY, activeStrikerX, activeStrikerY, strikerVx, strikerVy, isLoftedContext, com.assistant.vision.CameraProfile.captureWidthOrFallback(), com.assistant.vision.CameraProfile.captureHeightOrFallback(), outPass)
+        // NATIVE-GUARD: without the native lead calculator, pass to the
+        // receiver's current position (no lead) instead of throwing.
+        if (!com.assistant.NativeBridge.isNativeReady()) return PointF(activeStrikerX, activeStrikerY)
+        try {
+            com.assistant.NativeBridge.nativeCriticalTrueTargetPass(passButtonX, passButtonY, activeStrikerX, activeStrikerY, strikerVx, strikerVy, isLoftedContext, com.assistant.vision.CameraProfile.captureWidthOrFallback(), com.assistant.vision.CameraProfile.captureHeightOrFallback(), outPass)
+        } catch (t: Throwable) {
+            return PointF(activeStrikerX, activeStrikerY)
+        }
         return PointF(outPass[0], outPass[1])
     }
 }

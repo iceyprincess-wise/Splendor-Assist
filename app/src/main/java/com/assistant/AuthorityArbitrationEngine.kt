@@ -19,20 +19,29 @@ object AuthorityArbitrationEngine {
         shot: Float,
         stability: Float
     ): ArbitrationResult {
-        val packed = com.assistant.NativeBridge.nativeAuthorityArbitrate(
-            mode,
-            passX,
-            passY,
-            crossX,
-            crossY,
-            predictiveX,
-            predictiveY,
-            receiver,
-            forward,
-            recovery,
-            shot,
-            stability
-        )
+        // NATIVE-GUARD: the native library may fail to load; never throw from the
+        // live gesture path. Fall back to the pass target (a real on-screen
+        // point) instead of an arbitration blend.
+        if (!com.assistant.NativeBridge.isNativeReady()) return ArbitrationResult(passX, passY)
+
+        val packed: Long = try {
+            com.assistant.NativeBridge.nativeAuthorityArbitrate(
+                mode,
+                passX,
+                passY,
+                crossX,
+                crossY,
+                predictiveX,
+                predictiveY,
+                receiver,
+                forward,
+                recovery,
+                shot,
+                stability
+            )
+        } catch (t: Throwable) {
+            return ArbitrationResult(passX, passY)
+        }
 
         if (!proofLogged) {
             proofLogged = true
