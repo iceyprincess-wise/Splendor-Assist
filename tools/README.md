@@ -35,9 +35,6 @@ host it does nothing.
 - `nativeBreadcrumbDump` is static-only: `native_breadcrumb.c` includes
   `<android/log.h>` and cannot compile on a Linux host. Its C signature is
   checked against the Kotlin declaration instead of being called.
-- `nativeInjectTap` / `nativeInjectSwipe` are static-only: `native_input.cpp`
-  needs NDK headers and the methods delegate to AccessibilityService on
-  device. Their signatures are checked statically.
 - The 5 valid-input-only methods (`nativeAuthorityArbitrate`,
   `nativeBallRetentionShieldCompute`, `nativeInstantInterceptCompute`,
   `nativeBuildUpPressCompute`, `nativeExtractBlobs`) return silently / `-1`

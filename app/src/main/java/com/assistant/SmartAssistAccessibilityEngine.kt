@@ -515,8 +515,6 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
         dispatcher = ActiveGestureController(this)
         globalInstance = this
-        // Wire AsynchronousGestureQueue so its fallback dispatch path is live.
-        AsynchronousGestureQueue.bindService(this)
         AccessibilitySurvivalEngine.connected()
 
         // No63-D1: feed the accessibility-survival registry — it was dead

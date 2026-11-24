@@ -99,52 +99,8 @@ object NativePorts {
     fun vector(width: Float,height: Float,out: FloatArray) { out[0]=width*0.50f;out[1]=height*0.82f;out[2]=width*0.50f;out[3]=height*0.35f }
 }
 
-// Kotlin ports of two tiny native formulas (f17). Op-for-op mirrors of the C bodies.
+// Kotlin port of one tiny native formula (f17). Op-for-op mirror of the C body.
 // UNVERIFIED: not compiled in the build sandbox; compile happens on the user's Termux build.
-
-object VectorSmootherPort {
-    // same seed as native_vector_smoother.c: static uint32_t g_rng_state = 123456789;
-    private var rngState: Int = 123456789
-
-    private fun xorshift32(): Int {
-        var x = rngState
-        x = x xor (x shl 13)
-        x = x xor (x ushr 17)
-        x = x xor (x shl 5)
-        rngState = x
-        return x
-    }
-
-    // Intentional behavior change from the f17 bit-for-bit port: the C expression
-    // subtracted in uint32 and wrapped (e.g. 0u - 10u became 4294967286f).
-    // Jitter intent is signed range [-sub, m-sub-1], so subtract after modulo.
-    // This removes wrap-sized cursor jumps while retaining the xorshift sequence.
-    private fun unsignedModMinusToFloat(x: Int, m: Int, sub: Int): Float {
-        val r = Integer.remainderUnsigned(x, m)
-        return (r - sub).toFloat()
-    }
-
-    fun smooth(startX: Float, startY: Float, endX: Float, endY: Float, durationMs: Float, out: FloatArray) {
-        if (out.size < 33) return
-        val steps = 10
-        val dt = 1.0f / steps.toFloat()
-        val wobbleAmp = 1.5f
-        for (i in 0..steps) {
-            val t = i.toFloat() * dt
-            val cx = (startX + endX) * 0.5f + unsignedModMinusToFloat(xorshift32(), 20, 10)
-            val cy = (startY + endY) * 0.5f + unsignedModMinusToFloat(xorshift32(), 20, 10)
-            val u = 1.0f - t
-            val bx = u * u * startX + 2.0f * u * t * cx + t * t * endX
-            val by = u * u * startY + 2.0f * u * t * cy + t * t * endY
-            val wx = unsignedModMinusToFloat(xorshift32(), 200, 100) * 0.01f * wobbleAmp
-            val wy = unsignedModMinusToFloat(xorshift32(), 200, 100) * 0.01f * wobbleAmp
-            val idx = i * 3
-            out[idx] = bx + wx
-            out[idx + 1] = by + wy
-            out[idx + 2] = t * durationMs
-        }
-    }
-}
 
 object CounterattackPort {
     private fun branchlessCoerce(value: Float, minVal: Float, maxVal: Float): Float {

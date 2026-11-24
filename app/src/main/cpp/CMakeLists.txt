@@ -6,7 +6,8 @@ add_compile_definitions(SPLENDOR_BREADCRUMBS=1)
 
 add_library(splendor_native SHARED
   native_breadcrumb.c
-  native_input.cpp
+  # DEAD-REMOVE: native_input.cpp removed — its only JNI functions
+  # (nativeInjectTap, nativeInjectSwipe) had zero Kotlin callers.
   native_kicking_posture.c
   native_agility_physics.c
   native_registration.c

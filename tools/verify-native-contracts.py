@@ -14,8 +14,6 @@ Coverage: all 26 NativeBridge methods.
 - 1 static-only (nativeBreadcrumbDump): native_breadcrumb.c includes
   <android/log.h> and cannot compile on a Linux host, so its C signature
   is checked against the Kotlin declaration instead of being called.
-- 2 input-bridge methods (nativeInjectTap/Swipe, native_input.cpp) are
-  also static-only: they need the NDK and delegate to AccessibilityService.
 Run: JAVA_HOME=<jdk> python3 tools/verify-native-contracts.py
 """
 from pathlib import Path
@@ -105,13 +103,13 @@ require(nativeExtractBlobs(px,8,8,32,4,0.5f,new int[8])>=0);
 require(nativeExtractBlobs(null,8,8,32,4,0.5f,new int[8])==-1);
 require(nativeExtractBlobs(px,8,8,32,4,Float.NaN,new int[8])==-1);
 require(nativeExtractBlobs(px,8,8,32,4,0.5f,new int[0])==-1);
-System.out.println("PASS JNI checks="+checks+"; concurrent distinct-input calls=4000 (stroke + frame); static contracts=3 (breadcrumb dump + 2 input bridge)");
+System.out.println("PASS JNI checks="+checks+"; concurrent distinct-input calls=4000 (stroke + frame); static contracts=1 (breadcrumb dump)");
 }}'''
 (t / 'NativeBridge.java').write_text(text)
 
 # Static-only contracts: C signature must match the Kotlin declaration.
 # nativeBreadcrumbDump lives in native_breadcrumb.c (<android/log.h>: no host
-# compile); the input bridge lives in native_input.cpp (NDK-only headers).
+# compile).
 def static_contract(c_file, c_pat, kt_file, kt_decl, what):
     c = (r / c_file).read_text()
     k = (r / kt_file).read_text()
@@ -121,14 +119,6 @@ static_contract('app/src/main/cpp/native_breadcrumb.c',
                 r'JNIEXPORT\s+jstring\s+JNICALL\s+Java_com_assistant_NativeBridge_nativeBreadcrumbDump\(\s*JNIEnv\s*\*\s*env,\s*jclass\s+clazz\s*\)',
                 'app/src/main/java/com/assistant/NativeBridge.kt',
                 'external fun nativeBreadcrumbDump(): String', 'nativeBreadcrumbDump')
-static_contract('app/src/main/cpp/native_input.cpp',
-                r'Java_com_assistant_input_NativeInputBridge_nativeInjectTap\(\s*JNIEnv\*\s*env,\s*jobject[^,]*,\s*jfloat\s+x,\s*jfloat\s+y\s*\)',
-                'app/src/main/java/com/assistant/input/NativeInputBridge.kt',
-                'external fun nativeInjectTap(x: Float, y: Float): Boolean', 'nativeInjectTap')
-static_contract('app/src/main/cpp/native_input.cpp',
-                r'Java_com_assistant_input_NativeInputBridge_nativeInjectSwipe\(\s*JNIEnv\*\s*env,\s*jobject[^,]*,\s*jfloat\s+startX,\s*jfloat\s+startY,\s*jfloat\s+endX,\s*jfloat\s+endY,\s*jlong\s+duration\s*\)',
-                'app/src/main/java/com/assistant/input/NativeInputBridge.kt',
-                'external fun nativeInjectSwipe(startX: Float, startY: Float, endX: Float, endY: Float, duration: Long): Boolean', 'nativeInjectSwipe')
 
 # JDK: $JAVA_HOME, else ~/jdk17, else a clear failure (never a bare KeyError).
 def find_jdk():
