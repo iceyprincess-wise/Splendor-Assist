@@ -13,7 +13,10 @@ import com.assistant.runtime.EngineContribution
 import com.assistant.runtime.GameplayEngineRegistry
 import com.assistant.runtime.RuntimeFrame
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.math.acos
+import kotlin.math.cos
 import kotlin.math.hypot
+import kotlin.math.sin
 
 object RuntimeDecisionLoop {
 
@@ -49,6 +52,17 @@ object RuntimeDecisionLoop {
     // routeRejected: the bus never saw it, and the room's "Decision
     // Routed=" must stop climbing while the user is hands-off.
     private val moveHeldNoTouch = AtomicLong(0L)
+    // JOYSTICK SLEW LIMITER (output stage) — state. ConAI is a stateless
+    // per-frame max, so a winner flip swings the joystick direction
+    // instantly. The limiter holds the previous smoothed direction and
+    // the possession it was computed under; a possession flip resets it
+    // so the stick snaps to the new situation instead of slewing
+    // through the flip.
+    @Volatile private var slewPrevDirX: Float = 0f
+    @Volatile private var slewPrevDirY: Float = 0f
+    @Volatile private var slewHasPrev: Boolean = false
+    @Volatile private var slewPrevHasBall: Boolean = false
+    @Volatile private var slewHasPrevBall: Boolean = false
 
     @Volatile private var lastAction: String = "none"
     @Volatile private var lastWeight: Float = 0f
@@ -258,6 +272,90 @@ object RuntimeDecisionLoop {
         return accepted
     }
 
+    // ── Output stage: AnalogDeflection + JoystickSlewLimiter ─────────
+    // ANALOG DEFLECTION: the contributor's intended travel distance
+    // (aim origin → target, capture-frame px) sets the joystick
+    // deflection radius, bounded by the MEASURED max drag. Falls back
+    // to the legacy 0.08f factor only while the trainer probe has not
+    // measured a radius on this device (maxDragPx == null). Never
+    // invents a radius: the ceiling is the probe's measured
+    // DispatchBounds.maxDragPx (file comment: "NOTHING consumes it
+    // yet" — this is the queued follow-up that wires it in).
+    // A short intent (small distance) deflects gently (fine dribble);
+    // a long intent clamps to the ceiling (full stick, sprint).
+    private fun analogDeflectionRadius(distance: Float): Float {
+        val measuredMax = com.assistant.execution.DispatchBounds.maxDragPx
+        val ceiling = measuredMax ?: (minOf(frameWidth(), frameHeight()) * 0.08f)
+        return distance.coerceIn(0f, ceiling)
+    }
+
+    // SLEW LIMITER tuning (design parameters for this new engine; the
+    // deflection ceiling above is the only measured value in this
+    // stage): deadband 5° (ignore sub-5° jitter), max 45°/frame (a
+    // full 180° reversal takes ~8 frames / ~400 ms at the 20 fps
+    // processed rate — the clamp alone would allow 4 frames / 200 ms,
+    // but the EMA halves the effective swing), EMA alpha 0.5 (halve
+    // the remaining angle each frame). The slew clamp is an upper
+    // bound — the EMA makes the effective per-frame swing smaller,
+    // which is the safe direction.
+    private const val SLEW_DEADBAND_DEG = 5f
+    private const val SLEW_MAX_DEG_PER_FRAME = 45f
+    private const val SLEW_EMA_ALPHA = 0.5f
+
+    // Returns the slew-limited unit direction for this frame.
+    // newDirX/newDirY must already be a unit vector. A possession flip
+    // resets the limiter so the stick snaps to the new situation
+    // instead of slewing through the flip.
+    private fun slewLimitDirection(newDirX: Float, newDirY: Float, hasBall: Boolean): Pair<Float, Float> {
+        if (slewHasPrevBall && slewPrevHasBall != hasBall) slewHasPrev = false
+        slewPrevHasBall = hasBall
+        slewHasPrevBall = true
+        if (!slewHasPrev) {
+            slewPrevDirX = newDirX
+            slewPrevDirY = newDirY
+            slewHasPrev = true
+            return newDirX to newDirY
+        }
+        val prevX = slewPrevDirX
+        val prevY = slewPrevDirY
+        val dot = (prevX * newDirX + prevY * newDirY).coerceIn(-1f, 1f)
+        val angleDeg = Math.toDegrees(acos(dot.toDouble())).toFloat()
+        // Deadband: a sub-deadband change is jitter, not intent — hold
+        // the previous direction. Drift accumulates against the held
+        // direction, so a slow real turn still breaks through once the
+        // accumulated angle exceeds the deadband.
+        if (angleDeg < SLEW_DEADBAND_DEG) return prevX to prevY
+        // Slew clamp: rotate the previous direction toward the new one
+        // by at most the per-frame maximum.
+        val clamped = rotateToward(prevX, prevY, newDirX, newDirY, SLEW_MAX_DEG_PER_FRAME)
+        // EMA: blend the previous direction toward the clamped target.
+        val bx = prevX + (clamped.first - prevX) * SLEW_EMA_ALPHA
+        val by = prevY + (clamped.second - prevY) * SLEW_EMA_ALPHA
+        val blen = hypot(bx, by)
+        val outX = if (blen > 0f) bx / blen else newDirX
+        val outY = if (blen > 0f) by / blen else newDirY
+        slewPrevDirX = outX
+        slewPrevDirY = outY
+        return outX to outY
+    }
+
+    // Rotate unit vector (fromX, fromY) toward unit vector (toX, toY)
+    // by at most maxDeg degrees. Returns a unit vector.
+    private fun rotateToward(fromX: Float, fromY: Float, toX: Float, toY: Float, maxDeg: Float): Pair<Float, Float> {
+        val dot = (fromX * toX + fromY * toY).coerceIn(-1f, 1f)
+        val angleDeg = Math.toDegrees(acos(dot.toDouble())).toFloat()
+        if (angleDeg <= maxDeg || angleDeg <= 0f) return toX to toY
+        val cross = fromX * toY - fromY * toX
+        val sign = if (cross >= 0f) 1f else -1f
+        val theta = Math.toRadians(maxDeg.toDouble()).toFloat() * sign
+        val c = cos(theta)
+        val s = sin(theta)
+        val rx = fromX * c - fromY * s
+        val ry = fromX * s + fromY * c
+        val rlen = hypot(rx, ry)
+        return if (rlen > 0f) (rx / rlen) to (ry / rlen) else (toX to toY)
+    }
+
     private fun chooseRequest(
         best: EngineContribution?,
         parked: ExecutionRequest?,
@@ -286,6 +384,12 @@ object RuntimeDecisionLoop {
         val mover = frame.entities.firstOrNull { it.id == (if (frame.hasBall) frame.ownerId else frame.defenderId) && it.teammate }
         val aimOriginX = best.aimOriginX ?: if (controlSlot != 0) frame.ballX else mover?.x
         val aimOriginY = best.aimOriginY ?: if (controlSlot != 0) frame.ballY else mover?.y
+        // Deflection radius for this request. Default is the legacy fixed
+        // factor; the aim-origin branch below overwrites it with the
+        // intent-scaled radius. Hoisted so AimMotion (below) uses the
+        // same radius as the direct endpoint — the compensation path
+        // must not recompute a different deflection.
+        var deflectionRadius = minOf(frameWidth(), frameHeight()) * 0.08f
         if (aimOriginX != null && aimOriginY != null) {
             if (controlSlot != 0) {
                 if (!ControlMappingTrainer.matchActive || !ControlMappingTrainer.isSlotTrained(controlSlot)) { chooseNull.incrementAndGet(); return null }
@@ -297,9 +401,16 @@ object RuntimeDecisionLoop {
             val dy = best.targetY - aimOriginY
             val distance = hypot(dx, dy)
             if (!distance.isFinite() || distance <= 0f) { chooseNull.incrementAndGet(); return null }
-            val radius = minOf(frameWidth(), frameHeight()) * 0.08f
-            leadX = (startX + dx / distance * radius).coerceIn(0f, frameWidth() - 1f)
-            leadY = (startY + dy / distance * radius).coerceIn(0f, frameHeight() - 1f)
+            // OUTPUT STAGE — slew then deflect, in this order:
+            // 1. SlewLimiter smooths the winner's direction (unit vector).
+            // 2. AnalogDeflection scales the radius by contributor intent
+            //    (distance), bounded by the measured max drag.
+            val dirX = dx / distance
+            val dirY = dy / distance
+            val (slewX, slewY) = slewLimitDirection(dirX, dirY, frame.hasBall)
+            deflectionRadius = analogDeflectionRadius(distance)
+            leadX = (startX + slewX * deflectionRadius).coerceIn(0f, frameWidth() - 1f)
+            leadY = (startY + slewY * deflectionRadius).coerceIn(0f, frameHeight() - 1f)
         }
         if (aimOriginX == null || aimOriginY == null) { chooseNull.incrementAndGet(); return null }
         val targetId = best.targetEntityId ?: frame.passTargetId.takeIf {
@@ -320,7 +431,7 @@ object RuntimeDecisionLoop {
         }
         val motion = com.assistant.execution.AimMotion(aimOriginX, aimOriginY, best.targetX, best.targetY,
             (target?.velocityXPerSecond ?: 0f) - originVx, (target?.velocityYPerSecond ?: 0f) - originVy,
-            frame.predictedAtNanos, minOf(frameWidth(), frameHeight()) * 0.08f, frameWidth(), frameHeight(),
+            frame.predictedAtNanos, deflectionRadius, frameWidth(), frameHeight(),
             forwardLatencyNanos = forwardLatencyNanos)
         return ExecutionRequest(
             aimMotion = motion,
@@ -496,6 +607,8 @@ object RuntimeDecisionLoop {
     fun reset() {
         lastCaptureId = -1L
         activeGestureEnvelope = null
+        slewPrevDirX = 0f; slewPrevDirY = 0f; slewHasPrev = false
+        slewPrevHasBall = false; slewHasPrevBall = false
         ActionOutcomeVerifier.reset()
         decisions.set(0L); routed.set(0L)
         CaptaincySkillEngine.reset()
