@@ -106,9 +106,13 @@ object ForwardRunContributor : GameplayContributor {
         // Run TOWARD the open lane, not back to ballX/ballY (zero-movement).
         val targetX = frame.passTargetX.coerceAtLeast(0f)
         val targetY = frame.passTargetY.coerceAtLeast(0f)
+        // Authority scaling (fixed 2026-11-24, was /10): runBoost is 1.0-1.8
+        // (ForwardRunOpportunityEngine: 1 + laneConfidence*0.8), so /2 maps it
+        // to 0.50-0.90 — the same band as Dribble (0.45/0.55) and Evade.
+        // The old /10 gave 0.10-0.18, near-inert in arbitration.
         return EngineContribution(engineName, ActionClass.MOVE,
             targetX, targetY,
-            (r.runBoost / 10f).coerceIn(0f, 1f), r.confidence.coerceIn(0f, 1f), 38L)
+            (r.runBoost / 2f).coerceIn(0f, 1f), r.confidence.coerceIn(0f, 1f), 38L)
     }
 }
 
