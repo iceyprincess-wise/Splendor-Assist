@@ -512,6 +512,27 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
     }
 
     override fun onServiceConnected() {
+        // TOUCH-MASK-FORCE (2026-11-24, PROVEN by elimination): the system
+        // never delivered TYPE_TOUCH_INTERACTION_START/END on Ed's phone --
+        // the touch types entered the XML after the service was first
+        // enabled, and the system-cached event mask was never refreshed by
+        // app updates. Re-assert the mask on EVERY bind so a stale cached
+        // mask cannot starve UserTouchState again. Values mirror
+        // accessibility_service_config.xml exactly (no flags attribute
+        // declared there, so flags stays at its default 0).
+        try {
+            val info = android.accessibilityservice.AccessibilityServiceInfo().apply {
+                eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
+                    AccessibilityEvent.TYPE_TOUCH_INTERACTION_START or
+                    AccessibilityEvent.TYPE_TOUCH_INTERACTION_END
+                feedbackType = android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_HAPTIC
+                notificationTimeout = 0L
+                flags = 0
+                canRetrieveWindowContent = true
+                canPerformGestures = true
+            }
+            setServiceInfo(info)
+        } catch (_: Throwable) {}
         try {
             val windowManager = getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager
             @Suppress("DEPRECATION")
@@ -664,6 +685,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     UserTouchState.setTouching(true)
                     RuntimeDecisionLoop.invalidateGestureEnvelopeOnManualTouch()
                 }
+                RuntimeLogger.log("TOUCH_MASK_DIAG type=TOUCH_INTERACTION_START appGestureActive=${TouchSourceDiscriminator.isAppGestureActive(System.currentTimeMillis())} isTouching=${UserTouchState.isTouching()}", "SMART_ASSIST")
             }
             AccessibilityEvent.TYPE_TOUCH_INTERACTION_END -> {
                 // TOUCHSOURCE-DISCRIMINATOR (Phase 0 #1): an END for our own
@@ -673,6 +695,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 if (!TouchSourceDiscriminator.isAppGestureActive(System.currentTimeMillis())) {
                     UserTouchState.setTouching(false)
                 }
+                RuntimeLogger.log("TOUCH_MASK_DIAG type=TOUCH_INTERACTION_END appGestureActive=${TouchSourceDiscriminator.isAppGestureActive(System.currentTimeMillis())} isTouching=${UserTouchState.isTouching()}", "SMART_ASSIST")
             }
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
                 val pkg = event.packageName?.toString() ?: return
