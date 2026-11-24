@@ -101,24 +101,19 @@ object AttackingVectorContributor:GameplayContributor{
   override fun contribute(frame:RuntimeFrame):EngineContribution?{
     if(!frame.trusted||!frame.hasBall)return null
     val goalDetected=frame.goalDetected&&frame.goalConfidence>0.25f&&frame.goalRightX>frame.goalLeftX
+    // BLIND-SHOT GATE: no detected goal, no shot. The synthetic-goal
+    // fallback (invent a goal at the screen edge) is removed — a SHOT
+    // fires only at a real detected goal.
+    if(!goalDetected)return null
     val gkX:Float;val gkY:Float;val lpX:Float;val lpY:Float;val rpX:Float;val rpY:Float
-    if(goalDetected){val keeper=ShotTargetMath.keeperPosition(frame.goalkeeperVisible,frame.goalkeeperX,frame.goalkeeperY,frame.goalCenterX,frame.goalCenterY);gkX=keeper.x;gkY=keeper.y;lpX=frame.goalLeftX;lpY=frame.goalTopY;rpX=frame.goalRightX;rpY=frame.goalBottomY}
-    /* SPLENDOR_CAPTURE_TO_SCREEN_V1 - this branch used to test frame.ballX>=825f
-       against a logical 1650x720 landscape pitch, but frame.ballX is measured
-       on the capture buffer (e.g. 288x640). 825 was therefore unreachable and
-       the engine always picked the LEFT goal, so every shot contribution was
-       aimed at the wrong end. The decision is now made in the frame's space. */
-    else if(frame.ballX>=com.assistant.vision.CameraProfile.captureWidthOrFallback()*0.5f){gkX=com.assistant.vision.CameraProfile.captureWidthOrFallback()-30f;gkY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.5f;lpX=com.assistant.vision.CameraProfile.captureWidthOrFallback()-30f;lpY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.39f;rpX=com.assistant.vision.CameraProfile.captureWidthOrFallback()-30f;rpY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.61f}
-    else{gkX=30f;gkY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.5f;lpX=30f;lpY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.39f;rpX=30f;rpY=com.assistant.vision.CameraProfile.captureHeightOrFallback()*0.61f}
+    val keeper=ShotTargetMath.keeperPosition(frame.goalkeeperVisible,frame.goalkeeperX,frame.goalkeeperY,frame.goalCenterX,frame.goalCenterY);gkX=keeper.x;gkY=keeper.y;lpX=frame.goalLeftX;lpY=frame.goalTopY;rpX=frame.goalRightX;rpY=frame.goalBottomY
     val dist=hypot((frame.ballX-gkX).toDouble(),(frame.ballY-gkY).toDouble()).toFloat()
-    // UNCONDITIONAL AGGRESSIVE EXECUTION: Allow shot calculation at all ranges for recovery
     val point=CriticalAttackingVectorEngine.computeAbsoluteScoringVector(frame.ballX,frame.ballY,gkX,gkY,lpX,lpY,rpX,rpY)
     val proximity=(1f-dist/MAX_SHOT_RANGE).coerceIn(0f,1f)
     val clearance=(1f-frame.defenderDensity*0.4f).coerceIn(0f,1f)
     val authority=(MIN_AUTHORITY+proximity*0.35f+clearance*0.10f).coerceIn(MIN_AUTHORITY,0.95f)
     // Q-C3-1 (F07): shot duration is type-correct via ShotTypeEngine —
-    // POWER 35 / FINESSE 30 / CHIP 25; 35L fallback when select() returns
-    // null (e.g. no goal detected, so the fallback geometry above applies).
+    // POWER 35 / FINESSE 30 / CHIP 25; 35L fallback when select() returns null.
     return EngineContribution(engineName,ActionClass.SHOT,point.x.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),point.y.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),authority,frame.confidence,ShotTypeEngine.select(frame,point.x,point.y)?.durationHintMs?:35L)
   }
 }
