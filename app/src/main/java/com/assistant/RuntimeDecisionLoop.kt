@@ -119,7 +119,7 @@ object RuntimeDecisionLoop {
             RuntimePerformanceCoordinator.authority().coerceIn(0, 100) / 100f
         val collected = GameplayEngineRegistry.collect(frame).filter { c ->
             !ActionOutcomeVerifier.cooling(c.actionClass)
-        }.map { c -> c.copy(confidence = c.confidence * ActionOutcomeVerifier.confidenceFactor(c.actionClass)) }.filter { c ->
+        }.map { c -> c.copy(confidence = c.confidence * ActionOutcomeVerifier.confidenceFactor(c.actionClass) * EngineCreditStore.credit(c.engine)) }.filter { c ->
             requiredControlSlot(c) == 0 || (ControlMappingTrainer.matchActive && ControlMappingTrainer.isSlotTrained(requiredControlSlot(c)))
         }
         val contributions = if (authorityFactor >= 1f) collected else collected.map { c ->

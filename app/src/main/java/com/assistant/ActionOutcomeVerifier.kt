@@ -20,6 +20,12 @@ object ActionOutcomeVerifier {
     // (Pending.at, recordDispatch time) so verify() can measure the
     // dispatch→effect-observed latency — the dispatch→on-screen proxy.
     private val confirmedPreFrames = linkedMapOf<String, Triple<RuntimeFrame, ActionClass?, Long>>()
+    // PerEngineCredit: actionId -> engine name, so verify() can attribute
+    // each judged outcome to the engine that produced it. Bounded at 64,
+    // same cap as confirmedPreFrames; "" is never stored ("no engine
+    // claimed it"). Cleared on cancel/reset; the credit itself persists
+    // in EngineCreditStore and survives resets.
+    private val actionEngines = linkedMapOf<String, String>()
     private val policy = com.assistant.execution.OutcomePolicy()
     private var dispatched = 0L; private var macroObserved = 0L; private var heuristicFailure = 0L
     private var effectConfirmedCount = 0L; private var effectFailedCount = 0L
@@ -63,13 +69,21 @@ object ActionOutcomeVerifier {
                 return
             }
         policy.dispatched(actionId, phase, item.frame.ownerId, item.frame.hasBall, System.nanoTime())
+        // PerEngineCredit: remember which engine produced this dispatch so
+        // verify() can record the judged outcome against it.
+        if (item.request.engine.isNotBlank()) {
+            if (actionEngines.size >= 64) actionEngines.remove(actionEngines.keys.first())
+            actionEngines[actionId] = item.request.engine
+        }
         // L5 (batch 1): keep the pre-frame for the frame-effect compare,
         // plus the dispatch time for the F5 latency measurement.
         if (confirmedPreFrames.size >= 64) confirmedPreFrames.remove(confirmedPreFrames.keys.first())
         confirmedPreFrames[actionId] = Triple(item.frame, phase, item.at)
         dispatched++
     }
-    @Synchronized fun cancelDispatch(actionId: String) { pending.remove(actionId); policy.cancel(actionId) }
+    @Synchronized fun cancelDispatch(actionId: String) { pending.remove(actionId); actionEngines.remove(actionId); policy.cancel(actionId) }
+    // PerEngineCredit: take-and-remove the engine for a judged actionId.
+    @Synchronized private fun takeEngine(actionId: String): String? = actionEngines.remove(actionId)
     fun cooling(phase: ActionClass) = policy.cooling(phase, System.nanoTime())
     fun confidenceFactor(phase: ActionClass) = policy.confidenceFactor(phase)
     @Synchronized fun verify(currentFrame: RuntimeFrame) {
@@ -113,6 +127,11 @@ object ActionOutcomeVerifier {
                 pre?.let { PipelineLatencyMonitor.recordEffect(it.third, now, it.first.frameId, currentFrame.frameId) }
             }
             GestureExecutionAuthority.recordEffectObserved(id, effect)
+            // PerEngineCredit: attribute the judged outcome to the engine
+            // that produced it. Uses `observed` (the policy macro verdict)
+            // — the same signal that updates per-class reliability — not
+            // the frame-effect verdict, so the two stay consistent.
+            takeEngine(id)?.let { engine -> EngineCreditStore.recordOutcome(engine, observed) }
             RuntimeLogger.log(
                 "FRAME_EFFECT actionId=$id effectConfirmed=$effect policyObserved=$observed " +
                     "preFrame=${if (pre != null) "present" else "missing"}",
@@ -121,7 +140,7 @@ object ActionOutcomeVerifier {
             RuntimeLogger.log("${if (observed) "Macro_State_Correlation" else "Heuristic_Gesture_Failure"} actionId=$id", "FEEDBACK")
         }
     }
-    @Synchronized fun reset() { pending.clear(); confirmedPreFrames.clear(); policy.reset(); dispatched = 0; macroObserved = 0; heuristicFailure = 0; effectConfirmedCount = 0; effectFailedCount = 0 }
+    @Synchronized fun reset() { pending.clear(); confirmedPreFrames.clear(); actionEngines.clear(); policy.reset(); dispatched = 0; macroObserved = 0; heuristicFailure = 0; effectConfirmedCount = 0; effectFailedCount = 0 }
     @Synchronized fun diagnostics(): Map<String, Any> = mapOf("dispatched" to dispatched,
         "macroObserved" to macroObserved, "heuristicFailure" to heuristicFailure,
         "effectConfirmed" to effectConfirmedCount, "effectFailed" to effectFailedCount,

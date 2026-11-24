@@ -64,6 +64,7 @@ class App : Application() {
         LogMirror.init()
         GlobalCrashHandler.install(this)
         OverrideStore.initialize(this)
+        EngineCreditStore.initialize(this)
         installF47CrashMirror()
         registerComponentCallbacks(object : ComponentCallbacks2 {
             override fun onTrimMemory(level: Int) = DiagnosticSamplers.onTrimMemory(level)
