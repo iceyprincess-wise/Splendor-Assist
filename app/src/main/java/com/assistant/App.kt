@@ -5,7 +5,9 @@ package com.assistant
 import com.assistant.storage.SplendorStorageRoot
 import com.assistant.diagnostic.RuntimeLogger
 import com.assistant.diagnostic.LogMirror
+import com.assistant.execution.DispatchBounds
 import android.content.ComponentCallbacks2
+import android.content.Context
 import android.app.Application
 import android.os.Build
 
@@ -93,6 +95,29 @@ class App : Application() {
         // Runs on every process start (main + :survival); the seam reads
         // SharedPreferences, so each process restores its own copy.
         try { com.assistant.VisionConfigurationEngine.restore(applicationContext) } catch (_: Throwable) { }
+
+        // RC1 anchor fix (2026-11-24): apply Ed's joystick-origin pref at
+        // startup. The measured centre comes from his own 13 screenshots
+        // (ButtonMappingEngine.BUTTONS); the pref makes it explicit,
+        // logged and reversible — NOT a silent re-anchor. Default true
+        // (measured); recordProbeOutcome(false) restores the anchor.
+        // Runs on every process start like the restore above; the state
+        // is per-process in-memory, and background processes dispatch
+        // nothing, so the call is harmless there.
+        // Radius re-arm: the one-shot maxDrag probe measured ~8 px from
+        // the WRONG origin (the anchor) and then disarmed, locking the
+        // bad radius for the session. Clear it and re-arm so the probe
+        // re-measures from the corrected centre (~23 px expected). The
+        // probe already reads d7JoystickCenter, so the re-anchor alone
+        // un-poisons it — this clears the already-locked value.
+        try {
+            val joyPrefs = applicationContext.getSharedPreferences("splendor_capture", Context.MODE_PRIVATE)
+            val useMeasured = joyPrefs.getBoolean("joystick_use_measured_centre", true)
+            ButtonMappingEngine.recordProbeOutcome(useMeasured)
+            DispatchBounds.setMaxDrag(null)
+            ControlMappingTrainer.setMaxDragProbeActive(true)
+            logSafe("JOY_ORIGIN verdict=${ButtonMappingEngine.probeOutcome()} source=pref", "TRAINER")
+        } catch (_: Throwable) { }
 
         // Queue item 21 (v3 TFLite detector): initialise the trained
         // detector on a background thread — initialize() reads the 80 MB

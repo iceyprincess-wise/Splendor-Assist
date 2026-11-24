@@ -428,6 +428,27 @@ class ModMenuController(private val context: Context) {
         }
         contentContainer.addView(swTouchGateBypass)
 
+        // RC1 anchor fix (2026-11-24): A/B the joystick origin live.
+        // ON = measured centre (Ed's 13 screenshots); OFF = the trained
+        // anchor (0.182, 0.648). Flipping re-records the verdict, clears
+        // the locked maxDrag radius and re-arms the probe so it
+        // re-measures from the new origin — the evidence Q-N6-1 wanted,
+        // without building a probe executor. Same pref + store as the
+        // startup wiring in App.onCreate.
+        val swJoyOrigin = Switch(context).apply {
+            text = "Joystick origin: measured centre"
+            setTextColor(Color.WHITE)
+            isChecked = fpsPreferences.getBoolean("joystick_use_measured_centre", true)
+            setOnCheckedChangeListener { _, isChecked ->
+                fpsPreferences.edit { putBoolean("joystick_use_measured_centre", isChecked) }
+                ButtonMappingEngine.recordProbeOutcome(isChecked)
+                com.assistant.execution.DispatchBounds.setMaxDrag(null)
+                ControlMappingTrainer.setMaxDragProbeActive(true)
+                RuntimeLogger.log("JOY_ORIGIN verdict=${ButtonMappingEngine.probeOutcome()} source=ModMenu switch value=$isChecked", "TRAINER")
+            }
+        }
+        contentContainer.addView(swJoyOrigin)
+
         val targetFpsLabel = TextView(context).apply {
             setTextColor(TEXT_MUTED.toColorInt())
             textSize = 12f
