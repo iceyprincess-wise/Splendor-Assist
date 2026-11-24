@@ -235,8 +235,21 @@ object GoalkeeperActionRouter {
                         PanicAction.BLOCK_RIGHT ->
                         GoalkeeperAction.BLOCK_RIGHT
 
+                    // GHOST-RUSH GATE (2026-11-24 log verdict): the panic
+                    // 1v1 rush fired on priority + direction alone, with
+                    // no real opponent — the keeper offered the rush
+                    // ~6x/second all match and the bypass toggle was the
+                    // only thing between the decision and the screen (432
+                    // identical ghost swipes, phase 5). Require the 1v1
+                    // flag: decision.isOneVsOne is
+                    // PreShotRushEngine.shouldRush at the evaluate site —
+                    // a real tracked opponent within RUSH_DISTANCE_PX
+                    // (200) in possession of the ball. Without it the
+                    // decision falls through to TRACK: a rush offered on
+                    // no evidence is the ghost; a rush withheld on bad
+                    // data just means no rush that frame.
                     panic ==
-                        PanicAction.RUSH -> {
+                        PanicAction.RUSH && decision.isOneVsOne -> {
                         GoalkeeperAction.RUSH_OUT
                     }
 
