@@ -38,7 +38,8 @@ import com.assistant.diagnostic.RuntimeLogger
 
 
 
-import com.assistant.overlay.interceptor.InterceptionRuntimeRegistry
+import com.assistant.execution.ExecutionSource
+import com.assistant.overlay.interceptor.PerSourceTouchPolicy
 import com.assistant.runtime.*
 
 
@@ -169,6 +170,11 @@ object GestureExecutionAuthority {
         callback: AccessibilityService.GestureResultCallback? = null,
         handler: Handler? = null,
         origin: String = "unattributed",
+        // Phase 0 #3 (PerSourceTouchPolicy): the dispatch source, for the
+        // per-source touch gate. Null = undeclared (fail-closed: treated as
+        // SMART_ASSIST, which requires touch). SAAE passes request.source;
+        // legacy callers that don't pass it get the fail-closed default.
+        source: ExecutionSource? = null,
         actionIdParam: String? = null,
         busAcceptedParam: Boolean = false,
         busConsumedParam: Boolean = false
@@ -240,10 +246,17 @@ object GestureExecutionAuthority {
             }
         }
 
-        if (!InterceptionRuntimeRegistry.bypassTouchGate && !UserTouchState.isTouching()) {
+        // Phase 0 #3 (PerSourceTouchPolicy): the touch gate is per-source,
+        // not global. KEEPER/INTERCEPTION are autonomous (unless the user
+        // revoked autonomy via the ModMenu switch); SMART_ASSIST/STUTTER
+        // and undeclared sources always require touch. Touch signal is
+        // isUserTouchAuthorizing() (Split-boolean piece, Phase 0 #2) — the
+        // 500 ms post-lift retention and 5 s stuck-true cap apply.
+        val effectiveSource = source ?: ExecutionSource.SMART_ASSIST
+        if (PerSourceTouchPolicy.requiresTouch(effectiveSource) && !UserTouchState.isUserTouchAuthorizing()) {
             RuntimeLogger.log(
                 "Gesture blocked: no active user touch "
-                    + "(bypassTouchGate=${InterceptionRuntimeRegistry.bypassTouchGate}, "
+                    + "(source=$effectiveSource, "
                     + "isTouching=${UserTouchState.isTouching()}) "
                     + "GestureExecutionAuthority.kt dispatch gate",
                 "SMART_ASSIST"
@@ -261,7 +274,7 @@ object GestureExecutionAuthority {
             // SPLENDOR_F31_EVIDENCE: dispatch boundary state for every attempt.
             RuntimeLogger.log(
                 "dispatchGesture result=$result actionId=$actionId "
-                    + "bypassTouchGate=${InterceptionRuntimeRegistry.bypassTouchGate} "
+                    + "source=$effectiveSource "
                     + "isTouching=${UserTouchState.isTouching()} "
                     + "GestureExecutionAuthority.kt dispatchGesture boundary",
                 "SMART_ASSIST"

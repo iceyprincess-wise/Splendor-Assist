@@ -324,6 +324,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 },
                 null,
                 origin = "bus:${request.source}",
+                // Phase 0 #3 (PerSourceTouchPolicy): plumb the dispatch source
+                // so the authority's touch gate is per-source, not global.
+                source = request.source,
                 actionIdParam = request.actionId,
                 busAcceptedParam = request.busAccepted,
                 busConsumedParam = request.busConsumed

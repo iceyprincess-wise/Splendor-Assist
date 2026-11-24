@@ -237,8 +237,8 @@ object BurstForensicsEngine {
         // GHOST-TOUCH (batch G): the re-assert re-issues the last MOVE
         // hold. If the user is not touching a control, extending that
         // hold is the app moving the phone on its own. Skip it; the
-        // 2.5s touch-retention window covers a brief lift.
-        if (!UserTouchState.isTouching()) {
+        // short authorization window covers a brief lift.
+        if (!UserTouchState.isUserTouchAuthorizing()) {
             reassertNoTouch++
             RuntimeLogger.log("STUTTER re-assert skipped: no user touch (noTouch=$reassertNoTouch)", "STUTTER")
             return

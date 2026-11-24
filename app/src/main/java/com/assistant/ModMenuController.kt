@@ -416,14 +416,22 @@ class ModMenuController(private val context: Context) {
         }
         contentContainer.addView(swAutoIntercept)
 
+        // Phase 0 #3 (PerSourceTouchPolicy): this switch is re-scoped. It used
+        // to bypass the touch gate GLOBALLY (every source dispatched without
+        // touch). It now controls ONLY whether the autonomous sources
+        // (KEEPER/INTERCEPTION) may dispatch without touch. SMART_ASSIST
+        // (incl. the OCR pipe) and STUTTER always require touch, and the
+        // switch can no longer bypass them. The SharedPreferences key is
+        // unchanged ("bypass_touch_gate", default true) so an existing user
+        // preference is preserved.
         val swTouchGateBypass = Switch(context).apply {
-            text = "Bypass UserTouchState gate"
+            text = "Keeper/INT dispatch without touch"
             setTextColor(Color.WHITE)
             isChecked = InterceptionRuntimeRegistry.bypassTouchGate
             setOnCheckedChangeListener { _, isChecked ->
                 InterceptionRuntimeRegistry.bypassTouchGate = isChecked
                 fpsPreferences.edit { putBoolean("bypass_touch_gate", isChecked) }
-                RuntimeLogger.log("ModMenu bypassTouchGate toggled source=ModMenu switch value=$isChecked", "SMART_ASSIST")
+                RuntimeLogger.log("ModMenu bypassTouchGate toggled source=ModMenu switch value=$isChecked (now governs autonomous KEEPER/INTERCEPTION only; SMART_ASSIST/STUTTER always require touch)", "SMART_ASSIST")
             }
         }
         contentContainer.addView(swTouchGateBypass)

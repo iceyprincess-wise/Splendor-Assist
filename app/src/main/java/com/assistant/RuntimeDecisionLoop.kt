@@ -221,11 +221,12 @@ object RuntimeDecisionLoop {
         // actions and are NOT gated here (the keeper must save while
         // the user is not touching). The touch gate is deliberately
         // NOT the bypass: bypass ON is Ed's working config, and it
-        // must not re-open autonomous movement. isTouching() stays
-        // true for 2.5s after the last touch, so a hold extends briefly
-        // after release instead of cutting dead. Checked BEFORE
-        // recordDispatch so a held request leaves no pending entry.
-        if (HybridExecutionTerminal.isMovementHold(terminalRequest) && !UserTouchState.isTouching()) {
+        // must not re-open autonomous movement. isUserTouchAuthorizing()
+        // (Phase 0 #2) expires shortly after lift and is withdrawn if
+        // the touch flag sticks true without a fresh START, so a hold
+        // extends briefly after release instead of cutting dead. Checked
+        // BEFORE recordDispatch so a held request leaves no pending entry.
+        if (HybridExecutionTerminal.isMovementHold(terminalRequest) && !UserTouchState.isUserTouchAuthorizing()) {
             moveHeldNoTouch.incrementAndGet()
             lastAction = "idle-no-touch-move"
             return false

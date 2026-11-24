@@ -158,7 +158,7 @@ class ActiveGestureController(
         // while Ed is holding a control (autopilot dribble/skill is
         // defined as while holding dash+pressure). Deliberately NOT the
         // bypass: bypass ON must not re-open autonomous movement.
-        if (!UserTouchState.isTouching()) {
+        if (!UserTouchState.isUserTouchAuthorizing()) {
             ActiveGestureControllerDiagnostics.blocked(
                 "no user touch before controller execution"
             )
