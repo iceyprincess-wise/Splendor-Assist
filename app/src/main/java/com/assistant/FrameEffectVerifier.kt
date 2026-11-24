@@ -55,7 +55,10 @@ object FrameEffectVerifier {
                 moved > 2f
             ActionClass.KEEPER, ActionClass.DEFEND ->
                 moved > 4f || possessionFlipped
-            ActionClass.NONE, null ->
+            // SWITCH (Phase 5, step 2): a switch moves the cursor,
+            // not the ball — no ball-effect expectation, so it shares
+            // the NONE arm's generic check.
+            ActionClass.NONE, ActionClass.SWITCH, null ->
                 moved > 2f || ownerChanged
         }
     }

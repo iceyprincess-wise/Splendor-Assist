@@ -1,6 +1,12 @@
 package com.assistant.runtime
 
-enum class ActionClass { PASS, SHOT, CROSS, DEFEND, EVADE, KEEPER, MOVE, NONE, THROUGH }
+// SWITCH (Phase 5, step 2): the cursor-switch flick, pressed on slot 3
+// (Switch/Pass). Appended LAST — never insert a value mid-enum: the
+// ordinals are phases (ExecutionRequest.phase) and duration buckets
+// (ControlMappingTrainer recordDispatch/personalDuration), so a shift
+// would renumber every existing class. The switch direction is the
+// contribution's target point; the game picks the target player.
+enum class ActionClass { PASS, SHOT, CROSS, DEFEND, EVADE, KEEPER, MOVE, NONE, THROUGH, SWITCH }
 enum class EngineCapability { ATTACK, DEFENSE, MOVEMENT, PASSING, KEEPER, SUPPORT }
 
 /**

@@ -497,7 +497,10 @@ object ControlMappingTrainer {
         // sanitized by the gateway at a fixed 75 ms stroke — its
         // duration is not outcome-learned. Without this guard it would
         // coerce into bucket 7 (NONE) and train that bucket.
-        if (phaseOrdinal == ActionClass.THROUGH.ordinal) {
+        // SWITCH (Phase 5, step 2): same guard — ordinal 9 would
+        // otherwise coerce into bucket 7 and train NONE's bucket
+        // with switch durations.
+        if (phaseOrdinal == ActionClass.THROUGH.ordinal || phaseOrdinal == ActionClass.SWITCH.ordinal) {
             pendingClass = -1
             return
         }
@@ -525,7 +528,10 @@ object ControlMappingTrainer {
     fun personalDuration(actionClass: ActionClass, hint: Long): Long {
         // D13: THROUGH has no outcome-learned bucket (see
         // recordDispatch) — the hint passes through unchanged.
-        if (actionClass == ActionClass.THROUGH) return hint
+        // SWITCH (Phase 5, step 2): same — a switch has no
+        // outcome-learned bucket, and its ordinal (9) would
+        // otherwise read NONE's bucket (7) via the coerce below.
+        if (actionClass == ActionClass.THROUGH || actionClass == ActionClass.SWITCH) return hint
         val i = actionClass.ordinal.coerceIn(0, 7)
         if (emaN[i] < 4) return hint
         val scale = (emaMs[i] / baseMs[i]).coerceIn(0.8f, 1.25f)

@@ -237,7 +237,7 @@ object RuntimeDecisionLoop {
         // hold mask, hold it — the user's own press/drag does that job
         // (a second assist gesture on the same control would double-fire
         // or steer against their drag). Slot map is requiredControlSlot's
-        // (THROUGH=1, SHOT=2, PASS/CROSS=3, MOVE/EVADE=0 joystick);
+        // (THROUGH=1, SHOT=2, PASS/CROSS/SWITCH=3, MOVE/EVADE=0 joystick);
         // DEFEND/KEEPER have no slot and are never held here (the keeper
         // must save while the user holds a button). CONSEQUENCE: a MOVE
         // is held whenever the joystick is held — the assist steers only
@@ -349,10 +349,12 @@ object RuntimeDecisionLoop {
     // DEFEND = interception and defensive engagement (InstantIntercept
     // :164/:170, InterceptMatrix, ShotAnticipation :22, Defense
     // Contributor — all DEFEND); EVADE = dodging an opponent
-    // (EvadeContributor). All three are reactive: the situation
-    // changed under the player, so the stick must catch up. MOVE /
-    // PASS / SHOT / CROSS / THROUGH / NONE are settled-possession
-    // moves and keep the 45° clamp.
+    // (EvadeContributor); SWITCH = the cursor-switch flick (Phase 5,
+    // step 2) — its flick direction selects the player, so a tight
+    // clamp would bend the flick toward the wrong player. All four
+    // are reactive: the situation changed under the player, so the
+    // stick must catch up. MOVE / PASS / SHOT / CROSS / THROUGH /
+    // NONE are settled-possession moves and keep the 45° clamp.
     // REJECTED signals: frame.panic (RuntimeFrame.kt:93) is the
     // user's panic-mode toggle (FrameAssembler.kt:211,
     // SmartAssistRepository.panicActive()), a global setting, not
@@ -363,7 +365,7 @@ object RuntimeDecisionLoop {
     // action class already says. A future action class lands in
     // `else` and keeps the settled clamp.
     private fun isUrgentTurn(actionClass: ActionClass): Boolean = when (actionClass) {
-        ActionClass.KEEPER, ActionClass.DEFEND, ActionClass.EVADE -> true
+        ActionClass.KEEPER, ActionClass.DEFEND, ActionClass.EVADE, ActionClass.SWITCH -> true
         else -> false
     }
 
@@ -430,6 +432,20 @@ object RuntimeDecisionLoop {
         parked: ExecutionRequest?,
         frame: RuntimeFrame
     ): ExecutionRequest? {
+        // SWITCH (Phase 5, step 2): a switch request is only
+        // meaningful when the game cursor is known — the switch is
+        // FROM the cursor player TOWARD the target point. frame.cursorId
+        // is null when no ring was seen this frame (or the ring was ambiguous); without it there is no "from" to
+        // switch away from, so the request dies here. Placed BEFORE
+        // the parked return so the parked lane cannot smuggle a
+        // cursor-less switch through: the effective class is the
+        // parked entry's when best is null, best's otherwise.
+        // Fail-open: every other class is untouched, and a SWITCH
+        // with a known cursor passes.
+        if ((parked?.actionClass == ActionClass.SWITCH || best?.actionClass == ActionClass.SWITCH) && frame.cursorId == null) {
+            chooseNull.incrementAndGet()
+            return null
+        }
         // D-23-02/D3: the drained entry is a PARKED contribution (the only
         // source that parks is SMART_ASSIST), not an emergency - emergency
         // sources (GK/INT) bypass the map entirely. The old code compared
@@ -646,18 +662,26 @@ object RuntimeDecisionLoop {
             // button and is gated on slot 1 being trained, like every
             // other slot-routed action.
             ActionClass.THROUGH -> 1
+            // SWITCH (Phase 5, step 2): the cursor-switch flick is
+            // pressed on slot 3 (Switch/Pass) — the same physical
+            // button as PASS, a new request type, never a repurposed
+            // PASS. Gated on slot 3 trained, like every other
+            // slot-routed action.
+            ActionClass.SWITCH -> 3
             else -> 0
         }
 
     /*
      * UserIntentVision slot for a routed request's action class, or -1
      * when the class has no user control (DEFEND/KEEPER/NONE). Mirrors
-     * requiredControlSlot's mapping; MOVE/EVADE are the joystick (0).
+     * requiredControlSlot's mapping; MOVE/EVADE are the joystick (0);
+     * SWITCH is slot 3, so a switch request is held while the user
+     * holds the Switch button — the user's own switch press wins.
      */
     private fun slotForRequest(actionClass: ActionClass?): Int = when (actionClass) {
         ActionClass.THROUGH -> 1
         ActionClass.SHOT -> 2
-        ActionClass.PASS, ActionClass.CROSS -> 3
+        ActionClass.PASS, ActionClass.CROSS, ActionClass.SWITCH -> 3
         ActionClass.MOVE, ActionClass.EVADE -> 0
         else -> -1
     }
