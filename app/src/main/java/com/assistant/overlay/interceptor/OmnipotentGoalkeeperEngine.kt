@@ -230,6 +230,128 @@ object OmnipotentGoalkeeperEngine {
     private val executionCoordinates = FloatArray(4)
 
 
+    // W-Native (Phase 2): the native gauge scan. Tries
+    // NativeBridge.nativeShotScan first when the library is ready, and
+    // falls back to AdaptiveGaugeClassifier.scan() (Kotlin) on ANY
+    // failure — native not ready, a non-direct frame buffer, a negative
+    // C error code, a malformed out array, or a native hit the Kotlin
+    // rule rejects. The Kotlin path stays the default: the native path
+    // is an optimisation, never a hard requirement. The downstream
+    // fusion/confidence path is unchanged — a native hit is returned
+    // as the same GaugeHit shape the Kotlin path produces (frame-
+    // relative x/y, Kotlin match score, model confidence).
+    //
+    // ROI BUFFER (zero-copy slice, no per-frame pixel copy): the C code
+    // walks the buffer as if it IS the ROI (GetDirectBufferAddress, no
+    // offsets), so the full-frame buffer cannot be passed directly.
+    // Instead the ROI is exposed as a slice: duplicate the frame buffer,
+    // set position to the ROI's first byte (roi.y * rowStride +
+    // roi.x * 4), slice. The slice's base address IS the ROI start, so
+    // C's (0,0) is the ROI's top-left and its rowStride walk lands on
+    // the frame's rows (rowStride stays the FULL-frame rowStride, which
+    // satisfies C's rowStride >= w * pixelStride check). Cost: two
+    // small buffer-view objects per scan, zero pixel bytes copied, zero
+    // heap allocation of pixel data. The alternative — copying the ROI
+    // rows into a preallocated reusable direct ByteBuffer — would
+    // memcpy up to 288x160x4 = 184,320 bytes per scan (3.7 MB/s at
+    // 20 fps) for no benefit, so the slice is used.
+    // Margin note: for the initial ROI at 288x640 the slice capacity
+    // exceeds C's required byte count by exactly 1 byte (184,320 vs
+    // 184,319); C's own -4 capacity check is the guard, and a -4 falls
+    // back to the Kotlin scan. A non-direct frame buffer makes
+    // GetDirectBufferAddress return null (-2) and also falls back.
+    //
+    // CORRECTNESS (why a native miss may skip the Kotlin scan, and why
+    // a native hit is re-verified): exportRgbRules() returns RGB
+    // bounding boxes that are SUPERSETS of the HSV tolerance boxes, so
+    // a native miss is a true miss — no Kotlin pixel could match — and
+    // the Kotlin scan is skipped outright. A native hit may be a false
+    // positive of the superset (the WHITE box is the loosest), so the
+    // single hit pixel is re-verified with
+    // AdaptiveGaugeClassifier.matchScore(); only a pixel the Kotlin
+    // rule accepts becomes a GaugeHit (and confirmHit()s the tracker,
+    // exactly as the Kotlin scan does). A rejected hit falls through
+    // to the full Kotlin scan, which finds the true first hit if any.
+    private fun scanGaugeNativeOrKotlin(
+        buffer: ByteBuffer, width: Int, height: Int, rowStride: Int
+    ): AdaptiveGaugeClassifier.GaugeHit {
+        if (com.assistant.NativeBridge.isNativeReady()) {
+            try {
+                val roi = GaugeRegionTracker.currentRoi(width, height)
+                val model = AdaptiveGaugeClassifier.exportRgbRules()
+                if (model.isNotEmpty() && model.size % 7 == 0) {
+                    val roiBuffer = sliceRoiBuffer(buffer, roi, rowStride)
+                    if (roiBuffer != null) {
+                        val out = FloatArray(6)
+                        val rc = com.assistant.NativeBridge.nativeShotScan(
+                            roiBuffer, roi.width, roi.height, rowStride, 4,
+                            model, GaugeRegionTracker.SCAN_STRIDE_PX, out
+                        )
+                        if (rc >= 0 && out.size >= 6) {
+                            if (out[0] == 1.0f) {
+                                // Native hit (ROI-relative): re-verify the
+                                // single pixel with the Kotlin rule.
+                                val hitX = roi.x + out[1].toInt()
+                                val hitY = roi.y + out[2].toInt()
+                                val hitIndex = hitY * rowStride + hitX * 4
+                                if (hitIndex >= 0 && hitIndex + 2 < buffer.capacity()) {
+                                    val r = buffer.get(hitIndex).toInt() and 0xFF
+                                    val g = buffer.get(hitIndex + 1).toInt() and 0xFF
+                                    val b = buffer.get(hitIndex + 2).toInt() and 0xFF
+                                    val score = AdaptiveGaugeClassifier.matchScore(r, g, b)
+                                    if (score > 0f) {
+                                        GaugeRegionTracker.confirmHit(hitX, hitY)
+                                        return AdaptiveGaugeClassifier.GaugeHit(
+                                            found = true, x = hitX, y = hitY,
+                                            score = score,
+                                            confidence = AdaptiveGaugeClassifier.confidence()
+                                        )
+                                    }
+                                    // Superset false positive: fall through
+                                    // to the full Kotlin scan below.
+                                }
+                            } else if (out[0] == 0.0f) {
+                                // True miss (superset argument above):
+                                // skip the Kotlin scan for this frame.
+                                GaugeRegionTracker.noteMiss()
+                                return AdaptiveGaugeClassifier.GaugeHit(
+                                    found = false, x = 0, y = 0, score = 0f,
+                                    confidence = AdaptiveGaugeClassifier.confidence()
+                                )
+                            }
+                        }
+                        // rc < 0 or malformed out: fall through to Kotlin.
+                    }
+                }
+            } catch (_: Throwable) {
+                // Any fault in the native attempt: Kotlin scan below.
+            }
+        }
+        return AdaptiveGaugeClassifier.scan(buffer, width, height, rowStride)
+    }
+
+    /**
+     * A zero-copy view of the ROI inside the full-frame buffer: the
+     * slice's base address is the ROI's first byte. Returns null when
+     * the ROI start is outside the buffer (caller falls back to the
+     * Kotlin scan). The frame buffer must be direct for the C side to
+     * read it — a non-direct buffer yields C error -2, also a
+     * fallback, not a crash.
+     */
+    private fun sliceRoiBuffer(
+        buffer: ByteBuffer, roi: GaugeRegionTracker.GaugeRoi, rowStride: Int
+    ): ByteBuffer? {
+        return try {
+            val offset = roi.y * rowStride + roi.x * 4
+            if (offset < 0 || offset >= buffer.capacity()) return null
+            val dup = buffer.duplicate()
+            dup.position(offset)
+            dup.slice()
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
     // [ACTIVE TELEMETRY BRIDGE] - 1000% Capacity Hardware Heuristic Scanner
     fun scanFrameForOpponentAnimation(buffer: ByteBuffer, width: Int, height: Int, rowStride: Int = width * 4) {
         // No63-D26: the keeper ENABLED toggle did not gate this path.
@@ -281,7 +403,7 @@ object OmnipotentGoalkeeperEngine {
         var detectedY = 0
 
         try {
-            gaugeHit = AdaptiveGaugeClassifier.scan(buffer, width, height, rowStride)
+            gaugeHit = scanGaugeNativeOrKotlin(buffer, width, height, rowStride)
             if (gaugeHit.found) {
                 detectedX = gaugeHit.x
                 detectedY = gaugeHit.y
