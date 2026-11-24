@@ -41,7 +41,13 @@ data class RuntimeEntity(
     // Item 12 (F13): the keeper's own entity — set by FrameAssembler
     // from TrackedPlayer.isGoalkeeper. Consumers that pick "a teammate"
     // (distribution) must exclude him, or the keeper passes to himself.
-    val isGoalkeeper: Boolean = false
+    val isGoalkeeper: Boolean = false,
+    // CURSOR-ID (Phase 5, step 1): true when this entity is the
+    // indicator-ring player this frame (TrackedPlayer.isControlled,
+    // via FrameAssembler). Appended LAST with a default so every
+    // existing positional construction keeps working — the flag is
+    // set only by the assembler, never by contributors.
+    val isControlled: Boolean = false
 )
 
 /** B4: one low-block movement target, addressed to a defender by id. */
@@ -270,7 +276,22 @@ data class RuntimeFrame(
      * RuntimeDecisionLoop's never-fight-the-user gate. Appended last
      * so positional RuntimeFrame construction in tests keeps working.
      */
-    val userIntentMask: Int = 0
+    val userIntentMask: Int = 0,
+    /*
+     * CURSOR-ID (Phase 5, step 1): the indicator-ring player's entity
+     * id on this frame — the game cursor player, from the ring sensor
+     * (PlayerDetector) via TrackedPlayer.isControlled. Null = no ring
+     * seen this frame (fail-open: every consumer reads exactly what
+     * it read before, defenderId included). When several ring-marked
+     * tracks exist, FrameAssembler keeps the highest-confidence one;
+     * a tie at the top is ambiguous, so it publishes null — a wrong
+     * cursor claim is worse than no claim. Appended last, like
+     * userIntentMask above, so positional RuntimeFrame construction
+     * in tests keeps working. First consumer hook is the CURSOR log
+     * in FrameAssembler (identity vs defenderId); no consumer
+     * behaviour changes in this piece (PlayerSwitchEngine owns that).
+     */
+    val cursorId: Int? = null
 ) {
     // RF-D1/RF-D2: the old gate trusted a frame with a 0x0 capture size
     // (reachable before the camera profile populates), a confidence above

@@ -117,6 +117,9 @@ object FrameAssembler {
 
     @Volatile private var lastFrame: RuntimeFrame? = null
     @Volatile private var lastTrustRejectLogMs: Long = 0L
+    // CURSOR-ID (Phase 5, step 1): 1 Hz throttle for the CURSOR log
+    // below — same cadence guard as the N3 TRUST_REJECT log.
+    @Volatile private var lastCursorLogMs: Long = 0L
 
     fun assemble(opticalVariance: Float = 0f, capturedAtNanos: Long = System.nanoTime()): RuntimeFrame {
         val id = frameCounter.incrementAndGet()
@@ -292,6 +295,23 @@ object FrameAssembler {
             else -> CrossType.NONE
         }
 
+        // CURSOR-ID (Phase 5, step 1): the ring-marked controlled
+        // player. Candidates are USER tracks carrying the ring flag
+        // this frame (already fresh-only: rawPlayers required
+        // lastSeenFrame == scene.frameNumber). Exactly one → it.
+        // Several → the highest-confidence one; a tie at the top
+        // (two fixed 0.55f ring marks) is ambiguous, so none — a
+        // wrong cursor claim is worse than no claim. Null = no ring
+        // seen (fail-open). Note the assembler pool caps each side
+        // at 11: a ring player beyond the cap reads as no ring.
+        val cursorCandidates = players.filter { it.isUserTeam && it.isControlled }
+        val cursorTop = cursorCandidates.maxByOrNull { it.confidence }
+        val cursorId: Int? = when {
+            cursorTop == null -> null
+            cursorCandidates.count { it.confidence == cursorTop.confidence } > 1 -> null
+            else -> cursorTop.id
+        }
+
         val observedFrame = RuntimeFrame(
             frameId = scene?.frameNumber ?: id,
             timestampMs = System.currentTimeMillis(),
@@ -326,7 +346,9 @@ object FrameAssembler {
             entities = players.map { com.assistant.runtime.RuntimeEntity(it.id, it.x, it.y,
                 it.velocityX, it.velocityY, it.confidence, it.isUserTeam,
                 // B6: per-player px/s (SceneTracker / PlayerMotionProducer).
-                it.velocityXPerSecond, it.velocityYPerSecond, it.isGoalkeeper) },
+                // CURSOR-ID: the ring mark rides the entity, parallel
+                // to isGoalkeeper above.
+                it.velocityXPerSecond, it.velocityYPerSecond, it.isGoalkeeper, it.isControlled) },
             ownerId = world.ownership.takeIf { scene != null && it.hasOwner && it.confidence >= 0.2f }?.owner?.id,
             defenderId = world.defender.takeIf { scene != null && it.found }?.defender?.id,
             // L10: the learning-chain readout (see above).
@@ -378,6 +400,8 @@ object FrameAssembler {
             // UserIntentVision (Tier 2): per-slot hold mask, same
             // candidate semantics as throughPressed (0 = none held).
             userIntentMask = UserIntentVision.heldSlotMask(),
+            // CURSOR-ID: the ring identity computed above.
+            cursorId = cursorId,
             throughReceiverX = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.lane?.receiver?.x ?: 0f,
             throughReceiverY = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.lane?.receiver?.y ?: 0f,
             throughLeadX = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.leadX ?: 0f,
@@ -484,6 +508,23 @@ object FrameAssembler {
             rightWingAdvantage = world.wingOverloadDetectionResult.rightWingAdvantage
         )
         lastFrame = enriched
+        // CURSOR-ID (Phase 5): the first consumer hook is observation
+        // only — log the ring identity against the defenderId the
+        // frame carries, so a session proves whether the "controlled
+        // defender" IS the cursor player. Throttled to one line per
+        // second (same cadence guard as the N3 TRUST_REJECT log).
+        // No consumer behaviour changes in this piece.
+        try {
+            val nowCursorMs = System.currentTimeMillis()
+            if (enriched.cursorId != null && nowCursorMs - lastCursorLogMs >= 1000L) {
+                lastCursorLogMs = nowCursorMs
+                com.assistant.diagnostic.RuntimeLogger.log(
+                    "CURSOR id=${enriched.cursorId} defenderId=${enriched.defenderId ?: -1} " +
+                        "match=${enriched.cursorId == enriched.defenderId}",
+                    "CURSOR"
+                )
+            }
+        } catch (_: Throwable) { }
         return enriched
     }
 
@@ -551,7 +592,12 @@ object FrameAssembler {
             // overload favours (0 = no measured advantage).
             "centralControl" to f.centralControl,
             "leftWingAdvantage" to f.leftWingAdvantage,
-            "rightWingAdvantage" to f.rightWingAdvantage
+            "rightWingAdvantage" to f.rightWingAdvantage,
+            // CURSOR-ID (Phase 5, step 1): the ring identity on the
+            // frame (-1 = no ring this frame) + whether the named
+            // defender is the cursor player.
+            "cursorId" to (f.cursorId ?: -1),
+            "cursorIsDefender" to (f.cursorId != null && f.cursorId == f.defenderId)
         )
     }
 }

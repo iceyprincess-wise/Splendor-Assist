@@ -31,6 +31,14 @@ data class TrackedPlayer(
     // silently shift every positional argument.
     var velocityXPerSecond:Float = 0f,
 
-    var velocityYPerSecond:Float = 0f
+    var velocityYPerSecond:Float = 0f,
+
+    // CURSOR-ID (Phase 5, step 1): true when the detection this track
+    // matched THIS frame carried the indicator ring (PlayerDetector).
+    // Set fresh every association pass — a coasting track (no match)
+    // clears it, so a stale ring can never claim the cursor. Appended
+    // LAST, per the B6 note above: positional constructors must not
+    // shift. Default false: every existing track starts unmarked.
+    var isControlled:Boolean = false
 
 )

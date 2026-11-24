@@ -203,11 +203,21 @@ object EntityAssociationEngine {
                 ).coerceIn(0f, 1f)
 
                 track.lastSeenFrame = frameNumber
+
+                // CURSOR-ID: the ring mark is per-frame evidence —
+                // the matched detection carries it or it is absent
+                // this frame. Set fresh every pass, never OR-ed with
+                // the previous frame's value.
+                track.isControlled = nearest.isControlled
             } else {
                 // nothing believable this frame: coast and fade
                 track.x += track.velocityX
                 track.y += track.velocityY
                 track.confidence = (track.confidence * 0.98f).coerceAtLeast(0f)
+                // CURSOR-ID: no detection matched, so no ring was
+                // seen on this track this frame — clear the mark
+                // instead of coasting a stale claim.
+                track.isControlled = false
             }
         }
 
@@ -226,6 +236,7 @@ object EntityAssociationEngine {
                     velocityY = 0f,
                     confidence = detection.confidence,
                     isUserTeam = detection.isUserTeam,
+                    isControlled = detection.isControlled,
                     lastSeenFrame = frameNumber
                 )
             )
@@ -258,6 +269,21 @@ object EntityAssociationEngine {
             }
         }
         if (doomed.isNotEmpty()) {
+            // CURSOR-ID: a doomed ring-marked track is the same player
+            // as its survivor (same spot, same team — the ring and the
+            // shirt detections of one player). The mark transfers to
+            // the nearest surviving same-team track inside the merge
+            // radius instead of dying with the duplicate; without this
+            // the flag is lost whenever the shirt track outranks the
+            // ring track.
+            for (dead in doomed) {
+                if (!dead.isControlled) continue
+                val survivor = trackedPlayers.firstOrNull {
+                    it !in doomed && it.isUserTeam == dead.isUserTeam &&
+                        distance(it.x, it.y, dead.x, dead.y) < dupDist
+                }
+                if (survivor != null) survivor.isControlled = true
+            }
             val it = trackedPlayers.iterator()
             while (it.hasNext()) {
                 if (it.next() in doomed) it.remove()

@@ -101,6 +101,8 @@ object PlayerDetector {
                     pd.y = centerY
                     pd.confidence = INDICATOR_RING_CONFIDENCE
                     pd.isUserTeam = true
+                    // CURSOR-ID: the ring mark rides this detection.
+                    pd.isControlled = true
                     rawCount++
                 }
                 continue
@@ -141,9 +143,15 @@ object PlayerDetector {
         for (i in 0 until rawCount) {
             if (suppressed[i]) continue
             val pi = rawPool[i]
+            var keptIdx = -1
             if (keptCount < keptPool.size) {
                 val kd = keptPool[keptCount]
                 kd.x = pi.x; kd.y = pi.y; kd.confidence = pi.confidence; kd.isUserTeam = pi.isUserTeam
+                // CURSOR-ID: the ring mark rides with the kept
+                // detection; a suppressed ring detection of the same
+                // player hands its mark to the kept one below.
+                kd.isControlled = pi.isControlled
+                keptIdx = keptCount
                 keptCount++
             }
             sumConf += pi.confidence
@@ -153,7 +161,15 @@ object PlayerDetector {
                 val dy = abs(pi.y - rawPool[j].y)
                 val distSq = dx * dx + dy * dy
                 val radius = (com.assistant.vision.CameraProfile.captureHeightOrFallback() * 0.025f).coerceIn(3f, 12f)
-                if (pi.isUserTeam == rawPool[j].isUserTeam && distSq < radius * radius) suppressed[j] = true
+                if (pi.isUserTeam == rawPool[j].isUserTeam && distSq < radius * radius) {
+                    // CURSOR-ID: the suppressed detection is the same
+                    // player (same team, inside the merge radius) — if
+                    // it was the ring, the kept detection inherits the
+                    // mark. Without this the flag dies whenever the
+                    // shirt detection outranks the ring (0.55f).
+                    if (rawPool[j].isControlled && keptIdx >= 0) keptPool[keptIdx].isControlled = true
+                    suppressed[j] = true
+                }
             }
         }
 
@@ -163,7 +179,7 @@ object PlayerDetector {
         return PlayerDetectionResult(
             detected = keptCount > 0,
             confidence = aggregateConfidence,
-            detections = (0 until keptCount).map { i -> keptPool[i].let { PlayerDetection(it.x, it.y, it.confidence, it.isUserTeam) } }
+            detections = (0 until keptCount).map { i -> keptPool[i].let { PlayerDetection(it.x, it.y, it.confidence, it.isUserTeam, it.isControlled) } }
         )
     }
 }
