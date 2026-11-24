@@ -258,56 +258,57 @@ object OmnipotentGoalkeeperEngine {
         // Detection and decision readiness proceed regardless of dispatch availability.
         // REMOVED: if (isProcessingFrame) return. Frame scanning MUST NEVER be blocked by execution queue!
 
+        // W (Phase 2): the gauge scan is AdaptiveGaugeClassifier.scan()
+        // — same RGBA layout, stride 8, first-match-wins as the old
+        // hardcoded loop, but the region is owned by GaugeRegionTracker
+        // (initial bottom 25%, narrows on confirmed hits, widens on
+        // misses) and the pixel test is the learned HSV model, not the
+        // hardcoded ratios. The old :270/:304/:307 loop is gone; the
+        // threat TYPE for the legacy priority path is re-read from the
+        // hit pixel below (one classify call, same drop-in signature).
+        // SPLENDOR_P12_T2_SCAN_GEOMETRY, as before: the scan row
+        // fraction and pixel offset are never published as player
+        // velocity / opponent distance — those fields stay at honest
+        // defaults until a real tracker writes them.
+        var gaugeHit = AdaptiveGaugeClassifier.GaugeHit(
+            found = false, x = 0, y = 0, score = 0f,
+            confidence = AdaptiveGaugeClassifier.confidence()
+        )
         var anomalyDetected = false
         var detectedThreat = ThreatType.NONE
         var detectedZone = ThreatZone.CENTER
         var detectedX = 0
         var detectedY = 0
 
-        val stride = rowStride
-
-        // Target the bottom 25% of the frame where eFootball power gauges trigger
-        val startY = (height * 0.75).toInt()
-
         try {
-            val limit = buffer.capacity()
-            var y = startY
-            while (y < height) {
-                var x = 0
-                while (x < width) {
-                    val index = (y * stride) + (x * 4)
-                    if (index + 2 < limit) {
-                        val r = buffer.get(index).toInt() and 0xFF
-                        val g = buffer.get(index + 1).toInt() and 0xFF
-                        val b = buffer.get(index + 2).toInt() and 0xFF
-
-                        val threat = ThreatClassifierEngine.classify(r, g, b)
-
-                        if (threat != ThreatType.NONE) {
-                            detectedThreat = threat
-                            detectedZone = ThreatZoneEngine.detect(x, y, width, height)
-                            detectedX = x
-                            detectedY = y
-
-                            // SPLENDOR_P12_T2_SCAN_GEOMETRY: the scan row
-                            // fraction and pixel offset used to be written into
-                            // playerVelocity/opponentDistance, so consumers
-                            // read scan geometry as a player's speed and
-                            // distance (pv=0.25 on the first row, distances
-                            // always multiples of 8.0). Not published any
-                            // more; those fields stay at honest defaults
-                            // until a real tracker writes them.
-                            anomalyDetected = true
-                            break
-                        }
-                    }
-                    x += 8 // High-speed stride skip (Guarantees <1ms execution on Helio G81 cache)
+            gaugeHit = AdaptiveGaugeClassifier.scan(buffer, width, height, rowStride)
+            if (gaugeHit.found) {
+                detectedX = gaugeHit.x
+                detectedY = gaugeHit.y
+                detectedZone = ThreatZoneEngine.detect(detectedX, detectedY, width, height)
+                val hitIndex = (detectedY * rowStride) + (detectedX * 4)
+                if (hitIndex + 2 < buffer.capacity()) {
+                    val r = buffer.get(hitIndex).toInt() and 0xFF
+                    val g = buffer.get(hitIndex + 1).toInt() and 0xFF
+                    val b = buffer.get(hitIndex + 2).toInt() and 0xFF
+                    detectedThreat = AdaptiveGaugeClassifier.classify(r, g, b)
                 }
-                if (anomalyDetected) break
-                y += 8
+                // The anomaly is the classifier's verdict (a
+                // gauge-coloured pixel found), not the re-read type:
+                // the type above only feeds the legacy priority path.
+                anomalyDetected = true
             }
         } catch (t: Throwable) {
             android.util.Log.e("OmnipotentGoalkeeperEngine", "scan frame failed, anomaly detection skipped this frame", t)
+            gaugeHit = AdaptiveGaugeClassifier.GaugeHit(
+                found = false, x = 0, y = 0, score = 0f,
+                confidence = AdaptiveGaugeClassifier.confidence()
+            )
+            anomalyDetected = false
+            detectedThreat = ThreatType.NONE
+            detectedX = 0
+            detectedY = 0
+            detectedZone = ThreatZone.CENTER
         }
 
         // Item 12 (A10): the result is no longer read — the RUSH state
@@ -393,7 +394,13 @@ object OmnipotentGoalkeeperEngine {
         // Item 12 (A10): only a committed RUSH swallows the save
         // evaluation for this frame — a six-yard REFLEX micro-swipe
         // (or no defensive action at all) must not.
-        if (anomalyDetected && lastDefensiveAction != DefensiveAction.RUSH) {
+        // W (Phase 2): the gauge gate is GONE — `anomalyDetected`
+        // no longer guards this block. The fusion trigger inside
+        // fires unconditionally every frame; the gauge is one source
+        // among three, never the gate. A frame with no shot at all
+        // still evaluates (router TRACK, no offer) so the rebound
+        // override and the RECOVER path keep running.
+        if (lastDefensiveAction != DefensiveAction.RUSH) {
             // SPLENDOR_P10_ZONE_LOG: temporary, remove after live
             // confirmation. ADAPTATION vs the trace sketch: TelemetrySnapshot
             // has NO goalDetected/goalLeftX/goalRightX fields (only ball /
@@ -456,18 +463,83 @@ object OmnipotentGoalkeeperEngine {
 
             GoalkeeperDecisionRegistry.latestDecision = decision
 
+            // W (Phase 2): the fusion trigger — unconditional, every
+            // frame. The mouth comes from the live assembled frame
+            // (GoalMouthGeometry.resolve: detected box, else calibrated
+            // posts, else invalid); when no frame has been assembled
+            // yet, the scene's goal box feeds fromBox() (FRAME or
+            // UNAVAILABLE only — no calibration fallback on that path;
+            // fail open). Orientation is the live attack direction,
+            // same fallback shape. Trajectory is the pure evaluate()
+            // on the live prediction + the resolved mouth (not
+            // evaluateFrame — the mouth is already resolved here).
+            // Any fault anywhere in this block -> TRACK (no offer, no
+            // crash): the old behaviour for a frame with no anomaly.
+            var fused = DetectionFusionEngine.FusedShotHypothesis.NO_SHOT
+            val saveDecision: DetectionConfidenceEngine.SaveDecision = try {
+                val liveFrame = try { com.assistant.FrameAssembler.current() } catch (_: Throwable) { null }
+                val mouth = if (liveFrame != null) {
+                    GoalMouthGeometry.resolve(liveFrame, width.toFloat(), height.toFloat())
+                } else {
+                    GoalMouthGeometry.fromBox(
+                        p10Scene?.goalDetected ?: false,
+                        p10Scene?.goalLeftX ?: 0f, p10Scene?.goalRightX ?: 0f,
+                        p10Scene?.goalTopY ?: 0f, p10Scene?.goalBottomY ?: 0f,
+                        width.toFloat(), height.toFloat()
+                    )
+                }
+                val orientation = if (liveFrame != null) {
+                    GoalOrientationResolver.resolveFromFrame(liveFrame)
+                } else {
+                    GoalOrientationResolver.resolveFromLatest(
+                        com.assistant.AttackAxisModel.directionIfConfident()
+                    )
+                }
+                val trajectory = ShotTrajectoryDetector.evaluate(
+                    com.assistant.BallTrajectoryPredictor.current(),
+                    mouth, width.toFloat(), height.toFloat()
+                )
+                val gaugeForFusion = if (gaugeHit.found) gaugeHit else null
+                fused = DetectionFusionEngine.fuse(
+                    trajectory, gaugeForFusion, null, mouth, orientation
+                )
+                DetectionConfidenceEngine.record(fused)
+                // Learning loop (classifier KDoc: learn() takes ONLY a
+                // confirmed gauge pixel — a shot the fusion layer
+                // confirmed as a real gauge hit). Without this call the
+                // model never learns and the gauge can never reach the
+                // 0.7 fusion bar (13 confirmed hits); the per-call
+                // bounds (LEARN_GATE, drift caps) are the protection.
+                if (DetectionFusionEngine.ShotSource.GAUGE in fused.sources) {
+                    try {
+                        val learnIndex = (gaugeHit.y * rowStride) + (gaugeHit.x * 4)
+                        if (learnIndex + 2 < buffer.capacity()) {
+                            AdaptiveGaugeClassifier.learn(
+                                buffer.get(learnIndex).toInt() and 0xFF,
+                                buffer.get(learnIndex + 1).toInt() and 0xFF,
+                                buffer.get(learnIndex + 2).toInt() and 0xFF
+                            )
+                        }
+                    } catch (_: Throwable) { }
+                }
+                DetectionConfidenceEngine.decide(fused, decision.priority)
+            } catch (_: Throwable) {
+                DetectionConfidenceEngine.SaveDecision.TRACK
+            }
+
             val p10GoalDet = p10Scene?.goalDetected ?: false
             val p10GoalCx = if (p10Scene != null && p10Scene.goalDetected) ((p10Scene.goalLeftX + p10Scene.goalRightX) * 0.5f).toString() else "n/a"
             com.assistant.diagnostic.RuntimeLogger.log(
-                "GK_ZONE_SCAN threat=" + detectedThreat + "(ThreatClassifierEngine)" +
+                "GK_ZONE_SCAN threat=" + detectedThreat + "(AdaptiveGaugeClassifier)" +
                     " zone=" + decision.zone + " dir=" + decision.direction + "(ShotDirectionEngine)" +
                     " pri=" + decision.priority + "(ThreatPriorityEngine)" + " band=" + decision.heightBand + " normX=" + decision.normX +
                     " px=(" + detectedX + "," + detectedY + ") stripZone=" + detectedZone + " cap=" + width + "x" + height +
                     " ball=(" + p10Tele.ballX + "," + p10Tele.ballY + ")" +
-                    " goalDet=" + p10GoalDet + " goalCX=" + p10GoalCx,
+                    " goalDet=" + p10GoalDet + " goalCX=" + p10GoalCx +
+                    " fused=" + fused.isShot + ":" + fused.confidence + " src=" + fused.sources + " save=" + saveDecision,
                 "GOALKEEPER")
 
-            evaluateOpponentShotTrajectory(decision)
+            evaluateOpponentShotTrajectory(decision, saveDecision)
         }
     }
 
@@ -520,7 +592,10 @@ object OmnipotentGoalkeeperEngine {
     // interceptions.)
     @Volatile private var lastRecoveryTarget: RecoveryTarget? = null
 
-    private fun evaluateOpponentShotTrajectory(decision: ThreatDecision) {
+    private fun evaluateOpponentShotTrajectory(
+        decision: ThreatDecision,
+        saveDecision: DetectionConfidenceEngine.SaveDecision
+    ) {
         val now = System.currentTimeMillis()
         if (now - lastShotEvaluationTimestamp < 8L) return // 8 ms minimum inter-call gap (~0.16 of a 50 ms processed frame at 20 fps; binds only on same-frame re-entry, not a display cadence)
         lastShotEvaluationTimestamp = now
@@ -623,18 +698,46 @@ object OmnipotentGoalkeeperEngine {
                         action
                     }
 
+                // W (Phase 2): DetectionConfidenceEngine is the SAVE
+                // arbiter — it replaces ShotAnticipationEngine's fixed
+                // priority >= 100 bar for fused shots (G2/QF-8). Two
+                // directions, both through the router's own matrix (no
+                // invented action):
+                //  - saveDecision != SAVE suppresses ONLY the shot-save
+                //    actions (DIVE_FAMILY_ACTIONS: dives, blocks, jumps,
+                //    reaches, catch/reflex/parry). Cross interceptions
+                //    (PUNCH/CLAIM/AERIAL) and the SAVE-band 1v1 RUSH_OUT
+                //    are not shot saves and are NOT suppressed; the
+                //    rebound override and the RECOVER path below still
+                //    apply to a suppressed TRACK, exactly as before.
+                //  - saveDecision == SAVE with a router TRACK re-routes
+                //    the decision at priority 100 — the same idiom as
+                //    the goal-bound promote above — so the matrix picks
+                //    the dive for a corroborated 75-99 shot instead of
+                //    standing still (this is the G2 kill).
+                val confidenceAction = when {
+                    saveDecision == DetectionConfidenceEngine.SaveDecision.SAVE &&
+                        promotedAction == GoalkeeperAction.TRACK ->
+                        GoalkeeperActionRouter.route(decision.copy(priority = 100))
+                    saveDecision != DetectionConfidenceEngine.SaveDecision.SAVE &&
+                        promotedAction in DIVE_FAMILY_ACTIONS ->
+                        GoalkeeperAction.TRACK
+                    else -> promotedAction
+                }
+
                 // Item 12 (A9): RECOVER is now produced — on a quiet
                 // (TRACK) frame while recovering, the recovery vector
                 // (RecoveryVectorEngine, goal-line point for the predicted
                 // target) is offered instead of skipping. It never
-                // competes with a live save: only when the router says
-                // TRACK, and the rebound override below still wins.
+                // competes with a live save: only when the confidence-
+                // gated action says TRACK, and the rebound override below
+                // still wins.
                 // The No64-D16 finish-on-TRACK that used to sit here is
                 // removed: TRACK-while-recovering is now the RECOVER
                 // offer, and recovery ends on the window check at the
                 // top of the next evaluation instead.
                 val recoveryVector: FloatArray? =
-                    if (promotedAction == GoalkeeperAction.TRACK && RecoveryPositionEngine.recovering()) {
+                    if (confidenceAction == GoalkeeperAction.TRACK && RecoveryPositionEngine.recovering()) {
                         val joyX = screenWidthBase * com.assistant.ControlMappingTrainer.joystickCenterX()
                         val joyY = screenHeightBase * com.assistant.ControlMappingTrainer.joystickCenterY()
                         RecoveryVectorEngine.vectorForTarget(
@@ -653,7 +756,7 @@ object OmnipotentGoalkeeperEngine {
                     } else if (recoveryVector != null) {
                         GoalkeeperAction.RECOVER
                     } else {
-                        promotedAction
+                        confidenceAction
                     }
 
                 // Item 12 (A8): the state follows the action (see the
