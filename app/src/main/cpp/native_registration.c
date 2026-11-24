@@ -23,6 +23,13 @@ JNIEXPORT void JNICALL Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl(
     jfloatArray, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat,
     jfloat, jfloat, jfloat);
 
+/* Phase 2 (detection stack #3, native_shot_scan): the scan function is
+ * defined in native_shot_scan.c with the standard JNIEXPORT name; the
+ * RegisterNatives entry below points at that same symbol, so explicit
+ * registration wins and the exported name remains as fallback. */
+JNIEXPORT jint JNICALL Java_com_assistant_NativeBridge_nativeShotScan(
+    JNIEnv*, jclass, jobject, jint, jint, jint, jint, jfloatArray, jint, jfloatArray);
+
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     JNIEnv* env = NULL;
     if ((*vm)->GetEnv(vm, (void**)&env, JNI_VERSION_1_6) != JNI_OK || env == NULL) {
@@ -38,7 +45,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     
     static const JNINativeMethod methods[] = {
         {"nativeKickingPostureImpl", "(FFFFFFFF[F)V", (void*)Java_com_assistant_NativeBridge_nativeKickingPostureImpl},
-        {"nativeAgilityPhysicsImpl", "(FFFFFFFFFFFFF[FFFFFFFFFFFFF)V", (void*)Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl}
+        {"nativeAgilityPhysicsImpl", "(FFFFFFFFFFFFF[FFFFFFFFFFFFF)V", (void*)Java_com_assistant_NativeBridge_nativeAgilityPhysicsImpl},
+        {"nativeShotScan", "(Ljava/nio/ByteBuffer;IIII[FI[F)I", (void*)Java_com_assistant_NativeBridge_nativeShotScan}
     };
     
     const jint rc = (*env)->RegisterNatives(env, bridge, methods, sizeof(methods) / sizeof(methods[0]));

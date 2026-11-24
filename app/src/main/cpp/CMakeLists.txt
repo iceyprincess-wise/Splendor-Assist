@@ -15,6 +15,7 @@ add_library(splendor_native SHARED
   native_gameplay_compute.c
   native_vision_blob.c
   native_vision_preprocessor.c
+  native_shot_scan.c
   # Phase N (N-3/N-4): native_frame_analyzer.c + native_predictive_frame_interp.c
   # removed — their only JNI functions (nativeAnalyzeFrame,
   # nativePredictiveFrameInterpImpl) had zero Kotlin callers. The C files

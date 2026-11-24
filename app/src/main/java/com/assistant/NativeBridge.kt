@@ -181,6 +181,25 @@ object NativeBridge {
         threshold: Float,
         outputBlobs: IntArray
     ): Int
+
+    // Phase 2 (detection stack #3, native_shot_scan): the full-res
+    // zero-alloc gauge-pixel scan. C owns only the loop; the gaugeModel
+    // (7 floats per rule: rLo, rHi, gLo, gHi, bLo, bHi, score) and the
+    // score->threat decision live in AdaptiveGaugeClassifier (Kotlin).
+    // buffer is already delimited to the ROI — w/h describe the ROI, and
+    // out[1]/out[2] are ROI-relative. Returns pixels sampled (>= 0) or a
+    // negative error code; out layout is documented in native_shot_scan.c.
+    @JvmStatic
+    external fun nativeShotScan(
+        buffer: java.nio.ByteBuffer,
+        width: Int,
+        height: Int,
+        rowStride: Int,
+        pixelStride: Int,
+        gaugeModel: FloatArray,
+        scanStride: Int,
+        out: FloatArray
+    ): Int
     // SPLENDOR_V25_NATIVE_TRUTH_END
 init {
         try {
