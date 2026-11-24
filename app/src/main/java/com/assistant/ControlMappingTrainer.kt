@@ -132,8 +132,10 @@ object ControlMappingTrainer {
     // probe inside but off-centre). In PORTRAIT the rotation (CW vs
     // CCW) is not recorded anywhere, so the engine cannot pick a
     // mapping — the trained slotX/slotY arrays stay the fallback there.
-    // The JOYSTICK is NOT resolved here: its y is the open Q-N6-1
-    // probe (anchor vs measured) — see d7JoystickCenter() below.
+    // The JOYSTICK is NOT resolved here: its y is the probe-gated
+    // resolved centre — MEASURED in landscape since the RC1 fix
+    // 2026-11-24 (an explicit ANCHOR verdict still restores the
+    // anchor) — see d7JoystickCenter() below.
     private fun d7SlotButton(id: Int): ButtonMappingEngine.Button? = when (id) {
         1 -> ButtonMappingEngine.Button.MATCHUP_THROUGH
         2 -> ButtonMappingEngine.Button.TACKLE_SHOOT
@@ -149,9 +151,12 @@ object ControlMappingTrainer {
     }
 
     // D7 joystick origin: the probe-gated centre. LANDSCAPE returns the
-    // ButtonMappingEngine resolved centre (the ANCHOR until the Q-N6-1
-    // probe records MEASURED); anything else returns the legacy anchor
-    // (JOY_NX/Y) unchanged. Identical values today — the probe moves it.
+    // ButtonMappingEngine resolved centre (the MEASURED centre since
+    // the RC1 fix 2026-11-24 — the anchor was proven 52 source px
+    // above centre; an explicit ANCHOR probe verdict still restores
+    // it); anything else returns the legacy anchor (JOY_NX/Y)
+    // unchanged — portrait rotation is unknown, so the measured
+    // centre cannot be trusted there.
     private fun d7JoystickCenter(w: Int, h: Int): Pair<Float, Float> {
         if (w > h) return ButtonMappingEngine.resolvedJoystickCenter(ButtonMappingEngine.Orientation.LANDSCAPE)
         return Pair(JOY_NX, JOY_NY)
@@ -192,8 +197,8 @@ object ControlMappingTrainer {
         val now = System.currentTimeMillis()
         if (now - lastMaxDragMeasureMs < 1000L) return
         lastMaxDragMeasureMs = now
-        // D7: probe from the resolved joystick centre — the ANCHOR until
-        // the Q-N6-1 probe decides (identical values today). The
+        // D7: probe from the resolved joystick centre — the MEASURED
+        // centre in landscape since the RC1 fix 2026-11-24. The
         // min-of-valid-directions selection is what made the old
         // anchor-origin probe survive the 21px top-edge offset: the
         // upward rays from the edge return radius 0 and are dropped
@@ -362,9 +367,10 @@ object ControlMappingTrainer {
     // (250,550) in RuntimeDecisionLoop.chooseRequest and as the GK default. The
     // trainer already probes the real joystick at (JOY_NX,JOY_NY); expose it so
     // dispatch uses the measured point.
-    // D7 (6a): probe-gated — the ANCHOR until the Q-N6-1 probe records
-    // MEASURED (ButtonMappingEngine.resolvedJoystickCenter). Identical
-    // values today.
+    // D7 (6a): probe-gated — the MEASURED centre in landscape since
+    // the RC1 fix 2026-11-24 (ButtonMappingEngine.resolvedJoystickCenter);
+    // an explicit ANCHOR probe verdict still restores the anchor.
+    // Portrait returns the legacy anchor (rotation unknown).
     fun joystickCenterX(): Float {
         val w = try { com.assistant.vision.CameraProfile.captureWidth } catch (_: Throwable) { 0 }
         val h = try { com.assistant.vision.CameraProfile.captureHeight } catch (_: Throwable) { 0 }

@@ -28,14 +28,18 @@ package com.assistant
  * rotation is live is NOT known in-repo — nothing records it — so the
  * engine takes the orientation as an input and never guesses it.
  *
- * ANCHOR CROSS-CHECK (OPEN — Q-N6-1 probe decides): the app's trained
+ * ANCHOR CROSS-CHECK (CLOSED — RC1 fix 2026-11-24): the app's trained
  * joystick anchor (0.182w, 0.648h) matches the measured joystick x
  * exactly (0.1806 vs 0.182) but its y sits on the joystick's TOP EDGE:
  * anchor y = 466.6 source px vs measured centre 519 — 52 source px /
- * 21 landscape-capture px low. The probe hook below (probeCandidates /
- * recordProbeOutcome / resolvedJoystickCenter) settles which y the game
- * actually responds to. Until the probe decides, the live dispatch keeps
- * the ANCHOR — this engine never silently re-anchors.
+ * 21 landscape-capture px low. Dispatching from the anchor made
+ * down-field movement ~9% of intended deflection (one full radius of
+ * bias). The live dispatch now defaults to the MEASURED centre in
+ * landscape (see resolvedJoystickCenter); the Q-N6-1 probe hook below
+ * (probeCandidates / recordProbeOutcome / resolvedJoystickCenter)
+ * remains as the confirmation/revert path — an explicit ANCHOR verdict
+ * still restores the anchor, and the probe runs after the re-anchor
+ * as confirmation on Ed's device.
  *
  * TRAINER NOTE: ControlMappingTrainer.SLOTS are the same buttons with
  * stale centres (slots 3/4 probe OUTSIDE their measured discs in
@@ -169,11 +173,25 @@ object ButtonMappingEngine {
     }
 
     /**
-     * The live joystick centre for [orientation]: the MEASURED centre
-     * only after the probe has decided for it, otherwise the trained
-     * ANCHOR. This engine never silently re-anchors.
+     * The live joystick centre for [orientation].
+     *
+     * RC1 fix (2026-11-24): the trained anchor is PROVEN wrong in
+     * landscape (52 source px above the measured centre, on the
+     * joystick's top edge), so an UNDECIDED probe now defaults to the
+     * MEASURED centre in landscape — dispatch from the true centre.
+     * An explicit verdict still wins: ANCHOR restores the anchor
+     * (the revert path), MEASURED keeps the measured centre.
+     * Portrait keeps the anchor while UNDECIDED: the rotation is
+     * unknown, so the measured centre cannot be trusted there.
+     * No probe verdict is fabricated here — the default changed,
+     * the verdict mechanism is untouched.
      */
     fun resolvedJoystickCenter(orientation: Orientation): Pair<Float, Float> =
-        if (probeOutcome == JoystickProbeOutcome.MEASURED) center(Button.JOYSTICK, orientation)
-        else anchorCenter(orientation)
+        when (probeOutcome) {
+            JoystickProbeOutcome.ANCHOR -> anchorCenter(orientation)
+            JoystickProbeOutcome.MEASURED -> center(Button.JOYSTICK, orientation)
+            JoystickProbeOutcome.UNDECIDED ->
+                if (orientation == Orientation.LANDSCAPE) center(Button.JOYSTICK, orientation)
+                else anchorCenter(orientation)
+        }
 }
