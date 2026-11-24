@@ -17,7 +17,7 @@ object AppContributorRegistration {
     // keep this count and EXPECTED_CONTRIBUTOR_NAMES in sync with the
     // listOf below; a stale count throws in check() and leaves the
     // registry EMPTY (proven by Ed's 2026-11-18 logs: 43 != 44, Gens 1-13).
-    const val EXPECTED_CONTRIBUTOR_COUNT = 57
+    const val EXPECTED_CONTRIBUTOR_COUNT = 58
 
     // HIGH: Completeness invariant - explicit set of expected names
     private val EXPECTED_CONTRIBUTOR_NAMES = setOf(
@@ -46,7 +46,11 @@ object AppContributorRegistration {
         // Queue item 11 (anticipation): Anticipation (pre-move to the
         // predicted pass destination + cutback cover). Count 56 -> 57
         // with it.
-        "Anticipation"
+        "Anticipation",
+        // Phase 5 (cursor switch): PlayerSwitch (press the switch
+        // flick toward the best defender when the cursor is wrong).
+        // Count 57 -> 58 with it.
+        "PlayerSwitch"
     )
 
     private val state = AtomicReference(RegistrationState.IDLE)
@@ -166,7 +170,8 @@ object AppContributorRegistration {
                         com.assistant.contributors.BodyWeightPressContributor,
                         com.assistant.contributors.DecoyRunContributor,
                         com.assistant.contributors.MidfieldHoldContributor,
-                        com.assistant.contributors.AnticipationContributor
+                        com.assistant.contributors.AnticipationContributor,
+                        com.assistant.contributors.PlayerSwitchContributor
                     )
 
                     // MEDIUM: Runtime assertion for 57-contributor contract
