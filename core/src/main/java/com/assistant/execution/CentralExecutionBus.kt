@@ -73,6 +73,11 @@ data class BusStatistics(
     val staleDrops: Long = 0,
     val capacityDrops: Long = 0,
     val reservationDrops: Long = 0,
+    // ReservationTTLWatchdog: reservations force-released by the TTL
+    // sweep because their holder's complete() was lost. Distinct from
+    // reservationDrops (a submit rejected while a live reservation
+    // holds the slot) — this counts slots the watchdog reclaimed.
+    val ttlForceReleases: Long = 0,
     // D-26-04: a null AimMotion endpoint is not a drop - the request still
     // executes, uncompensated. It gets its own counter so invalidDrops
     // keeps meaning "rejected at submit".
@@ -113,6 +118,7 @@ object CentralExecutionBus {
     private val staleDrops = AtomicLong(0L)
     private val capacityDrops = AtomicLong(0L)
     private val reservationDrops = AtomicLong(0L)
+    private val ttlForceReleases = AtomicLong(0L)
     private val aimNullCompensations = AtomicLong(0L)
     private val running = AtomicBoolean(true)
 
@@ -128,6 +134,15 @@ object CentralExecutionBus {
     // (source, phase) never named its holder. Pruned wherever
     // reservations is pruned (complete/stop).
     private val reservationSinceNanos = mutableMapOf<Pair<ExecutionSource, Int>, Long>()
+    // ReservationTTLWatchdog: grace added to maxAgeMs(source) before a
+    // reservation is force-released. The legitimate consume->complete
+    // window ends at the latch force-release: 250ms timeout + 25ms
+    // grace = 275ms nominal, ~293ms worst case (9ms poll). 350ms
+    // clears that worst case with margin, so the sweep never releases
+    // a reservation that is still legitimately in flight. A wedged
+    // slot is therefore reclaimed at maxAgeMs + 350ms (GK/INT 650ms,
+    // SA 600ms, STUTTER 700ms) instead of never.
+    private const val RESERVATION_TTL_GRACE_MS = 350L
     // D-26-05: removal is by actionId VALUE, not by (source, phase) key,
     // so it releases every reservation holding that actionId. That is
     // correct only because an actionId is unique per logical action:
@@ -184,6 +199,7 @@ object CentralExecutionBus {
         discardStaleHeads(highRing)
         discardStaleHeads(medRing)
         discardStaleHeads(lowRing)
+        sweepExpiredReservations(nowNanos)
         val key = request.source to request.phase
         if (reservations.containsKey(key)) {
             reservationDrops.incrementAndGet()
@@ -291,6 +307,32 @@ object CentralExecutionBus {
         }
     }
 
+    // ReservationTTLWatchdog: force-release reservations whose holder's
+    // complete() was lost. A reservation is released only via complete()
+    // (consumer) or stop() (shutdown); consumeFrom() does NOT release
+    // on a successful consume, so a lost completion wedged the
+    // (source, phase) slot indefinitely — the 2026-11-16 live session's
+    // GK phase-4 wedge ran 43 min 38 s. The sweep runs inside submit()
+    // (same @Synchronized lock, no new thread) using the already-kept
+    // reservationSinceNanos as the age source, and releases through
+    // complete() so both maps stay pruned together. It never touches
+    // the head-only stale-discard design or the (source, phase) gate.
+    private fun sweepExpiredReservations(nowNanos: Long) {
+        val expired = reservationSinceNanos.entries
+            .filter { (key, sinceNanos) ->
+                val ageMs = (nowNanos - sinceNanos) / 1_000_000L
+                ageMs > maxAgeMs(key.first) + RESERVATION_TTL_GRACE_MS
+            }
+            .map { it.key }
+        for (key in expired) {
+            val holderActionId = reservations[key] ?: continue
+            val holderAgeMs = (nowNanos - (reservationSinceNanos[key] ?: nowNanos)) / 1_000_000L
+            complete(holderActionId)
+            ttlForceReleases.incrementAndGet()
+            RuntimeLogger.log("CentralExecutionBus reservation TTL force-release source=${key.first} phase=${key.second} actionId=$holderActionId holderAgeMs=$holderAgeMs", "CentralExecutionBus")
+        }
+    }
+
     // D-26-07: this "peek" MUTATES - it discards stale heads on all three
     // rings before reading. The sole caller (SmartAssistAccessibilityEngine
     // busRunnable) uses it only to decide preemption, then calls consume()
@@ -379,6 +421,7 @@ object CentralExecutionBus {
                     invalidDrops = invalidDrops.get(),
                     staleDrops = staleDrops.get(), capacityDrops = capacityDrops.get(),
                     reservationDrops = reservationDrops.get(),
+                    ttlForceReleases = ttlForceReleases.get(),
                     aimNullCompensations = aimNullCompensations.get()
                 )
             }
