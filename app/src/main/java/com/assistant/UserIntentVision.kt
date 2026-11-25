@@ -49,11 +49,12 @@ import kotlin.math.atan2
  * inference already depends on that (the centre pixel leaves
  * grey-or-green while touching only because the knob MOVED
  * off-centre). The reader segments the grey disc in the joystick
- * window and publishes angle + magnitude; what remains UNPROVEN is
- * the deflected rendering itself (no deflected sample exists — the
- * knob is at rest in both of Ed's screenshots), so the reader fails
- * open to this hold inference whenever the knob cannot be segmented
- * with confidence. See JoystickKnobReader for the full answer.
+ * window and publishes angle + magnitude; the deflected rendering is
+ * now MEASURED — rest centre (207,207,207), deflected centre ~241-245,
+ * body/ring ~217; reader worst case 11.5 vs tolerance 14, ~85% of
+ * pixels pass vs the 40% gate (measured 2026-11-24). The reader still
+ * fails open to this hold inference whenever the knob cannot be
+ * segmented with confidence. See JoystickKnobReader for the full answer.
  *
  * FAIL-OPEN: a failed pixel read (out of bounds / short buffer) is
  * "unknown", never "held" — the occlusion counter resets. Mask 0

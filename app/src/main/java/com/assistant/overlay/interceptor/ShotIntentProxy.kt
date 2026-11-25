@@ -217,7 +217,12 @@ object ShotIntentProxy {
                 carrier = entity
             }
         }
-        val ballAtFeet = carrier != null &&
+        // Snapshot the carrier into a val: carrier is a var, and
+        // Kotlin cannot smart-cast a var. The snapshot is what the
+        // signal (b) guard below smart-casts. Taken BEFORE
+        // ballAtFeet so ballAtFeet reads the same snapshot.
+        val c = carrier
+        val ballAtFeet = c != null &&
             carrierDistance <= BallOwnershipEngine.MAX_OWNERSHIP_DISTANCE
 
         // Signal (b): the SAME carrier drives at the mouth. Three
@@ -227,15 +232,14 @@ object ShotIntentProxy {
         // floor), (iii) the velocity extrapolated to the goal line
         // lands inside the mouth span.
         var attackerTowardGoal = false
-        // v266 warning fix: `carrier != null` here is always true —
-        // ballAtFeet is only true when a carrier was found
-        // (ballAtFeet = carrier != null && distance <= ownership).
-        // The check is load-bearing for the SMART CAST, not for logic:
-        // snapshot the carrier into a val so the null check the
-        // compiler can see still guards the reads. Behaviour identical:
-        // 3/3 -> 0.85 strong, 2/3 -> 0.60 under the bar.
-        val c = carrier
-        if (ballAtFeet && c != null) {
+        // Warning fix: the guard checks `c != null` FIRST. The old
+        // order (`ballAtFeet && c != null`) made `c != null` always
+        // true — ballAtFeet is only true when a carrier was found —
+        // so the compiler warned "Condition is always 'true'".
+        // Checked first, the null test is genuine (c may be null)
+        // and it smart-casts c for the reads below. Behaviour
+        // identical: 3/3 -> 0.85 strong, 2/3 -> 0.60 under the bar.
+        if (c != null && ballAtFeet) {
             val vx = c.velocityXPerSecond
             val vy = c.velocityYPerSecond
             if (vx.isFinite() && vy.isFinite() &&
