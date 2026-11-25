@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -34,11 +35,15 @@ import kotlinx.coroutines.launch
  *    (frame.trusted && !frame.hasBall) open right now?
  *  - are decisions flowing, is the emergency lane (keeper outranks normal
  *    contributions) draining, are gestures being accepted?
+ *
+ * Inner-rooms UI: the live half is the dashboard bulb grid now
+ * (PARAMETERS on top, LIVE COUNTERS in the middle), not the raw text
+ * dump — same sources, same values, counting live.
  */
 class GoalkeeperControlRoomActivity : AppCompatActivity() {
 
     private lateinit var repository: GoalkeeperRepository
-    private var liveText: TextView? = null
+    private var liveGrid: LinearLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,87 +109,115 @@ class GoalkeeperControlRoomActivity : AppCompatActivity() {
     }
 
     /* Live runtime panel injected under the status line - no layout edit needed. */
-    // No66-D32 (Q61-1): the panel used to be a default-styled Button/TextView
-    // with raw-pixel padding. It now uses ThemeTokens like the rest of the
-    // room, with dp padding (same helper shape as the other rooms).
-    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+    // Inner-rooms UI: the panel is the dashboard bulb grid now
+    // (ControlRoomBulbs), not the raw text dump.
 
     private fun installLivePanel(anchor: TextView) {
         val parent = anchor.parent as? ViewGroup ?: return
+        val grid = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
         val refresh = Button(this).apply {
             text = "Refresh live keeper status"
             isAllCaps = false
             setBackgroundColor(ThemeTokens.BUTTON)
             setTextColor(Color.WHITE)
             textSize = 14f
-            setOnClickListener { liveText?.text = liveKeeperStatus() }
-        }
-        val live = TextView(this).apply {
-            textSize = 12f
-            setTextColor(ThemeTokens.TEXT_MUTED)
-            setPadding(0, dp(16), 0, dp(16))
+            setOnClickListener { renderLivePanel() }
         }
         val index = parent.indexOfChild(anchor) + 1
-        parent.addView(refresh, index)
-        parent.addView(live, index + 1)
-        liveText = live
-        live.text = liveKeeperStatus()
+        parent.addView(grid, index)
+        parent.addView(refresh, index + 1)
+        liveGrid = grid
+        renderLivePanel()
     }
 
-    private fun liveKeeperStatus(): String = try {
-        val runtime = RuntimeCoordinator.runtimeState()
-        val health = RuntimeHealthMonitor.runtimeHealthSnapshot()
-        val frame = FrameAssembler.frameRuntimeSnapshot()
-        val decision = RuntimeDecisionLoop.decisionRuntimeSnapshot()
-        val contributions =
-            com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot()
-        val execution = GestureExecutionAuthority.executionRuntimeSnapshot()
-        val registry =
-            com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot()
+    private fun renderLivePanel() {
+        val grid = liveGrid ?: return
+        try {
+            val runtime = RuntimeCoordinator.runtimeState()
+            val health = RuntimeHealthMonitor.runtimeHealthSnapshot()
+            val frame = FrameAssembler.frameRuntimeSnapshot()
+            val decision = RuntimeDecisionLoop.decisionRuntimeSnapshot()
+            val contributions =
+                com.assistant.execution.ContributionRegistry.contributionRuntimeSnapshot()
+            val execution = GestureExecutionAuthority.executionRuntimeSnapshot()
+            val registry =
+                com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot()
 
-        val trusted = frame["trusted"] as? Boolean ?: false
-        val hasBall = frame["hasBall"] as? Boolean ?: false
-        val gate = when {
-            !trusted -> "CLOSED - no trusted game frame yet (open the game; the keeper stays silent on menus)"
-            hasBall -> "CLOSED - you have the ball (the keeper contributes only while defending)"
-            else -> "OPEN - trusted frame + opponent ball: keeper logic is live"
+            val trusted = frame["trusted"] as? Boolean ?: false
+            val hasBall = frame["hasBall"] as? Boolean ?: false
+            val gateOpen = trusted && !hasBall
+            val gate = when {
+                !trusted -> "CLOSED - no trusted game frame yet (open the game; the keeper stays silent on menus)"
+                hasBall -> "CLOSED - you have the ball (the keeper contributes only while defending)"
+                else -> "OPEN - trusted frame + opponent ball: keeper logic is live"
+            }
+            val registered =
+                (registry["names"]?.toString() ?: "").contains("KeeperFeedback")
+
+            // No66-D33: a cold frame carries only "frames"/"state" — confidence
+            // is absent and used to render as literal "null".
+            val cold = !frame.containsKey("trusted")
+
+            grid.removeAllViews()
+            with(ControlRoomBulbs) {
+                grid.addView(sectionHeader(this@GoalkeeperControlRoomActivity, getString(R.string.control_room_live_counters)))
+                renderFullWidthCell(grid, BulbEntry(
+                    "KEEPER GATE",
+                    if (gateOpen) BulbState.GREEN else BulbState.YELLOW, gate
+                ))
+                renderBulbSection(grid, listOf(
+                    BulbEntry("KeeperFeedback", if (registered) BulbState.GREEN else BulbState.YELLOW, if (registered) "Registered" else "Not registered")
+                ))
+                if (cold) {
+                    grid.addView(monoBlock(this@GoalkeeperControlRoomActivity, "Frame: no frame yet (runtime cold — open the game)"))
+                }
+                grid.addView(sectionHeader(this@GoalkeeperControlRoomActivity, "FRAME"))
+                renderBulbSection(grid, listOf(
+                    boolBulb(frame, "trusted", "Trusted", "Yes", "No"),
+                    BulbEntry("Has ball", if (hasBall) BulbState.YELLOW else BulbState.GREEN, if (hasBall) "Yes" else "No"),
+                    BulbEntry("Confidence", if (trusted) BulbState.GREEN else BulbState.YELLOW, text(frame, "confidence"))
+                ))
+                grid.addView(sectionHeader(this@GoalkeeperControlRoomActivity, "DECISION"))
+                renderBulbSection(grid, listOf(
+                    countBulb(decision, "decisions", "Decisions"),
+                    countBulb(decision, "routed", "Routed"),
+                    BulbEntry("Last action", if (count(decision, "routed") > 0) BulbState.GREEN else BulbState.YELLOW, text(decision, "lastAction"))
+                ))
+                // D7: the emergency lane is the emergencyOffered/Accepted/
+                // Rejected counters, not the parked-map counters - drained can
+                // never include GK/INT (they bypass the map) and pending is the
+                // map size. Show both lanes under their own labels.
+                grid.addView(sectionHeader(this@GoalkeeperControlRoomActivity, "EMERGENCY LANE"))
+                renderBulbSection(grid, listOf(
+                    countBulb(contributions, "emergencyOffered", "Offered"),
+                    countBulb(contributions, "emergencyAccepted", "Accepted"),
+                    failBulb(contributions, "emergencyRejected", "Rejected")
+                ))
+                grid.addView(sectionHeader(this@GoalkeeperControlRoomActivity, "PARKED"))
+                renderBulbSection(grid, listOf(
+                    countBulb(contributions, "offered", "Offered"),
+                    countBulb(contributions, "drained", "Drained"),
+                    countBulb(contributions, "pending", "Pending")
+                ))
+                grid.addView(sectionHeader(this@GoalkeeperControlRoomActivity, "EXECUTION"))
+                renderBulbSection(grid, listOf(
+                    countBulb(execution, "requested", "Requested"),
+                    countBulb(execution, "accepted", "Accepted"),
+                    failBulb(execution, "failed", "Failed")
+                ))
+                grid.addView(sectionHeader(this@GoalkeeperControlRoomActivity, "RUNTIME"))
+                renderBulbSection(grid, listOf(
+                    boolBulb(runtime, "runtimeReady", "Runtime ready"),
+                    countBulb(runtime, "busPending", "Bus pending"),
+                    issuesBulb(health)
+                ))
+            }
+        } catch (t: Throwable) {
+            grid.removeAllViews()
+            grid.addView(ControlRoomBulbs.monoBlock(this, "Live keeper status unavailable: " + (t.message ?: "runtime not started yet")))
         }
-        val registered =
-            (registry["names"]?.toString() ?: "").contains("KeeperFeedback")
-
-        // No66-D33: a cold frame carries only "frames"/"state" — confidence
-        // is absent and used to render as literal "null".
-        val cold = !frame.containsKey("trusted")
-
-        buildString {
-            append("KEEPER GATE: ").append(gate).append('\n')
-            append("KeeperFeedback contributor registered = ").append(registered).append('\n')
-            if (cold) append("Frame: no frame yet (runtime cold — open the game)\n")
-            append("Frame: trusted=").append(trusted)
-                .append(" hasBall=").append(hasBall)
-                .append(" confidence=").append(frame["confidence"] ?: "—").append('\n')
-            append("Decisions=").append(decision["decisions"])
-                .append(" routed=").append(decision["routed"])
-                .append(" lastAction=").append(decision["lastAction"]).append('\n')
-            // D7: the emergency lane is the emergencyOffered/Accepted/
-            // Rejected counters, not the parked-map counters - drained can
-            // never include GK/INT (they bypass the map) and pending is the
-            // map size. Show both lanes under their own labels.
-            append("Emergency lane (keeper outranks): offered=").append(contributions["emergencyOffered"])
-                .append(" accepted=").append(contributions["emergencyAccepted"])
-                .append(" rejected=").append(contributions["emergencyRejected"]).append('\n')
-            append("Parked (map): offered=").append(contributions["offered"])
-                .append(" drained=").append(contributions["drained"])
-                .append(" pending=").append(contributions["pending"]).append('\n')
-            append("Execution: requested=").append(execution["requested"])
-                .append(" accepted=").append(execution["accepted"])
-                .append(" failed=").append(execution["failed"]).append('\n')
-            append("Runtime ready=").append(runtime["runtimeReady"])
-                .append(" busPending=").append(runtime["busPending"]).append('\n')
-            append("Health: ").append(health["degradedReasons"])
-        }
-    } catch (t: Throwable) {
-        "Live keeper status unavailable: " + (t.message ?: "runtime not started yet")
     }
 
     override fun onResume() {
@@ -192,6 +225,6 @@ class GoalkeeperControlRoomActivity : AppCompatActivity() {
         RuntimePerformanceCoordinator.updateAuthority(
             SmartAssistRepository.configuration().authority
         )
-        liveText?.text = liveKeeperStatus()
+        renderLivePanel()
     }
 }

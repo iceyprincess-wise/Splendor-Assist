@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.Button
 import com.google.android.material.slider.Slider
 import com.google.android.material.materialswitch.MaterialSwitch
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -44,11 +45,11 @@ setContentView(R.layout.activity_smartassist_control_room)
         shot.value = config.shotThreshold.toFloat()
         cross.value = config.crossThreshold.toFloat()
 
-        // No66-D26/D27: refreshRuntime/refreshMetrics are member functions
-        // now (below) so onResume() can call them too; the sliders no
-        // longer rebuild the metrics on every drag tick.
-        refreshRuntime()
-        refreshMetrics()
+        // Inner-rooms UI: the raw tvRuntime/tvMetrics dump is replaced by
+        // the dashboard bulb grid (PARAMETERS on top, LIVE COUNTERS in
+        // the middle). The counters refresh here and on save, not on
+        // every slider tick (No66-D26/D27 behaviour kept).
+        refreshLiveCounters()
 
         val authoritySlider =
             findViewById<com.google.android.material.slider.Slider>(R.id.authoritySeek)
@@ -94,14 +95,13 @@ setContentView(R.layout.activity_smartassist_control_room)
                 Toast.LENGTH_SHORT
             ).show()
 
-            refreshRuntime()
-            refreshMetrics()
+            refreshLiveCounters()
 
             finish()
         }
 
-        enabled.setOnCheckedChangeListener { _, _ -> refreshRuntime() }
-        panic.setOnCheckedChangeListener { _, _ -> refreshRuntime() }
+        enabled.setOnCheckedChangeListener { _, _ -> refreshLiveCounters() }
+        panic.setOnCheckedChangeListener { _, _ -> refreshLiveCounters() }
     }
 
     override fun onResume() {
@@ -129,22 +129,19 @@ setContentView(R.layout.activity_smartassist_control_room)
         findViewById<TextView>(R.id.tvAuthorityValue).text =
             "${config.authority}% (${RuntimePerformanceCoordinator.runtimeAuthority()} Runtime)"
 
-        refreshRuntime()
-        refreshMetrics()
+        refreshLiveCounters()
     }
 
-    // No66-D26/D27: member functions (were local funs in onCreate, so
-    // onResume could not call them). The metrics no longer rebuild on
-    // every slider tick; they refresh here and on save instead.
-    private fun refreshRuntime() {
-        val enabled = findViewById<MaterialSwitch>(R.id.swEnabled)
-        val panic = findViewById<MaterialSwitch>(R.id.swPanic)
-        findViewById<TextView>(R.id.tvRuntime).text =
-            "Enabled=${enabled.isChecked}\n" +
-            "Panic=${panic.isChecked}"
-    }
-
-    private fun refreshMetrics() {
+    // Inner-rooms UI: replaces the old refreshRuntime()/refreshMetrics()
+    // raw text dump with the dashboard bulb grid. Same live sources, same
+    // values — RUNTIME, HEALTH, FRAME, DECISION, CONTRIBUTIONS,
+    // EXECUTION, REGISTRY — plus the registry names/capabilities as a
+    // bounded mono block (fixed content, not a growing log). The two
+    // switch bulbs read the live switch positions, as tvRuntime did.
+    private fun refreshLiveCounters() {
+        val grid = findViewById<LinearLayout>(R.id.liveCounterGrid) ?: return
+        val enabled = findViewById<MaterialSwitch>(R.id.swEnabled).isChecked
+        val panic = findViewById<MaterialSwitch>(R.id.swPanic).isChecked
         val runtime =
             com.assistant.RuntimeCoordinator.runtimeState()
         val health =
@@ -162,21 +159,76 @@ setContentView(R.layout.activity_smartassist_control_room)
             com.assistant.runtime.GameplayEngineRegistry
                 .registryRuntimeSnapshot()
 
-        findViewById<TextView>(R.id.tvMetrics).text =
-            buildString {
-                append("RuntimeReady=${runtime["runtimeReady"]}\n")
-                append("Permissions=${runtime["permissionsVerified"]} Accessibility=${runtime["accessibilityReady"]} Capture=${runtime["captureReady"]} Booster=${runtime["boosterReady"]}\n")
-                append("Health=${health["degradedReasons"]}\n")
-                append("Frame Trusted=${frame["trusted"]} Ball=${frame["hasBall"]} Lanes=${frame["viableLanes"]} Conf=${frame["confidence"]}\n")
-                append("Decision Routed=${decision["routed"]} IdleUntrusted=${decision["idleUntrusted"]} IdleNoContribution=${decision["idleNoContribution"]} GateBlocked=${decision["gateBlocked"]} StaleFrame=${decision["staleFrame"]} Settings=${decision["settingsExit"]} RouteRejected=${decision["routeRejected"]} ChooseNull=${decision["chooseNull"]} MoveHeldNoTouch=${decision["moveHeldNoTouch"]}\n")
-                append("LastAction=${decision["lastAction"]} Weight=${decision["lastWeight"]}\n")
-                append("Contributions Offered=${contributions["offered"]} Drained=${contributions["drained"]} Pending=${contributions["pending"]}\n")
-                append("Execution Requested=${execution["requested"]} Accepted=${execution["accepted"]} Failed=${execution["failed"]}\n")
-                append("Registry Engines=${registry["engines"]} CollectCycles=${registry["collectCycles"]}\n")
-                append("Registry Names=${registry["names"]}\n")
-                append("Registry Contributed=${registry["contributed"]}\n")
-                append("Registry Capabilities=${registry["capabilities"]}")
-            }
+        grid.removeAllViews()
+        with(ControlRoomBulbs) {
+            grid.addView(sectionHeader(this@SmartAssistControlRoomActivity, "RUNTIME"))
+            renderBulbSection(grid, listOf(
+                BulbEntry("Smart Assist", if (enabled) BulbState.GREEN else BulbState.YELLOW, if (enabled) "On" else "Off"),
+                BulbEntry("Panic mode", if (panic) BulbState.YELLOW else BulbState.GREEN, if (panic) "On" else "Off"),
+                boolBulb(runtime, "runtimeReady", "Runtime ready"),
+                boolBulb(runtime, "permissionsVerified", "Permissions"),
+                boolBulb(runtime, "accessibilityReady", "Accessibility"),
+                boolBulb(runtime, "captureReady", "Capture"),
+                boolBulb(runtime, "boosterReady", "Booster"),
+                countBulb(runtime, "busPending", "Bus pending")
+            ))
+            grid.addView(sectionHeader(this@SmartAssistControlRoomActivity, "HEALTH"))
+            renderBulbSection(grid, listOf(
+                boolBulb(health, "accessibilityAlive", "Accessibility", "Alive", "Dead"),
+                boolBulb(health, "overlayAlive", "Overlay", "Alive", "Dead"),
+                boolBulb(health, "frameAlive", "Frame", "Alive", "Dead"),
+                boolBulb(health, "decisionAlive", "Decision", "Alive", "Dead"),
+                boolBulb(health, "busAlive", "Bus", "Alive", "Dead"),
+                boolBulb(health, "dispatchAlive", "Dispatch", "Alive", "Dead"),
+                boolBulb(health, "gameplayAlive", "Gameplay", "Alive", "Dead"),
+                boolBulb(health, "boosterAlive", "Booster", "Alive", "Dead"),
+                issuesBulb(health),
+                countBulb(health, "evaluations", "Health checks")
+            ))
+            grid.addView(sectionHeader(this@SmartAssistControlRoomActivity, "FRAME"))
+            renderBulbSection(grid, listOf(
+                boolBulb(frame, "trusted", "Trusted", "Yes", "No"),
+                BulbEntry("Has ball", if (bool(frame, "hasBall")) BulbState.YELLOW else BulbState.GREEN, if (bool(frame, "hasBall")) "Yes" else "No"),
+                countBulb(frame, "viableLanes", "Lanes"),
+                BulbEntry("Confidence", if (bool(frame, "trusted")) BulbState.GREEN else BulbState.YELLOW, text(frame, "confidence"))
+            ))
+            grid.addView(sectionHeader(this@SmartAssistControlRoomActivity, "DECISION"))
+            renderBulbSection(grid, listOf(
+                countBulb(decision, "decisions", "Decisions"),
+                countBulb(decision, "routed", "Routed"),
+                countBulb(decision, "idleUntrusted", "Idle untrusted"),
+                countBulb(decision, "idleNoContribution", "Idle no contribution"),
+                countBulb(decision, "gateBlocked", "Gate blocked"),
+                countBulb(decision, "staleFrame", "Stale frame"),
+                countBulb(decision, "routeRejected", "Route rejected"),
+                countBulb(decision, "chooseNull", "Choose null"),
+                countBulb(decision, "moveHeldNoTouch", "Move held"),
+                BulbEntry("Last action", if (count(decision, "routed") > 0) BulbState.GREEN else BulbState.YELLOW, text(decision, "lastAction")),
+                BulbEntry("Last weight", if (count(decision, "routed") > 0) BulbState.GREEN else BulbState.YELLOW, text(decision, "lastWeight"))
+            ))
+            grid.addView(sectionHeader(this@SmartAssistControlRoomActivity, "CONTRIBUTIONS"))
+            renderBulbSection(grid, listOf(
+                countBulb(contributions, "offered", "Offered"),
+                countBulb(contributions, "drained", "Drained"),
+                countBulb(contributions, "pending", "Pending")
+            ))
+            grid.addView(sectionHeader(this@SmartAssistControlRoomActivity, "EXECUTION"))
+            renderBulbSection(grid, listOf(
+                countBulb(execution, "requested", "Requested"),
+                countBulb(execution, "accepted", "Accepted"),
+                failBulb(execution, "failed", "Failed")
+            ))
+            grid.addView(sectionHeader(this@SmartAssistControlRoomActivity, "REGISTRY"))
+            renderBulbSection(grid, listOf(
+                countBulb(registry, "engines", "Engines"),
+                countBulb(registry, "collectCycles", "Collect cycles"),
+                countBulb(registry, "contributed", "Contributed"),
+                countBulb(registry, "generation", "Generation"),
+                countBulb(registry, "collisions", "Collisions")
+            ))
+            grid.addView(monoBlock(this@SmartAssistControlRoomActivity, "Registry Names=${text(registry, "names")}"))
+            grid.addView(monoBlock(this@SmartAssistControlRoomActivity, "Registry Capabilities=${text(registry, "capabilities")}"))
+        }
     }
 
     private fun refreshEngineStatus() {

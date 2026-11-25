@@ -66,6 +66,9 @@ object RuntimeDecisionLoop {
     // USER-INTENT (UserIntentVision, Tier 2): requests held because
     // the user is holding that slot's control (see the gate below).
     private val intentHeld = AtomicLong(0L)
+    // KNOB DIRECTION (JoystickKnobReader): requests held because they
+    // oppose the user's held joystick direction (see the gate below).
+    private val intentDirectionHeld = AtomicLong(0L)
 
     @Volatile private var lastAction: String = "none"
     @Volatile private var lastWeight: Float = 0f
@@ -243,9 +246,10 @@ object RuntimeDecisionLoop {
         // is held whenever the joystick is held — the assist steers only
         // when the user's hands are off the stick (the ghost-touch gate
         // above already holds MOVE when not touching at all). The knob's
-        // drag DIRECTION is not pixel-readable while held (the finger
-        // occludes the knob), so this gate is hold-based, not
-        // direction-aware. Fail-open: mask 0 suppresses nothing.
+        // drag direction IS pixel-readable while held (JoystickKnobReader
+        // — the finger never appears in a screen recording); the
+        // direction gate below adds to this hold gate. Fail-open: mask 0
+        // suppresses nothing.
         // Checked BEFORE recordDispatch so a held request leaves no
         // pending entry.
         val requestSlot = slotForRequest(terminalRequest.actionClass)
@@ -253,6 +257,49 @@ object RuntimeDecisionLoop {
             intentHeld.incrementAndGet()
             lastAction = "idle-intent-held"
             return false
+        }
+
+        // KNOB DIRECTION (JoystickKnobReader): never dispatch AGAINST
+        // the user's held direction. This gate is ADDITIVE — the hold
+        // gate above stays exactly as it is; this one only adds
+        // suppression, never removes it. It fires where the hold gate
+        // cannot: a confidently segmented deflected knob suppresses an
+        // opposing joystick request on a single frame, without waiting
+        // for the hold's 2-frame confirmation and without the touch
+        // flag. Slot 0 only (MOVE/EVADE — the joystick-driven
+        // requests): a button request's swipe direction is a flick from
+        // a button centre, not a joystick direction, so the knob says
+        // nothing about it. Opposing = dot < 0 (angle > 90°);
+        // perpendicular (dot = 0) is not opposing. Fail-open: null
+        // direction, or magnitude below the reader's deadzone,
+        // suppresses nothing. Checked BEFORE recordDispatch so a held
+        // request leaves no pending entry.
+        if (requestSlot == 0) {
+            val userDir = frame.userIntentDirection
+            if (userDir != null && userDir.magnitude >= com.assistant.overlay.interceptor.JoystickKnobReader.MIN_DIRECTION_MAGNITUDE) {
+                val rdx = terminalRequest.endX - terminalRequest.startX
+                val rdy = terminalRequest.endY - terminalRequest.startY
+                val rlen = hypot(rdx, rdy)
+                if (rlen > 0f) {
+                    val dot = (rdx / rlen) * userDir.dirX + (rdy / rlen) * userDir.dirY
+                    if (dot < 0f) {
+                        intentDirectionHeld.incrementAndGet()
+                        lastAction = "idle-intent-opposed"
+                        return false
+                    }
+                }
+            }
+        }
+
+        // SHOT AIM STEER (shot core fix, item 1): pre-steer the stick
+        // toward the shot's aim before the shoot tap lands — see
+        // routeShotAimSteer. The MOVE is routed immediately before the
+        // SHOT in this same frame; the bus consumes FIFO (MOVE first,
+        // SHOT second — different (source, phase) reservations, so no
+        // collision), and the DIRECT_DISPATCH lines show the MOVE to
+        // the aim direction immediately before each SHOT dispatch.
+        if (terminalRequest.actionClass == ActionClass.SHOT && best != null) {
+            routeShotAimSteer(best, terminalRequest, frame)
         }
 
         // Register before publishing: the bus consumer runs on another thread.
@@ -425,6 +472,56 @@ object RuntimeDecisionLoop {
         val ry = fromX * s + fromY * c
         val rlen = hypot(rx, ry)
         return if (rlen > 0f) (rx / rlen) to (ry / rlen) else (toX to toY)
+    }
+
+    // SHOT AIM STEER (shot core fix, item 1): the game's real aim input is
+    // the left stick, and a SHOT routes only a shoot-button tap — the stick
+    // stays wherever the last MOVE left it (or centred), so the shot goes
+    // in the stick's direction, not toward the app's far-corner target.
+    // When a SHOT wins, pre-steer the stick toward the same ball→target
+    // direction (a MOVE hold through the same slew + deflection path) and
+    // hold it through the shoot tap: the MOVE is routed immediately
+    // before the SHOT in this same frame, and the bus consumes in FIFO
+    // order (MOVE first, SHOT second — different (source, phase)
+    // reservations, so no collision). The pre-steer is a movement hold,
+    // so it obeys the same two gates as any MOVE — the ghost-touch gate
+    // (no autonomous stick while Ed is not touching) and the never-fight
+    // gate (never steer against Ed's own drag on the joystick). When
+    // either gate holds it, the shot fires unsteered, exactly as today
+    // (fail-open). The MOVE is an auxiliary steering gesture, not a
+    // decision, so it is routed through the terminal (clamp + dedup +
+    // dispatch line) but not recorded with ActionOutcomeVerifier; the
+    // DIRECT_DISPATCH line is its record — a MOVE to the aim direction
+    // immediately before each SHOT dispatch is the falsifier.
+    private fun routeShotAimSteer(best: EngineContribution, shotRequest: ExecutionRequest, frame: RuntimeFrame) {
+        if (!UserTouchState.isUserTouchAuthorizing()) return
+        if (frame.userIntentMask and UserIntentVision.slotBit(0) != 0) return
+        val originX = best.aimOriginX ?: frame.ballX
+        val originY = best.aimOriginY ?: frame.ballY
+        val dx = best.targetX - originX
+        val dy = best.targetY - originY
+        val distance = hypot(dx, dy)
+        if (!distance.isFinite() || distance <= 0f) return
+        val dirX = dx / distance
+        val dirY = dy / distance
+        val (slewX, slewY) = slewLimitDirection(dirX, dirY, frame.hasBall, isUrgentTurn(best.actionClass))
+        val deflection = analogDeflectionRadius(distance)
+        val joyX = frameWidth() * ControlMappingTrainer.joystickCenterX()
+        val joyY = frameHeight() * ControlMappingTrainer.joystickCenterY()
+        val move = ExecutionRequest(
+            source = ExecutionSource.SMART_ASSIST,
+            phase = ActionClass.MOVE.ordinal,
+            startX = joyX,
+            startY = joyY,
+            endX = (joyX + slewX * deflection).coerceIn(0f, frameWidth() - 1f),
+            endY = (joyY + slewY * deflection).coerceIn(0f, frameHeight() - 1f),
+            duration = shotRequest.duration,
+            gestureEnvelope = shotRequest.gestureEnvelope,
+            aimMotion = null,
+            actionClass = ActionClass.MOVE,
+            engine = best.engine
+        )
+        HybridExecutionTerminal.route(move)
     }
 
     private fun chooseRequest(

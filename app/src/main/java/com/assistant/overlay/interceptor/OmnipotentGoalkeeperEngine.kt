@@ -516,13 +516,32 @@ object OmnipotentGoalkeeperEngine {
         // Item 12 (A10): only a committed RUSH swallows the save
         // evaluation for this frame — a six-yard REFLEX micro-swipe
         // (or no defensive action at all) must not.
+        // Curve fix (item 2, 2026-11-24): the swallow is lifted when
+        // the ball is already in flight toward goal (see
+        // ballInFlightTowardGoal below) — the save path gets its look
+        // on the shot frame instead of one frame late.
         // W (Phase 2): the gauge gate is GONE — `anomalyDetected`
         // no longer guards this block. The fusion trigger inside
         // fires unconditionally every frame; the gauge is one source
         // among three, never the gate. A frame with no shot at all
         // still evaluates (router TRACK, no offer) so the rebound
         // override and the RECOVER path keep running.
-        if (lastDefensiveAction != DefensiveAction.RUSH) {
+        // Curve fix (item 2): a committed pre-shot RUSH used to
+        // swallow the save evaluation for the whole frame — including
+        // the frame the attacker strikes the ball, when the ball is
+        // usually still within 60 px of him so the rush commits
+        // again. If the ball is already in flight toward our goal
+        // (valid prediction, moving down-frame at >= 2 px/frame —
+        // the same speed floor MotionTracker uses for a real
+        // displacement), the shot has been struck: run the save
+        // evaluation anyway. The rush offer already went out; the
+        // save path now gets its look on the same frame instead of
+        // one frame late, already rushing.
+        val ballInFlightTowardGoal = run {
+            val bp = try { com.assistant.BallTrajectoryPredictor.current() } catch (_: Throwable) { null }
+            bp != null && bp.valid && bp.velocityY > 0f && bp.speed >= 2f
+        }
+        if (lastDefensiveAction != DefensiveAction.RUSH || ballInFlightTowardGoal) {
             // SPLENDOR_P10_ZONE_LOG: temporary, remove after live
             // confirmation. ADAPTATION vs the trace sketch: TelemetrySnapshot
             // has NO goalDetected/goalLeftX/goalRightX fields (only ball /
@@ -656,6 +675,21 @@ object OmnipotentGoalkeeperEngine {
 
             val p10GoalDet = p10Scene?.goalDetected ?: false
             val p10GoalCx = if (p10Scene != null && p10Scene.goalDetected) ((p10Scene.goalLeftX + p10Scene.goalRightX) * 0.5f).toString() else "n/a"
+            // AI keeper fix (2026-11-24, item 8): the keeper-side
+            // goal-bound verdict on this frame — the promote in
+            // evaluateOpponentShotTrajectory runs the same test on
+            // the same inputs, so this line tells the next live
+            // test whether a missed save was a late line (H1), a
+            // late prediction (H3), or a promote that never fired.
+            val keeperGoalBoundScan = GoalBoundBallEngine.goalBoundToLine(
+                ballPrediction.currentX, ballPrediction.currentY,
+                ballPrediction.velocityX, ballPrediction.velocityY, ballPrediction.valid,
+                p10Scene?.goalLeftX ?: 0f, p10Scene?.goalRightX ?: 0f,
+                p10Scene?.goalDetected ?: false,
+                p10Scene?.goalBottomY ?: 0f,
+                width.toFloat(), height.toFloat(),
+                ballPrediction.accelerationX, ballPrediction.accelerationY
+            )
             com.assistant.diagnostic.RuntimeLogger.log(
                 "GK_ZONE_SCAN threat=" + detectedThreat + "(AdaptiveGaugeClassifier)" +
                     " zone=" + decision.zone + " dir=" + decision.direction + "(ShotDirectionEngine)" +
@@ -663,7 +697,13 @@ object OmnipotentGoalkeeperEngine {
                     " px=(" + detectedX + "," + detectedY + ") stripZone=" + detectedZone + " cap=" + width + "x" + height +
                     " ball=(" + p10Tele.ballX + "," + p10Tele.ballY + ")" +
                     " goalDet=" + p10GoalDet + " goalCX=" + p10GoalCx +
-                    " fused=" + fused.isShot + ":" + fused.confidence + " src=" + fused.sources + " save=" + saveDecision,
+                    " fused=" + fused.isShot + ":" + fused.confidence + " src=" + fused.sources + " save=" + saveDecision +
+                    " goalBound=" + keeperGoalBoundScan.goalBound + " predY=" + ballPrediction.predictedY +
+                    " lineY=" + keeperGoalBoundScan.goalLineY + " lineX=" + keeperGoalBoundScan.predictedXAtLine +
+                    " ttlFrames=" + keeperGoalBoundScan.timeToLineFrames +
+                    " ax=" + ballPrediction.accelerationX + " ay=" + ballPrediction.accelerationY +
+                    " mouth=" + mouth.source +
+                    (if (keeperGoalBoundScan.goalBound) "" else " block=" + keeperGoalBoundScan.blockReason),
                 "GOALKEEPER")
 
             // Phase 3 REVIVE-DIVE: keeper position is the real tracked
@@ -750,7 +790,11 @@ object OmnipotentGoalkeeperEngine {
         keeperX: Float,
         keeperY: Float,
         width: Float,
-        height: Float
+        height: Float,
+        // Curve fix (item 1c): the curved impact X at the same
+        // 6-frame horizon as fused.impact (null = no bend measured
+        // — the fused point is used unchanged).
+        curvedImpactX: Float? = null
     ): GoalkeeperAction {
         try {
             // (1) SAVE — the confidence arbiter has decided this fused shot saves.
@@ -767,11 +811,18 @@ object OmnipotentGoalkeeperEngine {
             val positional = DetectionFusionEngine.ShotSource.TRAJECTORY in fused.sources ||
                 DetectionFusionEngine.ShotSource.GAUGE in fused.sources
             if (!fused.isShot || !positional) return action
-            if (!mouth.isInsideMouth(fused.impactX, fused.impactY)) return action
+            // Curve fix (item 1c): the impact point tested here is
+            // the fused LINEAR 6-frame point. A curling ball's true
+            // 6-frame point is further toward the far post — test
+            // the curved X (passed in, null = no bend measured)
+            // so the dive is not refused / mis-aimed on a bend.
+            // impactY stays the fused one: the bend is lateral.
+            val impactX = curvedImpactX ?: fused.impactX
+            if (!mouth.isInsideMouth(impactX, fused.impactY)) return action
             // (6) G7 reach gate — the dive target must exist, be valid, and
             // be within gesture dive reach of the real tracked keeper.
             val target = mouth.diveTargetFor(
-                fused.impactX, fused.impactY, keeperX, keeperY, width, height
+                impactX, fused.impactY, keeperX, keeperY, width, height
             ) ?: return action
             if (!target.valid || !target.reachable) return action
             // (7) Goal-relative side must match the router's side (the
@@ -900,12 +951,24 @@ object OmnipotentGoalkeeperEngine {
                 // heightBand preserved, no invented action).
                 val ballPred = com.assistant.BallTrajectoryPredictor.current()
                 val goalScene = try { com.assistant.SceneTracker.current() } catch (_: Throwable) { null }
-                val goalBound = GoalBoundBallEngine.isGoalBound(
-                    ballPred.predictedX, ballPred.predictedY, ballPred.velocityY, ballPred.valid,
+                // AI keeper fix (2026-11-24, H1+H2): the promote used
+                // to test the fixed 6-frame prediction against the
+                // FRAME BOTTOM as the goal line, so goalBound flipped
+                // true only 0-4 frames before the ball left the frame
+                // — no time to dive. Now the ball is extrapolated to
+                // the REAL goal line (detected goal box bottom, else
+                // the frame bottom) with a 12-frame warning horizon
+                // (~600 ms at the 20 fps processed rate).
+                val keeperGoalBoundResult = GoalBoundBallEngine.goalBoundToLine(
+                    ballPred.currentX, ballPred.currentY,
+                    ballPred.velocityX, ballPred.velocityY, ballPred.valid,
                     goalScene?.goalLeftX ?: 0f, goalScene?.goalRightX ?: 0f,
                     goalScene?.goalDetected ?: false,
-                    screenHeightBase, screenWidthBase, screenHeightBase
+                    goalScene?.goalBottomY ?: 0f,
+                    screenWidthBase, screenHeightBase,
+                    ballPred.accelerationX, ballPred.accelerationY
                 )
+                val goalBound = keeperGoalBoundResult.goalBound
                 val promotedAction =
                     if (goalBound && (action == GoalkeeperAction.TRACK || action == GoalkeeperAction.CATCH_CENTER)) {
                         GoalkeeperActionRouter.route(decision.copy(priority = 100))
@@ -926,6 +989,19 @@ object OmnipotentGoalkeeperEngine {
                     } else {
                         action
                     }
+
+                // AI keeper fix (2026-11-24, item 8): log every
+                // actual promote re-route — without this the next
+                // live test cannot tell whether the promote fired.
+                if (promotedAction != action) {
+                    com.assistant.diagnostic.RuntimeLogger.log(
+                        "GK_PROMOTE action=" + action + "->" + promotedAction +
+                            " goalBound=" + goalBound +
+                            " lineY=" + keeperGoalBoundResult.goalLineY +
+                            " lineX=" + keeperGoalBoundResult.predictedXAtLine +
+                            " ttlFrames=" + keeperGoalBoundResult.timeToLineFrames,
+                        "GOALKEEPER")
+                }
 
                 // No-signal save (2026-11-24): the effective save
                 // verdict. The goal-bound promote above re-routes a
@@ -959,9 +1035,20 @@ object OmnipotentGoalkeeperEngine {
                 // machine (DIVE is already in DIVE_FAMILY_ACTIONS)
                 // and the rebound override, unchanged from any
                 // other dive-family save.
+                // Curve fix (item 1c): the curved 6-frame impact X
+                // for the dive promotion — same horizon as the fused
+                // impact point (MotionTracker LOOK_AHEAD_FRAMES = 6).
+                // Fail-open: no valid prediction -> null -> the
+                // fused point is used unchanged.
+                val curvedImpactX = if (ballPred.valid) {
+                    GoalBoundBallEngine.curvedXAt(
+                        ballPred.currentX, ballPred.velocityX, ballPred.accelerationX, 6f
+                    )
+                } else null
                 val diveAction = divePromotionFor(
                     promotedAction, decision, effectiveSaveDecision, fused, mouth,
-                    keeperX, keeperY, screenWidthBase, screenHeightBase
+                    keeperX, keeperY, screenWidthBase, screenHeightBase,
+                    curvedImpactX
                 )
 
                 // W (Phase 2): DetectionConfidenceEngine is the SAVE
@@ -1119,8 +1206,13 @@ object OmnipotentGoalkeeperEngine {
                             val spanRight =
                                 if (goalScene?.goalDetected == true) goalScene.goalRightX
                                 else screenWidthBase * GoalBoundBallEngine.GOAL_AREA_RIGHT_FRACTION
+                            // Curve fix (item 1b): the crossing is the
+                            // CURVED one (goalBoundToLine's quadratic
+                            // lineX), not the linear 6-frame point — a
+                            // curling ball's true crossing is further
+                            // toward the far post.
                             executionCoordinates[2] =
-                                ballPred.predictedX.coerceIn(spanLeft, spanRight)
+                                keeperGoalBoundResult.predictedXAtLine.coerceIn(spanLeft, spanRight)
                         }
                     }
 

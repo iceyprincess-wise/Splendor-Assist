@@ -61,7 +61,12 @@ object ShotContributor : GameplayContributor {
             frame.goalkeeperX <= frame.goalCenterX -> rightAim
             else -> leftAim
         }
-        var aimY = (frame.goalTopY + (frame.goalBottomY - frame.goalTopY) * 0.5f)
+        // Shot core fix (item 3): default aim is LOW, not mid-height.
+        // Mid-height aims at the keeper's chest and, on far-corner
+        // paths, at the bar line. Low = today's POWER placement;
+        // ShotTypeEngine below keeps CHIP high (its own override).
+        val goalHeight = (frame.goalBottomY - frame.goalTopY).coerceAtLeast(1f)
+        var aimY = (frame.goalBottomY - goalHeight * 0.15f).coerceIn(frame.goalTopY, frame.goalBottomY)
 
         // Closer shot + clearer goal sighting = more authority. A keeper we
         // can actually see (and aim around) is worth more than a blind shot.

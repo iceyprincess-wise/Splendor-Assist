@@ -23,9 +23,10 @@ Java_com_assistant_NativeBridge_nativeCriticalScoringVector(
         jfloat goalLeftPostX, jfloat goalLeftPostY,
         jfloat goalRightPostX, jfloat goalRightPostY,
         jfloat controlOriginX, jfloat controlOriginY, jfloat controlRadius,
+        jfloat aimY,
         jfloatArray outBuffer) {
     if (!splendor_array(env, outBuffer, 2)) return;
-    const jfloat contract_values[] = {strikerX, strikerY, gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY, controlOriginX, controlOriginY, controlRadius};
+    const jfloat contract_values[] = {strikerX, strikerY, gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY, controlOriginX, controlOriginY, controlRadius, aimY};
     if (!splendor_finite(env, contract_values, sizeof(contract_values)/sizeof(contract_values[0]))) return;
 
 #ifdef SPLENDOR_BREADCRUMBS
@@ -50,17 +51,20 @@ Java_com_assistant_NativeBridge_nativeCriticalScoringVector(
     // (diff < 0) -> leftBias 0 -> right post (far); keeper near the right
     // post (diff > 0) -> leftBias 1 -> left post (far).
     // NOTE: the pick rule here MUST stay identical to ShotTargetMath.kt's
-    // farCornerTarget (farther post, tie -> left, same 35/15 insets) — the
-    // Kotlin side computes the radius to the corner this picks, so if the
-    // two ever disagree the native lands off-target.
+    // farCornerTarget (farther post, tie -> left, same 35 X-insets, same
+    // aimY) — the Kotlin side computes the radius to the aim point this
+    // targets, so if the two ever disagree the native lands off-target.
     float leftBias = branchless_coerce(1.0f + (gkDistToLeft - gkDistToRight) * 1000.0f, 0.0f, 1.0f);
     float rightBias = 1.0f - leftBias;
 
     float targetPostX = (goalLeftPostX + 35.0f) * leftBias + (goalRightPostX - 35.0f) * rightBias;
-    // F03: right-post Y inset is -15, not +15. Y grows downward in capture
-    // space and the right post is the BOTTOM post, so +15 landed 15px
-    // OUTSIDE the mouth. Left post is the TOP post: +15 stays inward.
-    float targetPostY = (goalLeftPostY + 15.0f) * leftBias + (goalRightPostY - 15.0f) * rightBias;
+    // Shot core fix: the aim height is the caller's aimY (ShotTypeEngine
+    // via the Kotlin side — POWER/FINESSE low, CHIP high), NOT the
+    // diagonal corner's Y. The old corner Y (left = goalTopY + 15) is the
+    // high corner that sent shots at the bar. The pick (leftBias /
+    // rightBias — farther post, tie -> left) is unchanged and identical
+    // to ShotTargetMath.kt's farCornerTarget; only the height moved.
+    float targetPostY = aimY;
 
     float firingAngle = atan2f(targetPostY - strikerY, targetPostX - strikerX);
 

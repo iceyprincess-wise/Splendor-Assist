@@ -108,13 +108,25 @@ object AttackingVectorContributor:GameplayContributor{
     val gkX:Float;val gkY:Float;val lpX:Float;val lpY:Float;val rpX:Float;val rpY:Float
     val keeper=ShotTargetMath.keeperPosition(frame.goalkeeperVisible,frame.goalkeeperX,frame.goalkeeperY,frame.goalCenterX,frame.goalCenterY);gkX=keeper.x;gkY=keeper.y;lpX=frame.goalLeftX;lpY=frame.goalTopY;rpX=frame.goalRightX;rpY=frame.goalBottomY
     val dist=hypot((frame.ballX-gkX).toDouble(),(frame.ballY-gkY).toDouble()).toFloat()
-    val point=CriticalAttackingVectorEngine.computeAbsoluteScoringVector(frame.ballX,frame.ballY,gkX,gkY,lpX,lpY,rpX,rpY)
+    // Shot core fix (item 2): the aim height comes from ShotTypeEngine,
+    // not from the diagonal corner. The low placement is the default
+    // (POWER/FINESSE low, CHIP high); the corner pick itself is
+    // aimY-independent, so the provisional corner gives the true far X
+    // for the type decision, and the point below is then computed at
+    // the final aimY. The old single call fed the corner Y (high when
+    // the far post was the left one) straight into the target — the bar.
+    val goalHeight=(frame.goalBottomY-frame.goalTopY).coerceAtLeast(1f)
+    val lowAimY=(frame.goalBottomY-goalHeight*0.15f).coerceIn(frame.goalTopY,frame.goalBottomY)
+    val corner=ShotTargetMath.farCornerTarget(gkX,gkY,lpX,lpY,rpX,rpY,lowAimY)
+    val shotType=ShotTypeEngine.select(frame,corner.x,lowAimY)
+    val aimY=shotType?.aimY?:lowAimY
+    val point=CriticalAttackingVectorEngine.computeAbsoluteScoringVector(frame.ballX,frame.ballY,gkX,gkY,lpX,lpY,rpX,rpY,aimY)
     val proximity=(1f-dist/MAX_SHOT_RANGE).coerceIn(0f,1f)
     val clearance=(1f-frame.defenderDensity*0.4f).coerceIn(0f,1f)
     val authority=(MIN_AUTHORITY+proximity*0.35f+clearance*0.10f).coerceIn(MIN_AUTHORITY,0.95f)
     // Q-C3-1 (F07): shot duration is type-correct via ShotTypeEngine —
     // POWER 35 / FINESSE 30 / CHIP 25; 35L fallback when select() returns null.
-    return EngineContribution(engineName,ActionClass.SHOT,point.x.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),point.y.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),authority,frame.confidence,ShotTypeEngine.select(frame,point.x,point.y)?.durationHintMs?:35L)
+    return EngineContribution(engineName,ActionClass.SHOT,point.x.coerceIn(0f, com.assistant.vision.CameraProfile.captureWidthOrFallback()),point.y.coerceIn(0f, com.assistant.vision.CameraProfile.captureHeightOrFallback()),authority,frame.confidence,shotType?.durationHintMs?:35L)
   }
 }
 

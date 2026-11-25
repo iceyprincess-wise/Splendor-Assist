@@ -213,6 +213,20 @@ object FrameAssembler {
         val enabled = try { SmartAssistRepository.enabled() } catch (_: Throwable) { false }
         val panic = try { SmartAssistRepository.panicActive() } catch (_: Throwable) { false }
 
+        // RecoveryTurnPush: the keeper's latest threat decision — the
+        // long-ball signal + its priority, read ONCE per frame (the
+        // registry var is @Volatile; written every keeper evaluation).
+        // Option (a) over reading the registry from the contributor:
+        // the contributor stays a pure frame reader (MidfieldHold
+        // pattern), and every future frame reader gets the same
+        // signal. LongBallCounterEngine.detected() is the repo's own
+        // 13-line check (direction == LONG_BALL), reused, not copied.
+        val keeperDecision = com.assistant.overlay.interceptor.GoalkeeperDecisionRegistry.latestDecision
+        val longBall = keeperDecision?.let {
+            com.assistant.overlay.interceptor.LongBallCounterEngine.detected(it)
+        } ?: false
+        val threatPriority = keeperDecision?.priority ?: 0
+
         // GAP3: lane spread = share of lanes that are actually viable
         VisionTrust.stampLaneSpread(
             if (laneCount > 0) viable.toFloat() / laneCount.toFloat() else 0f
@@ -367,6 +381,10 @@ object FrameAssembler {
             dragOutHeld = world.defensiveStance.dragOutHeld,
             // Queue item 9 (L1): the vacated slot X (0f when no drag-out).
             dragOutGapX = world.defensiveStance.dragOutGapX,
+            // RecoveryTurnPush: the long-ball signal + the keeper's
+            // threat priority (locals above, read once per frame).
+            longBall = longBall,
+            threatPriority = threatPriority,
             // L14: the tracked defender's home on the tight line.
             homeX = world.defenderHome.x,
             homeY = world.defenderHome.y,
@@ -402,6 +420,9 @@ object FrameAssembler {
             userIntentMask = UserIntentVision.heldSlotMask(),
             // CURSOR-ID: the ring identity computed above.
             cursorId = cursorId,
+            // KNOB DIRECTION: the live deflection from UserIntentVision
+            // (null = no direction known; same freshness as the mask).
+            userIntentDirection = UserIntentVision.currentDirection(),
             throughReceiverX = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.lane?.receiver?.x ?: 0f,
             throughReceiverY = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.lane?.receiver?.y ?: 0f,
             throughLeadX = world.throughBallAnalysis.lanes.firstOrNull { it.viable }?.leadX ?: 0f,
@@ -574,6 +595,9 @@ object FrameAssembler {
             "stanceTight" to f.stanceTight,
             "dragOutHeld" to f.dragOutHeld,
             "dragOutGapX" to f.dragOutGapX,
+            // RecoveryTurnPush: the long-ball signal + threat priority.
+            "longBall" to f.longBall,
+            "threatPriority" to f.threatPriority,
             "homeFound" to f.homeFound,
             // Midfield (queue item 5, batch midfield): the measured line
             // + its compactness, and the stance-derived fallback X.

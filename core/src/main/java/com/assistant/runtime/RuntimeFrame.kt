@@ -174,6 +174,22 @@ data class RuntimeFrame(
      */
     val dragOutGapX: Float = 0f,
     /*
+     * RecoveryTurnPush (defender turn/push/long-ball hold): the
+     * long-ball signal + the keeper's threat priority, published by
+     * FrameAssembler from GoalkeeperDecisionRegistry.latestDecision
+     * (written every keeper evaluation). longBall=true means a long
+     * ball is on — the defender holds his stance slot instead of
+     * chasing (Ed's "hand in hand" rule). threatPriority is the
+     * keeper decision's priority (0 when none); PANIC_PRIORITY_
+     * THRESHOLD (150) is the repo's shared panic line. Defaults keep
+     * old frames behaving exactly as before (no long ball, no
+     * threat). Staleness: if the keeper stops evaluating, the last
+     * decision lingers — stale-high fails safe (no wander), and the
+     * keeper re-evaluates whenever a threat exists.
+     */
+    val longBall: Boolean = false,
+    val threatPriority: Int = 0,
+    /*
      * L14 Home Position Producer: the tracked defender's home on the
      * tight line. homeFound=false means "no line — use the historical
      * screen-centre fallback" (DefenseContributor).
@@ -297,7 +313,20 @@ data class RuntimeFrame(
      * in FrameAssembler (identity vs defenderId); no consumer
      * behaviour changes in this piece (PlayerSwitchEngine owns that).
      */
-    val cursorId: Int? = null
+    val cursorId: Int? = null,
+    /*
+     * KNOB DIRECTION (JoystickKnobReader): the user's held joystick
+     * direction on this frame — unit vector (x right, y down) +
+     * magnitude 0..1 + confidence 0..1. Null = no direction known
+     * (at rest, occluded, unsegmentable); consumers must treat null
+     * as "nothing to suppress on". Copied by FrameAssembler from
+     * UserIntentVision.currentDirection(); read by
+     * RuntimeDecisionLoop's direction gate, which holds a
+     * joystick-driven request that OPPOSES the held direction.
+     * Appended last, like cursorId above, so positional
+     * RuntimeFrame construction in tests keeps working.
+     */
+    val userIntentDirection: UserIntentDirection? = null
 ) {
     // RF-D1/RF-D2: the old gate trusted a frame with a 0x0 capture size
     // (reachable before the camera profile populates), a confidence above

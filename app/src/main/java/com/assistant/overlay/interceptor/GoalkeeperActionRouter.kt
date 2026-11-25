@@ -336,6 +336,7 @@ object GoalkeeperActionRouter {
 
                     anticipation ==
                         AnticipationResult.INTERCEPT &&
+                    decision.isOneVsOne &&
                     (
                         crossIntercept ||
                         longBallThreat ||

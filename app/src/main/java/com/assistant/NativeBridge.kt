@@ -396,7 +396,7 @@ init {
 
 
     // --- V57: CriticalAttackingVector & CrossPrecision Native Migration ---
-    @JvmStatic external fun nativeCriticalScoringVector(strikerX: Float, strikerY: Float, gkX: Float, gkY: Float, goalLeftPostX: Float, goalLeftPostY: Float, goalRightPostX: Float, goalRightPostY: Float, controlOriginX: Float, controlOriginY: Float, controlRadius: Float, outBuffer: FloatArray)
+    @JvmStatic external fun nativeCriticalScoringVector(strikerX: Float, strikerY: Float, gkX: Float, gkY: Float, goalLeftPostX: Float, goalLeftPostY: Float, goalRightPostX: Float, goalRightPostY: Float, controlOriginX: Float, controlOriginY: Float, controlRadius: Float, aimY: Float, outBuffer: FloatArray)
     @JvmStatic external fun nativeCriticalTrueTargetPass(passButtonX: Float, passButtonY: Float, activeStrikerX: Float, activeStrikerY: Float, strikerVx: Float, strikerVy: Float, isLoftedContext: Boolean, screenWidth: Float, screenHeight: Float, outBuffer: FloatArray)
 
 

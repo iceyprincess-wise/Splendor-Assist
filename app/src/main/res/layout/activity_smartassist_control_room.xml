@@ -46,6 +46,10 @@
     <View android:layout_width="56dp" android:layout_height="3dp"
         android:layout_marginTop="10dp" android:layout_marginBottom="20dp"
         android:background="@drawable/accent_bar" />
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="@string/control_room_parameters"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.SectionLabel"
+        android:layout_marginBottom="10dp" />
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:background="@drawable/panel_surface"
         android:padding="16dp">
@@ -101,14 +105,13 @@
         <TextView android:id="@+id/tvAuthorityValue" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="@string/auto_extracted_56" android:textColor="?attr/colorOnSurfaceVariant"
             android:textAppearance="@style/TextAppearance.SplendorAssist.Mono" android:layout_marginBottom="8dp" />
-    <TextView android:id="@+id/tvRuntime"
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="@string/control_room_live_counters"
+        android:textAppearance="@style/TextAppearance.SplendorAssist.SectionLabel"
+        android:layout_marginTop="20dp" android:layout_marginBottom="10dp" />
+    <LinearLayout android:id="@+id/liveCounterGrid"
         android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="12dp" android:textColor="?attr/colorOnSurfaceVariant"
-        android:textAppearance="@style/TextAppearance.SplendorAssist.Mono" />
-    <TextView android:id="@+id/tvMetrics"
-        android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" android:textColor="@color/splendor_text_dim"
-        android:textAppearance="@style/TextAppearance.SplendorAssist.MonoSmall" />
+        android:orientation="vertical" />
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSave" android:layout_width="match_parent" android:layout_height="54dp"
         android:layout_marginTop="24dp" android:text="@string/auto_extracted_57"

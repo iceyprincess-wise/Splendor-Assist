@@ -42,7 +42,7 @@ object ShotOpportunityContributor : GameplayContributor {
         // >= 0 — the same one-sided clamp D5 fixed in
         // ShotAnticipationContributor. The goal box can extend past the
         // capture edge (the goal sits at an X end), so rightAim /
-        // goalCenterY could exceed captureWidth/captureHeight and the
+        // lowAimY could exceed captureWidth/captureHeight and the
         // dispatch would aim off-screen. Clamp both axes to the capture,
         // same form as D5; unchanged for any on-screen goal.
         // B2-2 (item 23): align the duration hint to ShotTypeEngine — the
@@ -50,9 +50,16 @@ object ShotOpportunityContributor : GameplayContributor {
         // POWER only: mid/long FINESSE wants 30L (this fired 5ms long)
         // and keeper-stranded CHIP wants 25L (this fired 10ms long). Aim
         // stays the open-side inset aim above; duration only.
-        val durationHintMs = ShotTypeEngine.select(frame, aimX, frame.goalCenterY)?.durationHintMs ?: 35L
+        // Shot core fix (item 3): default aim is LOW, not mid-height
+        // (goalCenterY) — mid-height aims at the keeper's chest and,
+        // on far-corner paths, at the bar line. Low = today's POWER
+        // placement. ShotTypeEngine still owns the CHIP high aim; this
+        // engine uses its duration only, as before.
+        val goalHeight = (frame.goalBottomY - frame.goalTopY).coerceAtLeast(1f)
+        val lowAimY = (frame.goalBottomY - goalHeight * 0.15f).coerceIn(frame.goalTopY, frame.goalBottomY)
+        val durationHintMs = ShotTypeEngine.select(frame, aimX, lowAimY)?.durationHintMs ?: 35L
         return EngineContribution(engineName, ActionClass.SHOT,
-            aimX.coerceIn(0f, frame.captureWidth), frame.goalCenterY.coerceIn(0f, frame.captureHeight),
+            aimX.coerceIn(0f, frame.captureWidth), lowAimY.coerceIn(0f, frame.captureHeight),
             (r.openSideScore / 4f).coerceIn(0f, 1f), r.confidence.coerceIn(0f, 1f), durationHintMs)
     }
 }

@@ -18,6 +18,24 @@ object MotionTracker {
     private var lastVx = 0f
     private var lastVy = 0f
 
+    // Curve fix (R2/curved-shot keeper fix, 2026-11-24): velocity
+    // history for lateral acceleration. prevVx/prevVy is the velocity
+    // TWO frames ago, so (vx - prevVx) / 2 is the average per-frame
+    // acceleration over two frames — a single-frame difference is
+    // detection jitter, not a bend. trackedFrames counts consecutive
+    // valid tracked frames: the first real velocity appears on the
+    // second frame after first detection (the first frame's velocity
+    // is 0 by construction), so the two-frame difference is only
+    // meaningful from the fourth frame (trackedFrames >= 3 at the
+    // time of the computation). Reset whenever the ball is lost, on
+    // a deflection (the velocity straddles the impact), and by
+    // reset(). The acceleration itself is NOT clamped here — the
+    // single choke point is GoalBoundBallEngine.curvedXAt (deadband
+    // + clamp), so every consumer shares one policy.
+    private var prevVx = 0f
+    private var prevVy = 0f
+    private var trackedFrames = 0
+
     private const val LOOK_AHEAD_FRAMES = 6f
 
     // Batch-trajectory (A): a bounce / deflection is a sudden
@@ -45,6 +63,9 @@ object MotionTracker {
         initialized = false
         lastVx = 0f
         lastVy = 0f
+        prevVx = 0f
+        prevVy = 0f
+        trackedFrames = 0
     }
 
     fun update(
@@ -56,7 +77,10 @@ object MotionTracker {
             initialized = false
             lastVx = 0f
             lastVy = 0f
-            BallTrajectoryPredictor.update(0f, 0f, 0f, 0f, 0f, 0f, 0f, false)
+            prevVx = 0f
+            prevVy = 0f
+            trackedFrames = 0
+            BallTrajectoryPredictor.update(0f, 0f, 0f, 0f, 0f, 0f, 0f, false, 0f, 0f)
 
             return MotionResult(
                 0f,
@@ -100,9 +124,20 @@ object MotionTracker {
                 ball.x,
                 ball.y,
                 0f,
-                false
+                false,
+                0f,
+                0f
             )
 
+            // Curve fix: the mixed velocity must not seed a bend —
+            // the acceleration history restarts (trackedFrames = 0
+            // gates the acceleration off until three clean frames
+            // have rebuilt it). lastVx keeps today's value: the
+            // deflection test above still needs the previous frame's
+            // velocity on the next frame.
+            prevVx = vx
+            prevVy = vy
+            trackedFrames = 0
             lastVx = vx
             lastVy = vy
             previousX = ball.x
@@ -115,6 +150,17 @@ object MotionTracker {
                 directionRadians = atan2(vy,vx)
             )
         }
+
+        // Curve fix (R2/curved-shot keeper fix, 2026-11-24): lateral
+        // acceleration, averaged over two frames (see the field note
+        // above). Gated on trackedFrames >= 3: before the fourth
+        // tracked frame prevVx is not a real velocity yet (the first
+        // frame's velocity is 0 by construction), so the difference
+        // would be half the velocity, not an acceleration. Zero
+        // acceleration here is fail-open — every consumer falls back
+        // to the linear prediction.
+        val accelX = if (trackedFrames >= 3) (vx - prevVx) / 2f else 0f
+        val accelY = if (trackedFrames >= 3) (vy - prevVy) / 2f else 0f
 
         val predictedX =
             ball.x + (vx * LOOK_AHEAD_FRAMES)
@@ -130,14 +176,19 @@ object MotionTracker {
             predictedX,
             predictedY,
             speed,
-            true
+            true,
+            accelX,
+            accelY
         )
 
+        prevVx = lastVx
+        prevVy = lastVy
         lastVx = vx
         lastVy = vy
         previousX = ball.x
         previousY = ball.y
         initialized = true
+        trackedFrames++
 
         return MotionResult(
             velocityX = vx,

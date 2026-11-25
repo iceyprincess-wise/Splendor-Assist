@@ -110,13 +110,24 @@ object BallTrajectoryPredictor {
         // conservative values as before (velocity / speed zeroed on the
         // invalid frame, predicted = current). Readers that check it know
         // when the prediction is fresh vs stale.
-        val valid:Boolean=false
+        val valid:Boolean=false,
         // Item 15 (Letter B): the old deflection flag is gone.
         // It carried no information beyond valid=false on the same
         // frame, and no reader ever needed to distinguish "deflected"
         // from "unobserved" — both mean "don't trust this prediction".
         // MotionTracker's LOCAL deflection decision (zero the velocity,
         // re-anchor) is untouched.
+        // Curve fix (R2/curved-shot keeper fix, 2026-11-24):
+        // lateral acceleration, px/frame^2, averaged over two frames
+        // by MotionTracker (see its field note). RAW value: not
+        // clamped and not deadbanded here — every consumer must read
+        // it through GoalBoundBallEngine.curvedXAt, the single choke
+        // point for the deadband + clamp. 0 when the history is short,
+        // on a deflection frame, or when the ball is not observed.
+        // The linear predictedX/predictedY are untouched: no existing
+        // reader's numbers move.
+        val accelerationX:Float=0f,
+        val accelerationY:Float=0f
     )
 
     private var latest=Prediction()
@@ -129,7 +140,9 @@ object BallTrajectoryPredictor {
         predictedX:Float,
         predictedY:Float,
         speed:Float,
-        valid:Boolean=false
+        valid:Boolean=false,
+        accelerationX:Float=0f,
+        accelerationY:Float=0f
     ){
         latest=Prediction(
             currentX,
@@ -139,7 +152,9 @@ object BallTrajectoryPredictor {
             predictedX,
             predictedY,
             speed,
-            valid
+            valid,
+            accelerationX,
+            accelerationY
         )
     }
 

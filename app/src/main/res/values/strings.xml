@@ -105,6 +105,8 @@
     <string name="auto_extracted_85">INACTIVE</string>
     <string name="auto_extracted_86">Save Settings</string>
     <string name="splendor_authority">Authority</string>
+    <string name="control_room_parameters">PARAMETERS</string>
+    <string name="control_room_live_counters">LIVE COUNTERS</string>
     <!-- NO61-D3 (new string): splendor_tuning ("TUNING") — the section label in activity_room_tuner.xml was hardcoded "TUNING" because no string existed for it. Same pattern as NO60-D16 splendor_authority. -->
     <!-- NO60-D15: dead string, zero references (see header). Kept per the no-delete rule; removal is Ed's call. -->
 </resources>

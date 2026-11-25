@@ -2,6 +2,7 @@ package com.assistant
 
 import java.nio.ByteBuffer
 import kotlin.math.abs
+import kotlin.math.atan2
 
 /**
  * UserIntentVision (Tier 2) — per-slot user-intent inference from
@@ -38,13 +39,21 @@ import kotlin.math.abs
  * probe decides (this engine never re-anchors dispatch; it only
  * chooses where to look).
  *
- * KNOB DEFLECTION: deliberately NOT a live reading. While the user
- * holds the joystick their finger occludes the knob, so the knob's
- * position is not pixel-readable from the frame; and no knob colour
- * constant exists in-repo to segment it from the base. The engine
- * reports HELD vs NOT-HELD for the joystick, never a deflection
- * direction — a direction-aware gate needs the knob deflection, which
- * needs a measured knob colour (Ed's screenshots) first.
+ * KNOB DEFLECTION: a LIVE reading since JoystickKnobReader
+ * (interceptor package) landed with the measured knob colour. The
+ * old claim in this paragraph — "the finger occludes the knob, so
+ * the knob's position is not pixel-readable" — is resolved WRONG for
+ * this capture: MediaProjection records the RENDERED frame, so a
+ * physical finger never appears in it; the game renders the knob at
+ * the deflected position, and this engine's own joystick-hold
+ * inference already depends on that (the centre pixel leaves
+ * grey-or-green while touching only because the knob MOVED
+ * off-centre). The reader segments the grey disc in the joystick
+ * window and publishes angle + magnitude; what remains UNPROVEN is
+ * the deflected rendering itself (no deflected sample exists — the
+ * knob is at rest in both of Ed's screenshots), so the reader fails
+ * open to this hold inference whenever the knob cannot be segmented
+ * with confidence. See JoystickKnobReader for the full answer.
  *
  * FAIL-OPEN: a failed pixel read (out of bounds / short buffer) is
  * "unknown", never "held" — the occlusion counter resets. Mask 0
@@ -58,8 +67,11 @@ import kotlin.math.abs
  * read via ControlMappingTrainer.probePixel (the trainer's own probe
  * path, so probesRead telemetry stays accurate).
  * CONSUMER: FrameAssembler copies heldSlotMask() onto
- * RuntimeFrame.userIntentMask; RuntimeDecisionLoop's never-fight-the-
- * user gate holds a request whose slot is in the mask.
+ * RuntimeFrame.userIntentMask and currentDirection() onto
+ * RuntimeFrame.userIntentDirection; RuntimeDecisionLoop's
+ * never-fight-the-user gate holds a request whose slot is in the
+ * mask, and its direction gate holds a joystick-driven request that
+ * OPPOSES the held direction.
  */
 object UserIntentVision {
 
@@ -76,6 +88,8 @@ object UserIntentVision {
     private const val OCCLUDED_FRAMES_TO_CONFIRM = 2
     private const val CANDIDATE_FRESH_MS = 250L
     private const val LOG_MIN_INTERVAL_MS = 60_000L
+    /** KNOB log throttle: 1 Hz, the CURSOR-log precedent. */
+    private const val DIRECTION_LOG_MIN_INTERVAL_MS = 1_000L
 
     private class HoldState(val label: String) {
         var occludedFrames: Int = 0
@@ -87,6 +101,11 @@ object UserIntentVision {
     private val shootHold = HoldState("SHOOT")
     private val passHold = HoldState("PASS")
     private val joystickHold = HoldState("JOYSTICK")
+
+    /** Latest knob deflection + when it was read (observe thread only). */
+    @Volatile private var lastDirection: com.assistant.runtime.UserIntentDirection? = null
+    @Volatile private var lastDirectionMs: Long = 0L
+    private var lastDirectionLogMs: Long = 0L
 
     private fun isGreenRgb(rgb: IntArray) = rgb[1] > rgb[0] + 8 && rgb[1] > rgb[2] + 8
     private fun isGrayRgb(rgb: IntArray) =
@@ -194,11 +213,37 @@ object UserIntentVision {
             }
         }
         // Joystick: measured-centre pixel leaving grey-or-green while
-        // touching (finger occludes the knob/base). Same 2-frame rule.
+        // touching (the knob moves off-centre when dragged). Same
+        // 2-frame rule.
         val (jx, jy) = joystickReadCenter(w, h)
         val jrgb = ControlMappingTrainer.probePixel(b, w, h, stride, jx, jy, pixelStride)
         val joyOccluded = jrgb != null && !isJoystickRgb(jrgb) && touching
         updateHold(joystickHold, joyOccluded, now)
+        // KNOB DEFLECTION (JoystickKnobReader): the live deflection
+        // angle + magnitude, read from the same buffer. Runs after the
+        // TouchSourceDiscriminator skip above, so our own injected
+        // gesture never feeds a direction back into the gate (A3
+        // self-suppression). A null reading leaves the last direction
+        // untouched — its 250 ms freshness expires on its own — and
+        // the hold inference above is the fallback, never replaced.
+        // Centre is in capture px here (jx/jy are normalized).
+        val knob = com.assistant.overlay.interceptor.JoystickKnobReader.read(
+            b, w, h, stride, pixelStride, jx * w, jy * h
+        )
+        if (knob != null) {
+            lastDirection = knob
+            lastDirectionMs = now
+            if (now - lastDirectionLogMs >= DIRECTION_LOG_MIN_INTERVAL_MS) {
+                lastDirectionLogMs = now
+                try {
+                    val angleDeg = Math.toDegrees(atan2(knob.dirY.toDouble(), knob.dirX.toDouble())).toFloat()
+                    com.assistant.diagnostic.RuntimeLogger.log(
+                        "KNOB dirX=${knob.dirX} dirY=${knob.dirY} angleDeg=$angleDeg mag=${knob.magnitude} conf=${knob.confidence}",
+                        "KNOB"
+                    )
+                } catch (_: Throwable) { }
+            }
+        }
     }
 
     /** True while a Shoot-hold candidate is fresh (within 250 ms). */
@@ -212,6 +257,18 @@ object UserIntentVision {
     /** True while a joystick-hold candidate is fresh (within 250 ms). */
     fun joystickHoldCandidateFresh(nowMs: Long = System.currentTimeMillis()): Boolean =
         joystickHold.fresh(nowMs)
+
+    /**
+     * The latest knob deflection, fresh within 250 ms — the same
+     * freshness as the hold mask. Null = no direction known (at rest,
+     * occluded, unsegmentable); consumers must treat null as "nothing
+     * to suppress on". Read by FrameAssembler onto
+     * RuntimeFrame.userIntentDirection.
+     */
+    fun currentDirection(nowMs: Long = System.currentTimeMillis()): com.assistant.runtime.UserIntentDirection? {
+        val d = lastDirection
+        return if (d != null && nowMs - lastDirectionMs <= CANDIDATE_FRESH_MS) d else null
+    }
 
     /**
      * Bitmask of currently-held slots: bit 0 = joystick, bits 1-4 =

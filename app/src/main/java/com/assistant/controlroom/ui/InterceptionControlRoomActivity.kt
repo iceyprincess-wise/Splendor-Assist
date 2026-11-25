@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -33,11 +34,15 @@ import kotlinx.coroutines.launch
  *  - what does the field read look like (players, opponents, lanes, zones)
  *    - the inputs the intercept-vector math runs on
  *  - are decisions flowing and gestures being accepted?
+ *
+ * Inner-rooms UI: the live half is the dashboard bulb grid now
+ * (PARAMETERS on top, LIVE COUNTERS in the middle), not the raw text
+ * dump — same sources, same values, counting live.
  */
 class InterceptionControlRoomActivity : AppCompatActivity() {
 
     private lateinit var repository: InterceptionRepository
-    private var liveText: TextView? = null
+    private var liveGrid: LinearLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,80 +104,102 @@ class InterceptionControlRoomActivity : AppCompatActivity() {
     }
 
     /* Live runtime panel injected under the status line - no layout edit needed. */
-    // No66-D32 (Q61-1): the panel used to be a default-styled Button/TextView
-    // with raw-pixel padding. It now uses ThemeTokens like the rest of the
-    // room, with dp padding (same helper shape as the other rooms).
-    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+    // Inner-rooms UI: the panel is the dashboard bulb grid now
+    // (ControlRoomBulbs), not the raw text dump.
 
     private fun installLivePanel(anchor: TextView) {
         val parent = anchor.parent as? ViewGroup ?: return
+        val grid = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
         val refresh = Button(this).apply {
             text = "Refresh live interception status"
             isAllCaps = false
             setBackgroundColor(ThemeTokens.BUTTON)
             setTextColor(Color.WHITE)
             textSize = 14f
-            setOnClickListener { liveText?.text = liveInterceptionStatus() }
-        }
-        val live = TextView(this).apply {
-            textSize = 12f
-            setTextColor(ThemeTokens.TEXT_MUTED)
-            setPadding(0, dp(16), 0, dp(16))
+            setOnClickListener { renderLivePanel() }
         }
         val index = parent.indexOfChild(anchor) + 1
-        parent.addView(refresh, index)
-        parent.addView(live, index + 1)
-        liveText = live
-        live.text = liveInterceptionStatus()
+        parent.addView(grid, index)
+        parent.addView(refresh, index + 1)
+        liveGrid = grid
+        renderLivePanel()
     }
 
-    private fun liveInterceptionStatus(): String = try {
-        val runtime = RuntimeCoordinator.runtimeState()
-        val health = RuntimeHealthMonitor.runtimeHealthSnapshot()
-        val frame = FrameAssembler.frameRuntimeSnapshot()
-        val decision = RuntimeDecisionLoop.decisionRuntimeSnapshot()
-        val execution = GestureExecutionAuthority.executionRuntimeSnapshot()
-        val registry =
-            com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot()
+    private fun renderLivePanel() {
+        val grid = liveGrid ?: return
+        try {
+            val runtime = RuntimeCoordinator.runtimeState()
+            val health = RuntimeHealthMonitor.runtimeHealthSnapshot()
+            val frame = FrameAssembler.frameRuntimeSnapshot()
+            val decision = RuntimeDecisionLoop.decisionRuntimeSnapshot()
+            val execution = GestureExecutionAuthority.executionRuntimeSnapshot()
+            val registry =
+                com.assistant.runtime.GameplayEngineRegistry.registryRuntimeSnapshot()
 
-        val trusted = frame["trusted"] as? Boolean ?: false
-        val hasBall = frame["hasBall"] as? Boolean ?: false
-        val gate = when {
-            !trusted -> "CLOSED - no trusted game frame yet (open the game; interception is silent on menus)"
-            hasBall -> "CLOSED - you have the ball (interception hunts while the OPPONENT has it)"
-            else -> "OPEN - live frames, hunting intercept vectors"
+            val trusted = frame["trusted"] as? Boolean ?: false
+            val hasBall = frame["hasBall"] as? Boolean ?: false
+            val gateOpen = trusted && !hasBall
+            val gate = when {
+                !trusted -> "CLOSED - no trusted game frame yet (open the game; interception is silent on menus)"
+                hasBall -> "CLOSED - you have the ball (interception hunts while the OPPONENT has it)"
+                else -> "OPEN - live frames, hunting intercept vectors"
+            }
+            val registered =
+                (registry["names"]?.toString() ?: "").contains("InterceptMatrix")
+
+            // No66-D33: a cold frame carries only "frames"/"state" — the five
+            // field keys below are absent and used to render as literal "null".
+            val cold = !frame.containsKey("trusted")
+
+            grid.removeAllViews()
+            with(ControlRoomBulbs) {
+                grid.addView(sectionHeader(this@InterceptionControlRoomActivity, getString(R.string.control_room_live_counters)))
+                renderFullWidthCell(grid, BulbEntry(
+                    "INTERCEPT GATE",
+                    if (gateOpen) BulbState.GREEN else BulbState.YELLOW, gate
+                ))
+                renderBulbSection(grid, listOf(
+                    BulbEntry("InterceptMatrix", if (registered) BulbState.GREEN else BulbState.YELLOW, if (registered) "Registered" else "Not registered")
+                ))
+                if (cold) {
+                    grid.addView(monoBlock(this@InterceptionControlRoomActivity, "Field read: no frame yet (runtime cold — open the game)"))
+                }
+                grid.addView(sectionHeader(this@InterceptionControlRoomActivity, "FIELD"))
+                renderBulbSection(grid, listOf(
+                    BulbEntry("Players", if (text(frame, "players") != "—") BulbState.GREEN else BulbState.YELLOW, text(frame, "players")),
+                    BulbEntry("Opponents", if (text(frame, "opponents") != "—") BulbState.GREEN else BulbState.YELLOW, text(frame, "opponents")),
+                    BulbEntry("Lanes", if (text(frame, "viableLanes") != "—") BulbState.GREEN else BulbState.YELLOW, text(frame, "viableLanes")),
+                    BulbEntry("Zones", if (text(frame, "zones") != "—") BulbState.GREEN else BulbState.YELLOW, text(frame, "zones")),
+                    BulbEntry("Confidence", if (trusted) BulbState.GREEN else BulbState.YELLOW, text(frame, "confidence")),
+                    boolBulb(frame, "trusted", "Trusted", "Yes", "No"),
+                    BulbEntry("Has ball", if (hasBall) BulbState.YELLOW else BulbState.GREEN, if (hasBall) "Yes" else "No")
+                ))
+                grid.addView(sectionHeader(this@InterceptionControlRoomActivity, "DECISION"))
+                renderBulbSection(grid, listOf(
+                    countBulb(decision, "decisions", "Decisions"),
+                    countBulb(decision, "routed", "Routed"),
+                    BulbEntry("Last action", if (count(decision, "routed") > 0) BulbState.GREEN else BulbState.YELLOW, text(decision, "lastAction")),
+                    BulbEntry("Weight", if (count(decision, "routed") > 0) BulbState.GREEN else BulbState.YELLOW, text(decision, "lastWeight"))
+                ))
+                grid.addView(sectionHeader(this@InterceptionControlRoomActivity, "EXECUTION"))
+                renderBulbSection(grid, listOf(
+                    countBulb(execution, "requested", "Requested"),
+                    countBulb(execution, "accepted", "Accepted"),
+                    failBulb(execution, "failed", "Failed")
+                ))
+                grid.addView(sectionHeader(this@InterceptionControlRoomActivity, "RUNTIME"))
+                renderBulbSection(grid, listOf(
+                    boolBulb(runtime, "runtimeReady", "Runtime ready"),
+                    countBulb(runtime, "busPending", "Bus pending"),
+                    issuesBulb(health)
+                ))
+            }
+        } catch (t: Throwable) {
+            grid.removeAllViews()
+            grid.addView(ControlRoomBulbs.monoBlock(this, "Live interception status unavailable: " + (t.message ?: "runtime not started yet")))
         }
-        val registered =
-            (registry["names"]?.toString() ?: "").contains("InterceptMatrix")
-
-        // No66-D33: a cold frame carries only "frames"/"state" — the five
-        // field keys below are absent and used to render as literal "null".
-        val cold = !frame.containsKey("trusted")
-
-        buildString {
-            append("INTERCEPT GATE: ").append(gate).append('\n')
-            append("InterceptMatrix contributor registered = ").append(registered).append('\n')
-            if (cold) append("Field read: no frame yet (runtime cold — open the game)\n")
-            append("Field read: players=").append(frame["players"] ?: "—")
-                .append(" opponents=").append(frame["opponents"] ?: "—")
-                .append(" lanes=").append(frame["viableLanes"] ?: "—")
-                .append(" zones=").append(frame["zones"] ?: "—").append('\n')
-            append("Frame confidence=").append(frame["confidence"] ?: "—")
-                .append(" trusted=").append(trusted)
-                .append(" hasBall=").append(hasBall).append('\n')
-            append("Decisions=").append(decision["decisions"])
-                .append(" routed=").append(decision["routed"])
-                .append(" lastAction=").append(decision["lastAction"])
-                .append(" weight=").append(decision["lastWeight"]).append('\n')
-            append("Execution: requested=").append(execution["requested"])
-                .append(" accepted=").append(execution["accepted"])
-                .append(" failed=").append(execution["failed"]).append('\n')
-            append("Runtime ready=").append(runtime["runtimeReady"])
-                .append(" busPending=").append(runtime["busPending"]).append('\n')
-            append("Health: ").append(health["degradedReasons"])
-        }
-    } catch (t: Throwable) {
-        "Live interception status unavailable: " + (t.message ?: "runtime not started yet")
     }
 
     override fun onResume() {
@@ -180,6 +207,6 @@ class InterceptionControlRoomActivity : AppCompatActivity() {
         RuntimePerformanceCoordinator.updateAuthority(
             SmartAssistRepository.configuration().authority
         )
-        liveText?.text = liveInterceptionStatus()
+        renderLivePanel()
     }
 }

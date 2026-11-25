@@ -17,7 +17,7 @@ object AppContributorRegistration {
     // keep this count and EXPECTED_CONTRIBUTOR_NAMES in sync with the
     // listOf below; a stale count throws in check() and leaves the
     // registry EMPTY (proven by Ed's 2026-11-18 logs: 43 != 44, Gens 1-13).
-    const val EXPECTED_CONTRIBUTOR_COUNT = 59
+    const val EXPECTED_CONTRIBUTOR_COUNT = 60
 
     // HIGH: Completeness invariant - explicit set of expected names
     private val EXPECTED_CONTRIBUTOR_NAMES = setOf(
@@ -53,7 +53,13 @@ object AppContributorRegistration {
         "PlayerSwitch",
         // AutoEngage (aggressive auto-intercept + silent cursor
         // switch for outfield players). Count 58 -> 59 with it.
-        "AutoEngage"
+        "AutoEngage",
+        // Defender turn/push/long-ball hold: RecoveryTurnPush
+        // (defender-side only — keeper recovery already exists, Item
+        // 12 A9; this is the long-ball -> defensive-line link Ed
+        // ordered + the post-press return / step-out). Count 59 -> 60
+        // with it.
+        "RecoveryTurnPush"
     )
 
     private val state = AtomicReference(RegistrationState.IDLE)
@@ -175,10 +181,11 @@ object AppContributorRegistration {
                         com.assistant.contributors.MidfieldHoldContributor,
                         com.assistant.contributors.AnticipationContributor,
                         com.assistant.contributors.PlayerSwitchContributor,
-                        com.assistant.contributors.AutoEngageContributor
+                        com.assistant.contributors.AutoEngageContributor,
+                        com.assistant.contributors.RecoveryTurnPushContributor
                     )
 
-                    // MEDIUM: Runtime assertion for 57-contributor contract
+                    // MEDIUM: Runtime assertion for 60-contributor contract
                     check(allContributors.size == EXPECTED_CONTRIBUTOR_COUNT) {
                         "CRITICAL: Hardcoded contributor list size (${allContributors.size}) != expected ($EXPECTED_CONTRIBUTOR_COUNT)"
                     }

@@ -86,9 +86,21 @@ Java_com_assistant_NativeBridge_nativeTrueShotCompute(
     openX = branchless_coerce(openX, 0.0f, screenW);
     goalCY = branchless_coerce(goalCY, 0.0f, screenH);
 
+    // Shot core fix (item 3): the default aim height is LOW, not mid.
+    // Mid-height (goalCY) aims at the keeper's chest and, on far-corner
+    // paths, at the bar line. Low = today's POWER placement
+    // (goalBottom - 0.15 * height); ShotTypeEngine still owns the CHIP
+    // high aim on the Kotlin side. goalCY above is untouched — it stays
+    // the distance anchor.
+    float goalHeight = goalBottomY - goalTopY;
+    if (goalHeight < 1.0f) goalHeight = 1.0f;
+    float aimY = goalBottomY - goalHeight * 0.15f;
+    aimY = branchless_coerce(aimY, goalTopY, goalBottomY);
+    aimY = branchless_coerce(aimY, 0.0f, screenH);
+
     result[0] = 1.0f; // ALWAYS VALID - NO ABORTS
     result[1] = openX;
-    result[2] = goalCY;
+    result[2] = aimY;
     result[3] = authority;
     result[4] = goalDetMask; // onTarget
 

@@ -97,22 +97,27 @@ object CriticalAttackingVectorEngine {
     private val outScoring = FloatArray(2)
     private val outPass = FloatArray(2)
 
-    fun computeAbsoluteScoringVector(strikerX: Float, strikerY: Float, gkX: Float, gkY: Float, goalLeftPostX: Float, goalLeftPostY: Float, goalRightPostX: Float, goalRightPostY: Float): PointF {
+    fun computeAbsoluteScoringVector(strikerX: Float, strikerY: Float, gkX: Float, gkY: Float, goalLeftPostX: Float, goalLeftPostY: Float, goalRightPostX: Float, goalRightPostY: Float, aimY: Float = goalRightPostY - 0.15f * (goalRightPostY - goalLeftPostY)): PointF {
         // Q-C3-1 FIX (was: 0f, 0f, 0f as control origin/radius, so the
         // native formula returned (0,0) on every call — see TRACE-B3 queue
         // item Q-C3-1). The control origin is now the striker and the
-        // radius is the distance striker -> far inset corner (via
+        // radius is the distance striker -> far aim point (via
         // ShotTargetMath, same pick rule as the native), so the native
-        // returns exactly the far inset corner by construction: the firing
-        // angle points striker -> corner, and origin + unit(angle) * radius
-        // = corner. JNI signature unchanged (ABI).
-        val target = ShotTargetMath.farCornerTarget(gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY)
+        // returns exactly the far aim point by construction: the firing
+        // angle points striker -> aim point, and origin + unit(angle) *
+        // radius = aim point. The aim height is the caller's (ShotTypeEngine
+        // via the contributor); the default is the low placement, so a
+        // caller without a type decision still never aims at the high corner.
+        // JNI signature: one added float (aimY) — the JNI function NAME is
+        // unchanged (the method is not overloaded) and the .so rebuilds
+        // from source, so the declaration and the C stay in sync.
+        val target = ShotTargetMath.farCornerTarget(gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY, aimY)
         val radius = ShotTargetMath.scoringRadius(strikerX, strikerY, target.x, target.y)
-        // NATIVE-GUARD: the native returns the far inset corner by construction,
-        // so when it is unavailable the pure-Kotlin corner is the exact neutral.
+        // NATIVE-GUARD: the native returns the far aim point by construction,
+        // so when it is unavailable the pure-Kotlin aim point is the exact neutral.
         if (!com.assistant.NativeBridge.isNativeReady()) return PointF(target.x, target.y)
         try {
-            com.assistant.NativeBridge.nativeCriticalScoringVector(strikerX, strikerY, gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY, strikerX, strikerY, radius, outScoring)
+            com.assistant.NativeBridge.nativeCriticalScoringVector(strikerX, strikerY, gkX, gkY, goalLeftPostX, goalLeftPostY, goalRightPostX, goalRightPostY, strikerX, strikerY, radius, aimY, outScoring)
         } catch (t: Throwable) {
             return PointF(target.x, target.y)
         }

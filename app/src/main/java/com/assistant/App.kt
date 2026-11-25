@@ -62,6 +62,13 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // LOGFOLDER fresh-install reset: retain the application context
+        // so SplendorStorageRoot.initialize() can wipe
+        // /sdcard/Splendor-Assist on first run after a fresh install
+        // (marker in noBackupFilesDir, which Android deletes on
+        // uninstall and never restores from backup) and recreate it
+        // empty. Runs before any storage use; fail-open inside.
+        SplendorStorageRoot.attach(this)
         // No65-D10: LogMirror.init() takes no Context any more.
         LogMirror.init()
         GlobalCrashHandler.install(this)

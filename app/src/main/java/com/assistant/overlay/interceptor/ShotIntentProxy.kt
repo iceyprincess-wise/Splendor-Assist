@@ -227,9 +227,17 @@ object ShotIntentProxy {
         // floor), (iii) the velocity extrapolated to the goal line
         // lands inside the mouth span.
         var attackerTowardGoal = false
-        if (ballAtFeet && carrier != null) {
-            val vx = carrier.velocityXPerSecond
-            val vy = carrier.velocityYPerSecond
+        // v266 warning fix: `carrier != null` here is always true —
+        // ballAtFeet is only true when a carrier was found
+        // (ballAtFeet = carrier != null && distance <= ownership).
+        // The check is load-bearing for the SMART CAST, not for logic:
+        // snapshot the carrier into a val so the null check the
+        // compiler can see still guards the reads. Behaviour identical:
+        // 3/3 -> 0.85 strong, 2/3 -> 0.60 under the bar.
+        val c = carrier
+        if (ballAtFeet && c != null) {
+            val vx = c.velocityXPerSecond
+            val vy = c.velocityYPerSecond
             if (vx.isFinite() && vy.isFinite() &&
                 vy > 0f &&
                 hypot(vx.toDouble(), vy.toDouble()).toFloat() >= ATTACKER_MIN_SPEED_PX_PER_SECOND
@@ -237,9 +245,9 @@ object ShotIntentProxy {
                 // Time (seconds) for the carrier to reach the goal
                 // line at the current downward speed. t < 0 means
                 // the carrier is already beyond the line.
-                val timeToLine = (mouth.goalLineY - carrier.y) / vy
+                val timeToLine = (mouth.goalLineY - c.y) / vy
                 if (timeToLine.isFinite() && timeToLine >= 0f) {
-                    val predictedXAtLine = carrier.x + vx * timeToLine
+                    val predictedXAtLine = c.x + vx * timeToLine
                     attackerTowardGoal = predictedXAtLine.isFinite() &&
                         predictedXAtLine in mouth.goalLeftX..mouth.goalRightX
                 }
