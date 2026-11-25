@@ -389,14 +389,18 @@ class MainActivity : AppCompatActivity() {
 
         val manufacturer = Build.MANUFACTURER.lowercase()
         val brand = Build.BRAND.lowercase()
+        val isXiaomi = manufacturer.contains("xiaomi") || manufacturer.contains("redmi") ||
+            manufacturer.contains("poco") || brand.contains("xiaomi") ||
+            brand.contains("redmi") || brand.contains("poco")
 
         // F-PERMS-3: the direct exemption request FIRST — it opens the
         // system allow dialog for this exact app (the page
         // ComplianceState.battery() checks). The old code only tried the
         // MIUI autostart activities and the system app LIST, so Ed landed
         // on a list and had to find the app by hand. Only when the
-        // exemption is not yet granted; the "Open Settings Again" path
-        // (battery already granted) goes straight to the vendor pages.
+        // exemption is not yet granted; when battery is already granted
+        // there is no dialog to request, so the flow below opens the
+        // system list instead of the vendor pages.
         if (!ComplianceState.battery(this)) {
             val direct = Intent(
                 Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
@@ -405,45 +409,24 @@ class MainActivity : AppCompatActivity() {
             if (launchIfExists(direct)) return true
         }
 
-        if (manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || 
-            manufacturer.contains("poco") || brand.contains("xiaomi") || 
-            brand.contains("redmi") || brand.contains("poco")) {
-
-            val vendorIntents = listOf(
-                Intent().apply {
-                    component = ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity")
-                },
-                Intent().apply {
-                    component = ComponentName("com.miui.securitycenter", "com.miui.powercenter.PowerSettings")
-                },
-                // Battery-page fix: the explicit AOSP app-info activity
-                // opens the NEW-style editable page (battery usage can be
-                // changed there). Ed confirmed in Termux that
-                // InstalledAppDetails opens it; the generic
-                // ACTION_APPLICATION_DETAILS_SETTINGS below resolves to
-                // the OLD MIUI page, where the battery setting cannot be
-                // edited. Tried before the generic intent; launchIfExists
-                // falls through if the component is absent.
-                Intent().apply {
-                    component = ComponentName("com.android.settings", "com.android.settings.applications.InstalledAppDetails")
-                    data = "package:$packageName".toUri()
-                },
-                Intent().apply {
-                    action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                    data = "package:$packageName".toUri()
-                }
-            )
-
-            vendorIntents.forEach {
-                if (launchIfExists(it)) return true
-            }
-        }
-
-        val fallback = listOf(
+        // Battery-page fix: the system battery-optimization intents come
+        // BEFORE the MIUI vendor pages. The vendor list's FIRST entry used
+        // to be the autostart main-setup page, so whenever it launched the
+        // system list was unreachable — and when battery was already
+        // granted the old code went straight to the vendor pages (exactly
+        // what Ed hit on the fresh install). The autostart entry is kept,
+        // reordered after the battery intents, as a fallback if no system
+        // intent launches.
+        val batteryIntents = listOf(
             Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
-            // Battery-page fix: explicit AOSP app-info activity first (see
-            // the vendor list above — it opens the NEW-style editable
-            // page); the generic intent below it is the fallback.
+            // Battery-page fix: the explicit AOSP app-info activity
+            // opens the NEW-style editable page (battery usage can be
+            // changed there). Ed confirmed in Termux that
+            // InstalledAppDetails opens it; the generic
+            // ACTION_APPLICATION_DETAILS_SETTINGS below resolves to
+            // the OLD MIUI page, where the battery setting cannot be
+            // edited. Tried before the generic intent; launchIfExists
+            // falls through if the component is absent.
             Intent().apply {
                 component = ComponentName("com.android.settings", "com.android.settings.applications.InstalledAppDetails")
                 data = "package:$packageName".toUri()
@@ -451,8 +434,23 @@ class MainActivity : AppCompatActivity() {
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:$packageName".toUri())
         )
 
-        fallback.forEach {
+        batteryIntents.forEach {
             if (launchIfExists(it)) return true
+        }
+
+        if (isXiaomi) {
+            val vendorIntents = listOf(
+                Intent().apply {
+                    component = ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity")
+                },
+                Intent().apply {
+                    component = ComponentName("com.miui.securitycenter", "com.miui.powercenter.PowerSettings")
+                }
+            )
+
+            vendorIntents.forEach {
+                if (launchIfExists(it)) return true
+            }
         }
 
         return false

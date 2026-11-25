@@ -388,21 +388,33 @@ object RuntimeLogger {
         }
     }
 
-    @Synchronized
+    // SPLENDOR_P12_A6_SYNC (revised): the chain log is the death-window
+    // record; the async queue (256 deep, daemon thread, no flush) drops
+    // its tail on a kill. Chain lines still write synchronously on the
+    // calling thread — but under this narrow chain lock, NEVER under the
+    // global @Synchronized monitor: a stalled disk write used to hold the
+    // monitor and silence every logging thread at once (total log
+    // silence, no crash). A stall now blocks only other execution()
+    // callers; log()/telemetry()/heartbeat()/forensic() keep flowing.
+    // The single FileOutputStream write stays O_APPEND-atomic (FIX #4),
+    // so concurrent chain writes cannot interleave bytes, and each line
+    // is timestamped, so a reordering between two racing chain writes
+    // stays readable.
+    private val executionLock = Any()
+
     fun execution(
         stage:String,
         details:String
     ){
         LogMirror.mirror(stage, android.util.Log.INFO, details)
-        // SPLENDOR_P12_A6_SYNC: the chain log is the death-window record; the
-        // async queue (256 deep, daemon thread, no flush) drops its tail on a
-        // kill. Chain lines write synchronously on the calling thread instead.
         // no59 ITEM 2: grouped short-location format (own Grouper: the
         // chain log is its own stream — see the Grouper comment above).
-        appendSync(
-            executionChainLog,
-            executionGrouper.format(now(), callerLocation(), "[$stage] $details\n")
-        )
+        synchronized(executionLock) {
+            appendSync(
+                executionChainLog,
+                executionGrouper.format(now(), callerLocation(), "[$stage] $details\n")
+            )
+        }
     }
 
     @Synchronized
@@ -528,14 +540,25 @@ object RuntimeLogger {
         }
     }
 
+    // Chain-write stall watch: a write that hangs (not fails) used to
+    // produce no log line at all — the counter only moves on a rejection
+    // or an exception. Time the write; a slow one is logged to logcat so
+    // the next freeze shows whether a write stalled.
+    private const val SYNC_WRITE_STALL_WARN_MS = 250L
+
     private fun appendSync(
         file: File?,
         text: String
     ) {
         if (file == null) return
+        val startedMs = System.currentTimeMillis()
         try {
             java.io.FileOutputStream(file, true).use { fos ->
                 fos.write(text.toByteArray(Charsets.UTF_8))
+            }
+            val elapsedMs = System.currentTimeMillis() - startedMs
+            if (elapsedMs >= SYNC_WRITE_STALL_WARN_MS) {
+                try { android.util.Log.w("RuntimeLogger", "execution chain sync write stalled: ${elapsedMs}ms") } catch (_: Throwable) {}
             }
         } catch (e: Exception) {
             droppedWrites.incrementAndGet()
