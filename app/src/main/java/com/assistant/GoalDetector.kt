@@ -105,7 +105,7 @@ object GoalDetector {
     ): GoalDetectionResult {
 
         if (blobs.isEmpty()) {
-            return GoalDetectionResult(false, 0f, 0f, 0f, 0f, 0f)
+            return GoalDetectionResult(false, 0f, 0f, 0f, 0f, 0f, source = GoalDetectionSource.BLOB)
         }
 
         // Estimate screen width from the widest blob span seen this frame.
@@ -129,7 +129,7 @@ object GoalDetector {
 
         val whiteBlobs = candidates
         if (whiteBlobs.size < 2) {
-            return GoalDetectionResult(false, 0f, 0f, 0f, 0f, 0f)
+            return GoalDetectionResult(false, 0f, 0f, 0f, 0f, 0f, source = GoalDetectionSource.BLOB)
         }
 
         val left   = whiteBlobs.minOf { it.minX }.toFloat()
@@ -145,7 +145,8 @@ object GoalDetector {
             rightX     = right,
             topY       = top,
             bottomY    = bottom,
-            confidence = (pixels / 300f).coerceIn(0f, 1f)
+            confidence = (pixels / 300f).coerceIn(0f, 1f),
+            source     = GoalDetectionSource.BLOB
         )
     }
 }

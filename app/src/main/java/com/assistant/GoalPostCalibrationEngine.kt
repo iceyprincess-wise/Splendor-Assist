@@ -28,7 +28,8 @@ import java.util.Locale
  * their designed diagnostic consumer (Batch 6b).
  *
  * A calibration is VALID only when the detected box is sane: detected,
- * right > left, width within [2%, 60%] of the capture width, posts inside
+ * right > left, width within [2%, 60%] of the capture width (85% when
+ * the reader measured the posts — a near goal spans ~80%), posts inside
  * the frame, top < bottom. Anything else is an unanchored guess and reads
  * valid=false — post-coverage claims then fall back to unanchored
  * (false), never to a fabricated post.
@@ -53,6 +54,11 @@ data class GoalPostCalibration(
     val rightPostX: Float = 0f,
     val goalWidth: Float = 0f,
     val goalEnd: GoalEnd = GoalEnd.NONE,
+    /** Which path produced the detection this calibration anchors. */
+    val source: GoalDetectionSource = GoalDetectionSource.BLOB,
+    /** Median per-row thickness (px) of the post bars; 0 when BLOB-sourced. */
+    val barWidthLeftPx: Float = 0f,
+    val barWidthRightPx: Float = 0f,
     /*
      * Batch 6b: WHY this calibration is invalid — the first failing
      * clause, e.g. "not-detected" / "width-too-wide". The v219 session
@@ -84,6 +90,11 @@ object GoalPostCalibrationEngine {
         captureHeight: Float
     ): GoalPostCalibration {
         val width = detection.rightX - detection.leftX
+        // Reader path: a near goal spans ~80% of the frame (v1_111: 513 px
+        // of 640), so the 60% bound would throw away the best case. The
+        // reader measured the posts, so it earns the 85% bound; the blob
+        // box keeps 60%.
+        val maxWidthFrac = if (detection.source == GoalDetectionSource.READER) 0.85f else 0.60f
         // Batch 6b: name the FIRST failing clause so an invalid line
         // is diagnosable (v219: 23 invalid vs 2 valid, cause unknown).
         // The checks run in the same order as the validity conjunction
@@ -94,7 +105,7 @@ object GoalPostCalibrationEngine {
             detection.rightX <= detection.leftX -> "inverted-box"
             !(captureWidth > 0f && captureHeight > 0f) -> "no-capture"
             width < captureWidth * 0.02f -> "width-too-narrow"
-            width > captureWidth * 0.60f -> "width-too-wide"
+            width > captureWidth * maxWidthFrac -> "width-too-wide"
             detection.leftX < 0f || detection.rightX > captureWidth -> "posts-outside-frame-x"
             detection.topY < 0f || detection.bottomY > captureHeight -> "posts-outside-frame-y"
             detection.bottomY <= detection.topY -> "inverted-box-y"
@@ -105,13 +116,22 @@ object GoalPostCalibrationEngine {
         val end = if (!valid) GoalEnd.NONE
             else if ((detection.leftX + detection.rightX) * 0.5f < captureWidth * 0.5f) GoalEnd.LEFT
             else GoalEnd.RIGHT
-        val calibration = if (!valid) GoalPostCalibration(valid = false, invalidReason = invalidReason)
+        val calibration = if (!valid) GoalPostCalibration(
+            valid = false,
+            invalidReason = invalidReason,
+            source = detection.source,
+            barWidthLeftPx = detection.barWidthLeftPx,
+            barWidthRightPx = detection.barWidthRightPx
+        )
         else GoalPostCalibration(
             valid = true,
             leftPostX = detection.leftX,
             rightPostX = detection.rightX,
             goalWidth = width,
-            goalEnd = end
+            goalEnd = end,
+            source = detection.source,
+            barWidthLeftPx = detection.barWidthLeftPx,
+            barWidthRightPx = detection.barWidthRightPx
         )
         val nowMs = System.currentTimeMillis()
         // Item 12 (C12): coast the last valid calibration (see header);
@@ -135,7 +155,9 @@ object GoalPostCalibrationEngine {
                     "GOAL_POSTS width=${String.format(Locale.US, "%.1f", calibration.goalWidth)} " +
                         "left=${String.format(Locale.US, "%.1f", calibration.leftPostX)} " +
                         "right=${String.format(Locale.US, "%.1f", calibration.rightPostX)} " +
-                        "end=${calibration.goalEnd} valid=${calibration.valid}" +
+                        "end=${calibration.goalEnd} valid=${calibration.valid} " +
+                        "source=${calibration.source} " +
+                        "barW=${String.format(Locale.US, "%.1f", calibration.barWidthLeftPx)}/${String.format(Locale.US, "%.1f", calibration.barWidthRightPx)}" +
                         // Batch 6b: the reason an invalid calibration
                         // failed — without it the line cannot say why.
                         (if (!calibration.valid) " reason=${calibration.invalidReason}" else ""),

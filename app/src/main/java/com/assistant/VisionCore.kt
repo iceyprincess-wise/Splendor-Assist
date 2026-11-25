@@ -81,15 +81,12 @@ ConfidenceHeatmap.update(ball.confidence)
 // better than dropping vision entirely). D1: capture is NOT slowed;
 // this path is strictly cheaper than full vision.
 if (MemoryCaptureGateEngine.shouldSkipFullVision()) {
-    val ballOnlyState = processBallOnly(filteredBlobs, ball, frame.width.toFloat(), frame.height.toFloat())
+    val ballOnlyState = processBallOnly(filteredBlobs, ball, frame.width.toFloat(), frame.height.toFloat(), frame)
     reportVisionLatency(processStartedNanos)
     return ballOnlyState
 }
 
-val goal =
-    GoalDetector.detect(
-        filteredBlobs
-    )
+val goal = detectGoal(frame, filteredBlobs)
 
 // L2 (batch 1): anchor the detected goal to its posts. The calibration
 // is stored in GoalPostCalibrationEngine.latest() for the keeper router.
@@ -743,6 +740,41 @@ return state
     // instead of holding a stale keeper position.
     @Volatile private var lastBallOnlyLogMs: Long = 0L
 
+    /**
+     * Reader-first goal detection, shared by the full-vision and
+     * ball-only paths (single derivation site): the direct post-pair
+     * reader measures the posts off this frame's pixels; the blob box
+     * is the fallback. Fail-open: a null pair or a throw falls through
+     * to GoalDetector.detect — never a guessed post. On the
+     * CRITICAL-memory ball-only path the reader runs only in BALL_GOAL
+     * mode, not on every ball-only frame.
+     */
+    private fun detectGoal(
+        frame: FrameNormalizer.NormalizedFrame,
+        filteredBlobs: List<ConnectedComponentEngine.Blob>
+    ): GoalDetectionResult {
+        try {
+            PostPairReader.read(
+                frame.buffer, frame.width, frame.height,
+                frame.rowStride, frame.pixelStride
+            )?.let { pair ->
+                return GoalDetectionResult(
+                    detected = true,
+                    leftX = pair.left.centreX,
+                    rightX = pair.right.centreX,
+                    topY = minOf(pair.left.top, pair.right.top).toFloat(),
+                    bottomY = maxOf(pair.left.bottom, pair.right.bottom).toFloat(),
+                    confidence = pair.confidence,
+                    source = GoalDetectionSource.READER,
+                    barWidthLeftPx = pair.left.thickness,
+                    barWidthRightPx = pair.right.thickness
+                )
+            }
+        } catch (_: Throwable) {
+        }
+        return GoalDetector.detect(filteredBlobs)
+    }
+
     private fun processBallOnly(
         filteredBlobs: List<ConnectedComponentEngine.Blob>,
         ball: BallDetectionResult,
@@ -750,7 +782,11 @@ return state
         // the 1650x720 fallbacks, so the ball mode and the goal
         // calibration were computed against a frame that does not exist.
         frameWidth: Float,
-        frameHeight: Float
+        frameHeight: Float,
+        // Post-pair reader (v3): the ball-only path had no frame buffer,
+        // so it could only run the blob detect. The frame is threaded
+        // through (single caller) so BALL_GOAL mode reads the posts too.
+        frame: FrameNormalizer.NormalizedFrame
     ): GameStateSnapshot {
         val width = frameWidth
         val height = frameHeight
@@ -758,7 +794,7 @@ return state
             ball.x, width, AttackAxisModel.directionIfConfident()
         )
         val goal = if (mode == BallOnlyMode.BALL_GOAL) {
-            val detected = GoalDetector.detect(filteredBlobs)
+            val detected = detectGoal(frame, filteredBlobs)
             GoalPostCalibrationEngine.calibrate(detected, width, height)
             detected
         } else {
