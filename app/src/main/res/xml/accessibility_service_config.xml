@@ -26,11 +26,24 @@
   default feedback type for this service, which is a behaviour change
   for accessibility users that cannot be verified in the sandbox. If
   Ed wants it gone, that is his call (queued).
+
+  TOUCH-FALLBACK (2026-11-25): flagSendMotionEvents declared — the v268
+  session PROVED the touch-interaction path starved (A11Y_FLOW
+  touchEventAgeMs=-1 all session) while other events arrived, so this
+  ROM withholds TYPE_TOUCH_INTERACTION_* despite a correct mask. The flag
+  (API 36, value 0x4000, attrs.xml-verified) makes the system also
+  deliver raw MotionEvents to the service's onMotionEvent — a second,
+  independent touch signal. The service code re-asserts the same flag
+  on every bind (onServiceConnected) and in the watchdog heal, so the
+  declaration and the effective info cannot drift apart. FLAG_REQUEST_
+  TOUCH_EXPLORATION_MODE is deliberately NOT declared (explore-by-touch
+  would break gameplay input).
 -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/accessibility_service_description"
     android:accessibilityEventTypes="typeWindowStateChanged|typeTouchInteractionStart|typeTouchInteractionEnd"
     android:accessibilityFeedbackType="feedbackHaptic"
+    android:accessibilityFlags="flagSendMotionEvents"
     android:notificationTimeout="0"
     android:canRetrieveWindowContent="true"
     android:canPerformGestures="true" />
