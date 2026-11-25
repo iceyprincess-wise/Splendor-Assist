@@ -16,7 +16,7 @@ object PlayerDetector {
     // real ring — measured on 26 ring samples from two videos
     // (2024 BZG, 2027 RIYANZ FC), the classifier returns UNKNOWN
     // x23 / GOALKEEPER x3 / OPPONENT x0 (blue-minus-green on the
-    // ring is -49..-80; the rule needs +50), and real rings measure
+    // ring is -98..-27; the rule needs +50), and real rings measure
     // aspect 0.25-0.45, below the 0.60 cutoff. The ring is now read
     // directly from the pixels by ControlledRingReader (both states:
     // cyan when dashing, pale white-green when not) and merged into

@@ -38,7 +38,7 @@ import kotlin.math.sqrt
  * - Colour: the old rule demanded the blob classify OPPONENT via the
  *   saturated-blue rule (blue>140, blue>red+50, blue>green+50). The
  *   26 samples classify UNKNOWN x23 and GOALKEEPER x3 — OPPONENT x0.
- *   Blue-minus-green on the ring is -49..-80; the rule needs +50.
+ *   Blue-minus-green on the ring is -98..-27; the rule needs +50.
  *   It can never pass.
  * - Aspect: the old rule demanded aspect >= 0.60. Real rings
  *   measure 0.25-0.45. Density was never the failing constraint
