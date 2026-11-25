@@ -71,7 +71,13 @@ object GoalkeeperActionRouter {
         farPostCoverage: Boolean = false,
         nearPostCoverage: Boolean = false,
         crossIntercept: Boolean = false,
-        longBallThreat: Boolean = false
+        longBallThreat: Boolean = false,
+        // LOGGAPS: router-arm label + 1v1 flag for the GK_DECISION line
+        // (v268 log pass: RUSH_OUT lines could not be separated into
+        // legitimate 1v1 rushes vs the defensive-layer rush). Defaulted
+        // so the no64 harness pin (8-arg call) still compiles.
+        routerArm: String = "TRACK",
+        isOneVsOne: Boolean = false
     ): String {
         return "GK_DECISION action=" + action +
             " ShotAnticipationEngine=" + anticipation +
@@ -84,7 +90,9 @@ object GoalkeeperActionRouter {
             " FarPostCoverageEngine=" + farPostCoverage +
             " NearPostCoverageEngine=" + nearPostCoverage +
             " CrossInterceptionEngine=" + crossIntercept +
-            " LongBallCounterEngine=" + longBallThreat
+            " LongBallCounterEngine=" + longBallThreat +
+            " RouterArm=" + routerArm +
+            " IsOneVsOne=" + isOneVsOne
     }
 
     fun route(
@@ -383,6 +391,28 @@ object GoalkeeperActionRouter {
             lastRoutedAction = action
         }
 
+        // LOGGAPS: router-arm label for the GK_DECISION line — the v268
+        // log pass proved RUSH_OUT lines could not be separated into
+        // legitimate 1v1 rushes vs the defensive-layer rush (no arm
+        // field, no isOneVsOne flag). Derived here from the same inputs,
+        // in the same priority order as the selection above — it names
+        // the arm, it does not re-route. The phase-100 defensive rush
+        // is NOT a router arm (it dispatches in
+        // OmnipotentGoalkeeperEngine, phase=100) and stays visible in
+        // BUS_DISPATCH phase=100 lines, not here.
+        val routerArm: String = when {
+            action == GoalkeeperAction.PUNCH_CROSS -> "PUNCH"
+            action == GoalkeeperAction.CLAIM_CROSS -> "CLAIM"
+            action == GoalkeeperAction.RUSH_OUT && panic == PanicAction.RUSH && decision.isOneVsOne -> "PANIC_RUSH"
+            action == GoalkeeperAction.RUSH_OUT && decision.isOneVsOne && decision.priority >= 100 && decision.priority < PANIC_PRIORITY_THRESHOLD -> "SAVE_RUSH"
+            action == GoalkeeperAction.RUSH_OUT -> "INTERCEPT"
+            action == GoalkeeperAction.AERIAL_CLAIM -> "AERIAL"
+            action == GoalkeeperAction.BLOCK_LEFT || action == GoalkeeperAction.BLOCK_RIGHT -> "PANIC"
+            action == GoalkeeperAction.REFLEX_CENTER -> "REFLEX"
+            action == GoalkeeperAction.TRACK -> "TRACK"
+            else -> "SAVE"
+        }
+
         // No64-D33: name every decision-path engine and its output in the
         // log, so a live session proves which engines are active. The line
         // is built by the pure decisionLogLine() above; the RuntimeLogger
@@ -390,7 +420,7 @@ object GoalkeeperActionRouter {
         // routing (HybridExecutionTerminal.route precedent).
         try {
             com.assistant.diagnostic.RuntimeLogger.log(
-                decisionLogLine(action, anticipation, panicOverride, panic, safety, collision, cross, keeperBias, farPostCoverage, nearPostCoverage, crossIntercept, longBallThreat),
+                decisionLogLine(action, anticipation, panicOverride, panic, safety, collision, cross, keeperBias, farPostCoverage, nearPostCoverage, crossIntercept, longBallThreat, routerArm, decision.isOneVsOne),
                 "GOALKEEPER"
             )
         } catch (_: Throwable) {

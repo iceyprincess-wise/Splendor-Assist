@@ -4,6 +4,8 @@ import kotlin.math.atan2
 
 import kotlin.math.hypot
 
+import com.assistant.diagnostic.RuntimeLogger
+
 object MotionTracker {
 
     private var previousX = 0f
@@ -74,6 +76,14 @@ object MotionTracker {
 
         if (!ball.detected || !ball.observed) {
 
+            // LOGGAPS: tracker reset on ball loss — log once, on the
+            // transition (initialized is still true here; later lost
+            // frames have it false already). reset() itself is
+            // test-only (no production caller); this branch is the
+            // production reset.
+            if (initialized) {
+                try { RuntimeLogger.log("MOTION_RESET lost lastX=$previousX lastY=$previousY lastVx=$lastVx lastVy=$lastVy trackedFrames=$trackedFrames", "MOTION") } catch (_: Throwable) {}
+            }
             initialized = false
             lastVx = 0f
             lastVy = 0f

@@ -103,6 +103,12 @@ object PlayerDetector {
                     pd.isUserTeam = true
                     // CURSOR-ID: the ring mark rides this detection.
                     pd.isControlled = true
+                    // LOGGAPS: ring log — the v268 log pass proved no
+                    // ring-blob density/aspect/confidence values exist
+                    // in any log, so the blob path cannot be judged
+                    // from real play. One line per keyed ring (at most
+                    // one controlled player per frame).
+                    try { RuntimeLogger.log("RING controlled=true density=$density aspect=$aspectRatio conf=$INDICATOR_RING_CONFIDENCE center=($centerX,$centerY)", "PLAYER_DETECTOR") } catch (_: Throwable) {}
                     rawCount++
                 }
                 continue

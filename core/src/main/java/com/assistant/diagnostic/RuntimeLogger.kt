@@ -1,6 +1,8 @@
 package com.assistant.diagnostic
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import com.assistant.storage.SplendorStorageRoot
 import java.io.File
 
@@ -61,6 +63,12 @@ object RuntimeLogger {
         // (writeToAll) has the internal fallback.
         val isMainProcess = shouldWriteSessionHeader(context)
 
+        // LOGGAPS: app version for the session header (v268 log pass:
+        // no version string exists in any log, so a session could not
+        // be tied to a build). Read here so both the main and the
+        // background headers carry it.
+        val (versionName, versionCode) = appVersion(context)
+
         // Internal fallback is set for every process, before any branch
         // below, so a background process (or a main process whose external
         // storage is not ready) still has somewhere to write.
@@ -100,7 +108,7 @@ object RuntimeLogger {
             if (!sessionHeaderWritten) {
                 sessionHeaderWritten = true
                 writeToAll(
-                    "\n=== SESSION START (background process): ${sessionTimestamp()} ===\n"
+                    "\n=== SESSION START (background process): ${sessionTimestamp()} | versionName=$versionName versionCode=$versionCode ===\n"
                 )
             }
             return
@@ -120,12 +128,12 @@ object RuntimeLogger {
         val timestamp = sessionTimestamp()
 
         writeToAll(
-            "\n=== SESSION START: $timestamp ===$droppedNote\n"
+            "\n=== SESSION START: $timestamp | versionName=$versionName versionCode=$versionCode ===$droppedNote\n"
         )
 
         forensic(
             "FORENSIC",
-            "SESSION_START $timestamp"
+            "SESSION_START $timestamp versionCode=$versionCode versionName=$versionName"
         )
 
         log(
@@ -137,6 +145,30 @@ object RuntimeLogger {
     // F40-D7: initialize() allocated a fresh SimpleDateFormat for the
     // session timestamp while the ThreadLocal formatter below already
     // exists. Reuse it.
+    // LOGGAPS: installed version via PackageManager (UpdateChecker
+    // precedent: installedVersionCode). Fail-open to unknown/-1.
+    private fun appVersion(context: Context): Pair<String, Long> {
+        return try {
+            val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.getPackageInfo(
+                    context.packageName, PackageManager.PackageInfoFlags.of(0)
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageInfo(context.packageName, 0)
+            }
+            val code = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                info.longVersionCode
+            } else {
+                @Suppress("DEPRECATION")
+                info.versionCode.toLong()
+            }
+            Pair(info.versionName ?: "unknown", code)
+        } catch (_: Throwable) {
+            Pair("unknown", -1L)
+        }
+    }
+
     private fun sessionTimestamp(): String {
         val date = threadLocalDate.get()!!
         date.time = System.currentTimeMillis()

@@ -1252,6 +1252,19 @@ object OmnipotentGoalkeeperEngine {
                         "GK_SAVE accepted action=" + finalAction + " keeperVisible=" + keeperVisible,
                         "GOALKEEPER")
                     if (finalAction in DIVE_FAMILY_ACTIONS) {
+                        // LOGGAPS: GK_DIVE execution log — the v268 log pass
+                        // proved dives ARE accepted (152 GK_SAVE DIVE_*) but
+                        // the GK_DIVE marker never fires (the only GK_DIVE
+                        // line is the promote log). DIVE_* only: BLOCK/JUMP/
+                        // REACH/CATCH/REFLEX/PARRY share this family but are
+                        // not dives. Logs the accepted offer, not a
+                        // confirmed gesture — no dispatch-confirmation
+                        // signal exists at this site (No64-D28).
+                        if (finalAction.name.startsWith("DIVE")) {
+                            com.assistant.diagnostic.RuntimeLogger.log(
+                                "GK_DIVE accepted action=" + finalAction + " keeperVisible=" + keeperVisible,
+                                "GOALKEEPER")
+                        }
                         lastSaveTimestamp = System.currentTimeMillis()
                         recoveryFromSave = true
                         // No64-D16: an accepted dive-family save enters

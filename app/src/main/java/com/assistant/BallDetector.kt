@@ -65,6 +65,7 @@ import com.assistant.runtime.*
 
 
 import kotlin.math.*
+import com.assistant.diagnostic.RuntimeLogger
 
 
 
@@ -141,6 +142,12 @@ object BallDetector {
             !candidate.centerY.isFinite() || !candidate.radius.isFinite() || candidate.radius <= 0f || candidate.score < MIN_CANDIDATE_CONFIDENCE) {
             lostFrames++
             if (lostFrames > COAST_FRAMES) {
+                // LOGGAPS: lock lost — log once, on the transition
+                // (initialized is still true here; later lost frames
+                // have it false already).
+                if (initialized) {
+                    try { RuntimeLogger.log("BALL_LOST lockLost lostFrames=$lostFrames lastX=$lastBallX lastY=$lastBallY lastConf=$lastConfidence", "BALL") } catch (_: Throwable) {}
+                }
                 initialized = false
                 lastBallX = 0f
                 lastBallY = 0f
@@ -151,6 +158,11 @@ object BallDetector {
                 )
             }
             if (initialized) {
+                // LOGGAPS: coast start — first lost frame of this episode
+                // (lostFrames == 1; a later lost frame is already coasting).
+                if (lostFrames == 1) {
+                    try { RuntimeLogger.log("BALL_COAST start lostFrames=1 lastX=$lastBallX lastY=$lastBallY lastConf=$lastConfidence", "BALL") } catch (_: Throwable) {}
+                }
                 val coastFraction = 1f - (lostFrames.toFloat() / COAST_FRAMES)
                 val coastConfidence = (lastConfidence * coastFraction).coerceIn(0f, 1f)
                 return BallDetectionResult(
