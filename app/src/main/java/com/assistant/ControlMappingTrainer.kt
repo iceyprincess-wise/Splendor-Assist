@@ -185,6 +185,12 @@ object ControlMappingTrainer {
     private val maxDragProbeSamples = AtomicLong(0)
     private var maxDragProbeAttempts = 0
     private var lastMaxDragMeasureMs: Long = 0L
+    // Option A (probe fix): out-of-band rejections this session. A
+    // rejected lock never disarms the probe (see measureMaxDrag);
+    // after MAXDRAG_MAX_REJECTED_LOCKS the probe gives up for the
+    // session so a persistently bad frame cannot spin it forever.
+    // Cleared by reset() alongside maxDragProbeAttempts.
+    private var maxDragRejectedLocks = 0
 
     fun setMaxDragProbeActive(active: Boolean) {
         maxDragProbeActive = active
@@ -193,10 +199,16 @@ object ControlMappingTrainer {
     /** The measured joystick drag radius in px, or null when unmeasured. */
     fun measuredMaxDragPx(): Float? = measuredMaxDragPx
 
+    // Option A (probe fix): plausibility band for a locked radius.
+    // The disc radius is ~23 px (knob radius 22.8 px at capture);
+    // only a measurement inside 12-40 px may lock. A 4 px
+    // highlight/socket stop or a 64-80 px grass run is a fluke.
+    private const val MAXDRAG_MIN_PX = 12f
+    private const val MAXDRAG_MAX_PX = 40f
+    // Out-of-band rejections before the probe gives up for the session.
+    private const val MAXDRAG_MAX_REJECTED_LOCKS = 3
+
     private fun measureMaxDrag(b: ByteBuffer, w: Int, h: Int, stride: Int, pixelStride: Int) {
-        val now = System.currentTimeMillis()
-        if (now - lastMaxDragMeasureMs < 1000L) return
-        lastMaxDragMeasureMs = now
         // D7: probe from the resolved joystick centre — the MEASURED
         // centre in landscape since the RC1 fix 2026-11-24. The
         // min-of-valid-directions selection is what made the old
@@ -206,6 +218,28 @@ object ControlMappingTrainer {
         val (joyX, joyY) = d7JoystickCenter(w, h)
         val cx = joyX * w
         val cy = joyY * h
+        // OPTION A REST GATE: measure only when the knob is known at
+        // rest. Two signals, both read from THIS frame before any ray
+        // walks: no finger down (isTouching false — includes the 2.5 s
+        // retention, so a just-lifted finger still closes the gate)
+        // AND the knob reader sees no deflection (null = magnitude
+        // < 0.15, i.e. < ~3.5 px at the 23.04 px fallback scale).
+        // The read is on the live pixels, so it catches a deflection
+        // from any source — the user's finger, our own dispatched
+        // gesture, or a drifting knob. While the probe is armed
+        // DispatchBounds.maxDragPx is null (both re-arm paths clear
+        // it), so the reader always uses the fallback scale here and
+        // null really means "at rest". A non-rest frame returns
+        // silently: no throttle consumed, no attempt counted, no log —
+        // the probe simply waits for a rest frame.
+        if (UserTouchState.isTouching()) return
+        val knob = com.assistant.overlay.interceptor.JoystickKnobReader.read(
+            b, w, h, stride, pixelStride, cx, cy
+        )
+        if (knob != null) return
+        val now = System.currentTimeMillis()
+        if (now - lastMaxDragMeasureMs < 1000L) return
+        lastMaxDragMeasureMs = now
         val radii = FloatArray(8)
         var valid = 0
         for (d in 0 until 8) {
@@ -227,23 +261,50 @@ object ControlMappingTrainer {
         }
         val measured = MaxDragProbe.selectRadius(radii.copyOf(valid))
         if (measured != null) {
-            measuredMaxDragPx = measured
-            com.assistant.execution.DispatchBounds.setMaxDrag(measured)
-            maxDragProbeSamples.incrementAndGet()
-            maxDragProbeActive = false
-            try {
-                com.assistant.diagnostic.RuntimeLogger.log(
-                    "MAXDRAG_PROBE measured=${measured.toInt()}px directions=$valid samples=${maxDragProbeSamples.get()} — probe disarmed, value in DispatchBounds.maxDragPx",
-                    "TRAINER"
-                )
-            } catch (_: Throwable) { }
+            // OPTION A PLAUSIBILITY BAND: accept only 12-40 px. A 4 px
+            // highlight/socket stop or a 64-80 px grass run is a fluke,
+            // never a lock: do NOT write it, do NOT disarm — stay armed
+            // and retry. After 3 rejected locks the probe gives up for
+            // the session (a persistently bad frame must not spin the
+            // probe forever). The 10-attempt give-up below is unchanged
+            // and still applies to null (no-measurement) attempts.
+            if (measured in MAXDRAG_MIN_PX..MAXDRAG_MAX_PX) {
+                measuredMaxDragPx = measured
+                com.assistant.execution.DispatchBounds.setMaxDrag(measured)
+                maxDragProbeSamples.incrementAndGet()
+                maxDragProbeActive = false
+                try {
+                    com.assistant.diagnostic.RuntimeLogger.log(
+                        "MAXDRAG_PROBE measured=${measured.toInt()}px directions=$valid samples=${maxDragProbeSamples.get()} radii=${radii.copyOf(valid).joinToString(",") { it.toInt().toString() }} origin=(${cx.toInt()},${cy.toInt()}) frame=${w}x$h touching=false knobAtRest=true — probe disarmed, value in DispatchBounds.maxDragPx",
+                        "TRAINER"
+                    )
+                } catch (_: Throwable) { }
+            } else {
+                maxDragRejectedLocks++
+                if (maxDragRejectedLocks >= MAXDRAG_MAX_REJECTED_LOCKS) {
+                    maxDragProbeActive = false
+                    try {
+                        com.assistant.diagnostic.RuntimeLogger.log(
+                            "MAXDRAG_PROBE giving up after $maxDragRejectedLocks out-of-band measurements (last measured=${measured.toInt()}px directions=$valid radii=${radii.copyOf(valid).joinToString(",") { it.toInt().toString() }} origin=(${cx.toInt()},${cy.toInt()}) frame=${w}x$h touching=false knobAtRest=true) — value stays unmeasured",
+                            "TRAINER"
+                        )
+                    } catch (_: Throwable) { }
+                } else {
+                    try {
+                        com.assistant.diagnostic.RuntimeLogger.log(
+                            "MAXDRAG_PROBE rejected out-of-band measured=${measured.toInt()}px directions=$valid rejected=$maxDragRejectedLocks/$MAXDRAG_MAX_REJECTED_LOCKS radii=${radii.copyOf(valid).joinToString(",") { it.toInt().toString() }} origin=(${cx.toInt()},${cy.toInt()}) frame=${w}x$h touching=false knobAtRest=true — value not locked, probe stays armed",
+                            "TRAINER"
+                        )
+                    } catch (_: Throwable) { }
+                }
+            }
         } else {
             maxDragProbeAttempts++
             if (maxDragProbeAttempts >= 10) {
                 maxDragProbeActive = false
                 try {
                     com.assistant.diagnostic.RuntimeLogger.log(
-                        "MAXDRAG_PROBE giving up after 10 attempts — joystick edge not found, value stays unmeasured",
+                        "MAXDRAG_PROBE giving up after 10 attempts — joystick edge not found, value stays unmeasured (last radii=${radii.copyOf(valid).joinToString(",") { it.toInt().toString() }} origin=(${cx.toInt()},${cy.toInt()}) frame=${w}x$h touching=false knobAtRest=true)",
                         "TRAINER"
                     )
                 } catch (_: Throwable) { }
@@ -550,6 +611,12 @@ object ControlMappingTrainer {
             lastMove = "settings-training"
         } else if (next == UiMode.IN_MATCH) {
             matchFrames.incrementAndGet()
+            // UserIntentVision (Tier 2): per-slot hold intent (Shoot /
+            // Pass + joystick) on the same buffer, same in-match branch.
+            // Runs BEFORE the probe (Option A rest gate): the intent
+            // knob read sees the pre-probe scale, and the probe's own
+            // rest gate re-reads the same frame before its rays walk.
+            UserIntentVision.observeFrame(buffer, w, h, rowStride, pixelStride)
             // L11 (batch 1): the maxDrag probe runs here, throttled to
             // once per second inside measureMaxDrag, and only while armed.
             if (maxDragProbeActive) measureMaxDrag(buffer, w, h, rowStride, pixelStride)
@@ -559,9 +626,6 @@ object ControlMappingTrainer {
             // G-P (batch 4, D11): record the dash-hold state the same way
             // (slot-4 pixel + touch signal → hold candidate).
             recordDashHoldState(buffer, w, h, rowStride, pixelStride)
-            // UserIntentVision (Tier 2): per-slot hold intent (Shoot /
-            // Pass + joystick) on the same buffer, same in-match branch.
-            UserIntentVision.observeFrame(buffer, w, h, rowStride, pixelStride)
         }
     }
 
@@ -641,6 +705,7 @@ object ControlMappingTrainer {
         measuredMaxDragPx = null
         maxDragProbeSamples.set(0)
         maxDragProbeAttempts = 0
+        maxDragRejectedLocks = 0
         lastMaxDragMeasureMs = 0L
         maxDragProbeActive = true
         // D13: a reset clears the press candidate (a stale candidate
