@@ -9,20 +9,20 @@ object PlayerDetector {
     private const val MIN_ASPECT_RATIO = 0.15f
     private const val MIN_CANDIDATE_CONFIDENCE = 0.30f
 
-    // 6a (kits audit): blue-circle / direction-indicator ring cutoffs.
-    // A hollow blue blob is the indicator RING around the controlled
-    // player, not a blue shirt: its bbox is mostly NOT blue (the player
-    // inside it), so its density is low, and it is roughly circular. A
-    // solid blue-shirted opponent fills its bbox (density >= ~0.5).
-    // The 0.40 / 0.60 cutoffs are STRUCTURAL (ring circumference/area
-    // ~= 0.26 at capture scale vs solid >= 0.5), NOT measured — confirm
-    // on-device from ring-blob densities in the log before trusting
-    // them. INDICATOR_RING_CONFIDENCE is the fixed confidence of a
-    // ring-marked controlled-player detection (the ring centre IS the
-    // player's position).
-    private const val INDICATOR_RING_MAX_DENSITY = 0.40f
-    private const val INDICATOR_RING_MIN_ASPECT = 0.60f
-    private const val INDICATOR_RING_CONFIDENCE = 0.55f
+    // RING (retired 2026-11-25, ring-reader build): the controlled
+    // player used to be keyed here from a blob whose average colour
+    // classified OPPONENT via the saturated-blue rule AND density
+    // < 0.40 AND aspect >= 0.60. That rule is PROVEN dead on the
+    // real ring — measured on 26 ring samples from two videos
+    // (2024 BZG, 2027 RIYANZ FC), the classifier returns UNKNOWN
+    // x23 / GOALKEEPER x3 / OPPONENT x0 (blue-minus-green on the
+    // ring is -49..-80; the rule needs +50), and real rings measure
+    // aspect 0.25-0.45, below the 0.60 cutoff. The ring is now read
+    // directly from the pixels by ControlledRingReader (both states:
+    // cyan when dashing, pale white-green when not) and merged into
+    // the players in VisionCore.process — one ring sensor, never
+    // two. Nothing here keys a ring any more; the isControlled flag
+    // on a detection comes only from that merge.
     
     private val rawPool = Array(1000) { PlayerDetection(0f, 0f, 0f, false) }
     private val keptPool = Array(1000) { PlayerDetection(0f, 0f, 0f, false) }
@@ -81,38 +81,6 @@ object PlayerDetector {
                 blob.averageBlue
             )
 
-            // 6a (kits audit): indicator-ring keying. A blue blob that is
-            // hollow and roughly circular is the blue circle around the
-            // CONTROLLED player (Roboflow decision 2026-11-19: the blue
-            // circle is the reliable MyPlayer marker) — not an opponent.
-            // Emit it as a USER detection at the ring centre. This is
-            // what makes black-kit players visible at all: black is
-            // dropped at the FrameScanner gate (luminance ~28 < 128) and
-            // classifies UNKNOWN, so without the ring his 2nd/3rd-kit
-            // players would never appear. The existing same-team NMS
-            // below merges this with a real USER detection of the same
-            // player when the shirt is visible (yellow/light-blue).
-            if (jersey.team == JerseyColorSegmentation.Team.OPPONENT &&
-                density < INDICATOR_RING_MAX_DENSITY && aspectRatio >= INDICATOR_RING_MIN_ASPECT
-            ) {
-                if (rawCount < rawPool.size) {
-                    val pd = rawPool[rawCount]
-                    pd.x = centerX
-                    pd.y = centerY
-                    pd.confidence = INDICATOR_RING_CONFIDENCE
-                    pd.isUserTeam = true
-                    // CURSOR-ID: the ring mark rides this detection.
-                    pd.isControlled = true
-                    // LOGGAPS: ring log — the v268 log pass proved no
-                    // ring-blob density/aspect/confidence values exist
-                    // in any log, so the blob path cannot be judged
-                    // from real play. One line per keyed ring (at most
-                    // one controlled player per frame).
-                    try { RuntimeLogger.log("RING controlled=true density=$density aspect=$aspectRatio conf=$INDICATOR_RING_CONFIDENCE center=($centerX,$centerY)", "PLAYER_DETECTOR") } catch (_: Throwable) {}
-                    rawCount++
-                }
-                continue
-            }
             if (jersey.team != JerseyColorSegmentation.Team.USER && jersey.team != JerseyColorSegmentation.Team.OPPONENT) continue
             val sizeScore = (effectivePixelCount / 64f).coerceIn(0f, 1f)
             val densityScore = density.coerceIn(0f, 1f)

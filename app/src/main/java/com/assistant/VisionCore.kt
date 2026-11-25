@@ -119,6 +119,25 @@ BallTelemetryBridge.publish(ball)
 val heuristicPlayers =
     PlayerDetector.detect(filteredBlobs)
 
+// RING READER (ring-reader build, 2026-11-25): direct pixel read of
+// the controlled-player ring in both measured states (cyan when
+// dashing, pale white-green when not) — the old saturated-blue ring
+// branch in PlayerDetector never fires on the real ring (colour
+// never OPPONENT, aspect 0.25-0.45 < 0.60). The reader's output is
+// merged here, at the same point the branch fed the isControlled
+// flag, so every downstream consumer (trained merge, fusion,
+// SceneTracker, FrameAssembler cursor) sees it exactly as before.
+// Fail-open: a null ring (or a reader throw) leaves the players
+// untouched. Full-vision path only — the CRITICAL-memory ball-only
+// path stays heuristic-only by design (degraded path).
+val heuristicPlayersWithRing = try {
+    ControlledRingReader.mergeInto(
+        heuristicPlayers,
+        ControlledRingReader.read(frame.buffer, frame.width, frame.height, frame.rowStride, frame.pixelStride),
+        frame.height.toFloat()
+    )
+} catch (_: Throwable) { heuristicPlayers }
+
 // Queue item 21: trained players MERGE, never replace — a trained
 // player with no heuristic match within 40 px is added; matched pairs
 // confirm the heuristic one. Full-vision path only; the CRITICAL-memory
@@ -126,10 +145,10 @@ val heuristicPlayers =
 val players =
     if (trainedDetectionEnabled) {
         TrainedDetectionEngine.mergedPlayers(
-            heuristicPlayers, frame.width, frame.height, frame.metadata.timestampNanos
+            heuristicPlayersWithRing, frame.width, frame.height, frame.metadata.timestampNanos
         )
     } else {
-        heuristicPlayers
+        heuristicPlayersWithRing
     }
 
 val heuristicGoalkeeper =
