@@ -380,7 +380,7 @@ object ControlMappingTrainer {
     // touching: the finger occludes the Dash button (or the game
     // highlights it while held). Two consecutive occluded in-match
     // frames = a hold CANDIDATE — an inference, never a confirmed
-    // press. Read by DribbleContributor (the G-P autopilot gate) via
+    // press. Read by UserIntentVision (the dash slot in the hold mask) via
     // dashHoldCandidateFresh(). The through press (slot 1) is untouched.
     @Volatile private var lastDashHoldMs = 0L
     @Volatile private var dashHoldCandidateActive = false
@@ -389,7 +389,7 @@ object ControlMappingTrainer {
 
     // B2 (item 16): the lastDashHoldMs() raw getter is DELETED — zero
     // callers outside this file (grep-proven). The field stays: it backs
-    // the live dashHoldCandidateFresh() reader (DribbleContributor).
+    // the live dashHoldCandidateFresh() reader (UserIntentVision).
 
     /** True while a dash-hold candidate is fresh (within 250 ms). */
     fun dashHoldCandidateFresh(nowMs: Long = System.currentTimeMillis()): Boolean =
