@@ -23,12 +23,16 @@ import kotlin.math.hypot
  *    the carrier keeps the safe options (pass/shoot) — a failed dribble
  *    loses the ball, so the risky path is never taken hands-off.
  *
- * "Holding dash + pressure" is observed the same honest way D13
- * observes the through press: the slot-4 (Dash) centre pixel leaving
- * its at-rest green while the user is touching (ControlMappingTrainer
- * dash-hold candidate, >= 2 consecutive in-match frames). It is an
- * INFERRED hold, never a confirmed hardware press — the contributor
- * passes it in as dashHeld, and the engine is pure over it.
+ * "Holding dash + pressure" is read from the frame (frame.isDashing)
+ * — the ring reader's colour state (CYAN = dashing/in possession,
+ * PALE = not), a dash/possession PROXY: the footage evidence is
+ * possession-based and Ed's is Dash-based, and the two triggers are
+ * not yet separated on-device (#45). It replaces
+ * ControlMappingTrainer's dash-hold candidate, which had ZERO live
+ * evidence (0 DASH_HOLD_CANDIDATE lines in either logged session)
+ * and never fired (0 SKILL_MOVE lines in both sessions). The engine
+ * is pure over the Boolean — the contributor passes it in as
+ * dashHeld, and the engine never observes the hold itself.
  *
  * The output is a MOVE-class vector (joystick drag toward open space),
  * so it rides the existing MOVE path: the batch-G touch gate (user must

@@ -1,6 +1,5 @@
 package com.assistant.contributors
 
-import com.assistant.ControlMappingTrainer
 import com.assistant.DribbleEngine
 import com.assistant.DribbleKind
 import com.assistant.runtime.*
@@ -11,9 +10,13 @@ import com.assistant.runtime.*
  * DribbleEngine.decide returns DRIBBLE (open space, no defender in
  * tackle range — safe without any hold) or SKILL_MOVE (defender in
  * range — ONLY while the user holds dash + pressure, D11/G-P). The
- * hold is ControlMappingTrainer's dash-hold candidate (slot-4 pixel
- * occlusion + touch, inferred like the D13 through press — never a
- * confirmed hardware press).
+ * hold is now frame.isDashing — the ring reader's colour state
+ * (CYAN = dashing/in possession, PALE = not), a dash/possession
+ * PROXY: the footage evidence is possession-based and Ed's is
+ * Dash-based, and the two triggers are not yet separated on-device.
+ * It replaces ControlMappingTrainer's dash-hold candidate, which had
+ * ZERO live evidence (0 DASH_HOLD_CANDIDATE lines in either logged
+ * session) and never fired (0 SKILL_MOVE lines in both sessions).
  *
  * MOVE-class: a joystick drag toward open space. It rides the existing
  * MOVE path, so the batch-G touch gate (user must be touching — true
@@ -41,9 +44,7 @@ object DribbleContributor : GameplayContributor {
 
     override fun contribute(frame: RuntimeFrame): EngineContribution? {
         if (!frame.trusted || !frame.hasBall) return null
-        val dashHeld = try {
-            ControlMappingTrainer.dashHoldCandidateFresh()
-        } catch (_: Throwable) { false }
+        val dashHeld = frame.isDashing
         val decision = DribbleEngine.decide(frame, dashHeld)
         if (decision.kind == DribbleKind.NONE) {
             lastKind = DribbleKind.NONE

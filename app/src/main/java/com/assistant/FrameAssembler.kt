@@ -420,6 +420,11 @@ object FrameAssembler {
             userIntentMask = UserIntentVision.heldSlotMask(),
             // CURSOR-ID: the ring identity computed above.
             cursorId = cursorId,
+            // RING STATE -> DASH PROXY (#45): the ring reader's colour
+            // state from the world store (VisionCore) — CYAN = dashing
+            // / in possession, PALE = not. A dash/possession proxy,
+            // never "Dash pressed" as fact.
+            isDashing = world.isDashing,
             // KNOB DIRECTION: the live deflection from UserIntentVision
             // (null = no direction known; same freshness as the mask).
             userIntentDirection = UserIntentVision.currentDirection(),

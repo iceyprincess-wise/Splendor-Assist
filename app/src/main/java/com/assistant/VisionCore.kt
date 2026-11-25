@@ -130,10 +130,25 @@ val heuristicPlayers =
 // Fail-open: a null ring (or a reader throw) leaves the players
 // untouched. Full-vision path only — the CRITICAL-memory ball-only
 // path stays heuristic-only by design (degraded path).
+//
+// RING STATE -> DASH PROXY (#45): the same read result also feeds
+// isDashing (CYAN = dashing/in possession, PALE = not) — published
+// to the world store below so FrameAssembler can carry it into the
+// frame. The state's exact trigger is UNVERIFIED: the footage
+// evidence is possession-based (cyan with the ball, pale without)
+// and Ed's evidence is Dash-based (blue when Dash is pressed). They
+// correlate in play but are not the same signal, so this is a
+// dash/possession PROXY — never "cyan = Dash pressed" as fact.
+// Null ring (or a reader throw) -> false. No second read: the read
+// already happens once per frame here.
+val ringRead: ControlledRingReader.RingRead? = try {
+    ControlledRingReader.read(frame.buffer, frame.width, frame.height, frame.rowStride, frame.pixelStride)
+} catch (_: Throwable) { null }
+val isDashing = ringRead?.state == ControlledRingReader.RingState.CYAN
 val heuristicPlayersWithRing = try {
     ControlledRingReader.mergeInto(
         heuristicPlayers,
-        ControlledRingReader.read(frame.buffer, frame.width, frame.height, frame.rowStride, frame.pixelStride),
+        ringRead,
         frame.height.toFloat()
     )
 } catch (_: Throwable) { heuristicPlayers }
@@ -658,6 +673,8 @@ val offsideRiskEstimationResult = run {
             possession = possession,
             defender = defender,
             defensiveStance = defensiveStance,
+            // RING STATE -> DASH PROXY (#45): from the ring read above.
+            isDashing = isDashing,
             // B5: the user line itself, as a store field (first publish).
             userLine = userLine,
             // B4: the low-block movement list (computed above) + its

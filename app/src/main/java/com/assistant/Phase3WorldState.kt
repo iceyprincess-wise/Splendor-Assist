@@ -24,6 +24,15 @@ data class Phase3WorldState(
     // L13 (batch 1): the tight defensive stance (DefensiveStanceProducer),
     // computed in VisionCore from computeUserLine. Read by FrameAssembler.
     val defensiveStance: DefensiveStance = DefensiveStance(false),
+    // RING STATE -> DASH PROXY (#45): the ring reader's colour state
+    // on this frame — CYAN = dashing/in possession, PALE = not.
+    // Published by VisionCore from the ControlledRingReader.read()
+    // result (no second read); read by FrameAssembler (frame
+    // isDashing). Default false = no ring / not dashing (fail-open).
+    // The ball-only (CRITICAL-memory) path never updates this store,
+    // so the value lingers from the last full-vision frame there —
+    // the same staleness class as defensiveStance, not a new one.
+    val isDashing: Boolean = false,
     // B5 (batch 2): the raw user line itself (DefensiveLineEngine.
     // computeUserLine), published as a store field by VisionCore — the
     // stance above is derived from it. Read by FrameAssembler (frame

@@ -326,7 +326,22 @@ data class RuntimeFrame(
      * Appended last, like cursorId above, so positional
      * RuntimeFrame construction in tests keeps working.
      */
-    val userIntentDirection: UserIntentDirection? = null
+    val userIntentDirection: UserIntentDirection? = null,
+    /*
+     * RING STATE -> DASH PROXY (ring-reader build, 2026-11-25;
+     * plumbing #45): the controlled-player ring's colour state on
+     * this frame — CYAN = dashing/in possession, PALE = not dashing /
+     * off the ball (Ed's Dash correction + the 2024/2027 footage; the
+     * two triggers are not yet separated on-device, so this is a
+     * dash/possession PROXY, never "Dash pressed" as fact). Null ring
+     * -> false (fail-open). Published by VisionCore via the world
+     * store and copied here by FrameAssembler. Read by
+     * DribbleContributor (the D11 cut) in place of the dash-hold
+     * candidate, which had zero live evidence. Appended last, like
+     * cursorId above, so positional RuntimeFrame construction in
+     * tests keeps working.
+     */
+    val isDashing: Boolean = false
 ) {
     // RF-D1/RF-D2: the old gate trusted a frame with a 0x0 capture size
     // (reachable before the camera profile populates), a confidence above
