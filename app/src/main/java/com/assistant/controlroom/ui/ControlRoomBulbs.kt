@@ -25,11 +25,11 @@ import androidx.core.graphics.toColorInt
  * Every value comes from the live snapshot maps the caller passes in —
  * nothing here is hardcoded.
  */
+enum class BulbState { GREEN, YELLOW, RED }
+
+data class BulbEntry(val label: String, val state: BulbState, val value: String)
+
 object ControlRoomBulbs {
-
-    enum class BulbState { GREEN, YELLOW, RED }
-
-    data class BulbEntry(val label: String, val state: BulbState, val value: String)
 
     fun color(state: BulbState): Int = when (state) {
         BulbState.GREEN -> "#00E676".toColorInt()
