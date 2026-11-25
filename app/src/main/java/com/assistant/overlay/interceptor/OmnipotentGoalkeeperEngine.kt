@@ -66,8 +66,30 @@ object OmnipotentGoalkeeperEngine {
         // FABRICATED-THREAT GATE: Require valid detected positions
         if (!isBallInDangerZone || !isGkDetected) return false
 
+        // GHOST GATE (2026-11-25, v268 session PROVEN): the phase-100
+        // rush and the phase-101 reflex below both fired on ANY nearest
+        // attacker within range, with no possession check — 194
+        // phase-100 + 24 phase-101 accepted dispatches in the 2m44s
+        // bypass-ON window, the largest live ghost source. Both arms
+        // now require the sanctioned 1v1 test (the same
+        // PreShotRushEngine.shouldRush the pre-shot rush and the
+        // SAVE-band router RUSH arm already use): the attacker must be
+        // within 200 px of the keeper AND within 60 px of the ball
+        // (the repo's possession rule) AND the keeper must not already
+        // be closing on him fast. A nearby attacker without the ball
+        // is not a 1v1 breakaway — no dispatch. The save evaluation
+        // is untouched and still runs every frame; a gated-out rush
+        // leaves lastDefensiveAction NONE, so nothing swallows it.
+        val keeperVel = try { com.assistant.KeeperTrajectoryPredictor.current() } catch (_: Throwable) { null }
+        val genuineOneVsOne = PreShotRushEngine.shouldRush(
+            gkX, gkY,
+            keeperVel?.velocityX ?: 0f, keeperVel?.velocityY ?: 0f,
+            nearestAttackerX, nearestAttackerY, ballX, ballY
+        )
+
         // 1. MITIGATING SCENARIOS 1 & 5: Through-Balls and Composed 1v1 Breakaways
-        // UNCONDITIONAL: Distance-based activation bypasses velocity/position gates
+        // GHOST GATE: distance alone no longer dispatches — genuineOneVsOne
+        // (possession + 1v1) must also hold, see above.
         // Batch-trajectory (B): measure the rush from where the keeper
         // WILL be in 6 frames (~300 ms at the 20 fps processed rate),
         // not where he is. KeeperTrajectoryPredictor.interceptPosition
@@ -80,7 +102,7 @@ object OmnipotentGoalkeeperEngine {
             com.assistant.KeeperTrajectoryPredictor.interceptPosition(gkX, gkY)
         val attackerToGkDistance = hypot((nearestAttackerX - rushGkX).toDouble(), (nearestAttackerY - rushGkY).toDouble())
 
-        if (attackerToGkDistance < 200.0) {
+        if (genuineOneVsOne && attackerToGkDistance < 200.0) {
                 // Route GK RUSH through ContributionRegistry.offer - the emergency lane (Downward swipe on Pressure Button)
                 // SPLENDOR_P12_T3_RUSH: the rush was identical at distance 31
                 // and 185 (fixed swipe + 55ms). Scale by the computed distance.
@@ -121,8 +143,10 @@ object OmnipotentGoalkeeperEngine {
         val goalAreaRight = screenWidth * 0.68f
 
         val isBallInSixYardBox = ballY > sixYardTop && ballX in goalAreaLeft..goalAreaRight
-        // UNCONDITIONAL: Box-based activation bypasses velocity gates
-        if (isBallInSixYardBox) {
+        // GHOST GATE: box position alone no longer dispatches — a loose
+        // ball in the box with no attacker in possession is not a
+        // combination play. genuineOneVsOne (possession + 1v1) must hold.
+        if (genuineOneVsOne && isBallInSixYardBox) {
             // FORCE REACTION REFLEX: Micro-tap on Directional Joystick toward incoming ball
             val interceptAngle = atan2((ballY - gkY).toDouble(), (ballX - gkX).toDouble())
             val swipeRadius = screenHeight * 0.08f
