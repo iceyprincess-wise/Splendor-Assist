@@ -605,12 +605,13 @@ object MagneticFeetContributor : GameplayContributor {
      * arm feeds D11; it never duplicates it.
      *
      * Gates, in order (fail open — any miss returns null):
-     *  (i) dash ON — INFERRED ONLY. The ring reader (#39) is not
-     *      landed yet, so dash is ControlMappingTrainer's slot-4 hold
-     *      candidate (finger occludes the Dash button while touching;
-     *      NOT a confirmed hardware press). The switch to the ring
-     *      state is a follow-up once #39's reader is in. Labelled as
-     *      inferred here AND in the CHASE log line.
+     *  (i) dash ON — from the ring state (frame.isDashing, #45
+     *      plumbing). The ring reader (#39) reports CYAN when the
+     *      controlled player is dashing / in possession and PALE
+     *      otherwise; the state is a dash/possession PROXY, never
+     *      "Dash pressed" as fact (the trigger is UNVERIFIED
+     *      on-device). Labelled as ring here AND in the CHASE log
+     *      line ("dash=ring").
      *  (ii) chase band 18..120 px on a LEAVING frame (ball moving
      *      away, speed >= 5 px/frame — a frozen/stale ball reads
      *      SETTLED, never LEAVING, so no stale-distance chase).
@@ -646,12 +647,9 @@ object MagneticFeetContributor : GameplayContributor {
         trapBand: String,
         trapMargin: Float
     ): EngineContribution? {
-        // (i) DASH — inferred only (see header comment).
-        val dashOn = try {
-            ControlMappingTrainer.dashHoldCandidateFresh()
-        } catch (_: Throwable) {
-            false
-        }
+        // (i) DASH — ring state (frame.isDashing, #45 plumbing).
+        // A dash/possession PROXY, never "Dash pressed" as fact.
+        val dashOn = frame.isDashing
         if (!dashOn) {
             prevChaseActive = false
             return null
@@ -813,15 +811,15 @@ object MagneticFeetContributor : GameplayContributor {
                 else -> 24L
             }
         // CHASE log: one line per chase entry, not per frame.
-        // "dash=inferred" — the dash signal is a slot-4 hold
-        // candidate, NOT a confirmed hardware press (ring reader #39
-        // follow-up switches this to the ring state).
+        // "dash=ring" — the dash signal is the ring state
+        // (frame.isDashing, #45 plumbing), a dash/possession PROXY,
+        // never "Dash pressed" as fact.
         if (!prevChaseActive) {
             com.assistant.diagnostic.RuntimeLogger.log(
                 "CHASE dist=" + "%.0f".format(Locale.US, distance) +
                     " defBall=" + "%.0f".format(Locale.US, nearestDefenderToBallDist) +
                     " band=" + trapBand +
-                    " dash=inferred" +
+                    " dash=ring" +
                     " auth=" + "%.2f".format(Locale.US, authority),
                 "MagneticFeet")
         }
