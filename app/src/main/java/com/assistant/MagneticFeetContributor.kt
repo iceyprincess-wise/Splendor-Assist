@@ -26,6 +26,21 @@ object MagneticFeetContributor : GameplayContributor {
     private const val MIN_DISTANCE = 1.0f
 
     /*
+     * CHASE ARM (#43): the dash knock-on recovery. When Ed sprints,
+     * the ball is knocked ahead of the carrier and the trap window
+     * goes LEAVING — the existing trap returns null there. The arm
+     * chases the knocked ball down while a defender threatens it.
+     * CHASE_MAX_DISTANCE (120 px) is a JUSTIFIED STARTING VALUE (2x
+     * ownership), NOT a measurement — the M1-M4 log pass from Ed's
+     * v272 logs will calibrate it. Below 18 px the ball is already
+     * tight and the trap path owns it; beyond 120 px the ball is a
+     * loose ball and the contest logic owns it.
+     */
+    private const val CHASE_MIN_DISTANCE = 18.0f
+    private const val CHASE_MAX_DISTANCE = 120.0f
+    private const val CHASE_PRESS_DISTANCE = 45.0f
+
+    /*
      * No68-B-D18: there is no joystick origin in this file anymore.
      * The target is a VISION-SPACE point on the owner->ball ray (the
      * convention every other MOVE contributor uses): chooseRequest()
@@ -51,6 +66,11 @@ object MagneticFeetContributor : GameplayContributor {
     @Volatile
     private var prevTrapWindow = "none"
 
+    // CHASE ARM: last chase-arm firing state, for the chase-enter
+    // CHASE log (one line per chase entry, not per frame).
+    @Volatile
+    private var prevChaseActive = false
+
     // No68-B-D17: the base-class fastGate does not apply here -- this
     // contributor implements GameplayContributor directly, so the
     // default fastGate was `true` and the full contribute() body ran
@@ -58,7 +78,27 @@ object MagneticFeetContributor : GameplayContributor {
     // (trusted, not panicking, ball in play); the registry already
     // checks trusted, but panic is only checked here.
     override fun fastGate(frame: RuntimeFrame): Boolean =
-        frame.trusted && !frame.panic && frame.hasBall
+        frame.trusted && !frame.panic && (frame.hasBall || isChaseCandidate(frame))
+
+    /*
+     * CHASE ARM (#43): frame-only chase pre-check. A knock-on frame
+     * has hasBall=false (possession lost past 60 px, and
+     * FrameAssembler drops hasBall with it), so the plain hasBall gate
+     * would never let the chase arm run. Open the door only when a
+     * chaser exists: a user-team outfield entity within the chase band
+     * of a finite ball. contribute() re-checks everything (dash,
+     * LEAVING, PRESS, stick window) before emitting anything.
+     */
+    private fun isChaseCandidate(frame: RuntimeFrame): Boolean {
+        if (!frame.ballX.isFinite() || !frame.ballY.isFinite()) return false
+        return frame.entities.any { e ->
+            e.teammate && !e.isGoalkeeper &&
+                hypot(
+                    (e.x - frame.ballX).toDouble(),
+                    (e.y - frame.ballY).toDouble()
+                ).toFloat() in CHASE_MIN_DISTANCE..CHASE_MAX_DISTANCE
+        }
+    }
 
     override fun initialize() {
         MagneticFeetEngine.reset()
@@ -72,10 +112,18 @@ object MagneticFeetContributor : GameplayContributor {
          * Use the same runtime truth gates as the rest of the gameplay
          * contributor architecture.
          */
+        /*
+         * CHASE ARM (#43): hasBall is NOT required at this gate. A dash
+         * knock-on loses possession (BallPossessionEngine drops the
+         * owner when the ball passes 60 px, and FrameAssembler drops
+         * hasBall with it), so requiring hasBall here would make the
+         * chase arm dead on arrival. The trap path below still
+         * requires possession + hasBall; only the chase arm runs on
+         * possession-lost frames.
+         */
         if (
             !frame.enabled ||
-            !frame.trusted ||
-            !frame.hasBall
+            !frame.trusted
         ) {
             return null
         }
@@ -90,14 +138,20 @@ object MagneticFeetContributor : GameplayContributor {
         val possession =
             worldState.possession
 
-        if (
-            !possession.hasPossession ||
-            possession.confidence <
-                POSSESSION_MIN_CONFIDENCE ||
-            possession.ownerIndex < 0
-        ) {
-            return null
-        }
+        /*
+         * Possession-held frames take the existing trap path. On a
+         * knock-on the ball passes 60 px, BallPossessionEngine returns
+         * hasPossession=false with ownerIndex=-1, and the chaser is
+         * re-derived below as the nearest user-team outfield player
+         * to the ball. The possession-confidence gate is dropped for
+         * the chase case ONLY: requiring it would make the arm dead on
+         * arrival (possession is lost past 60 px by definition).
+         */
+        val possessionHeld =
+            possession.hasPossession &&
+                possession.confidence >=
+                    POSSESSION_MIN_CONFIDENCE &&
+                possession.ownerIndex >= 0
 
         val scene =
             try {
@@ -106,14 +160,33 @@ object MagneticFeetContributor : GameplayContributor {
                 return null
             }
 
+        val ballX =
+            frame.ballX
+
+        val ballY =
+            frame.ballY
+
+        if (
+            !ballX.isFinite() ||
+            !ballY.isFinite()
+        ) {
+            return null
+        }
+
         /*
          * BallOwnershipEngine's ownerIndex points into the same
          * SceneTracker snapshot that produced the possession result.
+         * When possession is lost the chaser is the nearest user-team
+         * outfield player to the ball in that same snapshot.
          */
         val owner =
-            scene.trackedPlayers.getOrNull(
-                possession.ownerIndex
-            ) ?: return null
+            if (possessionHeld) {
+                scene.trackedPlayers.getOrNull(
+                    possession.ownerIndex
+                ) ?: return null
+            } else {
+                nearestChaser(scene.trackedPlayers, ballX, ballY) ?: return null
+            }
 
         /*
          * Magnetic Feet is an attacking ball-retention movement assist.
@@ -127,15 +200,7 @@ object MagneticFeetContributor : GameplayContributor {
             return null
         }
 
-        val ballX =
-            frame.ballX
-
-        val ballY =
-            frame.ballY
-
         if (
-            !ballX.isFinite() ||
-            !ballY.isFinite() ||
             !owner.x.isFinite() ||
             !owner.y.isFinite()
         ) {
@@ -216,7 +281,32 @@ object MagneticFeetContributor : GameplayContributor {
         val enteredTrapWindow = trapWindow == "CLOSING" && prevTrapWindow != "CLOSING"
         prevTrapWindow = trapWindow
         MagneticFeetEngine.recordTrapWindow(trapWindow)
-        if (trapWindow == "LEAVING") return null
+        // CHASE ARM (#43): the knock-on recovery. On a LEAVING frame
+        // the ball is moving AWAY from the owner — the existing trap
+        // returns null here, and the arm below is the only path that
+        // may still fire (dash sprint knock-on). It returns the chase
+        // MOVE or null; it never falls through to the trap path.
+        if (trapWindow == "LEAVING") {
+            return tryChaseArm(
+                frame = frame,
+                owner = owner,
+                possessionConfidence = possession.confidence,
+                ballX = ballX,
+                ballY = ballY,
+                deltaX = deltaX,
+                deltaY = deltaY,
+                distance = distance,
+                trapBallSpeed = trapBallSpeed,
+                trapBand = trapBand,
+                trapMargin = trapMargin
+            )
+        }
+        prevChaseActive = false
+        // The trap path below still requires possession + hasBall:
+        // the old top gates guaranteed both, and this split keeps that
+        // exact conjunction for the trap path. Only the chase arm above
+        // runs on possession-lost frames.
+        if (!possessionHeld || !frame.hasBall) return null
 
         /*
          * Stronger magnetic behavior is associated with a closer ball.
@@ -477,11 +567,285 @@ object MagneticFeetContributor : GameplayContributor {
         )
     }
 
+
+    /*
+     * CHASE ARM: the chaser on a possession-lost frame is the nearest
+     * user-team outfield player to the ball in the unfiltered
+     * SceneTracker snapshot — the same source the trap path reads its
+     * owner from. (frame.entities is FrameAssembler-filtered.) A
+     * teammate ahead of the knocked ball is a valid chaser too: the
+     * nearest user player is the one who can reach the ball first.
+     */
+    private fun nearestChaser(
+        players: List<TrackedPlayer>,
+        ballX: Float,
+        ballY: Float
+    ): TrackedPlayer? {
+        return players
+            .filter { it.isUserTeam && !it.isGoalkeeper && it.confidence > 0.0f }
+            .minByOrNull { p ->
+                hypot((p.x - ballX).toDouble(), (p.y - ballY).toDouble())
+            }
+    }
+
+    /*
+     * CHASE ARM (#43): the dash knock-on recovery.
+     *
+     * The full glue (ball stuck to the feet through a full-speed
+     * sprint) is NOT achievable through the app's inputs as they
+     * stand: the app cannot modulate the stick while Ed holds it
+     * (the RDL never-fight gate holds a MOVE whenever the joystick
+     * is held), there is no Dash-press lever anywhere in the repo,
+     * and no close-control/R2 button exists. The knock-on is
+     * Konami's sprint physics, not the app's doing. This arm does
+     * NOT promise the glue — it is the recovery: chase the knocked
+     * ball down while a defender threatens it, so the carrier
+     * re-collects it and the existing D11 sharp cut (defender inside
+     * tackle radius ~23 px + dashHeld -> SKILL_MOVE) can fire. The
+     * arm feeds D11; it never duplicates it.
+     *
+     * Gates, in order (fail open — any miss returns null):
+     *  (i) dash ON — INFERRED ONLY. The ring reader (#39) is not
+     *      landed yet, so dash is ControlMappingTrainer's slot-4 hold
+     *      candidate (finger occludes the Dash button while touching;
+     *      NOT a confirmed hardware press). The switch to the ring
+     *      state is a follow-up once #39's reader is in. Labelled as
+     *      inferred here AND in the CHASE log line.
+     *  (ii) chase band 18..120 px on a LEAVING frame (ball moving
+     *      away, speed >= 5 px/frame — a frozen/stale ball reads
+     *      SETTLED, never LEAVING, so no stale-distance chase).
+     *  (iii) PRESS — nearest defender within 45 px of the BALL
+     *      (same margin the trap band uses) or the owner already
+     *      pressed (trapBand PRESS/HOT).
+     *  (iv) stick window OPEN — the same conditions the RDL gates
+     *      check before emitting: the user is touching
+     *      (authorizing), slot 0 (joystick) is NOT in the hold mask,
+     *      and the proposed direction does not oppose the knob
+     *      reader's held direction (dot < 0). A contribution the RDL
+     *      would hold is never offered.
+     * The MOVE shape is the trap path's shape (target on the
+     * owner->ball ray, travel per the inverted rule, duration
+     * 16-24 ms, authority from stabilize()); the confidence blend
+     * is the same formula with possession.confidence as-is (0 on a
+     * possession-lost frame, so the chase honestly ranks below a
+     * clean trap). The arm NEVER emits a MOVE opposing the knob
+     * reader's held direction, and it does NOT prevent rough-tackle
+     * dispossessions (tackles still happening is a falsifier, not a
+     * bug).
+     */
+    private fun tryChaseArm(
+        frame: RuntimeFrame,
+        owner: TrackedPlayer,
+        possessionConfidence: Float,
+        ballX: Float,
+        ballY: Float,
+        deltaX: Float,
+        deltaY: Float,
+        distance: Float,
+        trapBallSpeed: Float,
+        trapBand: String,
+        trapMargin: Float
+    ): EngineContribution? {
+        // (i) DASH — inferred only (see header comment).
+        val dashOn = try {
+            ControlMappingTrainer.dashHoldCandidateFresh()
+        } catch (_: Throwable) {
+            false
+        }
+        if (!dashOn) {
+            prevChaseActive = false
+            return null
+        }
+        // (ii) CHASE BAND.
+        if (
+            !distance.isFinite() ||
+            distance < CHASE_MIN_DISTANCE ||
+            distance > CHASE_MAX_DISTANCE
+        ) {
+            prevChaseActive = false
+            return null
+        }
+        // Ball must be live: LEAVING already requires trapBallSpeed
+        // >= 5, so a frozen/stale ball cannot reach this arm.
+        if (!trapBallSpeed.isFinite() || trapBallSpeed < 5f) {
+            prevChaseActive = false
+            return null
+        }
+        // (iii) PRESS — defender threatens the ball.
+        val nearestDefenderToBallDist = frame.entities.filter { !it.teammate }
+            .minOfOrNull { e -> hypot((e.x - ballX).toDouble(), (e.y - ballY).toDouble()).toFloat() }
+            ?: Float.MAX_VALUE
+        val defenderThreat = nearestDefenderToBallDist <= CHASE_PRESS_DISTANCE + trapMargin ||
+            trapBand == "PRESS" || trapBand == "HOT"
+        if (!defenderThreat) {
+            prevChaseActive = false
+            return null
+        }
+        // (iv) STICK WINDOW — same conditions the RDL gates check.
+        if (!UserTouchState.isUserTouchAuthorizing()) {
+            prevChaseActive = false
+            return null
+        }
+        if (frame.userIntentMask and UserIntentVision.slotBit(0) != 0) {
+            prevChaseActive = false
+            return null
+        }
+        val directionX = deltaX / distance
+        val directionY = deltaY / distance
+        val userDir = frame.userIntentDirection
+        if (userDir != null && userDir.magnitude >= com.assistant.overlay.interceptor.JoystickKnobReader.MIN_DIRECTION_MAGNITUDE) {
+            val dot = directionX * userDir.dirX + directionY * userDir.dirY
+            if (dot < 0f) {
+                prevChaseActive = false
+                return null
+            }
+        }
+        // MOVE shape: the trap path's shape (same constants, same
+        // inverted travel rule, same 16-24 ms durations, authority
+        // from stabilize()). No trap boost on a LEAVING frame
+        // (closingSpeed < 5 there by definition), so the boost is 1.0.
+        val proximity =
+            (
+                1.0f -
+                    (
+                        distance /
+                            MAGNETIC_RADIUS
+                    )
+            ).coerceIn(
+                0.0f,
+                1.0f
+            )
+        val proximitySignal =
+            (
+                proximity *
+                    100.0f
+            ).toInt().coerceIn(
+                0,
+                100
+            )
+        val normalizedStrength =
+            (
+                (owner.confidence * 0.70f) +
+                    (frame.confidence * 0.30f)
+            ).coerceIn(
+                0.0f,
+                1.0f
+            )
+        val strength =
+            (
+                normalizedStrength *
+                    100.0f
+            ).toInt().coerceIn(
+                0,
+                100
+            )
+        val result =
+            MagneticFeetEngine.stabilize(
+                proximity = proximitySignal,
+                strength = strength
+            )
+        val rawAuthority =
+            (
+                result.touchRetention /
+                    5.0f
+            ) * 1.2f
+        val weightedAuthority =
+            rawAuthority *
+                (
+                    (1.5f + 1.2f) / 2.0f
+                )
+        val shapedAuthority =
+            weightedAuthority /
+                (
+                    1.0f +
+                        weightedAuthority
+                )
+        val authority =
+            shapedAuthority
+                .coerceIn(
+                    0.0f,
+                    minOf(1.2f, 1.0f)
+                )
+        val confidence =
+            (
+                (frame.confidence * 0.30f) +
+                    (possessionConfidence * 0.35f) +
+                    (owner.confidence * 0.20f) +
+                    (proximity * 0.15f)
+            ).coerceIn(
+                0.0f,
+                1.0f
+            )
+        val travel =
+            MAX_TRAVEL -
+                (
+                    (
+                        MAX_TRAVEL -
+                            MIN_TRAVEL
+                    ) * proximity
+                )
+        val targetX =
+            (
+                owner.x +
+                    (
+                        directionX *
+                            travel
+                    )
+            ).coerceIn(
+                0.0f,
+                SCREEN_MAX_X
+            )
+        val targetY =
+            (
+                owner.y +
+                    (
+                        directionY *
+                            travel
+                    )
+            ).coerceIn(
+                0.0f,
+                SCREEN_MAX_Y
+            )
+        val duration =
+            when {
+                proximity >= 0.75f -> 16L
+                proximity >= 0.45f -> 20L
+                else -> 24L
+            }
+        // CHASE log: one line per chase entry, not per frame.
+        // "dash=inferred" — the dash signal is a slot-4 hold
+        // candidate, NOT a confirmed hardware press (ring reader #39
+        // follow-up switches this to the ring state).
+        if (!prevChaseActive) {
+            com.assistant.diagnostic.RuntimeLogger.log(
+                "CHASE dist=" + "%.0f".format(Locale.US, distance) +
+                    " defBall=" + "%.0f".format(Locale.US, nearestDefenderToBallDist) +
+                    " band=" + trapBand +
+                    " dash=inferred" +
+                    " auth=" + "%.2f".format(Locale.US, authority),
+                "MagneticFeet")
+        }
+        prevChaseActive = true
+        return EngineContribution(
+            engine = engineName,
+            actionClass = ActionClass.MOVE,
+            targetX = targetX,
+            targetY = targetY,
+            authority = authority,
+            confidence = confidence,
+            durationHintMs = duration,
+            aimOriginX = owner.x,
+            aimOriginY = owner.y,
+            aimEntityId = owner.id
+        )
+    }
+
     override fun reset() {
         // No68-B-D23: the engine reset never touched this file's own
         // prevTrapWindow, so the first CLOSING window after a reset
         // could go unlogged when the stale value was already CLOSING.
         prevTrapWindow = "none"
+        prevChaseActive = false
         MagneticFeetEngine.reset()
     }
 }
