@@ -115,6 +115,40 @@ class OverlayService : Service(), ComponentCallbacks2 {
         fun requestAutoHeal(): Boolean =
             instance?.autoHealCapture() ?: false
         // SPLENDOR_V42_AUTOHEAL_STATIC_END
+
+        // CAPTUREFIX-1: reason-returning restart (see
+        // restartCaptureWithReason()). The old Boolean hid WHICH false
+        // path fired; the heal engine burned its budget on instance-null
+        // calls it could never satisfy.
+        @JvmStatic
+        fun restartCaptureWithReason(): String =
+            instance?.restartCaptureWithReason() ?: "INSTANCE_NULL"
+
+        // CAPTUREFIX-2: silent auto-heal for the mid-match path. NEVER
+        // launches the reauth activity and NEVER shows the recovery
+        // prompt; a dead token defers reauth to the next non-match
+        // moment (SplendorCaptureRecovery). Returns a reason: OK /
+        // COOLDOWN / RESTART_FAILED / TOKEN_MISSING / TOKEN_DEAD.
+        @JvmStatic
+        fun requestAutoHealSilent(): String =
+            instance?.autoHealCaptureSilent() ?: "INSTANCE_NULL"
+
+        // CAPTUREFIX-4: stuck-vision timer entry point (see
+        // unwedgeVisionIfStuck()). Called by the self-heal agent on its
+        // 5 s cycle; no-op when nothing is stuck.
+        @JvmStatic
+        fun requestVisionUnwedgeIfStuck(): Boolean =
+            instance?.unwedgeVisionIfStuck() ?: false
+
+        // CAPTUREFIX-2: the projection token lives in the COMPANION
+        // (process lifetime), not the service instance. The service
+        // object can die and be recreated while the process (and the
+        // grant) lives — an instance-held token died with it and silent
+        // token reuse was impossible from a fresh instance. The grant
+        // dies with the process anyway, so a process-level store loses
+        // nothing; do NOT clear it in onDestroy.
+        @Volatile internal var savedProjectionCode = 0
+        @Volatile internal var savedProjectionData: Intent? = null
     }
 
     @Volatile private var isRunning = false
@@ -155,8 +189,9 @@ class OverlayService : Service(), ComponentCallbacks2 {
     // without user interaction (token reuse) before falling back to the
     // system consent dialog (one tap — Android 14 requires one consent per
     // capture session).
-    @Volatile private var savedProjectionCode = 0
-    @Volatile private var savedProjectionData: Intent? = null
+    // CAPTUREFIX-2: the token itself now lives in the COMPANION (see the
+    // note there) — the service object can die under the agent while the
+    // process lives, and an instance-held token died with it.
     @Volatile private var lastAutoHealAttemptMs = 0L
     // SPLENDOR_V42_AUTOHEAL_FIELDS_END
 
@@ -790,6 +825,59 @@ class OverlayService : Service(), ComponentCallbacks2 {
         return false
     }
 
+    // CAPTUREFIX-2: silent auto-heal for the MID-MATCH path. Identical
+    // recovery steps to autoHealCapture() EXCEPT it never launches the
+    // reauth activity and never shows the recovery prompt: a dead token
+    // defers reauth to the next non-match moment via
+    // SplendorCaptureRecovery.deferReauth() and the match keeps running
+    // degraded. Returns a reason: OK / COOLDOWN / RESTART_FAILED /
+    // TOKEN_MISSING / TOKEN_DEAD. Callers: the self-heal agent (all its
+    // branches), MediaProjection.Callback.onStop(), and the
+    // onStartCommand fault paths. autoHealCapture() above stays as the
+    // break-time path — it is called only from the deferred-reauth flush
+    // in SplendorCaptureRecovery, i.e. when the game is not foreground.
+    fun autoHealCaptureSilent(): String {
+        val now = System.currentTimeMillis()
+        if (now - lastAutoHealAttemptMs < 15_000L) return "COOLDOWN"
+        lastAutoHealAttemptMs = now
+        val st = readCaptureState()
+        if (st == CaptureState.ACTIVE || st == CaptureState.AUTHORIZED) {
+            val ok = try { restartCapture() } catch (_: Throwable) { false }
+            RuntimeLogger.log("AUTO_HEAL_SILENT: capture alive but stale -> restartCapture() = $ok", "OVERLAY")
+            return if (ok) "OK" else "RESTART_FAILED"
+        }
+        val code = savedProjectionCode
+        val data = savedProjectionData
+        if (code == 0 || data == null) {
+            RuntimeLogger.log("AUTO_HEAL_SILENT: no saved token; reauth deferred (no popup mid-match)", "OVERLAY")
+            try { com.assistant.SplendorCaptureRecovery.deferReauth() } catch (_: Throwable) {}
+            return "TOKEN_MISSING"
+        }
+        return try {
+            startForegroundSafely()
+            val pm = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+            val mp = pm.getMediaProjection(code, data)
+            if (mp != null) {
+                captureLock.lock()
+                try {
+                    setupMediaProjectionInternal(code, data)
+                    RuntimeLogger.log("AUTO_HEAL_SILENT: token reuse succeeded — capture restored without user interaction", "OVERLAY")
+                    "OK"
+                } finally {
+                    captureLock.unlock()
+                }
+            } else {
+                RuntimeLogger.log("AUTO_HEAL_SILENT: token reuse returned null; reauth deferred (no popup mid-match)", "OVERLAY")
+                try { com.assistant.SplendorCaptureRecovery.deferReauth() } catch (_: Throwable) {}
+                "TOKEN_DEAD"
+            }
+        } catch (t: Throwable) {
+            RuntimeLogger.log("AUTO_HEAL_SILENT: token reuse failed (${t.javaClass.simpleName}); reauth deferred (no popup mid-match)", "OVERLAY")
+            try { com.assistant.SplendorCaptureRecovery.deferReauth() } catch (_: Throwable) {}
+            "TOKEN_DEAD"
+        }
+    }
+
     private fun launchReauthActivity() {
         try {
             val i = Intent(this, SplendorReauthActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -828,23 +916,50 @@ class OverlayService : Service(), ComponentCallbacks2 {
         try { RuntimeLogger.log("VISION_ABANDONED generation=$generation stage=$visionStage stageMs=${if (visionStageStartedMs > 0L) System.currentTimeMillis() - visionStageStartedMs else -1L} inFlightMs=$stuckMs busySkips=$visionBusySkips (wedged coroutine abandoned; next frame may start)", "OVERLAY") } catch (_: Throwable) {}
     }
 
-    fun restartCapture(): Boolean {
+    // CAPTUREFIX-4: timer-driven stuck-vision check. The VISION_STUCK heal
+    // in the frame listener only arms when a frame ARRIVES — when capture
+    // is dead no frame arrives, so the wedge never clears. The self-heal
+    // agent calls this on its 5 s cycle (no frame arrival needed). Safe
+    // when nothing is stuck: the flag check fails and nothing changes.
+    // Abandon-only: it does NOT recreate capture surfaces (the capture
+    // path owns that) — it just frees the next frame to start. The
+    // staleness re-check mirrors the listener heal's guard so a fresh
+    // frame that started after the check is never abandoned.
+    fun unwedgeVisionIfStuck(): Boolean {
+        if (!visionInFlight.get()) return false
+        val startMs = visionStartTimeMs
+        if (startMs <= 0L) return false
+        if (System.currentTimeMillis() - startMs <= VISION_STUCK_HEAL_MS) return false
+        RuntimeLogger.log("VISION_UNWEDGE_TIMER inFlightMs=${System.currentTimeMillis() - startMs} busySkips=$visionBusySkips stage=$visionStage (timer abandon; no frame arrived to arm the listener heal)", "OVERLAY")
+        abandonWedgedVision()
+        return true
+    }
+
+    fun restartCapture(): Boolean = restartCaptureWithReason() == "OK"
+
+    // CAPTUREFIX-1: the restart returns a REASON, not a Boolean, so the
+    // caller can tell a dead session from a dead service object instead
+    // of burning its budget on a call that cannot succeed. Reasons: OK /
+    // REVOKED / NO_PROJECTION / RECREATE_FAILED:<result> /
+    // EXCEPTION:<type>. The log lines are unchanged (same strings as
+    // before) so existing log triage keeps working.
+    fun restartCaptureWithReason(): String {
         captureLock.lock()
         try {
             if (captureState == CaptureState.REVOKED) {
                 RuntimeLogger.log("AGENT CAPTURE RESTART: projection already revoked; fresh MediaProjection authorization required", "AGENT")
-                return false
+                return "REVOKED"
             }
             if (mediaProjection == null) {
                 RuntimeLogger.log("AGENT CAPTURE RESTART: no active MediaProjection", "AGENT")
-                return false
+                return "NO_PROJECTION"
             }
             try {
                 RuntimeLogger.log("AGENT CAPTURE RESTART: attempting ImageReader replacement", "AGENT")
                 val result = recreateCaptureSurfacesInternal()
                 if (result != CaptureResult.SUCCESS) {
                     RuntimeLogger.log("AGENT CAPTURE RESTART FAILED: $result", "AGENT")
-                    return false
+                    return "RECREATE_FAILED:$result"
                 }
                 lastFrameProcessedMs = 0L
                 captureFrameCount = 0L
@@ -854,10 +969,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 // every later frame was VISION_BUSY_SKIP).
                 abandonWedgedVision()
                 RuntimeLogger.log("AGENT CAPTURE RESTART: ImageReader replaced successfully", "AGENT")
-                return true
+                return "OK"
             } catch (e: Exception) {
                 RuntimeLogger.log("AGENT CAPTURE RESTART FAILED: ${e.message}", "AGENT")
-                return false
+                return "EXCEPTION:${e.javaClass.simpleName}"
             }
         } finally {
             captureLock.unlock()
@@ -867,6 +982,10 @@ class OverlayService : Service(), ComponentCallbacks2 {
     override fun onCreate() {
         com.assistant.CrashForensics.install()
         com.assistant.SplendorCaptureRecovery.attach(this)
+        // CAPTUREFIX-1: give the self-heal agent an application context so
+        // it can silently re-start this service when the service object
+        // dies under it (instance == null). init() is idempotent.
+        RuntimeSelfHealEngine.init(this)
         // SplendorWatchdog removed: WatchdogAdapterService handles survival process watchdog
         if(runtimeInitialized) return
         runtimeInitialized = true
@@ -941,9 +1060,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
                 // Do NOT stopSelf(): a dead service + a still-running agent
                 // is the session-2 zombie. Try auto-heal, else show the
                 // recovery prompt and stay alive for a fresh token.
-                val healedAfterFault = try { autoHealCapture() } catch (_: Throwable) { false }
+                // CAPTUREFIX-2: silent auto-heal + deferred reauth — a
+                // sticky restart can land mid-match, so no recovery
+                // prompt here; the deferred flush shows it at the next
+                // non-match moment instead.
+                val healedAfterFault = try { autoHealCaptureSilent() == "OK" } catch (_: Throwable) { false }
                 if (!healedAfterFault) {
-                    try { showCaptureRecoveryPrompt() } catch (_: Throwable) {}
+                    try { com.assistant.SplendorCaptureRecovery.deferReauth() } catch (_: Throwable) {}
                 }
                 // SPLENDOR_P6_NO_STOPSELF_END
             }
@@ -957,14 +1080,17 @@ class OverlayService : Service(), ComponentCallbacks2 {
             // when the service object survived), otherwise show the capture
             // recovery prompt so a fresh consent can be delivered via
             // applyFreshProjection on this live instance.
-            RuntimeLogger.log("onStartCommand: no valid projection token (resultCode=$resultCode); attempting auto-heal, else recovery prompt", "OVERLAY")
-            val healed = try { autoHealCapture() } catch (_: Throwable) { false }
+            RuntimeLogger.log("onStartCommand: no valid projection token (resultCode=$resultCode); attempting silent auto-heal, else deferred reauth", "OVERLAY")
+            val healed = try { autoHealCaptureSilent() == "OK" } catch (_: Throwable) { false }
             if (healed) {
                 if (!isRunning) {
                     initializeProcessingEngine()
                 }
             } else {
-                try { showCaptureRecoveryPrompt() } catch (_: Throwable) {}
+                // CAPTUREFIX-2: no recovery prompt here — a sticky restart
+                // can land mid-match. Defer reauth to the next non-match
+                // moment instead (the deferred flush shows it then).
+                try { com.assistant.SplendorCaptureRecovery.deferReauth() } catch (_: Throwable) {}
             }
             // SPLENDOR_P6_STICKY_RESTART_END
         }
@@ -1208,8 +1334,12 @@ class OverlayService : Service(), ComponentCallbacks2 {
                     // SPLENDOR_V42_AUTOHEAL_ONSTOP_BEGIN
                     // Auto-recover instead of waiting for a manual tap. Small
                     // delay lets the system settle after the revoke.
+                    // CAPTUREFIX-2: silent variant — onStop can fire
+                    // mid-match, so no reauth activity and no prompt here;
+                    // a dead token defers reauth to the next non-match
+                    // moment instead.
                     Handler(Looper.getMainLooper()).postDelayed({
-                        try { autoHealCapture() } catch (_: Throwable) {}
+                        try { autoHealCaptureSilent() } catch (_: Throwable) {}
                     }, 2000L)
                     // SPLENDOR_V42_AUTOHEAL_ONSTOP_END
                 }

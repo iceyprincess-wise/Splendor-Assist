@@ -129,6 +129,11 @@ object RuntimeSelfHealEngine {
         // SPLENDOR_F34_FG_ENFORCE: re-enabled so capture active keeps foregroundIsGame true.
         enforceForegroundGate()
         checkCaptureThread()         // critical — can restart
+        // CAPTUREFIX-4: timer-driven stuck-vision unwedge. The listener
+        // heal only arms when a frame arrives; when capture is dead no
+        // frame arrives, so the agent's 5 s cycle is the timer that
+        // frees a wedged vision coroutine. No-op when nothing is stuck.
+        try { com.assistant.OverlayService.requestVisionUnwedgeIfStuck() } catch (_: Throwable) {}
         checkBusSignals(warmed)
         checkLoadShed()
         checkDispatchRate()
@@ -238,6 +243,11 @@ object RuntimeSelfHealEngine {
     @Volatile private var lastKnownFrameId: Long = -1L
     @Volatile private var captureRestartAttempts = 0
     @Volatile private var lastRestartAttemptMs = 0L
+    // CAPTUREFIX-1: throttle for the silent service restart (see
+    // requestOverlayServiceRestart()). The service object can die under
+    // the agent while the process lives; re-starting it is silent (no UI)
+    // and lets the next cycle retry the restart against a live instance.
+    @Volatile private var lastServiceRestartMs = 0L
     // F37-D5: idle/auto-heal branches spend no attempt, so they throttle on
     // their own clock (lastIdleHealMs) instead of the attempt budget.
     @Volatile private var lastIdleHealMs = 0L
@@ -245,6 +255,30 @@ object RuntimeSelfHealEngine {
     // resets on any new frame, so "Attempt #1 of 3" could repeat in one
     // session. This one never resets except on process start.
     @Volatile private var captureRestartSessionTotal = 0
+
+    // CAPTUREFIX-1: silently re-start OverlayService when its object is
+    // gone (instance == null) while the agent is alive. No UI: a plain
+    // startForegroundService with no extras — the service re-enters via
+    // its sticky-restart branch and silent token reuse. Best-effort:
+    // background-start restrictions may refuse it (returns false,
+    // logged); the deferred-reauth path remains the fallback. Throttled
+    // to once per 30 s so a dead service cannot spin restarts. The
+    // context comes from init(), which OverlayService.onCreate calls.
+    private fun requestOverlayServiceRestart(): Boolean {
+        val now = System.currentTimeMillis()
+        if (now - lastServiceRestartMs < 30_000L) return false
+        lastServiceRestartMs = now
+        val ctx = appContext() ?: return false
+        return try {
+            val intent = android.content.Intent(ctx, com.assistant.OverlayService::class.java)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) ctx.startForegroundService(intent) else ctx.startService(intent)
+            RuntimeLogger.log("AGENT: OverlayService restart requested (instance was null)", "AGENT")
+            true
+        } catch (t: Throwable) {
+            RuntimeLogger.log("AGENT: OverlayService restart request failed: ${t.javaClass.simpleName}", "AGENT")
+            false
+        }
+    }
 
     private fun checkCaptureThread() {
         try {
@@ -265,13 +299,26 @@ object RuntimeSelfHealEngine {
                         captureRestartSessionTotal++
                         lastRestartAttemptMs = now
                         totalHeals++
-                        val restarted = try {
-                            val cls = Class.forName("com.assistant.OverlayService")
-                            val method = cls.getDeclaredMethod("restartCaptureIfAlive")
-                            (method.invoke(null) as? Boolean) ?: false
+                        // CAPTUREFIX-1: direct reason call, not reflection.
+                        // The reflection wrapper logged only e.message —
+                        // null for InvocationTargetException — and the
+                        // Boolean hid WHICH false path fired.
+                        val restartReason = try {
+                            com.assistant.OverlayService.restartCaptureWithReason()
                         } catch (e: Throwable) {
-                            RuntimeLogger.log("AGENT: restartCaptureIfAlive failed: ${e.message}", "AGENT")
-                            false
+                            "EXCEPTION:${e.javaClass.simpleName}"
+                        }
+                        val restarted = restartReason == "OK"
+                        if (restartReason == "INSTANCE_NULL") {
+                            // Service object gone under the agent: do NOT
+                            // burn the attempt budget on a call that cannot
+                            // succeed — refund the attempt and restart the
+                            // service silently instead.
+                            if (captureRestartAttempts > 0) captureRestartAttempts--
+                            requestOverlayServiceRestart()
+                        }
+                        if (!restarted) {
+                            RuntimeLogger.log("AGENT: restartCapture reason=$restartReason (capture state " + com.assistant.OverlayService.captureState() + ")", "AGENT")
                         }
                         record(HealEvent(
                             timestamp = fmt.format(Date()),
@@ -279,17 +326,18 @@ object RuntimeSelfHealEngine {
                             detected = "No frame ever assembled (capture=" + com.assistant.vision.CameraProfile.diagnostics() + "). " +
                                 "Attempt #$captureRestartAttempts of 3 (session #$captureRestartSessionTotal).",
                             fix = if (restarted) "RESTART SENT to OverlayService.restartCapture(); awaiting frame resumption for verification." else
-                                "CAPTURE RESTART FAILED — capture state " + com.assistant.OverlayService.captureState() + ".",
+                                "CAPTURE RESTART FAILED — reason=$restartReason, capture state " + com.assistant.OverlayService.captureState() + ".",
                             severity = if (restarted) "INFO" else "CRITICAL"
                         ))
                     } else {
                         // SPLENDOR_P11_D4: heal first, log second. The
                         // auto-heal request used to sit inside the shouldLog()
                         // block, so recovery was throttled by the 5-min log
-                        // dedup. requestAutoHeal() is safe to call every
-                        // cycle: OverlayService.autoHealCapture() has its own
-                        // 15s anti-spam cooldown.
-                        try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
+                        // dedup. requestAutoHealSilent() is safe to call every
+                        // cycle: OverlayService.autoHealCaptureSilent() has its
+                        // own 15s anti-spam cooldown — and it never launches
+                        // the reauth activity mid-match (CAPTUREFIX-2).
+                        try { com.assistant.OverlayService.requestAutoHealSilent() } catch (_: Throwable) {}
                         // F37-D5: EXHAUSTED used to fire whenever the 30s
                         // throttle blocked a retry — with 0 attempts spent —
                         // and hardcoded "3 attempts failed". Gate it on the
@@ -303,7 +351,7 @@ object RuntimeSelfHealEngine {
                                 timestamp = fmt.format(Date()),
                                 category = "CAPTURE_RESTART_EXHAUSTED",
                                 detected = "No frame ever assembled; $captureRestartAttempts capture restart attempts failed (capture=" + com.assistant.vision.CameraProfile.diagnostics() + ").",
-                                fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog).",
+                                fix = "Auto-heal requested (silent token reuse; reauth deferred to the next non-match break if the token is dead).",
                                 severity = "CRITICAL"
                             ))
                             // SPLENDOR_P6_RESTART_EXHAUSTED_END
@@ -318,8 +366,10 @@ object RuntimeSelfHealEngine {
                     // started (or died before the first frame): log it, record
                     // it, and attempt auto-heal instead of returning silently.
                     // Throttled to one attempt per 30s; autoHealCapture has its
-                    // own 15s cooldown. restartCaptureIfAlive is NOT used here:
-                    // it returns false when mediaProjection is null / revoked.
+                    // own 15s cooldown. restartCaptureWithReason is NOT used
+                    // here: it returns REVOKED / NO_PROJECTION when the
+                    // session is gone — the silent auto-heal is the route
+                    // instead.
                     // F37-D5: this branch spends no attempt, so it must not
                     // consume the attempt-budget throttle (lastRestartAttemptMs)
                     // — doing so poisoned canRetry and fired a false EXHAUSTED.
@@ -360,14 +410,16 @@ object RuntimeSelfHealEngine {
                     if (now - lastIdleHealMs > 30_000L || lastIdleHealMs == 0L) {
                         lastIdleHealMs = now
                         totalHeals++
-                        try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
+                        // CAPTUREFIX-2: silent auto-heal only — a dead token
+                        // defers reauth; no activity, no prompt mid-match.
+                        try { com.assistant.OverlayService.requestAutoHealSilent() } catch (_: Throwable) {}
                         val neverStartedCategory = "CAPTURE_" + state.name
                         if (shouldLog(neverStartedCategory, "never_started state=$state")) {
                             record(HealEvent(
                                 timestamp = fmt.format(Date()),
                                 category = neverStartedCategory,
                                 detected = "No frame ever assembled and capture is $state (never started, or died before the first frame). agentAge=${(now - agentStartedMs) / 1000L}s. capture=" + com.assistant.vision.CameraProfile.diagnostics() + ".",
-                                fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog). If the service was restarted without a token, tap the capture recovery prompt.",
+                                fix = "Auto-heal requested (silent token reuse; reauth deferred to the next non-match break if the token is dead). If the service was restarted without a token, recovery waits for the next non-match break.",
                                 severity = "CRITICAL"
                             ))
                         }
@@ -395,9 +447,11 @@ object RuntimeSelfHealEngine {
             // Capture IS stale
 
             // ROOT-CAUSE FIX (HealLog 2026-08-25): when the projection is revoked,
-            // restartCaptureIfAlive() can NEVER succeed (first branch returns false).
-            // Do not burn the 3-attempt budget on a no-op; escalate to the
-            // user-visible recovery prompt (tap = BAL exemption = fresh token).
+            // the restart path can NEVER succeed (first branch returns
+            // REVOKED). Do not burn the 3-attempt budget on a no-op;
+            // route to silent auto-heal instead — token reuse, and if the
+            // token is dead, reauth defers to the next non-match moment
+            // (CAPTUREFIX-2: no user-visible recovery prompt mid-match).
             val state = com.assistant.OverlayService.captureState()
             if (state == com.assistant.OverlayService.CaptureState.REVOKED) {
                 if (now - lastIdleHealMs > 30_000L || lastIdleHealMs == 0L) {
@@ -405,17 +459,18 @@ object RuntimeSelfHealEngine {
                     // SPLENDOR_V42_AUTOHEAL_FIX_BEGIN
                     // v2 (2026-10-02): automatic recovery — no manual tap.
                     // 1) token reuse (zero interaction) if the projection session
-                    //    is still alive; 2) otherwise auto-launch the system
-                    //    consent dialog (one tap — Android 14 requires one
-                    //    consent per capture session; no app can bypass it).
-                    try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
+                    //    is still alive; 2) otherwise defer reauth to the next
+                    //    non-match moment (CAPTUREFIX-2: no consent dialog
+                    //    mid-match — the old auto-launch is out).
+                    // CAPTUREFIX-2: silent auto-heal only.
+                    try { com.assistant.OverlayService.requestAutoHealSilent() } catch (_: Throwable) {}
                     // SPLENDOR_V42_AUTOHEAL_FIX_END
                     if (shouldLog("CAPTURE_REVOKED", "revoked")) {
                         record(HealEvent(
                             timestamp = fmt.format(Date()),
                             category = "CAPTURE_REVOKED",
-                            detected = "MediaProjection revoked; auto-heal triggered (token reuse or system consent).",
-                            fix = "Auto-heal: token reuse if session alive, else system consent dialog (single tap).",
+                            detected = "MediaProjection revoked; auto-heal triggered (silent token reuse; reauth deferred if the token is dead).",
+                            fix = "Auto-heal (silent): token reuse if session alive, else reauth deferred to the next non-match break.",
                             severity = "CRITICAL"
                         ))
                     }
@@ -428,14 +483,15 @@ object RuntimeSelfHealEngine {
                     // Was log-only ("AI Agent handling autonomously") while
                     // doing nothing: same silent no-op class as the f==null
                     // IDLE branch. Attempt auto-heal like the REVOKED branch.
-                    try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
+                    // CAPTUREFIX-2: silent auto-heal only.
+                    try { com.assistant.OverlayService.requestAutoHealSilent() } catch (_: Throwable) {}
                     // SPLENDOR_P6_STALE_FAILED_AUTOHEAL_END
                     if (shouldLog("CAPTURE_FAILED", "failed")) {
                         record(HealEvent(
                             timestamp = fmt.format(Date()),
                             category = "CAPTURE_FAILED",
                             detected = "MediaProjection setup failed; capture stale with no fresh frame.",
-                            fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog).",
+                            fix = "Auto-heal requested (silent token reuse; reauth deferred to the next non-match break if the token is dead).",
                             severity = "CRITICAL"
                         ))
                     }
@@ -448,14 +504,15 @@ object RuntimeSelfHealEngine {
                     // Was log-only ("AI Agent handling autonomously") while
                     // doing nothing: same silent no-op class as the f==null
                     // IDLE branch. Attempt auto-heal like the REVOKED branch.
-                    try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) {}
+                    // CAPTUREFIX-2: silent auto-heal only.
+                    try { com.assistant.OverlayService.requestAutoHealSilent() } catch (_: Throwable) {}
                     // SPLENDOR_P6_STALE_IDLE_AUTOHEAL_END
                     if (shouldLog("CAPTURE_IDLE", "idle")) {
                         record(HealEvent(
                             timestamp = fmt.format(Date()),
                             category = "CAPTURE_IDLE",
                             detected = "MediaProjection idle; capture stale with no fresh frame.",
-                            fix = "Auto-heal requested (token reuse if the session is alive, else system consent dialog).",
+                            fix = "Auto-heal requested (silent token reuse; reauth deferred to the next non-match break if the token is dead).",
                             severity = "WARNING"
                         ))
                     }
@@ -474,19 +531,26 @@ object RuntimeSelfHealEngine {
                 totalHeals++
 
                 // Attempt restart via OverlayService instance
-                val restarted = try {
-                    // This path is valid only while the existing MediaProjection
-                    // session is still alive. Callback.onStop() now marks the
-                    // projection revoked and starts fresh authorization instead.
-                    val cls = Class.forName("com.assistant.OverlayService")
-                    val method = cls.getDeclaredMethod("restartCaptureIfAlive")
-                    (method.invoke(null) as? Boolean) ?: false
+                // CAPTUREFIX-1: direct reason call (see the f==null branch
+                // above). This path is valid only while the existing
+                // MediaProjection session is still alive. Callback.onStop()
+                // now marks the projection revoked and starts silent
+                // recovery instead.
+                val restartReason = try {
+                    com.assistant.OverlayService.restartCaptureWithReason()
                 } catch (e: Throwable) {
+                    "EXCEPTION:${e.javaClass.simpleName}"
+                }
+                val restarted = restartReason == "OK"
+                if (restartReason == "INSTANCE_NULL") {
+                    if (captureRestartAttempts > 0) captureRestartAttempts--
+                    requestOverlayServiceRestart()
+                }
+                if (!restarted) {
                     RuntimeLogger.log(
-                        "AGENT: restartCaptureIfAlive failed: ${e.message}",
+                        "AGENT: restartCapture reason=$restartReason (capture state " + com.assistant.OverlayService.captureState() + ")",
                         "AGENT"
                     )
-                    false
                 }
 
                 record(HealEvent(
@@ -497,22 +561,19 @@ object RuntimeSelfHealEngine {
                         "decisions counter frozen at frameId=${f.frameId}. " +
                         "Attempt #$captureRestartAttempts of 3 (session #$captureRestartSessionTotal).",
                     fix = if (restarted) "RESTART SENT to OverlayService.restartCapture(); awaiting frame resumption for verification." else
-                        "CAPTURE RESTART FAILED because the current projection may be " +
-                        "invalid or revoked. OverlayService remains the recovery owner. " +
-                        "If MediaProjection.onStop() fired, fresh user authorization " +
-                        "is required; the old projection token cannot be reused.",
+                        "CAPTURE RESTART FAILED — reason=$restartReason, capture state " + com.assistant.OverlayService.captureState() + ". " +
+                        "Silent recovery continues (token reuse; reauth only at a non-match break).",
                     severity = if (restarted) "INFO" else "CRITICAL"
                 ))
 
-                if (!restarted) {
+                if (!restarted && restartReason != "INSTANCE_NULL") {
                     printCodeFix("CAPTURE_THREAD_DEATH",
-                        "HyperOS kills media projection after long sessions.\n" +
+                        "Capture stale; restart reason=$restartReason.\n" +
                         "The ImageReader stops delivering frames silently.\n" +
                         "PERMANENT FIX OPTIONS:\n" +
-                        "1. In OverlayService.MediaProjection.Callback.onStop():\n" +
-                        "   Instead of stopSelf(), call restartCapture() then re-request projection.\n" +
+                        "1. Silent token reuse from the process-level token store (no user tap); reauth only at a non-match break.\n" +
                         "2. Add KeepAlive periodic dummy capture every 60s to prevent OS timeout.\n" +
-                        "3. Register FOREGROUND_SERVICE_TYPE=mediaProjection in manifest.\n" +
+                        "3. Register FOREGROUND_SERVICE_TYPE=mediaProjection in manifest (already present — manifest :114).\n" +
                         "APPLY: Check app/src/main/AndroidManifest.xml for foregroundServiceType."
                     )
                 }
@@ -522,7 +583,7 @@ object RuntimeSelfHealEngine {
                     category = "CAPTURE_STALE",
                     detected = "Capture stale ${staleMs / 1000}s. Restart attempts: $captureRestartAttempts/3.",
                     fix = if (captureRestartAttempts >= 3)
-                        "Max restart attempts reached. If still frozen, re-grant MediaProjection via the capture recovery prompt; no automatic force-stop exists."
+                        "Max restart attempts reached. Reauth is deferred to the next non-match break (no popup mid-match); no automatic force-stop exists."
                         else "Next restart attempt in ${(30_000L - (System.currentTimeMillis() - lastRestartAttemptMs)) / 1000}s.",
                     severity = "CRITICAL"
                 ))
@@ -720,7 +781,7 @@ object RuntimeSelfHealEngine {
                             "(VISION_BUSY_SKIP) and dropping every frame before onFrame. " +
                             "See the capture check result for which. Decision exits: ${decisionExitCounters()}",
                         fix = "AGENT will attempt capture restart. If max attempts reached: " +
-                            "re-grant MediaProjection via the capture recovery prompt; no automatic force-stop exists.",
+                            "reauth is deferred to the next non-match break (no popup mid-match); no automatic force-stop exists.",
                         severity = "CRITICAL"
                     ))
                     RuntimeLogger.log("AGENT CRITICAL LOOP_FROZEN at $decisions — triggering capture check. Decision exits: ${decisionExitCounters()}", "AGENT")

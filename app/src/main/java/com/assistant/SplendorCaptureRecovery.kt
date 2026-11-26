@@ -23,6 +23,17 @@ object SplendorCaptureRecovery {
     @Volatile private var lastFrame = 0L
     @Volatile private var armed = false
     @Volatile private var dead = false
+    // CAPTUREFIX-2: deferred reauth. Mid-match, a dead token must NEVER
+    // pop a notification or an activity at the user — the match keeps
+    // running degraded and reauth waits for the next non-match moment.
+    // deferReauth() arms the flag; the 4 s checker flushes it as soon
+    // as the game is not foreground.
+    @Volatile private var reauthDeferred = false
+
+    fun deferReauth() {
+        reauthDeferred = true
+        Log.w(TAG, "capture reauth deferred to the next non-match moment (no popup mid-match)")
+    }
     private val handler = Handler(Looper.getMainLooper())
     private val checker = object : Runnable {
         override fun run() { check(); handler.postDelayed(this, 4000) }
@@ -55,6 +66,22 @@ object SplendorCaptureRecovery {
     }
 
     private fun check() {
+        // CAPTUREFIX-2: flush a deferred reauth as soon as we are NOT
+        // mid-match — even if capture never armed (first launch / sticky
+        // restart). The flush runs the full auto-heal (token reuse
+        // first); only if that fails does the tap-to-reauthorize
+        // notification post. While the game is foreground the flag stays
+        // armed and nothing user-facing fires.
+        if (reauthDeferred) {
+            val inGame = try { com.assistant.VisionTrust.isGameForeground() } catch (_: Throwable) { false }
+            if (!inGame) {
+                reauthDeferred = false
+                val healed = try { com.assistant.OverlayService.requestAutoHeal() } catch (_: Throwable) { false }
+                if (!healed) {
+                    try { requestReauth() } catch (_: Throwable) {}
+                }
+            }
+        }
         if (!armed || lastFrame == 0L || dead) return
         if (android.os.SystemClock.elapsedRealtime() - lastFrame > 30000) { dead = true; onRevoked() }
     }
@@ -62,19 +89,30 @@ object SplendorCaptureRecovery {
         if (svcRef?.get() == null) return
         Log.w(TAG, "capture stale -> auto-healing capture (no manual tap required)")
         // SPLENDOR_V42_AUTOHEAL_REVOKED_BEGIN
-        // v2: automatic recovery — token reuse first (zero tap), then the
-        // system consent dialog (one tap). No overlay prompt / notification spam.
+        // CAPTUREFIX-2: silent auto-heal only. The old code called the
+        // full requestAutoHeal() (which launches the reauth activity
+        // when the token is dead) and then posted the tap-to-reauthorize
+        // notification — both user-facing, both mid-match. Now: token
+        // reuse only; a dead token defers (no notification, no
+        // activity) unless the game is already background, and COOLDOWN
+        // (throttled, try again in 15 s) is not treated as dead.
         // No68-C-D23: requestAutoHeal()'s Boolean used to be ignored and
         // requestReauth() had zero callers, so when auto-heal failed
         // (e.g. the 15 s anti-spam cooldown) the user got no prompt at
         // all. Fall back to the tap-to-reauthorize notification then. The
         // overlap with auto-heal's own reauth-activity launch is deliberate:
         // the notification persists if that launch is swallowed.
-        val healed = try {
-            com.assistant.OverlayService.requestAutoHeal()
-        } catch (_: Throwable) { false }
-        if (!healed) {
-            try { requestReauth() } catch (_: Throwable) {}
+        val silent = try {
+            com.assistant.OverlayService.requestAutoHealSilent()
+        } catch (_: Throwable) { "EXCEPTION" }
+        val healed = silent == "OK"
+        if (!healed && silent != "COOLDOWN") {
+            val inGame = try { com.assistant.VisionTrust.isGameForeground() } catch (_: Throwable) { false }
+            if (inGame) {
+                try { deferReauth() } catch (_: Throwable) {}
+            } else {
+                try { requestReauth() } catch (_: Throwable) {}
+            }
         }
         // SPLENDOR_V42_AUTOHEAL_REVOKED_END
     }

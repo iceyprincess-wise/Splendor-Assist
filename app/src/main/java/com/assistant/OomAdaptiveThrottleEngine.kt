@@ -6,7 +6,12 @@ import com.assistant.diagnostic.RuntimeLogger
 
 object OomAdaptiveThrottleEngine {
 
-    private const val OOM_HOSTILE_THRESHOLD = 10
+    // CAPTUREFIX-1 (detector correction): adj is PROCESS-level, set by
+    // ActivityManager from process state. 200 is the NORMAL level for a
+    // foreground service (PERCEPTIBLE_APP_ADJ) — the old threshold of 10
+    // cried "hostile" at a healthy foreground service. 500 = plain
+    // service, 900 = cached. Only >= 500 is hostile here.
+    private const val OOM_HOSTILE_THRESHOLD = 500
     private const val POLL_MS = 500L
     private const val LOG_COOLDOWN_MS = 10_000L
 
@@ -61,16 +66,20 @@ object OomAdaptiveThrottleEngine {
         val wasHostile = oomHostile
         oomHostile = hostile
 
-        // CONDITIONLESS ACTIVE MITIGATION:
-        // HyperOS throttles via cgroups even if thread priority isn't explicitly reset.
-        // Force URGENT_AUDIO (-19) every cycle to prevent silent CPU starvation.
-        try {
-            val cur = Process.getThreadPriority(Process.myTid())
-            if (cur > Process.THREAD_PRIORITY_URGENT_AUDIO) {
-                Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
-                reapplyCount++
-            }
-        } catch (_: Throwable) {}
+        // CONDITIONLESS ACTIVE MITIGATION (corrected — see the threshold
+        // note above): thread priority CANNOT move oom_score_adj — that
+        // is process-level, set by ActivityManager. What this guards is
+        // silent priority resets on the two addressable worker threads:
+        // this poller (myTid()) at URGENT_AUDIO (-19, as before) and the
+        // MAIN thread (its Linux tid == pid) at URGENT_DISPLAY (-8, the
+        // input-thread level InputPriorityEngine uses). Coroutine-pool
+        // workers (vision/capture/dispatch) have no stable Thread object
+        // reachable here, so their tids are not addressable through the
+        // Process API and they are not re-asserted. HyperOS cgroup
+        // throttling is not measurable from here and is not claimed to
+        // be fixed by this reapply.
+        reassertThreadPriority(Process.myTid(), Process.THREAD_PRIORITY_URGENT_AUDIO)
+        reassertThreadPriority(Process.myPid(), Process.THREAD_PRIORITY_URGENT_DISPLAY)
 
         if (hostile) {
             // Publish hostile signal so Queen Bee (SmartAssist) can drop non-essential UI work
@@ -84,7 +93,7 @@ object OomAdaptiveThrottleEngine {
             if (!wasHostile || now - lastHostileLogMs > LOG_COOLDOWN_MS) {
                 lastHostileLogMs = now
                 RuntimeLogger.log(
-                    "OOM_HOSTILE: adj=$adj — HyperOS throttling active. " +
+                    "OOM_HOSTILE: adj=$adj — process backgrounded/cached (threshold $OOM_HOSTILE_THRESHOLD); cgroup throttling not measurable here. " +
                             "Priority reapply count=$reapplyCount",
                     "INPUT"
                 )
@@ -97,6 +106,18 @@ object OomAdaptiveThrottleEngine {
                 AdapterSignalBus.publishInput("OOM_CLEAR", 0L)
             }
         }
+    }
+
+    // Re-assert one addressable thread's priority; counts only real
+    // reapplies (a reset actually happened). tid must be a Linux tid:
+    // myTid() for the current thread, myPid() for the main thread.
+    private fun reassertThreadPriority(tid: Int, nice: Int) {
+        try {
+            if (Process.getThreadPriority(tid) > nice) {
+                Process.setThreadPriority(tid, nice)
+                reapplyCount++
+            }
+        } catch (_: Throwable) {}
     }
 
     private fun readOomAdj(pid: Int): Int = try {

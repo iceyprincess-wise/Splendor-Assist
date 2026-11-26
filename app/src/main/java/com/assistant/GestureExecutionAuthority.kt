@@ -107,6 +107,13 @@ object GestureExecutionAuthority {
     @Volatile private var lastOrigin: String = "none"
     @Volatile private var lastAccepted: Boolean = false
     @Volatile private var lastUpdatedMs: Long = 0L
+    // CAPTUREFIX-3: the refusing gate of the last execute() call, for
+    // the BUS_DISPATCH reason field (read by
+    // SmartAssistAccessibilityEngine). Set at every false return:
+    // touch-gate / dispatch-false / exception. "none" means the last
+    // call was not refused by this authority.
+    @Volatile var lastRejectReason: String = "none"
+        private set
     @Volatile private var currentActionTelemetry: ActionTelemetry? = null
     @Volatile private var lastActionTelemetry: Map<String, Any>? = null
 
@@ -263,6 +270,9 @@ object GestureExecutionAuthority {
             )
             // SPLENDOR_F33_GATE_COUNTERS: refusals were invisible in EXEC counters.
             rejected.incrementAndGet()
+            // CAPTUREFIX-3: name the refusing gate for the BUS_DISPATCH
+            // reason field.
+            lastRejectReason = "touch-gate"
             return false
         }
 
@@ -319,10 +329,16 @@ object GestureExecutionAuthority {
             } catch (_: Throwable) {
             }
             lastAccepted = result
+            // CAPTUREFIX-3: the OS refused the gesture (or the dispatch
+            // returned false without the touch gate firing).
+            if (!result) lastRejectReason = "dispatch-false"
             result
         } catch (e: Exception) {
             failed.incrementAndGet()
             lastAccepted = false
+            // CAPTUREFIX-3: name the refusing gate for the BUS_DISPATCH
+            // reason field.
+            lastRejectReason = "exception"
             RuntimeLogger.log(
                 "Gesture execution failed origin=$origin, actionId=$actionId: ${e.message}",
                 "SMART_ASSIST"

@@ -197,7 +197,16 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         return head != null && isEmergencySource(head)
     }
 
+    // CAPTUREFIX-3: the refusing gate of the last executeDirectRequest()
+    // call, for the BUS_DISPATCH reason field. Reset at the start of
+    // every call; set at each false return (ui-gate / sa-disabled /
+    // not-foreground / package-deny / cooling / latch-held / exception).
+    // The authority's touch-gate rejection is read from
+    // GestureExecutionAuthority.lastRejectReason after the authority call.
+    @Volatile private var lastRejectReason = "none"
+
     @Synchronized fun executeDirectRequest(request: com.assistant.execution.ExecutionRequest): Boolean {
+        lastRejectReason = "none"
         // FINAL EXECUTION GATE
         // Never turn a stale bus request into an Accessibility gesture
         // while the game is not foreground.
@@ -208,6 +217,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 "Direct dispatch blocked: UiExecutionGate blocked reason=${com.assistant.execution.UiExecutionGate.reason}",
                 "SMART_ASSIST"
             )
+            lastRejectReason = "ui-gate"
             return false
         }
         // Keeper fix (Ed, 2026-11-23): the emergency lane (GOALKEEPER /
@@ -220,6 +230,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 "Direct dispatch blocked: SmartAssist disabled",
                 "SMART_ASSIST"
             )
+            lastRejectReason = "sa-disabled"
             return false
         }
 
@@ -228,6 +239,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 "Direct dispatch blocked: game foreground is false",
                 "SMART_ASSIST"
             )
+            lastRejectReason = "not-foreground"
             return false
         }
 
@@ -240,6 +252,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 "Direct dispatch blocked: package deny pkg=${VisionTrust.diagnostics()}",
                 "SMART_ASSIST"
             )
+            lastRejectReason = "package-deny"
             return false
         }
 
@@ -258,6 +271,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             // DIRECT_DISPATCH line.
             RuntimeLogger.execution("BUS_DROPPED", "reason=cooling actionClass=$category actionId=${request.actionId}")
             RuntimeLogger.log("Direct dispatch dropped: cooling actionClass=$category actionId=${request.actionId}", "SMART_ASSIST")
+            lastRejectReason = "cooling"
             return false
         }
         if (isDispatching) {
@@ -265,6 +279,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             // dropped while a stroke is live left no trace.
             RuntimeLogger.execution("BUS_DROPPED", "reason=latch-held heldBy=$currentActionId actionId=${request.actionId}")
             RuntimeLogger.log("Direct dispatch dropped: dispatch latch held by actionId=$currentActionId actionId=${request.actionId}", "SMART_ASSIST")
+            lastRejectReason = "latch-held"
             return false // Completion callbacks own the live stroke, not a duration estimate.
         }
 
@@ -348,6 +363,10 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
             )
 
             if (!accepted) {
+                // CAPTUREFIX-3: the authority names its own refusing gate
+                // (touch-gate / dispatch-false / exception). The gates
+                // above already set lastRejectReason when they fire.
+                lastRejectReason = GestureExecutionAuthority.lastRejectReason
                 ActionOutcomeVerifier.cancelDispatch(request.actionId)
                 releaseDispatch()
             } else {
@@ -374,6 +393,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                 "Direct dispatch vector crash: ${t.message}",
                 "SMART_ASSIST"
             )
+            lastRejectReason = "exception"
             false
         }
     }
@@ -508,7 +528,7 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
 
                     RuntimeLogger.execution(
                         "BUS_DISPATCH",
-                        "actionId=${request.actionId} source=${request.source} phase=${request.phase} accepted=$accepted start=(${request.startX},${request.startY}) end=(${request.endX},${request.endY})"
+                        "actionId=${request.actionId} source=${request.source} phase=${request.phase} dispatched=$accepted reason=${if (accepted) "none" else lastRejectReason} start=(${request.startX},${request.startY}) end=(${request.endX},${request.endY})"
                     )
                 }
             } catch (e: Throwable) {
