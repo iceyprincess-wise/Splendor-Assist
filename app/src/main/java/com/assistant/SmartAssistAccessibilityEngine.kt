@@ -36,10 +36,9 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         var lastAccessibilityEventMs = 0L
         @Volatile
         var lastTouchInteractionMs = 0L
-        // FLAG-OFF-DIAG (2026-11-25): arrival stamp for raw MotionEvents.
-        // Kept because AccessibilityEventFlowWatchdog reads it; with the
-        // motion-events flag off it is never stamped, so it stays 0 and
-        // the motion age stays -1 by design in this build.
+        // Arrival stamp for raw MotionEvents (onMotionEvent) — the
+        // watchdog reads it for motionEventAgeMs; with the flag on,
+        // DOWN/MOVE stamp it, so the motion age refreshes from -1 live.
         @Volatile
         var lastMotionEventMs = 0L
 
@@ -554,14 +553,23 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         // app updates. Re-assert the mask on EVERY bind so a stale cached
         // mask cannot starve UserTouchState again. Values mirror
         // accessibility_service_config.xml exactly.
-        // FLAG-OFF-DIAG (2026-11-25): the motion-events flag is OFF for
-        // the freeze test — regression trace #66 PROVED v271 introduced
-        // it and v268 (flags = 0, no touch handler) never froze, while
-        // v271+ freezes on enable. With the flag off the system does not
-        // route raw MotionEvents through this process, so the input
-        // pipeline cannot block behind it. Diagnostic only: touch
-        // delivery (and the bypass-OFF keeper save) is lost in this
-        // build. The watchdog heal never re-asserts the flag either.
+        // TOUCH-FALLBACK (2026-11-25): the v268 session PROVED the mask
+        // alone is not enough — A11Y_FLOW touchEventAgeMs=-1 all session
+        // (39/39) while other events arrived, i.e. this ROM withholds
+        // TYPE_TOUCH_INTERACTION_* despite a correct mask. Set
+        // FLAG_SEND_MOTION_EVENTS (API 36, javap-verified) so the system
+        // also delivers raw MotionEvents to onMotionEvent — a second,
+        // independent touch signal. motionEventSources is set explicitly
+        // to SOURCE_TOUCHSCREEN so delivery does not depend on the
+        // framework default (finger touch is the only source that
+        // matters for the dispatch gate). FLAG_REQUEST_TOUCH_EXPLORATION_MODE
+        // is deliberately NOT set (explore-by-touch would break gameplay
+        // input). Fail-open: on a device that ignores the flag, or pre-36
+        // (the override is never called), the existing touch-interaction
+        // path and bypass behaviour are untouched.
+        // FLAG-RETURN (2026-11-26, #74): flag restored after v283 proved
+        // silent capture recovery on-device — monitored test; if the phone
+        // freezes on enable, the flag comes straight back off.
         // CI #64-#68 fix: canRetrieveWindowContent is a getter-only
         // val and canPerformGestures does not exist (javap, API 34/36);
         // capabilities live only in the XML config. Mutate the
@@ -575,9 +583,10 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
                     AccessibilityEvent.TYPE_TOUCH_INTERACTION_END
                 info.feedbackType = android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_HAPTIC
                 info.notificationTimeout = 0L
-                info.flags = 0
+                info.flags = android.accessibilityservice.AccessibilityServiceInfo.FLAG_SEND_MOTION_EVENTS
+                info.motionEventSources = android.view.InputDevice.SOURCE_TOUCHSCREEN
                 setServiceInfo(info)
-                RuntimeLogger.log("FLAG_OFF_DIAG: motion-events flag disabled for freeze test", "SMART_ASSIST")
+                RuntimeLogger.log("FLAG_ON_DIAG: motion-events flag enabled (flag return, monitored test)", "SMART_ASSIST")
             }
         } catch (_: Throwable) {}
         try {
@@ -771,11 +780,68 @@ class SmartAssistAccessibilityEngine : AccessibilityService() {
         }
     }
 
-    // FLAG-OFF-DIAG (2026-11-25): the raw-touch handler was REMOVED for
-    // the freeze test — with the motion-events flag off the system never
-    // delivers MotionEvents here, so the handler cannot fire. The field
-    // it stamped stays (the watchdog still reads it; it stays 0, so the
-    // motion age stays -1 by design in this build).
+    // TOUCH-FALLBACK (2026-11-25): second touch signal — FLAG_SEND_MOTION_EVENTS
+    // delivers raw MotionEvents here (API 36, javap-verified: the method
+    // exists on AccessibilityService). The v268 session PROVED the
+    // touch-interaction path starved (A11Y_FLOW touchEventAgeMs=-1 all
+    // session, 39/39) while other events arrived — this ROM withholds
+    // TYPE_TOUCH_INTERACTION_* despite a correct mask, so without this
+    // channel the keeper can never save with bypass OFF. The events go
+    // through the SAME discriminator gate as the START/END path
+    // (TouchSourceDiscriminator): while our own gesture is live, the
+    // event is our own output re-entering and is NOT a user touch.
+    // Fail-open: any throw is swallowed — the existing touch-interaction
+    // path and bypass behaviour are untouched by this method, and on a
+    // pre-36 device the method is simply never called. DOWN/UP/CANCEL log
+    // one MOTION_TOUCH_DIAG line each (sparse); MOVE is a silent keep-alive
+    // (a MOVE stream is high-frequency). POINTER_UP never clears the state
+    // — another finger is still down; only ACTION_UP/CANCEL clear it.
+    override fun onMotionEvent(event: android.view.MotionEvent) {
+        try {
+            super.onMotionEvent(event)
+            val now = System.currentTimeMillis()
+            when (event.actionMasked) {
+                android.view.MotionEvent.ACTION_DOWN,
+                android.view.MotionEvent.ACTION_POINTER_DOWN -> {
+                    lastMotionEventMs = now
+                    // Union stamp: A11Y_FLOW's touch age now measures the
+                    // last touch evidence from EITHER channel — its refresh
+                    // from -1 is the live proof this fallback delivers.
+                    lastTouchInteractionMs = now
+                    if (!TouchSourceDiscriminator.isAppGestureActive(now)) {
+                        UserTouchState.setTouching(true)
+                        RuntimeDecisionLoop.invalidateGestureEnvelopeOnManualTouch()
+                    }
+                    RuntimeLogger.log("MOTION_TOUCH_DIAG action=DOWN appGestureActive=${TouchSourceDiscriminator.isAppGestureActive(now)} isTouching=${UserTouchState.isTouching()}", "SMART_ASSIST")
+                }
+                android.view.MotionEvent.ACTION_UP,
+                android.view.MotionEvent.ACTION_CANCEL -> {
+                    lastMotionEventMs = now
+                    lastTouchInteractionMs = now
+                    if (!TouchSourceDiscriminator.isAppGestureActive(now)) {
+                        UserTouchState.setTouching(false)
+                    }
+                    val action = if (event.actionMasked == android.view.MotionEvent.ACTION_CANCEL) "CANCEL" else "UP"
+                    RuntimeLogger.log("MOTION_TOUCH_DIAG action=$action appGestureActive=${TouchSourceDiscriminator.isAppGestureActive(now)} isTouching=${UserTouchState.isTouching()}", "SMART_ASSIST")
+                }
+                android.view.MotionEvent.ACTION_POINTER_UP -> {
+                    // Another finger is still down — a pointer lift must
+                    // NOT clear the touch state (only ACTION_UP/CANCEL do).
+                    lastMotionEventMs = now
+                }
+                android.view.MotionEvent.ACTION_MOVE -> {
+                    // Keep-alive only: a MOVE stream means a finger is
+                    // still down, so refresh the retention the same way a
+                    // DOWN does. No log — MOVE streams are high-frequency.
+                    lastMotionEventMs = now
+                    if (!TouchSourceDiscriminator.isAppGestureActive(now)) {
+                        UserTouchState.setTouching(true)
+                    }
+                }
+                else -> Unit
+            }
+        } catch (_: Throwable) { }
+    }
 
     /**
      * B3 — re-establishes the bus consumer after a G1 loss. This is NOT
