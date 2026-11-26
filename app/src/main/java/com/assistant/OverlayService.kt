@@ -122,7 +122,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         // calls it could never satisfy.
         @JvmStatic
         fun restartCaptureWithReason(): String =
-            instance?.restartCaptureWithReason() ?: "INSTANCE_NULL"
+            instance?.restartCaptureWithReasonImpl() ?: "INSTANCE_NULL"
 
         // CAPTUREFIX-2: silent auto-heal for the mid-match path. NEVER
         // launches the reauth activity and NEVER shows the recovery
@@ -935,7 +935,7 @@ class OverlayService : Service(), ComponentCallbacks2 {
         return true
     }
 
-    fun restartCapture(): Boolean = restartCaptureWithReason() == "OK"
+    fun restartCapture(): Boolean = restartCaptureWithReasonImpl() == "OK"
 
     // CAPTUREFIX-1: the restart returns a REASON, not a Boolean, so the
     // caller can tell a dead session from a dead service object instead
@@ -943,7 +943,13 @@ class OverlayService : Service(), ComponentCallbacks2 {
     // REVOKED / NO_PROJECTION / RECREATE_FAILED:<result> /
     // EXCEPTION:<type>. The log lines are unchanged (same strings as
     // before) so existing log triage keeps working.
-    fun restartCaptureWithReason(): String {
+    // CAPTUREFIX-1b: instance impl carries the Impl suffix — a companion
+    // @JvmStatic fun restartCaptureWithReason() and an instance fun of the
+    // same name compile to the same JVM signature (platform declaration
+    // clash, CI run 45787515889 step 9). The companion keeps the name
+    // (RuntimeSelfHealEngine calls it statically); only this instance
+    // implementation is renamed. Do NOT rename it back.
+    fun restartCaptureWithReasonImpl(): String {
         captureLock.lock()
         try {
             if (captureState == CaptureState.REVOKED) {
