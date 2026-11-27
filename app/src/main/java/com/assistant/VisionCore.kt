@@ -15,12 +15,21 @@ object VisionCore {
         // never derive from FPS). Reported on both exits below.
         val processStartedNanos = System.nanoTime()
 
+        // Phase 0 (all-round upgrade plan): per-reader timing. Each
+        // reader/engine group below is timed into VisionStageProfiler
+        // (recordReader, beside reportVisionLatency) — no new logging
+        // system, no behaviour change.
+        val tPreprocess = System.nanoTime()
         val blobs =
             VisionPreprocessor.process(frame)
+        recordReader("preprocess", tPreprocess)
 
+        val tFilter = System.nanoTime()
         val filteredBlobs =
             NoiseFilter.filter(blobs)
+        recordReader("filter", tFilter)
 
+val tBallCandidate = System.nanoTime()
 val heuristicCandidate =
     BallCandidateEngine.select(
         filteredBlobs,
@@ -28,6 +37,7 @@ val heuristicCandidate =
         // Null until the first lock-on — select() is unchanged then.
         BallDetector.lastKnownPosition()
     )
+recordReader("ballCandidate", tBallCandidate)
 
 /*
  * Task C (queue item 21, v3 TFLite detector): trained detector joins,
@@ -57,10 +67,12 @@ val ballCandidate =
         heuristicCandidate
     }
 
+val tBallDetect = System.nanoTime()
 val ball =
     BallDetector.detect(
         ballCandidate
     )
+recordReader("ballDetect", tBallDetect)
 
 // Batch 6e (carried from 6d File 438): ConfidenceHeatmap.update() had
 // zero callers, so the `confidence` field in the heatmap state was
@@ -81,12 +93,16 @@ ConfidenceHeatmap.update(ball.confidence)
 // better than dropping vision entirely). D1: capture is NOT slowed;
 // this path is strictly cheaper than full vision.
 if (MemoryCaptureGateEngine.shouldSkipFullVision()) {
+    val tBallOnly = System.nanoTime()
     val ballOnlyState = processBallOnly(filteredBlobs, ball, frame.width.toFloat(), frame.height.toFloat(), frame)
+    recordReader("ballOnly", tBallOnly)
     reportVisionLatency(processStartedNanos)
     return ballOnlyState
 }
 
+val tGoal = System.nanoTime()
 val goal = detectGoal(frame, filteredBlobs)
+recordReader("goal", tGoal)
 
 // L2 (batch 1): anchor the detected goal to its posts. The calibration
 // is stored in GoalPostCalibrationEngine.latest() for the keeper router.
@@ -99,22 +115,28 @@ GoalPostCalibrationEngine.calibrate(
     frame.height.toFloat()
 )
 
+val tField = System.nanoTime()
 val field =
     FieldLineDetector.detect(
         filteredBlobs
     )
+recordReader("field", tField)
 
+val tMotion = System.nanoTime()
 val motion =
     MotionTracker.update(
         ball
     )
+recordReader("motion", tMotion)
 
 // Single writer of ball telemetry: publishes only on a real detection so
 // FrameAssembler can mark the frame trusted and all contributors activate.
 BallTelemetryBridge.publish(ball)
 
+val tPlayers = System.nanoTime()
 val heuristicPlayers =
     PlayerDetector.detect(filteredBlobs)
+recordReader("players", tPlayers)
 
 // RING READER (ring-reader build, 2026-11-25): direct pixel read of
 // the controlled-player ring in both measured states (cyan when
@@ -138,9 +160,11 @@ val heuristicPlayers =
 // dash/possession PROXY — never "cyan = Dash pressed" as fact.
 // Null ring (or a reader throw) -> false. No second read: the read
 // already happens once per frame here.
+val tRing = System.nanoTime()
 val ringRead: ControlledRingReader.RingRead? = try {
     ControlledRingReader.read(frame.buffer, frame.width, frame.height, frame.rowStride, frame.pixelStride)
 } catch (_: Throwable) { null }
+recordReader("ring", tRing)
 val isDashing = ringRead?.state == ControlledRingReader.RingState.CYAN
 val heuristicPlayersWithRing = try {
     ControlledRingReader.mergeInto(
@@ -163,10 +187,12 @@ val players =
         heuristicPlayersWithRing
     }
 
+val tKeeper = System.nanoTime()
 val heuristicGoalkeeper =
     GoalkeeperDetector.detect(
         filteredBlobs
     )
+recordReader("keeper", tKeeper)
 
 // Queue item 21: trained keeper wins when fresh + confident (>= 0.50),
 // via the fusion seam — GoalkeeperDetector.detect stays blob-only by
@@ -180,6 +206,7 @@ val goalkeeper =
         heuristicGoalkeeper
     }
 
+val tFusion = System.nanoTime()
 val state =
     GameStateFusion.fuse(
         ball,
@@ -189,11 +216,14 @@ val state =
         goal,
         field
     )
+recordReader("fusion", tFusion)
 
+val tSceneTracker = System.nanoTime()
 SceneTracker.update(
     state,
     players
 )
+recordReader("sceneTracker", tSceneTracker)
 
   val scene =
       SceneTracker.current()
@@ -214,6 +244,7 @@ SceneTracker.update(
       TelemetryCoordinator.updateGoalkeeperPosition(0f, 0f, 0f)
   }
 
+  val tEnginesDef = System.nanoTime()
   val ownership =
       BallOwnershipEngine.compute(
           ball,
@@ -340,7 +371,9 @@ SceneTracker.update(
               )
           } else HomePosition(false)
       }
+  recordReader("enginesDef", tEnginesDef)
 
+  val tEnginesLanes = System.nanoTime()
   val offensiveLine =
       OffensiveLineEngine.compute(
           scene
@@ -514,7 +547,9 @@ SceneTracker.update(
           passingGraph,
           pressure
       )
+  recordReader("enginesLanes", tEnginesLanes)
 
+  val tEnginesTactical = System.nanoTime()
   val tacticalAnalyticsResult =
       if (GameCoexistenceGovernor.shouldRunAnalytics()) {
           TacticalAnalyticsEngine.analyze(
@@ -663,7 +698,9 @@ val offsideRiskEstimationResult = run {
         )
     }
 }
+recordReader("enginesTactical", tEnginesTactical)
 
+    val tWorldStore = System.nanoTime()
     Phase3WorldStateStore.update(
         Phase3WorldState(
             ownership = ownership,
@@ -712,9 +749,25 @@ val offsideRiskEstimationResult = run {
             temporalMemoryState = temporalMemoryState
 )
     )
+    recordReader("worldStore", tWorldStore)
 
 reportVisionLatency(processStartedNanos)
 return state
+    }
+
+    // Phase 0 (all-round upgrade plan): per-reader timing. Records one
+    // reader/engine-group span into VisionStageProfiler, whose
+    // VISION_STAGE summary lines (every 30 s) are the existing output
+    // path — no new logging system. Stage names carry the "reader:"
+    // prefix so they can never collide with the OverlayService
+    // coroutine stages (dedup, normalize, visionCore, assemble, ...).
+    // Always on: there is no diagnostics flag in the repo, and the
+    // cost is one nanoTime pair + one profiler record per group per
+    // frame (~2-4 us total). Fail-open: a profiler throw can never
+    // break a frame.
+    private fun recordReader(stage: String, startNanos: Long) {
+        val dtMs = (System.nanoTime() - startNanos) / 1_000_000L
+        try { VisionStageProfiler.record("reader:$stage", dtMs) } catch (_: Throwable) { }
     }
 
     // B7: the vision-latency producer — reports this process() call's
